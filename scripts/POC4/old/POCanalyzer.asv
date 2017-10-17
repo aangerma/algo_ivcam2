@@ -1,0 +1,164 @@
+function POCanalyzer(inoutFolder,verbose)
+% matlab 2015a !!!
+% deploytool
+% library compiler
+% .NET assembly
+% add POC4analyzer.m & runPipe.m
+% library name: POC4analyzer
+% class name : POC4
+% files req... : add 'tables' dir
+% finish
+
+
+
+if(nargin==0)
+    buildGui();
+else
+    runPOCanalyzer(inoutFolder,verbose);
+end
+
+
+end
+
+function buildGui()
+%%
+
+W=500;
+H=120;
+
+DEF_FOLDER = '\\invcam322\Ohad\data\lidar\EXP\20170109\01\';
+
+
+
+
+h.f = figure('name','X0  analyzer','numbertitle','off','toolbar','none','menubar','none','units','pixels','position',[0 0 W H]);
+centerfig(h.f);
+clf(h.f);
+lh=22;
+stride = 25;
+currH = H-stride;
+
+%input dir
+uicontrol('style','text','units','pixels','position',[10 currH 120 lh],'String','data folder','horizontalalignment','left','parent',h.f);
+h.dataFolder = uicontrol('style','edit','units','pixels','position',[120 currH 320 lh],'String',DEF_FOLDER,'horizontalalignment','left','parent',h.f);
+uicontrol('style','pushbutton','units','pixels','position',[120+320 currH lh lh],'String','...','horizontalalignment','left','parent',h.f,'callback',{@callbackChoose,h.dataFolder,true});
+
+currH = currH-stride;
+uicontrol('style','text','units','pixels','position',[10 currH 120 lh],'String','verbose','horizontalalignment','left','parent',h.f);
+h.verbose = uicontrol('style','checkbox','units','pixels','position',[120 currH 2*lh lh],'value',0,'parent',h.f);
+currH = currH-stride;
+
+%generate IVS
+uicontrol('style','pushbutton','units','pixels','position',[10 currH W-20 lh],'String','generate IVS','parent',h.f,'callback',@callback_run);
+
+guidata(h.f,h);
+
+end
+
+function callbackChoose(varargin)
+h=guidata(varargin{1});
+hh=varargin{3};
+if(varargin{4})
+    d = uigetdir(hh.String);
+else
+    [FileName,PathName] = uigetfile(hh.String);
+    d=fullfile(PathName,filesep,FileName);
+end
+if(~isa(d,'numeric'))
+    h.dataFolder.String = d;
+end
+end
+
+% function callbackChooseFile(varargin)
+% h=guidata(varargin{1});
+% [FileName,PathName] = uigetfile(h.configFn.String);
+% if(~isa(FileName,'numeric'))
+%     h.configFn.String = [PathName FileName];
+% end
+% end
+
+
+function callback_run(varargin)
+h=guidata(varargin{1});
+
+
+inoutFolder = h.dataFolder.String;
+
+verbose = h.verbose.Value;
+set_watches(h.f,false);
+try
+    runPOCanalyzer(inoutFolder,verbose);
+catch e,
+    
+    errordlg(sprintf('Fatal error:\n%s',regexprep(getReport(e), '<[^>]*>', '')));
+end
+set_watches(h.f,true);
+
+end
+
+function runPOCanalyzer(inoutFolder,configFn,verbose)
+params= xml2structWrapper(fullfile(inoutFolder,filesep,'POCconfig.xml'));
+fprintf('reading scope PZR data...');
+scopeFile = dirRecursive(inoutFolder,'*.h5');
+scopeFile = scopeFile{1};
+switch(lower(params.dataMode))
+    case 'poc4'
+        [dt,pzr,indLocs]=aux.readScopeLOS_POC4(scopeFile);
+    case 'poc3'
+    otherwise
+        error('Bad params.dataMode');
+end
+
+fprintf('done\n');
+
+fprintf('generating LOS...');
+angxyQ = aux.extractLOS(pzr,params,dt,verbose);
+fprintf('done\n');
+
+fprintf('cutting frames/scanlines...');
+xpcDataFull=aux.cutFrames(angxyQ,dt,indLocs);
+fprintf('done\n');
+
+%%
+fprintf('reading X0 data...');
+switch(lower(params.dataMode))
+    case 'poc4'
+        framesFiles = dirRecursive(inoutFolder,'*.bin');
+        isSplitted = cellfun(@(x) ~isempty(strfind(x,'Splitted')),framesFiles);
+        framesFiles=framesFiles(isSplitted);
+        if(isempty(framesFiles))
+            errordlg('No splitted bin files found');
+            return
+        end
+        [ascDataFull] = cellfun(@(i) readRawframe(i),framesFiles,'uni',false);
+        
+    case 'poc3'
+    otherwise
+        error('Bad params.dataMode');
+end
+fprintf('done\n');
+%%
+
+
+fprintf('X0 (%2d):%s\n',length(ascDataFull),mat2str(cellfun(@(x) length(x),ascDataFull)'));
+fprintf('XPC(%2d):%s\n',length(xpcDataFull),mat2str(cellfun(@(x) length(x),xpcDataFull)'));
+%%
+fprintf('syncing...\n');
+ivsArr=aux.syncX0XPC(xpcDataFull,ascDataFull,params.sync,verbose);
+fprintf('done\n');
+
+
+for frameNum=1:length(ivsArr)
+    fprintf('writing ivs...');
+    ivsfn = fullfile(inoutFolder,sprintf('record_%02d.ivs',frameNum));
+    io.writeIVS(ivsfn,ivsArr(frameNum));
+    fprintf('done\n');
+    
+end
+
+
+
+
+fprintf('Done\n');
+end
+

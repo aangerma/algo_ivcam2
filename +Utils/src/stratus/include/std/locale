@@ -1,0 +1,77 @@
+/*****************************************************************************
+
+                                    locale
+
+    C++ compatible header file for use in compiling SystemC.
+
+    $Id: locale,v 1.4 2005-06-15 22:55:13 deg Exp $
+
+******************************************************************************/
+
+#ifndef _LOCALE
+#define _LOCALE
+
+namespace std { 
+
+    // 22.1.1, locale: 
+    class locale; 
+    template <class Facet> const Facet& use_facet(const locale&); 
+    template <class Facet> bool has_facet(const locale&) throw(); 
+
+    // 22.1.3, convenience interfaces: 
+    template <class charT> bool isspace (charT c, const locale& loc); 
+    template <class charT> bool isprint (charT c, const locale& loc); 
+    template <class charT> bool iscntrl (charT c, const locale& loc); 
+    template <class charT> bool isupper (charT c, const locale& loc); 
+    template <class charT> bool islower (charT c, const locale& loc); 
+    template <class charT> bool isalpha (charT c, const locale& loc); 
+    template <class charT> bool isdigit (charT c, const locale& loc); 
+    template <class charT> bool ispunct (charT c, const locale& loc); 
+    template <class charT> bool isxdigit(charT c, const locale& loc); 
+    template <class charT> bool isalnum (charT c, const locale& loc); 
+    template <class charT> bool isgraph (charT c, const locale& loc); 
+    template <class charT> charT toupper(charT c, const locale& loc); 
+    template <class charT> charT tolower(charT c, const locale& loc); 
+
+    // 22.2.1 and 22.2.1.3, ctype: 
+    class ctype_base; 
+    template <class charT> class ctype; 
+    template <> class ctype<char>; // specialization 
+    template <class charT> class ctype_byname; 
+    template <> class ctype_byname<char>; // specialization 
+    class codecvt_base; 
+    template <class internT, class externT, class stateT> class codecvt; 
+    template <class internT, class externT, class stateT> class codecvt_byname;
+
+    // 22.2.2 and 22.2.3, numeric: 
+    template <class charT, class InputIterator> class num_get; 
+    template <class charT, class OutputIterator> class num_put; 
+    template <class charT> class numpunct; 
+    template <class charT> class numpunct_byname; 
+
+    // 22.2.4, collation: 
+    template <class charT> class collate; 
+    template <class charT> class collate_byname; 
+
+    // 22.2.5, date and time: 
+    class time_base; 
+    template <class charT, class InputIterator> class time_get; 
+    template <class charT, class InputIterator> class time_get_byname; 
+    template <class charT, class OutputIterator> class time_put; 
+    template <class charT, class OutputIterator> class time_put_byname; 
+
+    // 22.2.6, money: 
+    class money_base; 
+    template <class charT, class InputIterator> class money_get; 
+    template <class charT, class OutputIterator> class money_put; 
+    template <class charT, bool Intl> class moneypunct; 
+    template <class charT, bool Intl> class moneypunct_byname; 
+
+    // 22.2.7, message retrieval: 
+    class messages_base; 
+    template <class charT> class messages; 
+    template <class charT> class messages_byname; 
+
+}   /* namespace std */
+
+#endif /* _LOCALE */

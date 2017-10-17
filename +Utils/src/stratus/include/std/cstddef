@@ -1,0 +1,44 @@
+/*****************************************************************************
+
+                                    cstddef
+
+    C++ compatible header file for use in compiling SystemC.
+
+    $Id: cstddef,v 1.5 2014-02-23 18:23:33 acg Exp $
+
+*****************************************************************************/
+
+#ifndef _CSTDDEF
+#define _CSTDDEF
+
+namespace std {
+extern "C" {
+
+/*  begin code shared with <stddef.h> */
+
+#ifndef _PTRDIFF_T
+#define _PTRDIFF_T
+typedef int ptrdiff_t;
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#define offsetof(s, m) (size_t)(&(((s *)0)->m))
+
+/*  end code shared with <stddef.h> */
+
+#ifndef _STD_SIZE_T
+#define _STD_SIZE_T
+#   if defined(__x86_64) || defined(__EDG__)
+        typedef unsigned long size_t;
+#   else
+        typedef unsigned int size_t;
+#   endif
+#endif
+
+}   // extern "C"
+}   // namespace std
+
+#endif /* _CSTDDEF */

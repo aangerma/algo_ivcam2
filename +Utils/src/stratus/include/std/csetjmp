@@ -1,0 +1,29 @@
+/*****************************************************************************
+
+                                    csetjmp
+
+    C++ compatible header file.
+
+    $Id: csetjmp,v 1.2 2009-04-07 18:26:40 deg Exp $
+
+*****************************************************************************/
+
+#ifndef _CSETJMP
+#define _CSETJMP
+
+namespace std {
+extern "C" {
+
+/*  begin code shared with <setjmp.h> */
+
+typedef int jmp_buf[12];
+
+extern int  setjmp(jmp_buf);
+extern void longjmp(jmp_buf, int);
+
+/*  end code shared with <setjmp.h> */
+
+}   /* extern "C" */
+}   /* namespace std */
+
+#endif  /* _CSETJMP */

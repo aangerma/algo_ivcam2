@@ -1,0 +1,37 @@
+/*****************************************************************************
+
+                                    typeinfo
+
+    C++ compatible header file for use in compiling SystemC.  essentially
+    copied from the Standard.
+
+    $Id: typeinfo,v 1.2 2002-11-15 19:27:13 rlb Exp $
+
+*****************************************************************************/
+
+#ifndef _TYPEINFO
+#define _TYPEINFO
+
+extern "C++" {
+
+namespace std {
+
+#pragma define_type_info
+    class type_info {
+    public:
+        virtual ~type_info();
+        bool operator==(const type_info& rhs) const;
+        bool operator!=(const type_info& rhs) const;
+        bool before(const type_info& rhs) const;
+        const char* name() const;
+    private:
+        type_info(const type_info& rhs);
+        type_info& operator=(const type_info& rhs);
+    };
+    class bad_cast;
+    class bad_typeid;
+
+} // namespace std
+} // extern "C++"
+
+#endif // _TYPEINFO

@@ -1,0 +1,23 @@
+/*****************************************************************************
+
+                                    cassert
+
+    C++ compatible header file for use in compiling SystemC.
+
+    $Id: cassert,v 1.4 2005-06-15 22:55:13 deg Exp $
+
+*****************************************************************************/
+
+#undef assert
+
+#ifdef NDEBUG
+
+#define assert(e) ((void) 0)
+
+#else /* NDEBUG */
+
+#define assert(e) ((void)((e) || \
+ (printf("%s:%u: assertion failure\n", __FILE__, __LINE__), \
+  ::std::abort(), 0)))
+
+#endif /* NDEBUG */

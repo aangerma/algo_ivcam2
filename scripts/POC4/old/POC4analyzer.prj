@@ -1,0 +1,300 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration build-checksum="3818269512" file="d:\ohad\SOURCE\IVCAM\Algo\LIDAR\Scripts\POC4\POC4analyzer.prj" location="d:\ohad\SOURCE\IVCAM\Algo\LIDAR\Scripts\POC4" name="POC4analyzer" preferred-package-location="\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\pkg" preferred-package-type="package.type.exe" target="target.ezdeploy.library" target-name="Library Compiler">
+    <param.appname>POC4analyzer</param.appname>
+    <param.icon />
+    <param.icons />
+    <param.version>1.0</param.version>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
+    <param.summary>R2015a</param.summary>
+    <param.description />
+    <param.screenshot />
+    <param.guid />
+    <param.net.saved.interface />
+    <param.installpath.string>\POC4analyzer\</param.installpath.string>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.intermediate>\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test</param.intermediate>
+    <param.files.only>\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\user</param.files.only>
+    <param.output>\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\pkg</param.output>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options />
+    <param.embed.ctf>true</param.embed.ctf>
+    <param.target.type>subtarget.net.component</param.target.type>
+    <param.support.packages />
+    <param.required.mcr.products>
+      <item>35000</item>
+      <item>35010</item>
+      <item>35001</item>
+    </param.required.mcr.products>
+    <param.namespace>POC4analyzer</param.namespace>
+    <param.classorg />
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>true</param.windows.command.prompt>
+    <param.create.log>false</param.create.log>
+    <param.log.file />
+    <param.user.only.registration>false</param.user.only.registration>
+    <param.net.framework>option.net.framework.4.0</param.net.framework>
+    <param.assembly.type>false</param.assembly.type>
+    <param.encryption.key.file />
+    <param.net.enable.remoting>false</param.net.enable.remoting>
+    <param.net.tsa.enable>false</param.net.tsa.enable>
+    <param.net.tsa.assembly />
+    <param.net.tsa.interface />
+    <param.net.tsa.namespace>POC4analyzer</param.net.tsa.namespace>
+    <param.net.tsa.superclass>POC4</param.net.tsa.superclass>
+    <param.net.tsa.metadata />
+    <param.net.tsa.metadata.assembly>C:\Users\omenashe\Documents\MATLAB</param.net.tsa.metadata.assembly>
+    <unset>
+      <param.icon />
+      <param.icons />
+      <param.version />
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.description />
+      <param.screenshot />
+      <param.guid />
+      <param.net.saved.interface />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.enable.clean.build />
+      <param.user.defined.mcr.options />
+      <param.embed.ctf />
+      <param.support.packages />
+      <param.namespace />
+      <param.classorg />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.windows.command.prompt />
+      <param.create.log />
+      <param.log.file />
+      <param.user.only.registration />
+      <param.assembly.type />
+      <param.encryption.key.file />
+      <param.net.enable.remoting />
+      <param.net.tsa.enable />
+      <param.net.tsa.assembly />
+      <param.net.tsa.interface />
+      <param.net.tsa.namespace />
+      <param.net.tsa.superclass />
+      <param.net.tsa.metadata />
+      <param.net.tsa.metadata.assembly />
+    </unset>
+    <fileset.exports>
+      <file>${PROJECT_ROOT}\POC4analyzer.m</file>
+      <file>${PROJECT_ROOT}\runPipe.m</file>
+    </fileset.exports>
+    <fileset.classes>
+      <entity.package name="">
+        <entity.class name="POC4">
+          <file>${PROJECT_ROOT}\POC4analyzer.m</file>
+          <file>${PROJECT_ROOT}\runPipe.m</file>
+        </entity.class>
+      </entity.package>
+    </fileset.classes>
+    <fileset.resources>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Codes\propCode.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+io\+POC\readScopeHDF5data.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+io\readBin.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+io\readIVS.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+io\writeBin.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+io\writeIVS.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+ASNC\ASNC.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+CBUF\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+CBUF\CBUF.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+CBUF\maxrun.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+CBUF\stepInc.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+CBUF\xRateCheck.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DCOR\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DCOR\DCOR.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DEST\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DEST\confBlock.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DEST\DEST.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DEST\detectPeaks.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\+FRMW\buildLensLUT.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\+FRMW\getAng2xyCoeffs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\+FRMW\getNotchFilterCoeffs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\ang2xy.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\bicubicFixed.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\DIGG.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\filter16b.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\GENG.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\NEST.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\notchFilter.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\ranger.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\roiFlag.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\scanStats.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+DIGG\undist.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\bilateral.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\checkStreamValidity.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\dnn.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\edge.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\featureExtrationD.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\featureExtrationI.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\gamma.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\geom.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\grad.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\gradient.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\inn.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\invalidation.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\irShading.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\JFIL.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\maxPool.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\nnet.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\nnetActFunc.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\printjStream.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\sort.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\sortEdge.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+JFIL\upscale.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+PCKR\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+PCKR\PCKR.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+RAST\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+RAST\CMAC.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+RAST\cmaFilter.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+RAST\cmaNorm.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+RAST\PCQ.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+RAST\RAST.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\+FRMW\bootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\create_tcam_in.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\createIconImage.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\exportSttMemoryLayoutToBuff.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\initMem.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\integralImage.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\my_blkproc.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\resize.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\runStt.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\STAT.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\+STAT\sum_quads.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\autopipe.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\displayPipeOutData.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\hwpipe.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\patternGenerator.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\savePipeOutData.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\setDefaultMemoryLayout.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Pipe\version.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\applyGamma.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\bin2uint32.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\buildTracer.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\correlator.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\dtnsec2rmm.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\fp20.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\fp32.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\indx2col.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\mat2hex.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\rmm2dtnsec.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\timePropogate.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\toHex.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Verifier\compareViewer.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\file_utils\dirFiles.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\file_utils\dirRecursive.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\file_utils\mkdirSafe.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\file_utils\stlwriteMatrix.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\general\buffer_.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\general\dec2hexFast.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\general\iff.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\general\logical2hex.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\general\logical2uint64.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\gui\goodLayout.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\gui\imagescNAN.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\gui\subaxis.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\image_utils\gray2colormap.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\image_utils\pad_array.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\lightspeed\map.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\lightspeed\vec.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\butter_.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\fftplot.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\filtfilt_.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\freqz_.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\iirnotch_.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\maxind.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\minind.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\minmax.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\math\prctile_.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\plot_utils\subplotTitle.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\string_utils\cell2str.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\string_utils\str2cell.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\..\Common\viewers\ivbin_viewer.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\dec2binFAST.mexw64</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\Firmware.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\mergeRegs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privAlgoStruct2AsicStruct.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privBootCalcs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privConstraints.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privLoadLUTs.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privLoadRegisters.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privRewriteRegisterDefFile.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privUpdate.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\privWrite2file.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\randomize.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivConvertBlockNameId2regName.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivConvertRegName2blockNameId.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivGetBaseVal.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivReadAsicFile.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivReadConfigurationFile.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivReadCSV.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivRegstruct2val.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivRmData2struct.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivSizeof.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\sprivStringDist.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Firmware\writeDefs4asic.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@Logger\Logger.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@LUTf\LUTf.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\@LUTi\LUTi.m</file>
+      <file>${PROJECT_ROOT}\crossing1.m</file>
+      <file>${PROJECT_ROOT}\Extract_LOS.m</file>
+      <file>${PROJECT_ROOT}\FiltFiltM.m</file>
+      <file>${PROJECT_ROOT}\readLocation.m</file>
+      <file>${PROJECT_ROOT}\readRawframe.m</file>
+      <file>${PROJECT_ROOT}\SchmittTrig.m</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file location="\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test" name="readme.txt" optional="true">\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test\readme.txt</file>
+      <file location="\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test" name="POC4analyzerNative.dll" optional="false">\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test\POC4analyzerNative.dll</file>
+      <file location="\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test" name="POC4analyzer.dll" optional="false">\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test\POC4analyzer.dll</file>
+      <file location="\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test" name="POC4analyzer_overview.html" optional="false">\\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4analayzer\test\POC4analyzer_overview.html</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2015a</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>6.2</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

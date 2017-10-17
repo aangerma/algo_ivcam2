@@ -1,0 +1,887 @@
+/****************************************************************************
+**
+** This file is part of the Stratus ™ software product and is protected 
+** by law including United States copyright laws, international treaty 
+** provisions, and other applicable laws.
+**
+** Copyright © 2015 Cadence Design Systems and / or its subsidiary(-ies).  All
+** rights reserved.
+**
+****************************************************************************/
+#if !defined(cynw_complex_h_included)
+#define cynw_complex_h_included
+
+#include <cmath> // pick up abs, sin, and friends
+
+namespace cynw {
+
+// Forward type declarations:
+
+template< typename T > class complex;
+
+// Functions defined in this file:
+
+template<typename T> T          abs(const complex<T>&);
+template<typename T> T          arg(const complex<T>&);
+template<typename T> complex<T> conj(const complex<T>&);
+template<typename T> complex<T> cos(const complex<T>&);
+template<typename T> complex<T> cosh(const complex<T>&);
+template<typename T> complex<T> exp(const complex<T>&);
+template<typename T> complex<T> log10(const complex<T>&);
+template<typename T> complex<T> log(const complex<T>&);
+template<typename T> T          norm(const complex<T>&);
+template<typename T> complex<T> polar(const T&, const T& = 0);
+template<typename T> complex<T> pow(const complex<T>&, const complex<T>&);
+template<typename T> complex<T> pow(const complex<T>&, const T&);
+template<typename T> complex<T> pow(const complex<T>&, int);
+template<typename T> complex<T> pow(const T&, const complex<T>&);
+template<typename T> complex<T> sin(const complex<T>&);
+template<typename T> complex<T> sinh(const complex<T>&);
+template<typename T> complex<T> sqrt(const complex<T>&);
+template<typename T> complex<T> tan(const complex<T>&);
+template<typename T> complex<T> tanh(const complex<T>&);
+
+// +============================================================================
+// | complex<T> - complex data class
+// +============================================================================
+template< typename T >
+class complex
+{
+  public: // typdefs:
+    typedef complex<T> this_type;
+
+  public: // constructor and destructor:
+    complex( const T& real = T(), const T& imag = T() );
+    template<typename _REAL, typename _IMAG>
+    complex( const _REAL& real, const _IMAG& imag );
+    template<typename T1>
+    complex( const complex<T1>& other );
+    ~complex() {}
+
+  public: // field access:
+    const T&       imag() const { return m_imag; }
+    T&             imag()       { return m_imag; }
+    const T&       real() const { return m_real; }
+    T&             real()       { return m_real; }
+    const complex& rep() const { return *this; }
+
+  public: // self referencing operators using a scalar value.
+    template<typename SCALAR>
+    const this_type& operator =  ( const SCALAR& value );
+    template<typename SCALAR>
+    const this_type& operator += ( const SCALAR& value );
+    template<typename SCALAR>
+    const this_type& operator -= ( const SCALAR& value );
+    template<typename SCALAR>
+    const this_type& operator *= ( const SCALAR& value );
+    template<typename SCALAR>
+    const this_type& operator /= ( const SCALAR& value );
+
+  public: // self referencing operators using the another object's data type.
+    template< typename OTHER>
+    const this_type& operator = ( const complex<OTHER>& other );
+    template< typename OTHER>
+    const this_type& operator += ( const complex<OTHER>& value );
+    template< typename OTHER>
+    const this_type& operator -= ( const complex<OTHER>& value );
+    template< typename OTHER>
+    const this_type& operator *= ( const complex<OTHER>& value );
+    template< typename OTHER>
+    const this_type& operator /= ( const complex<OTHER>& value );
+   
+  public:
+    T m_imag; // imaginary component of value.
+    T m_real; // real component of value.
+};
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::complex - components"
+// | 
+// | This is the object instance constructor for this class that takes 
+// | component values.
+// |
+// | Arguments:
+// |     real = real value.
+// |     imag = imaginary value.
+// +----------------------------------------------------------------------------
+template< typename T >
+inline complex<T>::complex( const T& real, const T& imag ) : 
+    m_imag(imag), m_real(real)
+{
+}
+
+template< typename T >
+template<typename _REAL, typename _IMAG>
+inline complex<T>::complex( const _REAL& real, const _IMAG& imag ) 
+{
+    m_real = real;
+    m_imag = imag;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::complex - other complex type"
+// | 
+// | This is the object instance constructor for this class that takes 
+// | another complex type.
+// |
+// | Arguments:
+// |     other = other complex type.
+// +----------------------------------------------------------------------------
+template<typename T>
+template<typename T1>
+inline complex<T>::complex( const complex<T1>& other ) :
+    m_imag(other.imag()), m_real(other.real())
+{
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator = scalar type"
+// | 
+// | This is the assignment operator for a scalar value of this type.
+// |
+// | Arguments:
+// |     value = complex<T> value to assign this object instance to.
+// | Result is a const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename SCALAR >
+const complex<T>& complex<T>::operator = ( const SCALAR& value )
+{
+    m_imag = T();
+    m_real = value;
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator = complex type"
+// | 
+// | This is the assignment operator for a value of a complex type.
+// |
+// | Arguments:
+// |     value = complex<OTHER> value to assign this object instance to.
+// | Result is a const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template < typename OTHER >
+const complex<T>& complex<T>::operator = ( const complex<OTHER>& value )
+{
+    m_imag = value.imag();
+    m_real = value.real();
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator += scalar type"
+// | 
+// | This operator adds the supplied scalar instance to this object instance.
+// | This only changes the real component of this object instance.
+// |
+// | Arguments:
+// |     value = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename SCALAR >
+const complex<T>& complex<T>::operator += ( const SCALAR& value )
+{
+    m_real += value;
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator += other complex instance"
+// | 
+// | This operator adds the supplied complex instance to this object instance.
+// | This results in changes to both the real and imaginary components of this
+// | object instance.
+// |
+// | Arguments:
+// |     value = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename OTHER >
+const complex<T>& complex<T>::operator += ( const complex<OTHER>& value )
+{
+    m_real += value.real();
+    m_imag += value.imag();
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator -= scalar type"
+// | 
+// | This operator adds the supplied scalar instance from this object 
+// | instance. This only changes the real component of this object instance.
+// |
+// | Arguments:
+// |     value = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename SCALAR>
+const complex<T>& complex<T>::operator -= ( const SCALAR& value )
+{
+    m_real -= value;
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator -= other complex instance"
+// | 
+// | This operator subtracts the supplied complex instance from this object 
+// | instance. This results in changes to both the real and imaginary components
+// | of this object instance.
+// |
+// | Arguments:
+// |     value = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename OTHER >
+const complex<T>& complex<T>::operator -= ( const complex<OTHER>& value )
+{
+    m_real -= value.real();
+    m_imag -= value.imag();
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator *= scalar type"
+// | 
+// | This operator multiplies the supplied scalar instance from this object 
+// | instance. This changes the both components of this object instance.
+// |
+// | Arguments:
+// |     value = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename SCALAR >
+const complex<T>& complex<T>::operator *= ( const SCALAR& value )
+{
+    m_imag *= value;
+    m_real *= value;
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator *= other complex instance"
+// | 
+// | This operator multiplies the supplied complex instance from this object 
+// | instance. This results in changes to both the real and imaginary components
+// | of this object instance. The order of the assignments below is important!
+// |
+// | Arguments:
+// |     other = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename OTHER >
+const complex<T>& complex<T>::operator *= ( const complex<OTHER>& other )
+{
+    const T real = m_real * other.real() - m_imag * other.imag();
+    m_imag = m_real * other.imag() + m_imag * other.real();
+    m_real = real;
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator /= scalar type"
+// | 
+// | This operator divides this object instance by the  supplied scalar 
+// | instance. This changes the both components of this object instance.
+// |
+// | Arguments:
+// |     other = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename SCALAR >
+const complex<T>& complex<T>::operator /= ( const SCALAR& other )
+{
+    m_imag /= other;
+    m_real /= other;
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// |"complex<T>::operator /= other complex instance"
+// | 
+// | This operator divides this object instance by the supplied complex 
+// | instance. This results in changes to both the real and imaginary components
+// | of this object instance. The order of the assignments below is important!
+// |
+// | Arguments:
+// |     other = value to be added.
+// | Result is const reference to this object instance.
+// +----------------------------------------------------------------------------
+template< typename T >
+template< typename OTHER >
+const complex<T>& complex<T>::operator /= ( const complex<OTHER>& other )
+{
+    const T real = m_real * other.real() + m_imag * other.imag();
+    const T norm_other = norm(other); 
+    m_imag = (m_imag * other.real() - m_real * other.imag()) / norm_other;
+    m_real = real;
+    return *this;
+}
+
+// +----------------------------------------------------------------------------
+// | Addition operators:
+// +----------------------------------------------------------------------------
+template< typename T >
+inline const complex<T> operator + ( const complex<T>& left, 
+	                              const complex<T>& right )
+{
+    complex<T> result;
+    result = left;
+    result += right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator + ( const complex<T>& left, const T& right )
+{
+    complex<T> result;
+    result = left;
+    result.m_real += right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator + ( const T& left, const complex<T>& right )
+{
+    complex<T> result;
+    result = right;
+    result.m_real += left;
+    return result;
+}
+
+// +----------------------------------------------------------------------------
+// | Subtraction operators:
+// +----------------------------------------------------------------------------
+template< typename T >
+inline const complex<T> operator - ( const complex<T>& left, 
+	                              const complex<T>& right )
+{
+    complex<T> result;
+    result = left;
+    result -= right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator - ( const complex<T>& left, const T& right )
+{
+    complex<T> result;
+    result = left;
+    result.m_real -= right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator - ( const T& left, const complex<T>& right )
+{
+    complex<T> result(left, -right.m_imag);
+    result.m_real -= right.m_real;
+    return result;
+}
+
+// +----------------------------------------------------------------------------
+// | Multiplication operators:
+// +----------------------------------------------------------------------------
+template< typename T >
+inline const complex<T> operator * ( const complex<T>& left, 
+	                              const complex<T>& right )
+{
+    complex<T> result;
+    result = left;
+    result *= right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator * ( const complex<T>& left, const T& right )
+{
+    complex<T> result;
+    result = left;
+    result *= right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator * ( const T& left, const complex<T>& right )
+{
+    complex<T> result;
+    result = right;
+    result *= left;
+    return result;
+}
+
+// +----------------------------------------------------------------------------
+// | Division operators:
+// +----------------------------------------------------------------------------
+template< typename T >
+inline const complex<T> operator / ( const complex<T>& left, 
+	                              const complex<T>& right )
+{
+    complex<T> result;
+    result = left;
+    result /= right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator / ( const complex<T>& left, const T& right )
+{
+    complex<T> result;
+    result = left;
+    result /= right;
+    return result;
+}
+
+template< typename T >
+inline const complex<T> operator / ( const T& left, const complex<T>& right )
+{
+    complex<T> result;
+    result = left;
+    result /= right;
+    return result;
+}
+
+// +----------------------------------------------------------------------------
+// | Unary sign operators:
+// +----------------------------------------------------------------------------
+template< typename T >
+inline const complex<T> operator + ( const complex<T>& obj )
+{
+    return obj;
+}
+
+template< typename T >
+inline const complex<T> operator - ( const complex<T>& obj )
+{
+    return complex<T>(-obj.m_real, -obj.m_imag);
+}
+
+// +----------------------------------------------------------------------------
+// | logical operators: ==
+// +----------------------------------------------------------------------------
+template< typename T >
+inline bool operator == ( const complex<T>& left, const complex<T>& right )
+{
+    return left.m_real == right.m_real && left.m_imag == right.m_imag;
+}
+
+template< typename T >
+inline bool operator == ( const complex<T>& left, const T& right )
+{
+    return left.m_real == right && left.m_imag == T();
+}
+
+template< typename T >
+inline bool operator == ( const T& left, const complex<T>& right )
+{
+    return left == right.m_real && right.m_imag == T();
+}
+
+// +----------------------------------------------------------------------------
+// | logical operators: !=
+// +----------------------------------------------------------------------------
+template< typename T >
+inline bool operator != ( const complex<T>& left, const complex<T>& right )
+{
+    return left.m_real != right.m_real || left.m_imag != right.m_imag;
+}
+
+template< typename T >
+inline bool operator != ( const complex<T>& left, const T& right )
+{
+    return left.m_real != right || left.m_imag != T();
+}
+
+template< typename T >
+inline bool operator != ( const T& left, const complex<T>& right )
+{
+    return left != right.m_real || right.m_imag != T();
+}
+
+#if defined(SYSTEMC_VERSION) || defined(NCSC)
+#include "systemc.h"
+
+// +----------------------------------------------------------------------------
+// | I/O stream operators
+// +----------------------------------------------------------------------------
+template<typename T>
+inline std::ostream& operator << ( std::ostream& os, const complex<T>& a )
+{
+  os << '(' << a.real() << ',' << a.imag() << ')';
+  return os;
+}
+
+// +----------------------------------------------------------------------------
+// | sc_trace
+// +----------------------------------------------------------------------------
+template<typename T>
+inline void sc_trace( sc_trace_file* tf, const complex<T>& object, 
+	              const std::string& name )
+{
+    std::string imag_name;
+    std::string real_name;
+    real_name = name + ".real";
+    imag_name = name + ".imag";
+    sc_trace( tf, object.real(), real_name );
+    sc_trace( tf, object.imag(), imag_name );
+}
+#endif // defined(SYSTEMC_VERSION) || defined(NCSC)
+
+
+// +----------------------------------------------------------------------------
+// |"abs(complex<T>)"
+// | 
+// | This function returns the absolute value of the supplied complex number.
+// |
+// | Arguments:
+// |     source = complex number to return the absolute value of.
+// | Result is the absolute value of the number.
+// +----------------------------------------------------------------------------
+template<typename T>
+inline T abs( const complex<T>& source )
+{
+    T real = source.real();
+    T imag = source.imag();
+    T divisor = std::abs(real) > std::abs(imag) ? std::abs(real): std::abs(imag);
+    if ( divisor == T() )
+	return divisor;
+    real /= divisor;
+    imag /= divisor;
+    return divisor * std::sqrt( real*real + imag*imag);
+}
+
+// +----------------------------------------------------------------------------
+// |"arg(complex<T>)"
+// | 
+// | This function returns the arctan2 of the supplied complex number.
+// |
+// | Arguments:
+// |     source = complex number to return the atan2 for.
+// | Result is the atan2 value of the number.
+// +----------------------------------------------------------------------------
+template<typename T>
+inline T arg( const complex<T>& source )
+{
+    return atan2( source.imag, source.real );
+}
+
+// +----------------------------------------------------------------------------
+// |"conj(complex<T>)"
+// | 
+// | This function returns the conjugate of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the conjugate of.
+// | Result is the conjugate of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+complex<T> conj(const complex<T>& source)
+{ 
+    return complex<T>(source.real(), -source.imag()); 
+}
+
+// +----------------------------------------------------------------------------
+// |"cos(complex<T>)"
+// | 
+// | This function returns the cosine of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the cosine of.
+// | Result is the cosine of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> cos(const complex<T>& source)
+{
+    T real = source.real();
+    T imag = source.imag();
+    return complex<T>(std::cos(real) * std::cosh(imag), -std::sin(real) * std::sinh(imag));
+}
+
+// +----------------------------------------------------------------------------
+// |"cosh(complex<T>)"
+// | 
+// | This function returns the hyperbolic cosine of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the hyperbolic cosine of.
+// | Result is the hyperbolic cosine of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> cosh(const complex<T>& source)
+{
+    T real = source.real();
+    T imag = source.imag();
+    return complex<T>(std::cosh(real) * std::cos(imag), -std::sinh(real) * std::sin(imag));
+}
+
+// +----------------------------------------------------------------------------
+// |"exp(complex<T>)"
+// | 
+// | This function returns the e to the power of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the exponential of.
+// | Result is the exponential of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> inline
+complex<T> exp(const complex<T>& source)
+{
+    return cynw::polar(std::exp(source.real()), source.imag());
+}
+
+// +----------------------------------------------------------------------------
+// |"imag(complex<T>)"
+// | 
+// | This function returns the imaginary part of the supplied complex number.
+// |
+// | Arguments:
+// |     source = number to take return the imaginary part of.
+// | Result is the imaginary part of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T>
+inline T& imag( complex<T>& source )
+{
+    return source.imag();
+}
+
+template<typename T>
+inline const T& imag( const complex<T>& source )
+{
+    return source.imag();
+}
+
+// +----------------------------------------------------------------------------
+// |"log(complex<T>)"
+// | 
+// | This function returns the natural log of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the natural log of.
+// | Result is the natural log of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> log(const complex<T>& source)
+{
+    return complex<T>( std::log(cynw::abs(source)), cynw::arg(source) );
+}
+
+// +----------------------------------------------------------------------------
+// |"log10(complex<T>)"
+// | 
+// | This function returns the log base 10 of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the log base 10 of.
+// | Result is the log base 10 of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> log10(const complex<T>& source)
+{
+    return cynw::log(source) / std::log( T(10.0) );
+}
+
+// +----------------------------------------------------------------------------
+// |"norm(complex<T>)"
+// | 
+// | This function returne the "norm" for the supplied complex value.
+// |
+// | Arguments:
+// |     source = value to return the norm of.
+// | Result is the norm.
+// +----------------------------------------------------------------------------
+template<typename T>
+inline T norm( const complex<T>& source )
+{
+    T real = source.real();
+    T imag = source.imag();
+    return real*real + imag*imag;
+}
+
+// +----------------------------------------------------------------------------
+// |"polar(complex<T>)"
+// | 
+// | This function returns the polar coordinate of the supplied complex value 
+// | as a complex value with magnitude rho, and angle theta.
+// |
+// | Arguments:
+// |     rho = magitude of the polar coordinate.
+// |     theta = angle for the polar coordinate.
+// | Result is the polar coordinate.
+// +----------------------------------------------------------------------------
+template<typename T>
+inline complex<T> polar( const T& rho, const T& theta )
+{
+    return complex<T>(rho * std::cos(theta), rho * std::sin(theta)); 
+}
+
+// +----------------------------------------------------------------------------
+// |"pow(complex<T>)"
+// | 
+// | These function overloads return the following power values:
+// |    (a) complex<T>,complex<T>   - x ** y
+// |    (b) complex<T>,T            - x ** y
+// |    (c) complex<T>,int          - complex cosine of source.
+// |    (d) T,complex<T>            - complex sine of source.
+// |
+// | Arguments:
+// |     x = first argument to function (base).
+// |     y = second argument to function (exponent).
+// | Result is the pow value.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> pow(const complex<T>& x, const complex<T>& y)
+{
+    if ( x.real() == T() )
+	return T();
+    else
+	return cynw::exp( y * cynw::log(x) );
+}
+
+template<typename T> 
+inline complex<T> pow(const complex<T>& x, const T& y)
+{
+    if ( x == T() ) return T();
+    if ( x.imag() == T() && x.real > T() ) return std::pow( x.real(), y );
+    complex<T> log_x = cynw::log(x);
+    return cynw::polar( std::exp(y * log_x.real()), y * log_x.imag() );
+}
+
+template<typename T> 
+inline complex<T> pow(const complex<T>& x, int y)
+{
+    // TBD  return std::__pow_helper(x, y);
+    return x;
+}
+
+template<typename T> 
+inline complex<T> pow(const T&, const complex<T>&)
+{
+}
+
+// +----------------------------------------------------------------------------
+// |"real(complex<T>)"
+// | 
+// | This function returns the real part of the supplied complex number.
+// |
+// | Arguments:
+// |     source = number to take return the real part of.
+// | Result is the real part of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T>
+inline T& real( complex<T>& source )
+{
+    return source.real();
+}
+
+template<typename T>
+inline const T& real( const complex<T>& source )
+{
+    return source.real();
+}
+
+// +----------------------------------------------------------------------------
+// |"sin(complex<T>)"
+// | 
+// | This function returns the sine of the supplied complex number.
+// |
+// | Arguments:
+// |     source = number to take the sine of.
+// | Result is the sine of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> sin(const complex<T>& source)
+{
+    T real = source.real();
+    T imag = source.imag();
+    return complex<T>(std::sin(real) * std::cosh(imag), std::cos(real) * std::sinh(imag) );
+}
+
+// +----------------------------------------------------------------------------
+// |"sinh(complex<T>)"
+// | 
+// | This function returns the hyperbolic sine of the supplied complex number.
+// |
+// | Arguments:
+// |     source = number to take the hyperbolic sine of.
+// | Result is the hyperbolic sine of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> sinh(const complex<T>& source)
+{
+    T real = source.real();
+    T imag = source.imag();
+    return complex<T>(std::sinh(real) * std::cos(imag), std::cosh(real) * std::sin(imag) );
+}
+
+// +----------------------------------------------------------------------------
+// |"sqrt(complex<T>)"
+// | 
+// | This function returns the square root of the supplied complex number.
+// |
+// | Arguments:
+// |     source = number to take the square root of.
+// | Result is the square root of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> sqrt(const complex<T>& source)
+{
+    T real = source.real();
+    T imag = source.imag();
+    if ( real == T() )
+    {
+	T temp = std::sqrt(std::abs(imag) / 2);
+	return complex<T>(real, imag < T() ? (T)-temp : temp );
+    }
+    else
+    {
+	T temp = std::sqrt( 2 * (cynw::abs(source) + std::abs(real)) );
+	T temp2 = temp / 2;
+	return real > T() ? complex<T>( temp2, imag / temp ) :
+		    complex<T>( std::abs(imag) / temp, imag < T() ? (T)-temp2 : 
+		                                               temp2);
+
+    }
+}
+
+// +----------------------------------------------------------------------------
+// |"tan(complex<T>)"
+// | 
+// | This function returns the tangent of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the tangent of.
+// | Result is the tangent of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> tan(const complex<T>& source)
+{
+    return cynw::sin(source) / cynw::cos(source);
+}
+
+// +----------------------------------------------------------------------------
+// |"tanh(complex<T>)"
+// | 
+// | This function returns the hyperbolic tangent of the supplied value.
+// |
+// | Arguments:
+// |     source = number to take the hyperbolic tangent of.
+// | Result is the hyperbolic tangent of 'source'.
+// +----------------------------------------------------------------------------
+template<typename T> 
+inline complex<T> tanh(const complex<T>& source)
+{
+    return cynw::sinh(source) / cynw::cosh(source);
+}
+
+} // namespace std
+
+#endif // !defined(cynw_complex_h_included)

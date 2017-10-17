@@ -1,0 +1,56 @@
+/*****************************************************************************
+
+                                    new
+
+    C++ compatible header file for synthesys.
+
+    $Id: new,v 1.2 2012-10-25 19:40:53 acg Exp $
+
+*****************************************************************************/
+
+#ifndef _NEW
+#define _NEW
+
+#include <cstddef>      // for size_t
+#include <exception>
+
+namespace std {
+
+    class bad_alloc : public exception {
+    public:
+        bad_alloc() throw();
+        bad_alloc(const bad_alloc&) throw();
+        bad_alloc& operator=(const bad_alloc&) throw();
+        virtual ~bad_alloc() throw();
+        virtual const char* what() const throw();
+    };  /* class bad_alloc */
+    struct nothrow_t {};
+    extern const nothrow_t nothrow;
+    typedef void (*new_handler)();
+    new_handler set_new_handler(new_handler new_p) throw();
+
+}   /* namespace std */
+
+void* operator new(std::size_t size) throw(std::bad_alloc);
+void* operator new(std::size_t size, const std::nothrow_t&) throw();
+void  operator delete(void* ptr) throw();
+void  operator delete(void* ptr, const std::nothrow_t&) throw();
+void* operator new[](std::size_t size) throw(std::bad_alloc);
+void* operator new[](std::size_t size, const std::nothrow_t&) throw();
+void  operator delete[](void* ptr) throw();
+void  operator delete[](void* ptr, const std::nothrow_t&) throw();
+
+void* operator new  (std::size_t size, void* ptr) throw();
+void* operator new[](std::size_t size, void* ptr) throw();
+void  operator delete  (void* ptr, void*) throw();
+void  operator delete[](void* ptr, void*) throw();
+
+// Default placement versions of operator new.
+inline void* operator new(std::size_t, void* __p) throw() { return __p; }
+inline void* operator new[](std::size_t, void* __p) throw() { return __p; }
+
+// Default placement versions of operator delete.
+inline void  operator delete  (void*, void*) throw() { }
+inline void  operator delete[](void*, void*) throw() { }
+
+#endif  /* _NEW */

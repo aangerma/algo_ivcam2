@@ -1,0 +1,59 @@
+/*****************************************************************************
+
+                                    ios
+
+    C++ compatible header file for use in compiling SystemC.
+
+    Copied from the Standard.
+
+    $Id: ios,v 1.3 2005-06-15 22:55:13 deg Exp $
+
+*****************************************************************************/
+
+#ifndef _IOS
+#define _IOS
+
+#include <iosfwd>
+#include <streamdefs>
+
+namespace std { 
+    template <class stateT> class fpos; 
+
+    class ios_base;
+
+    // manipulators:
+    ios_base& boolalpha (ios_base& str); 
+    ios_base& noboolalpha(ios_base& str); 
+
+    ios_base& showbase (ios_base& str); 
+    ios_base& noshowbase (ios_base& str); 
+
+    ios_base& showpoint (ios_base& str); 
+    ios_base& noshowpoint(ios_base& str); 
+
+    ios_base& showpos (ios_base& str); 
+    ios_base& noshowpos (ios_base& str); 
+
+    ios_base& skipws (ios_base& str); 
+    ios_base& noskipws (ios_base& str); 
+
+    ios_base& uppercase (ios_base& str); 
+    ios_base& nouppercase(ios_base& str); 
+
+    // adjustfield:
+    ios_base& internal (ios_base& str); 
+    ios_base& left (ios_base& str); 
+    ios_base& right (ios_base& str); 
+
+    // basefield:
+    ios_base& dec (ios_base& str); 
+    ios_base& hex (ios_base& str); 
+    ios_base& oct (ios_base& str); 
+
+    // floatfield:
+    ios_base& fixed (ios_base& str); 
+    ios_base& scientific (ios_base& str); 
+
+}   /* namespace std */
+
+#endif /* _IOS */

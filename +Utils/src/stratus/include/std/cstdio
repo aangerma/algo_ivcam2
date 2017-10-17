@@ -1,0 +1,168 @@
+/*****************************************************************************
+
+                                    cstdio
+
+    As specified by the Standard.
+
+    $Id: cstdio,v 1.6 2014-02-23 18:23:33 acg Exp $
+
+*****************************************************************************/
+
+#ifndef _CSTDIO
+#define _CSTDIO
+
+#include <cstdarg>
+
+#include "stdio.h"
+
+namespace std {
+extern "C" {
+
+#ifndef _STD_SIZE_T
+#define _STD_SIZE_T
+#   if defined(__x86_64) || defined(__EDG__)
+        typedef unsigned long size_t;
+#   else
+        typedef unsigned int size_t;
+#   endif
+#endif /* _STD_SIZE_T */
+
+/*  set up definitions to use those in  <stdio.h> */
+
+/*****************************************************************************
+
+                                    macros
+
+*****************************************************************************/
+
+#define BUFSIZ          1024
+#define FILENAME_MAX    1024
+#define FOPEN_MAX       20
+#define L_tmpnam        25
+
+#ifndef EOF
+#define EOF             (-1)
+#endif  /* EOF */
+
+#ifndef NULL
+#define NULL 0
+#endif /* NULL */
+
+#define SEEK_CUR        1
+#define SEEK_END        2
+#define SEEK_SET        0
+
+#define TMP_MAX         17576
+
+#define _IOFBF          0000    /* full buffered */
+#define _IOLBF          0100    /* line buffered */
+#define _IONBF          0004    /* not buffered */
+
+/*  
+ *  these definitions are nonsense, but they make exporting __iob unnecessary
+ */
+
+#define stdin   (FILE *)0
+#define stdout  (FILE *)0
+#define stderr  (FILE *)0
+
+/*****************************************************************************
+
+                                    functions
+
+*****************************************************************************/
+
+// Get rid of those macros defined in <stdio.h> in lieu of real functions.
+#undef clearerr
+#undef fclose
+#undef feof
+#undef ferror
+#undef fflush
+#undef fgetc
+#undef fgetpos
+#undef fgets
+#undef fopen
+#undef fprintf
+#undef fputc
+#undef fputs
+#undef fread
+#undef freopen
+#undef fscanf
+#undef fseek
+#undef fsetpos
+#undef ftell
+#undef fwrite
+#undef getc
+#undef getchar
+#undef gets
+#undef perror
+#undef printf
+#undef putc
+#undef putchar
+#undef puts
+#undef remove
+#undef rename
+#undef rewind
+#undef scanf
+#undef setbuf
+#undef setvbuf
+#undef sprintf
+#undef sscanf
+#undef tmpfile
+#undef tmpnam
+#undef ungetc
+#undef vfprintf
+#undef vprintf
+#undef vsprintf
+
+using ::FILE;
+using ::fpos_t;
+
+using ::clearerr;
+using ::fclose;
+using ::feof;
+using ::ferror;
+using ::fflush;
+using ::fgetc;
+using ::fgetpos;
+using ::fgets;
+using ::fopen;
+using ::fprintf;
+using ::fputc;
+using ::fputs;
+using ::fread;
+using ::freopen;
+using ::fscanf;
+using ::fseek;
+using ::fsetpos;
+using ::ftell;
+using ::fwrite;
+using ::getc;
+using ::getchar;
+using ::gets;
+using ::perror;
+using ::printf;
+using ::putc;
+using ::putchar;
+using ::puts;
+using ::remove;
+using ::rename;
+using ::rewind;
+using ::scanf;
+using ::setbuf;
+using ::setvbuf;
+using ::sprintf;
+using ::sscanf;
+using ::tmpfile;
+using ::tmpnam;
+using ::ungetc;
+using ::vfprintf;
+using ::vprintf;
+using ::vsprintf;
+
+/*  end code shared with <stdio.h> */
+
+}   // extern "C"
+}   // namespace std
+
+#endif /* _CSTDIO */

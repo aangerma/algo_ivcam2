@@ -1,0 +1,29 @@
+/******************************************************************************
+
+                                    iomanip
+
+    C++ compatible header file for synthesis.
+
+    $Id: iomanip,v 1.2 2005-06-29 19:12:04 deg Exp $
+
+    It's not entirely clear what the return types should be ...
+
+******************************************************************************/
+
+#ifndef _IOMANIP
+#define _IOMANIP
+
+#include <ios_base>
+
+namespace std {
+
+    ios_base::fmtflags              resetiosflags(ios_base::fmtflags mask);
+    ios_base::fmtflags              setiosflags  (ios_base::fmtflags mask);
+    int                             setbase(int base);
+    template <class charT> charT    setfill(charT c);
+    int                             setprecision(int n);
+    int                             setw(int n);
+
+}   /* namespace std */
+
+#endif  /* _IOMANIP */

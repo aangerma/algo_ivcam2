@@ -1,0 +1,97 @@
+clear;
+modelFn = '\\invcam322\Ohad\data\models\Lchart.stl';
+ivlpifn = '\\invcam322\Ohad\data\lidar\SIM\Lchart\run1\LchartNoise1.ivlpi';
+mdl = stlread(modelFn);
+mdl.albedo = ones(size(mdl.faces,1),1)*.8;
+mdl.vertices(:,3)=500-mdl.vertices(:,3);
+ mdl.vertices(:,2)=mdl.vertices(:,2)-mean(minmax((mdl.vertices(:,2))));
+ mdl.vertices(:,1)=-(mdl.vertices(:,1)-mean(minmax((mdl.vertices(:,1)))));
+% mdl.vertices(:,1) = -mdl.vertices(:,1);
+
+
+trisurf(mdl.faces,mdl.vertices(:,1),mdl.vertices(:,3),mdl.vertices(:,2)); axis equal;axis vis3d
+hold on
+% plot3(0,0,0,'r+')
+    [n,v]=calcNorms(mdl.vertices,mdl.faces);
+    quiver3(v(:,1),v(:,3),v(:,2),n(:,1),n(:,3),n(:,2),5,'color','r');
+    hold off;
+    drawnow;
+%%
+
+pSim1d = xml2structWrapper('\\invcam322\ohad\data\lidar\simulatorParams\params_860SKU1_indoor.xml');
+pSim1d.verbose=0;
+pSim2d = struct('verbose',true,...
+    'nRays',1e6,...
+    'mirAngx',36,...
+    'mirAngy',28,...
+    'fastMirrorFreq',20e3,...
+    'fps',60,...
+    'laserIncidentDirection',[0;0;-1],...
+    'sensorOffset', [30 0 0],...
+    'slowAxisScanType','tan',...
+    'xFOVraster',72,...
+    'yFOVraster',56, ...
+    'applyPowerEnvolope',true ...
+    );
+
+rng(1);
+%run sim
+
+
+noisless = false;
+if(noisless)
+    pSim1d.APD.darkCurrentAC=0;
+    pSim1d.APD.darkCurrentDC=0;
+    pSim1d.APD.excessNoiseFactor=0;
+    pSim1d.Comparator.irn=0;
+    pSim1d.Comparator.jitterMaxC2C=0;
+    pSim1d.Comparator.jitterRMS=0;
+    pSim1d.Comparator.sensitivity=0;
+    pSim1d.environment.ambientNoise=0;
+    pSim1d.environment.ambientNoiseFactor=0;
+    pSim1d.TIA.inputBiasCurrent=0;
+    pSim1d.TIA.preAmpIRN=0;
+end
+
+pSim1d.environment.ambientNoiseFactor = 7.6;
+
+
+t = tic;
+[ivs,referenceOffset,rgtImg,igtImg] = Simulator.runSim2D(mdl,pSim1d,pSim2d );
+t = toc(t);
+io.writeIVLpi(ivlpifn,ivs);
+[basedir,fn]=fileparts(ivlpifn);
+
+
+io.writeBin(fullfile(basedir,[fn 'GT.binr']),rgtImg');
+io.writeBin(fullfile(basedir,[fn 'GT.bini']),igtImg');
+
+rmConfigfn = [basedir '\Config.csv'];
+rm = RegistersManager();
+regs = rm.getRegs();
+regs.clb.fastChDelayNsec=0;
+regs.clb.slowChDelayNsec=0;
+regs.clb.referenceOffset = referenceOffset;
+regs.clb.xFOV = pSim2d.xFOVraster;
+regs.clb.yFOV = pSim2d.yFOVraster;
+regs.clb.xKeystone=0;
+regs.clb.yKeystone=0;
+regs.mtlb.calibrated = 1;
+rm.setRegs(regs);
+rm.writeUpdated(rmConfigfn);
+
+
+fprintf('Simulation runtime: %d minutes\n',round(t/60))
+%%
+
+% 
+% calibData = xml2structWrapper(fullfile(fileparts(ivlpifn),'calibdata.xml'));
+% pReconstruct = xml2structWrapper(fullfile(fileparts(ivlpifn),'pipeParams.xml'));
+% pInput = io.readIVLpi(ivlpifn);
+% [ pipeOutData ] = Pipe.hwpipe(pInput,pReconstruct,calibData );
+% 
+% Pipe.savePipeOutData(pipeOutData,calibData,ivlpifn);
+% 
+% 
+% 
+% pipeOut = Pipe.autopipe(ivlpifn);

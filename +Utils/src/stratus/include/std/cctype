@@ -1,0 +1,39 @@
+/*****************************************************************************
+
+                                    cctype
+
+    C++ compatible header file.
+
+    $Id: cctype,v 1.2 2009-04-07 18:26:40 deg Exp $
+
+*****************************************************************************/
+
+#ifndef _CCTYPE
+#define _CCTYPE
+
+namespace std {
+extern "C" {
+
+/*  begin code shared with <ctype.h> */
+
+extern int isalnum(int);
+extern int isalpha(int);
+extern int isblank(int);
+extern int iscntrl(int);
+extern int isdigit(int);
+extern int isgraph(int);
+extern int islower(int);
+extern int isprint(int);
+extern int ispunct(int);
+extern int isspace(int);
+extern int isupper(int);
+extern int isxdigit(int);
+extern int tolower(int);
+extern int toupper(int);
+
+/*  end code shared with <ctype.h> */
+
+}   /* extern "C" */
+}   /* namespace std */
+
+#endif  /* _CCTYPE */

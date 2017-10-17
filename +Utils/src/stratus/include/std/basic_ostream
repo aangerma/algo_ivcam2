@@ -1,0 +1,114 @@
+/*****************************************************************************
+
+                                basic_ostream
+
+    C++ compatible header file for use in compiling SystemC.
+
+    $Id: basic_ostream,v 1.3 2005-06-15 22:55:13 deg Exp $
+
+******************************************************************************/
+
+#ifndef _BASIC_OSTREAM
+#define _BASIC_OSTREAM
+
+#include <basic_ios>    /* for basic_ios */
+#include <char_traits>  /* for char_traits */
+#include <iosfwd>       /* for default template arguments */
+
+namespace std {
+
+    template <class charT, class traits> 
+    class basic_ostream : virtual public basic_ios<charT,traits> { 
+    public: 
+
+        // Types (inherited from basic_ios (27.4.4)): 
+        typedef charT char_type; 
+        typedef typename traits::int_type int_type; 
+        typedef typename traits::pos_type pos_type; 
+        typedef typename traits::off_type off_type; 
+        typedef traits traits_type; 
+
+        // 27.6.2.2 Constructor/destructor: 
+        explicit basic_ostream(basic_streambuf<char_type,traits>* sb); 
+        virtual ~basic_ostream(); 
+
+        // 27.6.2.3 Prefix/suffix: 
+        class sentry; 
+
+        // 27.6.2.5 Formatted output: 
+        basic_ostream<charT,traits>& operator<< 
+            (basic_ostream<charT,traits>& (*pf)(basic_ostream<charT,traits>&));
+        basic_ostream<charT,traits>& operator<< 
+            (basic_ios<charT,traits>& (* pf)(basic_ios<charT,traits>&)); 
+        basic_ostream<charT,traits>& operator<< 
+            (ios_base& (* pf)(ios_base&)); 
+
+        basic_ostream<charT,traits>& operator<<(bool n); 
+        basic_ostream<charT,traits>& operator<<(short n); 
+        basic_ostream<charT,traits>& operator<<(unsigned short n); 
+        basic_ostream<charT,traits>& operator<<(int n); 
+        basic_ostream<charT,traits>& operator<<(unsigned int n); 
+        basic_ostream<charT,traits>& operator<<(long n); 
+        basic_ostream<charT,traits>& operator<<(unsigned long n); 
+        basic_ostream<charT,traits>& operator<<(long long n); 
+        basic_ostream<charT,traits>& operator<<(unsigned long long n); 
+        basic_ostream<charT,traits>& operator<<(float f); 
+        basic_ostream<charT,traits>& operator<<(double f); 
+        basic_ostream<charT,traits>& operator<<(long double f);
+        basic_ostream<charT,traits>& operator<<(const void* p); 
+        basic_ostream<charT,traits>& operator<< 
+            (basic_streambuf<char_type,traits>* sb); 
+
+        // 27.6.2.6 Unformatted output: 
+        basic_ostream<charT,traits>& put(char_type c); 
+        basic_ostream<charT,traits>& write(const char_type* s, streamsize n); 
+        basic_ostream<charT,traits>& flush(); 
+
+        // 27.6.2.4 seeks: 
+        pos_type tellp(); 
+        basic_ostream<charT,traits>& seekp(pos_type); 
+        basic_ostream<charT,traits>& seekp(off_type, ios_base::seekdir); 
+    }; 
+
+    // 27.6.2.5.4 character inserters 
+    template<class charT, class traits> 
+    basic_ostream<charT,traits>& operator<<(basic_ostream<charT,traits>&, 
+                                            charT); 
+    template<class charT, class traits> 
+    basic_ostream<charT,traits>& operator<<(basic_ostream<charT,traits>&, 
+                                            char); 
+
+    // specialization 
+    template<class traits> 
+    basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&, 
+                                           char); 
+
+    // signed and unsigned 
+    template<class traits> 
+    basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&, 
+                                           signed char); 
+    template<class traits> 
+    basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&, 
+                                           unsigned char); 
+    template<class charT, class traits> 
+    basic_ostream<charT,traits>& operator<<(basic_ostream<charT,traits>&, 
+                                            const charT*); 
+    template<class charT, class traits> 
+    basic_ostream<charT,traits>& operator<<(basic_ostream<charT,traits>&, 
+                                            const char*); 
+
+    // partial specializations
+    template<class traits> 
+    basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&, 
+                                           const char*); 
+
+    // signed and unsigned 
+    template<class traits> 
+    basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&, 
+                                           const signed char*); 
+    template<class traits> 
+    basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&, 
+                                           const unsigned char*);
+}   /* namespace std */
+
+#endif /* _BASIC_OSTREAM */

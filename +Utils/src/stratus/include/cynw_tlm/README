@@ -1,0 +1,59 @@
+This directory contains the cts_tlm library.
+
+This is a replacement for OSCI tlm that includes extensions and modifications 
+for synthesis, as well as a library of basic transactors.
+
+The changes for synthesis are as follows.
+
+  - All include files take prefix 'cts_' in their name to distinguish them
+    from OSCI tlm.
+
+  - All classes are encapsulated in namespace 'cts_tlm' instead of 'tlm'; All
+    class names and method names are left unchanged.
+
+  - All interfaces that modify the state of the channel specify a reset method
+    that must be called by the process using the interface to reset the channel
+    properly. Therefor the following interfaces have been added:
+     * tlm_reset_get_if
+     * tlm_reset_put_if
+     * tlm_reset_transport_if
+
+    The following interfaces derive from 'tlm_reset_get_if':
+     * tlm_blocking_get_if
+     * tlm_nonblocking_get_if
+
+    The following interfaces derive from 'tlm_reset_put_if':
+     * tlm_blocking_put_if
+     * tlm_nonblocking_put_if
+
+    The following interface derives from 'tlm_reset_transport_if':
+     * tlm_transport_if
+
+  - 'tlm_fifo' has been changed as follows:
+      * it derives from sc_module instead of sc_prim_channel
+      * it takes 1 extra template parameter for specifying the size
+      * its constructor no longer takes the size as argument
+      * tlm_fifo_debug_if is not supported
+      * tlm_fifo_config_size_if is not supported
+      * put() copies the data at the beginning of the function and writes the copied data into the fifo slot when the slot is available. OSCI tlm fifo does not copy the data and so by the time the fifo slot is available the data may have changed.
+
+  - 3 other variants of tlm_fifo are provided that differ from 'tlm_fifo' as follows:
+      * 'tlm_fifo_1t' supports only 1 get per delta cycle and 1 put per delta cycle
+      * 'tlm_fifo_reg' uses an array of sc_signal for storing the data, this is 
+        intended for small fifos that are to be implemented by discreet registers
+        rather than a RAM
+      * 'tlm_fifo_reg_1t' is similar to 'tlm_fifo_reg', but allows only 1 get per
+         delta cycle and 1 put per delta cycle
+
+
+Features not supported for synthesis:
+
+  - class tlm_event_finder
+  - class tlm_nonblocking_get_port
+  - class tlm_nonblocking_put_port
+  - The methods that return sc_event references of the non-blocking interfaces
+    are not supported. 
+    
+ The transactor library is in subdirectory ctos_transactors. There, one can find
+ defintions of put/get as well as transport transactors. 
+ 

@@ -1,0 +1,96 @@
+/*****************************************************************************
+
+                                    ios_base
+
+    C++ compatible header file for use in compiling SystemC.
+
+    $Id: ios_base,v 1.2 2002-11-15 19:27:10 rlb Exp $
+
+*****************************************************************************/
+
+#ifndef _IOS_BASE
+#define _IOS_BASE
+
+#include <locale>   /* for locale */
+
+namespace std {
+
+    typedef long streamsize; 
+
+    class ios_base { 
+    public: 
+        class failure; 
+        typedef unsigned long fmtflags; 
+        static const fmtflags boolalpha; 
+        static const fmtflags dec; 
+        static const fmtflags fixed; 
+        static const fmtflags hex; 
+        static const fmtflags internal; 
+        static const fmtflags left; 
+        static const fmtflags oct; 
+        static const fmtflags right; 
+        static const fmtflags scientific; 
+        static const fmtflags showbase; 
+        static const fmtflags showpoint; 
+        static const fmtflags showpos; 
+        static const fmtflags skipws; 
+        static const fmtflags unitbuf; 
+        static const fmtflags uppercase; 
+        static const fmtflags adjustfield; 
+        static const fmtflags basefield; 
+        static const fmtflags floatfield; 
+
+        typedef unsigned long iostate; 
+        static const iostate badbit; 
+        static const iostate eofbit; 
+        static const iostate failbit; 
+        static const iostate goodbit; 
+
+        typedef unsigned long openmode; 
+        static const openmode app; 
+        static const openmode ate; 
+        static const openmode binary; 
+        static const openmode in; 
+        static const openmode out; 
+        static const openmode trunc; 
+
+        typedef enum { beg, cur, end } seekdir; 
+
+        class Init;
+
+        // 27.4.2.2 fmtflags state: 
+        fmtflags flags() const; 
+        fmtflags flags(fmtflags fmtfl); 
+        fmtflags setf(fmtflags fmtfl); 
+        fmtflags setf(fmtflags fmtfl, fmtflags mask); 
+        void unsetf(fmtflags mask); 
+        streamsize precision() const; 
+        streamsize precision(streamsize prec); 
+        streamsize width() const; 
+        streamsize width(streamsize wide); 
+
+        // 27.4.2.3 locales: 
+        locale imbue(const locale& loc); 
+        locale getloc() const; 
+
+        // 27.4.2.5 storage: 
+        static int xalloc(); 
+        long& iword(int index); 
+        void*& pword(int index); 
+
+        // destructor 
+        virtual ~ios_base(); 
+
+        // 27.4.2.6 callbacks; 
+        enum event { erase_event, imbue_event, copyfmt_event }; 
+        typedef void (*event_callback)(event, ios_base&, int index); 
+        void register_callback(event_callback fn, int index); 
+        static bool sync_with_stdio(bool sync = true); 
+
+    protected: 
+        ios_base(); 
+    };
+
+}   /* namespace std */
+
+#endif /* _IOS_BASE */

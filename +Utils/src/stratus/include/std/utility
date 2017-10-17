@@ -1,0 +1,55 @@
+/*****************************************************************************
+
+                                    utility
+
+    C++ compatible header file for synthesis.
+
+    $Id: utility,v 1.1 2005-06-15 22:55:13 deg Exp $
+
+*****************************************************************************/
+
+#ifndef _UTILITY
+#define _UTILITY
+
+namespace std {
+
+    // operators:
+    namespace rel_ops {
+        template <class T> bool operator!=(const T&, const T&);
+        template <class T> bool operator> (const T&, const T&);
+        template <class T> bool operator<=(const T&, const T&);
+        template <class T> bool operator>=(const T&, const T&);
+    }   /* namespace rel_ops */
+
+    // pairs:
+    template <class T1, class T2> struct pair {
+
+        typedef T1 first_type;
+        typedef T2 second_type;
+
+        T1 first;
+        T2 second;
+        pair();
+        pair(const T1& x, const T2& y);
+        template <class U, class V> pair(const pair<U, V>& p);
+
+    };  /* struct pair */
+
+    template <class T1, class T2>
+        bool operator==(const pair<T1, T2>&, const pair<T1, T2>&);
+    template <class T1, class T2>
+        bool operator< (const pair<T1, T2>&, const pair<T1, T2>&);
+    template <class T1, class T2>
+        bool operator!=(const pair<T1, T2>&, const pair<T1, T2>&);
+    template <class T1, class T2>
+        bool operator> (const pair<T1, T2>&, const pair<T1, T2>&);
+    template <class T1, class T2>
+        bool operator>=(const pair<T1, T2>&, const pair<T1, T2>&);
+    template <class T1, class T2>
+        bool operator<=(const pair<T1, T2>&, const pair<T1, T2>&);
+    template <class T1, class T2> pair<T1, T2> 
+        make_pair(const T1&, const T2&);
+
+}   /* namespace std */
+
+#endif  /* _UTILITY */

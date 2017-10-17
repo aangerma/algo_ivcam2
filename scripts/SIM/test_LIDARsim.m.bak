@@ -1,0 +1,70 @@
+%  clear;
+% 
+  inputRange = 5;
+
+
+ p = xml2structWrapper('\\invcam322\ohad\data\lidar\simulatorParams\params_860SKU1_indoor.xml');
+       p.laser.txSequence = Codes.barker13();
+p.TIA.overloadVoltage=inf;
+p.APD.overloadPower=inf;
+%           p.laser.txSequence = Codes.propCode(106,1);
+%            p.laser.txSequence = Codes.propCode(128,1);
+% p.laser.txSequence = Codes.golay26;
+
+
+
+p.verbose=0;
+
+nav = 1;
+nMes = 10;
+
+p.runTime= (length(p.laser.txSequence)/p.laser.frequency)*(1+(nMes+1)*nav);
+
+
+
+% p.environment.ambientNoiseFactor=4.5;%outdoor 2500lux
+
+ model =struct('t',[0 p.runTime],'r',[ inputRange  inputRange],'a',[ 1  1 ]);
+
+% model =struct('t',[0 p.runTime*1/3-1e-3 p.runTime*1/3 p.runTime*2/3 p.runTime*2/3+1e-3 p.runTime*3/3],'r',[ inputRange inputRange inputRange+300 inputRange+300  inputRange inputRange],'a',[1 1 1 1 1  1 ]);
+
+GT = false;
+if(GT)
+    
+    p.APD.darkCurrentAC=0;
+    p.APD.darkCurrentDC=0;
+    p.APD.excessNoiseFactor=0;
+    p.Comparator.irn=0;
+    p.Comparator.jitterMaxC2C=0;
+    p.Comparator.jitterRMS=0;
+    p.Comparator.sensitivity=0;
+    p.environment.ambientNoise=0;
+    p.environment.ambientNoiseFactor=0;
+    p.TIA.inputBiasCurrent=0;
+    p.TIA.preAmpIRN=0;
+end
+
+
+
+
+%
+rng(1);
+[chA,chB,prprts,mes] = Simulator.runSim(model,p);
+% disp(mes);
+%
+% subplot(212);
+%%
+verbose=2;
+rm = RegistersManager();
+regs = rm.getRegs();
+regs.GNRL.txCode = p.laser.txSequence';
+regs.GNRL.codeLength = length(p.laser.txSequence);
+regs.GNRL.tx = 1/p.laser.frequency;
+regs.GNRL.sampleRate = p.Comparator.frequency/p.laser.frequency;
+[~,~,stats] = Utils.sequenceDetector(chA,regs,nav,verbose);
+ 
+
+  txt=sprintf('mean: %fmm std: %fmm, OSNR: %f[db] (gt=%d)\n',stats.mean,stats.std,mes.osnr_tp1,inputRange);
+   fprintf('%s\n',txt);
+%  title(txt);
+%  fprintf('%f %f\n',inputRange,mean(r));

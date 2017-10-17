@@ -1,0 +1,75 @@
+function [delayF,delayS] = mSyncerPipe(ivsMS,regsMS,initGuessFast)
+%%
+coarseInitOffset = 6000;
+fineInitOffset = 640;
+changerFuncF = @(x) setfield(regsMS,'CLBR',setfield(regsMS.CLBR,'fastChDelayNsec',int32(x)));
+changerFuncS = @(x) setfield(regsMS,'CLBR',setfield(regsMS.CLBR,'slowChDelayNsec',int32(x)));
+
+delayF = runSyncer(ivsMS,changerFuncF,@(po) po.rImg,double(initGuessFast),coarseInitOffset);
+delayS = runSyncer(ivsMS,changerFuncS,@(po) po.iImg,double(delayF),fineInitOffset);
+
+end
+
+
+function d = runSyncer(ivsMS,regsVr,getMetricImg,initGuess,initOffset)
+
+MIN_STEP = 4;
+N=5;
+rng = [-initOffset initOffset]/2;
+if(exist('initGuess','var'))
+    rng = rng-mean(rng)+initGuess;
+end
+while(true)
+    ex =linspace(rng(1),rng(2),N);
+    ey = zeros(1,N);
+    imgs = cell(N,1);
+    for i=1:N
+        regsVrI = regsVr(ex(i));
+        po =  Pipe.pipeIVLpi(ivsMS,regsVrI);
+        imgs{i} = getMetricImg(po);
+        ey(i) = syncMetric(po,getMetricImg);
+    end
+    
+    ind = minind(ey);
+    
+    for i=1:N
+        subplot(2,N,i)
+        
+        imagesc(imgs{i},prctile(double(mat2vec(imgs{i})),[10 90])+[0 1e-3]);axis image
+    end
+    subplot(2,N,1+N:2*N);
+    plot(ex,ey,'k.-',ex(ind),ey(ind),'ro');
+    axis tight
+        drawnow;
+    
+
+    
+    d = ex(ind);
+    newrng = d +[-1 1]*diff(rng)/N;
+    rng = newrng;
+    if(diff(rng)/N<MIN_STEP)
+        break;
+    end
+    
+    
+end
+d = round(d);
+end
+
+
+function m = syncMetric(po,getMetricImg)
+
+% img = getMetricImg(po);
+% thr = prctile(img(:),95);
+% bwimg = imdilate(img>thr,ones(3));
+% [~,n]=bwlabel(bwimg);
+% m = n*1/sum(double(img(:)));
+
+img = double(getMetricImg(po));
+% [dx,~]=gradient(double(img));
+dx=diff(img,[],2);
+absdx = abs(dx);
+thr = prctile(abs(dx(:)),75);
+msk = double(absdx<thr).*double(po.cImg(:,1:end-1));
+m = sum(sum(absdx.*msk));
+end

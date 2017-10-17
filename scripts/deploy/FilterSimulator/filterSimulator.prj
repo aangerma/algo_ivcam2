@@ -1,0 +1,123 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration build-checksum="1201913521" file="D:\ohad\SOURCE\IVCAM\Algo\LIDAR\Scripts\onDemandScripts\deploy\filterSimulator.prj" location="D:\ohad\SOURCE\IVCAM\Algo\LIDAR\Scripts\onDemandScripts\deploy" name="filterSimulator" preferred-package-location="d:\ohad\share\filterSimulator" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="MATLAB Compiler for Standalone Applications">
+    <param.appname>filterSimulator</param.appname>
+    <param.icon>${PROJECT_ROOT}\filterSimulator_resources\icon.ico</param.icon>
+    <param.icons>
+      <file>${PROJECT_ROOT}\filterSimulator_resources\icon_48.png</file>
+      <file>${PROJECT_ROOT}\filterSimulator_resources\icon_32.png</file>
+      <file>${PROJECT_ROOT}\filterSimulator_resources\icon_24.png</file>
+      <file>${PROJECT_ROOT}\filterSimulator_resources\icon_16.png</file>
+    </param.icons>
+    <param.version>1.0</param.version>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
+    <param.summary />
+    <param.description />
+    <param.screenshot />
+    <param.guid />
+    <param.installpath.string>\filterSimulator\</param.installpath.string>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.intermediate>d:\ohad\share\filterSimulator</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\filterSimulator\for_redistribution_files_only</param.files.only>
+    <param.output>d:\ohad\share\filterSimulator</param.output>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options />
+    <param.embed.ctf>true</param.embed.ctf>
+    <param.server.ctf>d:\ohad\share\filterSimulator\.ctf</param.server.ctf>
+    <param.server.readme>d:\ohad\share\filterSimulator\readme.txt</param.server.readme>
+    <param.target.type>subtarget.standalone</param.target.type>
+    <param.support.packages />
+    <param.required.mcr.products>
+      <item>35000</item>
+      <item>35001</item>
+    </param.required.mcr.products>
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>true</param.windows.command.prompt>
+    <param.create.log>false</param.create.log>
+    <param.log.file />
+    <unset>
+      <param.version />
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.summary />
+      <param.description />
+      <param.screenshot />
+      <param.guid />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.install.notes />
+      <param.files.only />
+      <param.enable.clean.build />
+      <param.user.defined.mcr.options />
+      <param.embed.ctf />
+      <param.server.ctf />
+      <param.server.readme />
+      <param.target.type />
+      <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.windows.command.prompt />
+      <param.create.log />
+      <param.log.file />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\filterSimulator.m</file>
+    </fileset.main>
+    <fileset.resources>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\addons\Matlabaddons\gui\maximize.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\addons\Matlabaddons\image_utils\letter2icon.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\addons\Matlabaddons\math\butter.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\addons\Matlabaddons\string_utils\str2img.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\barker13.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\binarySeq.m</file>
+      <file>d:\ohad\SOURCE\IVCAM\Algo\LIDAR\+Utils\manchesterEncode.m</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file location="d:\ohad\share\filterSimulator" name="splash.png" optional="false">d:\ohad\share\filterSimulator\splash.png</file>
+      <file location="d:\ohad\share\filterSimulator" name="filterSimulator.exe" optional="false">d:\ohad\share\filterSimulator\filterSimulator.exe</file>
+      <file location="d:\ohad\share\filterSimulator" name="readme.txt" optional="true">d:\ohad\share\filterSimulator\readme.txt</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2014b_NETWORK</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>6.2</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

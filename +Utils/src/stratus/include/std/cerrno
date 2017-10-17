@@ -1,0 +1,38 @@
+/*****************************************************************************
+
+                                    cerrno
+
+    C++ compatible header file.
+
+    $Id: cerrno,v 1.2 2009-04-07 18:26:40 deg Exp $
+
+*****************************************************************************/
+
+#ifndef _CERRNO
+#define _CERRNO
+
+namespace std {
+extern "C" {
+
+/*  begin code shared with <errno.h> */
+
+#ifndef EDOM
+#define EDOM    33
+#endif
+
+#ifndef EILSEQ
+#define EILSEQ  88
+#endif
+
+#ifndef ERANGE
+#define ERANGE  34
+#endif
+
+extern int errno;
+
+/*  end code shared with <errno.h> */
+
+}   /* extern "C" */
+}   /* namespace std */
+
+#endif  /* _CERRNO */

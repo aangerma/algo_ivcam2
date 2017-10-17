@@ -1,0 +1,19 @@
+/*****************************************************************************
+
+                                streamdefs
+
+    C++ compatible header file for synthesis.
+
+    $Id: streamdefs,v 1.1 2005-06-15 22:55:13 deg Exp $
+
+*****************************************************************************/
+
+#ifndef _STREAMDEFS
+#define _STREAMDEFS
+
+namespace std {
+    typedef unsigned long streamoff;
+    typedef          long streamsize;
+}   /* namespace std */
+
+#endif  /* _STREAMDEFS */

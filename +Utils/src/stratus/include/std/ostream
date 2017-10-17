@@ -1,0 +1,33 @@
+/*****************************************************************************
+
+                                    ostream
+
+    C++ compatible header file for use in compiling SystemC.
+
+    Copied from the Standard.
+
+    $Id: ostream,v 1.2 2002-11-15 19:27:11 rlb Exp $
+
+*****************************************************************************/
+
+#ifndef _OSTREAM
+#define _OSTREAM
+
+#include <basic_ostream>    /* for basic_ostream */
+#include <char_traits>      /* for char_traits */
+
+namespace std { 
+
+    typedef basic_ostream<char> ostream; 
+    typedef basic_ostream<wchar_t> wostream; 
+
+    template <class charT, class traits> 
+        basic_ostream<charT,traits>& endl(basic_ostream<charT,traits>& os); 
+    template <class charT, class traits> 
+        basic_ostream<charT,traits>& ends(basic_ostream<charT,traits>& os); 
+    template <class charT, class traits> 
+        basic_ostream<charT,traits>& flush(basic_ostream<charT,traits>& os); 
+
+}   /* namespace std */
+
+#endif /* _OSTREAM */

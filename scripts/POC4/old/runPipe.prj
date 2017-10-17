@@ -1,0 +1,310 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration file="C:\SOURCE\Algo\LIDAR\Scripts\POC4\runPipe.prj" location="C:\SOURCE\Algo\LIDAR\Scripts\POC4" name="runPipe" target="target.ezdeploy.library" target-name="Library Compiler">
+    <param.appname>runPipe</param.appname>
+    <param.icon />
+    <param.icons />
+    <param.version>1.0</param.version>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
+    <param.summary />
+    <param.description />
+    <param.screenshot />
+    <param.guid />
+    <param.installpath.string>\runPipe\</param.installpath.string>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.target.install.notes />
+    <param.intermediate>${PROJECT_ROOT}\runPipe\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\runPipe\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\runPipe\for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}\runPipe</param.logdir>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options />
+    <param.embed.ctf>true</param.embed.ctf>
+    <param.target.type>subtarget.net.component</param.target.type>
+    <param.support.packages />
+    <param.namespace />
+    <param.classorg />
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>true</param.windows.command.prompt>
+    <param.create.log>false</param.create.log>
+    <param.log.file />
+    <param.user.only.registration>false</param.user.only.registration>
+    <param.net.framework>option.net.framework.default</param.net.framework>
+    <param.assembly.type>false</param.assembly.type>
+    <param.encryption.key.file />
+    <param.net.enable.remoting>false</param.net.enable.remoting>
+    <param.net.tsa.enable>false</param.net.tsa.enable>
+    <param.net.tsa.assembly />
+    <param.net.tsa.interface />
+    <param.net.tsa.namespace />
+    <param.net.tsa.superclass>RunPipe</param.net.tsa.superclass>
+    <param.net.tsa.metadata />
+    <param.net.tsa.metadata.assembly>C:\Users\ychechik\Documents\MATLAB</param.net.tsa.metadata.assembly>
+    <param.net.saved.interface />
+    <unset>
+      <param.icon />
+      <param.icons />
+      <param.version />
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.summary />
+      <param.description />
+      <param.screenshot />
+      <param.guid />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.target.install.notes />
+      <param.intermediate />
+      <param.files.only />
+      <param.output />
+      <param.logdir />
+      <param.enable.clean.build />
+      <param.user.defined.mcr.options />
+      <param.embed.ctf />
+      <param.support.packages />
+      <param.namespace />
+      <param.classorg />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.windows.command.prompt />
+      <param.create.log />
+      <param.log.file />
+      <param.user.only.registration />
+      <param.net.framework />
+      <param.assembly.type />
+      <param.encryption.key.file />
+      <param.net.enable.remoting />
+      <param.net.tsa.enable />
+      <param.net.tsa.assembly />
+      <param.net.tsa.interface />
+      <param.net.tsa.namespace />
+      <param.net.tsa.superclass />
+      <param.net.tsa.metadata />
+      <param.net.tsa.metadata.assembly />
+      <param.net.saved.interface />
+    </unset>
+    <fileset.exports>
+      <file>${PROJECT_ROOT}\runPipe.m</file>
+    </fileset.exports>
+    <fileset.classes>
+      <entity.package name="">
+        <entity.class name="RunPipe">
+          <file>${PROJECT_ROOT}\runPipe.m</file>
+        </entity.class>
+      </entity.package>
+    </fileset.classes>
+    <fileset.resources />
+    <fileset.depfun>
+      <file>C:\SOURCE\Algo\LIDAR\+Codes\propCode.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+io\readIVS.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+io\writeBin.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+io\writeIVS.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+ASNC\ASNC.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+CBUF\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+CBUF\CBUF.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+CBUF\maxrun.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+CBUF\stepInc.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+CBUF\xRateCheck.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DCOR\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DCOR\DCOR.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DEST\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DEST\confBlock.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DEST\DEST.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DEST\detectPeaks.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\+FRMW\buildLensLUT.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\+FRMW\getAng2xyCoeffs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\+FRMW\getNotchFilterCoeffs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\ang2xy.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\bicubicFixed.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\DIGG.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\filter16b.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\GENG.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\NEST.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\notchFilter.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\ranger.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\roiFlag.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\scanStats.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+DIGG\undist.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\bilateral.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\checkStreamValidity.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\dnn.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\edge.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\featureExtrationD.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\featureExtrationI.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\gamma.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\geom.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\grad.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\gradient.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\inn.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\invalidation.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\irShading.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\JFIL.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\maxPool.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\nnet.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\nnetActFunc.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\printjStream.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\sort.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\sortEdge.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+JFIL\upscale.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+PCKR\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+PCKR\PCKR.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+RAST\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+RAST\CMAC.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+RAST\cmaFilter.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+RAST\cmaNorm.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+RAST\PCQ.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+RAST\RAST.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\+FRMW\bootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\create_tcam_in.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\createIconImage.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\exportSttMemoryLayoutToBuff.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\initMem.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\integralImage.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\my_blkproc.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\resize.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\runStt.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\STAT.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\+STAT\sum_quads.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\autopipe.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\displayPipeOutData.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\hwpipe.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\patternGenerator.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\savePipeOutData.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\setDefaultMemoryLayout.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Pipe\version.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\applyGamma.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\bin2uint32.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\buildTracer.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\correlator.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\dtnsec2rmm.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\fp20.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\fp32.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\indx2col.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\mat2hex.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\rmm2dtnsec.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\timePropogate.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\+Utils\toHex.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\file_utils\dirFiles.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\file_utils\dirRecursive.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\file_utils\mkdirSafe.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\file_utils\stlwriteMatrix.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\general\buffer_.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\general\dec2hexFast.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\general\iff.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\general\logical2hex.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\general\logical2uint64.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\gui\goodLayout.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\gui\imagescNAN.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\gui\subaxis.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\image_utils\gray2colormap.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\image_utils\pad_array.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\lightspeed\map.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\lightspeed\vec.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\butter_.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\fftplot.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\filtfilt_.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\freqz_.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\iirnotch_.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\maxind.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\minind.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\minmax.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\math\prctile_.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\plot_utils\subplotTitle.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\string_utils\cell2str.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\..\Common\string_utils\str2cell.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\dec2binFAST.mexw64</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\Firmware.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\mergeRegs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privAlgoStruct2AsicStruct.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privBootCalcs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privConstraints.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privLoadLUTs.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privLoadRegisters.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privRewriteRegisterDefFile.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privUpdate.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\privWrite2file.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\randomize.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivConvertBlockNameId2regName.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivConvertRegName2blockNameId.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivReadAsicFile.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivReadConfigurationFile.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivReadCSV.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivRegstruct2val.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivRmData2struct.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivSizeof.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\sprivStringDist.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Firmware\writeDefs4asic.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@Logger\Logger.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@LUTf\LUTf.m</file>
+      <file>C:\SOURCE\Algo\LIDAR\@LUTi\LUTi.m</file>
+    </fileset.depfun>
+    <fileset.package />
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}\runPipe\for_testing" name="runPipeNative.dll" optional="false">C:\SOURCE\Algo\LIDAR\Scripts\POC4\runPipe\for_testing\runPipeNative.dll</file>
+      <file location="${PROJECT_ROOT}\runPipe\for_testing" name="readme.txt" optional="true">C:\SOURCE\Algo\LIDAR\Scripts\POC4\runPipe\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\runPipe\for_testing" name="runPipe.dll" optional="false">C:\SOURCE\Algo\LIDAR\Scripts\POC4\runPipe\for_testing\runPipe.dll</file>
+      <file location="${PROJECT_ROOT}\runPipe\for_testing" name="runPipe_overview.html" optional="false">C:\SOURCE\Algo\LIDAR\Scripts\POC4\runPipe\for_testing\runPipe_overview.html</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2016b</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabcoder" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="embeddedcoder" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>6.2</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
