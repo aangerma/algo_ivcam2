@@ -1,3 +1,3 @@
 restoredefaultpath;
 addpath(cd);
-addpath(genpath(fullfile(cd,'..','Common')));
+addpath(genpath(fullfile(cd,'..','AlgoCommon')));
