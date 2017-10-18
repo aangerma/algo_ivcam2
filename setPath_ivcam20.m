@@ -1,6 +1,4 @@
-%%%%%%%%%%%%%%%%
-
-
+%%%%%%%%%
 
 restoredefaultpath;
 addpath(cd);
