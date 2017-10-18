@@ -1,4 +1,7 @@
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+
+
+
 restoredefaultpath;
 addpath(cd);
 p=strsplit(genpath(fullfile(cd,'..','AlgoCommon')),';');
