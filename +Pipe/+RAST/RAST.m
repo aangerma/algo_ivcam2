@@ -1,6 +1,5 @@
 function [ cmaOut, irOut, nestOut, dutyCycle, flagsOut,pixIndOutOrder,pixRastOutTime] = RAST( inData, pipeData, regs, ~, lgr,traceOutDir)
 
-
 lgr.print2file('\n\t------- RAST -------\n');
 
 fastCh = inData.fast;
