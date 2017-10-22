@@ -40,9 +40,9 @@ else
     peakVal=max(peakVal,0);
     delayF=crossSync(peakVal,c,verbose);
 end
-%%?????????????????????? EMPIRIC TEST???????????
-delayS = delayS+1;
-delayF = delayF+1;
+% % % %%?????????????????????? EMPIRIC TEST???????????
+% % % delayS = delayS+1;
+% % % delayF = delayF+1;
 
 end
 
@@ -62,39 +62,63 @@ while(true)
     if(all(diff(x)==0))
         break;
     end
-    [y,sl] = arrayfun(@(k) calcErr(circshift(dataF,[0 k]),c),x,'uni',0);
+    if(d<=2)
+        try
+            [y,sl] = arrayfun(@(k) calcErrFine(circshift(dataF,[0 k]),c),x,'uni',0);
+        catch
+            [y,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),c),x,'uni',0);
+        end
+    else
+        [y,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),c),x,'uni',0);
+    end
     y=[y{:}]';
     
     r = x(minind(y));
     d = floor(d/R*2);
     if(verbose)
-    for i=1:R
-        aa(i)=subplot(2,R,i);
-        imagesc(sl{i},prctile(sl{i}(:),[10 90])+[0 1e-3]);
-    end
-    subplot(2,3,4:6)
-    plot(x,y,'o-');
-    line([r r ],minmax(y),'color','r');
-    axis tight
-    drawnow;
+        for i=1:R
+            aa(i)=subplot(2,R,i);
+            imagesc(sl{i},prctile(sl{i}(:),[10 90])+[0 1e-3]);
+        end
+        subplot(2,3,4:6)
+        plot(x,y,'o-');
+        line([r r ],minmax(y),'color','r');
+        axis tight
+        drawnow;
     end
 end
 delayOut=r;
- if(verbose)
- close(gcf);
- drawnow;
- end
+if(verbose)
+    close(gcf);
+    drawnow;
+end
 end
 
-function [err,im]=calcErr(data,c)
-
-N=1024;
-
+function sl=data2sl(data,c,N)
 sl=arrayfun(@(i) data(c(i):c(i+1)),1:length(c)-1,'uni',0);
 
 sl = cellfun(@(x) interp1(linspace(0,1,length(x)),x,linspace(0,1,N))',sl,'uni',0);
 sl=[sl{:}];
 sl=sl(:,1:floor(size(sl,2)/2)*2);
+end
+
+
+function [err,im]=calcErrFine(data,c)
+
+N=2048;
+sl = data2sl(data,c,N);
+img1=sl(:,1:2:end);
+img2=flipud(sl(:,2:2:end));
+im = reshape([img1;img2],size(sl));
+err = Calibration.aux.edgeUnifomity(im);
+err = err/2;%HD pixel
+end
+
+function [err,im]=calcErrDiff(data,c)
+
+N=1024;
+sl = data2sl(data,c,N);
+
 img1=sl(:,1:2:end);
 img2=flipud(sl(:,2:2:end));
 im = reshape([img1;img2],size(sl));
@@ -107,7 +131,7 @@ mask(N*3/4:end,:)=false;
 
 %   wImg = min(abs(dy1),abs(dy2));
 %   d=d.*wImg;
-  graderr = mean(vec(abs(d(mask))));
+graderr = mean(vec(abs(d(mask))));
 centererr=-nnz(im(floor(size(im,1)/2),:))/size(im,2);
 maskerr=-nnz(mask)/numel(mask);
 
