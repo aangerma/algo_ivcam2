@@ -1,4 +1,4 @@
-function [delayF,delayS] = mSyncerPipe(ivs,regs,verbose)
+function [delayF,delayS,err] = mSyncerPipe(ivs,regs,verbose)
 y = double(ivs.xy(2,:));
 winSz = round(length(y)/maxind(abs(fft(y)))*.5);
 y=conv(y,fspecial('gaussian',[1 winSz],winSz/5),'same');
@@ -26,7 +26,7 @@ end
 c=cc(:);
 %%
 vs=double(ivs.slow);
-delayS=crossSync(vs,c,verbose);
+[delayS, err] = crossSync(vs,c,verbose);
 
 %%
 if(isempty(regs))
@@ -38,7 +38,7 @@ else
     cr = Utils.correlator(vv,kF*2-1);
     peakVal = max(cr)*2/length(kF);
     peakVal=max(peakVal,0);
-    delayF=crossSync(peakVal,c,verbose);
+    delayF = crossSync(peakVal,c,verbose);
 end
 % % % %%?????????????????????? EMPIRIC TEST???????????
 % % % delayS = delayS+1;
@@ -46,7 +46,7 @@ end
 
 end
 
-function delayOut=crossSync(data,c,verbose)
+function [delayOut , err] = crossSync(data,c,verbose)
 
 %%
 dataF = conv(data,fspecial('gaussian',[5 1],2));
@@ -62,9 +62,11 @@ while(true)
     if(all(diff(x)==0))
         break;
     end
+    err = nan;
     if(d<=2)
         try
             [y,sl] = arrayfun(@(k) calcErrFine(circshift(dataF,[0 k]),c),x,'uni',0);
+            err = min(y);
         catch
             [y,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),c),x,'uni',0);
         end
