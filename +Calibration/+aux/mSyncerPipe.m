@@ -1,4 +1,4 @@
-function [delayF,delayS,err] = mSyncerPipe(ivs,regs,verbose)
+function [delayF,delayS,errS] = mSyncerPipe(ivs,regs,verbose)
 y = double(ivs.xy(2,:));
 winSz = round(length(y)/maxind(abs(fft(y)))*.5);
 y=conv(y,fspecial('gaussian',[1 winSz],winSz/5),'same');
@@ -26,7 +26,7 @@ end
 c=cc(:);
 %%
 vs=double(ivs.slow);
-[delayS, err] = crossSync(vs,c,verbose);
+[delayS, errS] = crossSync(vs,c,verbose);
 
 %%
 if(isempty(regs))
@@ -38,7 +38,7 @@ else
     cr = Utils.correlator(vv,kF*2-1);
     peakVal = max(cr)*2/length(kF);
     peakVal=max(peakVal,0);
-    delayF = crossSync(peakVal,c,verbose);
+    [delayF errF] = crossSync(peakVal,c,verbose);
 end
 % % % %%?????????????????????? EMPIRIC TEST???????????
 % % % delayS = delayS+1;
@@ -46,7 +46,7 @@ end
 
 end
 
-function [delayOut , err] = crossSync(data,c,verbose)
+function [delayOut , errOut] = crossSync(data,c,verbose)
 
 %%
 dataF = conv(data,fspecial('gaussian',[5 1],2));
@@ -62,20 +62,35 @@ while(true)
     if(all(diff(x)==0))
         break;
     end
-    err = nan;
+  
+    runExact = false;
     if(d<=2)
-        try
-            [y,sl] = arrayfun(@(k) calcErrFine(circshift(dataF,[0 k]),c),x,'uni',0);
-            err = min(y);
-        catch
-            [y,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),c),x,'uni',0);
-        end
-    else
-        [y,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),c),x,'uni',0);
+        runExact=true;
     end
-    y=[y{:}]';
     
-    r = x(minind(y));
+    if(runExact)
+        try
+            [err,sl] = arrayfun(@(k) calcErrFine(circshift(dataF,[0 k]),c),x,'uni',0);
+            
+        catch e,
+            warning(['could not find checkerboard image:\n' e.message]);
+            runExact=false;
+        end
+    end
+    
+    if(~runExact)
+            [err,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),c),x,'uni',0);
+    end
+
+    err=[err{:}]';
+    
+    minInd=minind(err);
+    r = x(minInd);
+    if runExact
+        errOut = err(minInd);
+    else
+        errOut = nan;
+    end
     d = floor(d/R*2);
     if(verbose)
         for i=1:R
@@ -83,8 +98,8 @@ while(true)
             imagesc(sl{i},prctile(sl{i}(:),[10 90])+[0 1e-3]);
         end
         subplot(2,3,4:6)
-        plot(x,y,'o-');
-        line([r r ],minmax(y),'color','r');
+        plot(x,err,'o-');
+        line([r r ],minmax(err),'color','r');
         axis tight
         drawnow;
     end
