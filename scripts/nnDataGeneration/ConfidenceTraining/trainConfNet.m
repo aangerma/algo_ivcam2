@@ -27,6 +27,7 @@ for i=1:length(results)
     dataMat(1+(i-1)*n_pixels:i*n_pixels,:) = [psnr(:),maxVal(:),dutyCycle(:),IR(:),depth_pipe(:),depth_gt(:)];
 end
 % Filter pixels with depth above 3500mmmax
+filterDistantPixels = false;
 if filterDistantPixels
     dataMat = dataMat(dataMat(:,6)<3500,:);
 end
@@ -70,7 +71,7 @@ final_conf = idivide(actOut2,2^4,'floor');
 
 
 %% Let us plot the True Positive / True Negative rate:
-plotClassificationRatesCurve = True;
+plotClassificationRatesCurve = true;
 if plotClassificationRatesCurve
     th = 0:0.5:15;
     labels = depthError <=0.01;
