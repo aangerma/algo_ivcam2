@@ -27,6 +27,7 @@ slowChDelay = slowChDelay(minI);
 if verbose
     fprintf('slow channel delay = %d\n', slowChDelay)
     fprintf('generet IR images...')
+    figure(11111);imagesc(Utils.raw2slImg(ivsArr{minI},slowChDelay));colormap gray;title('Best Scaneline Image')
 end
 sz = [1024 1024];
 irArr = cellfun(@(ivs) Utils.raw2img(ivs,slowChDelay,sz),ivsArr,'UniformOutput',0);
@@ -61,13 +62,12 @@ errSx = err(1);
 errSy = err(2);
 if verbose
     fprintf('slow error X:\n%d\n\nslow error Y:\n%d\n\n fast error:\n%d\n', err(1),err(2))
-    figure(13531);
-    
     pointsYoffset = find(~badRowsClean,1);
     for i = 1:length(irArr)
-        figure(1000+i);imagesc(irArr{i});hold on;plot(ip(i,:)+1j*pointsYoffset,'*');hold off
+        figure(1000+i);imagesc(irArr{i});colormap gray;title(['IVS: ' ivsFilenames{i}]);
+        hold on;plot(ip(i,:)+1j*pointsYoffset,'*');hold off
     end
-    figure(1000+i+1);plot(ip,'.')
+    figure(1000+i+1);plot(ip,'.');title('Point Groups')
 end
 end
 
