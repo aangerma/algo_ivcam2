@@ -3,26 +3,29 @@ if(nargin~=2)
     error('exactly two inputs');
 end
 params= xml2structWrapper(fullfile(inoutFolder,filesep,'POCconfig.xml'));
+if(verbose)
 fprintf('starting POC analysis:%s\n\n=====CONFIG BEGIN=====\n%s\n=====CONFIG END=====\n',inoutFolder,struct2str(params,':','\n','  '));
 fprintf('reading scope PZR data...');
+end
 scopeFile = dirRecursive(inoutFolder,'*.h5');
 scopeFile = scopeFile{1};
 [dt,pzr,indLocs]=aux.readScopeLOS(scopeFile,lower(params.dataMode));
-fprintf('done(#frames: %d)\n',length(indLocs));
+if(verbose),fprintf('done(#frames: %d)\n',length(indLocs));end
 %%
-fprintf('generating LOS...');
+
+if(verbose),fprintf('generating LOS...');end
 angxy = aux.extractLOS(pzr,params,dt,verbose);
-fprintf('done\n');
+if(verbose),fprintf('done\n');end
 %%
 %  indLocs{1}=[194874 3240762];
 
 
-fprintf('cutting frames/scanlines...');
+if(verbose),fprintf('cutting frames/scanlines...');end
 xpcDataFull=aux.cutFrames(angxy,dt,indLocs);
-fprintf('done\n');
+if(verbose),fprintf('done\n');end
 
 %
-fprintf('reading X0 data...');
+if(verbose),fprintf('reading X0 data...');end
 switch(lower(params.dataMode))
     case {'poc4','poc41d','poc4l','poc4l_mc_msync'}
         framesFiles = dirRecursive(inoutFolder,'*.bin');
@@ -74,25 +77,27 @@ end
 fprintf('done\n');
 %
 
-
+if(verbose)
 fprintf('X0 (%2d):%s\n',length(ascDataFull),mat2str(cellfun(@(x) length(x),ascDataFull)'));
 fprintf('XPC(%2d):%s\n',length(xpcDataFull),mat2str(cellfun(@(x) length(x),xpcDataFull)'));
 %
 fprintf('syncing...\n');
+end
 %find best value of params.nFrameSkip
 %%
 ivsArr=cell(5,1);
 syncErr=nan(5,1);
 for s=1:5
     params.sync.nFrameSkip=s-3;
+    if(verbose)
     fprintf('X  %s\n',repmat('-',1,length(xpcDataFull)))
     fprintf(' %s%s\n',repmat(' ',1,max(2,s-1)),repmat('|',1,min(length(xpcDataFull),length(ascDataFull)-s+1)));
     fprintf('A%s%s\n',repmat(' ',1,s-1),repmat('-',1,length(ascDataFull)))
-    
+        end
     [ivsArr{s},syncErr(s)]=aux.syncX0XPC(xpcDataFull,ascDataFull,params.sync,verbose);
 end
 ivsArr=ivsArr{minind(syncErr)};
-fprintf('done\n');
+if(verbose),fprintf('done\n');end
 
 %%
 if(isempty(ivsArr))
@@ -100,11 +105,11 @@ if(isempty(ivsArr))
 end
 %%
 for frameNum=1:length(ivsArr)
-    fprintf('writing ivs...');
+    if(verbose),   fprintf('writing ivs...');end
     ivsfn = fullfile(inoutFolder,sprintf('record_%02d.ivs',frameNum));
     
     io.writeIVS(ivsfn,ivsArr(frameNum));
-    fprintf('done\n');
+    if(verbose),    fprintf('done\n');end
     
 %     xy125=ivsArr(frameNum).xyF;
 %     xy120=interp1((0:size(xy125,2)-1)/125,xy125',0:1/120:(size(xy125,2)-1)/125)';
@@ -116,6 +121,11 @@ for frameNum=1:length(ivsArr)
     
 end
 %%
+if(verbose==0)
+    return;
+end
+
+
 fprintf('finding sync...');
 slowchDelay=Calibration.aux.mSyncerPipe(io.readIVS(ivsfn),[],verbose);
 fprintf('Done (%d)\n',slowchDelay);

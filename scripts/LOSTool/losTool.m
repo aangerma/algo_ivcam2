@@ -12,14 +12,15 @@ end
 ivsArr = cellfun(@(ivsFilename) io.readIVS(ivsFilename),ivsFilenames,'UniformOutput',0);
 
 fprintf('search for slow channel delay and fast error...');
-warning off;
-[~,slowChDelay,errFArr] = cellfun(@(ivs)Calibration.aux.mSyncerPipe(ivs,[],verbose),ivsArr);
-warning on;
-if any(slowChDelay(1:end-1) ~= slowChDelay(end))
-    warning('not all ivses have equal slowchannelDelay!!!');
-end
-[errF, minI] = nanmin(errFArr);
-slowChDelay = slowChDelay(minI);
+[slowChDelay,errF] = Calibration.aux.mSyncerPipe(ivsArr{1},[],verbose);
+% warning off;
+% [~,slowChDelay,errFArr] = cellfun(@(ivs)Calibration.aux.mSyncerPipe(ivs,[],verbose),ivsArr);
+% warning on;
+% if any(slowChDelay(1:end-1) ~= slowChDelay(end))
+%     warning('not all ivses have equal slowchannelDelay!!!');
+% end
+% [errF, minI] = nanmin(errFArr);
+% slowChDelay = slowChDelay(minI);
 fprintf('slow channel delay = %d\n', slowChDelay)
 fprintf('generet IR images...')
 sz = [1024 1024];
@@ -36,7 +37,8 @@ badRowsClean = false(size(badRows));
 badRowsClean(1:find(~badRows,1))=true;
 badRowsClean(find(~badRows,1,'last'):end)=true;
 irbox(badRowsClean,:,:)=[];
-
+mm = prctile(irbox(:),[10 90]);
+irbox=(irbox-mm(1))/diff(mm);
 warning off;
 [imagePoints,bsz] = arrayfun(@(i) detectCheckerboardPoints(irbox(:,:,i)),1:size(irbox,3),'UniformOutput',0);
 warning on;
