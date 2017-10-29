@@ -13,11 +13,11 @@ SCAN_DIR_BIT = 3;
 nframes = min(length(xpcDataFull),length(ascDataFull));
 
 lfit = @(x) [(1:length(x))' x(:)*0+1]\(x(:)-x(1));
-fprintf('\n');
+if(verbose),fprintf('\n');end
 syncErr=inf;
 for frameNum=1:nframes
     %%
-    fprintf('%d/%d\t',frameNum,nframes);
+    
     %eval scale
     xpcSyncLocs = ([xpcDataFull{frameNum}.t0]-xpcDataFull{frameNum}(1).t0)*1e9;
     asicSyncLocs=double(([ascDataFull{frameNum}.timestamp]-uint64([ascDataFull{frameNum}.vSyncDelay])))/64*8;
@@ -27,7 +27,6 @@ for frameNum=1:nframes
     scaleFactor=iff(asc_m(1)==xpc_m(1),1,xpc_m(1)/asc_m(1));
     
     asicSyncLocs = asicSyncLocs*scaleFactor;
-    fprintf('scaleFactor=%f\t',scaleFactor);
     
     
     
@@ -44,8 +43,6 @@ for frameNum=1:nframes
         xpcLocs=xpcDataFull{frameNum};
         x0Data = ascDataFull{frameNum}(-cm+1:end);
     end
-    fprintf('#XPC=%d\t',length(xpcLocs));
-    fprintf('#X0=%d\t',length(x0Data));
     
     nVscans = min(length(xpcLocs),length(x0Data));
     
@@ -57,10 +54,15 @@ for frameNum=1:nframes
     xpcSyncLocs2 = ([xpcLocs.t0]-xpcLocs(1).t0)*1e9;
     e = sqrt(mean((diff(asicSyncLocs2-xpcSyncLocs2).^2)));
     syncErr = min(syncErr,e);
-    fprintf('rms=%f\t',e);
     
     if(verbose)
         %%
+        fprintf('%d/%d\t',frameNum,nframes);
+        fprintf('scaleFactor=%f\t',scaleFactor);
+        fprintf('#XPC=%d\t',length(xpcLocs));
+        fprintf('#X0=%d\t',length(x0Data));
+        fprintf('rms=%f\t',e);
+        
         figure(3431);
         subplot(211)
         plot(diff(xpcSyncLocs));
@@ -83,7 +85,7 @@ for frameNum=1:nframes
         legend('XPC','ASIC')
     end
     if(e>10)
-        fprintf('SKIPPED\n');
+        if(verbose),fprintf('SKIPPED\n');end
         continue;
     end
     %% sync from v-syncs
@@ -147,7 +149,7 @@ for frameNum=1:nframes
     
     ivsArr=[ivsArr ivs];%#ok
     
-    fprintf('done\n');
+    if(verbose),fprintf('done\n');end
     
 end
 
