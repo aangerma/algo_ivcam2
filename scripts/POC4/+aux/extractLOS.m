@@ -49,19 +49,19 @@ case 'poc4l_mc_msync'
 end
 if(~isfield(params.fa,'scale'))
     params.fa.scale = 2/diff(minmax(FA_LOS_filterd));
-    fprintf('\nparams.fa.scale: %f\n',params.fa.scale);
+    if(verbose),fprintff('\nparams.fa.scale: %f\n',params.fa.scale);end
 end
 if(~isfield(params.sa,'scale'))
     params.sa.scale = 2/diff(minmax(SA_LOS_filterd));
-    fprintf('params.sa.scale: %f\n',params.sa.scale);
+    if(verbose),fprintff('params.sa.scale: %f\n',params.sa.scale);end
 end
 if(~isfield(params.fa,'offset'))
     params.fa.offset = mean(minmax(FA_LOS_filterd));
-    fprintf('params.fa.offset: %f\n',params.fa.offset);
+    if(verbose),fprintff('params.fa.offset: %f\n',params.fa.offset);end
 end
 if(~isfield(params.sa,'offset'))
     params.sa.offset = mean(minmax(SA_LOS_filterd));
-    fprintf('params.sa.offset: %f\n',params.sa.offset);
+    if(verbose),fprintff('params.sa.offset: %f\n',params.sa.offset);end
 end
 FA_LOS_filterd = (FA_LOS_filterd - params.fa.offset)*params.fa.scale;
 SA_LOS_filterd = (SA_LOS_filterd - params.sa.offset)*params.sa.scale;
