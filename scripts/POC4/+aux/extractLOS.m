@@ -80,14 +80,16 @@ fs2=0.5/dt;
 vout=vin;
 for i=1:size(p.filt,1)
     f = p.filt(i,:);
-    if(f(1)==0)%lowpass
+    if(f(1)==0 && f(2)==0)
+        continue;
+    elseif(f(1)==0)%lowpass
         [b,a]=butter(2,f(2)/fs2,'low');
     elseif(f(2)==0)%highpass
         [b,a]=butter(2,f(1)/fs2,'high');
     elseif(f(1)>f(2))%band-stop
         [b,a]=butter(1,fliplr(f)/fs2,'stop');
     else%band pass
-        [b,a]=butter(2,f/fs2);
+        [b,a]=butter(1,f/fs2);
     end
     vout=aux.FiltFiltM(b,a,vout);
 end
