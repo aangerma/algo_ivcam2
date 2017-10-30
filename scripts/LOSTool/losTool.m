@@ -15,19 +15,20 @@ end
 ivsArr = cellfun(@(ivsFilename) io.readIVS(ivsFilename),ivsFilenames,'UniformOutput',0);
 ivsArr = [ivsArr{:}];
 end
+if length(ivsArr) < 2
     error('losTool need at least 2 ivses to run on');
 end
-ivsArr = cellfun(@(ivsFilename) io.readIVS(ivsFilename),ivsFilenames,'UniformOutput',0);
-
+if verbose
 fprintf('search for slow channel delay and fast error...');
-[slowChDelay,~,errF] = Calibration.aux.mSyncerPipe(ivsArr{1},[],verbose);
+end
+[slowChDelay,~,errF] = Calibration.aux.mSyncerPipe(ivsArr(1),[],verbose);
 if verbose
     fprintf('slow channel delay = %d\n', slowChDelay)
     fprintf('generet IR images...')
-    figure(11111);imagesc(Utils.raw2slImg(ivsArr{minI},slowChDelay));colormap gray;title('Best Scaneline Image')
+    figure(11111);imagesc(Utils.raw2slImg(ivsArr(minI),slowChDelay));colormap gray;title('Best Scaneline Image')
 end
 sz = [1024 1024];
-irArr = cellfun(@(ivs) Utils.raw2img(ivs,slowChDelay,sz),ivsArr,'UniformOutput',0);
+irArr = arrayfun(@(i) Utils.raw2img(ivsArr(i),slowChDelay,sz),1:length(ivsArr),'UniformOutput',0);
 
 indxMat=Utils.indx2col(sz,[3 3]);
 for i = 1:length(irArr)
@@ -41,12 +42,12 @@ badRowsClean(1:find(~badRows,1))=true;
 badRowsClean(find(~badRows,1,'last'):end)=true;
 irbox(badRowsClean,:,:)=[];
 mm = prctile(irbox(:),[10 90]);
-irbox=(irbox-mm(1))/diff(mm);
-warning off;
+irbox=max(0,min(1,(irbox-mm(1))/diff(mm)));
+warning('off','vision:calibrate:boardShouldBeAsymmetric');
 [imagePoints,bsz] = arrayfun(@(i) detectCheckerboardPoints(irbox(:,:,i)),1:size(irbox,3),'UniformOutput',0);
-warning on;
 
-if isempty(bsz{1})
+
+if isempty(imagePoints{1})
     error('cant find checker board point!!!')
 end
 if(size(unique(reshape(cell2mat(bsz),2,[])','rows'),1)~=1)
