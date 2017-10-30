@@ -3,7 +3,7 @@ function [depthOut] = dnnExact(dFeatures)
 %through the net. Should replicate the results viewed in tensorflow.
 
 
-weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\depth_NN_weights.mat';
+weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\depth_NN_no_conf_weighting.mat';
 weights = load(weight_file_path);
 
 [height,width,~] = size(dFeatures);
@@ -21,7 +21,10 @@ for i = 1:n_depth_filters
     depthFeatures(:,:,i) = conv2(depthIn,flip_dims_1_2(weights.depth_filters_w(:,:,i)),'valid');
 end
 
+
 dFeatures = cat(3,dFeatures(:,:,1:14),confFeature,depthFeatures);
+dFeatures(dFeatures < 0) = 0;
+
 
 n_features = 22;
 n_pixels = height*width;

@@ -1,7 +1,7 @@
 %% LOAD FILES
 clear
 N_RUNS = 100;
-mainDir = '\\invcam322\ohad\data\lidar\NNdataset\MPI-Sintel-complete\training\';
+mainDir = 'X:\Data\IvCam2\NN\NNdataset\MPI-Sintel-complete\training\';
 %%
 albdoFiles =dirRecursive(fullfile(mainDir,'albedo'),'*.png');
 depthFiles = strrep(strrep(albdoFiles,fullfile(mainDir,'albedo'),fullfile(mainDir,'depth')),'.png','.dpt');
@@ -61,5 +61,9 @@ for i=1:N_RUNS
 
 end
 
-save(fullfile(mainDir,'pipeOut.mat'),'results','-v7.3');    
+% save(fullfile(mainDir,'pipeOut.mat'),'results','-v7.3');    
  
+
+
+
+

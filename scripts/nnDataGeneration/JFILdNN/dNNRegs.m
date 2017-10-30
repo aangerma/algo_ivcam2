@@ -2,7 +2,8 @@ function regsPlusDNN = dNNRegs(regs)
 % This function configurate the regs calculated on tensorflow.
 
 %% The weights as extracted from tensorflow:
-weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\depth_NN_weights.mat';
+% weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\depth_NN_weights.mat';
+weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\depth_NN_no_conf_weighting.mat';
 weights = load(weight_file_path);
 %% Set the weights in the write configuration regs
 % Under featureExtrationD:
