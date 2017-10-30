@@ -41,6 +41,7 @@ while(true)
         fprintff('.');
     end
     dx = eB-ei;
+    dx(isinf(ei))=0;    
     dx=dx/norm(dx)*p.xStep;
     %LINE SEARCH BACKTRACKING
     eL = inf;

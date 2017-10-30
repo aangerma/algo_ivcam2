@@ -1,6 +1,7 @@
 function [delayF,delayS,errS] = mSyncerPipe(ivs,regs,verbose)
 y = double(ivs.xy(2,:));
-winSz = round(length(y)/maxind(abs(fft(y)))*.5);
+fy = abs(fft(y-mean(y)));
+winSz = round(length(y)/maxind(fy(1:floor(length(fy)/2)))*.5);
 y=conv(y,fspecial('gaussian',[1 winSz],winSz/5),'same');
 %%
 c = round(crossing([],y,mean(y)));
