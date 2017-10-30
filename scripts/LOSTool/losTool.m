@@ -1,15 +1,20 @@
-function [errF, errSx, errSy] = losTool(baseDir,verbose)
+function [errF, errSx, errSy] = losTool(ivsInput,verbose)
 %mcc -m losTool.m -d \\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4RangeFinder\
 if(~exist('verbose','var'))
     verbose = false;
 end
-ivsFilenames = dirRecursive(baseDir,'*.ivs');
-
+if(isstruct(ivsInput))
+    ivsArr = ivsInput;
+else
+ivsFilenames = dirRecursive(ivsInput,'*.ivs');
 if verbose
-    fprintf('losToolSlowAx running on folder:\n\n%s\n\n', baseDir)
+    fprintf('losToolSlowAx running on folder:\n\n%s\n\n', ivsInput)
     fprintf('%d ivs files found\n reading ivses...\n',length(ivsFilenames))
 end
-if length(ivsFilenames) < 2
+
+ivsArr = cellfun(@(ivsFilename) io.readIVS(ivsFilename),ivsFilenames,'UniformOutput',0);
+ivsArr = [ivsArr{:}];
+end
     error('losTool need at least 2 ivses to run on');
 end
 ivsArr = cellfun(@(ivsFilename) io.readIVS(ivsFilename),ivsFilenames,'UniformOutput',0);
