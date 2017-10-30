@@ -99,7 +99,7 @@ abs([FRMWmarginB]-[FRMWmarginT]) < [FRMWyres]
 %range finder bypass 
 [GNRLrangeFinder]==0 | ( [RASTbiltBypass] & [CBUFbypass] )
 %range finder template length
-[GNRLrangeFinder]==0 |  any([GNRLtmplLength]==[1024 2048] )
+[GNRLrangeFinder]==0 |  any([GNRLtmplLength]==[848 1024 2048] )
 
 %code length must be even
 mod([GNRLcodeLength],2)==0

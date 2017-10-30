@@ -55,7 +55,7 @@ if(mean(vec(irB.*(linspace(-1,1,size(irB,1)))'))<0)
 end
 irB=imclose(irB,ones(floor(size(irB,1)/4),1));%remove small gaps
 zeroIfEmpty = @(x) iff(isempty(x),0,x);
-c = arrayfun(@(i) zeroIfEmpty(find(irB(:,i),1)),1:size(irB));%find crossing
+c = arrayfun(@(i) zeroIfEmpty(find(irB(:,i),1)),1:size(irB,2));%find crossing
 % err = var(c);
 err = mean((c-(size(ir,1)-1)/2).^2);
 
