@@ -8,9 +8,9 @@
 
 clear
 N_IMAGES = 1;
-addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\source\IVCAM\Algo\LIDAR'))
-addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\source\IVCAM\Algo\Common'))
-mainDir = '\\invcam322\data\lidar\NNdataset\MPI-Sintel-complete\training\';
+addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\git\ivcam2.0'))
+addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\git\AlgoCommon\Common'))
+mainDir = 'X:\Data\IvCam2\NN\NNdataset\MPI-Sintel-complete\training\';
 %
 albdoFiles =dirRecursive(fullfile(mainDir,'albedo'),'*.png');
 depthFiles = strrep(strrep(albdoFiles,fullfile(mainDir,'albedo'),fullfile(mainDir,'depth')),'.png','.dpt');
@@ -63,7 +63,7 @@ for i= 1:N_IMAGES
 end
 % save('X:\Data\IvCam2\NN\pipeOut.mat','results','-v7.3');    
 
-% Evaluate it
+%% Evaluate it
 % load('X:\Users\tmund\New folder\pipeOut.mat');    
 fp20Error = zeros(N_IMAGES,480,640);
 valid = zeros(N_IMAGES,480,640);
@@ -71,7 +71,7 @@ nnNorm = single(1/64000);
 reTh = 0.1;
 mdreClose = zeros(N_IMAGES,3);
 mdreHopeful = zeros(N_IMAGES,3);
-confWeights = true;
+confWeights = false;
 for i=1:N_IMAGES
     gtDepth = single(results(i).gt.zImg);
     conf = ones(size(results(i).cImg));

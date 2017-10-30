@@ -215,7 +215,7 @@ else
     
     
     C = 299.792458;
-    dImg = rtdImg/C;
+    dImg = rtdImg/C; % Round Trip Time
     dImg = dImg + randn(size(dImg))*double(regs.EPTG.sampleJitter);
     dvct = griddata(angxg,angyg,dImg,double(angx),double(angy));
 
@@ -761,7 +761,7 @@ function imgot=imresize_(imgin,szot)
 szin = size(imgin);
 [yin,xin]=ndgrid(linspace(0,1,szin(1)),linspace(0,1,szin(2)));
 [yot,xot]=ndgrid(linspace(0,1,szot(1)),linspace(0,1,szot(2)));
-imgot=interp2(xin,yin,imgin,xot,yot);
+imgot=interp2(xin,yin,imgin,xot,yot,'nearest'); %tmund - nearest neighbor method seems better for learning depth across the edges.  
 end
 
 

@@ -1,4 +1,4 @@
-function [dImgFil, iImgFil, cImgFil,nnfeatures] = JFIL(pipeOutData,regs,luts,lgr,traceOutDir)
+function [dImgFil, iImgFil, cImgFil,nnfeatures,dNNOutput,iNNOutput] = JFIL(pipeOutData,regs,luts,lgr,traceOutDir)
 
 lgr.print2file('\n\t------- JFIL -------\n');
 
@@ -91,6 +91,8 @@ else
         jStream = Pipe.JFIL.dnn        (jStream,  regs, luts, 'dnn', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         
+        dNNOutput = jStream.depth;
+        
 %         if ~isempty(lgrImgPixIndx)
 %             [r,c] = ind2sub(size(jStream.depth),lgrImgPixIndx);
 %             lgr.print2file(sprintf('\tjStream.iFeatures (14 values of pixel %d) = %s\n',lgrImgPixIndx,...
@@ -98,6 +100,9 @@ else
 %         end
         jStream = Pipe.JFIL.inn        (jStream,  regs, luts, 'inn', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
+        
+        iNNOutput = jStream.ir;
+        
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'bilt3', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         jStream = Pipe.JFIL.gradient    (jStream, regs, luts, 'grad2', lgr,traceOutDir);
@@ -108,8 +113,8 @@ else
         nnfeatures.i = jStream.iFeatures;
         jStream = Pipe.JFIL.irShading       (jStream,  regs, luts, 'irShading', lgr,traceOutDir);
     end
-        jStream = Pipe.JFIL.gamma       (jStream,  regs, luts, 'gamma', lgr,traceOutDir);
-        Pipe.JFIL.printjStream(lgr,jStream);
+    jStream = Pipe.JFIL.gamma       (jStream,  regs, luts, 'gamma', lgr,traceOutDir);
+    Pipe.JFIL.printjStream(lgr,jStream);
     % Output
     dImgFil = jStream.depth;
     iImgFil = jStream.ir;
