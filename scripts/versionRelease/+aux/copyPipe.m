@@ -53,7 +53,7 @@ fid = fopen(fullfile(baseDst,'setPath.m'),'w');
 
 
 fprintf(fid,'function  setPath()\n');
-fprintf(fid,'newIncPath = [pathdef '';'' cd '';'' genpath(fullfile(cd,''AlgoCommon%cCommon'')) '';'' fullfile(cd,''ivcam20'')];\n',filesep);
+fprintf(fid,'newIncPath = [pathdef '';'' cd '';'' genpath(fullfile(cd,''AlgoCommon/Common'')) '';'' fullfile(cd,''ivcam20'')];\n');
 fprintf(fid,'path(newIncPath);\n');
 fprintf(fid,'end\n');
 fclose(fid);
