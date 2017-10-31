@@ -30,18 +30,19 @@ end
 sz = [1024 1024];
 irArr = arrayfun(@(i) Utils.raw2img(ivsArr(i),slowChDelay,sz),1:length(ivsArr),'UniformOutput',0);
 
-indxMat=Utils.indx2col(sz,[3 3]);
+indxMat=Utils.indx2col(sz,[5 5]);
 for i = 1:length(irArr)
     irArr{i} = reshape(nanmedian(irArr{i}(indxMat)),sz);
+  
 end
 irbox = reshape([irArr{:}],sz(1),sz(2),[]);
 irbox(isnan(irbox))=0;
-badRows=any(any(irbox==0,2),3);
+badRows=any(sum(irbox==0,2)>10,3);
 badRowsClean = false(size(badRows));
 badRowsClean(1:find(~badRows,1))=true;
 badRowsClean(find(~badRows,1,'last'):end)=true;
 irbox(badRowsClean,:,:)=[];
-mm = prctile(irbox(:),[10 90]);
+mm = prctile(irbox(irbox~=0),[5 95]);
 irbox=max(0,min(1,(irbox-mm(1))/diff(mm)));
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 [imagePoints,bsz] = arrayfun(@(i) detectCheckerboardPoints(irbox(:,:,i)),1:size(irbox,3),'UniformOutput',0);
