@@ -49,10 +49,16 @@ warning('off','vision:calibrate:boardShouldBeAsymmetric');
 
 
 if isempty(imagePoints{1})
-    error('cant find checker board point!!!')
+    warning('cant find checker board point!!!')
+    errSx = inf;
+    errSy = inf;
+    return;
 end
 if(size(unique(reshape(cell2mat(bsz),2,[])','rows'),1)~=1)
-    error('checker board point numbers not equal in all images!!!')
+    warning('checker board point numbers not equal in all images!!!')
+    errSx = inf;
+    errSy = inf;
+    return;
 end
 distfunc = @(v) max(abs([vec(real(v(:)-v(:).')), vec(imag(v(:)-v(:).'))]));
 
