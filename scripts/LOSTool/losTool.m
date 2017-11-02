@@ -25,7 +25,7 @@ end
 if verbose
     fprintf('slow channel delay = %d\n', slowChDelay)
     fprintf('generet IR images...')
-    figure(11111);imagesc(Utils.raw2slImg(ivsArr(minI),slowChDelay));colormap gray;title('Best Scaneline Image')
+    figure(11111);imagesc(Utils.raw2slImg(ivsArr(1),slowChDelay));colormap gray;title('Best Scaneline Image')
 end
 sz = [1024 1024];
 irArr = arrayfun(@(i) Utils.raw2img(ivsArr(i),slowChDelay,sz),1:length(ivsArr),'UniformOutput',0);
@@ -42,11 +42,19 @@ badRowsClean = false(size(badRows));
 badRowsClean(1:find(~badRows,1))=true;
 badRowsClean(find(~badRows,1,'last'):end)=true;
 irbox(badRowsClean,:,:)=[];
+
 mm = prctile(irbox(irbox~=0),[5 95]);
 irbox=max(0,min(1,(irbox-mm(1))/diff(mm)));
-warning('off','vision:calibrate:boardShouldBeAsymmetric');
-[imagePoints,bsz] = arrayfun(@(i) detectCheckerboardPoints(irbox(:,:,i)),1:size(irbox,3),'UniformOutput',0);
 
+warning('off','vision:calibrate:boardShouldBeAsymmetric');
+fitImgCell = arrayfun(@(i) imdilate(imerode(irbox(:,:,i),strel('square',3)),strel('square',3)),1:size(irbox,3),'UniformOutput',0);
+[imagePoints,bsz] = arrayfun(@(i) detectCheckerboardPoints(fitImgCell{i}),1:length(fitImgCell),'UniformOutput',0);
+
+fullBoardSize = [10,14];
+allPointsDetect = arrayfun(@(i) all(bsz{i} == fullBoardSize),1:length(bsz));
+if any(~allPointsDetect)
+    warning(['only ' sum(allPointsDetect) ' out of ' length(allPointsDetect) ' images have all checker points']);
+end
 
 if isempty(imagePoints{1})
    error('cant find checker board point!!!')
@@ -64,7 +72,7 @@ if verbose
     fprintf('slow error X:\n%d\n\nslow error Y:\n%d\n\n fast error:\n%d\n', err(1),err(2))
     pointsYoffset = find(~badRowsClean,1);
     for i = 1:length(irArr)
-        figure(1000+i);imagesc(irArr{i});colormap gray;title(['IVS: ' ivsFilenames{i}]);
+        figure(1000+i);imagesc(irArr{i});colormap gray;title(['IVS: ' num2str(i)]);
         hold on;plot(ip(i,:)+1j*pointsYoffset,'*');hold off
     end
     figure(1000+i+1);plot(ip,'.');title('Point Groups')
