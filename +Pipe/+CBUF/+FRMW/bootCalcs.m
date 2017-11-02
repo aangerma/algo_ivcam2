@@ -12,7 +12,7 @@ MAX_BUFFER_SIZE = min(MAX_BUFFER_SIZE,double(regs.GNRL.imgHsize-1));
 BUFFER_TOP_MARGIN=10;
 
 MAX_BUFFER_SIZE = MAX_BUFFER_SIZE-BUFFER_TOP_MARGIN;
-BUFFER_SIZE_CORRECTION = 2;
+BUFFER_SIZE_CORRECTION = 4;
 
 autogenRegs.CBUF.xBitShifts =uint8(ceil(log2(double(regs.GNRL.imgHsize-1)))-4);
 n =  bitshift(double(regs.GNRL.imgHsize-1),-int16(autogenRegs.CBUF.xBitShifts))+1;
@@ -21,21 +21,23 @@ if(regs.FRMW.cbufConstLUT || regs.GNRL.rangeFinder)
     lutData = ones(1,n)*(MAX_BUFFER_SIZE);
 else
     %%
-        xPixCross = bitshift((0:n-1),autogenRegs.CBUF.xBitShifts);
-        %[~,yMid] = ang2xy([-2047 0 2047],[0 0 0],regs,luts);
-        [~,~,~,yMid] = Pipe.DIGG.ang2xy([-2047 0 2047],[0 0 0],regs,Logger(),[]);
-        yMid = round(mean(yMid));
-        [angxCross,~] = xy2ang(xPixCross,ones(size(xPixCross))*yMid,regs);
-        angStep = 8;
-        [angxQ,angyQ] = meshgrid(angxCross,int16(-2^11-1:angStep:2^11-1));
-        [~,~,x,~] = Pipe.DIGG.ang2xy(angxQ,angyQ,regs,Logger(),[]);
-        x = reshape(x,size(angxQ));
-        
-        lutData = max(x)-min(x)+1+BUFFER_SIZE_CORRECTION;
-        if(any(lutData>MAX_BUFFER_SIZE))
-            error('bad configuration! scan curve is too big');
-        end
-end   
+    xPixCross = bitshift((0:n-1),autogenRegs.CBUF.xBitShifts);
+    %[~,yMid] = ang2xy([-2047 0 2047],[0 0 0],regs,luts);
+    [~,~,~,yMid] = Pipe.DIGG.ang2xy([-2047 0 2047],[0 0 0],regs,Logger(),[]);
+    yMid = round(mean(yMid));
+    [angxCross,~] = xy2ang(xPixCross,ones(size(xPixCross))*yMid,regs);
+    angStep = 8;
+    [angxQ,angyQ] = meshgrid(angxCross,int16(-2^11-1:angStep:2^11-1));
+    [~,~,x,y] = Pipe.DIGG.ang2xy(angxQ,angyQ,regs,Logger(),[]);
+    x = reshape(x,size(angxQ));
+    y = reshape(y,size(angyQ));
+    
+    lutData = max(x.*(y>=0 & y<regs.GNRL.imgVsize))-min(x+((y<0 | y>regs.GNRL.imgVsize)*10000))+1+BUFFER_SIZE_CORRECTION;
+%     lutData = max(x)-min(x)+1+BUFFER_SIZE_CORRECTION;
+    if(any(lutData>MAX_BUFFER_SIZE))
+        error('bad configuration! scan curve is too big');
+    end
+end
 % lutData
 autogenRegs.CBUF.xRelease = uint16(zeros(1,16));
 autogenRegs.CBUF.xRelease(1:n) = uint16(round(lutData));
@@ -51,10 +53,10 @@ end
 
 
 % function x=movmax_(v,n)
-% 
+%
 % i=max(1,min(bsxfun(@plus,1:length(v),(0:n)'),numel(v)));
 % x=max(v(i));
-% 
+%
 % end
 
 function [angx,angy] = xy2ang(x,y,regs)
