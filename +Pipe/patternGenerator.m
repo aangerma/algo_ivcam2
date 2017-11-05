@@ -362,7 +362,9 @@ fw.writeUpdated(p.configOutputFilename);
 calibFilename = fullfile(p.outputDir,filesep,'calib.csv');
 fid=fopen(calibFilename,'w');
 fclose(fid);
-
+calibFilename = fullfile(p.outputDir,filesep,'mode.csv');
+fid=fopen(calibFilename,'w');
+fclose(fid);
 
 ivsFilename = fullfile(p.outputDir,filesep,'patternGenerator.ivs');
 io.writeIVS(ivsFilename,ivs);
