@@ -6,22 +6,24 @@ fpShiftBits = 13;%FIXED : 16-(maxval+1); maxval accupies 3 bits because signed!
 
 
 %%
-%bexause all sample rates has the same num freq, we are looking at this
-%problem like the symbolT=1.
+%because all sample rates has the same num freq, we are looking at this
+%problem like the time per symbol is 1 ns.
 baseFreq = 1/double(regs.GNRL.codeLength) ;
 Fs = double(regs.GNRL.sampleRate)/64;
 %%
 frqs=baseFreq.*(1:16);
 while(true)
+    
+frqs(frqs==Fs/2) = [];
 upperFrqs = frqs>Fs/2;
-
 if(nnz(upperFrqs)==0)
     break;
 end
 frqs(upperFrqs)=-frqs(upperFrqs)+Fs;
 frqs = abs(frqs);
 end
-frqs=unique(round(frqs*1e3))/1e3;
+frqs = unique(frqs);
+% frqs=unique(round(frqs*1e3))/1e3;
 frqs(frqs==0)=[];
 %%
 bacc = zeros(16,2);
