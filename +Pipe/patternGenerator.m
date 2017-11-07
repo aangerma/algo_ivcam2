@@ -158,12 +158,12 @@ else
     
     %     [yi,xi]=ndgrid(0:oh-1,0:ow-1);
     regs4digg=regs;
-    regs4digg.FRMW.marginL=int16(0);
-    regs4digg.FRMW.marginR=int16(0);
-    regs4digg.FRMW.marginT=int16(0);
-    regs4digg.FRMW.marginB=int16(0);
-    regs4digg.FRMW.gaurdBandH=single(0);
-    regs4digg.FRMW.gaurdBandV=single(0);
+%     regs4digg.FRMW.marginL=int16(0);
+%     regs4digg.FRMW.marginR=int16(0);
+%     regs4digg.FRMW.marginT=int16(0);
+%     regs4digg.FRMW.marginB=int16(0);
+%     regs4digg.FRMW.gaurdBandH=single(0);
+%     regs4digg.FRMW.gaurdBandV=single(0);
     regs4digg = Firmware.mergeRegs(regs4digg,Pipe.DIGG.FRMW.getAng2xyCoeffs(regs4digg));
     [regs4digg_,luts4digg_] = Pipe.DIGG.FRMW.buildLensLUT(regs4digg,[]);
     regs4digg = Firmware.mergeRegs(regs4digg,regs4digg_);
