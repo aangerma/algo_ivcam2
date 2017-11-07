@@ -1,3 +1,3 @@
 function n = normc(m)
-n = m./sqrt(sum(m.^2));
+n = bsxfun(@rdivide,m,sqrt(sum(m.^2)));
 end
