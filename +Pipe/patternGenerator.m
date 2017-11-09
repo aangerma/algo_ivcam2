@@ -4,9 +4,9 @@ warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
 [regs,luts] = fw.get();
 
 % check ROI cover
- if ~isROICovered(regs,luts)
-      error('Bad configuration: scan line not covering all ROI window. To check this ROI-scanline configuration set CBUFbypass = 1.');
- end 
+%  if( ~isROICovered(regs,luts))
+%       error('Bad configuration: scan line not covering all ROI window');
+%  end 
 %
 
 multiFocal = false;
@@ -643,7 +643,7 @@ snrB = double(regs.EPTG.noiseLevel)*snrA;
 
 
 
-assert(regs.GNRL.tmplLength==1024 || regs.GNRL.tmplLength==2048);
+
 %FREQ is always 250Mhz
 txrxMode = iff(regs.MTLB.txSymbolLength,0,1,-1,2);
 sampleFreq = double(regs.GNRL.sampleRate)/regs.MTLB.txSymbolLength;
@@ -778,26 +778,26 @@ end
 mm=minmax(v);
 end
 
-function isCovered = isROICovered(regs,luts)
-% if regs.CBUF.bypass
-%     isCovered = 1;
-%     return;
+% function isCovered = isROICovered(regs,luts)
+% % if regs.CBUF.bypass
+% %     isCovered = 1;
+% %     return;
+% % end
+% roiH = double(regs.GNRL.imgVsize);
+% roiB = double(regs.FRMW.marginB);
+% roiT = roiB + roiH;
+% angy = [-1 -1 -1 1 1 1] * 2047;
+% angx = [-1 0 1 -1 0 1] * 2047;
+% 
+% [xA,yA]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
+% [xA,yA] = Pipe.DIGG.undist(xA,yA,regs,luts,Logger(),[]);  
+% dn = @(x) bitshift(x+2^(double(regs.DIGG.bitshift)-1),-double(regs.DIGG.bitshift));
+% %xA = dn(xA);
+% yA = dn(yA);
+% 
+% if regs.FRMW.yflip
+%   yA = [yA(4:6) yA(1:3)];
 % end
-roiH = double(regs.GNRL.imgVsize);
-roiB = double(regs.FRMW.marginB);
-roiT = roiB + roiH;
-angy = [-1 -1 -1 1 1 1] * 2047;
-angx = [-1 0 1 -1 0 1] * 2047;
-
-[xA,yA]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
-[xA,yA] = Pipe.DIGG.undist(xA,yA,regs,luts,Logger(),[]);  
-dn = @(x) bitshift(x+2^(double(regs.DIGG.bitshift)-1),-double(regs.DIGG.bitshift));
-%xA = dn(xA);
-yA = dn(yA);
-
-if regs.FRMW.yflip
-  yA = [yA(4:6) yA(1:3)];
-end
-isCovered =  ~any(yA(1:3)>roiB | yA(4:6)<roiT);
-
-end
+% isCovered =  ~any(yA(1:3)>roiB | yA(4:6)<roiT);
+% 
+% end
