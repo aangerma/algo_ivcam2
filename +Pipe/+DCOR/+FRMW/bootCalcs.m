@@ -77,6 +77,13 @@ end
 % imagesc(fineTemplates(1:length(kF),:))
 % imagesc(coarseTemplates(1:length(kF_),:))
 autogenLuts.DCOR.templates = [coarseTemplates(:);fineTemplates(:)];
+
+
+%% PSNR
+% this should be calculated offline (not firmware)
+% psnrRegs = Pipe.DCOR.FRMW.genPSNRregs();
+% autogenRegs = Firmware.mergeRegs(autogenRegs,psnrRegs);
+
 %%
 tn=length(   autogenLuts.DCOR.templates);
 assert(tn==64*(256+1024),'bad templates length!')

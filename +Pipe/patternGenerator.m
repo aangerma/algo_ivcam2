@@ -4,9 +4,9 @@ warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
 [regs,luts] = fw.get();
 
 % check ROI cover
- if ~isROICovered(regs,luts)
-      error('Bad configuration: scan line not covering all ROI window. To check this ROI-scanline configuration set CBUFbypass = 1.');
- end 
+%  if( ~isROICovered(regs,luts))
+%       error('Bad configuration: scan line not covering all ROI window');
+%  end 
 %
 
 multiFocal = false;
@@ -158,12 +158,12 @@ else
     
     %     [yi,xi]=ndgrid(0:oh-1,0:ow-1);
     regs4digg=regs;
-    regs4digg.FRMW.marginL=int16(0);
-    regs4digg.FRMW.marginR=int16(0);
-    regs4digg.FRMW.marginT=int16(0);
-    regs4digg.FRMW.marginB=int16(0);
-    regs4digg.FRMW.gaurdBandH=single(0);
-    regs4digg.FRMW.gaurdBandV=single(0);
+%     regs4digg.FRMW.marginL=int16(0);
+%     regs4digg.FRMW.marginR=int16(0);
+%     regs4digg.FRMW.marginT=int16(0);
+%     regs4digg.FRMW.marginB=int16(0);
+%     regs4digg.FRMW.gaurdBandH=single(0);
+%     regs4digg.FRMW.gaurdBandV=single(0);
     regs4digg = Firmware.mergeRegs(regs4digg,Pipe.DIGG.FRMW.getAng2xyCoeffs(regs4digg));
     [regs4digg_,luts4digg_] = Pipe.DIGG.FRMW.buildLensLUT(regs4digg,[]);
     regs4digg = Firmware.mergeRegs(regs4digg,regs4digg_);
@@ -215,7 +215,7 @@ else
     
     
     C = 299.792458;
-    dImg = rtdImg/C;
+    dImg = rtdImg/C; % Round Trip Time
     dImg = dImg + randn(size(dImg))*double(regs.EPTG.sampleJitter);
     dvct = griddata(angxg,angyg,dImg,double(angx),double(angy));
 
@@ -362,7 +362,9 @@ fw.writeUpdated(p.configOutputFilename);
 calibFilename = fullfile(p.outputDir,filesep,'calib.csv');
 fid=fopen(calibFilename,'w');
 fclose(fid);
-
+calibFilename = fullfile(p.outputDir,filesep,'mode.csv');
+fid=fopen(calibFilename,'w');
+fclose(fid);
 
 ivsFilename = fullfile(p.outputDir,filesep,'patternGenerator.ivs');
 io.writeIVS(ivsFilename,ivs);
@@ -641,7 +643,7 @@ snrB = double(regs.EPTG.noiseLevel)*snrA;
 
 
 
-assert(regs.GNRL.tmplLength==1024 || regs.GNRL.tmplLength==2048);
+
 %FREQ is always 250Mhz
 txrxMode = iff(regs.MTLB.txSymbolLength,0,1,-1,2);
 sampleFreq = double(regs.GNRL.sampleRate)/regs.MTLB.txSymbolLength;
@@ -761,7 +763,7 @@ function imgot=imresize_(imgin,szot)
 szin = size(imgin);
 [yin,xin]=ndgrid(linspace(0,1,szin(1)),linspace(0,1,szin(2)));
 [yot,xot]=ndgrid(linspace(0,1,szot(1)),linspace(0,1,szot(2)));
-imgot=interp2(xin,yin,imgin,xot,yot);
+imgot=interp2(xin,yin,imgin,xot,yot,'nearest'); %tmund - nearest neighbor method seems better for learning depth across the edges.  
 end
 
 
@@ -776,26 +778,26 @@ end
 mm=minmax(v);
 end
 
-function isCovered = isROICovered(regs,luts)
-% if regs.CBUF.bypass
-%     isCovered = 1;
-%     return;
+% function isCovered = isROICovered(regs,luts)
+% % if regs.CBUF.bypass
+% %     isCovered = 1;
+% %     return;
+% % end
+% roiH = double(regs.GNRL.imgVsize);
+% roiB = double(regs.FRMW.marginB);
+% roiT = roiB + roiH;
+% angy = [-1 -1 -1 1 1 1] * 2047;
+% angx = [-1 0 1 -1 0 1] * 2047;
+% 
+% [xA,yA]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
+% [xA,yA] = Pipe.DIGG.undist(xA,yA,regs,luts,Logger(),[]);  
+% dn = @(x) bitshift(x+2^(double(regs.DIGG.bitshift)-1),-double(regs.DIGG.bitshift));
+% %xA = dn(xA);
+% yA = dn(yA);
+% 
+% if regs.FRMW.yflip
+%   yA = [yA(4:6) yA(1:3)];
 % end
-roiH = double(regs.GNRL.imgVsize);
-roiB = double(regs.FRMW.marginB);
-roiT = roiB + roiH;
-angy = [-1 -1 -1 1 1 1] * 2047;
-angx = [-1 0 1 -1 0 1] * 2047;
-
-[xA,yA]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
-[xA,yA] = Pipe.DIGG.undist(xA,yA,regs,luts,Logger(),[]);  
-dn = @(x) bitshift(x+2^(double(regs.DIGG.bitshift)-1),-double(regs.DIGG.bitshift));
-%xA = dn(xA);
-yA = dn(yA);
-
-if regs.FRMW.yflip
-  yA = [yA(4:6) yA(1:3)];
-end
-isCovered =  ~any(yA(1:3)>roiB | yA(4:6)<roiT);
-
-end
+% isCovered =  ~any(yA(1:3)>roiB | yA(4:6)<roiT);
+% 
+% end

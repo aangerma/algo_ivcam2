@@ -140,62 +140,62 @@ assert(all(yaddr(:)>=0 & yaddr(:)<=bitshift(32,shift)-1));
 
 end
 
-function [xd,yd]=lensDisplacmentModel(regs)
-N=32;
-%% ================== distortion model ======================
-% https://en.wikipedia.org/wiki/Distortion_(optics)
-
-K = [...
-    1    0   0;
-    0    1   0;
-    0    0   1];
-
-%     actualLens = [... %two last elements are the tangential...
-%         0.0091;
-%         0.0057;
-%         0.3134;
-%         -0.4344;
-%         0.3184;
-%         -0.0817;
-%         0;
-%         0];
-
-actualLens = [... %two last elements are the tangential...
-    -0.0007;
-    0.0485;
-    -0.0270;
-    0.0523;
-    -0.0371;
-    0.0129;
-    0;
-    0];
-
-
-c = actualLens.*double(regs.FRMW.undistLensCurve);
-
-% LUT range is defined on [2:31,2:31] so the bicubic interpolation
-% is applied without padding
-sp = linspace(-1,1,N-2);
-dsp = sp(2)-sp(1);
-sp = [sp(1)-dsp sp sp(end)+dsp];
-[ygrid,xgrid] = ndgrid(sp, sp);
-y = ygrid(:);
-x = xgrid(:);
-
-%barrel/pincushin distort + Tangential distortion
-r = sqrt((x).^2+(y).^2);
-
-A = [r r.^2 r.^3 r.^4 r.^5 r.^6];
-xx = (A*c(1:6)+1).*x + (c(8).*(r.^2+2.*x.^2)+2*c(7).*x.*y);
-yy = (A*c(1:6)+1).*y + (c(7).*(r.^2+2.*y.^2)+2*c(8).*x.*y);
-
-%calibration matrix
-a = K*[xx.';yy.';ones(size(xx.'))];
-xnew = (vec(a(1,:)./a(3,:))+1)*.5;
-ynew = (vec(a(2,:)./a(3,:))+1)*.5;
-xd=reshape(xnew,[N N])*double(regs.GNRL.imgHsize);
-yd=reshape(ynew,[N N])*double(regs.GNRL.imgVsize);
-
-end
+% function [xd,yd]=lensDisplacmentModel(regs)
+% N=32;
+% %% ================== distortion model ======================
+% % https://en.wikipedia.org/wiki/Distortion_(optics)
+% 
+% K = [...
+%     1    0   0;
+%     0    1   0;
+%     0    0   1];
+% 
+% %     actualLens = [... %two last elements are the tangential...
+% %         0.0091;
+% %         0.0057;
+% %         0.3134;
+% %         -0.4344;
+% %         0.3184;
+% %         -0.0817;
+% %         0;
+% %         0];
+% 
+% actualLens = [... %two last elements are the tangential...
+%     -0.0007;
+%     0.0485;
+%     -0.0270;
+%     0.0523;
+%     -0.0371;
+%     0.0129;
+%     0;
+%     0];
+% 
+% 
+% c = actualLens.*double(regs.FRMW.undistLensCurve);
+% 
+% % LUT range is defined on [2:31,2:31] so the bicubic interpolation
+% % is applied without padding
+% sp = linspace(-1,1,N-2);
+% dsp = sp(2)-sp(1);
+% sp = [sp(1)-dsp sp sp(end)+dsp];
+% [ygrid,xgrid] = ndgrid(sp, sp);
+% y = ygrid(:);
+% x = xgrid(:);
+% 
+% %barrel/pincushin distort + Tangential distortion
+% r = sqrt((x).^2+(y).^2);
+% 
+% A = [r r.^2 r.^3 r.^4 r.^5 r.^6];
+% xx = (A*c(1:6)+1).*x + (c(8).*(r.^2+2.*x.^2)+2*c(7).*x.*y);
+% yy = (A*c(1:6)+1).*y + (c(7).*(r.^2+2.*y.^2)+2*c(8).*x.*y);
+% 
+% %calibration matrix
+% a = K*[xx.';yy.';ones(size(xx.'))];
+% xnew = (vec(a(1,:)./a(3,:))+1)*.5;
+% ynew = (vec(a(2,:)./a(3,:))+1)*.5;
+% xd=reshape(xnew,[N N])*double(regs.GNRL.imgHsize);
+% yd=reshape(ynew,[N N])*double(regs.GNRL.imgVsize);
+% 
+% end
 
 

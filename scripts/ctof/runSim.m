@@ -24,7 +24,7 @@ r = r./sqrt(sum(r.^2,2));
 %%
 [d,a]=Simulator.aux.raytrace2d(mdl.f,mdl.v,mdl.a,r,params.sensor.tMat);
 
-grndtrth.rtd = reshape(sum(d,2),[h w]);
+rtd = reshape(sum(d,2),[h w]);
 grndtrth.a = reshape(a,[h w]);
 if(params.verbose>1)
     %%
@@ -40,7 +40,7 @@ end
 
 %% prequizites
 
-tau = grndtrth.rtd/C(); %nsec
+tau = rtd/C(); %nsec
 delayIndx = round(tau/params.system_dt);
 grndtrth.rtdS = delayIndx*params.system_dt*C(); %calculate bined ground truth acording to simulatio bin time
 
@@ -65,9 +65,11 @@ for s=1:nScenarios
     txsignal = interp1((0:length(params.scenario.data{s}.txmod)-1)*params.scenario.dt,params.scenario.data{s}.txmod,ts,'previous',0);
     txsignal = txsignal*params.prjector.power/(hh*ww);
     rwmod = interp1((0:length(params.scenario.data{s}.rxmod)-1)*params.scenario.dt,params.scenario.data{s}.rxmod,ts,'previous',0);
+    rxIntensity = grndtrth.a*min(1,params.sensor.collectionArea./(4*pi*(grndtrth.rtdS/2).^2));
     for p=1:nPatterns
         thisPat = params.scenario.data{s}.pat(:,:,p);
-        rxsignal=delaySum(txsignal,delayIndx,grndtrth.a.*thisPat);
+        
+        rxsignal=delaySum(txsignal,delayIndx,rxIntensity.*thisPat);
         %{
                 rxsignal = zeros(size(txsignal));
                 for i=1:w*h
@@ -90,7 +92,7 @@ for s=1:nScenarios
             fprintf('Generating measurment (%d,%d)/(%d,%d)\n',p,s,nPatterns,nScenarios);
         end
         if(params.verbose>2)
-            ah=plot(ts,txsignal,ts,rxsignal,ts,rwmod,'linewidth',2);
+            ah=plot(ts,txsignal,ts,rxsignal,ts,rwmod*max(txsignal),'linewidth',2);
             set(ah(1),'linewidth',4);
             
             xlabel('time[nsec]');

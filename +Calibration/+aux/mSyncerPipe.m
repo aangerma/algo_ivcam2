@@ -1,6 +1,7 @@
-function [delayF,delayS] = mSyncerPipe(ivs,regs,verbose)
+function [delayF,delayS,errS] = mSyncerPipe(ivs,regs,verbose)
 y = double(ivs.xy(2,:));
-winSz = round(length(y)/maxind(abs(fft(y)))*.5);
+fy = abs(fft(y-mean(y)));
+winSz = round(length(y)/maxind(fy(1:floor(length(fy)/2)))*.5);
 y=conv(y,fspecial('gaussian',[1 winSz],winSz/5),'same');
 %%
 c = round(crossing([],y,mean(y)));
@@ -26,7 +27,7 @@ end
 c=cc(:);
 %%
 vs=double(ivs.slow);
-delayS=crossSync(vs,c,verbose);
+[delayS, errS] = crossSync(vs,c,verbose);
 
 %%
 if(isempty(regs))
@@ -38,15 +39,15 @@ else
     cr = Utils.correlator(vv,kF*2-1);
     peakVal = max(cr)*2/length(kF);
     peakVal=max(peakVal,0);
-    delayF=crossSync(peakVal,c,verbose);
+    [delayF errF] = crossSync(peakVal,c,verbose);
 end
-%%?????????????????????? EMPIRIC TEST???????????
-delayS = delayS+1;
-delayF = delayF+1;
+% % % %%?????????????????????? EMPIRIC TEST???????????
+% % % delayS = delayS+1;
+% % % delayF = delayF+1;
 
 end
 
-function delayOut=crossSync(data,c,verbose)
+function [delayOut , errOut] = crossSync(data,c,verbose)
 
 %%
 dataF = conv(data,fspecial('gaussian',[5 1],2));
@@ -62,39 +63,80 @@ while(true)
     if(all(diff(x)==0))
         break;
     end
-    [y,sl] = arrayfun(@(k) calcErr(circshift(dataF,[0 k]),c),x,'uni',0);
-    y=[y{:}]';
+  
+    runExact = false;
+    if(d<=2)
+        runExact=true;
+    end
     
-    r = x(minind(y));
+    if(runExact)
+        try
+            [err,sl] = arrayfun(@(k) calcErrFine(circshift(dataF,[0 k]),c),x,'uni',0);
+            
+        catch e,
+            warning(['could not find checkerboard image:\n' e.message]);
+            runExact=false;
+        end
+    end
+    
+    if(~runExact)
+            [err,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),c),x,'uni',0);
+    end
+
+    err=[err{:}]';
+    
+    minInd=minind(err);
+    r = x(minInd);
+    if runExact
+        errOut = err(minInd);
+    else
+        errOut = nan;
+    end
     d = floor(d/R*2);
     if(verbose)
-    for i=1:R
-        aa(i)=subplot(2,R,i);
-        imagesc(sl{i},prctile(sl{i}(:),[10 90])+[0 1e-3]);
-    end
-    subplot(2,3,4:6)
-    plot(x,y,'o-');
-    line([r r ],minmax(y),'color','r');
-    axis tight
-    drawnow;
+        for i=1:R
+            aa(i)=subplot(2,R,i);
+            imagesc(sl{i},prctile(sl{i}(:),[10 90])+[0 1e-3]);
+        end
+        subplot(2,3,4:6)
+        plot(x,err,'o-');
+        line([r r ],minmax(err),'color','r');
+        axis tight
+        drawnow;
     end
 end
 delayOut=r;
- if(verbose)
- close(gcf);
- drawnow;
- end
+if(verbose)
+    close(gcf);
+    drawnow;
+end
 end
 
-function [err,im]=calcErr(data,c)
-
-N=1024;
-
+function sl=data2sl(data,c,N)
 sl=arrayfun(@(i) data(c(i):c(i+1)),1:length(c)-1,'uni',0);
 
 sl = cellfun(@(x) interp1(linspace(0,1,length(x)),x,linspace(0,1,N))',sl,'uni',0);
 sl=[sl{:}];
 sl=sl(:,1:floor(size(sl,2)/2)*2);
+end
+
+
+function [err,im]=calcErrFine(data,c)
+
+N=2048;
+sl = data2sl(data,c,N);
+img1=sl(:,1:2:end);
+img2=flipud(sl(:,2:2:end));
+im = reshape([img1;img2],size(sl));
+err = Calibration.aux.edgeUnifomity(im);
+err = err/2;%HD pixel
+end
+
+function [err,im]=calcErrDiff(data,c)
+
+N=1024;
+sl = data2sl(data,c,N);
+
 img1=sl(:,1:2:end);
 img2=flipud(sl(:,2:2:end));
 im = reshape([img1;img2],size(sl));
@@ -107,7 +149,7 @@ mask(N*3/4:end,:)=false;
 
 %   wImg = min(abs(dy1),abs(dy2));
 %   d=d.*wImg;
-  graderr = mean(vec(abs(d(mask))));
+graderr = mean(vec(abs(d(mask))));
 centererr=-nnz(im(floor(size(im,1)/2),:))/size(im,2);
 maskerr=-nnz(mask)/numel(mask);
 

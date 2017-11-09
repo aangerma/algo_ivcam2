@@ -49,19 +49,19 @@ case 'poc4l_mc_msync'
 end
 if(~isfield(params.fa,'scale'))
     params.fa.scale = 2/diff(minmax(FA_LOS_filterd));
-    fprintf('\nparams.fa.scale: %f\n',params.fa.scale);
+    if(verbose),fprintff('\nparams.fa.scale: %f\n',params.fa.scale);end
 end
 if(~isfield(params.sa,'scale'))
     params.sa.scale = 2/diff(minmax(SA_LOS_filterd));
-    fprintf('params.sa.scale: %f\n',params.sa.scale);
+    if(verbose),fprintff('params.sa.scale: %f\n',params.sa.scale);end
 end
 if(~isfield(params.fa,'offset'))
     params.fa.offset = mean(minmax(FA_LOS_filterd));
-    fprintf('params.fa.offset: %f\n',params.fa.offset);
+    if(verbose),fprintff('params.fa.offset: %f\n',params.fa.offset);end
 end
 if(~isfield(params.sa,'offset'))
     params.sa.offset = mean(minmax(SA_LOS_filterd));
-    fprintf('params.sa.offset: %f\n',params.sa.offset);
+    if(verbose),fprintff('params.sa.offset: %f\n',params.sa.offset);end
 end
 FA_LOS_filterd = (FA_LOS_filterd - params.fa.offset)*params.fa.scale;
 SA_LOS_filterd = (SA_LOS_filterd - params.sa.offset)*params.sa.scale;
@@ -80,14 +80,16 @@ fs2=0.5/dt;
 vout=vin;
 for i=1:size(p.filt,1)
     f = p.filt(i,:);
-    if(f(1)==0)%lowpass
+    if(f(1)==0 && f(2)==0)
+        continue;
+    elseif(f(1)==0)%lowpass
         [b,a]=butter(2,f(2)/fs2,'low');
     elseif(f(2)==0)%highpass
         [b,a]=butter(2,f(1)/fs2,'high');
     elseif(f(1)>f(2))%band-stop
         [b,a]=butter(1,fliplr(f)/fs2,'stop');
     else%band pass
-        [b,a]=butter(2,f/fs2);
+        [b,a]=butter(1,f/fs2);
     end
     vout=aux.FiltFiltM(b,a,vout);
 end

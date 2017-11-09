@@ -244,3 +244,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+temp.m
+*.orig
+dbg.mat
