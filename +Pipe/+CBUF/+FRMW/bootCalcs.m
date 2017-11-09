@@ -12,7 +12,7 @@ MAX_BUFFER_SIZE = min(MAX_BUFFER_SIZE,double(regs.GNRL.imgHsize-1));
 BUFFER_TOP_MARGIN=10;
 
 MAX_BUFFER_SIZE = MAX_BUFFER_SIZE-BUFFER_TOP_MARGIN;
-BUFFER_SIZE_CORRECTION = 4;
+MIN_BUFFER_SIZE = 8;
 
 autogenRegs.CBUF.xBitShifts =uint8(ceil(log2(double(regs.GNRL.imgHsize-1)))-4);
 n =  bitshift(double(regs.GNRL.imgHsize-1),-int16(autogenRegs.CBUF.xBitShifts))+1;
@@ -21,22 +21,21 @@ if(regs.FRMW.cbufConstLUT || regs.GNRL.rangeFinder)
     lutData = ones(1,n)*(MAX_BUFFER_SIZE);
 else
     %%
-    xPixCross = bitshift((0:n-1),autogenRegs.CBUF.xBitShifts);
-    %[~,yMid] = ang2xy([-2047 0 2047],[0 0 0],regs,luts);
-    [~,~,~,yMid] = Pipe.DIGG.ang2xy([-2047 0 2047],[0 0 0],regs,Logger(),[]);
-    yMid = round(mean(yMid));
-    [angxCross,~] = xy2ang(xPixCross,ones(size(xPixCross))*yMid,regs);
+    xcrossPix = bitshift((0:n-1),autogenRegs.CBUF.xBitShifts);
+    [xcrossAngQ,~] = xy2ang(xcrossPix,ones(size(xcrossPix))*double(regs.GNRL.imgVsize)/2,regs);
     angStep = 8;
-    [angxQ,angyQ] = meshgrid(angxCross,int16(-2^11-1:angStep:2^11-1));
+    [angyQ,angxQ] = ndgrid(int16(-2^11-1:angStep:2^11-1),xcrossAngQ);
     [~,~,x,y] = Pipe.DIGG.ang2xy(angxQ,angyQ,regs,Logger(),[]);
     x = reshape(x,size(angxQ));
     y = reshape(y,size(angyQ));
     
-    lutData = max(x.*(y>=0 & y<regs.GNRL.imgVsize))-min(x+((y<0 | y>regs.GNRL.imgVsize)*10000))+1+BUFFER_SIZE_CORRECTION;
-%     lutData = max(x)-min(x)+1+BUFFER_SIZE_CORRECTION;
-    if(any(lutData>MAX_BUFFER_SIZE))
-        error('bad configuration! scan curve is too big');
-    end
+    roiMask = (y>=0 & y<regs.GNRL.imgVsize);
+    x(~roiMask)=nan;
+
+%     lutData = max(x.*(y>=0 & y<regs.GNRL.imgVsize))-min(x+((y<0 | y>regs.GNRL.imgVsize)*10000))+1+MIN_BUFFER_SIZE;
+     lutData = max(ceil(nanmax(x)-nanmin(x)),MIN_BUFFER_SIZE);
+     lutData = min(lutData,MAX_BUFFER_SIZE);
+    
 end
 % lutData
 autogenRegs.CBUF.xRelease = uint16(zeros(1,16));
