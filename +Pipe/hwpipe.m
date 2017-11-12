@@ -23,7 +23,7 @@ lgr.print('done(%4.2fsec)\n', toc(localTic));
 %% RAST
 localTic=tic; lgr.print('\tComputing RAST...');
 %xyT = 64/regs.gnr.sampleRate;
-[pipeOut.cma,pipeOut.iImgRAW,pipeOut.aImg,pipeOut.dutyCycle, pipeOut.pipeFlags,pipeOut.pixIndOutOrder, pipeOut.pixRastOutTime ] =...
+[pipeOut.cma,pipeOut.iImgRAW,pipeOut.aImg,pipeOut.dutyCycle, pipeOut.pipeFlags,pipeOut.pixIndOutOrder, pipeOut.pixRastOutTime, pipeOut.rastReports ] =...
     Pipe.RAST.RAST(indata, pipeOut, regs, luts, lgr,traceOutDir);
 lgr.print('done(%4.2fsec)\n', toc(localTic));
 
