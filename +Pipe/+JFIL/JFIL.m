@@ -18,6 +18,8 @@ if(regs.JFIL.bypass)  %% do nothing.
         dImgFil=dImgFil(1);
         iImgFil=iImgFil(1);
         cImgFil=cImgFil(1);
+        dNNOutput = [];
+        iNNOutput = [];
     end
 	    
 else
@@ -47,6 +49,8 @@ else
     if(regs.GNRL.rangeFinder)
         jStream = Pipe.JFIL.maxPool(jStream, regs, luts,'maxPool',lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
+        dNNOutput = [];
+        iNNOutput = [];
     else
         % Filters
         jStream = Pipe.JFIL.gradient    (jStream,  regs, luts, 'grad1', lgr,traceOutDir);
@@ -119,7 +123,7 @@ else
     dImgFil = jStream.depth;
     iImgFil = jStream.ir;
     cImgFil = jStream.conf;
-
+    
     if(regs.MTLB.debug)
         %%
         figKey = 338877;
