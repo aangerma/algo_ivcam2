@@ -1,4 +1,4 @@
-function [dImgFil, iImgFil, cImgFil,nnfeatures,dNNOutput,iNNOutput] = JFIL(pipeOutData,regs,luts,lgr,traceOutDir)
+function [dImgFil, iImgFil, cImgFil,nnfeatures,dNNOutput,iNNOutput,BTStages] = JFIL(pipeOutData,regs,luts,lgr,traceOutDir)
 
 lgr.print2file('\n\t------- JFIL -------\n');
 
@@ -67,9 +67,14 @@ else
         jStream.features.featA=jStream.depth;
 %         lgr.print2file(sprintf('\tjStream.features.featA (1 value of pixel %d) = %X\n',lgrImgPixIndx,...
 %             jStream.features.featA(lgrImgPixIndx)));
-        
+        BTStages.conf = jStream.conf;
+        BTStages.preBT1 = jStream.depth;
+    
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'bilt1', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
+        
+        BTStages.BT1 = jStream.depth;
+        
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'biltIR', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         jStream.features.featB=jStream.depth;
@@ -79,6 +84,8 @@ else
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'bilt2', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
 
+        BTStages.BT2 = jStream.depth;
+            
         jStream.dFeatures = Pipe.JFIL.featureExtrationD(jStream,  regs, luts, 'dFeatures', lgr,traceOutDir);
         jStream.iFeatures = Pipe.JFIL.featureExtrationI(jStream,  regs, luts, 'iFeatures', lgr,traceOutDir);
         
@@ -105,6 +112,9 @@ else
         
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'bilt3', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
+        
+        BTStages.BT3 = jStream.depth;
+        
         jStream = Pipe.JFIL.gradient    (jStream, regs, luts, 'grad2', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         jStream = Pipe.JFIL.invalidation(jStream, regs, luts, 'invalidation', lgr,traceOutDir);

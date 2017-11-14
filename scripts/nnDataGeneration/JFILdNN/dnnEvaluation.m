@@ -42,13 +42,15 @@ dt = int16(13419); x0 = int16(-3528); % Activation maps [minPrev,maxPrev]->[-128
 regs.DEST.confactIn = [x0,dt];
 dt = int16(255); x0 = int16(-128);% Activation maps [-128,127]->[0,255]. dt and x0 are calculated 
 regs.DEST.confactOt = [x0,dt];
-regs = dNNRegs(regs);
+regs = nnRegs(regs);
+regs = btRegs(regs);
 
 rng(12345);
-ind = randperm(nframes,N_IMAGES);
+ind = randperm(nframes,N_IMAGES+100);
 % Prepare the data
 results=[];
 for i= 1:N_IMAGES
+    i = 42
     zIm = max(0,depth_read(depthFiles{ind(i)})*1000); %mm
     aIm = mean(imread(albdoFiles{ind(i)}),3)/255; %[0 1]
     
