@@ -1,9 +1,6 @@
 function [pipeOutData] = autopipe(varargin)
 % autoPipe
 
-
-
-
 %% input handle
 p = inputHandler(varargin{:});
 
@@ -117,6 +114,15 @@ if(p.rewrite)
     fw.writeUpdated(p.modeFile);
     fw.writeUpdated(p.calibFile);
 end
+
+%%% tmund write my own regs %%%
+% perosnalRegs = getPersonalRegs();
+% fw.setRegs(perosnalRegs,p.configFile);
+% fw.writeUpdated(p.configFile);
+% calibFilename = fullfile(p.outputDir,filesep,'calib.csv');
+% fid=fopen(calibFilename,'w');
+% fclose(fid);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [regs,luts] = fw.get();
 
 

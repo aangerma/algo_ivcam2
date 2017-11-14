@@ -1,4 +1,5 @@
-function [ cmaOut, irOut, nestOut, dutyCycle, flagsOut,pixIndOutOrder,pixRastOutTime] = RAST( inData, pipeData, regs, ~, lgr,traceOutDir)
+function [ cmaOut, irOut, nestOut, dutyCycle, flagsOut,pixIndOutOrder,pixRastOutTime, reports] = RAST( inData, pipeData, regs, ~, lgr,traceOutDir)
+
 
 lgr.print2file('\n\t------- RAST -------\n');
 
@@ -43,8 +44,11 @@ if (~isempty(yNonMonoPos))
     %figure(7737); imagesc(conv2(double(irC ~= 0), ones(3)/9,'same')<0.3);
 end
 
+reports = struct();
+
 [pcqChunks, pcqXY, pcqIR, pcqNest, pcqOffset, pcqFlags, pcqStats] = ...
     Pipe.RAST.PCQ(fastCh, xy, slowCh, nest, flags, mRegs);
+reports.pcq = pcqStats;
 
 assert(max([0;pcqChunks(:)]) <= 1, 'failed: Binary samples');
 
@@ -59,6 +63,7 @@ end
 
 [cmaA, cmaC, irA, irC, irMin, irMax, nestOut, flagsCmac, pxOutCmac, statsCmac] = ...
     Pipe.RAST.CMAC(pcqChunks, pcqXY, pcqIR, pcqNest, pcqOffset, pcqFlags, pcqStats.timestamps, mRegs);
+reports.cmac = statsCmac;
 assert(max(cmaA(:)) <= regs.RAST.cmaMaxSamples, 'failed: cma max samples in CMAC');
 assert(max(cmaC(:)) <= regs.RAST.cmaMaxSamples, 'failed: cma max samples in CMAC');
 
@@ -139,6 +144,8 @@ cmaPx = Pipe.RAST.cmaNorm(cmaA, cmaC, pxOutCmac, mLuts);
 assert(max(cmaPx(:))<128); %normalizer outputs 7b
 
 [cmaOut, irMM, flagsOut, pxOut, si, fStats, cmafWin] = Pipe.RAST.cmaFilter(cmaPx, irCmac, flagsCmac, statsCmac.timestamps, pxOutCmac, mRegs, mLuts);
+reports.filter = fStats;
+reports.filterWin = cmafWin;
 cmafWin.xy = reshape(cmafWin.xy, 2, 9, []);
 %assert(all((sum(cmafWin.w)==256)));
 assert(max(cmaOut(:))<128);

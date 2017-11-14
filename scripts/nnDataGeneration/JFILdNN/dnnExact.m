@@ -3,7 +3,7 @@ function [depthOut] = dnnExact(dFeatures)
 %through the net. Should replicate the results viewed in tensorflow.
 
 
-weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\depth_NN_no_conf_weighting.mat';
+weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\depth_NN_fixed_29_10.mat';
 weights = load(weight_file_path);
 
 [height,width,~] = size(dFeatures);

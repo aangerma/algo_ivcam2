@@ -44,7 +44,7 @@ lgr.print('done(%4.2fsec)\n', toc(localTic));
 
 %% JFIL
 localTic=tic; lgr.print('\tComputing JFIL...');
-[pipeOut.zImg,pipeOut.iImg, pipeOut.cImg,pipeOut.nnfeatures,pipeOut.dNNOutput,pipeOut.iNNOutput] = Pipe.JFIL.JFIL(pipeOut,regs,luts,lgr,traceOutDir);
+[pipeOut.zImg,pipeOut.iImg, pipeOut.cImg,pipeOut.nnfeatures,pipeOut.dNNOutput,pipeOut.iNNOutput,pipeOut.BTStages] = Pipe.JFIL.JFIL(pipeOut,regs,luts,lgr,traceOutDir);
 lgr.print('done(%4.2fsec)\n', toc(localTic));
 
 %% STAT

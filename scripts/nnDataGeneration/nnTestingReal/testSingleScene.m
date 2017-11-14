@@ -1,20 +1,5 @@
-% REGS SET
-regs.FRMW.xres = uint16(640);
-regs.FRMW.yres = uint16(480);
-regs.JFIL.dnnBypass = false;
-regs.JFIL.innBypass = false;
-
-% Confidence Regs
-regs.DEST.confIRbitshift = uint8(6); % confIRbitshift determines which 6 bits to use from the 
-regs.DEST.confw1 = [int8(30),int8(0),int8(127),int8(-56)]; % Calculated scaled weights value. 
-regs.DEST.confw2 = [int8(0),int8(0),int8(0),int8(0)]; % Other weights path should be ignored.
-regs.DEST.confv = [int8(0),int8(0),int8(0),int8(0)]; % All biases are zero.
-regs.DEST.confq = [int8(1),int8(0)];% Keep the first channel. Zero the second.
-dt = int16(13419); x0 = int16(-3528); % Activation maps [minPrev,maxPrev]->[-128,127]. dt and 
-regs.DEST.confactIn = [x0,dt];
-dt = int16(255); x0 = int16(-128);% Activation maps [-128,127]->[0,255]. dt and x0 are calculated 
-regs.DEST.confactOt = [x0,dt];
-regs = dNNRegs(regs);
+addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\git\ivcam2.0'))
+addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\git\AlgoCommon\Common'))
 
 % fw.setRegs(regs,p.configOutputFilename);
 % fw.writeUpdated(p.configOutputFilename);
@@ -25,3 +10,21 @@ regs = dNNRegs(regs);
 
 ivs = 'X:\Data\IvCam2\NN\capturedScenes\Sagy\record_04.ivs';
 pout = Pipe.autopipe(ivs,'verbose',0,'viewResults',0,'saveresults',0);
+
+% nnNorm = single(1/64000);1
+
+% netInputDepth =  Utils.fp20('to',pout.nnfeatures.d(:,:,1))/nnNorm;
+% netOutputDepth = pout.dNNOutput;
+% netOutputExpected = dnnExact(Utils.fp20('to',pout.nnfeatures.d));
+% 
+% ivbin_viewer(netInputDepth,netOutputDepth)
+% ivbin_viewer(netOutputDepth,netOutputExpected)
+
+
+%% View BT results from Tensorflow
+BTStages = pout.BTStages;
+ivbin_viewer({BTStages.preBT1,BTStages.BT1,BTStages.BT2,pout.dNNOutput,BTStages.BT3,pout.zImg})
+%% 
+BTStages_tf_clipped = load('X:\Data\IvCam2\NN\capturedScenes\Sagy\BTStages_tf_clipped.mat');
+BTStages_tf_comb = load('X:\Data\IvCam2\NN\capturedScenes\Sagy\BTStages_tf_comb.mat');
+ivbin_viewer({BTStages_tf_comb.preBT1,BTStages_tf_comb.BT1,BTStages_tf_comb.BT2,BTStages_tf_comb.BT2_nn,BTStages_tf_comb.BT3,BTStages_tf_comb.BT3_initial})

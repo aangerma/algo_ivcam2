@@ -49,6 +49,12 @@ regs.DEST.confactOt = [x0,dt];
 % Feature extraction and NN
 regs.JFIL.dFeaturesConfThr = uint8(0);
 
+
+% dnn regs
+regs = nnRegs(regs); 
+% bilateral regs
+regs = btRegs(regs);
+
 rng(12345);
 ind = randperm(nframes,N_RUNS);
 
