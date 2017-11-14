@@ -42,15 +42,15 @@ else
     [delayF errF] = crossSync(peakVal,c,verbose);
 end
 % % % %%?????????????????????? EMPIRIC TEST???????????
-% % % delayS = delayS+1;
-% % % delayF = delayF+1;
+% % delayS = delayS+1;
+% % delayF = delayF+1;
 
 end
 
 function [delayOut , errOut] = crossSync(data,c,verbose)
 
 %%
-dataF = conv(data,fspecial('gaussian',[5 1],2));
+dataF = data;%conv(data,fspecial('gaussian',[5 1],2),'valid');
 n = round(mean(diff(c)))*2;
 R=5;
 r = n/2;
@@ -129,7 +129,6 @@ img1=sl(:,1:2:end);
 img2=flipud(sl(:,2:2:end));
 im = reshape([img1;img2],size(sl));
 err = Calibration.aux.edgeUnifomity(im);
-err = err/2;%HD pixel
 end
 
 function [err,im]=calcErrDiff(data,c)
