@@ -71,26 +71,29 @@ else
             grid minor
             
         end
-        if(~all(x>=actBufLeftPointer))
-            txt=sprintf('CBUF underflow (%d, Assigned buffer is not big enough to accomodate scanline curve)',nnz(x<actBufLeftPointer));
+        underflowInd = (x<actBufLeftPointer);
+        if(nnz(underflowInd)>0)
+            txt=sprintf('CBUF underflow (%d, Assigned buffer is not big enough to accomodate scanline curve)',nnz(underflowInd));
             lgr.print2file('\t***%s***\n',txt);
-            if(regs.MTLB.assertionStop)
-                error(txt);
-            else
-                warning(txt);
-            end
+            
+            
+            %discard underflow pixels
+            zImgRAW(underflowInd) = uint16(0);
+            iImgRAW(underflowInd) = uint16(0);
+            cImgRAW(underflowInd) = uint8(0);
         end
-        if(~all(bufRightPointer-actBufLeftPointer<=MAX_BUFFER_SIZE))
-            txt=sprintf('CBUF overflow (%d slow axis is changing too fast)',nnz(bufRightPointer-actBufLeftPointer>MAX_BUFFER_SIZE));
+        overflowInd = (bufRightPointer-actBufLeftPointer>MAX_BUFFER_SIZE);
+        if(any(overflowInd))
+            txt=sprintf('CBUF overflow (%d slow axis is changing too fast)',nnz(overflowInd));
             lgr.print2file('\t***%s***\n',txt);
-            if(regs.MTLB.assertionStop)
-                error(txt);
-            else
-                warning(txt);
-            end
+            
+            %discard overflow pixels
+            zImgRAW(overflowInd) = uint16(0);
+            iImgRAW(overflowInd) = uint16(0);
+            cImgRAW(overflowInd) = uint8(0);
         end
         lgr.print2file('scan coverege: %.2f%%\nunderflow margin: %d\noverflow margin: %d\n',...
-            length(pflow.pixIndOutOrder)/numel(pflow.iImgRAW)*100,...
+            length(pflow.pixIndOutOrder)/numel(iImgRAW)*100,...
             min(x(find(x>MAX_BUFFER_SIZE,1):end)-actBufLeftPointer(find(x>MAX_BUFFER_SIZE,1):end)),...
             MAX_BUFFER_SIZE-max(x-actBufLeftPointer));
         

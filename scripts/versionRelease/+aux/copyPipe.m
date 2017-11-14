@@ -21,7 +21,8 @@ depFuncs = [depFuncs;dirFiles(fullfile(baseSrc,lidarFldrName,'+Pipe',filesep,'LU
 f = dirRecursive(fullfile(baseSrc,lidarFldrName),'compile_mex.m');
 depFuncs = [depFuncs;f{1}];
 depFuncs = [depFuncs;which('dirRecursive')];
-
+f = dirRecursive(fullfile(baseSrc,lidarFldrName),'setpath*.m');
+depFuncs = [depFuncs;f{1}];
 f = dirRecursive(fullfile(baseSrc,lidarFldrName,'+Utils','src'));
 depFuncs = [depFuncs;f];
 
@@ -42,21 +43,6 @@ for i=1:length(depFuncs)
     fprintf('%s -- > %s\n',depFuncs{i},destfn);
     copyfile(depFuncs{i},destfn)
 end
-
-fid = fopen(fullfile(baseDst,'entrypoint.m'),'w');
-fprintf(fid,'function varargout = entrypoint(varargin)\n');
-fprintf(fid,'varargout{:} = %s(varargin{:});\n',pipeEntryFunction);
-fprintf(fid,'end\n');
-fclose(fid);
-
-fid = fopen(fullfile(baseDst,'setPath.m'),'w');
-
-
-fprintf(fid,'function  setPath()\n');
-fprintf(fid,'newIncPath = [pathdef '';'' cd '';'' genpath(fullfile(cd,''AlgoCommon%cCommon'')) '';'' fullfile(cd,''ivcam20'')];\n',filesep);
-fprintf(fid,'path(newIncPath);\n');
-fprintf(fid,'end\n');
-fclose(fid);
 
 fw = Firmware();
 

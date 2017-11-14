@@ -43,18 +43,20 @@ if(regs.MTLB.debug)
     
     fs = double(regs.GNRL.sampleRate)/64;
     [H,f]=freqz_(bb,aa,2^16);
-    subplot(311);
+    a(1) = subplot(311);
     semilogy(f/pi*fs*.5,abs(H));axis tight
     xlabel('F[Ghz]');
     ylabel('||');
     
     title('Filter design');
-    subplot(312);
-     fftplot(slow,fs);axis tight
-title('Input')
-    subplot(313);
-     fftplot(slowOut,fs);axis tight
-title('Output')
+    a(2) = subplot(312);
+    fftplot(slow,fs);axis tight
+    title('Input')
+    a(3) = subplot(313);
+    fftplot(slowOut,fs);axis tight
+    title('Output')
+    
+    linkaxes(a,'x')
 
 end
 

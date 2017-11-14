@@ -1,8 +1,10 @@
-function ivsArr=runPOCanalyzer(inoutFolder,verbose)
-if(nargin~=2)
-    error('exactly two inputs');
+function ivsArr=runPOCanalyzer(inoutFolder,verbose,params)
+if(~exist('verbose','var'))
+    verbose=false;
 end
-params= xml2structWrapper(fullfile(inoutFolder,filesep,'POCconfig.xml'));
+if(~exist('params','var'))
+    params= xml2structWrapper(fullfile(inoutFolder,filesep,'POCconfig.xml'));
+end
 if(verbose)
     fprintf('starting POC analysis:%s\n\n=====CONFIG BEGIN=====\n%s\n=====CONFIG END=====\n',inoutFolder,struct2str(params,':','\n','  '));
     fprintf('reading scope PZR data...');
@@ -18,7 +20,9 @@ angxy = aux.extractLOS(pzr,params,dt,verbose);
 if(verbose),fprintf('done\n');end
 %%
 %  indLocs{1}=[194874 3240762];
-
+if(all(angxy(1,:)==angxy(1,1)) || all(angxy(2,:)==angxy(2,1)))
+    error('Bad filter configuration');
+end
 
 if(verbose),fprintf('cutting frames/scanlines...');end
 xpcDataFull=aux.cutFrames(angxy,dt,indLocs);

@@ -6,8 +6,11 @@ if(debug)
     fprintf('***compiling in debug mode****\n');
 end
 thisinc = fileparts(which(mfilename));
-baseDir = fileparts(which('Pipe.autopipe'));
-f= dirRecursive(fileparts(baseDir),'*.cpp');
+if(isempty(which('Pipe.autopipe')))
+    error('Could not find Pipe entry point');
+end
+baseDir = fileparts( fileparts(which('Pipe.autopipe')));
+f= dirRecursive(baseDir,'*.cpp');
 mxlen = max(cellfun(@(x) length(filename(x)),f))+3;
 for i=1:length(f)
     if(isempty(strfind(fileread(f{i}),'mexFunction(')))
