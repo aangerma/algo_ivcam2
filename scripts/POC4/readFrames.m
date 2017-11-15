@@ -16,7 +16,8 @@ try
         [columns,filesStruct] = readOneFrame(filesStruct,frameHeader);
         colsOut = [colsOut; {columns}];
     end
-catch
+catch e
+    1
 end
 
 
@@ -194,8 +195,8 @@ offsetH = int16(cumsum(offsetHperPacket));
 offsetVperPacket = ((double(colHeader.scanDir)*2-1)*-1) *double(bitshift(bitand(locOffset,uint8(2^8-1-7)),-3));
 offsetV = int16(cumsum(offsetVperPacket));
 
-x = int14saturation(colHeader.horizontalLocation+offsetH);
-y = int14saturation(colHeader.verticalLocation+offsetV);
+x = int14saturation(colHeader.horizontalLocation+offsetH*4);
+y = int14saturation(colHeader.verticalLocation+offsetV*4);
 colData.xy = [x; y];
 
 end
@@ -232,16 +233,27 @@ if(0)
     %% plot xy output
     figure(363);clf;
     xy = [columns.xy];
-    
-    
     plot(xy(1,:),xy(2,:),'*');
-  
+  title('xy')
+    
+    
+        figure(3673);clf;
+    xy = [columns.xy];
+    plot(xy(1,:),'*');
+    title('x')
+    
+            figure(39673);clf;
+    xy = [columns.xy];
+    plot(xy(2,:),'*');
+    title('y')
+    
 %     figure(253243);clf;
 %         hloc = [columns.verticalLocation];
-%     
-%     
 %     plot(hloc,'*');
-    
+%    
+%         figure(2538243);clf;
+%         hloc = [columns.horizontalLocation];
+%     plot(hloc);
 end
 
 %% data check
