@@ -90,9 +90,10 @@ FH_FIRST_BYTE = 35;%RAW_FORMAT_DEF = 3,LOCATION_FORMAT_DEF = 2; 2*2^4+3;
 
 
 [raw,filesStruct] = getConcatData(filesStruct,FRAME_HEADER_SZ_BYTES);
+
 if(raw(1) ~= FH_FIRST_BYTE)
     ind = find(raw==FH_FIRST_BYTE,1);
-    while(isempty(ind))
+    while(isempty(ind) || floor((filesStruct.ptr +ind -1)/16)~=(filesStruct.ptr +ind -1)/16) %FH should always start with good ptr 
         [raw,filesStruct] = getConcatData(filesStruct,FRAME_HEADER_SZ_BYTES);
         ind = find(raw==FH_FIRST_BYTE,1);
     end
