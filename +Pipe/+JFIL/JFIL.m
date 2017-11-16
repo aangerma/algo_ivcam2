@@ -18,10 +18,11 @@ if(regs.JFIL.bypass)  %% do nothing.
         dImgFil=dImgFil(1);
         iImgFil=iImgFil(1);
         cImgFil=cImgFil(1);
-        dNNOutput = [];
-        iNNOutput = [];
+
     end
-	    
+	          dNNOutput = [];
+        iNNOutput = []; 
+        BTStages = [];
 else
     % init jStream
     jStream = struct;
