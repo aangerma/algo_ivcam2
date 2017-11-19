@@ -42,11 +42,22 @@ function [filesStruct,ivs] = readOneFrame(filesStruct,outputDir)
 %     throw(e);
 % end
 
-ivs.xy = [columns.xy];
+%%
+     for i=1:length(columns)
+
+        if(mod(i,2)==0)
+ 
+            columns(i).xy(2,:) = -columns(i).xy(2,:);
+
+        end
+     end
+  %%  
+     ivs.xy = [columns.xy];
 ivs.slow = [columns.slow];
 ivs.fast = [columns.fast];
  ivs.flags = [columns.flags];
 
+ 
 io.writeIVS( fullfile(outputDir,sprintf('record_%02d.ivs',filesStruct.currFrameNum)),ivs);
 
 end
@@ -100,15 +111,9 @@ if(raw(1) ~= FH_FIRST_BYTE)
     [rawTmp,filesStruct] = getConcatData(filesStruct,ind-1);
     raw(1:ind-1) = [];
     raw = [raw;rawTmp];
-    
-    
-    % % %     [raw,filesStruct] = searchedNumCropping(raw,filesStruct,FRAME_HEADER_SZ_BYTES,FH_START_BYTE);
 end
 
 
-
-
-% fprintf('end getFrameHeader : ptr is %d, fileNum is %d\n',filesStruct.ptr,filesStruct.fileNum)
 
 
 frameHeader.RawFormat = bitand(raw(1),uint8(15));
@@ -125,21 +130,6 @@ if(frameHeader.RawFormat ~= 3)
 end
 end
 
-% % % % function [raw,filesStruct] = searchedNumCropping(raw,filesStruct,dataSz,searchedNum)
-% % % % %discard padding in raw data
-% % % % 
-% % % % ind = find(raw~=searchedNum,1);
-% % % % while(isempty(ind))
-% % % %     [raw,filesStruct] = getConcatData(filesStruct,dataSz);
-% % % %     ind = find(raw~=searchedNum,1);
-% % % % end
-% % % % [rawTmp,filesStruct] = getConcatData(filesStruct,ind-1);
-% % % % raw(1:ind-1) = [];
-% % % % raw = [raw;rawTmp];
-% % % % 
-% % % % 
-% % % % end
-
 
 function [colHeader,filesStruct] = getColumnHeader(filesStruct,numCol)
 
@@ -155,8 +145,6 @@ if(raw(1) == 0)%after each col could be some zero padding
     [rawTmp,filesStruct] = getConcatData(filesStruct,ind-1);
     raw(1:ind-1) = [];
     raw = [raw;rawTmp];
-    
-    %     [raw,filesStruct] = searchedNumCropping(raw,filesStruct,COLUMN_HEADER_SZ_BYTES,0);
 end
 
 %     struct colHeader
@@ -184,8 +172,6 @@ OFFSET = 1;
 colHeader.numPackets=typecast(raw(OFFSET+(0:1)),'uint16');
 colHeader.sizeOfPacket=raw(OFFSET+2);
 
-% colHeader.horizontalLocation=int14saturation(typecast(raw(OFFSET+(3:6)),'int32'));
-% colHeader.verticalLocation=int14saturation(typecast(raw(OFFSET+(7:10)),'int32'));
 colHeader.horizontalLocation=int16(bitshift(typecast(raw(OFFSET+(3:6)),'int32'),-2)); %we get 14b but should get 12b
 colHeader.verticalLocation=int16(bitshift(typecast(raw(OFFSET+(7:10)),'int32'),-2));
 
@@ -234,37 +220,26 @@ colData.projectionFlag = bitget(locOffset,1);
 
 hlocIndex=bitand(bitshift(locOffset,-1),uint8(3))+1;
 hlocLUT = int16([0 1 -2 -1]);%2s complement
-  hlocLUT = int16([0 1 -1 -2]);%Yoni
 offsetH = hlocLUT(hlocIndex);
 offsetH = cumsum(offsetH);
 
-offsetV = -int16(bitshift(locOffset,-3))*(int16(colHeader.scanDir)*2-1);
-
+offsetV = -int16(bitshift(locOffset,-3))*(int16(colHeader.scanDir)*2-1);%scanDir: 1== down, 0==up
 offsetV = cumsum(offsetV);
 
-x = (colHeader.horizontalLocation+offsetH);
+x = (colHeader.horizontalLocation*ones(size(offsetH),'int16'));%+offsetH);
 y = (colHeader.verticalLocation+offsetV);
 
 %% aSync sim
 y = y-int16(2048);
-% % % slow = 2^12-1-slow;
+
 slow=min(2^12-1,uint16(interp1(0:length(slow)-1,double(slow),0:0.5:length(slow)-0.5,'linear','extrap'))');
-assert(length(slow)==length(fast)/64);
+assert(length(slow)==length(fast)/64,'length(slow)~=length(fast)/64');
 
 x = min(2^12-1,int16(interp1(0:length(x)-1,double(x),0:0.25:length(x)-0.25,'linear','extrap')));
 y = min(2^12-1,int16(interp1(0:length(y)-1,double(y),0:0.25:length(y)-0.25,'linear','extrap')));
 
-%flags
-
-% % % %move vSyncDelay so it should be a divison of 64
-% % % vsyncOffset = mod(double(colHeader.vSyncDelay)-double(colHeader.txSyncDelay),64);
-% % % vsyncOffset(vsyncOffset>31)=-64+vsyncOffset(vsyncOffset>31);
-% % % colHeader.vSyncDelay = colHeader.vSyncDelay - vsyncOffset;
-
-
-
 numPackets2pad = double(colHeader.txSyncDelay)/64;
-assert(floor(numPackets2pad)==numPackets2pad);
+assert(floor(numPackets2pad)==numPackets2pad,'floor(numPackets2pad)~=numPackets2pad');
 
 tx_code_start = [uint8(1); zeros(numPackets2pad,1,'uint8'); zeros(length(slow)-1,1,'uint8')];
 slow = [zeros(numPackets2pad,1,'uint16'); slow];
@@ -275,7 +250,7 @@ y = [zeros(1,numPackets2pad,'int16') y];
 fast = [false(numPackets2pad*64,1); fast];
 
 
-scan_dir = 1-scan_dir;
+
 
 
 
@@ -309,7 +284,7 @@ for i=1:frameHeader.numOfColumns
     
     if(i~=1)
         deltaTxSyncDelay = colHeader.timestamp-uint64(colHeader.txSyncDelay) -(columns(i-1).timestamp-uint64(columns(i-1).txSyncDelay));
-        assert(rem(deltaTxSyncDelay,64)==0,'deltaTxSyncDelay should divide by 64(got %d)',mod(deltaTxSyncDelay,64));
+         assert(rem(deltaTxSyncDelay,64)==0,'deltaTxSyncDelay should divide by 64(got %d)',mod(deltaTxSyncDelay,64));
     end
     
     fnames = fieldnames(colHeader);
@@ -324,30 +299,54 @@ end
 
 if(0)
     %% plot xy output
-    figure(364);clf;
-    xy = [columns.xy];
-    t=double([columns.ts])/8e9;
-    plot(xy(1,:),xy(2,:),'*');
-    title('xy')
+    figure(364);clf;hold on;
+    for i=1:length(columns)
+        pat = '*b';
+        if(mod(i,2)==0)
+            pat = '*r';
+            plot(columns(i).xy(1,:),-columns(i).xy(2,:),pat)
+        else
+            plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
+        end
+    end
+    title('xy- y in y direction is now with minus sign')
+    legend('scanDir up','scanDir down')
     
+    
+    
+    
+    figure(36764);clf;hold on;
+    for i=1:length(columns)
+        pat = '*b';
+        if(mod(i,2)==0)
+            pat = '*r';
+            plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
+        else
+            plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
+        end
+    end
+    title('xy')
+    legend('scanDir up','scanDir down')
+    
+    
+    t=double([columns.ts])/8e9;
+    xy = [columns.xy];
     
     figure(3673);clf;
-    xy = [columns.xy];
     plot(t,xy(1,:),'*');
     title('x')
     
     figure(39673);clf;
-    xy = [columns.xy];
     plot(t,xy(2,:),'*');
     title('y')
     
-%         figure(253243);clf;
-%             hloc = [columns.verticalLocation];
-%         plot(hloc,'*');
-%     
-%             figure(2538243);clf;
-%             hloc = [columns.horizontalLocation];
-%         plot(hloc);
+        figure(253243);clf;
+            hloc = [columns.verticalLocation];
+        plot(hloc,'*');
+    
+            figure(2538243);clf;
+            hloc = [columns.horizontalLocation];
+        plot(hloc);
 end
 
 %% data check
@@ -361,76 +360,6 @@ end
 if(anoimalyChk(diff(double([columns.timestamp]))))
     error('readRawframe error: bad  timestamp data in file %s',fn);
 end
-% % % % 
-% % % % %% vector concatination
-% % % % 
-
-% % % % for i=1:length(columns)
-% % % % 
-% % % % end
-% % % % 
-% % % %  for i=1:length(columns)
-% % % %     if(i==length(columns))
-% % % %         %          nFastBits=length(columns(i).fast)+uint64(columns(i  ).txSyncDelay)+64-mod(uint64(columns(i  ).txSyncDelay),64);
-% % % %         nFastBits=length(columns(i).fast)+uint64(columns(i).vSyncDelay)+64-mod(uint64(columns(i).vSyncDelay),64);
-% % % %     else
-% % % %         %         nFastBits = columns(i+1).timestamp*4-uint64(columns(i+1).txSyncDelay) -(columns(i  ).timestamp*4-uint64(columns(i  ).txSyncDelay));
-% % % %         nFastBits = columns(i+1).timestamp-uint64(columns(i+1).vSyncDelay) -...
-% % % %             (columns(i).timestamp-uint64(columns(i).vSyncDelay));
-% % % %     end
-% % % %     if(nFastBits==0)
-% % % %         break;
-% % % %     end
-% % % %     assert(rem(nFastBits,64)==0)
-% % % %     nSlowBits     =nFastBits/64;
-% % % %     
-% % % %     %      nFastBitsPre = columns(i  ).txSyncDelay;
-% % % %     nFastBitsPre = columns(i).vSyncDelay;
-% % % %     nFastBitsPost = nFastBits-uint64(nFastBitsPre)-length(columns(i).fast);
-% % % %     columns(i).fast = vec([false(nFastBitsPre,1);columns(i).fast;false(nFastBitsPost,1)])';
-% % % %     
-% % % %     
-% % % %     
-% % % %     
-% % % %     %      nSlowBitsPre = round(double(columns(i  ).txSyncDelay)/64);
-% % % %     nSlowBitsPre = round(double(columns(i).vSyncDelay)/64);
-% % % %     nSlowBitpost = nSlowBits-nSlowBitsPre-length(columns(i).slow);
-% % % %     
-% % % %     ld_on =ones(length(columns(i).slow),1,'uint8');
-% % % %     
-% % % %     columns(i).slow = vec([zeros(nSlowBitsPre,1,'uint16');columns(i).slow;zeros(nSlowBitpost,1,'uint16')])';
-% % % %     
-% % % %      tx_code_start = zeros(length(columns(i).slow),1,'uint8');
-% % % %     txStartLoc = (double(columns(i).vSyncDelay)-double(columns(i).txSyncDelay))/64+1;
-% % % %      tx_code_start(txStartLoc)=uint8(1);
-% % % %      scan_dir = columns(i).scanDir*ones(length(columns(i).slow),1,'uint8');
-% % % %     %scan_dir=0 --> scan up
-% % % %     xyPre  = int16([double(columns(i).xy(1,1));double(columns(i).xy(2,1))+(double(scan_dir(1))*2-1)]);
-% % % %     xyPost = int16([double(columns(i).xy(1,end));double(columns(i).xy(2,end))-(double(scan_dir(1))*2-1)]);
-% % % %     columns(i).xy = [xyPre(:,ones(1,nSlowBitsPre)) columns(i).xy xyPost(:,ones(1,nSlowBitpost))];
-% % % %     
-% % % %     %flags
-% % % %     ld_on_bit = 1; %starting from 1...
-% % % %     tx_code_start_bit = 2;
-% % % %     scan_dir_bit = 3;
-% % % %     
-% % % %     columns(i).flags = vec(bitshift(ld_on        ,ld_on_bit-1)+...
-% % % %         bitshift(tx_code_start,tx_code_start_bit-1)+...
-% % % %         bitshift(scan_dir     ,scan_dir_bit-1))';
-% % % % end
-% % % % % for i=1:length(columns)
-% % % % %     columns(i).fast=columns(i).fast';
-% % % % %     columns(i).slow=columns(i).slow';
-% % % % %     columns(i).flags=columns(i).flags';
-% % % % % end
-% % % % 
-% % % % flag_scan_dir=bitget([columns.flags],scan_dir_bit);
-% % % % if(length(unique(flag_scan_dir))==1)
-% % % %     for i=1:length(columns)
-% % % %         
-% % % %         columns(i).flags=bitset([columns(i).flags],scan_dir_bit,mod(i,2));
-% % % %     end
-% % % % end
 
 end
 
