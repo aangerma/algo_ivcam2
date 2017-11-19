@@ -230,16 +230,17 @@ fast = uint82bin(fast);
 
 %column packets- location
 locOffset=rawColMat(36,:);
-colData.projectionFlag = logical(bitand(locOffset,uint8(1)));
+colData.projectionFlag = bitget(locOffset,1);
 
-offsetHperPacket = double(bitshift(bitand(locOffset,uint8(6)),-1));%2b with sign
-offsetHperPacket(offsetHperPacket==3) = -2;
-offsetHperPacket(offsetHperPacket==2) = -1;  
-offsetH = int16(cumsum(offsetHperPacket));
+hlocIndex=bitand(bitshift(locOffset,-1),uint8(3))+1;
+hlocLUT = int16([0 1 -2 -1]);%2s complement
+  hlocLUT = int16([0 1 -1 -2]);%Yoni
+offsetH = hlocLUT(hlocIndex);
+offsetH = cumsum(offsetH);
 
-offsetVperPacket = ((double(colHeader.scanDir)*2-1)*-1) *double(bitshift(bitand(locOffset,uint8(2^8-1-7)),-3));
+offsetV = -int16(bitshift(locOffset,-3))*(int16(colHeader.scanDir)*2-1);
 
-offsetV = int16(cumsum(offsetVperPacket));
+offsetV = cumsum(offsetV);
 
 x = (colHeader.horizontalLocation+offsetH);
 y = (colHeader.verticalLocation+offsetV);
@@ -274,7 +275,7 @@ y = [zeros(1,numPackets2pad,'int16') y];
 fast = [false(numPackets2pad*64,1); fast];
 
 
-
+scan_dir = 1-scan_dir;
 
 
 
@@ -290,6 +291,7 @@ colData.flags =vec(...
     bitshift(ld_on         ,ld_on_bit-1)+...
     bitshift(tx_code_start ,tx_code_start_bit-1)+...
     bitshift(scan_dir      ,scan_dir_bit-1))';
+colData.ts=uint64(0:length(slow)-1)*64+colHeader.timestamp;
 end
 
 
@@ -322,29 +324,30 @@ end
 
 if(0)
     %% plot xy output
-    figure(363);clf;
+    figure(364);clf;
     xy = [columns.xy];
+    t=double([columns.ts])/8e9;
     plot(xy(1,:),xy(2,:),'*');
     title('xy')
     
     
     figure(3673);clf;
     xy = [columns.xy];
-    plot(xy(1,:),'*');
+    plot(t,xy(1,:),'*');
     title('x')
     
     figure(39673);clf;
     xy = [columns.xy];
-    plot(xy(2,:),'*');
+    plot(t,xy(2,:),'*');
     title('y')
     
-        figure(253243);clf;
-            hloc = [columns.verticalLocation];
-        plot(hloc,'*');
-    
-            figure(2538243);clf;
-            hloc = [columns.horizontalLocation];
-        plot(hloc);
+%         figure(253243);clf;
+%             hloc = [columns.verticalLocation];
+%         plot(hloc,'*');
+%     
+%             figure(2538243);clf;
+%             hloc = [columns.horizontalLocation];
+%         plot(hloc);
 end
 
 %% data check
