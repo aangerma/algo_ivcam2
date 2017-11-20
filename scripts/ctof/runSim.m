@@ -23,8 +23,9 @@ r = r./sqrt(sum(r.^2,2));
 
 %%
 [d,a]=Simulator.aux.raytrace2d(mdl.f,mdl.v,mdl.a,r,params.sensor.tMat);
-
-rtd = reshape(sum(d,2),[h w]);
+%quantize distances according to system_dt
+dS = round(d/(C()*params.system_dt))*C()*params.system_dt;
+rtd = reshape(sum(dS,2),[h w]);
 grndtrth.a = reshape(a,[h w]);
 if(params.verbose>1)
     %%
@@ -41,8 +42,8 @@ end
 %% prequizites
 
 tau = rtd/C(); %nsec
-delayIndx = round(tau/params.system_dt);
-grndtrth.rtdS = delayIndx*params.system_dt*C(); %calculate bined ground truth acording to simulatio bin time
+delayIndx = tau/params.system_dt;
+grndtrth.rtdS = rtd;
 
 
 %% create tx signal
@@ -65,11 +66,12 @@ for s=1:nScenarios
     txsignal = interp1((0:length(params.scenario.data{s}.txmod)-1)*params.scenario.dt,params.scenario.data{s}.txmod,ts,'previous',0);
     txsignal = txsignal*params.prjector.power/(hh*ww);
     rwmod = interp1((0:length(params.scenario.data{s}.rxmod)-1)*params.scenario.dt,params.scenario.data{s}.rxmod,ts,'previous',0);
-    rxIntensity = grndtrth.a*min(1,params.sensor.collectionArea./(4*pi*(grndtrth.rtdS/2).^2));
+    chanAttenuation = grndtrth.a.*min(1,params.sensor.collectionArea./(4*pi*reshape(dS(:,2),[hh ww]).^2));
+    normPats = params.scenario.data{s}.pat.*chanAttenuation;
     for p=1:nPatterns
-        thisPat = params.scenario.data{s}.pat(:,:,p);
+        thisPat = normPats(:,:,p);
         
-        rxsignal=delaySum(txsignal,delayIndx,rxIntensity.*thisPat);
+        rxsignal=delaySum(txsignal,delayIndx,thisPat);
         %{
                 rxsignal = zeros(size(txsignal));
                 for i=1:w*h
@@ -112,10 +114,10 @@ end
 if(params.verbose>0)
     mm = cellfun(@(x) x',mes,'uni',0);
     mm = minmax([mm{:}]);
-    fprintf('pre sampler range: [%f : %f]\n',mm);
+    fprintf('pre sampler range: [%g : %g]\n',mm);
 end
-for s=1:length(mes)
-    mes{s} = round((mes{s}-params.sensor.sampler.v0)./(params.sensor.sampler.v1-params.sensor.sampler.v0)*(2^params.sensor.sampler.nbits-1));
-end
+ for s=1:length(mes)
+     mes{s} = round((mes{s}-params.sensor.sampler.v0)./(params.sensor.sampler.v1-params.sensor.sampler.v0)*(2^params.sensor.sampler.nbits-1));
+ end
 
 
