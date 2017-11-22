@@ -51,7 +51,7 @@ function frameHeader = getFrameHeader(s)
 
 FRAME_HEADER_SZ_BYTES = 32;
 FH_FIRST_BYTE = 35;%RAW_FORMAT_DEF = 3,LOCATION_FORMAT_DEF = 2; 2*2^4+3;
-FH_SECOND_BYTE = [16 17];%can be either
+FH_SECOND_BYTE = [16 17];%can be either. why? because.....
 
 
 raw = [];
