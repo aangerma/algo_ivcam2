@@ -4,14 +4,14 @@ function ivsArr = readFrames(inputDir)
 s = BinaryStream(inputDir);
 
 ivsArr = cell(0);
-while true
-    try
+% while true
+%     try
     ivs = readOneFrame(s);
-    catch e,
-        e;
-    end
+%     catch e,
+%         e;
+%     end
     ivsArr = [ivsArr; {ivs}];
-end
+% end
 
 
 end
@@ -82,7 +82,7 @@ end
 end
 
 
-function colHeader = getColumnHeader(s,numCol)
+function colHeader = getHeader(s)
 
 COLUMN_HEADER_SZ_BYTES = 32;
 
@@ -127,7 +127,8 @@ colHeader.data=raw(OFFSET+(16:24));
 colHeader.timestamp=bitand(bitshift(typecast([raw(OFFSET+(25:29));0;0;0],'uint64'),-4),uint64(2^32-1))*4;%*4 for it to be in fast samples count
 colHeader.vSyncDelay=bitand(bitshift(typecast([raw(OFFSET+(29:31));0;],'uint32'),-4),uint32(2^20-1))*4;%*4 for it to be in fast samples count
 colHeader.reserved=raw(OFFSET+(30:31));
-colHeader.numCol = numCol;
+colHeader.txSyncLoc = colHeader.timestamp+uint64(colHeader.txSyncDelay);
+
 
 if(double(colHeader.columnLength)==0)
     error('readRawframe error: bad columnLength data in file %s',s.fns{s.fileNum});
@@ -141,13 +142,14 @@ end
 
 
 
-function colData = getColumn(s,colSz,colHeader)
-
+function colData = getScanline(s)
+colData.header = getHeader(s);
+colSz = double(colData.header.numPackets)*double(colData.header.sizeOfPacket);
 rawCol = s.get(colSz);
 
 
 %column packets- fast & slow
-rawColMat = reshape(rawCol,double(colHeader.sizeOfPacket),[]);
+rawColMat = reshape(rawCol,double(colData.header.sizeOfPacket),[]);
 
 slow=rawColMat(1:3,:);
 slow = typecast(vec([slow;zeros(1,size(slow,2))]),'uint32');
@@ -163,16 +165,16 @@ locOffset=rawColMat(36,:);
 colData.projectionFlag = bitget(locOffset,1);
 
 hlocIndex=bitand(bitshift(locOffset,-1),uint8(3));
-% assert(all(hlocIndex~=2),'Hloc index equal to 3');
+assert(all(hlocIndex~=2),'Hloc index equal to 3');
 hlocLUT = int16([0 1 0 -1]);
 offsetH = hlocLUT(hlocIndex+1);
 offsetH = cumsum(offsetH);
 
-offsetV = -int16(bitshift(locOffset,-3))*(int16(colHeader.scanDir)*2-1);%scanDir: 1== down, 0==up
+offsetV = -int16(bitshift(locOffset,-3))*(int16(colData.header.scanDir)*2-1);%scanDir: 1== down, 0==up
 offsetV = cumsum(offsetV);
 
-x = (colHeader.horizontalLocation*ones(size(offsetH),'int16')+offsetH);
-y = (colHeader.verticalLocation+offsetV);
+x = (colData.header.horizontalLocation+offsetH);
+y = (colData.header.verticalLocation+offsetV);
 
 %% aSync sim
 y = y-int16(2048);
@@ -180,23 +182,23 @@ x = x-int16(2048);
 
 
 
-slow=min(2^12-1,uint16(interp1(0:length(slow)-1,double(slow),0:0.5:length(slow)-0.5,'linear','extrap'))');
+slow=uint16(min(2^12-1,interp1((0:length(slow)-1)*2,double(slow),0:length(slow)*2-1,'linear','extrap')));
 assert(length(slow)==length(fast)/64,'length(slow)~=length(fast)/64');
 
-x = min(2^12-1,int16(interp1(0:length(x)-1,double(x),0:0.25:length(x)-0.25,'linear','extrap')));
-y = min(2^12-1,int16(interp1(0:length(y)-1,double(y),0:0.25:length(y)-0.25,'linear','extrap')));
+xy=int16(interp1((0:length(y)-1)*4,double([x;y]'),0:length(y)*4-1,'linear','extrap'))';
 
-numPackets2pad = double(colHeader.txSyncDelay)/64;
-assert(floor(numPackets2pad)==numPackets2pad,'floor(numPackets2pad)~=numPackets2pad');
+% padding due to txSyncDelay
+txDelay_slowShift = round(double(colData.header.txSyncDelay)/64);
+txDelay_fastShift = double(colData.header.txSyncDelay);
+fast = [false(txDelay_fastShift,1);fast(1:end-txDelay_fastShift)];
+slow = [zeros(1,txDelay_slowShift) slow(1:end-txDelay_slowShift)];
+xy   = [ones(2,txDelay_slowShift,'int16').*xy(:,1)   xy(:,1:end-txDelay_slowShift)];
 
-tx_code_start = [uint8(1); zeros(numPackets2pad,1,'uint8'); zeros(length(slow)-1,1,'uint8')];
-slow = [zeros(numPackets2pad,1,'uint16'); slow];
-scan_dir = colHeader.scanDir*ones(length(slow),1,'uint8');
-ld_on =[ zeros(numPackets2pad,1,'uint8');  vec(repmat(uint8(colData.projectionFlag),4,1))];
-x = [ones(1,numPackets2pad,'int16')*x(1) x];
-y = [ones(1,numPackets2pad,'int16')*y(1) y];
-fast = [false(numPackets2pad*64,1); fast];
 
+tx_code_start = [uint8(1); zeros(length(slow)-1,1,'uint8')];
+
+scan_dir = colData.header.scanDir*ones(length(slow),1,'uint8');
+ld_on = vec(repmat(uint8(colData.projectionFlag),4,1));
 
 scan_dir=1-scan_dir; %?????????????????????????????????????????????????????????????????????????????????????
 
@@ -204,9 +206,9 @@ scan_dir=1-scan_dir; %??????????????????????????????????????????????????????????
 
 
 %% column struct
-colData.slow = slow';
+colData.slow = slow;
 colData.fast = fast';
-colData.xy = [x; y];
+colData.xy = xy;
 
 ld_on_bit = 1; %starting from 1...
 tx_code_start_bit = 2;
@@ -215,7 +217,7 @@ colData.flags =vec(...
     bitshift(ld_on         ,ld_on_bit-1)+...
     bitshift(tx_code_start ,tx_code_start_bit-1)+...
     bitshift(scan_dir      ,scan_dir_bit-1))';
-colData.ts=uint64(0:length(slow)-1)*64+colHeader.timestamp;
+
 end
 
 
@@ -223,27 +225,21 @@ end
 
 function columns = getFrameData(s)
 
-columns=struct();
+columns=[];
 frameHeader = getFrameHeader(s);
 %% columns
 for i=1:frameHeader.numOfColumns
-    
-    colHeader = getColumnHeader(s,i);
-    colData = getColumn(s,double(colHeader.numPackets)*double(colHeader.sizeOfPacket),colHeader);
-    
-    if(i~=1)
-        deltaTxSyncDelay = colHeader.timestamp-uint64(colHeader.txSyncDelay) -(columns(i-1).timestamp-uint64(columns(i-1).txSyncDelay));
-        assert(rem(deltaTxSyncDelay,64)==0,'deltaTxSyncDelay should divide by 64(got %d)',mod(deltaTxSyncDelay,64));
-    end
-    
-    fnames = fieldnames(colHeader);
-    for j=1:length(fnames)
-        columns(i).(fnames{j}) = colHeader.(fnames{j});
-    end
-    fnames = fieldnames(colData);
-    for j=1:length(fnames)
-        columns(i).(fnames{j}) = colData.(fnames{j});
-    end
+    columns =[columns getScanline(s)];
+end
+%% padding
+for i=1:frameHeader.numOfColumns-1
+    nFast = columns(i+1).header.timestamp-columns(i).header.timestamp;
+    assert(mod(nFast,64)==0,'Time between timestamps does not divide in 64');
+    nSlow = nFast/64;
+    columns(i).fast=[columns(i).fast false(1,nFast)];
+    columns(i).slow=[columns(i).slow zeros(1,nSlow)];
+    columns(i).flags=[columns(i).flags zeros(1,nSlow)];
+    columns(i).xy=[columns(i).xy columns(i).xy(:,end).*ones(2,nSlow,'int16')];
 end
 
 if(0)
@@ -278,7 +274,7 @@ if(0)
     legend('scanDir up','scanDir down')
     
     
-    t=double([columns.ts])/8e9;
+    t=(0:length([columns.slow])-1)/8e9;
     xy = [columns.xy];
     
     figure(3673);clf;
@@ -289,24 +285,19 @@ if(0)
     plot(t,xy(2,:),'*');
     title('y')
     
-    figure(253243);clf;
-    hloc = [columns.verticalLocation];
-    plot(hloc,'*');
     
-    figure(2538243);clf;
-    hloc = [columns.horizontalLocation];
-    plot(hloc);
 end
 
 %% data check
+ch = [columns.header];
 anoimalyChk = @(x) any(min(x)<mean(x)-5*std(x));
-if(anoimalyChk(double([columns.vSyncDelay])))
+if(anoimalyChk(double([ch.vSyncDelay])))
     error('readRawframe error: bad  vSyncDelay data in file %s',fn);
 end
-if(anoimalyChk(double([columns.txSyncDelay])))
+if(anoimalyChk(double([ch.txSyncDelay])))
     error('readRawframe error: bad  txSyncDelay data in file %s',fn);
 end
-if(anoimalyChk(diff(double([columns.timestamp]))))
+if(anoimalyChk(diff(double([ch.timestamp]))))
     error('readRawframe error: bad  timestamp data in file %s',fn);
 end
 
