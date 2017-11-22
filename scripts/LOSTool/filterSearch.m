@@ -1,6 +1,6 @@
 function filterSearch()
 addpath('../POC4');
-bd = 'd:\data\lidar\EXP\20171025\';
+bd = '\\invcam322\data\lidar\EXP\20171025\';
 pbase = xml2structWrapper([bd 'pocConfigBase.xml']);
 
 x0=p2x(pbase);
@@ -9,7 +9,7 @@ errFunc = @(x) calcLoss(bd,pbase,x);
 disp(eB);
 pnew=x2p(xbest,pbase);
 struct2xmlWrapper(pnew,[bd 'pocConfigBest.xml']);
-
+save dbg_HASRDSIVALGO
 
 
 end
@@ -36,7 +36,7 @@ try
     warning off
     ivsarr=aux.runPOCanalyzer(bd,false,pnew);%generate ivs
     [errF, errSx, errSy] = losTool(ivsarr,false);
-    err = mean([errF, errSx, errSy]);
+    err = mean([ errSx,errSy]);
     warning on
 catch e,
     
