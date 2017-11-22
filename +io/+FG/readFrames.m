@@ -1,27 +1,30 @@
-function ivsArr = readFrames(inputDir)
+function ivsArr = readFrames(inputDir,numFrames)
 
 
 s = BinaryStream(inputDir);
 
 ivsArr = cell(0);
-% while true
-%     try
-    ivs = readOneFrame(s);
-%     catch e,
-%         e;
-%     end
-    ivsArr = [ivsArr; {ivs}];
-% end
-
-
+if(nargin==1)
+    while true
+        %     try
+        ivs = readOneFrame(s);
+        %     catch e,
+        %         e;
+        %     end
+        ivsArr = [ivsArr; {ivs}];
+    end
+else
+    for i=1:numFrames
+        ivs = readOneFrame(s);
+        ivsArr = [ivsArr; {ivs}];
+    end
+end
 end
 
 
 
 function ivs = readOneFrame(s)
 % try
-
-
 columns = getFrameData(s);
 % catch e
 %     throw(e);
@@ -48,33 +51,41 @@ function frameHeader = getFrameHeader(s)
 
 FRAME_HEADER_SZ_BYTES = 32;
 FH_FIRST_BYTE = 35;%RAW_FORMAT_DEF = 3,LOCATION_FORMAT_DEF = 2; 2*2^4+3;
-% FH_SECOND_BYTE = 16;%just because...... NOTE: IF SCANNED LEFT TO RIGHT THEN WE HAVE A PROBLEM!!!!
+FH_SECOND_BYTE = [16 17];%can be either
 
 
-raw = s.get(FRAME_HEADER_SZ_BYTES);
-
-if(raw(1) ~= FH_FIRST_BYTE)
-    ind = find(raw==FH_FIRST_BYTE,1);
-    while(isempty(ind)) %FH should always start with good ptr
-        raw = s.get(FRAME_HEADER_SZ_BYTES);
-        ind = find(raw==FH_FIRST_BYTE,1);
+raw = [];
+cnt = 1;
+while(true)
+    raw = [raw; s.get(FRAME_HEADER_SZ_BYTES)];
+    ind = find(raw==FH_FIRST_BYTE,cnt);
+    if(length(ind)<cnt) %didn't found FH_FIRST_BYTE
+        continue;
     end
-    rawTmp = s.get(ind-1);
-    raw(1:ind-1) = [];
-    raw = [raw;rawTmp];
+    cnt = cnt+1;
+    
+    if(ind(end)==length(raw)) %need to bring the next byte- where FH_SECOND_BYTE should be
+        raw = [raw; s.get(1)];
+    end
+    
+    if(any(FH_SECOND_BYTE == raw(ind(end)+1)))
+        break;
+    end
+    %else- continue...
 end
+rawFH = [raw(ind(end):min(ind(end)+FRAME_HEADER_SZ_BYTES-1,length(raw))); s.get(max(0,ind(end)+FRAME_HEADER_SZ_BYTES-1-length(raw)))];
 
 
 
 
-frameHeader.RawFormat = bitand(raw(1),uint8(15));
-frameHeader.locationFormat = bitshift(raw(1),-4);
-frameHeader.info = typecast(raw(2:3),'uint16');
-frameHeader.numOfColumns = typecast(raw(4:5),'uint16');
-frameHeader.frameCounter = typecast(raw(6:7),'uint16');
-frameHeader.MIPIDispatcherPointer = raw(8);
-frameHeader.timestamp=typecast(raw(9:12),'uint32');
-frameHeader.reserved=raw(13:32);
+frameHeader.RawFormat = bitand(rawFH(1),uint8(15));
+frameHeader.locationFormat = bitshift(rawFH(1),-4);
+frameHeader.info = typecast(rawFH(2:3),'uint16');
+frameHeader.numOfColumns = typecast(rawFH(4:5),'uint16');
+frameHeader.frameCounter = typecast(rawFH(6:7),'uint16');
+frameHeader.MIPIDispatcherPointer = rawFH(8);
+frameHeader.timestamp=typecast(rawFH(9:12),'uint32');
+frameHeader.reserved=rawFH(13:32);
 
 if(frameHeader.RawFormat ~= 3)
     error('frameHeader.RawFormat ~= 3')
@@ -85,11 +96,20 @@ end
 function colHeader = getHeader(s)
 
 COLUMN_HEADER_SZ_BYTES = 32;
+SIZE_OF_PACKET_DEF = 36;
+PLACE_OF_SIZE_OF_PACKET_DEF = 2;
+
 
 raw = s.get(COLUMN_HEADER_SZ_BYTES);
-while(raw(1) == 0 || raw(3)~=36)%after each col could be some zero padding
-    raw = [raw(2:end);s.get(1)];
+
+ind = find(raw==SIZE_OF_PACKET_DEF,1);
+while(isempty(ind))
+    raw = [raw;s.get(COLUMN_HEADER_SZ_BYTES)];
+    ind = find(raw==SIZE_OF_PACKET_DEF,1);
 end
+    rawCH = [raw(ind-PLACE_OF_SIZE_OF_PACKET_DEF:min(ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1,length(raw)));
+        s.get(max(0,ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1-length(raw)))]; %get 32 bytes acoording to the sizeOfPacket place
+
 
 %     struct colHeader
 % {
@@ -113,22 +133,20 @@ end
 % };
 OFFSET = 1;
 
-colHeader.numPackets=typecast(raw(OFFSET+(0:1)),'uint16');
-colHeader.sizeOfPacket=raw(OFFSET+2);
+colHeader.numPackets=typecast(rawCH(OFFSET+(0:1)),'uint16');
+colHeader.sizeOfPacket=rawCH(OFFSET+2);
 
-colHeader.horizontalLocation=int16(bitshift(typecast(raw(OFFSET+(3:6)),'int32'),-2)); %we get 14b but should get 12b
-colHeader.verticalLocation=int16(bitshift(typecast(raw(OFFSET+(7:10)),'int32'),-2));
+colHeader.horizontalLocation=int16(bitshift(typecast(rawCH(OFFSET+(3:6)),'int32'),-2)); %we get 14b but should get 12b
+colHeader.verticalLocation=int16(bitshift(typecast(rawCH(OFFSET+(7:10)),'int32'),-2));
 
-colHeader.txSyncDelay=typecast(raw(OFFSET+(11:12)),'uint16'); %in fast samples count
-colHeader.columnLength=typecast(raw(OFFSET+(13:14)),'uint16');
-colHeader.info=raw(OFFSET+15);
+colHeader.txSyncDelay=typecast(rawCH(OFFSET+(11:12)),'uint16'); %in fast samples count
+colHeader.columnLength=typecast(rawCH(OFFSET+(13:14)),'uint16');
+colHeader.info=rawCH(OFFSET+15);
 colHeader.scanDir=bitand(colHeader.info,uint8(1));
-colHeader.data=raw(OFFSET+(16:24));
-colHeader.timestamp=bitand(bitshift(typecast([raw(OFFSET+(25:29));0;0;0],'uint64'),-4),uint64(2^32-1))*4;%*4 for it to be in fast samples count
-colHeader.vSyncDelay=bitand(bitshift(typecast([raw(OFFSET+(29:31));0;],'uint32'),-4),uint32(2^20-1))*4;%*4 for it to be in fast samples count
-colHeader.reserved=raw(OFFSET+(30:31));
-colHeader.txSyncLoc = colHeader.timestamp+uint64(colHeader.txSyncDelay);
-
+colHeader.data=rawCH(OFFSET+(16:24));
+colHeader.timestamp=bitand(bitshift(typecast([rawCH(OFFSET+(25:29));0;0;0],'uint64'),-4),uint64(2^32-1))*4;%*4 for it to be in fast samples count
+colHeader.vSyncDelay=bitand(bitshift(typecast([rawCH(OFFSET+(29:31));0;],'uint32'),-4),uint32(2^20-1))*4;%*4 for it to be in fast samples count
+colHeader.reserved=rawCH(OFFSET+(30:31));
 
 if(double(colHeader.columnLength)==0)
     error('readRawframe error: bad columnLength data in file %s',s.fns{s.fileNum});
@@ -165,7 +183,9 @@ locOffset=rawColMat(36,:);
 colData.projectionFlag = bitget(locOffset,1);
 
 hlocIndex=bitand(bitshift(locOffset,-1),uint8(3));
+
 assert(all(hlocIndex~=2),'Hloc index equal to 3');
+
 hlocLUT = int16([0 1 0 -1]);
 offsetH = hlocLUT(hlocIndex+1);
 offsetH = cumsum(offsetH);
