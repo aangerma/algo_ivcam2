@@ -81,13 +81,39 @@ function callback_runReadFrames(varargin)
 h=guidata(varargin{1});
 
 if(h.numFrames.checkbox.Value==0)
-    ivsArr = io.FG.readFrames(h.dataFolder.String,'verbose',h.verbose.Value>0);
+    ivsArr = io.FG.readFrames(h.dataFolder.String);
 else
-    ivsArr = io.FG.readFrames(h.dataFolder.String,'numFrames',str2double(h.numFrames.edit.String),'verbose',h.verbose.Value>0);
+    ivsArr = io.FG.readFrames(h.dataFolder.String,'numFrames',str2double(h.numFrames.edit.String));
 end
 
 
-
+%% verbose
+if(h.verbose.Value>0)
+    fxy = figure(2452);clf;
+    fx = figure(24852);clf;
+    fy = figure(245892);clf;
+    
+    for i=1:length(ivsArr)
+        xy = ivsArr{i}.xy;
+        
+        figure(fxy);
+        tabplot;hold on;
+        plot(xy(1,:),xy(2,:),'*');
+        title('xy')
+        
+        
+        t=(0:length(ivsArr{i}.slow)-1)/8e9;
+        figure(fx);tabplot;
+        plot(t,xy(1,:),'*');
+        title('x')
+        
+        figure(fy);tabplot;
+        plot(t,xy(2,:),'*');
+        title('y')
+        
+        
+    end
+end
 
 
 %% calib
@@ -102,9 +128,13 @@ for i=1:length(ivsArr)
 end
 
 
-figure;
+figure;clf
 for i=1:length(ivsArr)
     tabplot;
+       mx = max(vec(im{i}));mn = min(vec(im{i}));
+        im{i} = double(im{i}-mn)/double(mx-mn);
+        im{i}(isnan(im{i})) = 0;
+        
     imagesc(im{i}); colormap gray
 end
 
@@ -113,15 +143,15 @@ if(h.outDir.checkbox.Value==1)
     outDir = h.outDir.edit.String;
     mkdirSafe(outDir);
     
+    %write ivs
     for i=1:length(ivsArr)
         io.writeIVS(ivsArr{i},fullfile(outDir,sprintf('record_%02d.ivs',i)));
-        
-        mx = max(vec(im{i}));mn = min(vec(im{i}));
-        im{i} = double(im{i}-mn)/double(mx-mn);
         imwrite(im{i},fullfile(outDir,sprintf('record_%02d.png',i)));
-    end
-end
+    end   
+     
+        
 
+% % % %write gif
 % % % outfn = fullfile(outDir,'ir.gif');
 % % % if(length(ivsArr)==1)
 % % %     imwrite(im{1},outfn,'gif', 'Loopcount',inf);
@@ -130,10 +160,13 @@ end
 % % %         imwrite(im{i},outfn,'gif','WriteMode','append');
 % % %     end
 % % % end
-% % % 
-% % % [A,map]=imread(outfn,'frames','all');
-% % % mov=immovie(A,map);
-% % % implay(mov)
+
+
+end
+
+% [A,map]=imread(outfn,'frames','all');
+% mov=immovie(A,map);
+% implay(mov)
 
 
 end
