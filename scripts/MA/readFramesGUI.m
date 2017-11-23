@@ -17,7 +17,7 @@ function readFramesGUI()
 W=500;
 H=110;
 
-DEF_FOLDER = 'd:\Ohad\data\lidar\EXP\20170424\7014MB4104DF\240417\POC4\8MHz\Chess_Board\';
+DEF_FOLDER = 'C:\Users\ychechik\Desktop\171122\Frames\MIPI_0';
 
 h.f = figure('name','read frames','numbertitle','off','toolbar','none','menubar','none','units','pixels','position',[0 0 W H]);
 centerfig(h.f);
@@ -46,6 +46,8 @@ currH = currH-stride;
 h.numFrames.checkbox = uicontrol('style','checkbox','units','pixels','position',[10 currH 120 lh],'String','numFrames','horizontalalignment','left','parent',h.f,'Value',1);
 % uicontrol('style','text','units','pixels','position',[10+lh currH 120 lh],'String','numFrames','horizontalalignment','left','parent',h.f);
 h.numFrames.edit = uicontrol('style','edit','units','pixels','position',[120 currH lh*2 lh],'String','3','parent',h.f);
+
+h.verbose = uicontrol('style','checkbox','units','pixels','position',[250 currH 120 lh],'String','show xy','horizontalalignment','left','parent',h.f,'Value',1);
 
 
 
@@ -79,9 +81,9 @@ function callback_runReadFrames(varargin)
 h=guidata(varargin{1});
 
 if(h.numFrames.checkbox.Value==0)
-    ivsArr = io.FG.readFrames(h.dataFolder.String);
+    ivsArr = io.FG.readFrames(h.dataFolder.String,'verbose',h.verbose.Value>0);
 else
-    ivsArr = io.FG.readFrames(h.dataFolder.String,str2double(h.numFrames.edit.String));
+    ivsArr = io.FG.readFrames(h.dataFolder.String,'numFrames',str2double(h.numFrames.edit.String),'verbose',h.verbose.Value>0);
 end
 
 
@@ -103,7 +105,7 @@ end
 figure;
 for i=1:length(ivsArr)
     tabplot;
-    imagesc(im{i});
+    imagesc(im{i}); colormap gray
 end
 
 %% save
@@ -113,7 +115,10 @@ if(h.outDir.checkbox.Value==1)
     
     for i=1:length(ivsArr)
         io.writeIVS(ivsArr{i},fullfile(outDir,sprintf('record_%02d.ivs',i)));
-        imwrite(im{i},fullfile(outDir,sprintf('record_%2d.png',i)));
+        
+        mx = max(vec(im{i}));mn = min(vec(im{i}));
+        im{i} = double(im{i}-mn)/double(mx-mn);
+        imwrite(im{i},fullfile(outDir,sprintf('record_%02d.png',i)));
     end
 end
 

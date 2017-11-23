@@ -1,21 +1,33 @@
-function ivsArr = readFrames(inputDir,numFrames)
+function ivsArr = readFrames(varargin)
+inputDir = varargin{1};
+
+p = inputParser;
+
+addOptional(p,'numFrames',[]);
+addOptional(p,'verbose',false);
+
+parse(p,varargin{2:end});
+
+p = p.Results;
+
+
 
 
 s = BinaryStream(inputDir);
 
 ivsArr = cell(0);
-if(nargin==1)
+if(isempty(p.numFrames))
     while true
         %     try
-        ivs = readOneFrame(s);
+        ivs = readOneFrame(s,p.verbose);
         %     catch e,
         %         e;
         %     end
         ivsArr = [ivsArr; {ivs}];
     end
 else
-    for i=1:numFrames
-        ivs = readOneFrame(s);
+    for i=1:p.numFrames
+        ivs = readOneFrame(s,p.verbose);
         ivsArr = [ivsArr; {ivs}];
     end
 end
@@ -23,9 +35,9 @@ end
 
 
 
-function ivs = readOneFrame(s)
+function ivs = readOneFrame(s,verbose)
 % try
-columns = getFrameData(s);
+columns = getFrameData(s,verbose);
 % catch e
 %     throw(e);
 % end
@@ -243,7 +255,7 @@ end
 
 
 
-function columns = getFrameData(s)
+function columns = getFrameData(s,verbose)
 
 columns=[];
 frameHeader = getFrameHeader(s);
@@ -262,25 +274,25 @@ for i=1:frameHeader.numOfColumns-1
     columns(i).xy=[columns(i).xy columns(i).xy(:,end).*ones(2,nSlow,'int16')];
 end
 
-if(0)
+if(verbose)
     %% plot xy output
-    figure(364);clf;hold on;
-    for i=1:length(columns)
-        pat = '*b';
-        if(mod(i,2)==0)
-            pat = '*r';
-            plot(columns(i).xy(1,:),-columns(i).xy(2,:),pat)
-        else
-            plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
-        end
-    end
-    title('xy- y in y direction is now with minus sign')
-    legend('scanDir up','scanDir down')
+%     figure(364);clf;hold on;
+%     for i=1:length(columns)
+%         pat = '*b';
+%         if(mod(i,2)==0)
+%             pat = '*r';
+%             plot(columns(i).xy(1,:),-columns(i).xy(2,:),pat)
+%         else
+%             plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
+%         end
+%     end
+%     title('xy- y in y direction is now with minus sign')
+%     legend('scanDir up','scanDir down')
+%     
+%     
     
     
-    
-    
-    figure(36764);clf;hold on;
+    figure(36764);tabplot;hold on;
     for i=1:length(columns)
         pat = '*b';
         if(mod(i,2)==0)
@@ -297,11 +309,11 @@ if(0)
     t=(0:length([columns.slow])-1)/8e9;
     xy = [columns.xy];
     
-    figure(3673);clf;
+    figure(3673);tabplot;
     plot(t,xy(1,:),'*');
     title('x')
     
-    figure(39673);clf;
+    figure(39673);tabplot;
     plot(t,xy(2,:),'*');
     title('y')
     
