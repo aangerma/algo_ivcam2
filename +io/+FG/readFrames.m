@@ -2,11 +2,8 @@ function ivsArr = readFrames(varargin)
 inputDir = varargin{1};
 
 p = inputParser;
-
-addOptional(p,'numFrames',[]);
-
+addOptional(p,'numFrames',inf);
 parse(p,varargin{2:end});
-
 p = p.Results;
 
 
@@ -14,22 +11,16 @@ p = p.Results;
 
 s = BinaryStream(inputDir);
 
-ivsArr = cell(0);
-if(isempty(p.numFrames))
-    while true
-        %     try
-        ivs = readOneFrame(s,p);
-        %     catch e,
-        %         e;
-        %     end
-        ivsArr = [ivsArr; {ivs}];
+ivsArr = [];
+
+for i=1:p.numFrames
+    ivs = readOneFrame(s);
+    if(isempty(ivs))
+        break;
     end
-else
-    for i=1:p.numFrames
-        ivs = readOneFrame(s);
-        ivsArr = [ivsArr; {ivs}];
-    end
+    ivsArr = [ivsArr; ivs];%#ok
 end
+
 end
 
 

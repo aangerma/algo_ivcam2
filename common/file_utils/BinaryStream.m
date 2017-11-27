@@ -11,11 +11,16 @@ classdef BinaryStream <handle
     %% private
     methods (Access=private)
         
-        function obj=privNextFile(obj)
+        function ok=privNextFile(obj)
             obj.fcloseSafe();
-            obj.curfn = obj.fns{1};
+            if(isempty(obj.fns))
+                ok=false;
+            else
+                ok=true;
+            obj.curfn = strcat(obj.fns(1).folder,filesep,obj.fns(1).name);
             obj.fns = obj.fns(2:end);
             obj.fid = fopen(obj.curfn,'r');
+            end
             
         end
     end
@@ -35,20 +40,37 @@ classdef BinaryStream <handle
         end
         
         function obj = BinaryStream(inputDir)
-            obj.fns = sort(dirFiles(inputDir,'Frame_*.bin'));
+            obj.fns = dir(fullfile(inputDir,filesep,'Frame_*.bin'));
+            [~,o]=sort({obj.fns.name});
+            obj.fns =obj.fns(o);
             obj.fid=-1;
             obj.privNextFile();
         end
         
-        function data = get(obj,numBytes2read)  
+        function n = bytesRemain(obj)
+            n = sum([obj.fns.bytes]);
+            curpos = ftell(obj.fid);
+            fseek(obj.fid,0,'eof');
+            endpos = ftell(obj.fid);
+            fseek(obj.fid,curpos,'bof');
+            n=n+(endpos-curpos);
+            
+        end
+        
+        function [data,ok] = get(obj,numBytes2read)  
             data=[];
             while(length(data)~=numBytes2read)
                 data_ = fread( obj.fid,numBytes2read-length(data),'*uint8');
                 if(isempty(data_))
-                    obj.privNextFile();
+                    ok=obj.privNextFile();
+                    if(~ok)
+                        break;
+                    end
                 end
                 data = [data;data_]; %#ok;
             end
+            
+            ok = length(data)==numBytes2read;
         end
         
         function debugStruct = getDebugStruct(obj)
