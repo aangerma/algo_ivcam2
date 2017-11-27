@@ -175,9 +175,10 @@ slow=rawColMat(1:3,:);
 slow = typecast(vec([slow;zeros(1,size(slow,2))]),'uint32');
 slow=vec([bitand(slow,uint32(2^12-1)) bitshift(slow,-12)]');
 
-fast=rawColMat(4:35,:);
-fast = uint82bin(fast);
-
+fastRaw=rawColMat(4:35,:);
+fast = uint82bin(fastRaw);
+%  fast1 = dec2binFAST(fastRaw(:),8);
+% fast2 = (vec(fast1)-'0') >0;
 
 
 %column packets- location
