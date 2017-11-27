@@ -31,16 +31,55 @@ pzr{1}=pzr{1}*params.pzrPolarity(1);
 pzr{2}=pzr{2}*params.pzrPolarity(2);
 pzr{3}=pzr{3}*params.pzrPolarity(3);
 
-
-
+%{
+				   //////
+				   -----
+				     S
+				     S
+                     S
+          F         1S                      
+		   +-------------------+  
+		   |                   |  
+           |     +-------+     |             
+           |     |       |     |             
+          2|~~~~~|   M   |~~~~~|  
+           |     |       |     |            
+           |     +-------+     |            
+           |                   |            
+           +-------------------+             
+                    3S                       
+                     S
+			         S
+		  		     S
+	   			   -----
+                   /////                  
+%}
+DF_Angle=pzr{3};
 PA_Angle=(pzr{2}-pzr{1})/2;
+SA_LOS=(pzr{2}+pzr{1})/2;
+phaseOffset = minind(DF_Angle(1:1e4))-minind(PA_Angle(1:1e4));
+
+PA_Angle=PA_Angle(1:end-phaseOffset);
+DF_Angle=DF_Angle(phaseOffset+1:end);
+SA_LOS=SA_LOS(phaseOffset+1:end);
+
+%
+% a = max(abs(SA_LOS));
+% b = max(abs(PA_Angle));
+% N=2;
+% SA_LOS_ = (SA_LOS/a) .* (1 - 0.5*(PA_Angle/b).^N).^(1/N);
+% PA_Angle_ = (PA_Angle/b) .* (1 - 0.5*(SA_LOS/a).^N).^(1/N);
+% SA_LOS=SA_LOS_;
+% PA_Angle=PA_Angle_;
+
+
+
+DF_Angle_filtered = runFilter(DF_Angle,params.fa,dt);
 PA_Angle_filtered = runFilter(PA_Angle,params.pa,dt);
-
-SA_LOS=(pzr{1}+pzr{2})/2;
-FA_LOS=params.pa2faGain*PA_Angle_filtered+pzr{3};
-
+FA_LOS_filterd=params.pa2faGain*PA_Angle_filtered+DF_Angle_filtered;
 SA_LOS_filterd = runFilter(SA_LOS,params.sa,dt);
-FA_LOS_filterd = runFilter(FA_LOS,params.fa,dt);
+
+
 case 'poc4l_mc_msync'
         
         
@@ -49,19 +88,19 @@ case 'poc4l_mc_msync'
 end
 if(~isfield(params.fa,'scale'))
     params.fa.scale = 2/diff(minmax(FA_LOS_filterd));
-    if(verbose),fprintff('\nparams.fa.scale: %f\n',params.fa.scale);end
+    if(verbose),fprintf('\nparams.fa.scale: %f\n',params.fa.scale);end
 end
 if(~isfield(params.sa,'scale'))
     params.sa.scale = 2/diff(minmax(SA_LOS_filterd));
-    if(verbose),fprintff('params.sa.scale: %f\n',params.sa.scale);end
+    if(verbose),fprintf('params.sa.scale: %f\n',params.sa.scale);end
 end
 if(~isfield(params.fa,'offset'))
     params.fa.offset = mean(minmax(FA_LOS_filterd));
-    if(verbose),fprintff('params.fa.offset: %f\n',params.fa.offset);end
+    if(verbose),fprintf('params.fa.offset: %f\n',params.fa.offset);end
 end
 if(~isfield(params.sa,'offset'))
     params.sa.offset = mean(minmax(SA_LOS_filterd));
-    if(verbose),fprintff('params.sa.offset: %f\n',params.sa.offset);end
+    if(verbose),fprintf('params.sa.offset: %f\n',params.sa.offset);end
 end
 FA_LOS_filterd = (FA_LOS_filterd - params.fa.offset)*params.fa.scale;
 SA_LOS_filterd = (SA_LOS_filterd - params.sa.offset)*params.sa.scale;

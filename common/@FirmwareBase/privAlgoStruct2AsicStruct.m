@@ -99,7 +99,7 @@ for i = 1:length(algoBlocks)
                 inval2 = typecast(uint32(hex2dec({s.value})),class(inval));
                 assert(all(vec(inval2(1:length(inval)))==vec(inval)),'INTERNAL TYPE SET CHECK FAILED');
             case 'logical'
-                inval2=fliplr(vec(cell2mat(cellfun(@(x) FirmwareBase.dec2binFAST(uint64(hex2dec(x)),32),fliplr({s.value}),'uni',0))=='1')');
+                inval2=fliplr(vec(cell2mat(cellfun(@(x) dec2binFAST(uint64(hex2dec(x)),32),fliplr({s.value}),'uni',0))=='1')');
                 assert(all(inval2(1:length(inval))==inval),'INTERNAL TYPE SET CHECK FAILED')
             otherwise
         end

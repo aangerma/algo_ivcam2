@@ -105,7 +105,7 @@ switch(lower(s.base))
         if(numval<0)
             error('use d type for fixed unsigned and s for fixed signed(%s)',s.regName);
         end
-        bout = FirmwareBase.dec2binFAST(uint64(numval),nbits);
+        bout = dec2binFAST(uint64(numval),nbits);
     case 's'
         numval = str2double(val);
         if(rem(numval,1)~=0)
@@ -114,13 +114,13 @@ switch(lower(s.base))
         if(numval<0)
             numval = numval+2^nbits;
         end
-        bout = FirmwareBase.dec2binFAST(uint64(numval),nbits);
+        bout = dec2binFAST(uint64(numval),nbits);
     case 'h'
-        bout = FirmwareBase.dec2binFAST(uint64(hex2dec(val)),nbits);
+        bout = dec2binFAST(uint64(hex2dec(val)),nbits);
     case 'b'
         bout = [ones(1,nbits-length(val))*'0' val];
     case 'f'
-        bout=FirmwareBase.dec2binFAST(uint64(typecast(single(str2double(val)),'uint32')),32);
+        bout = dec2binFAST(uint64(typecast(single(str2double(val)),'uint32')),32);
     otherwise
         error('Invalid base in register %s',s(1).regName);
 end
