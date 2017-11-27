@@ -10,7 +10,7 @@ N_RUNS = 1064;
 addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\git\ivcam2.0'))
 addpath(genpath('\\tmund-MOBL1.ger.corp.intel.com\c$\git\AlgoCommon\Common'))
 mainDir = 'X:\Data\IvCam2\NN\NNdataset\MPI-Sintel-complete\training\';
-saveDirDepth = 'X:\Data\IvCam2\NN\JFIL\sintelBinFramesAugmentedDepth';
+saveDirDepth = 'X:\Data\IvCam2\NN\JFIL\sintelBinFramesNextGen';
 saveDirIR= 'X:\Data\IvCam2\NN\JFIL\sintelBinFramesAugmentedIR';
 
 
@@ -46,12 +46,14 @@ regs.DEST.confactIn = [x0,dt];
 dt = int16(255); x0 = int16(-128);% Activation maps [-128,127]->[0,255]. dt and x0 are calculated 
 regs.DEST.confactOt = [x0,dt];
 
+% CBUF needs fixing in this version
+regs.FRMW.cbufConstLUT = 1;
 % Feature extraction and NN
 regs.JFIL.dFeaturesConfThr = uint8(0);
 
 
 % dnn regs
-regs = nnRegs(regs); 
+% regs = nnRegs(regs); 
 % bilateral regs
 regs = btRegs(regs);
 
@@ -63,11 +65,11 @@ confNorm = single(1/15);
 irNorm = single(1/(2^12-1));
 nnNorm = single(1/64000);
 normFactors = [confNorm;irNorm;nnNorm];
-    
-fn = fullfile(saveDirIR,strcat('norm_factors','.bin'));
-fid = fopen(fn,'wb');
-fwrite(fid,single(normFactors),'single');
-fclose(fid);
+   
+% fn = fullfile(saveDirIR,strcat('norm_factors','.bin'));
+% fid = fopen(fn,'wb');
+% fwrite(fid,single(normFactors),'single');
+% fclose(fid);
 
 fn = fullfile(saveDirDepth,strcat('norm_factors','.bin'));
 fid = fopen(fn,'wb');
@@ -83,11 +85,10 @@ while true
     zIm = max(0,depth_read(depthFiles{ind(i)})*1000); %mm
     aIm = mean(imread(albdoFiles{ind(i)}),3)/255; %[0 1]
     
-    if mean(zIm(:)<3500) < 0.1
+    if mean(zIm(:)<3500) < 0.2
        continue 
     end
-    
-    
+   
     
     [zIm,aIm] = augmentDepthAndAlbedo(zIm,aIm);
     
@@ -100,8 +101,7 @@ while true
     pout.frameNum = ind(i);
 
     % Depth Data
-    features_single = Utils.fp20('to',pout.nnfeatures.d(:,:,1:14));
-    dataMatDepth = cat(3,single(pout.gt.zImg),features_single);
+    dataMatDepth = cat(3,single(pout.gt.zImg*8),single(pout.gt.zImgRaw),single(pout.gt.zImg),single(pout.BTStages.PreBT1));
     dataMatDepth = permute(dataMatDepth,[3 2 1]);
     if ~isempty(dataMatDepth)
         % save current frame in a binary format
@@ -111,18 +111,18 @@ while true
         fclose(fid);
         fprintf('Bin Depth frame %d done. ',j);
     end
-    % IR Data
-    features_single = Utils.fp20('to',pout.nnfeatures.i(:,:,1:12));
-    dataMatIR = cat(3,single(pout.gt.zImg),single(intensity),features_single);
-    dataMatIR = permute(dataMatIR,[3 2 1]);
-    if ~isempty(dataMatIR)
-        % save current frame in a binary format
-        fn = fullfile(saveDirIR,strcat('frame_',num2str(j),'.bin'));
-        fid = fopen(fn,'wb');
-        fwrite(fid,single(vec(dataMatIR)),'single');
-        fclose(fid);
-        fprintf('Bin IR frame %d done\n',j);
-    end    
+%     % IR Data
+%     features_single = Utils.fp20('to',pout.nnfeatures.i(:,:,1:12));
+%     dataMatIR = cat(3,single(pout.gt.zImg),single(intensity),features_single);
+%     dataMatIR = permute(dataMatIR,[3 2 1]);
+%     if ~isempty(dataMatIR)
+%         % save current frame in a binary format
+%         fn = fullfile(saveDirIR,strcat('frame_',num2str(j),'.bin'));
+%         fid = fopen(fn,'wb');
+%         fwrite(fid,single(vec(dataMatIR)),'single');
+%         fclose(fid);
+%         fprintf('Bin IR frame %d done\n',j);
+%     end    
 end
 
 

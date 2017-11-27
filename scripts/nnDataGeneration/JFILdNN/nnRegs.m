@@ -5,7 +5,7 @@ regsPlusNN = iNNRegs(regsPlusDNN);
 end
 function regsPlusDNN = dNNRegs(regs)
     %% The weights as extracted from tensorflow:
-    weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\dnn_with_bt.mat';
+    weight_file_path = 'X:\Data\IvCam2\NN\JFIL\NN_Weights\dnn_with_bt_noisy_sintel.mat'
     weights = load(weight_file_path);
     %% Set the weights in the write configuration regs
     % Under featureExtrationD:

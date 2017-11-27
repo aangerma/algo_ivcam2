@@ -83,7 +83,7 @@ codeLength = double(regs.GNRL.codeLength);
 sampleRate= double(regs.GNRL.sampleRate);
 tmplLength = codeLength*sampleRate;
 %%
-
+  %
 fprintf('Starting GPlab...');
 gplab=GPlab(gpMode,gpType,doAutoSkew,tmplLength,inDir,recOutDir); %hardware
 gplab.start();

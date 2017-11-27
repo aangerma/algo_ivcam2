@@ -217,9 +217,10 @@ else
     C = 299.792458;
     dImg = rtdImg/C; % Round Trip Time
     dImg = dImg + randn(size(dImg))*double(regs.EPTG.sampleJitter);
-    dvct = griddata(angxg,angyg,dImg,double(angx),double(angy));
+    dvct = griddata(angxg,angyg,dImg,double(angx),double(angy),'nearest');
 
-    dvctF = interp1(t,dvct,tF,'linear','extrap');
+%     dvctF = interp1(t,dvct,tF,'linear','extrap');
+    dvctF = interp1(t,dvct,tF,'nearest','extrap');
     %%
     %genereate slow
     albedoImg = max(0,gt.aImg);
