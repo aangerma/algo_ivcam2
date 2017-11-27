@@ -23,6 +23,7 @@ r = r./sqrt(sum(r.^2,2));
 
 %%
 [d,a]=Simulator.aux.raytrace2d(mdl.f,mdl.v,mdl.a,r,params.sensor.tMat);
+d=RaytracerMEX(single(reshape(mdl.v(vec(mdl.f'),:),9,[])),uint8(255*repmat(mdl.a',3,1)),single(r'));
 %quantize distances according to system_dt
 dS = round(d/(C()*params.system_dt))*C()*params.system_dt;
 rtd = reshape(sum(dS,2),[h w]);
