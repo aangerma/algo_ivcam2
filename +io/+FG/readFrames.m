@@ -2,8 +2,11 @@ function ivsArr = readFrames(varargin)
 inputDir = varargin{1};
 
 p = inputParser;
-addOptional(p,'numFrames',inf);
+
+addOptional(p,'numFrames',[]);
+
 parse(p,varargin{2:end});
+
 p = p.Results;
 
 
@@ -12,24 +15,47 @@ p = p.Results;
 s = BinaryStream(inputDir);
 
 ivsArr = cell(0);
-for i=1:p.numFrames
-    try
-        columns = getFrameData(s);
-    catch e
-        break;
+if(isempty(p.numFrames))
+    while true
+        %     try
+        ivs = readOneFrame(s,p);
+        %     catch e,
+        %         e;
+        %     end
+        ivsArr = [ivsArr; {ivs}];
     end
-    
-    %%
-    ivs = [];
-    ivs.xy = [columns.xy];
-    ivs.slow = [columns.slow];
-    ivs.fast = [columns.fast];
-    ivs.flags = [columns.flags];
-    
-    ivsArr = [ivsArr; {ivs}];
+else
+    for i=1:p.numFrames
+        ivs = readOneFrame(s);
+        ivsArr = [ivsArr; {ivs}];
+    end
+end
 end
 
+
+
+function ivs = readOneFrame(s)
+% try
+columns = getFrameData(s);
+% catch e
+%     throw(e);
+% end
+
+%%
+ivs.xy = [columns.xy];
+ivs.slow = [columns.slow];
+ivs.fast = [columns.fast];
+ivs.flags = [columns.flags];
+
+
+
+
 end
+
+
+
+
+
 
 
 function frameHeader = getFrameHeader(s)
@@ -92,8 +118,8 @@ while(isempty(ind))
     raw = [raw;s.get(COLUMN_HEADER_SZ_BYTES)];
     ind = find(raw==SIZE_OF_PACKET_DEF,1);
 end
-rawCH = [raw(ind-PLACE_OF_SIZE_OF_PACKET_DEF:min(ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1,length(raw)));
-    s.get(max(0,ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1-length(raw)))]; %get 32 bytes acoording to the sizeOfPacket place
+    rawCH = [raw(ind-PLACE_OF_SIZE_OF_PACKET_DEF:min(ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1,length(raw)));
+        s.get(max(0,ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1-length(raw)))]; %get 32 bytes acoording to the sizeOfPacket place
 
 
 %     struct colHeader
@@ -249,18 +275,18 @@ end
 
 if(0)
     %% plot xy output
-    % % %     figure(364);clf;hold on;
-    % % %     for i=1:length(columns)
-    % % %         pat = '*b';
-    % % %         if(mod(i,2)==0)
-    % % %             pat = '*r';
-    % % %             plot(columns(i).xy(1,:),-columns(i).xy(2,:),pat)
-    % % %         else
-    % % %             plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
-    % % %         end
-    % % %     end
-    % % %     title('xy- y in y direction is now with minus sign')
-    % % %     legend('scanDir up','scanDir down')
+% % %     figure(364);clf;hold on;
+% % %     for i=1:length(columns)
+% % %         pat = '*b';
+% % %         if(mod(i,2)==0)
+% % %             pat = '*r';
+% % %             plot(columns(i).xy(1,:),-columns(i).xy(2,:),pat)
+% % %         else
+% % %             plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
+% % %         end
+% % %     end
+% % %     title('xy- y in y direction is now with minus sign')
+% % %     legend('scanDir up','scanDir down')
     
     
     
