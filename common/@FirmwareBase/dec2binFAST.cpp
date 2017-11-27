@@ -16,27 +16,14 @@ void dec2bin_range(int nbits,int i0, int i1, const uint64_t* v, unsigned short* 
 	}
 }
 
-
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-	unsigned int nvals = int(mxGetNumberOfElements(prhs[0]));
-	mxClassID c =  mxGetClassID(prhs[0]);
-	int csize;
-	switch(c)
-	{
-        case mxLOGICAL_CLASS,mxCHAR_CLASS,mxINT8_CLASS ,mxUINT8_CLASS :    csize=8;   break;
-        case mxINT16_CLASS,mxUINT16_CLASS:    csize=16;   break;
-        case mxSINGLE_CLASS,mxINT32_CLASS,mxUINT32_CLASS:    csize=32;   break;
-        case mxDOUBLE_CLASS,mxINT64_CLASS,mxUINT64_CLASS:    csize=64;   break;
-        default: mexErrMsgTxt("Unknown input type");
-	}
-	int n = nvals*csize;
-	if(n%64!=0)
-		mexErrMsgTxt("number of input bytes should divide by 8");
+	if(mxGetClassID(prhs[0])!=mxUINT64_CLASS)
+		mexErrMsgTxt("Input type should be UINT64");
 
 	const uint64_t* v = static_cast<const uint64_t*>(mxGetData(prhs[0]));
 
-	
+	unsigned int nvals = int(mxGetN(prhs[0])*mxGetM(prhs[0]));
 	unsigned int nbits = nrhs == 2 ? int(*mxGetPr(prhs[1])) : 16;
 	plhs[0] = mxCreateNumericMatrix(nbits, nvals, mxCHAR_CLASS, mxREAL);
 	unsigned short* mxout = static_cast<unsigned short*>(mxGetData(plhs[0]));
