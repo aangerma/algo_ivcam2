@@ -32,7 +32,7 @@ for i=1:length(c)/2-1
 end
 c=cc(:);
 
-data=circshift(double(ivs.slow),s);
+data=circshift(double(ivs.slow),[0,s]);
 if(exactLocation)
  sl=arrayfun(@(i) [y(c(i):c(i+1));data(c(i):c(i+1))],1:length(c)-1,'uni',0);
  g = minmax(y);

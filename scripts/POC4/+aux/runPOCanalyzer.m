@@ -17,6 +17,10 @@ if(verbose),fprintf('done(#frames: %d)\n',length(indLocs));end
 
 if(verbose),fprintf('generating LOS...');end
 angxy = aux.extractLOS(pzr,params,dt,verbose);
+if(isfield(params,'angxDelay'))
+    angxy=[circshift(angxy(1,:),params.angxDelay);
+        angxy(2,:)];
+end
 if(verbose),fprintf('done\n');end
 %%
 %  indLocs{1}=[194874 3240762];
