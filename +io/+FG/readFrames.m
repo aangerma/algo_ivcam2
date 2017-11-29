@@ -176,7 +176,9 @@ slow = typecast(vec([slow;zeros(1,size(slow,2))]),'uint32');
 slow=vec([bitand(slow,uint32(2^12-1)) bitshift(slow,-12)]');
 
 fast=rawColMat(4:35,:);
-fast = uint82bin(fast);
+
+fast = vec(flipud(dec2binFast(fast(:))))>'0';
+
 
 
 

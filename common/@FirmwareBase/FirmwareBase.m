@@ -217,7 +217,6 @@ classdef FirmwareBase <handle
     
     methods (Static=true, Access=public)
         
-        b = dec2binFAST(d,n)
         regs = mergeRegs(regs,autogenRegs)
         
     end

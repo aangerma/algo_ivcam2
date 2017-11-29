@@ -5,8 +5,8 @@ if(nvals~=1)
     allsame = @(v) all(strcmp(v,v{1}));
     assert(all(s(1).typeID==[s.typeID]),sprintf('registers with same blockID and register ID should have the same type(%s)',s(1).regName));
     assert(allsame({s.algoName}),sprintf('registers with same blockID and register ID should have the same algoName(%s)',s(1).regName));
-%     assert(all(s(1).arraySize==[s.arraySize]),sprintf('registers with same blockID and register ID should have the same arraySize(%s)',s(1).regName));
-%     assert(allsame({s.range}),sprintf('registers with same blockID and register ID should have the same range(%s)',s(1).regName));
+    %     assert(all(s(1).arraySize==[s.arraySize]),sprintf('registers with same blockID and register ID should have the same arraySize(%s)',s(1).regName));
+    %     assert(allsame({s.range}),sprintf('registers with same blockID and register ID should have the same range(%s)',s(1).regName));
     
     
     
@@ -105,7 +105,7 @@ switch(lower(s.base))
         if(numval<0)
             error('use d type for fixed unsigned and s for fixed signed(%s)',s.regName);
         end
-        bout = FirmwareBase.dec2binFAST(uint64(numval),nbits);
+        bout = dec2binFast(uint64(numval),nbits);
     case 's'
         numval = str2double(val);
         if(rem(numval,1)~=0)
@@ -114,13 +114,15 @@ switch(lower(s.base))
         if(numval<0)
             numval = numval+2^nbits;
         end
-        bout = FirmwareBase.dec2binFAST(uint64(numval),nbits);
+        bout = dec2binFast(uint64(numval),nbits);
     case 'h'
-        bout = FirmwareBase.dec2binFAST(uint64(hex2dec(val)),nbits);
+        bout = dec2binFast(uint64(hex2dec(val)),nbits);
     case 'b'
         bout = [ones(1,nbits-length(val))*'0' val];
     case 'f'
-        bout=FirmwareBase.dec2binFAST(uint64(typecast(single(str2double(val)),'uint32')),32);
+        bout = dec2binFast(uint64(typecast(single(str2double(val)),'uint32')),32);
+        
+        
     otherwise
         error('Invalid base in register %s',s(1).regName);
 end
@@ -132,7 +134,22 @@ bout=vec(fliplr(reshape(bout,n,[]))); %LITLLE ENDIAN
 
 end
 
-
+%         bout = dec2binFast(cast(numval,tt));
+%     case 's'
+%         numval = str2double(val);
+%         if(rem(numval,1)~=0)
+%             error('decimal value should be non fraction numbers(%s)',s.regName);
+%         end
+%         if(numval<0)
+%             numval = numval+2^nbits;
+%         end
+%         bout = dec2binFast(cast(numval,tt));
+%     case 'h'
+%         bout = dec2binFast(cast(hex2dec(val),tt));
+%     case 'b'
+%         bout = [ones(1,nbits-length(val))*'0' val];
+%     case 'f'
+%         bout = dec2binFast(typecast(single(str2double(val)),'uint32'));
 
 
 
