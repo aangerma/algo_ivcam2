@@ -327,22 +327,5 @@ end
 
 end
 
-% % % function x = int14saturation(x)
-% % %
-% % % % x(x>2^11-1) = 2^11-1;
-% % % % x(x<-2^11) = -2^11;
-% % % x(x>2^14-1) = 2^14-1;
-% % % x(x<0) = 0;
-% % % x = int16(x);
-% % % end
-
-function bi = uint82bin(i)
-i = vec(i);
-
-bi = bitand(i,uint8(2.^(7:-1:0)))./uint8(2.^(7:-1:0)) == 1;
-
-bi = vec(fliplr(bi)');
-end
-
 
 
