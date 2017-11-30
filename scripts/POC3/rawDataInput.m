@@ -18,6 +18,7 @@ params.locIRdelay = 114;
 params.outBin = 512;
 params.angxSO = [12 0];
 params.angySO = [2 0];
+params.slowSO = [29e3 0];
 
 
 Pbest=fminsearch(@(x) errFunc(x,v,dt),params.pzr2los,struct('Display','iter'));

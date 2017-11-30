@@ -54,9 +54,12 @@ ivs.slow = interp1(0:dt:tend,irdata,bT:dtO:eT);
 ivs.xy = interp1((0:(length(sa)-1))*dtP,[sa;fa]',bT:dtO:eT)';
 % params.angxSO=[minmax(ivs.xy(1,:)); 1 1]'\[-1;1];
 % params.angySO=[minmax(ivs.xy(2,:)); 1 1]'\[-1;1];
+
+ivs.slow = uint16(ivs.slow*params.slowSO(1)+params.slowSO(2));
+
 to12b = @(x) int16(min(1,max(-1,x))*(2^11-1));
-ivs.xy(1,:) = to12b(ivs.xy(1,:)*params.angxSO(1)+params.angxSO(2));
-ivs.xy(2,:) = to12b(ivs.xy(2,:)*params.angySO(1)+params.angySO(2));
+ivs.xy = [to12b(ivs.xy(1,:)*params.angxSO(1)+params.angxSO(2));to12b(ivs.xy(2,:)*params.angySO(1)+params.angySO(2))];
+
 
 im=raw2img(ivs,params.locIRdelay,params.outBin);
 end
