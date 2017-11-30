@@ -1,6 +1,7 @@
 function e=errFunc(P,v,dt,params)
 warning('off',    'vision:calibrate:boardShouldBeAsymmetric');
-params.pzr2los = P;
+params.angxFilt(3)=P(1);
+params.angyFilt(3)=P(2);
 
 im=cellfun(@(x) scope2img(x,dt,params),v,'uni',0);
 indv=Utils.indx2col(size(im{1}),[3 3]);
