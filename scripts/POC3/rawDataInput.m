@@ -1,8 +1,8 @@
 %function x=rawDataInput()
 %%
-fldr = 'd:\data\ivcam20\EXP\20171126\Record1\';
-fldrs= dirFolders('d:\data\ivcam20\exp\20171129\','*',true);
-fldr = 'd:\data\ivcam20\exp\20171129\1\';
+
+fldrs= dirFolders('\\invcam450\D\data\ivcam20\exp\20171129\','*',true);
+
 [v,dt]=cellfun(@(x) folder2scopeData(x),fldrs,'uni',0);
 dt=dt{1};
 %%
@@ -21,7 +21,7 @@ params.angySO = [2 0];
 params.slowSO = [29e3 0];
 
 
-Pbest=fminsearch(@(x) errFunc(x,v,dt),params.pzr2los,struct('Display','iter'));
+Pbest=fminsearch(@(x) errFunc(x,v,dt,params),params.pzr2los,struct('Display','iter'));
 
 [im,ivs]=cellfun(@(x) scope2img(x,dt,params),v,'uni',0);
 imagesc(im);
