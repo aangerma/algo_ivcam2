@@ -6,34 +6,6 @@ im = (padarray(kron(ones((bsz+1)/2),kron([1 0;0 1],ones(7))),[ 10 10 ]));
 
 p=Utils.findCheckerBoardCorners(im,bsz,true);
 
-%% accuracy vs SNR test
-n = [0.01:0.1:1];
-
-[gty,gtx]=ndgrid(1:bsz(1),1:bsz(2))
-pgt=(gtx*7+10.5)+1j*(gty*7+10.5)
-imagesc(im);
-hold on
-plot(gtp,'r+');
-hold off
-e=zeros(size(n));
-g=false(size(n));
-NRAND=100;
-for i=1:length(n)
-    for j=1:NRAND
-        rng(j)
-        imN = im+rand(size(im))*n(i);
-        imN = conv2(imN,fspecial('gaussian',[5 5],.5),'same');
-        try
-        p=Utils.findCheckerBoardCorners(imN,bsz,true);
-catch
-break;
-end
-        e(i)=e(i)+rms(p-pgt);
-    end
-    if(j!=NRAND)
-    break;
-end
-
 
 %}
 %%
