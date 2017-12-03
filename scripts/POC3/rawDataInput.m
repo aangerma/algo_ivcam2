@@ -15,7 +15,7 @@ params.locPreFreq = 120e6;
 params.locPostFreq = 10e6;
 params.outFreq = 125e6;
 params.locIRdelay = 114;
-params.outBin = 1024;
+params.outBin = 512;
 params.angxSO = [12 0];
 params.angySO = [2 0];
 params.slowSO = [29e3 0];
@@ -23,7 +23,6 @@ params.slowSO = [29e3 0];
 %%
 p1_best=fminsearch(@(x) errFuncA(x,v,dt,params),params.pzr2los,struct('Display','iter'));
 
-p2_best=fminsearch(@(x) errFuncA(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
+p2_best=fminsearch(@(x) errFuncB(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
 
-[im,ivs]=cellfun(@(x) scope2img(x,dt,params),v,'uni',0);
-imagesc(im);
+
