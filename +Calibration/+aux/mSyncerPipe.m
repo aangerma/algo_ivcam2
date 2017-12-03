@@ -89,7 +89,7 @@ while(true)
         subplot(2,3,4:6)
         plot(x,err,'o-');set(gca,'xlim',[x(1)-d/2 x(end)+d/2]);
         line([r r ],minmax(err),'color','r');
-        axis tight
+        
         drawnow;
     end
 end
