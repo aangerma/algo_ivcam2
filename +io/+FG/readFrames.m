@@ -2,23 +2,28 @@ function ivsArr = readFrames(varargin)
 inputDir = varargin{1};
 
 p = inputParser;
-addOptional(p,'numFrames',inf);
+addOptional(p,'numFrames',2^31-1);
+addOptional(p,'verbose',false);
 parse(p,varargin{2:end});
 p = p.Results;
 
-
+logger=Logger(p.verbose);
 
 
 s = BinaryStream(inputDir);
 
 ivsArr = [];
 
+
+
 for i=1:p.numFrames
+    logger.print('Reading frame %d...',i);
     ivs = readOneFrame(s);
     if(isempty(ivs))
         break;
     end
-    ivsArr = [ivsArr; ivs];%#ok
+    logger.print('done\n');
+    ivsArr = [ivsArr; ivs];
 end
 
 end
@@ -26,18 +31,16 @@ end
 
 
 function ivs = readOneFrame(s)
-% try
+
 columns = getFrameData(s);
-% catch e
-%     throw(e);
-% end
-
-%%
-ivs.xy = [columns.xy];
-ivs.slow = [columns.slow];
-ivs.fast = [columns.fast];
-ivs.flags = [columns.flags];
-
+if(isempty(columns))
+    ivs=[];
+else
+    ivs.xy = [columns.xy];
+    ivs.slow = [columns.slow];
+    ivs.fast = [columns.fast];
+    ivs.flags = [columns.flags];
+end
 
 
 
@@ -50,7 +53,7 @@ end
 
 
 function frameHeader = getFrameHeader(s)
-
+frameHeader=[];
 FRAME_HEADER_SZ_BYTES = 32;
 FH_FIRST_BYTE = 35;%RAW_FORMAT_DEF = 3,LOCATION_FORMAT_DEF = 2; 2*2^4+3;
 FH_SECOND_BYTE = [16 17];%can be either. why? because.....
@@ -59,7 +62,9 @@ FH_SECOND_BYTE = [16 17];%can be either. why? because.....
 raw = [];
 cnt = 1;
 while(true)
-    raw = [raw; s.get(FRAME_HEADER_SZ_BYTES)];
+    [b,ok]=s.get(FRAME_HEADER_SZ_BYTES);
+    if(~ok),return;end
+    raw = [raw; b];
     ind = find(raw==FH_FIRST_BYTE,cnt);
     if(length(ind)<cnt) %didn't found FH_FIRST_BYTE
         continue;
@@ -67,7 +72,9 @@ while(true)
     cnt = cnt+1;
     
     if(ind(end)==length(raw)) %need to bring the next byte- where FH_SECOND_BYTE should be
-        raw = [raw; s.get(1)];
+        [b,ok]=s.get(1);
+        if(~ok),return;end
+        raw = [raw; b];
     end
     
     if(any(FH_SECOND_BYTE == raw(ind(end)+1)))
@@ -75,7 +82,9 @@ while(true)
     end
     %else- continue...
 end
-rawFH = [raw(ind(end):min(ind(end)+FRAME_HEADER_SZ_BYTES-1,length(raw))); s.get(max(0,ind(end)+FRAME_HEADER_SZ_BYTES-1-length(raw)))];
+[b,ok]=s.get(max(0,ind(end)+FRAME_HEADER_SZ_BYTES-1-length(raw)));
+if(~ok),return;end
+rawFH = [raw(ind(end):min(ind(end)+FRAME_HEADER_SZ_BYTES-1,length(raw))); b];
 
 
 
@@ -96,21 +105,26 @@ end
 
 
 function colHeader = getHeader(s)
-
+colHeader=[];
 COLUMN_HEADER_SZ_BYTES = 32;
 SIZE_OF_PACKET_DEF = 36;
 PLACE_OF_SIZE_OF_PACKET_DEF = 2;
 
 
-raw = s.get(COLUMN_HEADER_SZ_BYTES);
-
+[raw,ok] = s.get(COLUMN_HEADER_SZ_BYTES);
+if(~ok),return;end
 ind = find(raw==SIZE_OF_PACKET_DEF,1);
 while(isempty(ind))
-    raw = [raw;s.get(COLUMN_HEADER_SZ_BYTES)];
+    [b,ok]=s.get(COLUMN_HEADER_SZ_BYTES);
+    if(~ok),return;end
+    raw = [raw;b];
+    
     ind = find(raw==SIZE_OF_PACKET_DEF,1);
 end
-    rawCH = [raw(ind-PLACE_OF_SIZE_OF_PACKET_DEF:min(ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1,length(raw)));
-        s.get(max(0,ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1-length(raw)))]; %get 32 bytes acoording to the sizeOfPacket place
+[b,ok]=s.get(max(0,ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1-length(raw)));
+if(~ok),return;end
+rawCH = [raw(ind-PLACE_OF_SIZE_OF_PACKET_DEF:min(ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1,length(raw)));
+    b]; %get 32 bytes acoording to the sizeOfPacket place
 
 
 %     struct colHeader
@@ -165,7 +179,9 @@ end
 function colData = getScanline(s)
 colData.header = getHeader(s);
 colSz = double(colData.header.numPackets)*double(colData.header.sizeOfPacket);
-rawCol = s.get(colSz);
+[rawCol,ok] = s.get(colSz);
+if(~ok),  colData=[];   return;end
+
 
 
 %column packets- fast & slow
@@ -251,37 +267,24 @@ columns=[];
 frameHeader = getFrameHeader(s);
 %% columns
 for i=1:frameHeader.numOfColumns
-    columns =[columns getScanline(s)];
+    ns=getScanline(s);
+    if(isempty(ns)),columns=[];return; end
+        
+    columns =[columns ns];
 end
 %% padding
 for i=1:frameHeader.numOfColumns-1
     nFast = columns(i+1).header.timestamp-columns(i).header.timestamp;
     assert(mod(nFast,64)==0,'Time between timestamps does not divide in 64');
     nSlow = nFast/64;
-    columns(i).fast=[columns(i).fast false(1,nFast)];
+    columns(i).fast=[columns(i).fast false(1,nFast)]; %#ok<*AGROW>
     columns(i).slow=[columns(i).slow zeros(1,nSlow)];
     columns(i).flags=[columns(i).flags zeros(1,nSlow)];
     columns(i).xy=[columns(i).xy columns(i).xy(:,end).*ones(2,nSlow,'int16')];
 end
 
 if(0)
-    %% plot xy output
-% % %     figure(364);clf;hold on;
-% % %     for i=1:length(columns)
-% % %         pat = '*b';
-% % %         if(mod(i,2)==0)
-% % %             pat = '*r';
-% % %             plot(columns(i).xy(1,:),-columns(i).xy(2,:),pat)
-% % %         else
-% % %             plot(columns(i).xy(1,:),columns(i).xy(2,:),pat)
-% % %         end
-% % %     end
-% % %     title('xy- y in y direction is now with minus sign')
-% % %     legend('scanDir up','scanDir down')
-    
-    
-    
-    
+    %%
     figure(36764);clf;hold on;
     for i=1:length(columns)
         pat = '*b';
@@ -325,14 +328,6 @@ end
 
 end
 
-% % % function x = int14saturation(x)
-% % %
-% % % % x(x>2^11-1) = 2^11-1;
-% % % % x(x<-2^11) = -2^11;
-% % % x(x>2^14-1) = 2^14-1;
-% % % x(x<0) = 0;
-% % % x = int16(x);
-% % % end
 
 function bi = uint82bin(i)
 i = vec(i);
