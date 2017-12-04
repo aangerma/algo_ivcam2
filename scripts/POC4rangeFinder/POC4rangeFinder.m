@@ -2,6 +2,18 @@ function POC4rangeFinder
 %{
 mcc -m POC4rangeFinder.m -d \\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4RangeFinder\ -a ..\..\+Pipe\tables\* -a .\*
 %}
+
+
+%% Algo use
+% -choose simulation 
+% -put in 'in Dir' config.csv with (Sagi's default): 
+%     GNRLcodeLength d32
+%     FRMWtxCode_000 h995A6A96
+%     GNRLsampleRate d8
+% - inside the in dir should be '/MIPI_0' dir with all 'Frame_***.bin' files
+%%
+
+
 sourModes = {'FullFlowWithHardware'
     'OnlyGPLABFrames'
     'SplittedFrames'
@@ -23,7 +35,7 @@ sourModes = {'FullFlowWithHardware'
 fprintf('Pipe version: %s\n',Pipe.version());
 W=500;
 H=220;
-h.f = figure('name','POC4 rangeFinder','numbertitle','off','toolbar','none','menubar','none','units','pixels','position',[0 0 W H]);
+h.f = figure('name','POC4 rangeFinder','numbertitle','off','menubar','none','units','pixels','position',[0 0 W H]);
 centerfig(h.f);
 clf(h.f);
 lh=22;
@@ -126,7 +138,7 @@ fw.setRegs(newregs,'POC4');
 
 f = figure('Numbertitle','off','name','Range finder','toolbar','none','MenuBar','none');
 maximize(f);
-a = arrayfun(@(i) subplot(2,6,i),1:6,'uni',0);
+a = arrayfun(@(i) subplot(2,7,i),1:7,'uni',0);
 % xy00 = get(a{1},'Position');
 % xy11 = get(a{end},'Position');
 hEditbox = uicontrol('units','normalized','position',[0 .1 1 0.4],'style','edit', 'max',5,'parent',f,'horizontalalignment','left','fontname','courier','fontSize',12);
@@ -136,7 +148,7 @@ hGrabButton = uicontrol('units','normalized','position',[0 0 1 0.1],'style','tog
 
 txt='';
 txtHead = sprintf('%5s | %9s | %9s | %9s | %9s | %9s | %9s  | %9s | %9s  | %9s ',...
-    '#','u(r)','s(r)','u(ir)','s(ir)','s(irR)','u(c)','range(r)','range(ir)','ser[%]');
+    '#','mean(r)','std(r)','mean(ir)','std(ir)','std(ir Raw)','mean(c)','range(r)','range(ir)','ser[%]');
 txtHead = [txtHead char(10) '-'*ones(size(txtHead))];
 % if(hObj.doJitter.Value==1)
 %     ff=figure(8889);
@@ -226,20 +238,35 @@ while(ishandle(f))
     fftplot(ivs.slow(1:length(ivs.slow)-mod(length(ivs.slow),2)),0.125,'parent',a{6});
     axis(a{6},'tight');
     axis(a{6},'square');
+    title(a{6},'FFT-slow')
+
+    fftplot(ivs.fast,8,'parent',a{7});
+    axis(a{7},'tight');
+    axis(a{7},'square');
+    title(a{7},'FFT-fast')
+
     txtInc = sprintf('%5d   %9.3f   %9.3f   %9.3f   %9.3f   %9.3f   %9.3f   %9.3f   %9d   %9d   %9d',cnt,rmu,rsig,imu,isig,iSigRaw,cmu,r_minmax,i_minmax,ser);
-    if(hGrabButton.Value==1)
-        hGrabButton.Value=0;
-        txtInc = [txtInc '    *']; %#ok
-        fid = fopen('grabbed','a');
-        fprintf(fid,'%s\n',sprintf('%f ',rImg(:)));
-        fclose(fid);
-    end
-    
-    cnt = cnt+1;
     txt = [txtInc char(10) txt];%#ok
     hEditbox.String = [txtHead char(10) txt];
     
-
+    cnt = cnt+1;
+    
+    if(hGrabButton.Value==1)
+        hGrabButton.Value=0;
+        
+        fid = fopen(fullfile(recOutDir,'grabbed_depth.csv'),'a');
+        fprintf(fid,'%s\n',sprintf('%d,',rImg(:)));
+        fclose(fid);
+        
+        fid = fopen(fullfile(recOutDir,'grabbed_ir.csv'),'a');
+        fprintf(fid,'%s\n',sprintf('%d,',iImg(:)));
+        fclose(fid);
+        
+        fid = fopen(fullfile(recOutDir,'grabbed_conf.csv'),'a');
+        fprintf(fid,'%s\n',sprintf('%d,',cImg(:)));
+        fclose(fid);
+    end
+    
     
 %     if(hObj.doJitter.Value==1)
 %         vmoved = circshift(v,-floor(peakLoc));
