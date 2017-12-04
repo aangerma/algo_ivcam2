@@ -29,7 +29,8 @@ params.slowSO = [29e3 0];
 
 %%
 p1_best=fminsearch(@(x) errFuncA(x,v,dt,params),params.pzr2los,struct('Display','iter'));
+p2_best=fminsearch(@(x) errFuncA(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
 
-p2_best=fminsearch(@(x) errFuncB(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
-
+p3_best=fminsearch(@(x) errFuncB(x,v,dt,params),params.pzr2los,struct('Display','iter'));
+p4_best=fminsearch(@(x) errFuncB(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
 
