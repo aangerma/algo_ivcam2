@@ -4,8 +4,8 @@ ir(sum(ir(:,2:end-1),2)==0,:)=[];
 
 ir_=ir;
 ir_(isnan(ir_))=0;
-ir_=histeq(ir_);
-% pt = Utils.findCheckerBoardCorners(ir,boardSize,false);
+
+% pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
 [pt,bsz]=detectCheckerboardPoints(ir_);
 pt=reshape(pt(:,1)+1j*pt(:,2),bsz-1);
 % if(~all(bsz-1==boardSize))
