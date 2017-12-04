@@ -7,7 +7,7 @@
 void main()
 {
 
-	char directoryName[] = "c:\\temp\\testData\\Frames\\";
+	char directoryName[] = "c:/temp/1/Frames/";
 	char recordDirectoryName[] = "c:\\temp\\Frames_rec_constant\\";
 
 	
@@ -15,6 +15,7 @@ void main()
 
 	std::cout << "Starting" << std::endl;
 	SourceMode s(SourceMode::Simulation);
+
 	GPLabType t(GPLabType::USB);
 	bool doAS=false;
 	int captureTimeOut = 5000;
