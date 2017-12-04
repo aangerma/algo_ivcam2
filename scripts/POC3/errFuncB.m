@@ -8,8 +8,10 @@ indv=Utils.indx2col(size(im{1}),[3 3]);
 im = cellfun(@(x) reshape(nanmedian(x(indv)),size(im{1})),im,'uni',0);
 im = cellfun(@(x) nan2zero(x),im,'uni',0);
 im = cellfun(@(x) histeq(normByMax(x)),im,'uni',0);
+
 try
-       p = cellfun(@(x)  Utils.findCheckerBoardCorners(x,[9 13],true),im,'uni',0);
+    p = cellfun(@(x)  detectCheckerboardPoints(x),im,'uni',0);
+    p = cellfun(@(x) x(:,1)+1j*x(:,2),p,'uni',0);
     p=reshape([p{:}],9,13,[]);
     
     e=sqrt(mean(vec(var(real(p),[],3)+var(imag(p),[],3))));
@@ -17,7 +19,6 @@ catch
     e=10;
     return;
 end
-
 
 
 
