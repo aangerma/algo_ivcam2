@@ -4,6 +4,7 @@ inputDir = varargin{1};
 p = inputParser;
 addOptional(p,'numFrames',2^31-1);
 addOptional(p,'verbose',false);
+
 parse(p,varargin{2:end});
 p = p.Results;
 
@@ -13,26 +14,27 @@ logger=Logger(p.verbose);
 s = BinaryStream(inputDir);
 
 ivsArr = [];
-
+fhs=[];
 
 
 for i=1:p.numFrames
     logger.print('Reading frame %d...',i);
-    ivs = readOneFrame(s);
+    [ivs,frameHeader] = readOneFrame(s);
     if(isempty(ivs))
         break;
     end
     logger.print('done\n');
     ivsArr = [ivsArr; ivs];
+    fhs=[fhs;frameHeader];
 end
 
 end
 
 
 
-function ivs = readOneFrame(s)
+function [ivs,frameHeader] = readOneFrame(s)
 
-columns = getFrameData(s);
+[columns,frameHeader] = getFrameData(s);
 if(isempty(columns))
     ivs=[];
 else
@@ -55,52 +57,49 @@ end
 function frameHeader = getFrameHeader(s)
 frameHeader=[];
 FRAME_HEADER_SZ_BYTES = 32;
-FH_FIRST_BYTE = 35;%RAW_FORMAT_DEF = 3,LOCATION_FORMAT_DEF = 2; 2*2^4+3;
-FH_SECOND_BYTE = [16 17];%can be either. why? because.....
 
 
-raw = [];
-cnt = 1;
+[rawFH,ok]=s.get(FRAME_HEADER_SZ_BYTES-1);
+rawFH=[0;rawFH];
+if(~ok),return;end
 while(true)
-    [b,ok]=s.get(FRAME_HEADER_SZ_BYTES);
+    [b,ok]=s.get(1);
     if(~ok),return;end
-    raw = [raw; b];
-    ind = find(raw==FH_FIRST_BYTE,cnt);
-    if(length(ind)<cnt) %didn't found FH_FIRST_BYTE
+    rawFH=[rawFH(2:end);b];
+    
+    
+    frameHeader.RawFormat = bitand(rawFH(1),uint8(15));
+    frameHeader.locationFormat = bitshift(rawFH(1),-4);
+    frameHeader.info = typecast(rawFH(2:3),'uint16');
+    frameHeader.numOfColumns = typecast(rawFH(4:5),'uint16');
+    frameHeader.frameCounter = typecast(rawFH(6:7),'uint16');
+    frameHeader.MIPIDispatcherPointer = rawFH(8);
+    frameHeader.timestamp=typecast(rawFH(9:12),'uint32');
+    frameHeader.reserved=rawFH(13:32);
+    
+    if(all(frameHeader.info~=[16  17]))
         continue;
     end
-    cnt = cnt+1;
-    
-    if(ind(end)==length(raw)) %need to bring the next byte- where FH_SECOND_BYTE should be
-        [b,ok]=s.get(1);
-        if(~ok),return;end
-        raw = [raw; b];
+    if(frameHeader.RawFormat~=3)
+        continue;
     end
-    
-    if(any(FH_SECOND_BYTE == raw(ind(end)+1)))
-        break;
+    if(frameHeader.numOfColumns==0 || frameHeader.numOfColumns>10e3)
+        continue;
     end
-    %else- continue...
+    if(all(frameHeader.MIPIDispatcherPointer ~=[1 2 3 4]))
+        continue;
+    end
+    if(any(frameHeader.reserved ~=0))
+        continue;
+    end
+    break;
 end
-[b,ok]=s.get(max(0,ind(end)+FRAME_HEADER_SZ_BYTES-1-length(raw)));
-if(~ok),return;end
-rawFH = [raw(ind(end):min(ind(end)+FRAME_HEADER_SZ_BYTES-1,length(raw))); b];
 
 
 
 
-frameHeader.RawFormat = bitand(rawFH(1),uint8(15));
-frameHeader.locationFormat = bitshift(rawFH(1),-4);
-frameHeader.info = typecast(rawFH(2:3),'uint16');
-frameHeader.numOfColumns = typecast(rawFH(4:5),'uint16');
-frameHeader.frameCounter = typecast(rawFH(6:7),'uint16');
-frameHeader.MIPIDispatcherPointer = rawFH(8);
-frameHeader.timestamp=typecast(rawFH(9:12),'uint32');
-frameHeader.reserved=rawFH(13:32);
 
-if(frameHeader.RawFormat ~= 3)
-    error('frameHeader.RawFormat ~= 3')
-end
+
 end
 
 
@@ -190,7 +189,9 @@ rawColMat = reshape(rawCol,double(colData.header.sizeOfPacket),[]);
 slow=rawColMat(1:3,:);
 slow = typecast(vec([slow;zeros(1,size(slow,2))]),'uint32');
 slow=vec([bitand(slow,uint32(2^12-1)) bitshift(slow,-12)]');
-
+if(round(double(colData.header.txSyncDelay)/64)>length(slow))
+    error('txSyncDelay(%d) is bigger than data length(%d),cannot padd data.',round(double(colData.header.txSyncDelay)/64),length(slow));
+end
 fast=rawColMat(4:35,:);
 fast = uint82bin(fast);
 
@@ -261,7 +262,7 @@ end
 
 
 
-function columns = getFrameData(s)
+function [columns,frameHeader] = getFrameData(s)
 
 columns=[];
 frameHeader = getFrameHeader(s);
