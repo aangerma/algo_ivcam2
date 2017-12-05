@@ -14,11 +14,11 @@ im=scope2img(v{1},dt,params);
 indv=Utils.indx2col(size(im),[3 3]);
 im =  reshape(nanmedian(im(indv)),size(im));
 im = nan2zero(im);
-im = histeq(normByMax(im));
+
 
 try
-    [e1,e2]=Calibration.aux.edgeUnifomity(im);
-    e=e1+e2;
+    e=Calibration.aux.edgeUnifomity(im);
+
 catch
     e=100;
     return;
