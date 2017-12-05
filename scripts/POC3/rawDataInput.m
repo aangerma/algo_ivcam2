@@ -38,9 +38,15 @@ params.pzr2los = [0.5248    0.0000    0.4942    0.1273    1.0214   -0.1234];
  linkaxes(findobj(0,'type','axes'))
 
 %%
-p1_best=fminsearch(@(x) errFuncA(x,v,dt,params),params.pzr2los,struct('Display','iter'));
-p2_best=fminsearch(@(x) errFuncA(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
+fa_0 = errFuncA(params.pzr2los,v,dt,params);
+[p1_best,fa1]=fminsearch(@(x) errFuncA(x,v,dt,params),params.pzr2los,struct('Display','iter'));
+[p2_best,fa2]=fminsearch(@(x) errFuncA(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
 
-p3_best=fminsearch(@(x) errFuncB(x,v,dt,params),params.pzr2los,struct('Display','iter'));
-p4_best=fminsearch(@(x) errFuncB(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
+
+fb_0 = errFuncB(params.pzr2los,v,dt,params);
+[p3_best,fb1]=fminsearch(@(x) errFuncB(x,v,dt,params),params.pzr2los,struct('Display','iter'));
+[p4_best,fb2]=fminsearch(@(x) errFuncB(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
+
+[fa_0 fb_0]./[fa1 fb1]-1
+[fa_0 fb_0]./[fa2 fb2]-1
 
