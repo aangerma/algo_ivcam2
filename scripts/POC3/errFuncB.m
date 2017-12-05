@@ -1,4 +1,4 @@
-function e=errFuncA(P,v,dt,params)
+function e=errFuncB(P,v,dt,params)
 warning('off',    'vision:calibrate:boardShouldBeAsymmetric');
 switch(length(P))
     case 6
@@ -20,7 +20,7 @@ try
     e=Calibration.aux.edgeUnifomity(im);
 
 catch
-    e=100;
+    e=10000;
     return;
 end
 
