@@ -19,13 +19,23 @@ params.outBin = 1024;
 params.angxSO = [12 0];
 params.angySO = [2 0];
 params.slowSO = [29e3 0];
-% [im,ivs_]=scope2img(v,dt,params);
-% indv=Utils.indx2col(size(im),[3 3]);
-% im=reshape(nanmedian(im(indv)),size(im));
-% figure;
-% imagesc(im,[0 1500]);
+%%
+params.pzr2los = [0.5248    0.0000    0.4942    0.1273    1.0214   -0.1234];
+% params.angxFilt(3) = 12089.7330567241;
+% params.angyFilt(3) = 57976.8520966172;
+%% 
+ [im,ivs_]=scope2img(v{1},dt,params);
+ indv=Utils.indx2col(size(im),[3 3]);
+ im=reshape(nanmedian(im(indv)),size(im));
+%%
+ figure;
+ subplot(121)
+ imagesc(imo);axis image
+ subplot(122)
+ imagesc(im);axis image
+ 
 % colormap gray
-% linkaxes(findobj(0,'type','axes'))
+ linkaxes(findobj(0,'type','axes'))
 
 %%
 p1_best=fminsearch(@(x) errFuncA(x,v,dt,params),params.pzr2los,struct('Display','iter'));
