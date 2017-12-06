@@ -1,0 +1,57 @@
+CAMPORT:0	// old format compatible
+SYNCMODE:0	// old format compatible
+SOLCODE:0	// old format compatible
+EOLCODE:0	// old format compatible
+SOFCODE:0	// old format compatible
+EOFCODE:0	// old format compatible
+HPOR:0		// old format compatible
+VPOR:0		// old format compatible
+HOFF:0
+HCNT:8184
+VOFF:0
+VCNT:1050
+HREDUCT:0	// old format compatible
+VREDUCT:0	// old format compatible
+FRMSKP:0
+FRMDROP:0
+HWEXCHG:0	// old format compatible
+SPACK:0		// old format compatible
+PORTMSBBIT:9	// old format compatible
+BITWIDTH:8
+B2R:0		// old format compatible
+SMIAIN:0	// old format compatible
+SMIACLASS:0	// old format compatible
+CAMERAFORMAT:0	// old format compatible
+INPUTFORMAT:42
+EXCHGFORMAT:0	// old format compatible
+ADB:1		// old format compatible
+CAMERA_IF:1
+NUM_CHANNEL:4
+CCP_CLASS:0	// old format compatible
+CCP_FORMAT:0	// old format compatible
+CSI_ECC:0
+CONT_CLK:0
+HISPI_MODE:0	// old format compatible
+HISPI_ENDIAN:0	// old format compatible
+HISPI_FILLER:0	// old format compatible
+HISPI_FORMAT:2	// old format compatible
+HISPI_HLEN:0	// old format compatible
+HISPI_LPOL:0x00	// old format compatible
+ADB_DPACK:0	// old format compatible
+HROI_OFF1:0
+HROI_CNT1:0
+HROI_OFF2:0
+HROI_CNT2:0
+HROI_OFF3:0
+HROI_CNT3:0
+HROI_OFF4:0
+HROI_CNT4:0
+HROI_OFF5:0
+HROI_CNT5:0
+HROI_OFF6:0
+HROI_CNT6:0
+HROI_OFF7:0
+HROI_CNT7:0
+HROI_OFF8:0
+HROI_CNT8:0
+END:
