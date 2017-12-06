@@ -10,8 +10,11 @@ p = p.Results;
 
 logger=Logger(p.verbose);
 
-
-s = BinaryStream(inputDir);
+if(isnumeric(inputDir))
+    s = ArrayStream(inputDir);
+else
+    s = BinaryStream(inputDir);
+end
 
 ivsArr = [];
 fhs=[];
@@ -106,69 +109,66 @@ end
 function colHeader = getHeader(s)
 colHeader=[];
 COLUMN_HEADER_SZ_BYTES = 32;
-SIZE_OF_PACKET_DEF = 36;
-PLACE_OF_SIZE_OF_PACKET_DEF = 2;
 
 
-[raw,ok] = s.get(COLUMN_HEADER_SZ_BYTES);
+[rawCH,ok] = s.get(COLUMN_HEADER_SZ_BYTES-1);
+rawCH=[0;rawCH];
 if(~ok),return;end
-ind = find(raw==SIZE_OF_PACKET_DEF,1);
-while(isempty(ind))
-    [b,ok]=s.get(COLUMN_HEADER_SZ_BYTES);
+OFFSET=1;
+while(true)
+    [b,ok]=s.get(1);
     if(~ok),return;end
-    raw = [raw;b];
+    rawCH = [rawCH(2:end);b];
     
-    ind = find(raw==SIZE_OF_PACKET_DEF,1);
+    %     struct colHeader
+    % {
+    %    UINT16               numPackets; //bytes 0 1
+    %    byte            sizeOfPacket;   //bytes 2
+    %    UINT32               horizontalLocation; //bytes 3-6
+    %    UINT32               verticalLocation; //bytes 7-10
+    %    UINT16               txSyncDelay; //bytes 11 12
+    %    UINT16               columnLength;  //bytes 13 14
+    %    Info            info; //byte 15
+    %    byte            data[9]; //byte 16-24
+    %    byte            timestamp[5]; //byte 25-29
+    %    byte            reserved[2]; //byte 30-31
+    %    // 204- 235
+    %
+    %    /*Info               info;
+    %    FreqCompensation freqCompensation;
+    %    LocCorrection    locCorrection;
+    %    UINT32               horizontalTimeFromHsync;
+    %    UINT32               verticalTimeFromHsync : 20;*/
+    % };
+    
+    
+    colHeader.numPackets=typecast(rawCH(1+(0:1)),'uint16');
+    colHeader.sizeOfPacket=rawCH(1+2);
+    
+    colHeader.horizontalLocation=int16(bitshift(typecast(rawCH(1+(3:6)),'int32'),-2)); %we get 14b but should get 12b
+    colHeader.verticalLocation=int16(bitshift(typecast(rawCH(1+(7:10)),'int32'),-2));
+    
+    colHeader.txSyncDelay=typecast(rawCH(1+(11:12)),'uint16'); %in fast samples count
+    colHeader.columnLength=typecast(rawCH(1+(13:14)),'uint16');
+    colHeader.info=rawCH(1+15);
+    colHeader.scanDir=bitand(colHeader.info,uint8(1));
+    colHeader.data=rawCH(1+(16:24));
+    colHeader.timestamp=bitand(bitshift(typecast([rawCH(1+(25:29));0;0;0],'uint64'),-4),uint64(2^32-1))*4;%*4 for it to be in fast samples count
+    colHeader.vSyncDelay=bitand(bitshift(typecast([rawCH(1+(29:31));0;],'uint32'),-4),uint32(2^20-1))*4;%*4 for it to be in fast samples count
+    colHeader.reserved=rawCH(1+(30:31));
+    
+    if(colHeader.sizeOfPacket~=36)
+        continue;
+    end
+    if(colHeader.columnLength==0)
+        continue;
+    end
+    break;
+    
+    
 end
-[b,ok]=s.get(max(0,ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1-length(raw)));
-if(~ok),return;end
-rawCH = [raw(ind-PLACE_OF_SIZE_OF_PACKET_DEF:min(ind+COLUMN_HEADER_SZ_BYTES-PLACE_OF_SIZE_OF_PACKET_DEF-1,length(raw)));
-    b]; %get 32 bytes acoording to the sizeOfPacket place
 
 
-%     struct colHeader
-% {
-%    UINT16               numPackets; //bytes 0 1
-%    byte            sizeOfPacket;   //bytes 2
-%    UINT32               horizontalLocation; //bytes 3-6
-%    UINT32               verticalLocation; //bytes 7-10
-%    UINT16               txSyncDelay; //bytes 11 12
-%    UINT16               columnLength;  //bytes 13 14
-%    Info            info; //byte 15
-%    byte            data[9]; //byte 16-24
-%    byte            timestamp[5]; //byte 25-29
-%    byte            reserved[2]; //byte 30-31
-%    // 204- 235
-%
-%    /*Info               info;
-%    FreqCompensation freqCompensation;
-%    LocCorrection    locCorrection;
-%    UINT32               horizontalTimeFromHsync;
-%    UINT32               verticalTimeFromHsync : 20;*/
-% };
-OFFSET = 1;
-
-colHeader.numPackets=typecast(rawCH(OFFSET+(0:1)),'uint16');
-colHeader.sizeOfPacket=rawCH(OFFSET+2);
-
-colHeader.horizontalLocation=int16(bitshift(typecast(rawCH(OFFSET+(3:6)),'int32'),-2)); %we get 14b but should get 12b
-colHeader.verticalLocation=int16(bitshift(typecast(rawCH(OFFSET+(7:10)),'int32'),-2));
-
-colHeader.txSyncDelay=typecast(rawCH(OFFSET+(11:12)),'uint16'); %in fast samples count
-colHeader.columnLength=typecast(rawCH(OFFSET+(13:14)),'uint16');
-colHeader.info=rawCH(OFFSET+15);
-colHeader.scanDir=bitand(colHeader.info,uint8(1));
-colHeader.data=rawCH(OFFSET+(16:24));
-colHeader.timestamp=bitand(bitshift(typecast([rawCH(OFFSET+(25:29));0;0;0],'uint64'),-4),uint64(2^32-1))*4;%*4 for it to be in fast samples count
-colHeader.vSyncDelay=bitand(bitshift(typecast([rawCH(OFFSET+(29:31));0;],'uint32'),-4),uint32(2^20-1))*4;%*4 for it to be in fast samples count
-colHeader.reserved=rawCH(OFFSET+(30:31));
-
-if(double(colHeader.columnLength)==0)
-    error('readRawframe error: bad columnLength data in file %s',s.fns{s.fileNum});
-end
-if(double(colHeader.sizeOfPacket)~=36)
-    error('readRawframe error: bad  sizeOfPacket data in file %s',s.curFile());
-end
 end
 
 
@@ -203,7 +203,7 @@ colData.projectionFlag = bitget(locOffset,1);
 
 hlocIndex=bitand(bitshift(locOffset,-1),uint8(3));
 
-assert(all(hlocIndex~=2),'Hloc index equal to 3');
+% assert(all(hlocIndex~=2),'Hloc index equal to 3');
 
 hlocLUT = int16([0 1 0 -1]);
 offsetH = hlocLUT(hlocIndex+1);
