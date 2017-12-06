@@ -7,7 +7,8 @@
 void main()
 {
 
-	char directoryName[] = "c:/temp/1/Frames/";
+	//char directoryName[] = "c:\\temp\\Frames_rec_constant\\Frames\\"; 
+	char directoryName[] = "d:\\data\\ivcam20\\exp\\20171204\\6\\Frames";
 	char recordDirectoryName[] = "c:\\temp\\Frames_rec_constant\\";
 
 	
