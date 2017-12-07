@@ -9,7 +9,7 @@ dt=dt{1};
 params.irPreFilt = [3 166e6+[-30 30]*1e6];
 params.irPostFilt = [3 0 64e6 ];
 params.pzr2los = [  .5       0          .5       1/8 1 -1/8];
-params.angxFilt = [3 0 15e3 0];
+params.angxFilt = [3 0 15e3 ];
 params.angyFilt = [3 0 50e3 ];
 params.locPreFreq = 120e6;
 params.locPostFreq = 10e6;
@@ -21,34 +21,36 @@ params.angySO = [2 0];
 params.slowSO = [29e3 0];
 %%
 %{
- params.pzr2los = [0.5248    0.0000    0.4942    0.1273    1.0214   -0.1234];
- params.angxFilt(3) = 12089.7330567241;
- params.angyFilt(3) = 57976.8520966172;
+ params.pzr2los = [0.4886 -1.4041e-04 0.5545 0.1371 1.0042 -0.1316];
+ params.angxFilt(3) = 1.3340e+04;
+ params.angyFilt(3) = 4.8581e+04;
 %}
 %% 
  [im,ivs_]=scope2img(v{1},dt,params);
+%  [im,ivs_]=cellfun(@(x) scope2img(x,dt,params),v,'uni',0);
  indv=Utils.indx2col(size(im),[3 3]);
- im=reshape(nanmedian(im(indv)),size(im));
+  im=reshape(nanmedian(im(indv)),size(im));
+% im=cellfun(@(x) reshape(nanmedian(x(indv)),size(im{1})),im,'uni',0);
 %%
  figure;
  subplot(121)
  imagesc(imo);axis image
  subplot(122)
  imagesc(im);axis image
- 
-% colormap gray
  linkaxes(findobj(0,'type','axes'))
+ %%
 
+ 
+
+[fa_0,im,p] = errFuncA(params.pzr2los,v,dt,params); 
+fc_0 = errFuncC(params.pzr2los,v,dt,params);
 %%
-fa_0 = errFuncA(params.pzr2los,v,dt,params);
-[p1_best,fa1]=fminsearch(@(x) errFuncA(x,v,dt,params),params.pzr2los,struct('Display','iter'));
-[p2_best,fa2]=fminsearch(@(x) errFuncA(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
+while(true)
+[p3_best,fc1]=fminsearch(@(x) errFuncC(x,v,dt,params),params.pzr2los);
+params.pzr2los=p3_best;
+[p4_best,fc2]=fminsearch(@(x) errFuncC(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)]);
+params.angxFilt(3)=p4_best(1);params.angyFilt(3)=p4_best(2);
+[ fc1 fc2]
 
-
-fb_0 = errFuncB(params.pzr2los,v,dt,params);
-[p3_best,fb1]=fminsearch(@(x) errFuncB(x,v,dt,params),params.pzr2los,struct('Display','iter'));
-[p4_best,fb2]=fminsearch(@(x) errFuncB(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)],struct('Display','iter'));
-
-[fa_0 fb_0]./[fa1 fb1]-1
-[fa_0 fb_0]./[fa2 fb2]-1
-
+params
+end

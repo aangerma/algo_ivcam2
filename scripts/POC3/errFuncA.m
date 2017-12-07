@@ -1,4 +1,4 @@
-function e=errFuncA(P,v,dt,params)
+function [e,im,p]=errFuncA(P,v,dt,params)
 warning('off',    'vision:calibrate:boardShouldBeAsymmetric');
 switch(length(P))
     case 6
