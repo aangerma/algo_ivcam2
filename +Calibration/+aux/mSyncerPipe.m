@@ -114,10 +114,7 @@ end
 function [err,im]=calcErrFine(data,y,c)
 
 N=2048;
-sl = data2sl(data,y,c,N);
-img1=sl(:,1:2:end);
-img2=(sl(:,2:2:end));
-im = reshape([img1;img2],size(sl));
+im = data2sl(data,y,c,N);
 err = Calibration.aux.edgeUnifomity(im);
 end
 
