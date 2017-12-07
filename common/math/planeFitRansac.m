@@ -1,4 +1,4 @@
-function [vec,distFromPlane,inliers] = evalPlaneRansac(x,y,z,fovMask,crit)
+function [vec,distFromPlane,inliers] = planeFitRansac(x,y,z,fovMask,crit)
     
     if(~exist('fovMask','var') || isempty(fovMask))
         fovMask = ones(numel(x),1);

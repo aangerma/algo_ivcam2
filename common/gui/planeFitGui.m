@@ -23,7 +23,7 @@ z = reshape(I(sub2ind(size(I),y(:),x(:))),size(x));
 nanMask = isnan(z);
 %  figure;imagesc(z)
 
-[normal,distFromPlane, validInd] = evalPlane(x(~nanMask),y(~nanMask),double(z(~nanMask)));
+[normal,distFromPlane, validInd] = planeFit(x(~nanMask),y(~nanMask),double(z(~nanMask)));
 
 zPlane = (normal(1)*x+normal(2)*y+normal(4))/-normal(3);
 

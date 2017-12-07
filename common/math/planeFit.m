@@ -1,4 +1,4 @@
-function [vec ,distFromPlane,fovMaskOut] = evalPlane(x,y,z,fovMask,outliersThr)
+function [vec ,distFromPlane,fovMaskOut] = planeFit(x,y,z,fovMask,outliersThr)
 
     if(~exist('fovMask','var') || isempty(fovMask))
         fovMask = ones(numel(x),1);
