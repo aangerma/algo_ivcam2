@@ -78,13 +78,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	}
     if (strcmp(buff, "getFragment") == 0)
 	{
-        int port = 0;
+        
+        int port = nrhs==3?int(*(double*)mxGetData(prhs[2])):0;
 		int maxCouter = 1000;
 		int i = 0;
 		for (; i != maxCouter && !GetFragmant(p,port); ++i);
 
 		if (i == maxCouter)
-			mexErrMsgTxt("reached max getFrame counter");
+			mexErrMsgTxt("reached max GetFragmant counter");
 
 		uint8_t * datap = (uint8_t*)GetFragmantData(p,port);
 		if (datap == nullptr)

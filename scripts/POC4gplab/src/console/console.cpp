@@ -15,7 +15,7 @@ void main()
 
 
 	std::cout << "Starting" << std::endl;
-	SourceMode s(SourceMode::Simulation);
+	SourceMode s(SourceMode::SplittedFramesSimulation);
 
 	GPLabType t(GPLabType::USB);
 	bool doAS=false;
@@ -39,7 +39,7 @@ void main()
 	while (true)
 	{
 		
-		ok = GetFrame(p);
+		ok = GetFragmant(p,0);
 		
 		if (ok)
 		{

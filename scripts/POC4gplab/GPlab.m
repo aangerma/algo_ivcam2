@@ -14,7 +14,7 @@ classdef GPlab < handle
         function obj = GPlab(gpMode,gpType,doAutoSkew,tmplLength,inDir,recOutDir)
             try
             obj.m_h=GPlabInterface('new',gpMode,gpType,doAutoSkew,tmplLength,inDir,recOutDir); %hardware
-            catch e,
+            catch e
                 error(e.message);
             end
         end
@@ -25,6 +25,9 @@ classdef GPlab < handle
         function stop(obj)
             GPlabInterface('stop',obj.m_h);
         end
+          function data=getFragment(obj,port)
+              data=GPlabInterface('getFragment',obj.m_h,port);
+          end
         function [fast,slow,xy,flags]=getFrame(obj)
             headerSize = 32;
             
