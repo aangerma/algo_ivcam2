@@ -59,26 +59,32 @@ end
 
 function frameHeader = getFrameHeader(s)
 frameHeader=[];
-FRAME_HEADER_SZ_BYTES = 32;
+HEADER_SZ_BYTES = 32;
 
 
-[rawFH,ok]=s.get(FRAME_HEADER_SZ_BYTES-1);
-rawFH=[0;rawFH];
+[raw,ok]=s.get(HEADER_SZ_BYTES-1);
+raw=[0;raw];
 if(~ok),return;end
 while(true)
-    [b,ok]=s.get(1);
+    nonz = max(1,min([find(raw,1),HEADER_SZ_BYTES+1])-1);
+    [b,ok]=s.get(nonz);
     if(~ok),return;end
-    rawFH=[rawFH(2:end);b];
+    raw = [raw(nonz+1:end);b];
     
     
-    frameHeader.RawFormat = bitand(rawFH(1),uint8(15));
-    frameHeader.locationFormat = bitshift(rawFH(1),-4);
-    frameHeader.info = typecast(rawFH(2:3),'uint16');
-    frameHeader.numOfColumns = typecast(rawFH(4:5),'uint16');
-    frameHeader.frameCounter = typecast(rawFH(6:7),'uint16');
-    frameHeader.MIPIDispatcherPointer = rawFH(8);
-    frameHeader.timestamp=typecast(rawFH(9:12),'uint32');
-    frameHeader.reserved=rawFH(13:32);
+%      [b,ok]=s.get(1);
+%      if(~ok),return;end
+%      raw=[raw(2:end);b];
+%     
+    
+    frameHeader.RawFormat = bitand(raw(1),uint8(15));
+    frameHeader.locationFormat = bitshift(raw(1),-4);
+    frameHeader.info = typecast(raw(2:3),'uint16');
+    frameHeader.numOfColumns = typecast(raw(4:5),'uint16');
+    frameHeader.frameCounter = typecast(raw(6:7),'uint16');
+    frameHeader.MIPIDispatcherPointer = raw(8);
+    frameHeader.timestamp=typecast(raw(9:12),'uint32');
+    frameHeader.reserved=raw(13:32);
     
     if(all(frameHeader.info~=[16  17]))
         continue;
@@ -106,19 +112,20 @@ end
 end
 
 
-function colHeader = getHeader(s)
+function colHeader = getColumnHeader(s)
 colHeader=[];
-COLUMN_HEADER_SZ_BYTES = 32;
+HEADER_SZ_BYTES = 32;
 
 
-[rawCH,ok] = s.get(COLUMN_HEADER_SZ_BYTES-1);
-rawCH=[0;rawCH];
+[raw,ok] = s.get(HEADER_SZ_BYTES-1);
+raw=[0;raw];
 if(~ok),return;end
-OFFSET=1;
+
 while(true)
-    [b,ok]=s.get(1);
+     nonz = max(1,min([find(raw,1),HEADER_SZ_BYTES+1])-1);
+    [b,ok]=s.get(nonz);
     if(~ok),return;end
-    rawCH = [rawCH(2:end);b];
+    raw = [raw(nonz+1:end);b];
     
     %     struct colHeader
     % {
@@ -142,20 +149,20 @@ while(true)
     % };
     
     
-    colHeader.numPackets=typecast(rawCH(1+(0:1)),'uint16');
-    colHeader.sizeOfPacket=rawCH(1+2);
+    colHeader.numPackets=typecast(raw(1+(0:1)),'uint16');
+    colHeader.sizeOfPacket=raw(1+2);
     
-    colHeader.horizontalLocation=int16(bitshift(typecast(rawCH(1+(3:6)),'int32'),-2)); %we get 14b but should get 12b
-    colHeader.verticalLocation=int16(bitshift(typecast(rawCH(1+(7:10)),'int32'),-2));
+    colHeader.horizontalLocation=int16(bitshift(typecast(raw(1+(3:6)),'int32'),-2)); %we get 14b but should get 12b
+    colHeader.verticalLocation=int16(bitshift(typecast(raw(1+(7:10)),'int32'),-2));
     
-    colHeader.txSyncDelay=typecast(rawCH(1+(11:12)),'uint16'); %in fast samples count
-    colHeader.columnLength=typecast(rawCH(1+(13:14)),'uint16');
-    colHeader.info=rawCH(1+15);
+    colHeader.txSyncDelay=typecast(raw(1+(11:12)),'uint16'); %in fast samples count
+    colHeader.columnLength=typecast(raw(1+(13:14)),'uint16');
+    colHeader.info=raw(1+15);
     colHeader.scanDir=bitand(colHeader.info,uint8(1));
-    colHeader.data=rawCH(1+(16:24));
-    colHeader.timestamp=bitand(bitshift(typecast([rawCH(1+(25:29));0;0;0],'uint64'),-4),uint64(2^32-1))*4;%*4 for it to be in fast samples count
-    colHeader.vSyncDelay=bitand(bitshift(typecast([rawCH(1+(29:31));0;],'uint32'),-4),uint32(2^20-1))*4;%*4 for it to be in fast samples count
-    colHeader.reserved=rawCH(1+(30:31));
+    colHeader.data=raw(1+(16:24));
+    colHeader.timestamp=bitand(bitshift(typecast([raw(1+(25:29));0;0;0],'uint64'),-4),uint64(2^32-1))*4;%*4 for it to be in fast samples count
+    colHeader.vSyncDelay=bitand(bitshift(typecast([raw(1+(29:31));0;],'uint32'),-4),uint32(2^20-1))*4;%*4 for it to be in fast samples count
+    colHeader.reserved=raw(1+(30:31));
     
     if(colHeader.sizeOfPacket~=36)
         continue;
@@ -176,7 +183,7 @@ end
 
 
 function colData = getScanline(s)
-colData.header = getHeader(s);
+colData.header = getColumnHeader(s);
 colSz = double(colData.header.numPackets)*double(colData.header.sizeOfPacket);
 [rawCol,ok] = s.get(colSz);
 if(~ok),  colData=[];   return;end
