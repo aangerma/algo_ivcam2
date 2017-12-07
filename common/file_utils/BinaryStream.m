@@ -40,7 +40,14 @@ classdef BinaryStream <handle
         end
         
         function obj = BinaryStream(inputDir)
-            obj.fns = dir(fullfile(inputDir,filesep,'Frame_*.bin'));
+            if(~exist(inputDir,'dir'))
+                error('directory %s do no exists',inputDir);
+            end
+            
+            obj.fns = dir(fullfile(inputDir,filesep,'*.bin'));
+            if(isempty(obj.fns))
+                 error('no .bin files in directory %s',inputDir);
+            end
             [~,o]=sort({obj.fns.name});
             obj.fns =obj.fns(o);
             obj.fid=-1;
