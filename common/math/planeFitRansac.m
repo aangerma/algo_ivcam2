@@ -1,4 +1,4 @@
-function [vec,distFromPlane,inliers] = planeFitRansac(x,y,z,fovMask,crit)
+function [vec,distFromPlane,inliers] = planeFitRansac(x,y,z,fovMask,crit,verbose)
     
     if(~exist('fovMask','var') || isempty(fovMask))
         fovMask = ones(numel(x),1);
@@ -6,8 +6,11 @@ function [vec,distFromPlane,inliers] = planeFitRansac(x,y,z,fovMask,crit)
     if(~exist('crit','var'))
         crit = 5;
     end
+    if(~exist('verbose','var'))
+        verbose = false;
+    end
      
-    mask = (z(:)~=0) & fovMask & ~isnan(x(:)) & ~isnan(y(:)) & ~isnan(z(:));
+    mask = (z(:)~=0) & fovMask(:) & ~isnan(x(:)) & ~isnan(y(:)) & ~isnan(z(:));
     xc = double(x(mask));
     yc = double(y(mask));
     zc = double(z(mask));  
@@ -16,8 +19,12 @@ function [vec,distFromPlane,inliers] = planeFitRansac(x,y,z,fovMask,crit)
     [inliers, ~] = ransac(A, @planeRansacEval, @planeRansacErr, 'errorThr', crit, 'iterations', 1000, 'plotFunc', 'off');
     B = A(inliers,:);
     vec = planeRansacEval(B);
-    distFromPlane = planeRansacErr(vec, B);
-    
+    distFromPlane = reshape(planeRansacErr(vec, [x(:) y(:) z(:)]),size(x));
+    if(verbose)
+        plot3(x(:),y(:),z(:),'ro');
+        plotPlane(vec,'edgecolor','none','facecolor','b','facealpha',.5);
+    end
+%     distFromPlane(~fovMask)=nan;
 end
 
 function vec = planeRansacEval(A)
