@@ -139,8 +139,13 @@ w = p(3);
 n = getlen(s);
 h=(n+1.5)*ROW_HEIGHT;
 hndl = uipanel('Units','Pixels','Position',[2+TAB_WIDTH*lvl ph-h-2 w-4-TAB_WIDTH*lvl h-4],'Title',sname,'Parent',phndl,'borderType','none'); 
+
+
 f = fieldnames(s);
-TXT_LEN = max(cellfun(@(x) length(x),f))*LETTER_WIDTH;
+TXT_LEN = cellfun(@(x) length(x),f)*LETTER_WIDTH;
+UNIT_LEN = structfun(@(x) iff( ~isstruct(x), iff(~isempty(x),length(x)+3,0),0)  ,s_units)*LETTER_WIDTH;%+3 for the ' []'
+TXT_LEN = max(TXT_LEN+UNIT_LEN);
+
 ch = h-ROW_HEIGHT;
 for i=1:length(f)
     if(isstruct(s.(f{i})))
@@ -158,7 +163,7 @@ for i=1:length(f)
         %
         
         uicontrol('Style','Text','Units','Pixels','Position',[15 ch-ROW_HEIGHT TXT_LEN+5 ROW_HEIGHT],'String',[f{i} units],'Parent',hndl,'Horizontalalignment','Left'); 
-        handles.(strcat('s',num2str(idx_out))) = uicontrol('Style','Edit','Units','Pixels','Position',[20+TXT_LEN ch-ROW_HEIGHT w-TXT_LEN-100 ROW_HEIGHT],'String',num2str(s.(f{i})),'Parent',hndl,'Horizontalalignment','Left');       
+        handles.(strcat('s',num2str(idx_out))) = uicontrol('Style','Edit','Units','Pixels','Position',[20+TXT_LEN ch-ROW_HEIGHT w-TXT_LEN-100 ROW_HEIGHT],'String',num2str(s.(f{i})),'Parent',hndl,'Horizontalalignment','Left','userData',class(s.(f{i})));       
         ch = ch-ROW_HEIGHT;
     end
 end
@@ -192,7 +197,15 @@ for i=1:length(fn)
         [s_fin.(fn{i}),idx_out] = copyStruct(s.(fn{i}),idx_out,handles);
     else
         idx_out = idx_out+1;
-        s_fin.(fn{i}) = get(handles.(strcat('s',num2str(idx_out))),'String');  
+        valStr = get(handles.(strcat('s',num2str(idx_out))),'String'); 
+        valType = get(handles.(strcat('s',num2str(idx_out))),'userData');
+        
+        if(strcmp(valType,'char'))
+            s_fin.(fn{i}) = valStr;
+        else
+            c = strsplit(valStr,' ');
+            s_fin.(fn{i}) = cast(str2double(c),valType);
+        end
     end
 end
 
