@@ -63,14 +63,17 @@ switch p.Results.type
         assert(isfield(data,'zImg') && isfield(data,'iImg'))
         assert(isa(data.zImg,'uint16'),'z must be uint16');
         assert(isa(data.iImg,'uint8' ),'i must be uint16');
-        fwrite(f,vec([reshape(typecast(vec(data.zImg'),'uint8'),2,[])' vec(data.iImg')]),'uint8');
+        zBytes = reshape(typecast(vec(data.zImg'), 'uint8'),2,[]);
+        fwrite(f,[zBytes;vec(data.iImg')']);
+        %vec([reshape(typecast(vec(data.zImg'),'uint8'),2,[])' vec(data.iImg')]),'uint8');
     case 'binvi'
         assert(isfield(data,'vImg') && isfield(data,'iImg'))
         assert(isa(data.vImg,'single'),'z must be uint16');
         assert(size(data.vImg,3)==3);
         assert(isa(data.iImg,'uint8' ),'i must be uint16');
-        fwrite(f,vec([reshape(typecast(vec(data.zImg'),'uint8'),2,[])' vec(data.iImg')]),'uint8');
-        
+        xyz = permute(data.vImg, [3,2,1]);
+        xyzBytes = reshape(typecast(vec(xyz), 'uint8'),12,[]);
+        fwrite(f,[xyzBytes;vec(data.iImg')']);
     otherwise
         error('unknonw extention');
 end
