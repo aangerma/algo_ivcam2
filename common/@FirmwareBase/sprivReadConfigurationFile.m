@@ -2,12 +2,12 @@ function values = sprivReadConfigurationFile(filename)
 
 
 [~,~,ext]=fileparts(filename);
-switch(ext)
+switch(lower(ext))
     case '.csv'
         allData = FirmwareBase.sprivReadCSV(filename);
     otherwise
         error('unsupported filetype');
-    end
+end
 
 if(isempty(allData))
     values = [];
@@ -23,10 +23,10 @@ if(size(allData,2)==1)
     data=cellfun(@(x) {x{1} x{2}(1) x{2}(2:end)},data,'uni',0);
     data=reshape([data{:}],3,[])';
     if(~all(cellfun(@(x) any(x=='bsdhf'),data(:,2))))
-            error('Bad value base (%s)',cell2str(data(cellfun(@(x) ~any(x=='bsdhf'),data(:,2)),:)));
+        error('Bad value base (%s)',cell2str(data(cellfun(@(x) ~any(x=='bsdhf'),data(:,2)),:)));
     end
     
-       
+    
 else
     headers = allData(1,:);
     data = allData(2:end,:);
@@ -71,10 +71,10 @@ evl = sprintf('headers{%d},data(:,%d),',repmat(1:length(headers),2,1));
 evl=['struct(' evl(1:end-1) ' );'];
 values=eval(evl);
 if(~isfield(values,'comments'))
-    values=arrayfun(@(x) setfield(x,'comments',''),values); %#ok<SFLD>
+    values=arrayfun(@(x) setfield(x,'comments',''),values); 
 end
 if(~isfield(values,'uniqueID'))
-    values=arrayfun(@(x) setfield(x,'comments','000.000.000'),values); %#ok<SFLD>
+    values=arrayfun(@(x) setfield(x,'comments','000.000.000'),values); 
 end
 
 end

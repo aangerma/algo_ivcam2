@@ -1,13 +1,44 @@
 function [pipeOutData] = autopipe(varargin)
-% autoPipe
-
+%{
+otions:
+    viewResults
+    saveTrace
+    saveMAT
+    verbose
+    rewrite
+    debug
+    fastApprox
+    saveResults
+    memoryLayout
+    regHandle
+%}
 %% input handle
 p = inputHandler(varargin{:});
 
-[~,fn] = fileparts(p.ivsFilename);
 
+%%
+if(isdir(p.ivsFilename))
+    ivsFiles = dirFiles(p.ivsFilename,'*.ivs');
+    memLayout = Pipe.setDefaultMemoryLayout();
+    pipeOutData=[];
+    for i=1:length(ivsFiles)
+        if(p.verbose)
+            fprintf('=======Batch %d/%d=======\n',i,length(ivsFiles));
+        end
+        pipeOutData = [pipeOutData Pipe.autopipe(ivsFiles{i},varargin{2:end},'memoryLayout',memLayout)];%#ok
+        memLayout=pipeOutData(i).memoryLayoutOut;
+    end
+    if(p.saveResults)
+        imwriteAnimatedGif({pipeOutData.iImg},[p.ivsFilename filesep 'buffer_ir.gif']);
+        imwriteAnimatedGif({pipeOutData.zImg},[p.ivsFilename filesep 'buffer_depth.gif'],true);
+    end
+    return
+end
+    
+
+%%
 lgr = Logger(p.verbose,p.saveResults,fullfile(p.outputDir,'log.log'));
-
+[~,fn] = fileparts(p.ivsFilename);
 
 %% read .ivs
 autoTic=tic;
@@ -25,31 +56,7 @@ lgr.print('\tReading .ivs...');
 if(~exist(p.ivsFilename,'file'))
     lgr.error('file %s does not exists',p.ivsFilename);
 end
-if(isdir(p.ivsFilename))
-    ivsFiles = dirFiles(p.ivsFilename,'*.ivs');
-    memLayout = Pipe.setDefaultMemoryLayout();
-    for i=1:length(ivsFiles)
-        pipeOutData{i} = Pipe.autopipe(ivsFiles{i},varargin{2:end},'memoryLayout',memLayout);  %#ok
-        memLayout=pipeOutData{i}.memoryLayoutOut;
-    end
-    if(p.saveResults)
-        topname=strrep(p.ivsFilename(find(p.ivsFilename(1:end-1)==filesep,1,'last')+1:end),filesep,'');
-        irfns = dirRecursive(p.ivsFilename,'*_ir.png');
-        outfn = fullfile(p.ivsFilename,filesep,[topname '_ir.gif']);
-        for i=1:length(irfns)
-            img = imread(irfns{i});
-            
-            if(i==1)
-                imwrite(img,outfn,'gif', 'Loopcount',inf);
-            else
-                imwrite(img,outfn,'gif','WriteMode','append');
-            end
-        end
-    end
-    return
-else
-    piStruct = io.readIVS(p.ivsFilename);
-end
+piStruct = io.readIVS(p.ivsFilename);
 lgr.print(' done in %4.2f sec \n', toc(localTic));
 
 
@@ -204,17 +211,17 @@ if(~exist('ivsFilename','var'))
     ivsFilename = 'patgen::wall';
 end
 
-if(~isempty(strfind(ivsFilename,'::')))
+if(contains(ivsFilename,'::'))
     %special case, generate from patgen/regression
     %pattergenerator
     
     
-    if(~isempty(strfind(ivsFilename,'patgen::')))
+    if(contains(ivsFilename,'patgen::'))
         patgenTxt = ivsFilename(9:end);
         ivsFilename = Pipe.patternGenerator(patgenTxt,'outputdir',tempdir);
         
         %regression
-    elseif(~isempty(strfind(ivsFilename,'regression::')))
+    elseif(contains(ivsFilename,'regression::'))
         if(ispc)
             regressionFolder = '\\ger\ec\proj\ha\perc\SA_3DCam\Algorithm\Releases\IVCAM2.0\Regression';
         else

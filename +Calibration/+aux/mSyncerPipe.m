@@ -33,7 +33,10 @@ end
 c=cc(:);
 %%
 vs=double(ivs.slow);
-[delayS, errS] = crossSync(vs,y,c,checkerboardTarget,verbose);
+n = round(mean(diff(c)));
+r = n/4;
+d = n/4;
+[delayS, errS] = crossSync(vs,y,c,r,d,checkerboardTarget,verbose);
 
 %%
 if(isempty(regs))
@@ -43,32 +46,32 @@ else
     kF = double(vec(repmat(codevec(1:regs.GNRL.codeLength),1,regs.GNRL.sampleRate)'));
     vv=buffer(ivs.fast,length(kF),length(kF)-64);
     cr = Utils.correlator(vv,kF*2-1);
+    cr=conv2(cr,[ 0.0625    0.2500    0.3750    0.2500    0.0625]','same');
     peakVal = max(cr)*2/length(kF);
-    peakVal=max(peakVal,0);
-    [delayF errF] = crossSync(peakVal,y,c,checkerboardTarget,verbose);
+   peakVal=max(peakVal,0);
+    r=delayS;
+    d=32;
+    [delayF errF] = crossSync(peakVal,y,c,r,d,false,verbose);
 end
 
 
 end
 
-function [delayOut , errOut] = crossSync(data,y,c,checkerboardTarget,verbose)
+function [delayOut , errOut] = crossSync(data,y,c,r,d,checkerboardTarget,verbose)
 
 %%
 dataF = data;%conv(data,fspecial('gaussian',[5 1],2),'valid');
-n = round(mean(diff(c)));
+
 R=5;
-r = n/4;
-d = n/4;
-
-
+step=ceil(2*d/R);
 while(true)
     
-    x =  round(r+linspace(-d,d,R))';
+    x =  round(r+(-(R-1)/2:(R-1)/2)'*step);
     if(all(diff(x)==0))
         break;
     end
   
-    if(checkerboardTarget && d<=2)
+    if(checkerboardTarget && step<=2)
        [err,sl] = arrayfun(@(k) calcErrFine(circshift(dataF,[0 k]),y,c),x,'uni',0);
     else
         [err,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),y,c),x,'uni',0);
@@ -80,18 +83,19 @@ while(true)
     r = x(minInd);
     errOut = err(minInd);
     
-    d = floor(d/R*2);
+    
     if(verbose)
         for i=1:R
             aa(i)=subplot(2,R,i);
-            imagesc(sl{i},prctile_(sl{i}(:),[10 90])+[0 1e-3]);
+            imagesc(sl{i},prctile_(sl{i}(sl{i}~=0),[10 90])+[0 1e-3]);
         end
         subplot(2,3,4:6)
-        plot(x,err,'o-');set(gca,'xlim',[x(1)-d/2 x(end)+d/2]);
+        plot(x,err,'o-');set(gca,'xlim',[x(1)-step/2 x(end)+step/2]);
         line([r r ],minmax(err),'color','r');
-        axis tight
+        linkaxes(aa);
         drawnow;
     end
+    step = floor(step/2);
 end
 delayOut=r;
 if(verbose)
@@ -103,21 +107,18 @@ end
 function dl=data2sl(data,y,c,N)
 dl=arrayfun(@(i) [y(c(i):c(i+1));data(c(i):c(i+1))],1:length(c)-1,'uni',0);
 r = minmax(y);
-%  dl = cellfun(@(x) interp1(linspace(0,1,length(x)),x(2,:),linspace(0,1,N))',dl,'uni',0);
-  dl = cellfun(@(x) interp1(x(1,:),x(2,:),linspace(r(1),r(2),N))',dl,'uni',0);
+  dl = cellfun(@(x) interp1(linspace(0,1,length(x)),x(2,:),linspace(0,1,N))',dl,'uni',0);
+%   dl = cellfun(@(x) interp1(x(1,:),x(2,:),linspace(r(1),r(2),N))',dl,'uni',0);
 dl=[dl{:}];
 dl=dl(:,1:floor(size(dl,2)/2)*2);
-% dl(:,2:2:end)=flipud(dl(:,2:2:end));
+ dl(:,2:2:end)=flipud(dl(:,2:2:end));
 end
 
 
 function [err,im]=calcErrFine(data,y,c)
 
 N=2048;
-sl = data2sl(data,y,c,N);
-img1=sl(:,1:2:end);
-img2=(sl(:,2:2:end));
-im = reshape([img1;img2],size(sl));
+im = data2sl(data,y,c,N);
 err = Calibration.aux.edgeUnifomity(im);
 end
 
@@ -125,7 +126,7 @@ function [err,im]=calcErrDiff(data,y,c)
 
 N=1024;
 sl = data2sl(data,y,c,N);
-
+sl(isnan(sl))=0;
 img1=sl(:,1:2:end);
 img2=(sl(:,2:2:end));
 im = reshape([img1;img2],size(sl));

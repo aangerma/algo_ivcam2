@@ -1,4 +1,11 @@
 function [ res ] = writeIVS( filename,ivs)
+if(length(ivs)~=1)
+    [bd,fn,~]=fileparts(filename);
+    for i=1:length(ivs)
+        io.writeIVS(sprintf('%s%s%s_%04d.ivs',bd,filesep,fn,i),ivs(i));
+    end
+    return
+end
 % Write a .ivs BINARY file. 
 % Either a file name <fileName> and a struct <ivStruct> are passed as
 % arguments, or a fila naem <fileName> and the arguments: fastCh, slowCh,

@@ -32,19 +32,22 @@ for i=1:length(c)/2-1
 end
 c=cc(:);
 
-data=circshift(double(ivs.slow),[0,s]);
+data=circshift(vec(double(ivs.slow))',[0 s]);
 if(exactLocation)
- sl=arrayfun(@(i) [y(c(i):c(i+1));data(c(i):c(i+1))],1:length(c)-1,'uni',0);
- g = minmax(y);
- sl = cellfun(@(x) accumarray(round((x(1,:)'-g(1))/(g(2)-g(1))*(N-1))+1,x(2,:)',[N 1],@mean),sl,'uni',0);
- im=[sl{:}];
+    y = round(normByMax(y)*(N-1)+1);
+    x = zeros(size(y));
+    x(c)=1;
+    x = cumsum(x)+1;
+    M = x(end);
+    i = sub2ind([N M],y,x);
+    im = reshape(accumarray(i',data',[M*N 1],@mean),[N M]);
 else
-
-
-sl=arrayfun(@(i) data(c(i):c(i+1)),1:length(c)-1,'uni',0);
-sl = cellfun(@(x) interp1(linspace(0,1,length(x)),x,linspace(0,1,N))',sl,'uni',0);
-im=[sl{:}];
-im(:,1:2:end)=flipud(im(:,1:2:end));
+    
+    
+    sl=arrayfun(@(i) data(c(i):c(i+1)),1:length(c)-1,'uni',0);
+    sl = cellfun(@(x) interp1(linspace(0,1,length(x)),x,linspace(0,1,N))',sl,'uni',0);
+    im=[sl{:}];
+    im(:,1:2:end)=flipud(im(:,1:2:end));
 end
 
 

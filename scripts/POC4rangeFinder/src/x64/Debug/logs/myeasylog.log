@@ -1,4 +1,0 @@
-2017-02-06 11:25:43,471 INFO  [default] POC4Pipeline constructor
-2017-02-06 11:25:43,471 INFO  [default] Mode: FullFlowWithHardware
-2017-02-06 11:25:43,471 WARN  [default] No GPLab device found
-2017-02-06 11:25:43,487 INFO  [default] POC4Pipeline constructor failed

@@ -15,7 +15,7 @@ debug = 0;
 
 
 if(debug)
-    figure;subplot(131);imagesc(jStream.depth);title('d');subplot(132);imagesc(jStream.ir);title('ir');subplot(133);imagesc(jStream.conf);title('c');linkaxes;subplotTitle('input to edge edge')%#ok
+    figure;subplot(131);imagesc(jStream.depth);title('d');subplot(132);imagesc(jStream.ir);title('ir');subplot(133);imagesc(jStream.conf);title('c');linkaxes;subplotTitle('input to edge');
 end
 
 
@@ -124,7 +124,7 @@ if( bypassMode(1) == 0  )
     edgeDirectionInd = edgeDirectionInd(minDiff<RegsMaxTh & isAboveRegsDetectTh);
     
     if(debug)
-        figure;subplot(131);imagesc(newD);title('d');subplot(132);imagesc(newI);title('ir');subplot(133);imagesc(newC);title('c');linkaxes;subplotTitle('before edge after median');%#ok
+        figure;subplot(131);imagesc(newD);title('d');subplot(132);imagesc(newI);title('ir');subplot(133);imagesc(newC);title('c');linkaxes;subplotTitle('before edge after median');
         figure;imagesc(reshape(minDiff<RegsMaxTh & isAboveRegsDetectTh,S));title('detected edges');
     end
     
@@ -166,18 +166,20 @@ Pipe.JFIL.checkStreamValidity(jStream,instance,false);
 if(~isempty(traceOutDir) )
     Utils.buildTracer([dec2hexFast(jStream.ir,3) dec2hexFast(jStream.conf,1) dec2hexFast(jStream.depth,4)],['JFIL_' instance],traceOutDir);
 end
+
 if(debug)
-    figure(453323); %#ok
+    %%
+    figure(453323);clf 
     name = {'depth','ir','conf'};
     a = zeros(9,1);
     for i=1:3
         a(1+(i-1)*3) = subplot(3,3,1+(i-1)*3);
-        before = jStream.(name{i});
+        before = jStreamIn.(name{i});
         if(strcmp(name{i},'depth'))
             before(before<6000 | before>7000) = nan;
         end
         imagesc(before);
-        title('before edge');
+        title([name{i} ' before edge']);
         
         after = jStream.(name{i});
         if(strcmp(name{i},'depth'))
@@ -185,7 +187,7 @@ if(debug)
         end
         a(2+(i-1)*3) = subplot(3,3,2+(i-1)*3);
         imagesc(after);
-        title('after edge');
+        title([name{i} ' after edge']);
         
         dif = abs(double(before)-double(after));
         % dif(isnan(before) | isnan(after)) = nan;

@@ -1,4 +1,12 @@
 function img=raw2img(ivs,s,sz)
+if(length(ivs)~=1)
+    img=cell(length(ivs),1);
+    for i=1:length(ivs)
+    img{i}=Utils.raw2img(ivs(i),s,sz);
+    end
+    return;
+end
+
 if(~exist('sz','var'))
     sz=[512 512];
 end

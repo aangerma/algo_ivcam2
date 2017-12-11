@@ -35,22 +35,22 @@ function ivbin_viewer(varargin)
         ivFileIdx = 1;
         
         i=1;
-        while (i<=nargin),
+        while (i<=nargin)
             jump_step = 0;
-            if ischar(varargin{i}), % Filename
+            if ischar(varargin{i}) % Filename
                 
                 if exist(varargin{i},'file')
                     
                     [~,~,ext_str] = fileparts(varargin{i});
                     
-                    if strcmp(ext_str,'.bin'),
+                    if strcmp(ext_str,'.bin')
                         
                         ivFileNames{ivFileIdx} = varargin{i};
                         
-                    elseif strcmp(ext_str,'.mat'),
+                    elseif strcmp(ext_str,'.mat')
                         
                         mat = load(varargin{i});
-                        if ((i+1 <= nargin) && isfield(mat,varargin{i+1})),
+                        if ((i+1 <= nargin) && isfield(mat,varargin{i+1}))
                             zimg = getfield(mat,varargin{i+1}); %#ok<GFLD>
                             jump_step = jump_step + 1;
                             
@@ -102,7 +102,7 @@ function ivbin_viewer(varargin)
             system([viewer ' "' ivFileNames{1} '" ' ivFileNames{2} ' &']);
         else
             system([viewer ' ' ivFileNames{1} ' &']);
-            if ~isempty(ivFileNames{2}),
+            if ~isempty(ivFileNames{2})
                 system([viewer ' ' ivFileNames{2} ' &']);
             end
         end
@@ -117,72 +117,82 @@ function ivbin_viewer(varargin)
 end
 
 
-function [retFilename,isAnimated] = saveBinFile(filename,img,format)
+function [retFilename,isAnimated] = saveBinFile(filename, img)
 
-    if ~exist('format','var'),
-        format = 'uint16';
-    end
-    
+    [path_str,name_str,ext_str] = fileparts(filename);
+
     if iscell(img)
-        
-        save_img = img;
-        
+        imgCells = img;
     elseif isnumeric(img) % A 2D or 3D matrix
-
         if (ndims(img) > 3)
             error('save_bin_file','Unsupported matrix dimension.'); %#ok<*CTPCT>
-
-        elseif ~ismatrix(img) % Temporal matrix
-            
-            save_img = cell(size(img,3));
-            for i=1:size(img,3),
-                save_img{i} = img(:,:,i);
-            end
-
-        elseif (min(size(img)) > 1) % One depth image
-
-            save_img{1} = img;
-            
         else
+            imgCells{1} = img;
+        end
+    else
+        error('save_bin_file','Unsupported data format.');
+    end
 
-            error('save_bin_file','Unsupported matrix dimension.');
-        
+    withIR = false;
+    if (ndims(imgCells{1}) == 3 && isa(imgCells{1}, 'single'))
+        typeVertices = true;
+    elseif (ismatrix(imgCells{1}) && isa(imgCells{1}, 'uint16'))
+        typeVertices = false;
+    else
+        error('ivbin_viewer:save_bin_file','Unsupported data format.\n Only depth image of uint16 and 3d xyz matrix of single are supported.');
+    end
+            
+    
+    imgStreams = {};
+    iStream = 1;
+    i = 1;
+    while (i <= length(imgCells))
+        if (ismatrix(imgCells{i}))
+            z = imgCells{i}';
+            zBytes = reshape(typecast(z(:), 'uint8'),2,[]);
+        else
+            z = permute(imgCells{i}, [3,2,1]);
+            zBytes = reshape(typecast(z(:), 'uint8'),12,[]);
         end
         
-    else
-
-        error('save_bin_file','Unsupported data format.');
-
+        if (i < length(imgCells) && isa(imgCells{i+1},'uint8'))
+            ir = imgCells{i+1}';
+            imgStreams{iStream} = [zBytes;ir(:)'];
+            i = i + 1;
+            withIR = true;
+        else
+            imgStreams{iStream} = zBytes;
+        end
+        iStream = iStream + 1;
+        i = i + 1;
     end
     
-    if (length(save_img) > 1)
-    
+    if (length(imgStreams) > 1)
         isAnimated = 1;
-        
-        [path_str,name_str,ext_str] = fileparts(filename);
-        retFilename = [fullfile(path_str,[name_str '_0000']) ext_str]; 
-        
-        for i=1:length(save_img),
-            temporal_filename = [fullfile(path_str,[name_str sprintf('_%04d',i-1)]) ext_str];
-            fid = fopen(temporal_filename,'wb');
-            if (fid == 0)
-                error('save_bin_file','Cannot open bin file for writing');
-            end
-    
-            fwrite(fid,eval([format '(save_img{i}'')']),format);
-            fclose(fid);
-        end
-        
     else
-        
         isAnimated = 0;
-        retFilename = filename;
-        fid = fopen(retFilename,'wb');
+    end
+    
+    if (typeVertices)
+        ext_str = [ext_str 'v'];
+    else
+        ext_str = [ext_str 'z'];
+    end
+        
+    if (withIR)
+        ext_str = [ext_str 'i'];
+    end
+    
+    retFilename = [fullfile(path_str,[name_str '_0000']) ext_str];
+    
+    for i=1:length(imgStreams)
+        temporal_filename = [fullfile(path_str,[name_str sprintf('_%04d',i-1)]) ext_str];
+        fid = fopen(temporal_filename,'wb');
         if (fid == 0)
-            error('save_bin_file','Cannot open bin file for writting');
+            error('save_bin_file','Cannot open bin file for writing');
         end
-
-        fwrite(fid,eval([format '(save_img{1}'')']),format);
+        
+        fwrite(fid, imgStreams{i});
         fclose(fid);
     end
 

@@ -15,7 +15,7 @@ function ret = calibratorOpticalMeritFunction(r,th,retErrdata)
     [x,y,z]=Pipe.DEST.rImgUnproject(r,th(1),th(2),th(3),th(4));
       
      [d,abcd]=ransacPlane(x,y,z);  
-%      [abcd,d] = evalPlane(x,y,z);
+%      [abcd,d] = planeFit(x,y,z);
     
 
 thr = prctile(d(:),75);

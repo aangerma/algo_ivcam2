@@ -1,51 +1,56 @@
 %function x=rawDataInput()
 %%
-fldr = 'd:\data\lidar\EXP\20171126\Record1\';
-f = dirFiles(fldr,'*.trc');
-v=cellfun(@(x) io.POC.readLeCroyBinaryWaveform(x),f);
-dt = v(1).desc.Ts;
-v=[v.y];
-tia = v(:,1);
-pzr1=v(:,2);
-pzr2=v(:,4);
-pzr3=v(:,3);
-clear v;
+
+fldrs= dirFolders('\\invcam450\D\data\ivcam20\exp\20171129\','*',true);
+
+[v,dt]=cellfun(@(x) folder2scopeData(x),fldrs,'uni',0);
+dt=dt{1};
 %%
-irdata=tia;
-[b,a]=butter_(3,(166e6+[-30 30]*1e6)*2*dt,'bandpass');
-irdata=vec(filter(b,a,irdata))';
-
-irdata = abs(irdata);
-% [b,a]=fir1(128,30e3*2*dt);
-[b,a]=butter_(3,64e6*2*dt);
-irdata=vec(filter(b,a,irdata))';
-
+params.irPreFilt = [3 166e6+[-30 30]*1e6];
+params.irPostFilt = [3 0 64e6 ];
+params.pzr2los = [  .5       0          .5       1/8 1 -1/8];
+params.angxFilt = [3 0 15e3 ];
+params.angyFilt = [3 0 50e3 ];
+params.locPreFreq = 120e6;
+params.locPostFreq = 10e6;
+params.outFreq = 125e6;
+params.locIRdelay = 114;
+params.outBin = 1024;
+params.angxSO = [12 0];
+params.angySO = [2 0];
+params.slowSO = [29e3 0];
 %%
-% s=cov([pzr1 pzr3]);
-% a=(s(2,2)^2-s(1,2))/(s(1,1)^2+s(2,2)^2-2*s(2,1));
-sa = (pzr1+pzr3)/2;
-fa = pzr2+0.25*(pzr1-pzr3)/2;
- [b,a]=butter_(3,15e3*dt*2);
- sa = filtfilt(b,a,sa);
-% H-sync
-% [b,a]=butter_(2,[15e3 25e3]*dt*2,'bandpass');
-% fa = filtfilt(b,a,fa);
+%{
+ params.pzr2los = [0.4886 -1.4041e-04 0.5545 0.1371 1.0042 -0.1316];
+ params.angxFilt(3) = 1.3340e+04;
+ params.angyFilt(3) = 4.8581e+04;
+%}
+%% 
+ [im,ivs_]=scope2img(v{1},dt,params);
+%  [im,ivs_]=cellfun(@(x) scope2img(x,dt,params),v,'uni',0);
+ indv=Utils.indx2col(size(im),[3 3]);
+  im=reshape(nanmedian(im(indv)),size(im));
+% im=cellfun(@(x) reshape(nanmedian(x(indv)),size(im{1})),im,'uni',0);
+%%
+ figure;
+ subplot(121)
+ imagesc(imo);axis image
+ subplot(122)
+ imagesc(im);axis image
+ linkaxes(findobj(0,'type','axes'))
+ %%
 
+ 
 
+[fa_0,im,p] = errFuncA(params.pzr2los,v,dt,params); 
+fc_0 = errFuncC(params.pzr2los,v,dt,params);
+%%
+while(true)
+[p3_best,fc1]=fminsearch(@(x) errFuncC(x,v,dt,params),params.pzr2los);
+params.pzr2los=p3_best;
+[p4_best,fc2]=fminsearch(@(x) errFuncC(x,v,dt,params),[params.angxFilt(3) params.angyFilt(3)]);
+params.angxFilt(3)=p4_best(1);params.angyFilt(3)=p4_best(2);
+[ fc1 fc2]
 
-begind = minind(sa(1e6:floor(length(sa)/2)))+1e6;
-endind = maxind(sa(begind:end))+begind;
-ivs.slow=vec(irdata(begind:endind))';
-ivs.xy=[sa(begind:endind)';fa(begind:endind)'];
-%
-ivs.slow = mean(buffer_(ivs.slow,4));
-ivs.xy = [mean(buffer_(ivs.xy(1,:),4));mean(buffer_(ivs.xy(2,:),4))];
-%
-% imagesc(Utils.raw2slImg(ivs,3067,512,true))
-
-%
-% ivs_=ivs;
-% K=0;
-% ivs_.xy=[circshift(ivs_.xy(1,:),[0 K]);ivs_.xy(2,:)];
-im=fliplr(Utils.raw2img(ivs,3067,[512 512]));
-imagesc()
+params
+end

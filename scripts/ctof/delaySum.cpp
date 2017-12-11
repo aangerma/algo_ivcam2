@@ -1,18 +1,17 @@
 #include "mex.h"
 #include <cmath>
-
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-	const double* data = static_cast<const double*>(mxGetData(prhs[0]));
-	const double* delays = static_cast<const double*>(mxGetData(prhs[1]));
-	const double* attenuation = static_cast<const double*>(mxGetData(prhs[2]));
+	double* data = mxGetPr(prhs[0]);
+	double* delays = mxGetPr(prhs[1]);
+	double* attenuation = mxGetPr(prhs[2]);
     
     
     int datalen = int(mxGetNumberOfElements(prhs[0]));
     int ndelays = int(mxGetNumberOfElements(prhs[1]));
 
 	plhs[0] = mxCreateDoubleMatrix(1, datalen,  mxREAL);
-	double* out = static_cast<double*>(mxGetData(plhs[0]));
+	double* out = mxGetPr(plhs[0]);
 
     for (int i = 0; i != ndelays; ++i)
 	{

@@ -160,7 +160,7 @@ for i=1:3
     
     rmserrPre=inf;
     
-    while(true & 0)
+    while(true )
         [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
         %rx delay
         
@@ -225,6 +225,13 @@ tileSizeMM = 30;
 ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
 
 whiteInd = ((-1).^(1:h)'*(-1).^(1:w)>0);
+% %find best plane
+% [mdl,d]=planeFit(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),whiteInd,2)
+% %project point to best plane
+% ptP=xyzmes-d.*mdl(1:3)-[0;0;mdl(4)];
+% %PCA
+% [v,l]=eig(ptP*ptP');
+% ptPR=v(:,[3 2])'*ptP;
 
 meanpv=mean(xyzmes,2);
 ptsInzm=xyzmes-meanpv;
@@ -247,6 +254,10 @@ for i=1:1
     ptsOptR = rotmat*ptsOpt;
     ptsOptR = ptsOptR+meanpv;
     errVec = vec(sqrt((sum((xyzmes-ptsOptR).^2))));
+    %{
+    plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
+    
+    %}
 end
 
  e = sqrt((mean(errVec(inliers).^2)));
