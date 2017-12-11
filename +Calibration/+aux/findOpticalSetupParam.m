@@ -34,19 +34,15 @@ fwc.setRegs(setregs,[]);
 
 [regs,~]=fwc.get();
 
-k=vec(repmat(Utils.uint322bin(regs.FRMW.txCode,regs.GNRL.codeLength),1,regs.GNRL.sampleRate)');
-nPcktsPerDepth = length(k)/64;
+shortpipe=false;
+
+
+
 %%
 
 % regs.MTLB.fastChDelay=regs.MTLB.fastChDelay+22
-ivs2=ivs;
-ivs2.fast = circshift(ivs2.fast,[0 regs.MTLB.fastChDelay*64]);
-ivs2.slow = circshift(ivs2.slow,[0 regs.MTLB.slowChDelay]);
-ivs2.flags= circshift(ivs2.flags,[0 regs.MTLB.fastChDelay]);
-[cma,xy,ir]=Utils.ivsCodechunker(ivs2,nPcktsPerDepth*2);
-cma = permute((mean(reshape(cma,[],2,size(cma,2)),2)),[1 3 2]);
 
-[glohi]=round(prctile(ir(ir~=0),[1 100]));
+[glohi]=round(prctile(double(ivs.slow(ivs.slow~=0)),[1 100]));
 glohi(2)=round(glohi(2)*1.2);%add 20% margin;
 multFact = 2^12/diff(glohi);
 if(multFact>4)
@@ -58,6 +54,26 @@ gammaRegs.DIGG.gammaShift=int16([-round(glohi(1)*multFact) 0]);
 fwc.setRegs(gammaRegs,[]);
 
 %
+
+
+
+
+
+
+
+
+
+
+if(shortpipe)
+k=vec(repmat(Utils.uint322bin(regs.FRMW.txCode,regs.GNRL.codeLength),1,regs.GNRL.sampleRate)');
+nPcktsPerDepth = length(k)/64;
+ivs2=ivs;
+ivs2.fast = circshift(ivs2.fast,[0 regs.MTLB.fastChDelay*64]);
+ivs2.slow = circshift(ivs2.slow,[0 regs.MTLB.slowChDelay]);
+ivs2.flags= circshift(ivs2.flags,[0 regs.MTLB.fastChDelay]);
+[cma,xy,ir]=Utils.ivsCodechunker(ivs2,nPcktsPerDepth*2);
+cma = permute((mean(reshape(cma,[],2,size(cma,2)),2)),[1 3 2]);
+
 cma = circshift(cma,[0 1]);
 
 c=Utils.correlator(cma,k*2-1);
@@ -69,20 +85,15 @@ raw.xy=int16(round(xy(:,ok)));
 raw.ir=ir(ok);
 [raw.mxv,mxc]=max(c_);
 
+    ind = sub2ind(size(c_),mod(mxc+(-1:1)'-1,size(c_,1))+1,(1:size(c_,2)).*[1;1;1]);
+    cm=c_(ind);
+    pk=(cm(1,:)-cm(3,:))./(cm(1,:)+cm(3,:)-2*cm(2,:))+mxc;
+    raw.rtd=pk*double(regs.DEST.sampleDist(1));
+    runPipe  = @(regs_,luts_) shortPipe (raw,regs_,luts_);
+else
+    runPipe  = @(regs_,luts_) longPipe (ivs,regs_,luts_);
+end
 
-
-ind = sub2ind(size(c_),mod(mxc+(-1:1)'-1,size(c_,1))+1,(1:size(c_,2)).*[1;1;1]);
-cm=c_(ind);
-pk=(cm(1,:)-cm(3,:))./(cm(1,:)+cm(3,:)-2*cm(2,:))+mxc;
-raw.rtd=pk*double(regs.DEST.sampleDist(1));
-
-
-
-
-
-runPipeF  = @(regs_,luts_) shortPipe (raw,regs_,luts_);
-runPipeL  = @(regs_,luts_) longPipe (ivs,regs_,luts_);
-runPipe=runPipeL ;
 % scatter3(xy_(1,:)/4,xy_(2,:),double(z)/8,10,ir_,'fill')
 % errFunc1(xbest,fwc,runPipeF)
 
@@ -303,7 +314,10 @@ iImg=pout(:,:,4);
 to255 = @(x) uint8(x/max(x(:))*255);
 [p,bsz]=detectCheckerboardPoints(to255(conv2(double(iImg),fspecial('gaussian',3,1))));
 p=p-1;%????
-assert(all(bsz==[10 14]));
+if(~all(bsz==[10 14]))
+    err=1e3;
+return;
+end
 p=reshape(p(:,1)+1j*p(:,2),bsz-1);
 if(mean(vec(diff(real(p),[],2)))<0)
     p=fliplr(p);
