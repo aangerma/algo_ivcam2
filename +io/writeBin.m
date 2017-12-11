@@ -23,7 +23,10 @@ function [] = writeBin(fname,data,varargin)
     end
     
     fullname = fullfile(folder,[file,ext]);
-    f = fopen(fullname,'wb');
+    [f,err] = fopen(fullname,'wb');
+    if(~isempty(err))
+        error([fullname ': ' err])
+    end
     switch p.Results.type
         case 'binz'
             fwrite(f,data,'uint16');
