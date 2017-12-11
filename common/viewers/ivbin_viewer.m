@@ -116,7 +116,6 @@ function ivbin_viewer(varargin)
     %delete(tmpFileName);
 end
 
-
 function [retFilename,isAnimated] = saveBinFile(filename, img)
 
     [path_str,name_str,ext_str] = fileparts(filename);
@@ -183,11 +182,17 @@ function [retFilename,isAnimated] = saveBinFile(filename, img)
         ext_str = [ext_str 'i'];
     end
     
-    retFilename = [fullfile(path_str,[name_str '_0000']) ext_str];
-    
     for i=1:length(imgStreams)
-        temporal_filename = [fullfile(path_str,[name_str sprintf('_%04d',i-1)]) ext_str];
-        fid = fopen(temporal_filename,'wb');
+        if (length(imgStreams) > 1)
+            fname = [fullfile(path_str,[name_str sprintf('_%04d',i-1)]) ext_str];
+        else
+            fname = [fullfile(path_str, name_str) ext_str];
+        end
+        if (~exist('retFilename'))
+            retFilename = fname;
+        end
+        
+        fid = fopen(fname,'wb');
         if (fid == 0)
             error('save_bin_file','Cannot open bin file for writing');
         end
@@ -197,3 +202,5 @@ function [retFilename,isAnimated] = saveBinFile(filename, img)
     end
 
 end
+
+
