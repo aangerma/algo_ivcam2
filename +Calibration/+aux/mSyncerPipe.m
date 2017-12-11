@@ -33,7 +33,10 @@ end
 c=cc(:);
 %%
 vs=double(ivs.slow);
-[delayS, errS] = crossSync(vs,y,c,checkerboardTarget,verbose);
+n = round(mean(diff(c)));
+r = n/4;
+d = n/4;
+[delayS, errS] = crossSync(vs,y,c,r,d,checkerboardTarget,verbose);
 
 %%
 if(isempty(regs))
@@ -43,32 +46,32 @@ else
     kF = double(vec(repmat(codevec(1:regs.GNRL.codeLength),1,regs.GNRL.sampleRate)'));
     vv=buffer(ivs.fast,length(kF),length(kF)-64);
     cr = Utils.correlator(vv,kF*2-1);
+    cr=conv2(cr,[ 0.0625    0.2500    0.3750    0.2500    0.0625]','same');
     peakVal = max(cr)*2/length(kF);
-    peakVal=max(peakVal,0);
-    [delayF errF] = crossSync(peakVal,y,c,checkerboardTarget,verbose);
+   peakVal=max(peakVal,0);
+    r=delayS;
+    d=32;
+    [delayF errF] = crossSync(peakVal,y,c,r,d,false,verbose);
 end
 
 
 end
 
-function [delayOut , errOut] = crossSync(data,y,c,checkerboardTarget,verbose)
+function [delayOut , errOut] = crossSync(data,y,c,r,d,checkerboardTarget,verbose)
 
 %%
 dataF = data;%conv(data,fspecial('gaussian',[5 1],2),'valid');
-n = round(mean(diff(c)));
+
 R=5;
-r = n/2;
-d = n/2;
-
-
+step=ceil(2*d/R);
 while(true)
     
-    x =  round(r+linspace(-d,d,R))';
+    x =  round(r+(-(R-1)/2:(R-1)/2)'*step);
     if(all(diff(x)==0))
         break;
     end
   
-    if(checkerboardTarget && d<=2)
+    if(checkerboardTarget && step<=2)
        [err,sl] = arrayfun(@(k) calcErrFine(circshift(dataF,[0 k]),y,c),x,'uni',0);
     else
         [err,sl] = arrayfun(@(k) calcErrDiff(circshift(dataF,[0 k]),y,c),x,'uni',0);
@@ -80,18 +83,19 @@ while(true)
     r = x(minInd);
     errOut = err(minInd);
     
-    d = floor(d/R*2);
+    
     if(verbose)
         for i=1:R
             aa(i)=subplot(2,R,i);
             imagesc(sl{i},prctile_(sl{i}(sl{i}~=0),[10 90])+[0 1e-3]);
         end
         subplot(2,3,4:6)
-        plot(x,err,'o-');set(gca,'xlim',[x(1)-d/2 x(end)+d/2]);
+        plot(x,err,'o-');set(gca,'xlim',[x(1)-step/2 x(end)+step/2]);
         line([r r ],minmax(err),'color','r');
         linkaxes(aa);
         drawnow;
     end
+    step = floor(step/2);
 end
 delayOut=r;
 if(verbose)

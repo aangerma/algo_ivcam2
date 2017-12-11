@@ -19,7 +19,7 @@ if (regs.DEST.bypass || isempty(pflow.pixIndOutOrder))
     depth = zeros(size(pflow.pipeFlags), 'uint16');
     confOut = zeros(size(pflow.pipeFlags), 'uint8');
     ir = pflow.iImgRAW;
-    roundTripDistance = single(nan(size(pflow.pipeFlags)));
+    roundTripDistance_ = single(nan(size(pflow.pipeFlags)));
     
     cor_seg_fil = zeros(size(pflow.corr),'uint32');
     peak_val = zeros(size(ir),'uint32');
@@ -104,25 +104,25 @@ else
     
 %     lgr.print2file(sprintf('\troundTripDistance = %X\n',roundTripDistance(lgrOutPixIndx)));
     
-   roundTripDistance = Pipe.DEST.rtdDelays(roundTripDistance,regs,pflow.iImgRAW,txmode);
+   roundTripDistance_ = Pipe.DEST.rtdDelays(roundTripDistance,regs,pflow.iImgRAW,txmode);
    
    
    
     confOut(noScanPixels | mixModePixels)=0;
-    roundTripDistance(noScanPixels | mixModePixels)=0;
+    roundTripDistance_(noScanPixels | mixModePixels)=0;
     
 %     lgr.print2file(sprintf('\troundTripDistance(ambiguity length fix) = %X\n',roundTripDistance(lgrOutPixIndx)));
     
     
     %% ambiguity filter
-    closeRangeLowConf = roundTripDistance<regs.DEST.ambiguityMinRTD & confOut<regs.DEST.ambiguityMinConf & ~noScanPixels;
-    roundTripDistance(closeRangeLowConf)=vec(roundTripDistance(closeRangeLowConf)) + vec(regs.DEST.ambiguityRTD(txmode(closeRangeLowConf)));
+    closeRangeLowConf = roundTripDistance_<regs.DEST.ambiguityMinRTD & confOut<regs.DEST.ambiguityMinConf & ~noScanPixels;
+    roundTripDistance_(closeRangeLowConf)=vec(roundTripDistance_(closeRangeLowConf)) + vec(regs.DEST.ambiguityRTD(txmode(closeRangeLowConf)));
 
 %     lgr.print2file(sprintf('\troundTripDistance(ambiguity filter) = %X\n',roundTripDistance(lgrOutPixIndx)));
 
 
     %% rtd2depth
-    depth=Pipe.DEST.rtd2depth(roundTripDistance,regs);
+    depth=Pipe.DEST.rtd2depth(roundTripDistance_,regs);
     depth = depth*regs.GNRL.zNorm;
 %     lgr.print2file(sprintf('\tdepth(pre round) = %X\n',typecast(depth(lgrOutPixIndx),'uint32')));
     depth=uint16 (floor(max(1,depth+.5)));

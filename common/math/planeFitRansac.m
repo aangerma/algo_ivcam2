@@ -1,4 +1,4 @@
-function [vec,distFromPlane,inliers] = planeFitRansac(x,y,z,fovMask,crit,verbose)
+function [vec,distFromPlane,inliersOut] = planeFitRansac(x,y,z,fovMask,crit,verbose)
     
     if(~exist('fovMask','var') || isempty(fovMask))
         fovMask = ones(numel(x),1);
@@ -25,6 +25,8 @@ function [vec,distFromPlane,inliers] = planeFitRansac(x,y,z,fovMask,crit,verbose
         plotPlane(vec,'edgecolor','none','facecolor','b','facealpha',.5);
     end
 %     distFromPlane(~fovMask)=nan;
+inliersOut=false(size(x));
+f=find(mask);inliersOut(f(inliers))=true;
 end
 
 function vec = planeRansacEval(A)

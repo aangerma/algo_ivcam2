@@ -19,8 +19,8 @@ params.scenario.data{1}.txmod = [0 tw0 0];
 params.scenario.data{1}.rxmod = [0 tw1 0];
 
 %albedo
-P=rand([sz 300])>.5;
-%      P = reshape(eye(prod(sz)),sz(1),sz(2),[])>0;
+ P=rand([sz 200])>.5;
+%     P = reshape(eye(prod(sz)),sz(1),sz(2),[])>0;
 params.scenario.data{2}.pat=P;
 params.scenario.data{2}.txmod = [0 tw1 tw1 0 ];
 params.scenario.data{2}.rxmod = [0 tw0 tw1 0 ];
@@ -60,14 +60,16 @@ for i=1:nItr
     %%
     collectionT = sum(params.scenario.data{2}.rxmod)*params.scenario.dt;
     matB=(mes{2}-g*collectionT)/(collectionT*p);
+    
     rangeE =min(1,params.sensor.collectionArea./(pi*(rtd_hat).^2));
     matA  = double(reshape(params.scenario.data{2}.pat.*rangeE,prod(sz),[])');
+    matA = matA*1e9;%compensate on quantization
     a_hat=admm(matB,o,matA,1e-3,0,1e-3,1,false);
     a_hat = reshape(a_hat,sz);
-    imagesc(a_hat);
+%     imagesc(a_hat);
     
 %     imagesc(reshape(pinv(matA)*matB,sz))
-%     imagesc(reshape(mes{2},sz)/(p*tw).*(pi*gt.rtdS.^2))%check measurments
+%     imagesc(reshape(mes{2}/(2^12-1),sz)/(p*tw).*(pi*gt.rtdS.^2))%check measurments
 %     on identity prjection
     
     %%
@@ -76,10 +78,12 @@ for i=1:nItr
     
     
     matB = (mes{2}-mes{3})/p;
-    pat_ = params.scenario.data{3}.pat.*gt.a;
+    pat_ = params.scenario.data{3}.pat.*a_hat;
     matA = double(reshape(pat_,prod(sz),[])');
-    rtd_hat=admm(matB,o,matA,1e-4,0,1e-1,1,false);
-    rtd_hat = reshape(rtd_hat,sz)*C();
+    gamma_hat=admm(matB,o,matA,1e-4,0,1e-1,1,false);
+    
+    scaleFact = mean(vec((gt.rtdS./rtd_hat)));
+    rtd_hat = reshape(1./gamma_hat,sz)*C()*scaleFact;
     
     
     %Display results
