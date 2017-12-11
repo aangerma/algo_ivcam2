@@ -10,9 +10,9 @@ switch(length(P))
         error('bad input');
 end
 imsz=params.outBin*[1 1];
-im=cell(length(v));
+im=cell(length(v),1);
 indv=Utils.indx2col(imsz,[5 5]);
-parfor i=1:length(v)
+for i=1:length(v)
 im{i}=scope2img(v{i},dt,params);
 im{i}=reshape(nanmedian(im{i}(indv)),imsz);
 end

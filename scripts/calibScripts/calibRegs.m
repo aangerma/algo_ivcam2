@@ -1,0 +1,1 @@
+[pbest,f]=fminsearchbnd(@(x) regsErrorFunc(x,{'MTLB.fastChDelay'}),[0],[0],[20],struct('Display','iter','OutputFcn',[]));
