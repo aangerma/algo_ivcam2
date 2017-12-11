@@ -1,6 +1,17 @@
 function [pipeOutData] = autopipe(varargin)
-
-
+%{
+otions:
+    viewResults
+    saveTrace
+    saveMAT
+    verbose
+    rewrite
+    debug
+    fastApprox
+    saveResults
+    memoryLayout
+    regHandle
+%}
 %% input handle
 p = inputHandler(varargin{:});
 
