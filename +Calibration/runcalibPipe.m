@@ -10,7 +10,7 @@ ivs = io.readIVS(p.ivsFilename);
 
 
 %% slow/fast delays
- [fd,sd] = Calibration.aux.mSyncerPipe(ivs,regs,p.verbose);
+ [fd,sd] = Calibration.aux.mSyncerPipe(ivs,regs,true,p.verbose);
 fprintf('MTLBfastChDelay = %d\n',fd);
 fprintf('MTLBslowChDelay = %d\n',sd);
 calibRegs.MTLB.fastChDelay=uint32(fd);
