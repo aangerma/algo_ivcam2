@@ -17,7 +17,7 @@ if(numel(x)<10)
     return;
 end
 xyzc=[x(:) y(:) z(:)];
-inliers =fovMask(:) & ~isnan(any(xyzc,2)) & ~isinf(any(xyzc,2));
+inliers =fovMask(:) & all(~isnan(xyzc),2) & all(~isinf(xyzc),2);
 
 for i=1:2
     %generate model
@@ -30,15 +30,17 @@ distFromPlane = generateLSH(xyzc,FIT_DEG)*d;
 inliers = (abs(distFromPlane)<crit) & inliers;
 end
 
-distFromPlane = reshape(distFromPlane,size(x));
-inliers = reshape(inliers,size(x));
+
 
 if(verbose)
-    xyzcOnPlane=permute(cat(3,xyzc,xyzc-d(1:3)'.*distFromPlane'),[3 1 2]);
+    %%
+    xyzcOnPlane=permute(cat(3,xyzc,xyzc-d(1:3)'.*distFromPlane),[3 1 2]);
     plot3(x(:),y(:),z(:),'ro');
     plotPlane(d,'edgecolor','none','facecolor','b','facealpha',.1);
     line(xyzcOnPlane(:,inliers,1),xyzcOnPlane(:,inliers,2),xyzcOnPlane(:,inliers,3),'color','g')
     line(xyzcOnPlane(:,~inliers,1),xyzcOnPlane(:,~inliers,2),xyzcOnPlane(:,~inliers,3),'color','r')
     axis equal
 end
+distFromPlane = reshape(distFromPlane,size(x));
+inliers = reshape(inliers,size(x));
 end
