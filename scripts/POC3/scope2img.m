@@ -12,8 +12,8 @@ if(~exist('params','var'))
     params.outFreq = 125e6;
     params.locIRdelay = 3069;
     params.outBin = 1024;
-    params.anxgSO = [10 0];
-    params.anygSO = [10 0];
+    params.angxSO = [10 0];
+    params.angySO = [10 0];
 end
 %%
 tia = v(:,1);
@@ -52,9 +52,12 @@ fa = interp1(0:dtL:tend,fa,0:dtP:tend);
 dtO = 1/params.outFreq;
 ivs.slow = interp1(0:dt:tend,irdata,bT:dtO:eT);
 ivs.xy = interp1((0:(length(sa)-1))*dtP,[sa;fa]',bT:dtO:eT)';
-% params.angxSO=[minmax(ivs.xy(1,:)); 1 1]'\[-1;1];
-% params.angySO=[minmax(ivs.xy(2,:)); 1 1]'\[-1;1];
-
+if(isempty(params.angxSO))
+ params.angxSO=[minmax(ivs.xy(1,:)); 1 1]'\[-1;1];
+end
+if(isempty(params.angySO))
+ params.angySO=[minmax(ivs.xy(2,:)); 1 1]'\[-1;1];
+end
 ivs.slow = uint16(ivs.slow*params.slowSO(1)+params.slowSO(2));
 
 to12b = @(x) int16(min(1,max(-1,x))*(2^11-1));

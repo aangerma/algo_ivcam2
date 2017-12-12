@@ -14,8 +14,8 @@ params.locPostFreq = 10e6;
 params.outFreq = 125e6;
 params.locIRdelay = 114;
 params.outBin = 1024;
-params.angxSO = [12 0];
-params.angySO = [2 0];
+params.angxSO = [];
+params.angySO = [];
 params.slowSO = [29e3 0];
 %%
 %H calib
@@ -28,8 +28,14 @@ view(60,22);
 grid on
 axis equal
 %%
-[pp,~] = icosphere(4);
+[pp,ff] = icosphere(5);
+nH = params.pzr2los(1:3);
+nV = params.pzr2los(4:6);
 
+nV =nV/norm(nV );
+nH =nH/norm(nH );
+iV = find(sqrt(sum((pp-nV).^2,2))<.25);
+iH = find(sqrt(sum((pp-nH).^2,2))<.25 & pp(:,1)>0 & pp(:,2)>0);
 %%
 n = size(pp,1);
 eH=nan(n,1);
@@ -38,21 +44,16 @@ imH=cell(n,1);
 eV=nan(n,1);
 imV=cell(n,1);
 
-n=numel(eH);
-for i=1:n
+
+for i=iV'
     disp(i/n);
     PV=[.5       0          .5  pp(i,:) ];
     [eV(i),imV{i}]=errFuncC(PV,v,dt,params);
-    
-    
-    PH=[pp(i,:) 1/8 1 -1/8];
-    if(PH(1)<0 || PH(3)<0)
-        continue;
-    end
-    [eH(i),imH{i}]=errFuncC(PH,v,dt,params);
-    
 end
-
-
+for i=iH'
+    disp(i/n);
+    PH=[pp(i,:) 1/8 1 -1/8];
+    [eH(i),imH{i}]=errFuncC(PH,v,dt,params);
+end
 
 save dbg 
