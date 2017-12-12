@@ -10,9 +10,8 @@ v=regexprep(v,'(?:\n){2,}','\n');
 
 
 v=str2cell(v,10);
-if(isempty(v{end}))
-    v(end)=[];
-end
+v(cellfun(@(x) length(x)<=1,v))=[];
+v(cellfun(@(x) x(1)=='%',v))=[];
 % v = v(cellfun(@(x) checkIfGoodRow(x),v));
 v=cellfun(@(x) str2cell(x,',')',v,'uni',false);
 % v=cellfun(@(x) strtrim(x),v,'uni',false);
