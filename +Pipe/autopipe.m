@@ -94,6 +94,7 @@ else
     calibTic=tic; lgr.print('\n\t\tCalibrating...');
     Calibration.runcalibPipe(p.ivsFilename,'calibFile',p.calibFile,'modeFile',p.modeFile);
     lgr.print(' done in %4.2f sec \n', toc(calibTic));
+    fw.setRegs(p.calibFile);
     %------------CALIBRATION END------------
 end
 dnnWeightFile = fullfile(fileparts(p.calibFile),'dnnweights.csv');
