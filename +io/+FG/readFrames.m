@@ -3,6 +3,7 @@ inputDir = varargin{1};
 
 p = inputParser;
 addOptional(p,'numFrames',2^31-1);
+addOptional(p,'addpadding',true);
 addOptional(p,'verbose',false);
 
 parse(p,varargin{2:end});
@@ -21,8 +22,8 @@ fhs=[];
 
 
 for i=1:p.numFrames
-    logger.print('Reading frame %d...',i);
-    [ivs,frameHeader] = readOneFrame(s);
+    logger.print('Reading frame %3d...',i);
+    [ivs,frameHeader] = readOneFrame(s,p.addpadding,p.verbose);
     if(isempty(ivs))
         break;
     end
@@ -35,9 +36,9 @@ end
 
 
 
-function [ivs,frameHeader] = readOneFrame(s)
+function [ivs,frameHeader] = readOneFrame(s,pad,verbose)
 
-[columns,frameHeader] = getFrameData(s);
+[columns,frameHeader] = getFrameData(s,pad,verbose);
 if(isempty(columns))
     ivs=[];
 else
@@ -210,7 +211,7 @@ colData.projectionFlag = bitget(locOffset,1);
 
 hlocIndex=bitand(bitshift(locOffset,-1),uint8(3));
 
-% assert(all(hlocIndex~=2),'Hloc index equal to 3');
+assert(all(hlocIndex~=2),'Hloc index equal to 2');
 
 hlocLUT = int16([0 1 0 -1]);
 offsetH = hlocLUT(hlocIndex+1);
@@ -222,9 +223,6 @@ offsetV = cumsum(offsetV);
 x = (colData.header.horizontalLocation+offsetH);
 y = (colData.header.verticalLocation+offsetV);
 
-%% aSync sim
-y = y-int16(2048);
-x = x-int16(2048);
 
 
 
@@ -246,7 +244,7 @@ tx_code_start = [uint8(1); zeros(length(slow)-1,1,'uint8')];
 scan_dir = colData.header.scanDir*ones(length(slow),1,'uint8');
 ld_on = vec(repmat(uint8(colData.projectionFlag),4,1));
 
-scan_dir=1-scan_dir; %?????????????????????????????????????????????????????????????????????????????????????
+
 
 
 
@@ -269,7 +267,7 @@ end
 
 
 
-function [columns,frameHeader] = getFrameData(s)
+function [columns,frameHeader] = getFrameData(s,pad,verbose)
 
 columns=[];
 frameHeader = getFrameHeader(s);
@@ -280,7 +278,20 @@ for i=1:frameHeader.numOfColumns
         
     columns =[columns ns];
 end
+if(verbose)
+    xy=[columns.xy];
+    ps = @(v) sprintf('% 5.2f|% 5.2f|% 5.2f|% 5.2f|% 5.2f',min(v),max(v),diff(minmax(v)),mean(v),std(double(v)));
+    fprintf('stats(min|max|diff|average|std): angX(%s) angY(%s) ir(%s) fast(%s)',ps(xy(1,:)),ps(xy(2,:)),ps([columns.slow]),ps([columns.fast]));
+    
+end
+
+%%BUG FIXEDS
+for i=1:length(columns)
+    columns(i).xy=columns(i).xy-2048;
+    columns(i).flags = bitxor(columns(i).flags,uint8(4));
+end
 %% padding
+if(pad)
 for i=1:frameHeader.numOfColumns-1
     nFast = columns(i+1).header.timestamp-columns(i).header.timestamp;
     assert(mod(nFast,64)==0,'Time between timestamps does not divide in 64');
@@ -290,7 +301,7 @@ for i=1:frameHeader.numOfColumns-1
     columns(i).flags=[columns(i).flags zeros(1,nSlow)];
     columns(i).xy=[columns(i).xy columns(i).xy(:,end).*ones(2,nSlow,'int16')];
 end
-
+end
 if(0)
     %%
     figure(36764);clf;hold on;
