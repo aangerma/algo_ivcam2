@@ -10,16 +10,19 @@ if(nargin>0)
     p = inputParser;
     
     addOptional(p,'outDir',[]);
-    addOptional(p,'numFrames',[]);
-    addOptional(p,'sampleRate', str2double(sampleRates{1}) ,@(x) any(strcmp(num2str(x),sampleRates)) );
+    addOptional(p,'numFrames',num2str(2^31-1));%input from cmd as str
+    addOptional(p,'sampleRate', sampleRates{1} ,@(x) any(strcmp(x,sampleRates)) );%input from cmd as str
     addOptional(p,'xy',false);
     addOptional(p,'fastFFT',false);
-    addOptional(p,'calib',[]);
+    addOptional(p,'calib',[]);%input from cmd as str
     
     parse(p,varargin{2:end});
-    
     p = p.Results;
-    p.inDir = varargin{1};
+    
+    p.inDir = varargin{1};  
+    p.numFrames = str2double(p.numFrames);
+    p.sampleRate = str2double(p.sampleRate)*1e9;
+    p.calib = iff(~isempty(p.calib),str2double(p.calib),[]);
     
     callback_runReadFrames(p)
     
@@ -131,7 +134,7 @@ if(nargin>1)
     
     p.inDir = h.dataFolder.String;
     p.sampleRate =  str2double(h.sampleRate.popup.String{h.sampleRate.popup.Value})*1e9;
-    p.numFrames = iff(h.numFrames.checkbox.Value>0,str2double(h.numFrames.edit.String),[]);
+    p.numFrames = iff(h.numFrames.checkbox.Value>0,str2double(h.numFrames.edit.String),2^31-1);
     p.xy = h.xy.Value>0;
     p.fastFFT = h.fastFFT.Value>0;
     p.calib = iff(h.calib.checkbox.Value>0, str2double(h.calib.edit.String),[]);
@@ -141,7 +144,6 @@ else
     h = [];
     
     p = varargin{1};
-    p.sampleRate = p.sampleRate*1e9;
 end
 
 
@@ -152,11 +154,8 @@ end
 
 
 textRefrash(h,'reading frames...')
-if(isempty(p.numFrames))
-    ivsArr = io.FG.readFrames(p.inDir);
-else
-    ivsArr = io.FG.readFrames(p.inDir ,'numFrames',p.numFrames);
-end
+ivsArr = io.FG.readFrames(p.inDir ,'numFrames',p.numFrames,'verbose',true,'addpadding',true);
+
 
 
 %% xy
