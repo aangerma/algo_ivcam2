@@ -28,32 +28,40 @@ view(60,22);
 grid on
 axis equal
 %%
-[pp,ff] = icosphere(5);
+[pp,ff] = icosphere(6);
 nH = params.pzr2los(1:3);
+ppH=pp*rotateAroundVector(pp(1,:),nH);
 nV = params.pzr2los(4:6);
-
+ppV=pp*rotateAroundVector(pp(1,:),nV);
 nV =nV/norm(nV );
 nH =nH/norm(nH );
-iV = find(sqrt(sum((pp-nV).^2,2))<.25);
-iH = find(sqrt(sum((pp-nH).^2,2))<.25 & pp(:,1)>0 & pp(:,2)>0);
+iV = find(sqrt(sum((ppV-nV).^2,2))<.5);
+iH = find(sqrt(sum((ppH-nH).^2,2))<.5 & ppH(:,1)>0 & ppH(:,2)>0);
 %%
-n = size(pp,1);
-eH=nan(n,1);
-imH=cell(n,1);
 
-eV=nan(n,1);
-imV=cell(n,1);
+eH=nan(length(iH),1);
+imH=cell(length(iH),1);
 
+eV=nan(length(iV),1);
+imV=cell(length(iV),1);
 
-for i=iV'
-    disp(i/n);
-    PV=[.5       0          .5  pp(i,:) ];
-    [eV(i),imV{i}]=errFuncC(PV,v,dt,params);
-end
-for i=iH'
-    disp(i/n);
-    PH=[pp(i,:) 1/8 1 -1/8];
-    [eH(i),imH{i}]=errFuncC(PH,v,dt,params);
+tic
+parfor i=1:length(iV)
+    ind = iV(i);
+    fprintf('V %5.2f\n',i/length(iV)*100);
+     PV=[.5       0          .5  ppV(ind,:) ];
+     [eV(i),imV{i}]=errFuncV(PV,v,dt,params);
 end
 
+parfor i=1:length(iH)
+    ind = iH(i);
+    fprintf('V %5.2f\n',i/length(iH)*100);
+    PH=[ppH(ind,:) 1/8 1 -1/8];
+    [eH(i),imH{i}]=errFuncH(PH,v,dt,params);
+end
+eeV=nan(size(pp,1),1);
+eeH=nan(size(pp,1),1);
+eeV(iV)=eV;
+eeH(iH)=eH;
 save dbg 
+toc

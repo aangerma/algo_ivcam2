@@ -42,7 +42,7 @@ params.slowSO = [29e3 0];
 
  
 
-[fa_0,im,p] = errFuncA(params.pzr2los,v,dt,params); 
+[fa_0,im,p] = errFuncB(params.pzr2los,v,dt,params); 
 fc_0 = errFuncC(params.pzr2los,v,dt,params);
 %%
 while(true)
