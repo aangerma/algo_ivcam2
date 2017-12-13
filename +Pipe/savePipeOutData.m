@@ -11,6 +11,7 @@ function savePipeOutData(pipeOutData,baseDir,outputFn)
     towrite.binz     = (getZ4bin(pipeOutData.zImg));
     towrite.binv     = (pipeOutData.vImg);
     towrite.binc     = (pipeOutData.cImg);
+    towrite.binvi    = pipeOutData;
     towrite.stl.xImg = (pipeOutData.vImg(:,:,1));
     towrite.stl.yImg = (pipeOutData.vImg(:,:,2));
     towrite.stl.zImg = (pipeOutData.vImg(:,:,3));
