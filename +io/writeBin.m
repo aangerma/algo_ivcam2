@@ -65,7 +65,6 @@ switch p.Results.type
         assert(isa(data.iImg,'uint8' ),'i must be uint16');
         zBytes = reshape(typecast(vec(data.zImg'), 'uint8'),2,[]);
         fwrite(f,[zBytes;vec(data.iImg')']);
-        %vec([reshape(typecast(vec(data.zImg'),'uint8'),2,[])' vec(data.iImg')]),'uint8');
     case 'binvi'
         assert(isfield(data,'vImg') && isfield(data,'iImg'))
         assert(isa(data.vImg,'single'),'z must be uint16');

@@ -1,6 +1,6 @@
-function [err, distortionErr,pt] = edgeUnifomity(ir,tunnelWidth,horizontalMargin,verbose)
+function [err,cc, distortionErr] = edgeUnifomity(ir,tunnelWidth,horizontalMargin,verbose)
 if(~exist('tunnelWidth','var'))
-    tunnelWidth=3;
+    tunnelWidth=7;
 end
 if(~exist('horizontalMargin','var'))
     horizontalMargin=3;
@@ -12,16 +12,20 @@ end
 ir(sum(ir(:,2:end-1),2)==0,:)=[];
 
 ir_=ir;
-ir_(isnan(ir_))=0;
 
+ir_(isnan(ir_))=0;
+ir_ = histeq(normByMax(ir_));
 % pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
 [pt,bsz]=detectCheckerboardPoints(ir_);
- boardSize=bsz-1;%[9 13];
-pt=reshape(pt(:,1)+1j*pt(:,2),bsz-1);
-% if(~all(bsz-1==boardSize))
-%     error('Bad binput image/board size');
-% end
-% 
+ boardSize=[9 13];%bsz-1
+ 
+if(~all(bsz-1==boardSize))
+     error('Bad binput image/board size');
+ end
+ 
+ 
+pt=reshape(pt(:,1)+1j*pt(:,2),boardSize);
+
 
 
 
@@ -39,7 +43,8 @@ yf={};
 evy=zeros(boardSize(1),1);
 for i = 1:boardSize(1)
     %find x location, minus vertical margin
-    xv{i} = setdiff(real(pt(i,1)):real(pt(i,end)),vec(real(pt(i,:))+(-horizontalMargin:horizontalMargin)'));
+    xv{i} =real(pt(i,1)):.5:real(pt(i,end));
+    xv{i}(min(abs(xv{i}-vec(real(pt(i,:))')))<horizontalMargin)=[];
     %find checkerboard y location in these point using splin interpolation
 
     p=polyfit(real(pt(i,:)),imag(pt(i,:)),2);
@@ -62,21 +67,32 @@ distortionErr=rms([evx;evy]);
 irBox=interp2(xg,yg,ir,repmat(xv,tunnelWidth*2+1,1),yv+(-tunnelWidth:tunnelWidth)');
 %inverse the checkerboard
 irBox(:,yf>0)=flipud(irBox(:,yf>0));
+[~,dy]=gradient(irBox);
+[m1,mi]=max(dy(2:end-1,:));
+mi=mi+1;
+m0 = dy(sub2ind(size(dy),mi-1,1:size(dy,2)));
+m2 = dy(sub2ind(size(dy),mi+1,1:size(dy,2)));
+
+ddy = diff([m0;m1;m2]);
+cc = mean(ddy)./diff(ddy)+mi-(tunnelWidth+1);
+err=std(cc);
 %%
 if(verbose)
     %%
-    subplot(5,5,setdiff(1:20,5:5:25));
-    imagesc(ir); %#ok
+    subplot(6,1,1:4);
+    imagesc(ir_); axis equal
      hold on;
      plot(pt,'ro');
      plot(xv,yv,'g.');
      hold off
-     subplot(5,5,21:24);
-     imagesc(irBox);
-     subplot(5,5,25);
-     plot(std(irBox,[],2),1:tunnelWidth*2+1);axis tight;set(gca,'ydir','reverse');
+     subplot(6,1,5:6);
+     imagesc(irBox,'ydata',-tunnelWidth:tunnelWidth);
+     hold on
+     plot(1:length(cc),cc,'r.');
+     hold off
+     title(std(cc));
 end
-err = sqrt(mean(diff(irBox(tunnelWidth+1,:),[],2).^2));
+
 end
 
 function err = errorFunc(ir)
