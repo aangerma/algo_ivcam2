@@ -20,12 +20,6 @@ end
 
 if(exist(p.calibFile,'file'))
     fw.setRegs(p.calibFile);
-else
-    %------------CALIBRATION BEGIN------------
-    calibTic=tic; lgr.print('\n\t\tCalibrating...');
-    Calibration.runcalibPipe(p.ivsFilename,'calibFile',p.calibFile,'modeFile',p.modeFile);
-    lgr.print(' done in %4.2f sec \n', toc(calibTic));
-    %------------CALIBRATION END------------
 end
 dnnWeightFile = fullfile(fileparts(p.calibFile),'dnnweights.csv');
 innWeightFile = fullfile(fileparts(p.calibFile),'innweights.csv');
@@ -129,7 +123,7 @@ defs.modefn =fullfile(basedir,filesep,'mode.csv');
 %% varargin parse
 p = inputParser;
 
-isfile = @(x) exist(x,'file');
+isfile = @(x) true;
 isflag = @(x) or(isnumeric(x),islogical(x));
 
 addOptional(p,'outputDir',defs.outputDir);
