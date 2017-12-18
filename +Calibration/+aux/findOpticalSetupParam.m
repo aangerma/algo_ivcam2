@@ -1,14 +1,14 @@
 function [regsOut,lutsOut] = findOpticalSetupParam(ivs,fw)
 
 
-
+BASE_SIZE = 640;
 fwc=copy(fw);
-rxpropregs.DEST.rxPWRpd=single([-0.0268449783325195 -0.0252129249274731 -0.0236396975815296 -0.0221243984997272 -0.0206661224365234 -0.0192639753222466 -0.0179170593619347 -0.0166244767606258 -0.0153853232041001 -0.0141987064853311 -0.013063726015389 -0.0119794821366668 -0.0109450798481703 -0.00995961762964725 -0.00902219861745834 -0.00813192408531904 -0.00728789530694485 -0.00648921262472868 -0.00573498057201505 -0.00502429902553558 -0.0043562687933445 -0.00383868534117937 -0.00340324896387756 -0.00299753248691559 -0.00262086745351553 -0.00227258633822203 -0.00195202091708779 -0.00165850203484297 -0.00139136239886284 -0.00114993331953883 -0.00093354657292366 -0.000741533935070038 -0.000573227414861321 -0.000427958555519581 -0.000305059365928173 -0.000203860923647881 -0.000123695936053991 -6.38952478766441e-05 -2.37911008298397e-05 -2.71573662757874e-06 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]);
+rxpropregs.DEST.rxPWRpd=zeros(1,65,'single');
 setregs.DEST.rxPWRpd=rxpropregs.DEST.rxPWRpd;
 setregs.FRMW.destRxpdGen = single([0 0 0]);
 setregs.FRMW.destTxpdGen = single([0 0 0]);
-setregs.FRMW.xres = uint16(640);
-setregs.FRMW.yres = uint16(640);
+setregs.FRMW.xres = uint16(BASE_SIZE);
+setregs.FRMW.yres = uint16(BASE_SIZE);
 setregs.DIGG.undistBypass=false;
 
 
@@ -29,12 +29,12 @@ setregs.JFIL.gammaBypass=true;
 setregs.JFIL.sort1Edge01=true;
 setregs.JFIL.sort1Edge03=true;
 setregs.JFIL.edge3bypassMode=uint8(1);
+setregs.DIGG.sphericalEn = true;
 
 fwc.setRegs(setregs,[]);
 
 [regs,~]=fwc.get();
 
-shortpipe=false;
 
 
 
@@ -42,8 +42,9 @@ shortpipe=false;
 
 % regs.MTLB.fastChDelay=regs.MTLB.fastChDelay+22
 
-[glohi]=round(prctile(double(ivs.slow(ivs.slow~=0)),[1 100]));
-glohi(2)=round(glohi(2)*1.2);%add 20% margin;
+[glohi]=round(prctile(double(ivs.slow(ivs.slow~=0)),[1 99]));
+glohi=round(glohi.*[.8 1.2]);%add 20% margin;
+
 multFact = 2^12/diff(glohi);
 if(multFact>4)
     error('IR dynamci range of input image is too low(min=%d,max=%d)',glohi);
@@ -57,42 +58,21 @@ fwc.setRegs(gammaRegs,[]);
 
 
 
+% 
+% [regs,luts]=fwc.get();
+% pout = Pipe.hwpipe(ivs,regs,luts,Pipe.setDefaultMemoryLayout(),Logger(),[]);
+% 
+% [p,bsz] = detectCheckerboardPoints(pout.iImgRAW);
+% [yg,xg]=ndgrid(1:BASE_SIZE);
+% rtd = interp2(xg,yg,pout.rtdImg,p(:,1),p(:,2));
+% c = interp2(xg,yg,double(pout.iImgRAW),p(:,1),p(:,2));
+% raw= reshape([p/BASE_SIZE*2-1  rtd c],bsz(1)-1,bsz(2)-1,4);
+% 
 
 
 
 
 
-
-
-if(shortpipe)
-k=vec(repmat(Utils.uint322bin(regs.FRMW.txCode,regs.GNRL.codeLength),1,regs.GNRL.sampleRate)');
-nPcktsPerDepth = length(k)/64;
-ivs2=ivs;
-ivs2.fast = circshift(ivs2.fast,[0 regs.MTLB.fastChDelay*64]);
-ivs2.slow = circshift(ivs2.slow,[0 regs.MTLB.slowChDelay]);
-ivs2.flags= circshift(ivs2.flags,[0 regs.MTLB.fastChDelay]);
-[cma,xy,ir]=Utils.ivsCodechunker(ivs2,nPcktsPerDepth*2);
-cma = permute((mean(reshape(cma,[],2,size(cma,2)),2)),[1 3 2]);
-
-cma = circshift(cma,[0 1]);
-
-c=Utils.correlator(cma,k*2-1);
-c=c*2/length(k);
-%
-ok=max(c)>.3;
-c_=c(:,ok);
-raw.xy=int16(round(xy(:,ok)));
-raw.ir=ir(ok);
-[raw.mxv,mxc]=max(c_);
-
-    ind = sub2ind(size(c_),mod(mxc+(-1:1)'-1,size(c_,1))+1,(1:size(c_,2)).*[1;1;1]);
-    cm=c_(ind);
-    pk=(cm(1,:)-cm(3,:))./(cm(1,:)+cm(3,:)-2*cm(2,:))+mxc;
-    raw.rtd=pk*double(regs.DEST.sampleDist(1));
-    runPipe  = @(regs_,luts_) shortPipe (raw,regs_,luts_);
-else
-    runPipe  = @(regs_,luts_) longPipe (ivs,regs_,luts_);
-end
 
 % scatter3(xy_(1,:)/4,xy_(2,:),double(z)/8,10,ir_,'fill')
 % errFunc1(xbest,fwc,runPipeF)
@@ -112,44 +92,65 @@ fwc.setLut(undistLuts);
 xbest =  [47.3482686908418 47.5213992906887 7311.55601853396 0.534818968265146 1.43425961018034];
 %}
 
-% xbest =  [47.9713447686545 48.1857796574158 7294.39224926682 0.424012250712631 1.99813751250044];
-xbest = [48.335197 51.458416 7436.094808 1.741173 0.912716 ];
 
-xL = [40   40    6000  -3  -3 ];
-xH = [70   56    8000   3   3 ];
+xbest = [55 50 8000 -1 1];
+
+xL = [40   40    8000  -3  -3 ];
+xH = [70   56    8700   3   3 ];
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
 warning('off','pipe:RAST');
+
+
+runPipe = @(r,l) longPipe(ivs,r,l);
 
 err=[];
 THR=0.1;
 fvalPre = inf;
 
 fminSearchOpt=struct('tolx',inf,'TolFun',THR,'OutputFcn',[],'MaxIter',15);
+
+% [xbest(1:3),fval]=fminsearchbnd(@(x) p2e(raw2xyzc(x,regs.DEST.baseline,raw),false),xbest(1:3),xL(1:3),xH(1:3),struct('Display','iter','OutputFcn',[]));
+
 for i=1:3
-    
+       figure(1);
+    ah=arrayfun(@(i) subplot(2,2,i),1:4,'uni',false);ah=[ah{:}];
     %% fov+delay
     [xbest(1:3),fval]=fminsearchbnd(@(x) errFunc(x,fwc,runPipe,false),xbest(1:3),xL(1:3),xH(1:3),fminSearchOpt);
+    newregs = th2regs(xbest(1:3));
+    fwc.setRegs(newregs,[]);
     %% laser angles
     [xbest(4:5),fval]=fminsearchbnd(@(x) errFunc(x,fwc,runPipe,false),xbest(4:5),xL(4:5),xH(4:5),fminSearchOpt);
+    newregs = th2regs(xbest(4:5));
+    fwc.setRegs(newregs,[]);
+
     err(i)=fval;
     
     %%
-    figure(1);
-    ah=arrayfun(@(i) subplot(2,2,i),1:4,'uni',false);ah=[ah{:}];
+ 
     
     
     %% UNDISTORT
     
     [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
     %find distortion
-    uvmes=(dataOut.kMat(1:2,:)*dataOut.xyzmes./(dataOut.kMat(3,:)*dataOut.xyzmes)+1)*0.5.*size(dataOut.iImg)';
-    uvopt=(dataOut.kMat(1:2,:)*dataOut.xyzopt./(dataOut.kMat(3,:)*dataOut.xyzopt)+1)*0.5.*size(dataOut.iImg)';
+    xyzm = reshape(dataOut.xyzmes(:,:,1:3),[],3)';
+    xyzo = reshape(dataOut.xyzopt(:,:,1:3),[],3)';
+    uvmes=(dataOut.kMat(1:2,:)*xyzm./(dataOut.kMat(3,:)*xyzm)+1)*0.5.*size(dataOut.iImg)';
+    uvopt=(dataOut.kMat(1:2,:)*xyzo./(dataOut.kMat(3,:)*xyzo)+1)*0.5.*size(dataOut.iImg)';
+    
+    
     uverr = uvopt-uvmes;
     tps=TPS(uvmes',uverr');
     undist=tps.at([xg(:) yg(:)]);
     undistx=reshape(undist(:,1),size(xg));
     undisty=reshape(undist(:,2),size(xg));
+    [udyg,udxg]=ndgrid(linspace(-1,1,32));
+    oo = ones(numel(udxg),1);
+    %remove scale
+    undistx=undistx-reshape([vec(udxg) oo]*([vec(udxg) oo]\vec(undistx)),32,32);
+    undisty=undisty-reshape([vec(udyg) oo]*([vec(udyg) oo]\vec(undisty)),32,32);
+    
     
     interError=max([interp2(xg,yg,undistx,uvmes(1,:),uvmes(2,:))+uvmes(1,:)-uvopt(1,:) interp2(xg,yg,undisty,uvmes(1,:),uvmes(2,:))+uvmes(2,:)-uvopt(2,:)]);
     
@@ -161,7 +162,7 @@ for i=1:3
     undistLuts.FRMW.yLensModel=typecast(single(vec(undisty_)'/single(regs.GNRL.imgVsize)),'uint32');
     fwc.setLut(undistLuts);
     rmserr = rms([undistx(:);undisty(:)]);
-    quiverCmplx(uvmes(1,:)+1j*uvmes(2,:),uvopt(1,:)+1j*uvopt(2,:),'parent',ah(2))
+    quiver(udxg,udyg,undistx,undisty,'parent',ah(2))
     title(sprintf('distortion(%f)',rmserr),'parent',ah(2))
     grid(ah(2),'on');
     axis(ah(2),'equal');
@@ -171,7 +172,7 @@ for i=1:3
     
     rmserrPre=inf;
     
-    while(true )
+    while(true && 0 )
         [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
         %rx delay
         
@@ -214,7 +215,7 @@ newregs = Firmware.mergeRegs(newregs,gammaRegs);
 newregs.DIGG.undistBypass = false;
 fwc.setRegs(newregs,[]);
 %{
-  [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
+  [~,dataOut] = errFunc(xbest,fwc,longPipe,ah(1));
 regtxt=cellfun(@(X) cell2str(strcat(X,fieldnames(newregs.(X))),'|'),fieldnames(newregs),'uni',0);regtxt=cell2str(regtxt,'|');
 fwc.disp(regtxt);
 io.writeBin('FRMWxLensModel.bin32',undistLuts.FRMW.xLensModel);
@@ -228,52 +229,69 @@ regsOut = newregs;
 save dbg3
 end
 
-function [e,ptsOptR]=p2e(xyzmes,h,w)
+function xyzmes=raw2xyzc(p,bl,raw)
+angx=raw(:,:,1).*p(1)*pi/180;
+angy=raw(:,:,2).*p(2)*pi/180;
+rtd =raw(:,:,3)-p(3);
+
+
+tanx = tan(angx);
+sinx = sin(angx);
+cosx = cos(angx);
+cosy = cos(angy);
+sing=sin(atan(tanx.*cosy));
+cosw=cos(atan(tan(angy)./sqrt(1+tanx.^2)));
+sinw=sin(atan(tan(angy)./sqrt(1+tanx.^2)));
+r= (0.5*(rtd.^2 - bl^2))./(rtd - bl.*sing);
+
+z = r.*cosw.*cosx;
+x = r.*cosy.*sinx;
+y = r.*sinw;
+xyzmes=cat(3,x,y,z,raw(:,:,4));
+end
+
+function [e,ptsOut]=p2e(p,verbose)
 %%
 tileSizeMM = 30;
-
+h=size(p,1);
+w=size(p,2);
 [oy,ox]=ndgrid(linspace(-1,1,h)*(h-1)*tileSizeMM/2,linspace(-1,1,w)*(w-1)*tileSizeMM/2);
 ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
+xyzmes =reshape(p,[],4)';
+xyzmes=xyzmes(1:3,:);
 
-whiteInd = ((-1).^(1:h)'*(-1).^(1:w)>0);
-% %find best plane
-% [mdl,d]=planeFit(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),whiteInd,2)
-% %project point to best plane
-% ptP=xyzmes-d.*mdl(1:3)-[0;0;mdl(4)];
-% %PCA
-% [v,l]=eig(ptP*ptP');
-% ptPR=v(:,[3 2])'*ptP;
 
-meanpv=mean(xyzmes,2);
-ptsInzm=xyzmes-meanpv;
-errVec = zeros(numel(whiteInd),1);
-for i=1:1
-    thr = prctile(errVec,75);
-    inliers = whiteInd(:)&errVec<=thr;
-    pvc=ptsInzm(:,inliers);
     %find best plane
-    hMat=[ones(size(pvc,2),1) pvc' ];
-    [c,n] = clsq(hMat,3);
+    [mdl,d,in]=planeFit(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),[],200);
+    if(nnz(in)/numel(in)<.90)
+        e=1e3;
+        ptsOut=xyzmes;
+        return;
+    end
+    pvc=xyzmes-mean(xyzmes(:,in),2);
+%     
     %project all point to plane
-    pvp=pvc-n*([ones(size(pvc,2),1) pvc' ]*[c;n])';
+    pvp=pvc(:,in)-mdl(1:3).*d(:,in);
     
     pvp=pvp-mean(pvp,2);
     %shift to center, find rotation along PCA
-    [u,~,vt]=svd(pvp*ptsOpt(:,inliers)');
+    [u,~,vt]=svd(pvp*ptsOpt(:,in)');
     rotmat=u*vt';
     
     ptsOptR = rotmat*ptsOpt;
-    ptsOptR = ptsOptR+meanpv;
-    errVec = vec(sqrt((sum((xyzmes-ptsOptR).^2))));
-    %{
-    plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
     
-    %}
-end
+    errVec = vec(sqrt((sum((pvc-ptsOptR).^2))));
+    if(exist('verbose','var') && verbose)
+   
+    plot3(pvc(1,in),pvc(2,in),pvc(3,in),'go',pvc(1,~in),pvc(2,~in),pvc(3,~in),'Ro',ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),'b+')
+%     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
+%     plotPlane(mdl);
+%     plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
+    end
 
- e = sqrt((mean(errVec(inliers).^2)));
+ e = sqrt((mean(errVec(in).^2)));
 %  e=prctile(errVec,85);
-
+ptsOut = reshape(ptsOptR'+mean(xyzmes(:,in),2)',size(p,1),size(p,2),3);
 end
 
 
@@ -296,8 +314,10 @@ switch(n)
         
 end
 end
-function [err,dataOut] = errFunc(X,fwc,runPipe,axesH)
-
+function [err,dataOut] = errFunc(X,fw,runPipe,axesH)
+lookAtCenters=false;
+doRadialAveraging = false;
+fwc = copy(fw);
 newregs = th2regs(X);
 fwc.setRegs(newregs,[]);
 
@@ -325,15 +345,24 @@ end
 if(mean(vec(diff(imag(p))))<0)
     p=flipud(p);
 end
-stepSz=min(mean(vec(diff(real(p),[],2))),mean(vec(diff(imag(p)))));
-r = max(stepSz/4,1);
+if(lookAtCenters)
+    p=(p(1:end-1,1:end-1)+p(1:end-1,2:end)+p(2:end,1:1:end-1)+p(2:end,2:end))/4;
+end
+if(doRadialAveraging)
+    stepSz=min(mean(vec(diff(real(p),[],2))),mean(vec(diff(imag(p)))));
+    r = max(stepSz/4,1);
+else
+    r=1;
+end
 [yg,xg]=ndgrid(1:double(regs.GNRL.imgVsize),1:double(regs.GNRL.imgHsize));
-q=(p(1:end-1,1:end-1)+p(1:end-1,2:end)+p(2:end,1:1:end-1)+p(2:end,2:end))/4;
 
 inp=vec(xg)+1j*vec(yg);
-insample=arrayfun(@(x) abs(x-inp)<r,q,'uni',false);
+insample=arrayfun(@(x) abs(x-inp)<r,p,'uni',false);
 insample=([insample{:}]);
 insample=double(insample)./sum(insample);
+
+    
+
 pout(isnan(pout))=0;
 xyzcAv=[vec(pout(:,:,1)) vec(pout(:,:,2)) vec(pout(:,:,3))  vec(pout(:,:,4))]'*insample;
 
@@ -352,25 +381,24 @@ y=xyzcAv(2,:);
 z=xyzcAv(3,:);
 c=xyzcAv(4,:);
 %find K
-qn = (real(q)/w*2-1)+1j*(imag(q)/h*2-1);
+qn = (real(p)/w*2-1)+1j*(imag(p)/h*2-1);
 fpx=[vec(x)./vec(z) ones(numel(x),1)]\real(qn(:));
 fpy=[vec(y)./vec(z) ones(numel(y),1)]\imag(qn(:));
 %     fitErr=norm([vec(x)./vec(z) ones(numel(x),1)]*fpx-real(qn(:)))+norm([vec(y)./vec(z) ones(numel(x),1)]*fpy-imag(qn(:)));
 dataOut.kMat = [fpx(1) 0 fpx(2);0 fpy(1) fpy(2); 0 0 1];
 
-dataOut.xyzmes=[x(:) y(:) z(:)]';
+
+dataOut.xyzmes=reshape(xyzcAv',size(p,1),size(p,2),[]);%[x(:) y(:) z(:)]';
 dataOut.colData = c(:);
 dataOut.iImg = iImg;
-dataOut.imgPts = q;
+dataOut.imgPts = p;
 
 
-[dataOut.err,dataOut.xyzopt]=p2e(dataOut.xyzmes,bsz(1)-2,bsz(2)-2);
+[dataOut.err,dataOut.xyzopt]=p2e(dataOut.xyzmes);
+
 
 if(exist('axesH','var') && ishandle(axesH))
-    plot3(vec(dataOut.xyzmes(1,:,:)),vec(dataOut.xyzmes(2,:,:)),vec(dataOut.xyzmes(3,:,:)),'ro',dataOut.xyzopt(1,:),dataOut.xyzopt(2,:),dataOut.xyzopt(3,:),'go','parent',axesH);
-    hold(axesH,'on');
-    quiver3(dataOut.xyzopt(1,:),dataOut.xyzopt(2,:),dataOut.xyzopt(3,:),dataOut.xyzmes(1,:)-dataOut.xyzopt(1,:),dataOut.xyzmes(2,:)-dataOut.xyzopt(2,:),dataOut.xyzmes(3,:)-dataOut.xyzopt(3,:),0,'parent',axesH);
-    hold(axesH,'off');
+    plot3(vec(dataOut.xyzmes(:,:,1)),vec(dataOut.xyzmes(:,:,2)),vec(dataOut.xyzmes(:,:,3)),'ro',dataOut.xyzopt(:,:,1),dataOut.xyzopt(:,:,2),dataOut.xyzopt(:,:,3),'go','parent',axesH);
     view(axesH,200,45)
     axis(axesH,'square');
     grid(axesH,'on');
