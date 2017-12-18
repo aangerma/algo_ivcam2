@@ -19,7 +19,7 @@ if (regs.DEST.bypass || isempty(pflow.pixIndOutOrder))
     depth = zeros(size(pflow.pipeFlags), 'uint16');
     confOut = zeros(size(pflow.pipeFlags), 'uint8');
     ir = pflow.iImgRAW;
-    roundTripDistance_ = single(nan(size(pflow.pipeFlags)));
+    roundTripDistance = single(nan(size(pflow.pipeFlags)));
     
     cor_seg_fil = zeros(size(pflow.corr),'uint32');
     peak_val = zeros(size(ir),'uint32');
