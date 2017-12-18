@@ -184,11 +184,15 @@ end
 
 
 function colData = getScanline(s)
-colData.header = getColumnHeader(s);
-colSz = double(colData.header.numPackets)*double(colData.header.sizeOfPacket);
+colData=[];
+header = getColumnHeader(s);
+if(isempty(header))
+    return;
+end
+colSz = double(header.numPackets)*double(header.sizeOfPacket);
 [rawCol,ok] = s.get(colSz);
-if(~ok),  colData=[];   return;end
-
+if(~ok), return;end
+colData.header=header;
 
 
 %column packets- fast & slow
