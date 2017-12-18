@@ -40,7 +40,15 @@ end
 %%
 lgr = Logger(p.verbose,p.saveResults,fullfile(p.outputDir,'log.log'));
 [~,fn] = fileparts(p.ivsFilename);
-
+%%
+if(~exist(p.calibFile,'file'))
+        %------------CALIBRATION BEGIN------------
+    calibTic=tic; lgr.print('Calibrating...\n');
+    Calibration.runcalibPipe(p.ivsFilename,'calibFile',p.calibFile,'modeFile',p.modeFile);
+    lgr.print(' done in %4.2f sec \n', toc(calibTic));
+    %------------CALIBRATION END------------
+    [fw,p] = Pipe.loadFirmware(varargin{:});
+end
 %% read .ivs
 autoTic=tic;
 lgr.print('Executing algo pipe\n');
