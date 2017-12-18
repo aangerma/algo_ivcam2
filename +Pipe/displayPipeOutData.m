@@ -9,24 +9,26 @@ function img = displayPipeOutData(po,figTitle)
 % po.vImg = flip(po.vImg,2);
 
 f=figure(354343);
+clf(f);
 set(f,'name',figTitle,'numberTitle','off');
 % clf
 N = 4;
 profileXlocs = round(size(po.zImg,2).*(1:1:N-1)/N);
 profileYlocs = round(size(po.zImg,1).*(1:1:N-1)/N);
 %     maximize(gcf);
-[pd,planeabcd]=ransacPlane(po.vImg);
+[planeabcd,pd]=planeFitRansac(po.vImg(:,:,1),po.vImg(:,:,2),po.vImg(:,:,3));
 pd = pd+planeabcd(end);
-pdlims = nanprctile(pd(:),[10 90])+[0 1e-3];
+pdlims = nanmean(pd(:))+[-1 1]*nanstd(pd(:));
 profCols = hsv(max(length(profileXlocs),length(profileYlocs)));
 
 subplot(221);
 imagescNAN(po.cImg,[0 15]);
 title('Confidence');axis image;colorbar;
 
-subplot(223);
+imH=subplot(223);
 imagescNAN(pd,pdlims);title(sprintf('Rotated z (z=%f)',planeabcd(end)));axis image;colorbar;
-
+hh = 0.01;
+aa=uicontrol('style','pushbutton','Units',imH.Units,'position',imH.Position.*[1 1 0 0]+[-hh -hh hh hh],'parent',f,'callback',{@callabck_setClim,imH})
 
 
 if(numel(pd)>10)
@@ -78,77 +80,85 @@ end
 
 end
 
-function v=nanprctile(y,p)
-v=double(prctile_(y,p));
-if(all(isnan(v)))
-    v=interp1([0 100],[0 1],p);
-end
-end
-
-
-
-function [d,bestModel]=ransacPlane(v)
-rng(1);
-% v = double(v);
-x = v(:,:,1);
-y = v(:,:,2);
-z = v(:,:,3);
-bdmsk = z(:)==0 | isnan(z(:));
-p=[x(:) y(:) z(:)];
-p(bdmsk(:),:)=[];
-
-bestModel=[0 0 0]';
-d=nan(size(x));
-if(size(p,1)<10)
-    return;
-end
-n = size(p,1);
-bestNinlier=0;
-
-thr = 10;
-for i=1:1000
-    h=p(randperm(n,3),:);
-    A = double([h(:,1:2) ones(3,1)]);
-    if(abs(det(A))<1e-1)
-        continue;
-    end
-    %fit model z = ax+by+c
-    th = pinv(A'*A)*A'*h(:,3);%A\h(:,3);
-    e = abs(p(:,1:2)*th(1:2)+th(3)-p(:,3));
-    thisNinliers = nnz(e<thr);
-    if(bestNinlier<thisNinliers )
-        bestNinlier=thisNinliers ;
-        bestModel = th;
-    end
-    
-end
-if(bestNinlier/n<.1)
-    %not planar!
-    bestModel = [0 0 0]';
-else
-    e = abs(p(:,1:2)*bestModel(1:2)+bestModel(3)-p(:,3));
-    A = [p(e<thr,1:2) ones(nnz(e<thr),1)];
-    if(abs(det(A'*A))<1e-3)
-        bestModel = [0 0 0]';
-    else
-        yy = p(e<thr,3);
-        bestModel = pinv(A'*A)*A'*yy;%A\yy;
-    end
-end
-bestModel = [-bestModel(1) -bestModel(2) 1 -bestModel(3)] ;
-if(bestModel(4)<0)
-    bestModel=-bestModel;
-end
-normModel = bestModel/norm(bestModel);
-%in case the model plane  is almost parallel to the xy axis - make it
-%parallel
-if(acosd(normModel(3))<1.0)
-    bestModel=[0 0 1 bestModel(4)];
+function callabck_setClim(varargin)
+hh=varargin{3};
+imH=findobj(hh,'type','image');
+roi=round(getrect(hh));
+mm=minmax(vec(imH.CData(roi(2)+[0:roi(4)],roi(1)+[0:roi(3)])));
+set(hh,'clim',mm);
 end
 
-e = ([x(:) y(:) z(:) ones(numel(z),1)]*bestModel');
+% function v=nanprctile(y,p)
+% v=double(prctile_(y,p));
+% if(all(isnan(v)))
+%     v=interp1([0 100],[0 1],p);
+% end
+% end
 
-d=reshape(e,size(x));
-d(bdmsk)=nan;
 
-end
+% 
+% function [d,bestModel]=ransacPlane(v)
+% rng(1);
+% % v = double(v);
+% x = v(:,:,1);
+% y = v(:,:,2);
+% z = v(:,:,3);
+% bdmsk = z(:)==0 | isnan(z(:));
+% p=[x(:) y(:) z(:)];
+% p(bdmsk(:),:)=[];
+% 
+% bestModel=[0 0 0]';
+% d=nan(size(x));
+% if(size(p,1)<10)
+%     return;
+% end
+% n = size(p,1);
+% bestNinlier=0;
+% 
+% thr = 10;
+% for i=1:1000
+%     h=p(randperm(n,3),:);
+%     A = double([h(:,1:2) ones(3,1)]);
+%     if(abs(det(A))<1e-1)
+%         continue;
+%     end
+%     %fit model z = ax+by+c
+%     th = pinv(A'*A)*A'*h(:,3);%A\h(:,3);
+%     e = abs(p(:,1:2)*th(1:2)+th(3)-p(:,3));
+%     thisNinliers = nnz(e<thr);
+%     if(bestNinlier<thisNinliers )
+%         bestNinlier=thisNinliers ;
+%         bestModel = th;
+%     end
+%     
+% end
+% if(bestNinlier/n<.1)
+%     %not planar!
+%     bestModel = [0 0 0]';
+% else
+%     e = abs(p(:,1:2)*bestModel(1:2)+bestModel(3)-p(:,3));
+%     A = [p(e<thr,1:2) ones(nnz(e<thr),1)];
+%     if(abs(det(A'*A))<1e-3)
+%         bestModel = [0 0 0]';
+%     else
+%         yy = p(e<thr,3);
+%         bestModel = pinv(A'*A)*A'*yy;%A\yy;
+%     end
+% end
+% bestModel = [-bestModel(1) -bestModel(2) 1 -bestModel(3)] ;
+% if(bestModel(4)<0)
+%     bestModel=-bestModel;
+% end
+% normModel = bestModel/norm(bestModel);
+% %in case the model plane  is almost parallel to the xy axis - make it
+% %parallel
+% if(acosd(normModel(3))<1.0)
+%     bestModel=[0 0 1 bestModel(4)];
+% end
+% 
+% e = ([x(:) y(:) z(:) ones(numel(z),1)]*bestModel');
+% 
+% d=reshape(e,size(x));
+% d(bdmsk)=nan;
+% 
+% end
