@@ -12,154 +12,6 @@ typedef char int8;
 typedef short int16;
 typedef int int32;
 
-static const uint8 cFlagsLdOnMask = uint8(1) << 0;
-static const uint8 cFlagsCodeStartMask = uint8(1) << 1;
-static const uint8 cFlagsScanDirMask = uint8(1) << 2;
-static const uint8 cFlagsTxRxShift = 3;
-static const uint8 cFlagsTxRxMask = uint8(3) << cFlagsTxRxShift;
-static const uint8 cFlagsRoiMask = uint8(1) << 5;
-
-static const uint8 cPixelFlagsScanDirMask = uint8(1) << 0;
-static const uint8 cPixelFlagsTxRxShift = 1;
-static const uint8 cPixelFlagsTxRxMask = uint8(3) << cPixelFlagsTxRxShift;
-static const uint8 cPixelFlagsEOFMask = uint8(1) << 3;
-
-inline uint8 flagsTxRxMode(uint8 flags) { return (flags & cFlagsTxRxMask) >> cFlagsTxRxShift; }
-inline uint8 pixelFlagsTxRxMode(uint8 flags) { return (flags & cPixelFlagsTxRxMask) >> cPixelFlagsTxRxShift; }
-inline uint8 clearPixelFlagsEOF(uint8 flags) { return (flags & ~cPixelFlagsEOFMask); }
-
-// -------------------------------------------------------------------------------------------------------
-// convert c type to mex enum type
-// -------------------------------------------------------------------------------------------------------
-
-template<class T>
-class mxType {
-public:
-    static mxClassID classID() { return 0; }
-    static bool isClass(const mxArray *pa) { return false; }
-};
-
-#define MX_TYPE(type, cid, isf)  template<>\
-class mxType<type> { public:\
-static mxClassID classID() { return cid; }\
-static bool isClass(const mxArray *pa) { return isf(pa); }\
-};
-
-MX_TYPE(bool, mxLOGICAL_CLASS, mxIsLogical)
-MX_TYPE(int8, mxINT8_CLASS, mxIsInt8)
-MX_TYPE(uint8, mxUINT8_CLASS, mxIsUint8)
-MX_TYPE(int16, mxINT16_CLASS, mxIsInt16)
-MX_TYPE(uint16, mxUINT16_CLASS, mxIsUint16)
-MX_TYPE(int32, mxINT32_CLASS, mxIsInt32)
-MX_TYPE(uint32, mxUINT32_CLASS, mxIsUint32)
-MX_TYPE(float, mxSINGLE_CLASS, mxIsSingle)
-MX_TYPE(double, mxDOUBLE_CLASS, mxIsDouble)
-
-inline
-int mxClassSize(const mxArray *mx)
-{
-    mxClassID cid = mxGetClassID(mx);
-    switch (cid) {
-    case mxLOGICAL_CLASS:
-        return 1;
-    case mxCHAR_CLASS:
-        return 2;
-    case mxDOUBLE_CLASS:
-        return 8;
-    case mxSINGLE_CLASS:
-        return 4;
-    case mxINT8_CLASS:
-        return 1;
-    case mxUINT8_CLASS:
-        return 1;
-    case mxINT16_CLASS:
-        return 2;
-    case mxUINT16_CLASS:
-        return 2;
-    case mxINT32_CLASS:
-        return 4;
-    case mxUINT32_CLASS:
-        return 4;
-    case mxINT64_CLASS:
-        return 8;
-    case mxUINT64_CLASS:
-        return 8;
-    default:
-        return 0;
-    }
-}
-
-inline
-void mxFieldErrorMessage(const char* errorId, const char* field)
-{
-    char strError[128];
-    sprintf(strError, "Field '%s' in struct has a wrong type or does not exist", field);
-    if (errorId == 0)
-        mexErrMsgTxt(strError);
-    else
-        mexErrMsgIdAndTxt(errorId, strError);
-}
-
-template <class T>
-inline
-T mxScalar(const mxArray* mxs, const char* errorId = 0)
-{
-    if (!mxIsNumeric(mxs))
-        mxFieldErrorMessage(errorId, "Parameter is not scalar");
-    return T(mxGetScalar(mxs));
-}
-
-
-template <class T>
-inline
-T mxField(const mxArray* mxStruct, const char* field, const char* errorId = 0)
-{
-    const mxArray* mxField = mxGetField(mxStruct, 0, field);
-    if (mxField == 0 || !mxIsNumeric(mxField))
-        mxFieldErrorMessage(errorId, field);
-    return T(mxGetScalar(mxField));
-}
-
-template <>
-inline
-bool mxField<bool>(const mxArray* mxStruct, const char* field, const char* errorId)
-{
-    const mxArray* mxField = mxGetField(mxStruct, 0, field);
-    if (mxField == 0 || !(mxIsNumeric(mxField) || mxIsLogical(mxField)))
-        mxFieldErrorMessage(errorId, field);
-    return (mxGetScalar(mxField) != 0);
-}
-
-template <class T>
-inline
-const T* mxArrayField(const mxArray* mxStruct, const char* field, int size, const char* errorId = 0)
-{
-    const mxArray* mxField = mxGetField(mxStruct, 0, field);
-    if (mxField == 0 || !mxType<T>::isClass(mxField))
-        mxFieldErrorMessage(errorId, field);
-    if (mxGetM(mxField) * mxGetN(mxField) != size) {
-        char errStr[256];
-        sprintf(errStr, "filed \'%s\' has a wrong size", field);
-        mxFieldErrorMessage(errorId, errStr);
-    }
-    return (const T*)(mxGetData(mxField));
-}
-
-//template <>
-//inine
-//bool mxField<bool>(const mxArray* mxStruct, const char* field, const char* errorId = 0)
-//{
-//	const mxArray* mxField = mxGetField(mxStruct, 0, field);
-//	if (mxField == 0)
-//		mxFieldErrorMessage(field, errorId);
-//	else if (mxIsNumeric(mxField))
-//		return (mxGetScalar(mxField) != 0);
-//	else if (mxIsLogical(mxField))
-//		return (mxGetLogicals(mxField) != 0);
-//	return false;
-//}
-
-
 inline
 void ErrorFun(const char* name, bool cond)
 {
@@ -204,35 +56,6 @@ void BreakFun(const char* name, bool cond)
 # define REQUIRE(name, cond) (void(0))
 #endif
 
-class MexStruct {
-public:
-    MexStruct()
-        : m_struct(0)
-    {
-        const char* structFields[] = { "" };
-        mwSize dims[1] = { 1 };
-        m_struct = mxCreateStructArray(1, dims, 0, structFields);
-    }
-
-    mxArray* mxStruct() const { return m_struct; }
-
-    void add(const char* fieldName, double value) {
-        int iField = mxAddField(m_struct, fieldName);
-        mxSetFieldByNumber(m_struct, 0, iField, mxCreateDoubleScalar(value));
-    }
-
-    template <class T>
-    T* add(const char* fieldName, int m, int n) {
-        int iField = mxAddField(m_struct, fieldName);
-        mxArray* mxa = mxCreateNumericMatrix(m, n, mxType<T>::classID(), mxREAL);
-        mxSetFieldByNumber(m_struct, 0, iField, mxa);
-        return (T*)mxGetData(mxa);
-    }
-
-private:
-    mxArray* m_struct;
-};
-
 template<class T>
 inline T min(T a1, T a2)
 {
@@ -246,6 +69,73 @@ inline T max(T a1, T a2)
 }
 
 template <class T>
+class Array {
+public:
+    Array()
+        : m_data(0), m_size(0), m_allocSize(0) {}
+    Array(T* data, size_t size)
+        : m_data(data), m_size(size), m_allocSize(0) {}
+    Array(size_t size)
+        : m_data(0), m_size(size), m_allocSize(0)
+    {
+        m_allocSize = size;
+        m_data = new T[m_allocSize];
+    }
+
+    ~Array() { if (m_allocSize != 0) delete m_data; }
+
+    void set(T* data, size_t size) {
+        if (m_allocSize != 0) {
+            delete m_data;
+            m_allocSize = 0;
+        }
+        m_data = data;
+        m_size = size;
+    }
+    void set(size_t size) {
+        m_size = size;
+        if (size <= m_allocSize)
+            return;
+        else if (m_allocSize != 0)
+            delete m_data;
+        m_allocSize = size;
+        m_data = new T[m_allocSize];
+    }
+
+    bool empty() const { return m_size == 0; }
+
+    size_t size() const { return m_size; }
+
+    T* data() { return m_data; }
+    const T* data() const { return m_data; }
+
+    void clear() { m_size = 0; }
+
+    const T& operator[](size_t i) const {
+        CHECK(Valid, 0 <= i && i < size());
+        return m_data[i];
+    }
+    T& operator[](size_t i) {
+        CHECK(Valid, 0 <= i && i < size());
+        return m_data[i];
+    }
+
+    void flip() {
+        for (int i = 0; i < m_size / 2; ++i)
+            swap((*this)[i], (*this)[m_size - 1 - i]);
+    }
+
+private:
+    T* m_data;
+    size_t m_size;
+    size_t m_allocSize;
+
+private:
+    Array(const Array&);
+};
+
+
+template <class T>
 class Image {
 public:
     Image()
@@ -257,6 +147,14 @@ public:
     {
         m_allocSize = size();
         m_data = new T[m_allocSize];
+    }
+    Image(size_t width, size_t height, const T& initValue)
+        : m_data(0), m_w(width), m_h(height), m_allocSize(0)
+    {
+        m_allocSize = size();
+        m_data = new T[m_allocSize];
+        for (size_t i = 0; i != size(); ++i)
+            m_data[i] = initValue;
     }
 
     ~Image() { if (m_allocSize != 0) delete m_data; }
@@ -287,6 +185,13 @@ public:
     size_t height() const { return m_h; }
 
     size_t size() const { return m_w * m_h; }
+
+    T* data() { return m_data; }
+    const T* data() const { return m_data; }
+    void clearData() {
+        for (size_t i = 0; i != size(); ++i)
+            m_data[i] = 0;
+    }
 
     void clear() { m_w = 0; m_h = 0; }
 
@@ -384,6 +289,14 @@ public:
     size_t size() const { return size_t(m_w) * size_t(m_h) * size_t(m_depth); }
 
     void clear() { m_w = 0; m_h = 0; }
+
+    T* data() { return m_data; }
+    const T* data() const { return m_data; }
+
+    void clearData() {
+        for (size_t i = 0; i != size(); ++i)
+            m_data[i] = 0;
+    }
 
     const T* operator()(size_t x, size_t y) const {
         CHECK(Valid_x, 0 <= x && x < m_w);
@@ -517,6 +430,245 @@ private:
     T m_buf[cBufferLen];
     int m_start, m_end;
     int m_size;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Matlab helpers
+
+template<class T>
+class mxType {
+public:
+    static mxClassID classID() { return 0; }
+    static bool isClass(const mxArray *pa) { return false; }
+};
+
+#define MX_TYPE(type, cid, isf)  template<>\
+class mxType<type> { public:\
+static mxClassID classID() { return cid; }\
+static bool isClass(const mxArray *pa) { return isf(pa); }\
+};
+
+MX_TYPE(bool, mxLOGICAL_CLASS, mxIsLogical)
+MX_TYPE(int8, mxINT8_CLASS, mxIsInt8)
+MX_TYPE(uint8, mxUINT8_CLASS, mxIsUint8)
+MX_TYPE(int16, mxINT16_CLASS, mxIsInt16)
+MX_TYPE(uint16, mxUINT16_CLASS, mxIsUint16)
+MX_TYPE(int32, mxINT32_CLASS, mxIsInt32)
+MX_TYPE(uint32, mxUINT32_CLASS, mxIsUint32)
+MX_TYPE(float, mxSINGLE_CLASS, mxIsSingle)
+MX_TYPE(double, mxDOUBLE_CLASS, mxIsDouble)
+
+inline
+int mxClassSize(const mxArray *mx)
+{
+    mxClassID cid = mxGetClassID(mx);
+    switch (cid) {
+    case mxLOGICAL_CLASS:
+        return 1;
+    case mxCHAR_CLASS:
+        return 2;
+    case mxDOUBLE_CLASS:
+        return 8;
+    case mxSINGLE_CLASS:
+        return 4;
+    case mxINT8_CLASS:
+        return 1;
+    case mxUINT8_CLASS:
+        return 1;
+    case mxINT16_CLASS:
+        return 2;
+    case mxUINT16_CLASS:
+        return 2;
+    case mxINT32_CLASS:
+        return 4;
+    case mxUINT32_CLASS:
+        return 4;
+    case mxINT64_CLASS:
+        return 8;
+    case mxUINT64_CLASS:
+        return 8;
+    default:
+        return 0;
+    }
+}
+
+inline
+void mxFieldErrorMessage(const char* errorId, const char* field)
+{
+    char strError[128];
+    sprintf(strError, "Field '%s' in struct has a wrong type or does not exist", field);
+    if (errorId == 0)
+        mexErrMsgTxt(strError);
+    else
+        mexErrMsgIdAndTxt(errorId, strError);
+}
+
+template <class T>
+inline
+T mxScalar(const mxArray* mxs, const char* errorId = 0)
+{
+    if (!mxIsNumeric(mxs))
+        mxFieldErrorMessage(errorId, "Parameter is not scalar");
+    return T(mxGetScalar(mxs));
+}
+
+
+template <class T>
+inline
+T mxField(const mxArray* mxStruct, const char* field, const char* errorId = 0)
+{
+    const mxArray* mxField = mxGetField(mxStruct, 0, field);
+    if (mxField == 0 || !mxIsNumeric(mxField))
+        mxFieldErrorMessage(errorId, field);
+    return T(mxGetScalar(mxField));
+}
+
+template <>
+inline
+bool mxField<bool>(const mxArray* mxStruct, const char* field, const char* errorId)
+{
+    const mxArray* mxField = mxGetField(mxStruct, 0, field);
+    if (mxField == 0 || !(mxIsNumeric(mxField) || mxIsLogical(mxField)))
+        mxFieldErrorMessage(errorId, field);
+    return (mxGetScalar(mxField) != 0);
+}
+
+template <class T>
+inline
+const T* mxArrayField(const mxArray* mxStruct, const char* field, int size, const char* errorId = 0)
+{
+    const mxArray* mxField = mxGetField(mxStruct, 0, field);
+    char errStr[256];
+    if (mxField == 0 || !mxType<T>::isClass(mxField)) {
+        sprintf(errStr, "field \'%s\' has a wrong type or does not exist", field);
+        mxFieldErrorMessage(errorId, field);
+    }
+    if (mxGetM(mxField) * mxGetN(mxField) != size) {
+        sprintf(errStr, "field \'%s\' has a wrong size", field);
+        mxFieldErrorMessage(errorId, errStr);
+    }
+    return (const T*)(mxGetData(mxField));
+}
+
+template <class T>
+inline
+void mxGetArrayField(const mxArray* mxStruct, const char* field, Array<T>& a, const char* errorId = 0)
+{
+    const mxArray* mxField = mxGetField(mxStruct, 0, field);
+    char errStr[256];
+    if (mxField == 0 || !mxType<T>::isClass(mxField)) {
+        sprintf(errStr, "field \'%s\' has a wrong type or does not exist", field);
+        mxFieldErrorMessage(errorId, field);
+    }
+
+    const size_t m = mxGetM(mxField);
+    const size_t n = mxGetN(mxField);
+    
+    if ((m > 1 && n > 1) || mxGetNumberOfDimensions(mxField) > 2) {
+        sprintf(errStr, "field \'%s\' has a wrong size", field);
+        mxFieldErrorMessage(errorId, errStr);
+    }
+    const size_t size = max(m, n);
+    a.set((T*)(mxGetData(mxField)), size);
+}
+
+template <class T>
+inline
+void mxGetImageField(const mxArray* mxStruct, const char* field, Image<T>& img, const char* errorId = 0)
+{
+    const mxArray* mxField = mxGetField(mxStruct, 0, field);
+    char errStr[256];
+    if (mxField == 0 || !mxType<T>::isClass(mxField)) {
+        sprintf(errStr, "field \'%s\' has a wrong type or does not exist", field);
+        mxFieldErrorMessage(errorId, field);
+    }
+
+    const size_t m = mxGetM(mxField);
+    const size_t n = mxGetN(mxField);
+
+    if (mxGetNumberOfDimensions(mxField) != 2) {
+        sprintf(errStr, "field \'%s\' is not a 2D matrix", field);
+        mxFieldErrorMessage(errorId, errStr);
+    }
+
+    img.set((T*)(mxGetData(mxField)), m, n);
+}
+
+template <class T>
+inline
+void mxGetImage3DField(const mxArray* mxStruct, const char* field, Image3D<T>& img, const char* errorId = 0)
+{
+    const mxArray* mxField = mxGetField(mxStruct, 0, field);
+    char errStr[256];
+    if (mxField == 0 || !mxType<T>::isClass(mxField)) {
+        sprintf(errStr, "field \'%s\' has a wrong type or does not exist", field);
+        mxFieldErrorMessage(errorId, field);
+    }
+
+    if (mxGetNumberOfDimensions(mxField) != 3) {
+        sprintf(errStr, "field \'%s\' is not a 2D matrix", field);
+        mxFieldErrorMessage(errorId, errStr);
+    }
+
+    const mwSize* dims = mxGetDimensions(mxField);
+
+    img.set((T*)(mxGetData(mxField)), dims[1], dims[2], dims[0]);
+}
+
+//template <>
+//inine
+//bool mxField<bool>(const mxArray* mxStruct, const char* field, const char* errorId = 0)
+//{
+//	const mxArray* mxField = mxGetField(mxStruct, 0, field);
+//	if (mxField == 0)
+//		mxFieldErrorMessage(field, errorId);
+//	else if (mxIsNumeric(mxField))
+//		return (mxGetScalar(mxField) != 0);
+//	else if (mxIsLogical(mxField))
+//		return (mxGetLogicals(mxField) != 0);
+//	return false;
+//}
+
+
+
+
+class MexStruct {
+public:
+    MexStruct()
+        : m_struct(0)
+    {
+        const char* structFields[] = { "" };
+        mwSize dims[1] = { 1 };
+        m_struct = mxCreateStructArray(1, dims, 0, structFields);
+    }
+
+    mxArray* mxStruct() const { return m_struct; }
+
+    void add(const char* fieldName, double value) {
+        int iField = mxAddField(m_struct, fieldName);
+        mxSetFieldByNumber(m_struct, 0, iField, mxCreateDoubleScalar(value));
+    }
+
+    template <class T>
+    T* add(const char* fieldName, int m, int n) {
+        int iField = mxAddField(m_struct, fieldName);
+        mxArray* mxa = mxCreateNumericMatrix(m, n, mxType<T>::classID(), mxREAL);
+        mxSetFieldByNumber(m_struct, 0, iField, mxa);
+        return (T*)mxGetData(mxa);
+    }
+
+    template <class T>
+    T* add(const char* fieldName, int m, int n, int d) {
+        int iField = mxAddField(m_struct, fieldName);
+        mwSize size[3] = { mwSize(m), mwSize(n), mwSize(d) };
+        mxArray* mxa = mxCreateNumericArray(3, size, mxType<T>::classID(), mxREAL);
+        mxSetFieldByNumber(m_struct, 0, iField, mxa);
+        return (T*)mxGetData(mxa);
+    }
+
+private:
+    mxArray* m_struct;
 };
 
 

@@ -1,28 +1,11 @@
 #include <stdio.h>
 
 #include "../mex/auGeneral.h"
+#include "../mex/pipeDefinitions.h"
 
 #include <string.h>
 
 const char* cStrErr = "PCQ:nrhs";
-
-struct Point {
-    int16 p[2];
-
-    int16 x() const { return p[0]; }
-    int16 y() const { return p[1]; }
-
-    int16& x() { return p[0]; }
-    int16& y() { return p[1]; }
-
-    int16 operator[] (int i) const { return p[i]; }
-    int16& operator[] (int i) { return p[i]; }
-
-    Point() {}
-    Point(int a) { p[0] = p[1] = a; }
-    Point(int _x, int _y) { p[0] = _x;  p[1] = _y; }
-};
-
 
 struct Regs {
     int imgHsize;
@@ -55,9 +38,6 @@ struct Stats {
     uint32 idConsecutiveChunksFail = 0;
     Point pConsecutiveChunksFail = 0;
 };
-
-const int cChunkExp = 6;
-const int cChunkSize = 1 << cChunkExp;
 
 struct Chunk {
     uint8 samples[cChunkSize];
@@ -492,49 +472,39 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     Stats stats;
 
-    if (nrhs != 6) // check for proper number of arguments
-        mexErrMsgIdAndTxt(cStrErr, "6 input parameters are required:\n"
-            "  (1) S: matrix 1 x N of logical or uint8,\n"
-            "  (2) XY: matrix 2 x n of int16,\n"
-            "  (3) IR: matrix 1 x n of uint16,\n"
-            "  (4) NEST: matrix 1 x n of uint16,\n"
-            "  (5) flags: matrix 1 x n of uint8,\n"
-            "  (6) Regs: struct of registers\n"
+    if (nrhs != 2) // check for proper number of arguments
+        mexErrMsgIdAndTxt(cStrErr, "2 input parameters are required:\n"
+            "  (1) input: input struct with fast, slow, xy, nest, flags fields\n"
+            "  (2) regs: struct of registers\n"
         );
 
-    if (nlhs != 7)
-        mexErrMsgIdAndTxt(cStrErr, "5 (chunks, xy, IR, nest, offset, flags, timestamps, valids, stats) outputs are required\n");
+    if (nlhs != 2)
+        mexErrMsgIdAndTxt(cStrErr, "2 outputs are required\n");
 
-    const mxArray *mxS = prhs[0];
-    const int N = int(mxGetN(mxS));
-    if (int(mxGetM(mxS)) != 1 || !(mxIsLogical(mxS) || mxIsUint8(mxS)))
-        mexErrMsgIdAndTxt(cStrErr, "1st parameter (S) must be a matrix 1 x N of logical or uint8.");
-    const uint8* S = (uint8*)mxGetData(mxS);
+    const mxArray* mxInput = prhs[0];
 
-    const mxArray *mxXY = prhs[1];
-    const int m = int(mxGetM(mxXY));
-    const int nChunks = int(mxGetN(mxXY));
-    if (int(mxGetM(mxXY)) != 2 || !mxIsInt16(mxXY))
-        mexErrMsgIdAndTxt(cStrErr, "2nd parameter (XY) must be a matrix 2 x n of int16.");
-    const Point* xy = (Point*)mxGetData(mxXY);
+    Array<uint8> fast;
+    mxGetArrayField(mxInput, "fast", fast, cStrErr);
+    const int N = fast.size();
 
-    const mxArray *mxIR = prhs[2];
-    const int nIR = int(mxGetN(mxIR));
-    if (int(mxGetM(mxIR)) != 1 || !mxIsUint16(mxIR))
-        mexErrMsgIdAndTxt(cStrErr, "3rd parameter (IR) must be a matrix 1 x n of uint16.");
-    const uint16* IR = (uint16*)mxGetData(mxIR);
+    Array<uint16> slow;
+    mxGetArrayField(mxInput, "ir", slow, cStrErr);
+    const int nIR = slow.size();
 
-    const mxArray *mxNest = prhs[3];
-    const int nNest = int(mxGetN(mxNest));
-    if (int(mxGetM(mxNest)) != 1 || !mxIsUint16(mxNest))
-        mexErrMsgIdAndTxt(cStrErr, "4th parameter (NEST) must be a matrix 1 x n of uint16.");
-    const uint16* nest = (uint16*)mxGetData(mxNest);
+    Image<int16> imgXY;
+    mxGetImageField(mxInput, "xy", imgXY, cStrErr);
+    const int nChunks = imgXY.height();
+    if (imgXY.width() != 2)
+        mexErrMsgIdAndTxt(cStrErr, "xy field should be a 2 x N matrix of int16");
+    const Point* xy = (const Point*)&imgXY[0];
 
-    const mxArray *mxFlags = prhs[4];
-    const int nFlags = int(mxGetN(mxFlags));
-    if (int(mxGetM(mxFlags)) != 1 || !mxIsUint8(mxFlags))
-        mexErrMsgIdAndTxt(cStrErr, "5th parameter (flags) must be a matrix 1 x n of uint8.");
-    const uint8* flags = (uint8*)mxGetData(mxFlags);
+    Array<uint16> nest;
+    mxGetArrayField(mxInput, "nest", nest, cStrErr);
+    const int nNest = nest.size();
+
+    Array<uint8> flags;
+    mxGetArrayField(mxInput, "flags", flags, cStrErr);
+    const int nFlags = flags.size();
 
     if (nIR != nChunks || nNest != nChunks || nFlags != nChunks)
         mexErrMsgIdAndTxt(cStrErr, "3rd, 4th and 5th parameters (IR, NEST, flags) must be of the length of 2nd parameter (XY)");
@@ -542,7 +512,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if (nChunks * 64 != N)
         mexErrMsgIdAndTxt(cStrErr, "The number of chunks based on the 2nd parameter (XY) and the size of the 1st parameter (fast) mismatch.");
 
-    const mxArray* mxRegs = prhs[5];
+    const mxArray* mxRegs = prhs[1];
+
     Regs regs;
     regs.imgVsize = mxField<int>(mxRegs, "imgVsize", cStrErr);
     regs.imgHsize = mxField<int>(mxRegs, "imgHsize", cStrErr);
@@ -584,33 +555,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     flowData.pxTotalChunks = new int16[outCounters.maxPxInfos];
     flowData.pxMainChunks = new int16[outCounters.maxPxInfos];
 
-    pixelate(S, xy, IR, nest, flags, nChunks, outCounters, chunks, flowData, regs, stats);
+    pixelate(fast.data(), xy, slow.data(), nest.data(), flags.data(), nChunks,
+        outCounters, chunks, flowData, regs, stats);
     const int nOutChunks = outCounters.nChunks;
     const int nOutValidQuads = outCounters.nChunkQuads;
     const int nPxInfos = outCounters.nPxInfos;
     
-    // create output matrices
+    MexStruct mxOutput;
+    plhs[0] = mxOutput.mxStruct();
 
-    plhs[0] = mxCreateNumericMatrix(cChunkSize, nOutChunks, mxUINT8_CLASS, mxREAL);
-    uint8* outFast = (uint8*)mxGetData(plhs[0]);
-
-    plhs[1] = mxCreateNumericMatrix(2, nOutChunks, mxINT16_CLASS, mxREAL);
-    Point* outXY = (Point*)mxGetData(plhs[1]);
-
-    plhs[2] = mxCreateNumericMatrix(1, nOutChunks, mxUINT16_CLASS, mxREAL);
-    uint16* outIR = (uint16*)mxGetData(plhs[2]);
-
-    plhs[3] = mxCreateNumericMatrix(1, nOutChunks, mxUINT16_CLASS, mxREAL);
-    uint16* outNest = (uint16*)mxGetData(plhs[3]);
-
-    plhs[4] = mxCreateNumericMatrix(1, nOutChunks, mxINT16_CLASS, mxREAL);
-    int16* outOffset = (int16*)mxGetData(plhs[4]);
-
-    plhs[5] = mxCreateNumericMatrix(1, nOutChunks, mxUINT8_CLASS, mxREAL);
-    uint8* outFlags = (uint8*)mxGetData(plhs[5]);
+    uint8* outFast = mxOutput.add<uint8>("chunks", cChunkSize, nOutChunks);
+    Point* outXY = (Point*)mxOutput.add<int16>("xy", 2, nOutChunks);
+    uint16* outIR = mxOutput.add<uint16>("ir", 1, nOutChunks);
+    uint16* outNest = mxOutput.add<uint16>("nest", 1, nOutChunks);
+    int16* outOffset = mxOutput.add<int16>("offset", 1, nOutChunks);
+    uint8* outFlags = mxOutput.add<uint8>("flags", 1, nOutChunks);
+    uint32* outTimestamp = mxOutput.add<uint32>("timestamp", 1, nOutChunks);
 
     MexStruct mxStats;
-    plhs[6] = mxStats.mxStruct();
+    plhs[1] = mxStats.mxStruct();
     mxStats.add("maxPixelFifoSize", stats.maxPixelFifoSize);
     mxStats.add("maxChunkFifoSize", stats.maxChunkFifoSize);
     mxStats.add("minPixelMainLobe", stats.minPixelMainLobe);
@@ -630,7 +593,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     uint32* outIDs = mxStats.add<uint32>("ids", 1, nOutChunks);
     int32* outQIndices = mxStats.add<int32>("validIndices", 4, nOutValidQuads);
     ValidFlag* outValids = (ValidFlag*)mxStats.add<uint8>("valids", 4, nOutValidQuads);
-    uint32* outTimestamp = mxStats.add<uint32>("timestamps", 1, nOutChunks);
         
     // copy to output
 

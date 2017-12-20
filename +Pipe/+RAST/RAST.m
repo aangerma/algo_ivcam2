@@ -3,9 +3,6 @@ function [ cmaOut, irOut, nestOut, dutyCycle, flagsOut,pixIndOutOrder,pixRastOut
 
 lgr.print2file('\n\t------- RAST -------\n');
 
-fastCh = inData.fast;
-slowCh = inData.slow;
-nest = pipeData.nest;
 xy = pipeData.xyPix;
 
 flags = inData.flags;
@@ -46,11 +43,22 @@ end
 
 reports = struct();
 
-[pcqChunks, pcqXY, pcqIR, pcqNest, pcqOffset, pcqFlags, pcqStats] = ...
-    Pipe.RAST.PCQ(fastCh, xy, slowCh, nest, flags, mRegs);
+
+R0 = 1;
+R1 = length(inData.slow); % 20000; 
+R = R0:R1;
+Rch = ((R0-1)*64+1):(R1*64);
+
+pcqIn.fast = uint8(inData.fast(Rch));
+pcqIn.ir = inData.slow(R);
+pcqIn.xy = xy(:,R);
+pcqIn.nest = pipeData.nest(R);
+pcqIn.flags = flags(R);
+
+[pcqOut, pcqStats] = Pipe.RAST.PCQ(pcqIn, mRegs);
 reports.pcq = pcqStats;
 
-assert(max([0;pcqChunks(:)]) <= 1, 'failed: Binary samples');
+assert(max([0;pcqOut.chunks(:)]) <= 1, 'failed: Binary samples');
 
 if (pcqStats.consecutiveChunksFail)
     errTxt = 'PCQ failed: non-consecutive (garbage) chunks used';
@@ -61,11 +69,15 @@ if (pcqStats.consecutiveChunksFail)
     end
 end
 
-[cmaA, cmaC, irA, irC, irMin, irMax, nestOut, flagsCmac, pxOutCmac, statsCmac] = ...
-    Pipe.RAST.CMAC(pcqChunks, pcqXY, pcqIR, pcqNest, pcqOffset, pcqFlags, pcqStats.timestamps, mRegs);
-reports.cmac = statsCmac;
-assert(max(cmaA(:)) <= regs.RAST.cmaMaxSamples, 'failed: cma max samples in CMAC');
-assert(max(cmaC(:)) <= regs.RAST.cmaMaxSamples, 'failed: cma max samples in CMAC');
+mRegs.nScansPerPixel = uint8(4);
+
+[cmacOut, cmacStats] = Pipe.RAST.CMAC(pcqOut, mRegs);
+
+nestOut = cmacOut.nest;
+
+reports.cmac = cmacStats;
+assert(max(cmacOut.cmaA(:)) <= regs.RAST.cmaMaxSamples, 'failed: cma max samples in CMAC');
+assert(max(cmacOut.cmaC(:)) <= regs.RAST.cmaMaxSamples, 'failed: cma max samples in CMAC');
 
 % % logger
 % if numel(pcqChunks) ~= 0
@@ -87,7 +99,7 @@ assert(max(cmaC(:)) <= regs.RAST.cmaMaxSamples, 'failed: cma max samples in CMAC
 % end
 
 
-pxIndCmac = sub2ind([mRegs.imgVsize,mRegs.imgHsize],pxOutCmac(2,:)+1,pxOutCmac(1,:)+1)';
+pxIndCmac = sub2ind([mRegs.imgVsize,mRegs.imgHsize],cmacOut.xy(2,:)+1,cmacOut.xy(1,:)+1)';
 if(length(pxIndCmac)~=length(unique(pxIndCmac)))
     upixindOut=unique(pxIndCmac);
     [bady,badx] = ind2sub([mRegs.imgVsize,mRegs.imgHsize],upixindOut(find(histc(pxIndCmac,upixindOut)~=1)));
@@ -107,16 +119,16 @@ figure; plot(tColMax - tColMin);
 %% IR
 
 if (regs.MTLB.fastApprox(1))
-    irCinv = 1./single(irC);
+    irCinv = 1./single(cmacOut.irC);
 else
     irCinv = Utils.fp32('inv',single(irC));
 end
 
-ir = single(irA).*irCinv;
-irVar = irMax - irMin;
+ir = single(cmacOut.irA).*irCinv;
+irVar = cmacOut.irMax - cmacOut.irMin;
 
-ir(irC == 0) = 0;
-irVar(irC == 0) = 0;
+ir(cmacOut.irC == 0) = 0;
+irVar(cmacOut.irC == 0) = 0;
 
 ir = min(uint16(ir), 2^12-1);
 irVar = min(uint16(irVar), 2^12-1);
@@ -125,7 +137,7 @@ if (regs.RAST.outIRvar)
     irCmac = irVar;
 else
     irCmac = ir;
-end;
+end
 
 
 % mLuts.divCma = regs.RAST.divCma;
@@ -139,11 +151,11 @@ mLuts.biltSpat = regs.RAST.biltSpat; %YC: TODO uint4!!!
 mRegs.fastApprox = regs.MTLB.fastApprox(1);
 
 %cmaPx = cmaA.*mLuts.divCma(cmaC+1);
-cmaPx = Pipe.RAST.cmaNorm(cmaA, cmaC, pxOutCmac, mLuts);
+cmaPx = Pipe.RAST.cmaNorm(cmacOut.cmaA, cmacOut.cmaC, cmacOut.xy, mLuts);
 
 assert(max(cmaPx(:))<128); %normalizer outputs 7b
 
-[cmaOut, irMM, flagsOut, pxOut, si, fStats, cmafWin] = Pipe.RAST.cmaFilter(cmaPx, irCmac, flagsCmac, statsCmac.timestamps, pxOutCmac, mRegs, mLuts);
+[cmaOut, irMM, flagsOut, pxOut, si, fStats, cmafWin] = Pipe.RAST.cmaFilter(cmaPx, irCmac, cmacOut.flags, cmacOut.timestamp, cmacOut.xy, mRegs, mLuts);
 reports.filter = fStats;
 reports.filterWin = cmafWin;
 cmafWin.xy = reshape(cmafWin.xy, 2, 9, []);
@@ -180,7 +192,7 @@ if (regs.RAST.outIRmm)
     irOut = irMM;
 else
     irOut = irCmac;
-end;
+end
 
 %{
 %zeroInd = (cmaC == 0);
@@ -258,7 +270,8 @@ if(regs.MTLB.debug)
     
 end
 
-lgr.print2file('\t Scan loop holes lost chunks: %.2f%%\n',(length(pcqIR)-sum(cmaC(:))/64)/length(pcqIR)*100);
+lgr.print2file('\t Scan loop holes lost chunks: %.2f%%\n',(length(pcqOut.ir)-sum(cmacOut.cmaC(:))/64)/length(pcqOut.ir)*100);
+
 if(~isempty(traceOutDir) )
     %% RAST trace
     outTxt = [...
