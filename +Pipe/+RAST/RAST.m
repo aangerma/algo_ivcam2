@@ -69,9 +69,10 @@ if (pcqStats.consecutiveChunksFail)
     end
 end
 
-mRegs.nScansPerPixel = uint8(4);
+mRegs.nScansPerPixel = uint8(1);
 
 [cmacOut, cmacStats] = Pipe.RAST.CMAC(pcqOut, mRegs);
+%[cmacSLOut, cmacSLStats] = Pipe.RAST.CMACscanLine(pcqOut, mRegs);
 
 nestOut = cmacOut.nest;
 
