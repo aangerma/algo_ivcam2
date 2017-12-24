@@ -108,7 +108,7 @@ err=[];
 THR=0.1;
 fvalPre = inf;
 
-fminSearchOpt=struct('tolx',inf,'TolFun',THR,'OutputFcn',[],'MaxIter',15);
+fminSearchOpt=struct('tolx',inf,'TolFun',THR,'OutputFcn',[],'MaxIter',25);
 
 % [xbest(1:3),fval]=fminsearchbnd(@(x) p2e(raw2xyzc(x,regs.DEST.baseline,raw),false),xbest(1:3),xL(1:3),xH(1:3),struct('Display','iter','OutputFcn',[]));
 
@@ -139,20 +139,20 @@ for i=1:3
     uvmes=(dataOut.kMat(1:2,:)*xyzm./(dataOut.kMat(3,:)*xyzm)+1)*0.5.*size(dataOut.iImg)';
     uvopt=(dataOut.kMat(1:2,:)*xyzo./(dataOut.kMat(3,:)*xyzo)+1)*0.5.*size(dataOut.iImg)';
     
-    
+        [udyg,udxg]=ndgrid(linspace(-1,1,32));
     uverr = uvopt-uvmes;
     tps=TPS(uvmes',uverr');
-    undist=tps.at([xg(:) yg(:)]);
-    undistx=reshape(undist(:,1),size(xg));
-    undisty=reshape(undist(:,2),size(xg));
-    [udyg,udxg]=ndgrid(linspace(-1,1,32));
+    undist=tps.at([udyg(:) udxg(:)]);
+    undistx=reshape(undist(:,1),size(udxg));
+    undisty=reshape(undist(:,2),size(udxg));
+
     oo = ones(numel(udxg),1);
     %remove scale
     undistx=undistx-reshape([vec(udxg) oo]*([vec(udxg) oo]\vec(undistx)),32,32);
     undisty=undisty-reshape([vec(udyg) oo]*([vec(udyg) oo]\vec(undisty)),32,32);
     
     
-    interError=max([interp2(xg,yg,undistx,uvmes(1,:),uvmes(2,:))+uvmes(1,:)-uvopt(1,:) interp2(xg,yg,undisty,uvmes(1,:),uvmes(2,:))+uvmes(2,:)-uvopt(2,:)]);
+%     interError=max([interp2(xg,yg,undistx,uvmes(1,:),uvmes(2,:))+uvmes(1,:)-uvopt(1,:) interp2(xg,yg,undisty,uvmes(1,:),uvmes(2,:))+uvmes(2,:)-uvopt(2,:)]);
     
     
     undistx_ = undistx_+undistx;
@@ -171,29 +171,35 @@ for i=1:3
     %% RX DELAY
     
     rmserrPre=inf;
+    rxpropregs.DEST.rxPWRpd=zeros(1,65,'single');
     
-    while(true && 0 )
-        [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
-        %rx delay
-        
-        %     [h,w] = size(dataOut.imgPts);
-        %     whiteInd = ((-1).^(1:h)'*(-1).^(1:w)>0);
-        
-        %     abc=(dataOut.xyzmes(1:3,whiteInd).*[1;1;0]+[0;0;1])'\dataOut.xyzmes(3,whiteInd)';
-        %     e=(dataOut.xyzmes(1:3,:).*[1;1;0]+[0;0;1])'*abc-dataOut.xyzmes(3,:)';
-        e=vec(dataOut.xyzopt(3,:)-dataOut.xyzmes(3,:));
-        c = dataOut.colData;
-        rxc=linspace(0,4095,65)';
-        th=((c/4096*2-1).^[3 2 1 0])\e;
-        f=((rxc/4096*2-1).^[3 2 1 0])*th;
-        %f = interp1(c,e,rxc,'phichip',0);
-        plot(c,e,'.',rxc,f,'parent',ah(3));
-        %
-        
-        %
-        %     drawnow;
-        rxpropregs.DEST.rxPWRpd=-single(f(:)'/2^10)+rxpropregs.DEST.rxPWRpd;
+
+    while(true )
         fwc.setRegs(rxpropregs,[]);
+        [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
+            
+            [mdl,d,in]=planeFit(dataOut.xyzmes(:,:,1),dataOut.xyzmes(:,:,2),dataOut.xyzmes(:,:,3),[],200);
+            p=conv2(dataOut.imgPts,ones(2)/4,'valid');
+            [yg,xg]=ndgrid(1:size(dataOut.rawout,1),1:size(dataOut.rawout,2));
+            cptsxyz=...
+            cat(3,interp2(xg,yg,dataOut.rawout(:,:,1),real(p),imag(p)),...
+                  interp2(xg,yg,dataOut.rawout(:,:,2),real(p),imag(p)),...
+                  interp2(xg,yg,dataOut.rawout(:,:,3),real(p),imag(p)));
+             cptsc=interp2(xg,yg,dataOut.rawout(:,:,4),real(p),imag(p));
+             cptsxyz = reshape(cptsxyz,[],3);
+             mm=mdl(1:3)*mdl(1:3)';
+             
+             cptsxyzP=cptsxyz*(eye(3)-mm)+(mm*[0;0;mdl(4)])';
+             e = sqrt(sum((cptsxyzP-cptsxyz).^2,2));
+             m = generateLSH(cptsc(:),2)\e;
+             rxc=linspace(0,4095,65)';
+             lut = generateLSH(rxc,2)*m;
+            plot(cptsc(:),e,'.',rxc,lut,'parent',ah(3))
+            drawnow;
+            
+
+        rxpropregs.DEST.rxPWRpd=rxpropregs.DEST.rxPWRpd-single(lut(:)'/2^10);
+        
         rmserr = rms(e);
         title(sprintf('RX fix (%f)',rmserr),'parent',ah(3))
         drawnow;
