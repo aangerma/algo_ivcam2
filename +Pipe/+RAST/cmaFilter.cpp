@@ -1,25 +1,9 @@
 #include <stdio.h>
 
 #include "../mex/auGeneral.h"
+#include "../mex/pipeDefinitions.h"
 
 const char* cStrErr = "cmaFilter:nrhs";
-
-struct Point {
-    int16 x() const { return p[0]; }
-    int16 y() const { return p[1]; }
-
-    int16& x() { return p[0]; }
-    int16& y() { return p[1]; }
-
-    int16 p[2];
-
-    int16 operator[] (int i) const { return p[i]; }
-    int16& operator[] (int i) { return p[i]; }
-
-    Point() {}
-    Point(int a) { p[0] = p[1] = a; }
-    Point(int _x, int _y) { p[0] = _x;  p[1] = _y; }
-};
 
 //const uint8 cSmoothWSTotalExp = 7;
 //const uint8 cSmoothWSTotal = 1 << cSmoothWSTotalExp;
