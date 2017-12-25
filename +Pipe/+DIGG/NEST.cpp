@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "../mex/auGeneral.h"
+#include "../mex/pipeDefinitions.h"
 
 const char* cStrErr = "NEST:nrhs";
 
