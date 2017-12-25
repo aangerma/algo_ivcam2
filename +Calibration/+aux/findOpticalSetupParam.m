@@ -29,8 +29,11 @@ setregs.JFIL.gammaBypass=true;
 setregs.JFIL.sort1Edge01=true;
 setregs.JFIL.sort1Edge03=true;
 setregs.JFIL.edge3bypassMode=uint8(1);
-setregs.DIGG.sphericalEn = true;
-
+setregs.DIGG.sphericalEn = false;
+setregs.FRMW.marginL=int16(0);
+setregs.FRMW.marginR=int16(0);
+setregs.FRMW.marginT=int16(0);
+setregs.FRMW.marginB=int16(0);
 fwc.setRegs(setregs,[]);
 
 [regs,~]=fwc.get();
@@ -95,7 +98,7 @@ xbest =  [47.3482686908418 47.5213992906887 7311.55601853396 0.534818968265146 1
 
 xbest = [55 50 8000 -1 1];
 
-xL = [40   40    8000  -3  -3 ];
+xL = [40   40    7500  -3  -3 ];
 xH = [70   56    8700   3   3 ];
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
@@ -111,10 +114,10 @@ fvalPre = inf;
 fminSearchOpt=struct('tolx',inf,'TolFun',THR,'OutputFcn',[],'MaxIter',25);
 
 % [xbest(1:3),fval]=fminsearchbnd(@(x) p2e(raw2xyzc(x,regs.DEST.baseline,raw),false),xbest(1:3),xL(1:3),xH(1:3),struct('Display','iter','OutputFcn',[]));
-
-for i=1:3
        figure(1);
     ah=arrayfun(@(i) subplot(2,2,i),1:4,'uni',false);ah=[ah{:}];
+  [udyg,udxg]=ndgrid(linspace(0,1,32));
+for i=1:3
     %% fov+delay
     [xbest(1:3),fval]=fminsearchbnd(@(x) errFunc(x,fwc,runPipe,false),xbest(1:3),xL(1:3),xH(1:3),fminSearchOpt);
     newregs = th2regs(xbest(1:3));
@@ -133,23 +136,32 @@ for i=1:3
     %% UNDISTORT
     
     [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
+    [e,s,d]=Calibration.aux.evalProjectiveDisotrtion(dataOut.iImg);
+   
+    tps=TPS(s,d-s);
+    undist=tps.at([xg(:) yg(:)]);
+     undistx=reshape(undist(:,1),size(udxg));
+     undisty=reshape(undist(:,2),size(udxg));
     %find distortion
-    xyzm = reshape(dataOut.xyzmes(:,:,1:3),[],3)';
-    xyzo = reshape(dataOut.xyzopt(:,:,1:3),[],3)';
-    uvmes=(dataOut.kMat(1:2,:)*xyzm./(dataOut.kMat(3,:)*xyzm)+1)*0.5.*size(dataOut.iImg)';
-    uvopt=(dataOut.kMat(1:2,:)*xyzo./(dataOut.kMat(3,:)*xyzo)+1)*0.5.*size(dataOut.iImg)';
-    
-        [udyg,udxg]=ndgrid(linspace(-1,1,32));
-    uverr = uvopt-uvmes;
-    tps=TPS(uvmes',uverr');
-    undist=tps.at([udyg(:) udxg(:)]);
-    undistx=reshape(undist(:,1),size(udxg));
-    undisty=reshape(undist(:,2),size(udxg));
+% [udyg,udxg]=ndgrid(linspace(-1,1,32));
+%     xyzm = reshape(dataOut.xyzmes(:,:,1:3),[],3)';
+%     xyzo = reshape(dataOut.xyzopt(:,:,1:3),[],3)';
+%     uvmes=(dataOut.kMat(1:2,:)*xyzm./(dataOut.kMat(3,:)*xyzm)+1)*0.5.*size(dataOut.iImg)';
+%     uvopt=(dataOut.kMat(1:2,:)*xyzo./(dataOut.kMat(3,:)*xyzo)+1)*0.5.*size(dataOut.iImg)';
+%     
+%        
+%     uverr = uvopt-uvmes;
+%     tps=TPS(uvmes',uverr');
+%     undist=tps.at([udyg(:) udxg(:)]);
+%     undistx=reshape(undist(:,1),size(udxg));
+%     undisty=reshape(undist(:,2),size(udxg));
+% 
 
-    oo = ones(numel(udxg),1);
-    %remove scale
-    undistx=undistx-reshape([vec(udxg) oo]*([vec(udxg) oo]\vec(undistx)),32,32);
-    undisty=undisty-reshape([vec(udyg) oo]*([vec(udyg) oo]\vec(undisty)),32,32);
+     %remove scale
+     oo = ones(numel(udxg),1);
+   
+     undistx=undistx-reshape([vec(udxg) oo]*([vec(udxg) oo]\vec(undistx)),32,32);
+     undisty=undisty-reshape([vec(udyg) oo]*([vec(udyg) oo]\vec(undisty)),32,32);
     
     
 %     interError=max([interp2(xg,yg,undistx,uvmes(1,:),uvmes(2,:))+uvmes(1,:)-uvopt(1,:) interp2(xg,yg,undisty,uvmes(1,:),uvmes(2,:))+uvmes(2,:)-uvopt(2,:)]);
@@ -162,8 +174,8 @@ for i=1:3
     undistLuts.FRMW.yLensModel=typecast(single(vec(undisty_)'/single(regs.GNRL.imgVsize)),'uint32');
     fwc.setLut(undistLuts);
     rmserr = rms([undistx(:);undisty(:)]);
-    quiver(udxg,udyg,undistx,undisty,'parent',ah(2))
-    title(sprintf('distortion(%f)',rmserr),'parent',ah(2))
+    quiver(udxg,udyg,undistx_,undisty_,'parent',ah(2))
+    title(sprintf('step distortion(%f)',rmserr),'parent',ah(2))
     grid(ah(2),'on');
     axis(ah(2),'equal');
     drawnow;
@@ -174,7 +186,7 @@ for i=1:3
     rxpropregs.DEST.rxPWRpd=zeros(1,65,'single');
     
 
-    while(true )
+    while(true & 0)
         fwc.setRegs(rxpropregs,[]);
         [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
             
