@@ -42,9 +42,9 @@ classdef FirmwareBase <handle
             
         end
         
-        function [regsData,indx]=getMeta(obj,txt)
-            rn={obj.m_registers.regName};
-            indx=find(cellfun(@(x) ~isempty(x),strfind(rn,txt)));
+        function [regsData,indx]=getMeta(obj,regNameKey)
+            indx=regexpi({obj.m_registers.regName},regNameKey);
+            indx=cellfun(@(x) ~isempty(x),indx);
             regsData = obj.m_registers(indx);
         end
         

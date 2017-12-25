@@ -12,4 +12,9 @@ fvals = find([s.base]=='f');
 for i=fvals
     v(i) = typecast(single(str2double(s(i).value)),'uint32');
 end
+fvals = find([s.base]=='h');
+for i=fvals
+    v(i) = uint32(hex2dec(s(i).value));
+end
+
 end
