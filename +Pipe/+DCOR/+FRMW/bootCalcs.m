@@ -72,8 +72,6 @@ else
     fineTemplates(1:size(templates, 1),:) = templates;
     coarseTemplates(1:size(decTemplates, 1),:) = decTemplates;
 end
-
-
 % imagesc(fineTemplates(1:length(kF),:))
 % imagesc(coarseTemplates(1:length(kF_),:))
 autogenLuts.DCOR.templates = [coarseTemplates(:);fineTemplates(:)];
@@ -83,12 +81,14 @@ autogenLuts.DCOR.templates = [coarseTemplates(:);fineTemplates(:)];
 % this should be calculated offline (not firmware)
 % psnrRegs = Pipe.DCOR.FRMW.genPSNRregs();
 % autogenRegs = Firmware.mergeRegs(autogenRegs,psnrRegs);
+%% ASIC
+crse_len  = double(regs.GNRL.tmplLength)/double(autogenRegs.DCOR.decRatio);
+autogenRegs.DCOR.loopCtrl=bitshift(uint32(uint8(ceil(crse_len / 66.0 ))),0)+bitshift(uint32(uint8(ceil(crse_len / 22.0 ))),8)+bitshift(uint32(uint8(ceil(regs.GNRL.tmplLength / 84.0 ))),16);
 
 %%
 tn=length(   autogenLuts.DCOR.templates);
 assert(tn==64*(256+1024),'bad templates length!')
 regs = Firmware.mergeRegs(regs,autogenRegs);
-
 
 
 end
