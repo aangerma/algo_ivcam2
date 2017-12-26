@@ -1,4 +1,5 @@
-function [errStat] = edgeUnifomity(ir,tunnelWidth,horizontalMargin,verbose)
+function [errStat] = edgeTrans(ir,tunnelWidth,horizontalMargin,verbose)
+ir = double(ir);
 if(~exist('tunnelWidth','var'))
     tunnelWidth=7;
 end
@@ -17,11 +18,16 @@ ir_(isnan(ir_))=0;
 ir_ = histeq(normByMax(ir_));
 % pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
 [pt,bsz]=detectCheckerboardPoints(ir_);
- boardSize=[9 13];%bsz-1
- 
-if(~all(bsz-1==boardSize))
-     error('Bad binput image/board size');
- end
+
+boardSize = bsz - 1;
+if(any(boardSize < 2))
+    error('Board is not detected');
+end
+
+% boardSize=[9 13];%bsz-1
+% if(~all(bsz-1==boardSize))
+%     error('Bad binput image/board size');
+% end
  
  
 pts=reshape(pt(:,1)+1j*pt(:,2),boardSize);
