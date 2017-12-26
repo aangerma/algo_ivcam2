@@ -41,6 +41,12 @@ end
 autogenRegs.CBUF.xRelease = uint16(zeros(1,16));
 autogenRegs.CBUF.xRelease(1:n) = uint16(round(lutData));
 %
+%%ASIC
+autogenRegs.CBUF.valPer=uint32(256);
+if(~regs.JFIL.upscalexyBypass)
+    autogenRegs.CBUF.valPer=uint32(512);
+end
+%%
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
 if(0)

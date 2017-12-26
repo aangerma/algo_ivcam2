@@ -27,7 +27,7 @@ for i=1:size(metaData.data,1)
     obj.m_registers(i).arraySize = str2double(obj.m_registers(i).arraySize);
     obj.m_registers(i).autogen = ~isempty(obj.m_registers(i).autogen)*-1; %autogen but not set ==-1, when set change it to 1
     obj.m_registers(i).updated=false;
-    
+    obj.m_registers(i).address=uint64(str2double(obj.m_registers(i).address));
     obj.m_registers(i).rangeStruct = parseRange(obj.m_registers(i));
     
     obj.m_registers(i).typeID = typeToClassID(obj.m_registers(i).type);

@@ -29,21 +29,20 @@ else
     % sampleRate = double(regs.GNRL.sampleRate);
     downSamplingR = 2 ^ double(regs.DCOR.decRatio);
     % cfs = double(regs.GNRL.sampleRate) / sc0;
-    
+    %% PSNR
     iImgRAW = pflow.iImgRAW;
     dIR = max(0, int16(iImgRAW)-int16(regs.DCOR.irStartLUT));
-    irIndex = map(regs.DCOR.irMap, min(63, bitshift(dIR, -int8(regs.DCOR.irLUTExp)))+1);
+    irIndex = map(regs.DCOR.irMap,    min(63, bitshift(dIR, -int8(regs.DCOR.irLUTExp))  )   +1);
     
     amb = pflow.aImg;
     dAmb = max(0, int16(amb)-int16(regs.DCOR.ambStartLUT));
     ambIndex = map(regs.DCOR.ambMap, min(63, bitshift(dAmb, -int8(regs.DCOR.ambLUTExp)))+1);
+    
     psnrIndex = bitor(bitshift(ambIndex, 4), irIndex);
-    
-    
     psnr_value = map(regs.DCOR.psnr, uint16(psnrIndex)+1);
     
 %     lgr.print2file(sprintf('\tpsnr_value = %X\n',psnr_value(lgrOutPixIndx)));
-    
+   %% 
     [ys, xs] = ndgrid(0:regs.GNRL.imgVsize-1, 0:regs.GNRL.imgHsize-1);
     
     

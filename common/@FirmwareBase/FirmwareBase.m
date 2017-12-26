@@ -6,7 +6,7 @@ classdef FirmwareBase <handle
         m_luts
         m_tablesFolder
         m_regHandle
-		m_bootCalcsFunction
+        m_bootCalcsFunction
     end
     
     properties (Constant)
@@ -42,9 +42,9 @@ classdef FirmwareBase <handle
             
         end
         
-        function [regsData,indx]=getMeta(obj,txt)
-            rn={obj.m_registers.regName};
-            indx=find(cellfun(@(x) ~isempty(x),strfind(rn,txt)));
+        function [regsData,indx]=getMeta(obj,regNameKey)
+            indx=regexpi({obj.m_registers.regName},regNameKey);
+            indx=cellfun(@(x) ~isempty(x),indx);
             regsData = obj.m_registers(indx);
         end
         
@@ -63,19 +63,19 @@ classdef FirmwareBase <handle
             if(isempty(regList))
                 txt='';
             else
-            [~,o]=sort({regList.uniqueID});
-            regList = regList(o);
-            %%
-            txt = [ {regList.regName}' arrayfun(@(x) ' ',1:length(regList),'uni',0)' {regList.base}' {regList.value}' ];
-
-            txt(:,end)=strcat(txt(:,end),char(10));
-             txt=arrayfun(@(i) char(strcat(txt(:,i),char(9))) ,1:size(txt,2),'uni',false);
-            txt=[txt{:}];
+                [~,o]=sort({regList.uniqueID});
+                regList = regList(o);
+                %%
+                txt = [ {regList.regName}' arrayfun(@(x) ' ',1:length(regList),'uni',0)' {regList.base}' {regList.value}' ];
+                
+                txt(:,end)=strcat(txt(:,end),newline);
+                txt=arrayfun(@(i) char(strcat(txt(:,i),char(9))) ,1:size(txt,2),'uni',false);
+                txt=[txt{:}];
             end
             if(nargout==0)
                 disp(txt);
             else
-                txt=[txt ones(size(txt,1),1)*char(10)];
+                txt=[txt ones(size(txt,1),1)*newline];
                 varargout{1}=txt;
             end
         end
@@ -103,12 +103,12 @@ classdef FirmwareBase <handle
             privUpdate( obj,vals,updatedBy );
             %reset autogen
             if(~strcmpi(updatedBy,'autogen'))
-            updatetag = [obj.m_registers.autogen]==1;
-            if(nnz(updatetag)~=0)
-                for i=find(updatetag)
-                    obj.m_registers(i).autogen=-1;
+                updatetag = [obj.m_registers.autogen]==1;
+                if(nnz(updatetag)~=0)
+                    for i=find(updatetag)
+                        obj.m_registers(i).autogen=-1;
+                    end
                 end
-            end
             end
         end
         
@@ -207,9 +207,31 @@ classdef FirmwareBase <handle
             privWrite2file( obj,outputFn,'config');
         end
         
+        function writeMWDfile(obj,outfn,regTokens)
+            if(~exist('regTokens','var') || isempty(regTokens))
+                regTokens={'.'};
+            elseif(~iscell(regTokens))
+                regTokens={regTokens};
+            end
+            ind=[];
+            for t=regTokens(:)'
+                r=regexpi({obj.m_registers.regName},t);
+                ind=[ind find(cellfun(@(x) ~isempty(x),r))];%#ok
+            end
+            m = num2cell([[obj.m_registers(ind).address]' [obj.m_registers(ind).address]'+4 Firmware.sprivRegstruct2uint32val(obj.m_registers(ind))]);
+            m=[m {obj.m_registers(ind).regName}']';
+            fid=fopen(outfn,'w');
+            fprintf(fid,'mwd %08x %08x %08x //%s\n',m{:});
+            fclose(fid);
+            
+        end
+        
+        
+        
+        
         writeDefs4asic(obj, outputFn) %seperate implementation
         randomize(obj,outputFile,regsList)
-
+        
     end % public methods
     
     
@@ -233,6 +255,8 @@ classdef FirmwareBase <handle
         regName                   = sprivConvertBlockNameId2regName(s)
         [blockName,algoReg,subId] = sprivConvertRegName2blockNameId(regName)
         val                       = sprivRegstruct2val             (s)
+       val                       = sprivRegstruct2uint32val             (s)
+
         score                     = sprivStringDist                (string1,string2)
         s                         = sprivSizeof                    (typestr)
         [b,v]                     = sprivGetBaseVal                (txt)

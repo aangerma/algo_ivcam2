@@ -1,6 +1,6 @@
 function pipeOutData = runPipe(ivsFn,changeFW)
 % mcc -m runPipe.m -d '\\ger\ec\proj\ha\perc\SA_3DCam\Algorithm\YONI\runPipe\' -a ..\..\+Pipe\tables\* 
-if(naragin==0)
+if(nargin==0)
     ivsFn=uigetdir;
     if(ivsFn==0)
         return;
@@ -10,10 +10,7 @@ if(nargin<2)
     changeFW = 0;
 end
 
-if(changeFW)
-  
-    
-    
+if(changeFW)    
     [fw,p] = Pipe.loadFirmware(ivsFn);
     regs = fw.get();
     regsNew = structDlg(regs);
