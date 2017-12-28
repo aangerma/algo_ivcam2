@@ -208,6 +208,7 @@ classdef FirmwareBase <handle
         end
         
         function writeMWDfile(obj,outfn,regTokens)
+            obj.privBootCalcs();
             if(~exist('regTokens','var') || isempty(regTokens))
                 regTokens={'.'};
             elseif(~iscell(regTokens))
@@ -218,10 +219,35 @@ classdef FirmwareBase <handle
                 r=regexpi({obj.m_registers.regName},t);
                 ind=[ind find(cellfun(@(x) ~isempty(x),r))];%#ok
             end
+            
+            
+            
+            
             m = num2cell([[obj.m_registers(ind).address]' [obj.m_registers(ind).address]'+4 Firmware.sprivRegstruct2uint32val(obj.m_registers(ind))]);
             m=[m {obj.m_registers(ind).regName}']';
             fid=fopen(outfn,'w');
             fprintf(fid,'mwd %08x %08x %08x //%s\n',m{:});
+            for i=1:length(obj.m_luts)
+                if(any(strcmp(obj.m_luts(i).algoBlock,{'FRMW','MTLB'})))
+                    continue;
+                end
+                switch(obj.m_luts(i).elemSize)
+                    case 32
+                        m=[
+                            num2cell(uint64(0:length(obj.m_luts(i).data)-1)*4+uint64([0;4])+obj.m_luts(i).address)
+                            num2cell(typecast(obj.m_luts(i).data(:),'uint32')')
+                            arrayfun(@(k) sprintf('%s_%04d',obj.m_luts(i).lutName,k-1),1:length(obj.m_luts(i).data),'uni',0)
+                            ];
+                    case 3
+                        continue;
+                    otherwise
+                        
+                        error('Unsopported LUT datasize');
+                end
+                
+                fprintf(fid,'mwd %08x %08x %08x //%s\n',m{:});
+            end
+            
             fclose(fid);
             
         end
@@ -255,8 +281,8 @@ classdef FirmwareBase <handle
         regName                   = sprivConvertBlockNameId2regName(s)
         [blockName,algoReg,subId] = sprivConvertRegName2blockNameId(regName)
         val                       = sprivRegstruct2val             (s)
-       val                       = sprivRegstruct2uint32val             (s)
-
+        val                       = sprivRegstruct2uint32val             (s)
+        
         score                     = sprivStringDist                (string1,string2)
         s                         = sprivSizeof                    (typestr)
         [b,v]                     = sprivGetBaseVal                (txt)
