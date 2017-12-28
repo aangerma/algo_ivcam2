@@ -22,8 +22,9 @@ else
     
     
     % undist
-    xLUT = reshape(typecast(luts.DIGG.xLensModel,'int32'),32,32);
-    yLUT = reshape(typecast(luts.DIGG.yLensModel,'int32'),32,32);
+    xylut = typecast(luts.DIGG.lensModel,'int32');
+    xLUT = reshape(xylut(1:2:end),32,32);
+    yLUT = reshape(xylut(2:2:end),32,32);
     
     
     [xnew,x_xaddr,x_yaddr,xnei,xindRow,xIndCol]= bicubicInterp(xLUT,regs.DIGG,xx,yy);%#ok

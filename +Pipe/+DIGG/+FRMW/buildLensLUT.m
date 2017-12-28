@@ -53,12 +53,13 @@ else
     distortionW=x1-x0;
     fx = (N-1)/distortionW;
     fy = (N-1)/distortionH;
-    if(~isfield(luts,'FRMW') || ~isfield(luts.FRMW,'yLensModel') || ~isfield(luts.FRMW,'xLensModel') || all([vec(luts.FRMW.xLensModel);vec(luts.FRMW.yLensModel)]==0))
+    if(~isfield(luts,'FRMW') || ~isfield(luts.FRMW,'lensModel') || all(luts.FRMW.lensModel)==0)
         xDisplacment=zeros(32,'single');
         yDisplacment=zeros(32,'single');
     else
-        yDisplacment = reshape(typecast(luts.FRMW.yLensModel,'single'),32,32);
-        xDisplacment = reshape(typecast(luts.FRMW.xLensModel,'single'),32,32);
+        xylut = typecast(luts.FRMW.lensModel,'single');
+        xDisplacment = reshape(xylut(1:2:end),32,32);
+        yDisplacment = reshape(xylut(2:2:end),32,32);
         
     end
     %% renormalize
@@ -92,8 +93,8 @@ autogenRegs.DIGG.undistFy = uint32(toint32(fy));
 autogenRegs.DIGG.undistX0 = toint32(x0);
 autogenRegs.DIGG.undistY0 = toint32(y0);
 
-autogenLuts.DIGG.xLensModel = toint32(xLUT(:));
-autogenLuts.DIGG.yLensModel = toint32(yLUT(:));
+autogenLuts.DIGG.lensModel = toint32(vec([xLUT(:) yLUT(:)]'));
+
 
 
 %%
