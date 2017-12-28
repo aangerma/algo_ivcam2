@@ -30,7 +30,7 @@ function [ obj ] = privLoadLUTs( obj )
         end
 
         obj.m_luts(i).elemSize=str2double(obj.m_luts(i).elemSize);
-        obj.m_luts(i).address=str2double(obj.m_luts(i).address);
+        obj.m_luts(i).address=uint64(str2double(obj.m_luts(i).address));
     end
     
     obj.m_luts=rmfield(obj.m_luts,'length');
