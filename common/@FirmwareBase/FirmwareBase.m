@@ -126,7 +126,7 @@ classdef FirmwareBase <handle
             if(ischar(lutsStruct) && exist(lutsStruct,'file'))
                 [~,fn]=fileparts(lutsStruct);
                 [block,algoName]=FirmwareBase.sprivConvertRegName2blockNameId(fn);
-                val=typecast(single((io.readBin(lutsStruct,[1 1024]))),'uint32');
+                val=typecast(single((io.readBin(lutsStruct))),'uint32');
                 luts.(block).(algoName)=vec(uint32(val))';
                 obj.setLut(luts);
                 return;
