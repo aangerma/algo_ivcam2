@@ -1,7 +1,7 @@
 function [ obj ] = privLoadLUTs( obj )
     lutdata = FirmwareBase.sprivReadCSV([obj.m_tablesFolder filesep 'lutsDefinitions.frmw']);
     headers = strtrim(lutdata(1,:));
-    if(~all(strcmpi(headers,{'lutName'    'length'    'elemSize'  })))
+    if(~all(strcmpi(headers,{'lutName'    'length'    'elemSize' 'address'  })))
         error('LUT header should be lutName    length    elemSize ');
     end
     lutdata =lutdata(2:end,:);
@@ -30,6 +30,7 @@ function [ obj ] = privLoadLUTs( obj )
         end
 
         obj.m_luts(i).elemSize=str2double(obj.m_luts(i).elemSize);
+        obj.m_luts(i).address=str2double(obj.m_luts(i).address);
     end
     
     obj.m_luts=rmfield(obj.m_luts,'length');
