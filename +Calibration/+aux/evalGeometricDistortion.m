@@ -1,84 +1,43 @@
-function ret = calibratorOpticalMeritFunction(r,th,retErrdata)
-    
-    if(any(th(1:2)<0) || any(th(3:4)<-1) || any(th(3:4)>1))
-        ret = 1e3;
+function [e,ptsOut]=evalGeometricDistortion(p,verbose)
+%%
+tileSizeMM = 30;
+h=size(p,1);
+w=size(p,2);
+[oy,ox]=ndgrid(linspace(-1,1,h)*(h-1)*tileSizeMM/2,linspace(-1,1,w)*(w-1)*tileSizeMM/2);
+ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
+xyzmes =reshape(p,[],4)';
+xyzmes=xyzmes(1:3,:);
+
+
+    %find best plane
+    [mdl,d,in]=planeFit(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),[],200);
+    if(nnz(in)/numel(in)<.90)
+        e=1e3;
+        ptsOut=xyzmes;
         return;
     end
+    pvc=xyzmes-mean(xyzmes(:,in),2);
+%     
+    %project all point to plane
+    pvp=pvc(:,in)-mdl(1:3).*d(:,in);
     
-    aspctrto = th(1)/th(2);
-    if(aspctrto>2 || aspctrto<.5)
-        ret = 1e3;
-        return;
-    end
+    pvp=pvp-mean(pvp,2);
+    %shift to center, find rotation along PCA
+    [u,~,vt]=svd(pvp*ptsOpt(:,in)');
+    rotmat=u*vt';
+    
+    ptsOptR = rotmat*ptsOpt;
+    
+    errVec = vec(sqrt((sum((pvc-ptsOptR).^2))));
+    if(exist('verbose','var') && verbose)
    
-    
-    [x,y,z]=Pipe.DEST.rImgUnproject(r,th(1),th(2),th(3),th(4));
-      
-     [d,abcd]=ransacPlane(x,y,z);  
-%      [abcd,d] = planeFit(x,y,z);
-    
-
-thr = prctile(d(:),75);
-    msk = d<thr;
-    d(~msk)=nan;
-    abcd=abcd/sqrt(sum(abcd(1:3).^2));
-
-        switch(retErrdata)
-            case 'f'
-        ret = sqrt(mean(d(~isnan(d)).^2));
-            case'x'
-        ret=abs(abcd(1));
-            case 'y'
-        ret=abs(abcd(2));
-            case 'v'
-                plot3(x(msk),y(msk),z(msk),'.')
-                 plotPlane(abcd);
-                 title(abcd);
-                 axis equal;axis vis3d;
-                drawnow;
-                ret = abcd;
-        end
-    fprintf('FOV (%.2f %.2f) KST(%.2f %.2f) ERR(%f)\n',[th ret]);
-    
-end
-
-
-function [d,bestModel]=ransacPlane(x,y,z)
-N_ITER = 200;
-    rng(1);
-    p=[x(:) y(:) z(:)];
-    p(z(:)==0 | isnan(z(:)),:)=[];
-    
-        bestModel=[0 0 0 0];
-        d=nan(size(x));
-    if(size(p,1)<10)
-        return;
+    plot3(pvc(1,in),pvc(2,in),pvc(3,in),'go',pvc(1,~in),pvc(2,~in),pvc(3,~in),'Ro',ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),'b+')
+%     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
+%     plotPlane(mdl);
+%     plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
     end
-    n = size(p,1);
-    bestNinlier=0;
-    
-    thr = 10;
-    for i=1:N_ITER
-        h=p(randperm(n,3),:);
-        A = [h(:,1:2) ones(3,1)];
-        if(abs(det(A))<1e-1)
-            continue;
-        end
-        th = A\h(:,3);
-        e = abs(p(:,1:2)*th(1:2)+th(3)-p(:,3));
-        thisNinliers = nnz(e<thr);
-        if(bestNinlier<thisNinliers )
-            bestNinlier=thisNinliers ;
-            bestModel = th;
-        end
-        
-    end
-    e = abs(p(:,1:2)*bestModel(1:2)+bestModel(3)-p(:,3));
-    A2 = [p(e<thr,1:2) ones(nnz(e<thr),1)];
 
-    bestModel = A2\p(e<thr,3);
-    e = ([x(:) y(:)]*bestModel(1:2)+bestModel(3)-z(:));
-    d=reshape(e,size(x));
-    
-    bestModel = [bestModel(1) bestModel(2) -1 bestModel(3)] ;
+ e = sqrt((mean(errVec(in).^2)));
+%  e=prctile(errVec,85);
+ptsOut = reshape(ptsOptR'+mean(xyzmes(:,in),2)',size(p,1),size(p,2),3);
 end
