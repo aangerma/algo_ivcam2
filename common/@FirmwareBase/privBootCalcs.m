@@ -5,7 +5,7 @@ autogenRegs = struct();
 autogenLuts = struct();
 
 
-[regs,autogenRegs] = generalRegisters(regs,autogenRegs);
+
 if (isa(obj.m_bootCalcsFunction, 'function_handle'))
     [regs,autogenRegs,autogenLuts] = obj.m_bootCalcsFunction(regs,luts,autogenRegs,autogenLuts);
 end
@@ -22,11 +22,5 @@ for i=1:length(obj.m_registers)
         error('boot cals error in %s: floating point registers should be initilized with floating point data(%s)',obj.m_registers(i).algoBlock,obj.m_registers(i).regName);
     end
 end
-end
-
-function [regs,autogenRegs] = generalRegisters(regs,autogenRegs)
-autogenRegs.GNRL.tmplLength = uint16(double(regs.GNRL.codeLength)*double(regs.GNRL.sampleRate));
-autogenRegs.GNRL.zNorm = single(bitshift(1,regs.GNRL.zMaxSubMMExp));
-regs = FirmwareBase.mergeRegs(regs,autogenRegs);
 end
 
