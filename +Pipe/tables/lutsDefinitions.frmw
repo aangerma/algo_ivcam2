@@ -1,4 +1,5 @@
 lutName                   , length ,elemSize, address
-DIGGlensModel            , 2048    ,32      ,2232418304
-FRMWlensModel            , 2048    ,32      ,
-DCORtemplates			  , 81920   ,3      ,
+DIGGundistModel           , 2048    ,32      ,2232418304
+FRMWundistModel           , 2048    ,32      ,
+DCORtmpltFine			  , 8192    ,32      , 2250252288
+DCORtmpltCrse			  , 2048    ,32      , 2250244096

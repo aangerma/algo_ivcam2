@@ -23,7 +23,7 @@ if(exist(p.calibFile,'file'))
 end
 dnnWeightFile = fullfile(fileparts(p.calibFile),'dnnweights.csv');
 innWeightFile = fullfile(fileparts(p.calibFile),'innweights.csv');
-lensMdlFile = fullfile(fileparts(p.calibFile),'FRMWlensModel.bin32');
+undistMdlFile = fullfile(fileparts(p.calibFile),'FRMWundistModel.bin32');
 
 if(exist(dnnWeightFile,'file'))
     fw.setRegs(dnnWeightFile);
@@ -33,8 +33,8 @@ if(exist(innWeightFile,'file'))
     fw.setRegs(innWeightFile);
 end
 
-if(exist(lensMdlFile,'file'))
-    fw.setLut(lensMdlFile);
+if(exist(undistMdlFile,'file'))
+    fw.setLut(undistMdlFile);
 end
 
 
