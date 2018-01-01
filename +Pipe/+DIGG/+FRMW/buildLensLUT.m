@@ -49,7 +49,7 @@ else
 % % %     y1=ceil(y1)+1;
 % % %     
 % MARGINS ARE FIXED TO +-p%
-wh=double([regs.GNRL.imgHsize regs.GNRL.imgVsize]);
+wh=double([regs.FRMW.xres regs.FRMW.yres]);
 pmargin = 0.05;
 x0 = -ceil(wh(1)*pmargin);
 x1 =  ceil(wh(1)*(1+pmargin));
