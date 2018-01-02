@@ -32,7 +32,19 @@ end
  
 pts=reshape(pt(:,1)+1j*pt(:,2),boardSize);
 
-hSize = [boardSize(1) boardSize(2)-1];
+if abs(real(pts(1,1)) - real(pts(1,2))) < abs(imag(pts(1,1)) - imag(pts(1,2)))
+    pts = pts.';
+end
+
+if real(pts(1,1)) > real(pts(1,end))
+    pts = fliplr(pts);
+end
+
+if imag(pts(1,1)) > imag(pts(end,1))
+    pts = flipud(pts);
+end
+
+hSize = [size(pts,1) size(pts,2)-1];
 hTrans = zeros(hSize);
 for j=1:hSize(2)
     for i=1:hSize(1)
@@ -42,7 +54,7 @@ for j=1:hSize(2)
     end
 end
 
-vSize = [boardSize(1)-1 boardSize(2)];
+vSize = [size(pts,1)-1 size(pts,2)];
 vTrans = zeros(vSize);
 irT = ir';
 for j=1:vSize(2)
