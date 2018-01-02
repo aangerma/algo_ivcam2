@@ -11,6 +11,7 @@ defaultType = ext(2:end);
 
 expectedTypes = {'binz'  ,'bini'  ,'binr'  ,'binv' ,'binc' ,'bint' ,'bin8' ,'bin12' ,'bin16' ,'bin32'};
 readTypes     = {'uint16','uint16','uint16','float','uint16','uint8','ubit8','ubit12','ubit16','float'};
+castType      = {'uint16','uint16','uint16','float','uint16','uint8','uint8','uint16','uint16','single'};
 
 addOptional(p,'size',defaultSize,@isnumeric);
 addParameter(p,'type',defaultType,...
@@ -25,8 +26,11 @@ end
 
 fullname = fullfile(folder,[file,ext]);
 f = fopen(fullname,'rb');
-buffer = fread(f,Inf,readTypes{strcmpi(p.type,expectedTypes)});
+ind = find(strcmpi(p.type,expectedTypes),1);
+buffer = fread(f,Inf,readTypes{ind});
 fclose(f);
+
+buffer = cast(buffer,castType{ind});
 if(~isempty(p.size))
     sz=p.size;
 else

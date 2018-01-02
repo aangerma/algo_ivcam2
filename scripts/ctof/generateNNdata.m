@@ -1,13 +1,14 @@
 clear;
+N_SAMPLES=1e4
 sz = [24 32];
 % params.model = '+dataGen\+Shapes\flat.stl';
-params.model=dataGen.generateRandomSecene(1);
+
 params.prjector.kMat=[2 0 0; 0 2.666 0 ; 0 0 1];
 params.prjector.rMat=eye(3);
 params.prjector.res=sz;
 params.prjector.power = 400;%mW
 params.sensor.tMat=zeros(3,1);
-params.verbose = 1;
+params.verbose = 0;
 params.system_dt = 0.001;
 params.scenario.dt=1;%nsec
 
@@ -32,14 +33,20 @@ params.scenario.data{3}.txmod = [0 tw1 0];
 params.scenario.data{3}.rxmod = [0 tw1 0];
 
 %sensor
-params.sensor.sampler.nbits=12;
+params.sensor.sampler.nbits=16;
 params.sensor.sampler.v0 = 0;     %v
 params.sensor.sampler.v1 = 1e-3; %v
 params.sensor.collectionArea = 1;%mm^2
-fprintf('Compression ratio: 1:%d\n',prod(sz)/size(P,3));
-%% run sim
+
+%% 
+fid = fopen('ctofNNdata.bin','w');
+
+for i=1:N_SAMPLES
+tt=tic;
+params.model=dataGen.generateRandomSecene(1);
 [mes,gt]=Sim.run(params);
-% mes = cellfun(@(x) double(x)./(2.^params.sensor.sampler.nbits-1)*(params.sensor.sampler.v1-params.sensor.sampler.v0)+params.sensor.sampler.v0,mes,'uni',0);
-% mes = round(mes*2^params.sensor.sampler.nbits)/2^params.sensor.sampler.nbits;
-%% solve
-Solver.run(mes,gt,params);
+fwrite(fid,[uint16(mes{1});uint16(mes{2});uint16(mes{3});typecast(vec(single(gt.rtdS)),'uint16');typecast(vec(single(gt.a)),'uint16')],'uint16');
+tt=toc(tt);
+fprintf('%d ( %5.2fsec)\n',i,tt);
+end
+fclose(fid);

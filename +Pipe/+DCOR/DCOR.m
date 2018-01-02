@@ -5,10 +5,16 @@ function  [corrOffset, corrSegment, psnr_value, iImgRAW,tmplIndex] = DCOR(pflow,
 assert(max(pflow.cma(:))<128); %cma should be always 7b
 cma_ = min(63, bitshift(pflow.cma+1,-1));
 
+    nF = double(regs.GNRL.tmplLength);
+    nC = double(regs.DCOR.coarseTmplLength);
 
 
-cTemplates = uint8(reshape(luts.DCOR.templates(1:256*64), 256, 64));
-fTemplates = uint8(reshape(luts.DCOR.templates(256*64+1:end), 1024, 64));
+uint322uint4 = @(v) vec([bitshift(typecast(v,'uint8'),-4);bitand(typecast(v,'uint8'),uint8(15))]);
+
+tmplC = reshape(uint322uint4(luts.DCOR.tmpltCrse),256,[]);
+tmplF = reshape(uint322uint4(luts.DCOR.tmpltFine),1024,[]);
+% rotate (asic bug)
+tmplF  = circshift(tmplF ,[-nF+16,16]);
 if (regs.DCOR.bypass || isempty(pflow.pixIndOutOrder)) %bypass or no pixels
     corrOffset = zeros(size(pflow.pipeFlags), 'uint16');
     fCorrSize = regs.DCOR.fineCorrRange * 2 + 1;
@@ -52,8 +58,8 @@ else
         yIndex = uint8(bitand(xs,1));
         tmplIndex = bitor(bitshift(yIndex,4), uint8(bitshift(psnr_value, -2)));
         assert(max(tmplIndex(:))<=31);
-        cTemplates=cTemplates(:,1:32);
-        fTemplates=reshape(fTemplates,2048,32);
+        tmplC=tmplC(:,1:32);
+        tmplF=reshape(tmplF,2048,32);
 
     else
         switch (regs.DCOR.tmplMode)
@@ -94,11 +100,9 @@ else
     
 %     lgr.print2file(sprintf('\tcma_dec = %s\n',sprintf('%08X ',flipud(cma_dec(:,lgrOutPixIndx)))));
     
-    lenF = double(regs.GNRL.tmplLength);
-    lenC = double(regs.DCOR.coarseTmplLength);
     
-    kerC = cTemplates(1:lenC,:);
-    kerF = fTemplates(1:lenF,:);
+    kerC = tmplC(1:nC,:);
+    kerF = tmplF(1:nF,:);
     
     
     cor_dec = Utils.correlator(uint16(cma_dec), kerC, uint32(tmplIndex));
@@ -216,8 +220,8 @@ if(~isempty(traceOutDir) )
     Utils.buildTracer(tmpl_psnr_txt,'DCOR_tmpl_psnr',traceOutDir);
     
     %% template LUT trace
-    Utils.buildTracer(Utils.mat2hex(fTemplates',1),'DCOR_fineTemplates',traceOutDir);
-    Utils.buildTracer(Utils.mat2hex(cTemplates',1),'DCOR_coarseTemplates',traceOutDir);
+    Utils.buildTracer(Utils.mat2hex(tmplF',1),'DCOR_fineTemplates',traceOutDir);
+    Utils.buildTracer(Utils.mat2hex(tmplC',1),'DCOR_coarseTemplates',traceOutDir);
     
 end
 

@@ -772,6 +772,13 @@ uniqueID    , regName                      , type   , arraySize, defaultValue   
 999.039.000 , FRMWundistXfovFactor         , single , 1        , f1.0                             ,2200      ,        , {[1.0:2.0]}                                                  , 
 999.040.000 , FRMWundistYfovFactor         , single , 1        , f1.0                             ,2204      ,        , {[1.0:2.0]}                                                  , 
 999.041.000 , FRMWcorSaturationPrc         , single , 1        , f0.75                            ,0         ,        , {[0.0:1.0]}                                                  , of max to saturate to maximum in DEST correlation proccess
+999.042.000 , FRMWauxPItxCode_000          , uint32 , 1        , h0                               ,2231762944, x      ,                                                              , PI tx code register
+999.042.001 , FRMWauxPItxCode_001          , uint32 , 1        , h0                               ,2231762948, x      ,                                                              , PI tx code register
+999.042.002 , FRMWauxPItxCode_002          , uint32 , 1        , h0                               ,2231762952, x      ,                                                              , PI tx code register
+999.042.003 , FRMWauxPItxCode_003          , uint32 , 1        , h0                               ,2231762960, x      ,                                                              , PI tx code register
+999.043.000 , FRMWauxShadowUpdate          , uint32 , 1        , h1f8                             ,2685207028,        ,{504}                                                         , shadow update enabler
+
+
 100.001.000 , DIGGgamma_000                , uint12 , 2        , h040000                          ,2684488308, x      ,                                                              ,                                                                                                                                                                    
 100.001.001 , DIGGgamma_001                , uint12 , 2        , h0C0080                          ,2684488312, x      ,                                                              ,                                                                                                                                                                    
 100.001.002 , DIGGgamma_002                , uint12 , 2        , h140100                          ,2684488316, x      ,                                                              ,                                                                                                                                                                    

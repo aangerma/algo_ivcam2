@@ -1,6 +1,5 @@
-lutName                   , length ,elemSize 
-DIGGxLensModel            , 1024    ,32      
-DIGGyLensModel            , 1024    ,32      
-FRMWxLensModel            , 1024    ,32      
-FRMWyLensModel            , 1024    ,32      
-DCORtemplates			  , 81920   ,3
+lutName                   , length ,elemSize, address
+DIGGundistModel           , 2048    ,32      ,2232418304
+FRMWundistModel           , 2048    ,32      ,
+DCORtmpltFine			  , 8192    ,32      , 2250252288
+DCORtmpltCrse			  , 2048    ,32      , 2250244096

@@ -35,8 +35,7 @@ fw.setRegs(calibRegs,p.calibFile);
 fw.writeUpdated(p.calibFile);
 
 basedir=fileparts(p.calibFile)	;
-io.writeBin(fullfile(basedir,'FRMWxLensModel.bin32'),opticalLuts.FRMW.xLensModel);
-io.writeBin(fullfile(basedir,'FRMWyLensModel.bin32'),opticalLuts.FRMW.yLensModel);
+io.writeBin(fullfile(basedir,'FRMWundistModel.bin32'),opticalLuts.FRMW.undistModel);
 	
 end
 % 
