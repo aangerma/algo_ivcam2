@@ -28,8 +28,11 @@ autogenRegs.DCOR.coarseMasking = coarseMasking(:).';
  %% templates
 
 codevec = vec(fliplr(dec2bin(regs.FRMW.txCode(:),32))')=='1';
+codevec = codevec(1:regs.GNRL.codeLength);
 
-kF = double(vec(repmat(codevec(1:regs.GNRL.codeLength),1,regs.GNRL.sampleRate)'));
+codevec =flipud(codevec);%ASIC ALIGNMENT
+
+kF = double(vec(repmat(codevec,1,regs.GNRL.sampleRate)'));
 nF =  length(kF)  ; 
 nC =  bitshift(nF,-double(autogenRegs.DCOR.decRatio));
 nTemplates = iff(nF==2048,32,64);
@@ -42,19 +45,20 @@ for i=1:nTemplates
 end
 
 templates = uint8(round(min(1,max(0,templates))*7));
+tbl2uint32 = @(t) typecast(vec(flipud(reshape(uint8(sum(bsxfun(@bitshift,reshape(t(:),2,[]),[4;0]))),4,[]))),'uint32');
 %% gen fine
 tmplF = templates;
 % replicate to 1024
 tmplF = tmplF(mod(0:1023,nF)+1,:);
-% rotate (asic bug)
-tmplF  = circshift(tmplF ,[nF-16,-16]);
-autogenLuts.DCOR.tmpltFine = typecast(uint8(sum(bsxfun(@bitshift,reshape(tmplF(:),2,[]),[0;4]))),'uint32');
+ tmplF  = circshift(tmplF ,[nF-16,-16]);
+autogenLuts.DCOR.tmpltFine = tbl2uint32(tmplF);
 %% gen coarse
+
 %corse from fine
 tmplC=bitshift(uint8(permute(sum(reshape(templates,downSamplingR,[],size(templates,2))),[2 3 1])),-double(autogenRegs.DCOR.decRatio));
 % replicate to 256
 tmplC = tmplC(mod(0:255,nC)+1,:);
-autogenLuts.DCOR.tmpltCrse = typecast(uint8(sum(bsxfun(@bitshift,reshape(tmplC(:),2,[]),[0;4]))),'uint32');
+autogenLuts.DCOR.tmpltCrse = tbl2uint32(tmplC);
 %% PSNR
 % this should be calculated offline (not firmware)
 % psnrRegs = Pipe.DCOR.FRMW.genPSNRregs();
