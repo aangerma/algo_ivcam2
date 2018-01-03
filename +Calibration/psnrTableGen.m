@@ -2,9 +2,11 @@ function [regs, unitTestS] = psnrTableGen(Mcw,isDebug,isFast)
 %% flags
 if(nargin==0)
     Mcw = uint16(2^8);
-elseif(nargin==1)
     debug = 1;
     fastApprox = 1;
+elseif(nargin==1)
+    debug = 0;
+    fastApprox = 0;
 elseif(nargin==2)
     debug = isDebug;
     fastApprox = isDebug;
@@ -19,16 +21,16 @@ regType = {'ir', 'amb'};
 
 %Ms,Mn: given later in the pipe so we need to simulate them
 if(fastApprox)
-    MnSim = linspace(0,(2^12-1),2^10);
+    MnSim = linspace(0,2^12-1,2^10);
 else
-    MnSim = linspace(0,(2^12-1),2^12);
+    MnSim = linspace(0,2^12-1,2^12);
 end
 
 %to get alpha (denoted here 'a') we need Ms and go back to alpha
 if(fastApprox)
-    alphaSim = linspace(0,(2^12-1),2^10);
+    alphaSim = linspace(0,2^12-1,2^10);
 else
-    alphaSim = linspace(0,(2^12-1),2^12);
+    alphaSim = linspace(0,2^12-1,2^12);
 end
 
 [MnSimT,aSimT] = meshgrid(MnSim,alphaSim);
@@ -161,49 +163,52 @@ psnrTgrad1D = cell(2,1);
 for j=1:length(regType)
     psnrTgrad1D{j} = nansum(psnrTgrad,j);
     
-    integral = sum(psnrTgrad1D{j}(i:length(psnrTgrad1D{j})));
-    area = integral/(16);
+    integral = sum(psnrTgrad1D{j});
+    area = integral/16; %16X16 bins in 2D lut
     
-    minStep = ceil(length(psnrTgrad1D{j})/64);
+    minStep = ceil(length(psnrTgrad1D{j})/64);%64 entries in 1D lut- so can't move 2 bins in less then minStep
     tmpSum = 0;
     
-    qBinEdgesTmp = nan(17,1);
-    qBinEdgesTmp(1) = 1;
+    qBinEdgesIndTmp = nan(17,1);
+    qBinEdgesIndTmp(1) = 1;
     curInd = 1;
     
-    % figure;plot(psnrTgrad1D{j});hold on;plot(qBinEdgesTmp(1),psnrTgrad1D{j}(qBinEdgesTmp(1)),'*');%%%%%%%%%%%%%%
     for i=1:length(psnrTgrad1D{j})
         
         
         tmpSum = tmpSum+psnrTgrad1D{j}(i);
-        if(i-qBinEdgesTmp(curInd)<minStep)
+        if(i-qBinEdgesIndTmp(curInd)<minStep)
             continue;
         end
         
         if(tmpSum>=area)
             curInd = curInd+1;
-            qBinEdgesTmp(curInd) = i;
-            tmpSum = 0;%tmpSum-area;
+            qBinEdgesIndTmp(curInd) = i;
+            tmpSum = 0;
+            
+            if(curInd==16) %we can do finer quantization on the last one because of the padded zeros
+                qBinEdgesIndTmp(end) = find(psnrTgrad1D{j}~=0,1,'last');
+                break;
+            end
             
             %integral over the remain func
-            integral = sum(psnrTgrad1D{j}((i+1):length(psnrTgrad1D{j})));
+            integral = sum(psnrTgrad1D{j}((i+1):end));
             area = integral/(16-curInd+1);
-            
-            %         plot(qBinEdgesTmp(curInd),psnrTgrad1D{j}(qBinEdgesTmp(curInd)),'*');%%%%%%%%%%%
-            %         text(qBinEdgesTmp(curInd),psnrTgrad1D{j}(qBinEdgesTmp(curInd)),num2str(curInd))
         end
+        
     end
     
-    assert(curInd==17,'was not able to devide to 16 bins')
+    assert(curInd==16,'was not able to devide to 16 bins')
     
+    %get the map
     mappp = zeros(64,1);
-    mappp(   ceil(   qBinEdgesTmp(2:end-1)/length(psnrTgrad1D{j})*64   )   ) = 1;
-    qBinEdges16Tmp = cumsum(mappp);
+    mappp(   ceil(   qBinEdgesIndTmp(2:end-1)/length(psnrTgrad1D{j})*64   )   ) = 1;
+    qBinEdgesInd16Tmp = cumsum(mappp);
     
-    assert(qBinEdges16Tmp(1)==0 && qBinEdges16Tmp(end)==15,'problem with 1D lut generation')
+    assert(qBinEdgesInd16Tmp(1)==0 && qBinEdgesInd16Tmp(end)==15,'problem with 1D lut generation')
     
-    qBinVals.(regType{mod(j,2)+1}) = round(mean([qBinEdgesTmp(1:end-1) qBinEdgesTmp(2:end)],2));
-    regs.DCOR.([regType{mod(j,2)+1} 'Map']) = uint8(qBinEdges16Tmp);
+    qBinValInds.(regType{mod(j,2)+1}) = round(mean([qBinEdgesIndTmp(1:end-1) qBinEdgesIndTmp(2:end)],2));
+    regs.DCOR.([regType{mod(j,2)+1} 'Map']) = uint8(qBinEdgesInd16Tmp);
     
 end
 
@@ -211,7 +216,7 @@ end
 psnrTfinal = zeros(16,16);
 for i=1:16
     for j=1:16
-        psnrTfinal(i,j) = psnrTReduced(qBinVals.ir(i),qBinVals.amb(j));
+        psnrTfinal(i,j) = psnrTReduced(qBinValInds.ir(i),qBinValInds.amb(j));
     end
 end
 
@@ -226,7 +231,7 @@ if(debug)
         plot(data,'lineWidth',3);hold on;
         maxVal = max(data);
         minVal = min(data);
-        x = qBinVals.(regType{j});
+        x = qBinValInds.(regType{j});
         y = minVal:maxVal;
         for i=1:16
             plot(x(i)*ones(size(y)),y,'k');
@@ -241,16 +246,14 @@ if(debug)
     
     subplot(222);cla;imagesc([MnSim(lowIndAmb) MnSim(highIndAmb)],[MsSim(lowIndIr) MsSim(highIndIr)],psnrTReduced);hold on;
     
-%     o = ones(,1);
     y = linspace(MsSim(lowIndIr), MsSim(highIndIr),size(psnrTReduced,1));
     for i=1:16
-        plot((MnSim(qBinVals.amb(i)+lowIndAmb-1))*ones(size(y)),y);
+        plot((MnSim(qBinValInds.amb(i)+lowIndAmb-1))*ones(size(y)),y);
     end
     
-%     o = ones(size(psnrTReduced,2),1);
-       x = linspace(MnSim(lowIndAmb), MnSim(highIndAmb),size(psnrTReduced,2));
+    x = linspace(MnSim(lowIndAmb), MnSim(highIndAmb),size(psnrTReduced,2));
     for i=1:16
-        plot(x,MsSim(qBinVals.ir(i)+lowIndIr-1)*ones(size(x)));
+        plot(x,MsSim(qBinValInds.ir(i)+lowIndIr-1)*ones(size(x)));
     end
     title('non linear quantization')
     ylabel('Ms == ir');xlabel('Mn == nest');
@@ -260,7 +263,6 @@ if(debug)
 end
 
 %% for unit test
-% unitTestS.a = alphaT;
 unitTestS.Ms = MsSim;
 unitTestS.Mn = MnSim;
 unitTestS.psnrT = psnrT;
