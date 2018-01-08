@@ -221,8 +221,8 @@ if(~isempty(traceOutDir) )
     Utils.buildTracer(tmpl_psnr_txt,'DCOR_tmpl_psnr',traceOutDir);
     
     %% template LUT trace
-    Utils.buildTracer(Utils.mat2hex(tmplF',1),'DCOR_fineTemplates',traceOutDir);
-    Utils.buildTracer(Utils.mat2hex(tmplC',1),'DCOR_coarseTemplates',traceOutDir);
+    Utils.buildTracer(Utils.mat2hex(tmplF,1),'DCOR_fineTemplates',traceOutDir);
+    Utils.buildTracer(Utils.mat2hex(tmplC,1),'DCOR_coarseTemplates',traceOutDir);
     
 end
 
