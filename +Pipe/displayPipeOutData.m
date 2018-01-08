@@ -26,10 +26,11 @@ imagescNAN(po.cImg,[0 15]);
 title('Confidence');axis image;colorbar;
 
 imH=subplot(223);
-imagescNAN(pd,pdlims);title(sprintf('Rotated z (z=%f)',planeabcd(end)));axis image;colorbar;
-hh = 0.01;
-aa=uicontrol('style','pushbutton','Units',imH.Units,'position',imH.Position.*[1 1 0 0]+[-hh -hh hh hh],'parent',f,'callback',{@callabck_setClim,imH})
-
+if(diff(pdlims)>0)
+    imagescNAN(pd,pdlims);title(sprintf('Rotated z (z=%f)',planeabcd(end)));axis image;colorbar;
+    hh = 0.01;
+    aa=uicontrol('style','pushbutton','Units',imH.Units,'position',imH.Position.*[1 1 0 0]+[-hh -hh hh hh],'parent',f,'callback',{@callabck_setClim,imH})
+end
 
 if(numel(pd)>10)
     profsX = arrayfun(@(x) pd(:,x),profileXlocs,'uni',false);
