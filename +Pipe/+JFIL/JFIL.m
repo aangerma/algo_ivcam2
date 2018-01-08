@@ -18,11 +18,11 @@ if(regs.JFIL.bypass)  %% do nothing.
         dImgFil=dImgFil(1);
         iImgFil=iImgFil(1);
         cImgFil=cImgFil(1);
-
+        
     end
-	          dNNOutput = [];
-        iNNOutput = []; 
-        BTStages = [];
+    dNNOutput = [];
+    iNNOutput = [];
+    BTStages = [];
 else
     % init jStream
     jStream = struct;
@@ -35,23 +35,24 @@ else
         jStream.debug = {{'Input',jStream.depth,jStream.ir,jStream.conf}};
     end
     Pipe.JFIL.checkStreamValidity(jStream,'JFIL input',true);
-     
-%     if regs.MTLB.loggerImgPixelIndex < length(jStream.depth(:)) &&...
-%             regs.MTLB.loggerImgPixelIndex >= 0
-%         lgrImgPixIndx = regs.MTLB.loggerImgPixelIndex+1;
-%     else
-%         lgrImgPixIndx = [];
-%     end
-%     lgr.print2file(sprintf('\tpixel = %d (linear indices)\n',lgrImgPixIndx));
+    
+    %     if regs.MTLB.loggerImgPixelIndex < length(jStream.depth(:)) &&...
+    %             regs.MTLB.loggerImgPixelIndex >= 0
+    %         lgrImgPixIndx = regs.MTLB.loggerImgPixelIndex+1;
+    %     else
+    %         lgrImgPixIndx = [];
+    %     end
+    %     lgr.print2file(sprintf('\tpixel = %d (linear indices)\n',lgrImgPixIndx));
     
     
     Pipe.JFIL.printjStream(lgr,jStream);
-
+    
     if(regs.GNRL.rangeFinder)
         jStream = Pipe.JFIL.maxPool(jStream, regs, luts,'maxPool',lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         dNNOutput = [];
         iNNOutput = [];
+        BTStages = [];
     else
         % Filters
         jStream = Pipe.JFIL.gradient    (jStream,  regs, luts, 'grad1', lgr,traceOutDir);
@@ -64,17 +65,17 @@ else
         Pipe.JFIL.printjStream(lgr,jStream);
         jStream = Pipe.JFIL.upscale     (jStream,  regs, luts, 'xyus', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
-
+        
         jStream = Pipe.JFIL.sortEdge    (jStream,  regs, luts, 'sort1Edge03', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         jStream = Pipe.JFIL.edge        (jStream,  regs, luts, 'edge4', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         jStream.features.featA=jStream.depth;
-%         lgr.print2file(sprintf('\tjStream.features.featA (1 value of pixel %d) = %X\n',lgrImgPixIndx,...
-%             jStream.features.featA(lgrImgPixIndx)));
+        %         lgr.print2file(sprintf('\tjStream.features.featA (1 value of pixel %d) = %X\n',lgrImgPixIndx,...
+        %             jStream.features.featA(lgrImgPixIndx)));
         BTStages.conf = jStream.conf;
         BTStages.preBT1 = jStream.depth;
-    
+        
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'bilt1', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         
@@ -83,33 +84,33 @@ else
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'biltIR', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         jStream.features.featB=jStream.depth;
-%         lgr.print2file(sprintf('\tjStream.features.featB (1 value of pixel %d) = %X\n',lgrImgPixIndx,...
-%             jStream.features.featB(lgrImgPixIndx)));
+        %         lgr.print2file(sprintf('\tjStream.features.featB (1 value of pixel %d) = %X\n',lgrImgPixIndx,...
+        %             jStream.features.featB(lgrImgPixIndx)));
         
         jStream = Pipe.JFIL.bilateral   (jStream,  regs, luts, 'bilt2', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
-
+        
         BTStages.BT2 = jStream.depth;
-            
+        
         jStream.dFeatures = Pipe.JFIL.featureExtrationD(jStream,  regs, luts, 'dFeatures', lgr,traceOutDir);
         jStream.iFeatures = Pipe.JFIL.featureExtrationI(jStream,  regs, luts, 'iFeatures', lgr,traceOutDir);
         
-%         if ~isempty(lgrImgPixIndx)
-%             [r,c] = ind2sub(size(jStream.depth),lgrImgPixIndx);
-%             lgr.print2file(sprintf('\tjStream.dFeatures (22 values of pixel %d) = %s\n',lgrImgPixIndx,...
-%                 reshape([dec2hexFast(jStream.dFeatures(r,c,:),5),repmat(' ',22,1)]',6*22,[])'));
-%         end
+        %         if ~isempty(lgrImgPixIndx)
+        %             [r,c] = ind2sub(size(jStream.depth),lgrImgPixIndx);
+        %             lgr.print2file(sprintf('\tjStream.dFeatures (22 values of pixel %d) = %s\n',lgrImgPixIndx,...
+        %                 reshape([dec2hexFast(jStream.dFeatures(r,c,:),5),repmat(' ',22,1)]',6*22,[])'));
+        %         end
         
         jStream = Pipe.JFIL.dnn        (jStream,  regs, luts, 'dnn', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         
         dNNOutput = jStream.depth;
         
-%         if ~isempty(lgrImgPixIndx)
-%             [r,c] = ind2sub(size(jStream.depth),lgrImgPixIndx);
-%             lgr.print2file(sprintf('\tjStream.iFeatures (14 values of pixel %d) = %s\n',lgrImgPixIndx,...
-%                 reshape([dec2hexFast(jStream.iFeatures(r,c,:),5),repmat(' ',14,1)]',6*14,[])'));
-%         end
+        %         if ~isempty(lgrImgPixIndx)
+        %             [r,c] = ind2sub(size(jStream.depth),lgrImgPixIndx);
+        %             lgr.print2file(sprintf('\tjStream.iFeatures (14 values of pixel %d) = %s\n',lgrImgPixIndx,...
+        %                 reshape([dec2hexFast(jStream.iFeatures(r,c,:),5),repmat(' ',14,1)]',6*14,[])'));
+        %         end
         jStream = Pipe.JFIL.inn        (jStream,  regs, luts, 'inn', lgr,traceOutDir);
         Pipe.JFIL.printjStream(lgr,jStream);
         
@@ -138,9 +139,9 @@ else
     if(regs.MTLB.debug)
         %%
         figKey = 338877;
-
+        
         [ny,nx]=goodLayout(length(jStream.debug));
-
+        
         ha = zeros(length(jStream.debug),3);
         fa=zeros(3,1);
         figNames = {'Depth','IR','Confidence'};
