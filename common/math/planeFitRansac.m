@@ -14,6 +14,12 @@ function [vec,distFromPlane,inliersOut] = planeFitRansac(x,y,z,fovMask,crit,verb
     xc = double(x(mask));
     yc = double(y(mask));
     zc = double(z(mask));  
+    if(nnz(mask)<3)
+        vec=zeros(4,1);
+        distFromPlane=nan(size(x));
+        inliersOut=false(size(x));
+        return;
+    end
     A = [xc(:) yc(:) zc(:)];
     
     [inliers, ~] = ransac(A, @planeRansacEval, @planeRansacErr, 'errorThr', crit, 'iterations', 1000, 'plotFunc', 'off');
