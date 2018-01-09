@@ -118,7 +118,8 @@ fminSearchOpt=struct('tolx',inf,'TolFun',THR,'OutputFcn',[],'MaxIter',30);
 % [xbest(1:3),fval]=fminsearchbnd(@(x) p2e(raw2xyzc(x,regs.DEST.baseline,raw),false),xbest(1:3),xL(1:3),xH(1:3),struct('Display','iter','OutputFcn',[]));
 figure(1);
 ah=arrayfun(@(i) subplot(2,2,i),1:4,'uni',false);ah=[ah{:}];
-
+u322s=@(v) typecast(uint32(v),'single');
+s2u32=@(v) typecast(single(v),'uint32');
 for i=1:5
     %% fov+delay
     [xbest(1:3),~]=fminsearchbnd(@(x) errFunc(x,fwc,runPipe,false),xbest(1:3),xL(1:3),xH(1:3),fminSearchOpt);
@@ -138,7 +139,9 @@ for i=1:5
     %% UNDISTORT
     
     [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
-        [undistx,undisty]=Calibration.aux.generateUndistTables(dataOut.iImg,dataOut.regs);
+       [~,s,d]=Calibration.aux.evalProjectiveDisotrtion(dataOut.iImg);
+        wh=fliplr(size(dataOut.iImg));
+        [~,undistx,undisty]=Calibration.aux.generateUndistTables(s,d,wh);
     %     quiver(s(:,1),s(:,2),d(:,1)-s(:,1),d(:,2)-s(:,2),'r');     hold on  ;   quiver(xg,yg,undistx,undisty,'g');     hold off
     
     
@@ -148,14 +151,8 @@ for i=1:5
     %       undistx=undistx-reshape([vec(udxg) oo]*([vec(udxg) oo]\vec(undistx)),32,32);
     %       undisty=undisty-reshape([vec(udyg) oo]*([vec(udyg) oo]\vec(undisty)),32,32);
     %
-    
-    
-    
     undistx_ = undistx_+undistx;
     undisty_ = undisty_+undisty;
-    
-    
-    
     
     %find optical params
     undistLuts.FRMW.undistModel=typecast(vec(single([undistx_(:) undisty_(:)])'./single([dataOut.regs.GNRL.imgHsize;dataOut.regs.GNRL.imgVsize])),'uint32');

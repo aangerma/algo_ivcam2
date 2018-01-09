@@ -4,7 +4,6 @@ if(nargin==1)
     % find checkboard corners
     im = double(im);
     im(im==0)=nan;
-    
     N=3;
     imv = im(Utils.indx2col(size(im),[N N]));
     bd = vec(isnan(im));
@@ -58,16 +57,20 @@ d=d(:,1:2)./d(:,3);
 ev = sqrt(sum((d-s).^2,2));
 e = rms(ev);
 
+s=s';
+d=d';
+
 if(1)
+    %%
 figure(343424);
 aa(1)=subplot(121);
 imagesc(im);title('Input');
 hold on
-plot(d(:,1),d(:,2),'.g',s(:,1),s(:,2),'ro');axis image
+plot(d(1,:),d(2,:),'.g',s(1,:),s(2,:),'ro');axis image
 colormap gray
 hold off
 aa(2)=subplot(122);
-quiver(s(:,1),s(:,2),d(:,1)-s(:,1),d(:,2)-s(:,2),'k');title(sprintf('Output (rms err = %f)',e));
+quiver(s(1,:),s(2,:),d(1,:)-s(1,:),d(2,:)-s(2,:),'k');title(sprintf('Output (rms err = %f)',e));
 set(aa(2),'ydir','reverse');
 axis image
 linkaxes(aa);

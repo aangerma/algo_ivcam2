@@ -1,13 +1,33 @@
-function [undistx,undisty]=generateUndistTables(im,regs)
+function [udistLUT,xg,yg,undistx,undisty]=generateUndistTables(s,d,wh)
+pmargin = 0.1;
+N=32;
+wh=fliplr(wh);
 
-[e,s,d]=Calibration.aux.evalProjectiveDisotrtion(im);
-bdpts=(interp1(0:4,[0 0;1 0;1 1;0 1;0 0],0:0.1:4)).*fliplr(size(im));
-s=[s;bdpts];d=[d;bdpts];
-tps=TPS(s,d-s);
-tod = @(v) double(v)/2^double(regs.DIGG.bitshift);
-[yg,xg]=ndgrid(1/tod(regs.DIGG.undistFy)*(0:31)+tod(regs.DIGG.undistY0),...
-    1/tod(regs.DIGG.undistFx)*(0:31)+tod(regs.DIGG.undistX0));
+x0 = -ceil(wh(1)*pmargin);
+x1 =  ceil(wh(1)*(1+pmargin));
+y0 = -ceil(wh(2)*pmargin);
+y1 =  ceil(wh(2)*(1+pmargin));
+distortionH=y1-y0;
+distortionW=x1-x0;
+fx = (N-1)/distortionW;
+fy = (N-1)/distortionH;
+
+
+ bdpts=interp1(0:4,[0 0;1 0;1 1;0 1;0 0],(0:0.1:4))'.*[distortionW;distortionH]+[x0;y0];
+ s=[s bdpts];d=[d bdpts];
+tps=TPS(s',d'-s');
+
+[yg,xg]=ndgrid(1/fy*(0:31)+y0,1/fx*(0:31)+x0);
 undist=tps.at([xg(:) yg(:)]);
 undistx=reshape(undist(:,1),size(xg));
 undisty=reshape(undist(:,2),size(yg));
+udistLUT = typecast(vec(single([undistx(:) undisty(:)]')./wh'),'uint32');
+
+
+% quiver(s(1,:),s(2,:),d(1,:)-s(1,:),d(2,:)-s(2,:))
+% rectangle('position',[1 1 wh])
+% hold on
+% quiver(xg,yg,undistx,undisty)
+% hold off
+
 end

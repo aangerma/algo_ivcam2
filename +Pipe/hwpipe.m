@@ -64,7 +64,7 @@ lgr.print('HWPipe finished in %4.2f sec\n', pipeOut.timeEval);
 
 
 %% x,y,z,r calculation (not part of ASIC)
-[pipeOut.vImg,pipeOut.rImg] = genVerts(pipeOut.zImg,regs);
+[pipeOut.vImg,pipeOut.rImg] = Pipe.z16toVerts(pipeOut.zImg,regs);
 
 
 
