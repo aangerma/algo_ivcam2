@@ -46,18 +46,6 @@ function [ResultTable,Cylinders] = cylindersMetric(vertices,Iir,distance,chartTy
     centersOut = centersOut(Idxs,:);
     radiiOut = radiiOut(Idxs,:);
     
-    if showFigs
-        figure(1);clf;
-        imagesc(Iir);axis image;
-        hold on
-        viscircles(centersOut,radiiOut,'EdgeColor','k');
-        viscircles(centersIn,radiiIn,'EdgeColor','r');
-        for i=1:size(centersIn,1)
-            text(centersIn(i,1), centersIn(i,2), sprintf('H %d x D %d',heights(i),diameters(i)))
-        end
-        hold off
-    end
-    
     
     Idxs = zeros(size(centersOut,1),1);
     for i=1:size(centersOut,1)
@@ -72,7 +60,20 @@ function [ResultTable,Cylinders] = cylindersMetric(vertices,Iir,distance,chartTy
     radiiOut(Idxs,:) = [];
     radiiIn(Idxs,:) = [];
     centers = (centersOut+centersIn)./2;
-    patchFactor = 2;
+
+    if showFigs
+        figure(1);clf;
+        imagesc(Iir);axis image;
+        hold on
+        viscircles(centersOut,radiiOut,'EdgeColor','k');
+        viscircles(centersIn,radiiIn,'EdgeColor','r');
+        for i=1:size(centersIn,1)
+            text(centers(i,1), centers(i,2), sprintf('%d: H%d x D%d',i, heights(i),diameters(i)))
+        end
+        hold off
+    end
+    
+    patchFactor = 1.4;
     fidSaftyOut = 3;
     fidSaftyIn = 0;
     innerRadFactor = 1;
