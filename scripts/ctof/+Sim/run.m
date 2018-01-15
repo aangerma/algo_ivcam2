@@ -126,10 +126,10 @@ if(params.verbose>0)
     mm = minmax([mm{:}]);
     fprintf('pre sampler range: [%g : %g]\n',mm);
 end
-mes = cell(nScenarios,1);
+mesQ = cell(nScenarios,1);
 nrm = @(s) round(min(1,max(0,(s-params.sensor.sampler.v0)/(params.sensor.sampler.v1-params.sensor.sampler.v0)))*(2^params.sensor.sampler.nbits-1));
  for s=1:length(mes)
-     mesQ{s} = uint64(nrm(mes{s}));
+     mesQ{s} = uint64(nrm(mes{s}))';
  end
 
 
