@@ -42,8 +42,15 @@ classdef FirmwareBase <handle
             
         end
         
-        function [regsData,indx]=getMeta(obj,regNameKey)
-            indx=regexpi({obj.m_registers.regName},regNameKey);
+        function [regsData,indx]=getMeta(obj,regTokens)
+            
+            if(~exist('regTokens','var') || isempty(regTokens))
+                regTokens={'.'};
+            elseif(~iscell(regTokens))
+                regTokens={regTokens};
+            end
+            
+            indx=regexpi({obj.m_registers.regName},regTokens);
             indx=cellfun(@(x) ~isempty(x),indx);
             regsData = obj.m_registers(indx);
         end
@@ -259,7 +266,7 @@ classdef FirmwareBase <handle
             end
         end
         
-
+        
         
         writeDefs4asic(obj, outputFn) %seperate implementation
         randomize(obj,outputFile,regsList)

@@ -33,7 +33,7 @@ else
     x(~roiMask)=nan;
 
 %     lutData = max(x.*(y>=0 & y<regs.GNRL.imgVsize))-min(x+((y<0 | y>regs.GNRL.imgVsize)*10000))+1+MIN_BUFFER_SIZE;
-     lutData = max(ceil(nanmax(x)-nanmin(x)),MIN_BUFFER_SIZE);
+     lutData = max(ceil(nanmax_(x)-nanmin_(x)),MIN_BUFFER_SIZE);
      lutData = min(lutData,MAX_BUFFER_SIZE);
     
 end
