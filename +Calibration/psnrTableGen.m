@@ -156,6 +156,7 @@ if(debug)
 end
 
 %% do non linear 2D quantization to get psnr LUT
+
 psnrTgrad = imgradient(psnrTReduced);
 psnrTgrad1D = cell(2,1);
 for j=1:length(regType)
@@ -202,19 +203,31 @@ for j=1:length(regType)
     
     assert(qBinEdges16Tmp(1)==0 && qBinEdges16Tmp(end)==15,'problem with 1D lut generation')
     
-    qBinVals.(regType{mod(j,2)+1}) = round(mean([qBinEdgesTmp(1:end-1) qBinEdgesTmp(2:end)],2));
+%     qBinVals.(regType{mod(j,2)+1}) = round(mean([qBinEdgesTmp(1:end-1) qBinEdgesTmp(2:end)],2));
+    qBinVals.(regType{mod(j,2)+1}) = (mean([qBinEdgesTmp(1:end-1) qBinEdgesTmp(2:end)],2));
+   
     regs.DCOR.([regType{mod(j,2)+1} 'Map']) = uint8(qBinEdges16Tmp);
     
 end
 
+%% Talm - Replaced 'for loop' with '2D interpolation' and scaled to the whole 0-63 range.
+[irInd,ambInd] = ndgrid(qBinVals.ir,qBinVals.amb); 
+psnrTfinal = interp2(psnrTReduced,ambInd,irInd);
+minPsnr = min(psnrTfinal(psnrTfinal>0));
+maxPsnr = max(psnrTfinal(psnrTfinal>0));
+psnrTfinal(isnan(psnrTfinal)) = 0;
+psnrTfinal(psnrTfinal==0) = minPsnr;
+psnrTfinal = round((psnrTfinal-minPsnr)/(maxPsnr-minPsnr)*(2^6-1));
 
-psnrTfinal = zeros(16,16);
-for i=1:16
-    for j=1:16
-        psnrTfinal(i,j) = psnrTReduced(qBinVals.ir(i),qBinVals.amb(j));
-    end
-end
-
+qBinVals.ir = round(qBinVals.ir);
+qBinVals.amb = round(qBinVals.amb);
+% 
+% psnrTfinal = zeros(16,16);
+% for i=1:16
+%     for j=1:16
+%         psnrTfinal(i,j) = psnrTReduced(round(qBinVals.ir(i)),round(qBinVals.amb(j)));
+%     end
+% end
 
 regs.DCOR.psnr = uint8(psnrTfinal(:));
 if(debug)
