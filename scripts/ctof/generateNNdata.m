@@ -1,5 +1,5 @@
 clear;
-N_SAMPLES=1e4
+N_SAMPLES=16e3;
 sz = [24 32];
 % params.model = '+dataGen\+Shapes\flat.stl';
 
@@ -21,7 +21,7 @@ params.scenario.data{1}.txmod = [0 tw0 0];
 params.scenario.data{1}.rxmod = [0 tw1 0];
 
 %albedo
- P=rand([sz 96*2])>.5;
+ P=randn([sz prod(sz)])>0;
 %     P = reshape(eye(prod(sz)),sz(1),sz(2),[])>0;
 params.scenario.data{2}.pat=P;
 params.scenario.data{2}.txmod = [0 tw1 tw1 0 ];
@@ -39,18 +39,21 @@ params.sensor.sampler.v1 = 1e-3; %v
 params.sensor.collectionArea = 1;%mm^2
 
 %% 
-fid = fopen('ctofNNdata.cfg','w');
-fprintf(fid,'[data]\nnfeatures=%d\nheight=%d\nwidth=%d',length([mes{:}]),sz);
-fclose(fid);
+
 fid = fopen('ctofNNdata.bin','w');
 
 for i=1:N_SAMPLES
 tt=tic;
-params.model=dataGen.generateRandomSecene(1);
+params.model=dataGen.generateRandomSecene(i);
 [mes,gt]=Sim.run(params);
-
+imagesc(gt.a);
+drawnow;
 fwrite(fid,typecast([single([mes{:}]) single([gt.rtdS(:);gt.a(:)])'],'uint32'),'uint32');
 tt=toc(tt);
 fprintf('%d ( %5.2fsec)\n',i,tt);
 end
+fclose(fid);
+
+fid = fopen('ctofNNdata.cfg','w');
+fprintf(fid,'[data]\nnfeatures=%d\nheight=%d\nwidth=%d',length([mes{:}]),sz);
 fclose(fid);
