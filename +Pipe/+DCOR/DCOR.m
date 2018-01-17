@@ -9,11 +9,12 @@ cma_ = min(63, bitshift(pflow.cma+1,-1));
     nC = double(regs.DCOR.coarseTmplLength);
 
 
-uint322uint4 = @(v) vec([bitshift(typecast(v,'uint8'),-4);bitand(typecast(v,'uint8'),uint8(15))]);
+uint82uint4 = @(v) vec([bitand(v(:),uint8(15)) bitshift(v(:),-4)]');
+mem2tbl = @(v) reshape(flipud(reshape(uint82uint4 (typecast(v,'uint8')),8,[])),[],64);
+tmplC = mem2tbl (luts.DCOR.tmpltCrse);
+tmplF = mem2tbl (luts.DCOR.tmpltFine);
 
-tmplC = reshape(uint322uint4(luts.DCOR.tmpltCrse),256,[]);
-tmplF = reshape(uint322uint4(luts.DCOR.tmpltFine),1024,[]);
-% rotate (asic bug)
+
 tmplF  = circshift(tmplF ,[-nF+16,16]);
 if (regs.DCOR.bypass || isempty(pflow.pixIndOutOrder)) %bypass or no pixels
     corrOffset = zeros(size(pflow.pipeFlags), 'uint16');
@@ -220,8 +221,8 @@ if(~isempty(traceOutDir) )
     Utils.buildTracer(tmpl_psnr_txt,'DCOR_tmpl_psnr',traceOutDir);
     
     %% template LUT trace
-    Utils.buildTracer(Utils.mat2hex(tmplF',1),'DCOR_fineTemplates',traceOutDir);
-    Utils.buildTracer(Utils.mat2hex(tmplC',1),'DCOR_coarseTemplates',traceOutDir);
+    Utils.buildTracer(Utils.mat2hex(tmplF,1),'DCOR_fineTemplates',traceOutDir);
+    Utils.buildTracer(Utils.mat2hex(tmplC,1),'DCOR_coarseTemplates',traceOutDir);
     
 end
 

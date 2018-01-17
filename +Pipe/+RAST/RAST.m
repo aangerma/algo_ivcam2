@@ -122,7 +122,7 @@ figure; plot(tColMax - tColMin);
 if (regs.MTLB.fastApprox(1))
     irCinv = 1./single(cmacOut.irC);
 else
-    irCinv = Utils.fp32('inv',single(irC));
+    irCinv = Utils.fp32('inv',single(cmacOut.irC));
 end
 
 ir = single(cmacOut.irA).*irCinv;

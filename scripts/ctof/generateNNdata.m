@@ -39,13 +39,17 @@ params.sensor.sampler.v1 = 1e-3; %v
 params.sensor.collectionArea = 1;%mm^2
 
 %% 
+fid = fopen('ctofNNdata.cfg','w');
+fprintf(fid,'[data]\nnfeatures=%d\nheight=%d\nwidth=%d',length([mes{:}]),sz);
+fclose(fid);
 fid = fopen('ctofNNdata.bin','w');
 
 for i=1:N_SAMPLES
 tt=tic;
 params.model=dataGen.generateRandomSecene(1);
 [mes,gt]=Sim.run(params);
-fwrite(fid,[uint16(mes{1});uint16(mes{2});uint16(mes{3});typecast(vec(single(gt.rtdS)),'uint16');typecast(vec(single(gt.a)),'uint16')],'uint16');
+
+fwrite(fid,typecast([single([mes{:}]) single([gt.rtdS(:);gt.a(:)])'],'uint32'),'uint32');
 tt=toc(tt);
 fprintf('%d ( %5.2fsec)\n',i,tt);
 end

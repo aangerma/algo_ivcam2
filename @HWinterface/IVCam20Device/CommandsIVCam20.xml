@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- CmdInterface:
+		1. I2cOnly
+		2. UvcOnly
+		3. UvcAndI2c
+		4. None
+	I2cCmdType:
+		1. ReadOnly
+		2. WriteOnly
+		3. ReadAfterWrite
+		4. ReadWrite
+	CmdPermission:
+		1.Public
+		2.Private
+-->
+<Commands FwVersion="5.135.4.14">
+  <!-- Custom formats -->
+  <CustomFormatter Name="productType" KeySize="Byte">
+    <KVP Key="0" Value="DS5" />
+    <KVP Key="1" Value="IVCAM 2.0" />
+    <KVP Key="2" Value="ds4" />
+  </CustomFormatter>
+  <CustomFormatter Name="depthCamera" KeySize="Byte">
+    <KVP Key="0" Value="No depth" />
+    <KVP Key="1" Value="Standard depth" />
+    <KVP Key="2" Value="Wide depth" />
+  </CustomFormatter>
+  <CustomFormatter Name="projectorType" KeySize="Byte">
+    <KVP Key="0" Value="HPTG" />
+    <KVP Key="1" Value="Princeton" />
+  </CustomFormatter>
+  <CustomFormatter Name="Boolean" KeySize="Byte">
+    <KVP Key="0" Value="NO" />
+    <KVP Key="1" Value="YES" />
+  </CustomFormatter>
+  <CustomFormatter Name="FlashStatus" KeySize="Byte">
+    <KVP Key="0" Value="Unlocked" />
+    <KVP Key="1" Value="Locked" />
+  </CustomFormatter>
+  <!-- Custom formats end -->
+  <Command Name="MRD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x01" I2cRegOffset="0x3008" I2cCmdType="ReadAfterWrite" CmdPermission="Public" ReadFormat="Doubles" IsReadCommand="true" Description="Read Tensilica memory ( 32bit ). Output : 32bit dump">
+    <Parameter1 Name="Offset" />
+    <Parameter2 Name="End Address" />
+  </Command>
+  <Command Name="MWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x02" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write Tensilica memory ( 32bit )">
+    <Parameter1 Name="Start Address" />
+    <Parameter2 Name="End Address" />
+    <Data Name="Data" IsReverseBytes="true" FormatLength="8" />
+  </Command>
+  <Command Name="IRB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x03" I2cRegOffset="0x3018" I2cCmdType="ReadAfterWrite" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Read from i2c ( 8x8 )">
+    <Parameter1 Name="Device ID" />
+    <Parameter2 Name="Offset" />
+    <Parameter3 Name="Size" />
+  </Command>
+  <Command Name="IRW" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x04" I2cRegOffset="0x301C" I2cCmdType="ReadAfterWrite" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Read from i2c ( 16x8 )">
+    <Parameter1 Name="Device ID" />
+    <Parameter2 Name="Offset" />
+    <Parameter3 Name="Size" />
+  </Command>
+  <Command Name="IRD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x05" I2cRegOffset="0x3020" I2cCmdType="ReadAfterWrite" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Read from i2c ( 32x8 )">
+    <Parameter1 Name="Device ID">
+    </Parameter1>
+    <Parameter2 Name="Offset">
+    </Parameter2>
+    <Parameter3 Name="Size">
+    </Parameter3>
+  </Command>
+  <Command Name="IWB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x06" I2cRegOffset="0x3024" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 8x8 )">
+    <Parameter1 Name="Device ID">
+    </Parameter1>
+    <Parameter2 Name="Offset">
+    </Parameter2>
+    <Parameter3 Name="Size">
+    </Parameter3>
+    <Data FormatLength="2" />
+  </Command>
+  <Command Name="IWW" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x07" I2cRegOffset="0x3028" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 16x8 )">
+    <Parameter1 Name="Device ID">
+    </Parameter1>
+    <Parameter2 Name="Offset">
+    </Parameter2>
+    <Parameter3 Name="Size">
+    </Parameter3>
+    <Data IsReverseBytes="false" FormatLength="2" />
+  </Command>
+  <Command Name="IWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x08" I2cRegOffset="0x302C" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 32x8 )">
+    <Parameter1 Name="Device ID">
+    </Parameter1>
+    <Parameter2 Name="Offset">
+    </Parameter2>
+    <Parameter3 Name="Size">
+    </Parameter3>
+    <Data IsReverseBytes="false" FormatLength="2" />
+  </Command>
+  <Command Name="FRB" CmdPipe="WinUsb" Opcode="0x09" IsReadCommand="true" ReadFormat="Bytes" Description="Read from flash">
+    <Parameter1 Name="StartIndex">
+    </Parameter1>
+    <Parameter2 Name="Size">
+    </Parameter2>
+  </Command>
+  <Command Name="FWB" CmdPipe="WinUsb" Opcode="0x0A" Description="Write to flash">
+    <Parameter1 Name="StartIndex">
+    </Parameter1>
+    <Parameter2 Name="Size">
+    </Parameter2>
+    <Data />
+  </Command>
+  <Command Name="FES" CmdPipe="WinUsb" Opcode="0x0B" Description="Erase flash sector">
+    <Parameter1 Name="Sector Index">
+    </Parameter1>
+    <Parameter2 Name="Number of Sectors">
+    </Parameter2>
+  </Command>
+  <Command Name="FEF" CmdPipe="WinUsb" Opcode="0x0C" Description="Erase flash full">
+    <Parameter1 Name="0xACE">
+    </Parameter1>
+  </Command>
+  <Command Name="FSRU" CmdPipe="WinUsb" Opcode="0x0D" Description="Flash status register unlock">
+  </Command>
+  <Command Name="FPLOCK" CmdPipe="WinUsb" Opcode="0x0E" Description="Permanent lock on lower Quarter region of the flash.">
+    <Parameter1 Name="Password" />
+  </Command>
+  <Command Name="GLD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x0F" I2cRegOffset="0xA00" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="LoggerCoreGetDataParams">
+    <Parameter1 Name="NumberOfBytes" IsDecimal="true" />
+  </Command>
+  <Command Name="GVD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x10" I2cRegOffset="0x200" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="Get Version and Date">
+    <ReadData>
+      <Section Name="StructureSize" Title="Structure size" Offset="0" Size="2" FormatType="HexNumber" />
+      <Section Name="StructureVersion" Title="Structure version" Offset="2" Size="1" FormatType="DecByte" />
+      <Section Name="ProductType" Title="Product type" Offset="3" Size="1" FormatType="productType" />
+      <Section Name="ProductID" Title="Product ID" Offset="4" Size="1" FormatType="HexNumber" />
+      <Section Name="AdvancedModeEnabled" Title="Advanced Mode" Offset="5" Size="1" FormatType="Boolean" />
+      <Section Name="FunctionalPayloadVersion" Title="FunctionalPayloadVersion" Offset="12" Size="4" FormatType="ChangeSetVersion" />
+      <Section Name="EyeSafetyPayloadVersion" Title="EyeSafety payload version" Offset="16" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="DfuPayloadVersion" Title="DFU payload version" Offset="20" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="FlashRoVersion" Title="Flash RO version" Offset="24" Size="1" FormatType="DecByte" />
+      <Section Name="FlashStatus" Title="Flash is locked" Offset="25" Size="1" FormatType="FlashStatus" />
+      <Section Name="FlashRwVersion" Title="Flash RW version" Offset="26" Size="1" FormatType="DecByte" />
+      <Section Name="StrapState" Title="Strap state" Offset="28" Size="4" FormatType="HexNumber" />
+      <Section Name="OemId" Title="OEM ID" Offset="32" Size="4" FormatType="HexNumber" />
+      <Section Name="ControlVendor" Title="Control vendor" Offset="36" Size="4" FormatType="HexNumber" />
+      <Section Name="MipiConfig" Title="MIPI config" Offset="40" Size="4" FormatType="HexNumber" />
+      <Section Name="MipiFrequencies" Title="MIPI Frequencies" Offset="44" Size="4" FormatType="HexNumber" />
+      <Section Name="OpticModuleSerial" Title="OpticModuleSerial" Offset="48" Size="6" FormatType="BarCodeSerial12Char" />
+      <Section Name="StereoModuleVersion" Title="Stereo module version" Offset="56" Size="1" FormatType="HexNumber" />
+      <Section Name="StereoModuleMm" Title="Stereo module mm#" Offset="60" Size="4" FormatType="HexNumber" />
+      <Section Name="AsicModuleSerial" Title="AsicModuleSerial" Offset="64" Size="6" FormatType="BarCodeSerial12Char" />
+      <Section Name="AsicModuleChipID" Title="Asic module chip ID" Offset="72" Size="6" FormatType="BarCodeSerial12Char" />
+      <Section Name="AsicModuleVersion" Title="Asic module version" Offset="80" Size="1" FormatType="HexNumber" />
+      <Section Name="AsicModuleMm" Title="Asic module mm#" Offset="84" Size="4" FormatType="HexNumber" />
+      <Section Name="LeftSensorID" Title="Left sensor ID" Offset="88" Size="2" FormatType="HexNumber" />
+      <Section Name="LeftSensorVersion" Title="Left sensor version" Offset="90" Size="1" FormatType="HexNumber" />
+      <Section Name="RightSensorID" Title="Right sensor ID" Offset="100" Size="2" FormatType="HexNumber" />
+      <Section Name="RightSensorVersion" Title="Right sensor version" Offset="102" Size="1" FormatType="HexNumber" />
+      <Section Name="FishEyeSensorID" Title="FishEye sensor ID" Offset="112" Size="2" FormatType="HexNumber" />
+      <Section Name="FishEyeSensorVersion" Title="FishEye sensor version" Offset="114" Size="1" FormatType="HexNumber" />
+      <Section Name="FishEyeSensorSN" Title="FishEye Sensor SN" Offset="116" Size="6" FormatType="BarCodeSerial12Char" />
+      <Section Name="ImuModuleID" Title="Imu module ID" Offset="124" Size="2" FormatType="HexNumber" />
+      <Section Name="ImuModuleVersion" Title="Imu module version" Offset="126" Size="1" FormatType="HexNumber" />
+      <Section Name="ImuModuleSN" Title="Imu module SN" Offset="130" Size="6" FormatType="BarCodeSerial12Char" />
+      <Section Name="RgbModuleID" Title="RGB module ID" Offset="138" Size="2" FormatType="HexNumber" />
+      <Section Name="RgbModuleVersion" Title="RGB module version" Offset="140" Size="1" FormatType="HexNumber" />
+      <Section Name="RgbModuleSN" Title="RGB module SN" Offset="142" Size="6" FormatType="BarCodeSerial12Char" />
+      <Section Name="RgbIspFWVersion" Title="RGB ISP FW" Offset="150" Size="2" FormatType="HexNumber" />
+      <Section Name="LaserDiodeVersion" Title="Laser diode version" Offset="152" Size="1" FormatType="HexNumber" />
+      <Section Name="WinUsbSupport" Title="WinUSB support" Offset="156" Size="1" FormatType="Bool" />
+      <Section Name="HwType" Title="HW type" Offset="160" Size="1" FormatType="HexNumber" />
+      <Section Name="SkuComponent " Title="SKU component" Offset="162" Size="1" FormatType="HexNumber" />
+      <Section Name="DepthCamera" Title="--&gt;Depth camera" Offset="166" Size="1" FormatType="depthCamera" />
+      <Section Name="DepthActiveMode" Title="--&gt;Depth active mode" Offset="170" Size="1" FormatType="Boolean" />
+      <Section Name="WithRGB" Title="--&gt;WithRGB" Offset="174" Size="1" FormatType="Boolean" />
+      <Section Name="WithImu" Title="--&gt;WithImu" Offset="178" Size="1" FormatType="Boolean" />
+      <Section Name="ProjectorType" Title="--&gt;Projector type" Offset="182" Size="1" FormatType="projectorType" />
+      <Section Name="EepromVersion" Title="EEPROM version" Offset="186" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="EepromModuleInfoVersion" Title="EEPROM module info version" Offset="188" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="AsicModuleInfoTableVersion" Title="Asic module info table version" Offset="190" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="CalibrationTableVersion" Title="Calibration table version" Offset="192" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="CoefficientsVersion" Title="--&gt;Coefficients sub table version" Offset="194" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="DepthVersion" Title="--&gt;Depth sub table  version" Offset="196" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="RgbVersion" Title="--&gt;RGB sub table  version" Offset="198" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="FishEyeVersion" Title="--&gt;FishEye sub table version" Offset="200" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="ImuVersion" Title="--&gt;IMU sub table version" Offset="202" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="LensShadingVersion" Title="--&gt;Lens Shading sub table  version" Offset="204" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="ProjectorVersion" Title="--&gt;Projector sub table version" Offset="206" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="SNVersion" Title="--&gt;SN sub table version" Offset="208" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="ThermalLoopTableVersion" Title="ThermalLoop table version" Offset="210" Size="2" FormatType="MajorMinorVersion" />
+    </ReadData>
+  </Command>
+  <Command Name="UPD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x11" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Public" Description="OTF update (shadow) ( 32bit )">
+    <Parameter1 Name="OTF MASK" IsReverseBytes="true" FormatLength="4" />
+  </Command>
+  <Command Name="UPDI" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x12" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Public" Description="OTF update immediate (shadow) ( 32bit )">
+    <Parameter1 Name="OTF MASK" IsReverseBytes="true" FormatLength="4" />
+  </Command>
+  <Command Name="GETCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x13" CmdPermission="Public" IsReadCommand="true" Description="Flash Read Calibration Table to HOST">
+    <Parameter1 Name="phase id" />
+  </Command>
+  <Command Name="SETCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x14" CmdPermission="Public" Description="Set Calibration Tables">
+    <Parameter1 Name="Region Type 0 - Not valid 1 - RW 2 - Both" />
+    <Parameter2 Name="phase id" />
+    <Data />
+  </Command>
+  <Command Name="GETINTCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x15" IsReadCommand="true" CmdPermission="Public" Description="Get Internal sub calibration table">
+    <Parameter1 Name="Table ID SerialNumber = 3, Coefficients = 19, Depth =  1f, RGB =  20, FishEye = 21, IMU = 22, LaserShading = 23, Projector = 24, ViewPoint = 25" />
+  </Command>
+  <Command Name="SETINTCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x16" CmdPermission="Public" Description="Set Internal sub calibration table">
+    <Parameter1 Name="Table ID" />
+    <Data />
+  </Command>
+  <Command Name="ERB" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x17" CmdPermission="Public" IsReadCommand="true" ReadFormat="Bytes" Description="Read from eeprom">
+    <Parameter1 Name="StartIndex">
+    </Parameter1>
+    <Parameter2 Name="Size">
+    </Parameter2>
+  </Command>
+  <Command Name="EWB" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x18" CmdPermission="Private" Description="Write to eeprom">
+    <Parameter1 Name="StartIndex">
+    </Parameter1>
+    <Parameter2 Name="Size">
+    </Parameter2>
+    <Data />
+  </Command>
+  <Command Name="GPWM" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x19" IsReadCommand="true" CmdPermission="Public" Description="Get PWM Laser range">
+    <ReadData>
+      <Section Name="MinValue" Title="MinValue" Offset="0" Size="2" FormatType="HexNumberTwoBytes" />
+      <Section Name="MaxValue" Title="MaxValue" Offset="2" Size="2" FormatType="HexNumberTwoBytes" />
+      <Section Name="NoOfSteps" Title="NoOfSteps" Offset="4" Size="2" FormatType="HexNumberTwoBytes" />
+    </ReadData>
+  </Command>
+  <Command Name="SPWM" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1A" CmdPermission="Public" Description="Set PWM Laser enable count">
+    <Parameter1 Name="Power Laser, 0 - disable 1 - enable" />
+  </Command>
+  <Command Name="INITCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1C" CmdPermission="Public" Description="Copy calibration tables from EEPROM to Flash">
+  </Command>
+  <Command Name="LOADINTCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1D" IsReadCommand="true" CmdPermission="Public" Description="Get Internal sub calibration table">
+    <Parameter1 Name="Table ID" />
+    <Parameter2 Name="0 - Flash 1 - EEPROM" />
+  </Command>
+  <Command Name="DFU" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1E" CmdPermission="Public" Description="Go to DFU">
+    <Parameter1 Name="Reset Type" />
+  </Command>
+  <Command Name="GETCALIBINPUTPARAMS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1f" IsReadCommand="true" CmdPermission="Public" Description="Get Calibration handler input parameters">
+  </Command>
+  <Command Name="RST" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x20" CmdPermission="Public" Description="HW Reset">
+  </Command>
+  <Command Name="GETFWRECCOEFF" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x21" IsReadCommand="true" CmdPermission="Public" Description="Get FW Rectification coefficients">
+    <Parameter1 Name="phase id" />
+  </Command>
+  <Command Name="RFBI" CmdInterface="UvcOnly" Opcode="0x22" CmdPermission="Public" Description="Burn a complete RealTek flash image">
+  </Command>
+  <Command Name="GLP" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x23" IsReadCommand="true" CmdPermission="Public" Description="Get Current Laser Optical Power">
+    <ReadData>
+      <Section Name="Laser Power" Title="Laser Power" Offset="0" Size="2" FormatType="HexNumberTwoBytes" />
+    </ReadData>
+  </Command>
+  <Command Name="GLEC" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x24" IsReadCommand="true" CmdPermission="Public" Description="Get PWM laser enable count">
+  </Command>
+  <Command Name="WTI" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x25" CmdPermission="Public" Description="Wait Time in ms">
+    <Parameter1 Name="delay_ms" />
+  </Command>
+  <Command Name="SETDISPSHIFT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x26" CmdPermission="Public" Description="Set disparity shift value">
+    <Parameter1 Name="disparity shift value" />
+  </Command>
+  <Command Name="SETMINMAXZ" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x27" CmdPermission="Public" Description="Set minimal and maximal Z value">
+    <Parameter1 Name="MinZ" />
+    <Parameter2 Name="MaxZ" />
+  </Command>
+  <Command Name="OBR" Opcode="0x28" IsReadCommand="true" Description="OVT Bypass Read">
+    <Parameter1 Name="Register address">
+    </Parameter1>
+  </Command>
+  <Command Name="OBW" Opcode="0x29" IsReadCommand="false" Description="OVT Bypass Write">
+    <Parameter1 Name="Register address">
+    </Parameter1>
+    <Parameter2 Name="Value to write">
+    </Parameter2>
+  </Command>
+  <Command Name="GTEMP" Opcode="0x2A" IsReadCommand="true" Description="Reads temperature from Stereo Module">
+  </Command>
+  <Command Name="AMCSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2B" CmdPermission="Public" Description="AMC_SET">
+    <Parameter1 Name="opcode" />
+    <Data IsReverseBytes="false" FormatLength="8" />
+  </Command>
+  <Command Name="AMCGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2C" IsReadCommand="true" CmdPermission="Public" Description="AMC_GET">
+    <Parameter1 Name="opcode" />
+    <Parameter2 Name="dataType" />
+  </Command>
+  <Command Name="UAME" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2D" CmdPermission="Public" Description="USB Advanced Mode Enable">
+    <Parameter1 Name="Advanced Mode enable" />
+  </Command>
+  <Command Name="TS_HEADER" Opcode="0x2E" Description="Set header timestamp">
+    <Parameter1 Name="STC start count" />
+  </Command>
+  <Command Name="TS_UNITS" Opcode="0x2F" Description="Set timestamp unit">
+    <Parameter1 Name="sclk units number ( must be &gt; 0 )" />
+  </Command>
+  <Command Name="UAMG" Opcode="0x30" IsReadCommand="true" Description="USB Advanced Mode Get">
+  </Command>
+  <Command Name="SETDEMOSAIC" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x31" CmdPermission="Public" Description="Update demosaic mode">
+    <Parameter1 Name="0 - Demosaic off, 1 - Demosaic on" />
+  </Command>
+  <Command Name="GETAESPT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x32" IsReadCommand="true" CmdPermission="Public" ReadFormat="Doubles" Description="Get AE setpoint">
+  </Command>
+  <Command Name="SETAESPT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x33" CmdPermission="Public" Description="Set AE setpoint">
+    <Parameter1 Name="Setpoint" />
+  </Command>
+  <Command Name="GETAEDRK" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x34" IsReadCommand="true" CmdPermission="Public" ReadFormat="Doubles" Description="Get AE dark threshold">
+  </Command>
+  <Command Name="SETAEDRK" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x35" CmdPermission="Public" Description="Set AE dark threshold">
+    <Parameter1 Name="Dark Threshold" />
+  </Command>
+  <Command Name="GETAEBRT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x36" IsReadCommand="true" CmdPermission="Public" ReadFormat="Doubles" Description="Get AE bright threshold">
+  </Command>
+  <Command Name="SETAEBRT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x37" CmdPermission="Public" Description="Set AE bright threshold">
+    <Parameter1 Name="Bright Threshold" />
+  </Command>
+  <Command Name="SETCOLCORR" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x38" CmdPermission="Public" Description="Set Color Correction Matrix">
+    <Parameter1 Name="0 - Matrix0, 1 - Matrix1, 2 - Matrix2" />
+  </Command>
+  <Command Name="MMRB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x39" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Read from MM i2c ( 8x8 )">
+    <Parameter1 Name="Offset" />
+    <Parameter2 Name="Size" />
+  </Command>
+  <Command Name="MMWB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x3A" CmdPermission="Private" Description="Write to MM i2c ( 8x8 )">
+    <Parameter1 Name="Offset" />
+    <Parameter2 Name="Size" />
+    <Data FormatLength="2" />
+  </Command>
+  <Command Name="PFD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3B" CmdPermission="Public" Description="Disable power features">
+    <Parameter1 Name="0 - Disable, 1 - Enable" />
+  </Command>
+  
+  <Command Name="PTENABLEMODE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3C" CmdPermission="Public" Description="Set projector tester enable mode">
+    <Parameter1 Name="Mode 0 - Dis, 1 - En, Wait for values, 2 - En, Load&Test EEPROM" />
+  </Command>
+  <Command Name="PTEYESAFETYVAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3D" CmdPermission="Public" Description="Set Projector tester eye safety values">
+    <Parameter1 Name="Count Max" />
+	<Parameter2 Name="Max Ratio" />
+	<Parameter3 Name="Invert Output" />
+  </Command>
+  <Command Name="PTWINDOWCNT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3E" CmdPermission="Public" Description="Set Projector tester windows count value" >
+    <Parameter1 Name="Window Count" />
+  </Command>
+  <Command Name="PTPWMSTART" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3F" CmdPermission="Public" Description="Start/Stop laser">
+    <Parameter1 Name="0 - Start 1 - Stop" />
+  </Command>
+    <Command Name="PTENABLEDISABLECNT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x40" CmdPermission="Public" Description="Start/Stop lase">
+    <Parameter1 Name="Enable count" />
+	<Parameter2 Name="Disable count" />
+  </Command>
+
+  <Command Name="CALIB_READ_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x43" CmdPermission="Public" IsReadCommand="true" Description="Read calibration table">
+    <Parameter1 Name="TableId" />
+  </Command>
+  <Command Name="CALIB_WRITE_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x44" CmdPermission="Public" Description="Write calibration table">
+    <Data/>
+  </Command>
+    <Command Name="CALIB_EXEC_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x45" CmdPermission="Public" Description="Execute calibration table">
+    <Parameter1 Name="Calibration Table Id" />
+  </Command>
+  
+  
+</Commands>
