@@ -24,6 +24,7 @@ end
 dnnWeightFile = fullfile(fileparts(p.calibFile),'dnnweights.csv');
 innWeightFile = fullfile(fileparts(p.calibFile),'innweights.csv');
 undistMdlFile = fullfile(fileparts(p.calibFile),'FRMWundistModel.bin32');
+dcorFineTmpltFile = fullfile(fileparts(p.calibFile),'DCORtmpltFine.bin32');
 
 if(exist(dnnWeightFile,'file'))
     fw.setRegs(dnnWeightFile);
@@ -37,6 +38,9 @@ if(exist(undistMdlFile,'file'))
     fw.setLut(undistMdlFile);
 end
 
+if(exist(dcorFineTmpltFile,'file'))
+    fw.setLut(dcorFineTmpltFile);
+end
 
 if(p.rewrite)
     fw.writeUpdated(p.configFile);

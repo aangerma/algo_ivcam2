@@ -213,7 +213,7 @@ for j=1:length(regType)
 end
 
 %% Talm - Replaced 'for loop' with '2D interpolation' and scaled to the whole 0-63 range.
-[irInd,ambInd] = ndgrid(qBinVals.ir,qBinVals.amb); 
+[irInd,ambInd] = ndgrid(qBinValInds.ir,qBinValInds.amb); 
 psnrTfinal = interp2(psnrTReduced,ambInd,irInd);
 minPsnr = min(psnrTfinal(psnrTfinal>0));
 maxPsnr = max(psnrTfinal(psnrTfinal>0));
@@ -221,8 +221,8 @@ psnrTfinal(isnan(psnrTfinal)) = 0;
 psnrTfinal(psnrTfinal==0) = minPsnr;
 psnrTfinal = round((psnrTfinal-minPsnr)/(maxPsnr-minPsnr)*(2^6-1));
 
-qBinVals.ir = round(qBinVals.ir);
-qBinVals.amb = round(qBinVals.amb);
+qBinValInds.ir = round(qBinValInds.ir);
+qBinValInds.amb = round(qBinValInds.amb);
 
 
 regs.DCOR.psnr = uint8(psnrTfinal(:));
