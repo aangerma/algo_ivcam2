@@ -270,6 +270,9 @@ end
 unitTestS.Ms = MsSim;
 unitTestS.Mn = MnSim;
 unitTestS.psnrT = psnrT;
+fw=Firmware;
+fw.setRegs(regs,[]);
+fw.disp('irStartLUT|irLUTExp|ambStartLUT|ambLUTExp|ambMap|irMap|psnr');
 end
 
 
