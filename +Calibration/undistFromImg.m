@@ -12,8 +12,10 @@ if(verbose)
     figure(sum('filecalib'));
     clf;
     imagesc(im);
-    colorbar gray
-    quiver(xg,yg,undistx,undisty);
+    colormap gray
+    hold on
+    quiver(uxg,uyg,undistx,undisty);
+    hold off
     title(sprintf('Projective error: %f',e));
 end
 
