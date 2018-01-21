@@ -27,7 +27,7 @@ classdef HWinterface <handle
         end
         
         
-         
+        
         
         
         function obj = HWinterface(fw)
@@ -37,7 +37,7 @@ classdef HWinterface <handle
             
             obj.m_fw = fw;
             obj.privInitCam();
-
+            
         end
         
         
@@ -79,16 +79,16 @@ classdef HWinterface <handle
         end
         
         
-          function res = cmd(obj,str)
+        function res = cmd(obj,str)
             sysstr = System.String(str);
             result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
             if(~result.IsCompletedOk)
                 error(char(result.ErrorMessage))
             end
             res = char(result.ResultFormatted);
-          end
+        end
         
-              function frame = getFrame(obj)
+        function frame = getFrame(obj)
             imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
             % get depth
             imageObj = imageCollection.Images.Item(0);
