@@ -5,13 +5,22 @@
 % addition, the name of the test that was used to output these results
 % should be noted.
 
-recordingsPath = 'X:\Data\IvCam2\NN\DCOR\IRFullRange';
-testName = 'cross_entropy_plus_min_z';
+recordingsPath = 'X:\Data\IvCam2\NN\DCOR\IRFullRange8G';
+% testName = 'cross_entropy_plus_min_z_shifted_data_augmented';
+% testName = 'logistic_or_min_z_augmented_adam';
+% testName = 'depth_l1_shifted_data_init_bin_or_avg';
+% testName = 'cross_entropy_plus_min_z_shifted_data_init_bin_or_avg';
+
+% testName = 'cross_entropy_or_min_z_augmented_adam';
+% testName = 'logistic_or_min_z_augmented_adam';
+testName = 'depth_l1_augmented_adam';
+% testName = 'cross_entropy_soft_augmented_adam';
 
 rangeDirs = dir(recordingsPath);
 rangeDirs = rangeDirs(3:end);
 rangeDirs = rangeDirs([rangeDirs.isdir]);%rangeDirs: Contains a list of the directories - each directory has the recordings for a specific range of psnr/ir
 
+% rangeDirs = rangeDirs(end-1);
 % Load results per range
 results = cellfun(@(p) load(fullfile(recordingsPath,p,testName,'results.mat')),{rangeDirs.name},'UniformOutput',false);
 % Add the results to the rangeDir struct array
@@ -28,13 +37,16 @@ results = cellfun(@(p) load(fullfile(recordingsPath,p,testName,'results.mat')),{
 
 errors = {'exact_sample_acc','mean_z_error'};
 title_vec = {'Exact Sample Acc Per Range','Mean Z Error'};
-ylab_vec = {'Percentage','mm'};
+ylab_vec = {'Percentage','m'};
 
-tempNames = {'Binary','Avg','Learned'};
+tempNames = {'Binary','Avg','BestSoFar','LearnedFl'};
+% tempNames = {'Binary','Avg','Learned'};
 modeNames = {'train','val'};
 % Define a cell which will convert to table. The columns are -
 % [error,range,binary,avg,learned]
-errCell = cell(numel(errors)*numel(rangeDirs),2+numel(tempNames));
+errCellVal = cell(numel(errors)*numel(rangeDirs),2+numel(tempNames));
+errCellTrain = cell(numel(errors)*numel(rangeDirs),2+numel(tempNames));
+
 
 for errI = 1:numel(errors)
     
@@ -56,10 +68,12 @@ for errI = 1:numel(errors)
         
     end
     rowsInd = 1 + (errI-1)*numel(rangeDirs):errI*numel(rangeDirs);
-    errCell(rowsInd,1) = {err};
-    errCell(rowsInd,2) = {rangeDirs(:).name}';
-    errCell(rowsInd,3:5) = num2cell(barData(:,2:2:2*numel(tempNames)));
-    
+    errCellVal(rowsInd,1) = {err};
+    errCellVal(rowsInd,2) = {rangeDirs(:).name}';
+    errCellVal(rowsInd,3:2+numel(tempNames)) = num2cell(barData(:,2:2:2*numel(tempNames)));
+    errCellTrain(rowsInd,1) = {err};
+    errCellTrain(rowsInd,2) = {rangeDirs(:).name}';
+    errCellTrain(rowsInd,3:2+numel(tempNames)) = num2cell(barData(:,1:2:2*numel(tempNames)-1));
     figure
     
     hb = bar( barData, 'grouped');
@@ -73,6 +87,9 @@ end
 
 % Show the validation data as a table per error.
 % The rows are the error criteria per range, the columns are the templates
-T = cell2table(errCell,...
-    'VariableNames',{'Error' 'Range' 'Binary' 'Average' 'Learned'});
+T = cell2table(errCellTrain,...
+    'VariableNames',{'Error' 'Range' 'Binary' 'Average' 'Best' 'LearnedFl'});
+disp(T)
+T = cell2table(errCellVal,...
+    'VariableNames',{'Error' 'Range' 'Binary' 'Average' 'Best' 'LearnedFl'});
 disp(T)
