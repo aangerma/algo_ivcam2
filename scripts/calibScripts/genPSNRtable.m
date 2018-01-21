@@ -1,4 +1,4 @@
-function [regs, unitTestS] = psnrTableGen(Mcw,isDebug,isFast)
+function [regs, unitTestS] = genPSNRtable(Mcw,isDebug,isFast)
 %% flags
 if(nargin==0)
     Mcw = uint16(2^8);
