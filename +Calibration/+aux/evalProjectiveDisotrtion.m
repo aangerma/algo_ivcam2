@@ -60,7 +60,7 @@ e = rms(ev);
 s=s';
 d=d';
 
-if(1)
+if(0)
     %%
 figure(343424);
 aa(1)=subplot(121);

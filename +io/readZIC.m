@@ -15,6 +15,10 @@ end
 i = dirFiles(fldr,'IR*.bin');
 z = dirFiles(fldr,'Depth*.bin');
 c = dirFiles(fldr,'Conf*.bin');
+if(isempty([i;z;c]))
+    s=[];
+    return;
+end
 res = determineRes([i;z;c]);
 
 zn=cellfun(@(x) fn2num(x),z);
