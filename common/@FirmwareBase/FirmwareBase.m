@@ -215,7 +215,7 @@ classdef FirmwareBase <handle
         end
         
         function txtout=genMWDcmd(obj,regTokens,outfn)
-            obj.privBootCalcs();
+            
             if(~exist('regTokens','var') || isempty(regTokens))
                 regTokens={'.'};
             elseif(~iscell(regTokens))

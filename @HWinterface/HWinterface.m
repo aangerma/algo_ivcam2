@@ -61,11 +61,11 @@ classdef HWinterface <handle
         end
         
         
-        function write(obj,regTokens)
+        function [regs,luts]=write(obj,regTokens)
             if(~exist('regTokens','var'))
                 regTokens=[];
             end
-            
+            [regs,luts]=obj.m_fw.get();%force bootcalcs
             meta = obj.m_fw.genMWDcmd(regTokens);
             meta = str2cell(meta,newline);
             meta(end) = [];%only newLine
