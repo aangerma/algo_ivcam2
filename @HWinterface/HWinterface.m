@@ -134,7 +134,7 @@ classdef HWinterface <handle
         
         function stopStream(obj)
             obj.m_dotnetcam.Close();
-            fn = fullfile(pwd,'IVCam20Scripts','SW_Reset.txt');
+            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','SW_Reset.txt');
             obj.runScript(fn)
         end
         
@@ -142,7 +142,7 @@ classdef HWinterface <handle
         
         
         function restartStream(obj)
-            fn = fullfile(pwd,'IVCam20Scripts','Restart_ma_pipe.txt');
+            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','Restart_ma_pipe.txt');
             obj.runScript(fn)
             obj.privConfigureStream();
         end
@@ -151,7 +151,12 @@ classdef HWinterface <handle
         
         
         function runScript(obj,fn)
-            obj.cmd(['apbwf ' fn]);
+%                      sysstr = System.String(fn);
+            result = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
+%             if(~result.IsCompletedOk)
+%                 error(char(result.ErrorMessage))
+%             end
+%             res = char(result.ResultFormatted);
         end
     end
 end
