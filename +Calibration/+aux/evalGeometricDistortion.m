@@ -3,10 +3,11 @@ function [e,ptsOut]=evalGeometricDistortion(p,verbose)
 tileSizeMM = 30;
 h=size(p,1);
 w=size(p,2);
+p=p(:,:,1:3);
 [oy,ox]=ndgrid(linspace(-1,1,h)*(h-1)*tileSizeMM/2,linspace(-1,1,w)*(w-1)*tileSizeMM/2);
 ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
-xyzmes =reshape(p,[],4)';
-xyzmes=xyzmes(1:3,:);
+xyzmes =reshape(p,[],3)';
+
 
 
     %find best plane
