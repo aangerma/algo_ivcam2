@@ -120,7 +120,13 @@ if(contains(ivsFilename,'::'))
         
     end
 end
-[basedir, subDir] = fileparts(ivsFilename);
+if(exist(ivsFilename,'file')~=7)%check for file
+    [basedir, subDir] = fileparts(ivsFilename);
+elseif(exist(ivsFilename,'dir'))
+    [basedir, subDir] = fileparts(fullfile(ivsFilename,filesep));
+else
+    error('Could not file file/folder %s',ivsFilename);
+end
 defs.outputDir = fullfile(basedir,filesep,subDir,filesep);
 defs.calibfn = fullfile(basedir,filesep,'calib.csv');
 defs.configfn =fullfile(basedir,filesep,'config.csv');
