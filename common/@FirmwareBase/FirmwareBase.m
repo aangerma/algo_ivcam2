@@ -155,7 +155,7 @@ classdef FirmwareBase <handle
                     end
                     
                     if(length(obj.m_luts(indx).data) ~=length(lut))
-                        error('Bad LUT %s length (expected: %d,actual: %d)',lutName,length(obj.m_luts(indx).data),length(lut));
+                        error('Bad LUT %s length (expected: %dx%db,actual: %dx%db)',lutName,length(obj.m_luts(indx).data),obj.m_luts(indx).elemSize,length(lut),obj.m_luts(indx).elemSize);
                     end
                     obj.m_luts(indx).data = lut;
                 end
