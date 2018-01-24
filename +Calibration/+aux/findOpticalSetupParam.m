@@ -141,7 +141,7 @@ for i=1:5
     [~,dataOut] = errFunc(xbest,fwc,runPipe,ah(1));
        [~,s,d]=Calibration.aux.evalProjectiveDisotrtion(dataOut.iImg);
         wh=fliplr(size(dataOut.iImg));
-        [~,undistx,undisty]=Calibration.aux.generateUndistTables(s,d,wh);
+        [~,xg,yg,undistx,undisty]=Calibration.aux.generateUndistTables(s,d,wh);
     %     quiver(s(:,1),s(:,2),d(:,1)-s(:,1),d(:,2)-s(:,2),'r');     hold on  ;   quiver(xg,yg,undistx,undisty,'g');     hold off
     
     
