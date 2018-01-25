@@ -12,11 +12,11 @@ xyzmes =reshape(p,[],3)';
 
     %find best plane
     [mdl,d,in]=planeFit(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),[],200);
-    if(nnz(in)/numel(in)<.90)
-        e=1e3;
-        ptsOut=xyzmes;
-        return;
-    end
+%     if(nnz(in)/numel(in)<.90)
+%         e=1e3;
+%         ptsOut=xyzmes;
+%         return;
+%     end
     pvc=xyzmes-mean(xyzmes(:,in),2);
 %     
     %project all point to plane

@@ -58,7 +58,7 @@ else
     distortionW=x1-x0;
     fx = (N-1)/distortionW;
     fy = (N-1)/distortionH;
-    if(~isfield(luts,'FRMW') || ~isfield(luts.FRMW,'undistModel') || all(luts.FRMW.undistModel)==0)
+    if(~isfield(luts,'FRMW') || ~isfield(luts.FRMW,'undistModel') || all(luts.FRMW.undistModel==0))
         xDisplacment=zeros(32,'single');
         yDisplacment=zeros(32,'single');
     else
