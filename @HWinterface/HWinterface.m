@@ -15,7 +15,18 @@ classdef HWinterface <handle
     end
     
     methods (Access=private)
-        privInitCam(obj)
+        privInitCam(obj);
+        privConfigureStream(obj);
+        
+        function res = cmd(obj,str)
+            sysstr = System.String(str);
+            result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
+            if(~result.IsCompletedOk)
+                error(char(result.ErrorMessage))
+            end
+            res = char(result.ResultFormatted);
+        end
+        
     end
     
     
@@ -27,7 +38,7 @@ classdef HWinterface <handle
         end
         
         
-         
+        
         
         
         function obj = HWinterface(fw)
@@ -37,7 +48,7 @@ classdef HWinterface <handle
             
             obj.m_fw = fw;
             obj.privInitCam();
-
+            obj.privConfigureStream();
         end
         
         
@@ -46,8 +57,7 @@ classdef HWinterface <handle
         function read(obj,regTokens)
             if(~exist('regTokens','var'))
                 regTokens=[];
-            end
-            
+            end           
             
             meta = obj.m_fw.genMWDcmd(regTokens);
             meta = str2cell(meta,newline);
@@ -61,11 +71,15 @@ classdef HWinterface <handle
         end
         
         
-        function write(obj,regTokens)
+        
+        
+        
+        
+        function [regs,luts]=write(obj,regTokens)
             if(~exist('regTokens','var'))
                 regTokens=[];
             end
-            
+            [regs,luts]=obj.m_fw.get();%force bootcalcs
             meta = obj.m_fw.genMWDcmd(regTokens);
             meta = str2cell(meta,newline);
             meta(end) = [];%only newLine
@@ -78,17 +92,13 @@ classdef HWinterface <handle
             
         end
         
+       
         
-          function res = cmd(obj,str)
-            sysstr = System.String(str);
-            result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
-            if(~result.IsCompletedOk)
-                error(char(result.ErrorMessage))
-            end
-            res = char(result.ResultFormatted);
-          end
         
-              function frame = getFrame(obj)
+        
+        
+        
+        function frame = getFrame(obj)
             imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
             % get depth
             imageObj = imageCollection.Images.Item(0);
@@ -117,6 +127,36 @@ classdef HWinterface <handle
                 tabplot;imagesc(frame.i);
                 tabplot;imagesc(frame.c);
             end
+        end
+        
+        
+        
+        
+        function stopStream(obj)
+            obj.m_dotnetcam.Close();
+            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','SW_Reset.txt');
+            obj.runScript(fn)
+        end
+        
+        
+        
+        
+        function restartStream(obj)
+            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','Restart_ma_pipe.txt');
+            obj.runScript(fn)
+            obj.privConfigureStream();
+        end
+        
+        
+        
+        
+        function runScript(obj,fn)
+%                      sysstr = System.String(fn);
+            result = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
+%             if(~result.IsCompletedOk)
+%                 error(char(result.ErrorMessage))
+%             end
+%             res = char(result.ResultFormatted);
         end
     end
 end

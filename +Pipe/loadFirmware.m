@@ -24,6 +24,9 @@ end
 dnnWeightFile = fullfile(fileparts(p.calibFile),'dnnweights.csv');
 innWeightFile = fullfile(fileparts(p.calibFile),'innweights.csv');
 undistMdlFile = fullfile(fileparts(p.calibFile),'FRMWundistModel.bin32');
+dcorFineTmpltFile = fullfile(fileparts(p.calibFile),'DCORtmpltFine.bin32');
+dcorCrseTmpltFile = fullfile(fileparts(p.calibFile),'DCORtmpltCrse.bin32');
+
 
 if(exist(dnnWeightFile,'file'))
     fw.setRegs(dnnWeightFile);
@@ -37,6 +40,12 @@ if(exist(undistMdlFile,'file'))
     fw.setLut(undistMdlFile);
 end
 
+if(exist(dcorFineTmpltFile,'file'))
+    fw.setLut(dcorFineTmpltFile);
+end
+if(exist(dcorCrseTmpltFile,'file'))
+    fw.setLut(dcorCrseTmpltFile);
+end
 
 if(p.rewrite)
     fw.writeUpdated(p.configFile);
@@ -111,7 +120,13 @@ if(contains(ivsFilename,'::'))
         
     end
 end
-[basedir, subDir] = fileparts(ivsFilename);
+if(exist(ivsFilename,'file')~=7)%check for file
+    [basedir, subDir] = fileparts(ivsFilename);
+elseif(exist(ivsFilename,'dir'))
+    [basedir, subDir] = fileparts(fullfile(ivsFilename,filesep));
+else
+    error('Could not file file/folder %s',ivsFilename);
+end
 defs.outputDir = fullfile(basedir,filesep,subDir,filesep);
 defs.calibfn = fullfile(basedir,filesep,'calib.csv');
 defs.configfn =fullfile(basedir,filesep,'config.csv');

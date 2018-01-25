@@ -1,0 +1,9 @@
+mwd a0010100 a0010104 11000000  // pmg_pmg. RegsPmgDepthEn        -  close algo pipe, but keep usb on
+mwd a00c0100 a00c0104 00000000  // pmg_dpt_pmg. RegsPmgDptEn      – close PI,ANSYNC
+mwd a001000c a0010010 ffe13373  // pmg_pmg. RegsPmgClkEn              – close Anclk (fast clock goes to afe)
+mwd a0010050 a0010054 00000000  // pmg_pmg. RegsPmgAnalogRstN    - reset afe counters
+mwd a003011c a0030120 00000000 //bgen
+mwd a0030154 a0030158 00000000 //ldo en 
+mwd a0030064 a0030068 00000000 //sipo pdo en
+mwd a0030020 a0030024 00000000 // cmp en 
+mwd a00d01f4 a00d01f8 00000800 // shadow update Imm to afe only

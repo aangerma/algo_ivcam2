@@ -50,15 +50,19 @@ tbl2uint32 = @(t) typecast(vec(flipud(reshape(uint8(sum(bsxfun(@bitshift,reshape
 tmplF = templates;
 % replicate to 1024
 tmplF = tmplF(mod(0:1023,nF)+1,:);
- tmplF  = circshift(tmplF ,[nF-16,-16]);
-autogenLuts.DCOR.tmpltFine = tbl2uint32(tmplF);
+tmplF  = circshift(tmplF ,[nF-16,-16]);
+if(all(luts.DCOR.tmpltFine==0))%already set using aux file, do not set!
+    autogenLuts.DCOR.tmpltFine = tbl2uint32(tmplF);
+end
 %% gen coarse
 
 %corse from fine
 tmplC=bitshift(uint8(permute(sum(reshape(templates,downSamplingR,[],size(templates,2))),[2 3 1])),-double(autogenRegs.DCOR.decRatio));
 % replicate to 256
 tmplC = tmplC(mod(0:255,nC)+1,:);
-autogenLuts.DCOR.tmpltCrse = tbl2uint32(tmplC);
+if(all(luts.DCOR.tmpltCrse==0))%already set using aux file, do not set!
+    autogenLuts.DCOR.tmpltCrse = tbl2uint32(tmplC);
+end
 %% PSNR
 % this should be calculated offline (not firmware)
 % psnrRegs = Pipe.DCOR.FRMW.genPSNRregs();
