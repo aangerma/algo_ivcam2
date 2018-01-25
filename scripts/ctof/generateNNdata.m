@@ -42,25 +42,23 @@ params.sensor.collectionArea = 1;%mm^2
 outputfldr = '\\algonas\Root\Data\cToF\simData';
 cnt = 0;
 while(true)
-    ifn = sprintf('%s\\simdataI_%06d.bin',outputfldr,cnt);
-    ofn = sprintf('%s\\simdataO_%06d.bin',outputfldr,cnt);
+    fn = sprintf('%s\\simdata_%06d.bin',outputfldr,cnt);
     
-    if(~exist(ifn,'file'))
-        fidi=fopen(ifn,'w');
-        fido=fopen(ofn,'w');
+    
+    if(~exist(fn,'file'))
+        fid=fopen(fn,'w');
+        
         for i=1:N_SAMPLES_PER_BATCH
             tt= tic;
             randseed = (cnt*N_SAMPLES_PER_BATCH+i-1);
             params.model=dataGen.generateRandomSecene(randseed);
             [mes,gt]=Sim.run(params);
             mesv=single([mes{1} vec([mes{2};mes{3}])']);
-            fwrite(fidi,typecast(mesv,'uint32'),'uint32');
-            fwrite(fido,typecast(single([gt.rtdS(:);gt.a(:)])','uint32'),'uint32');
+            fwrite(fid,typecast([single([mes{:}]) single([gt.rtdS(:);gt.a(:)])'],'uint32'),'uint32');
             tt=toc(tt);
             fprintf('Done(%4d sec) %5d %4d/%4d\n',round(tt),cnt,i,N_SAMPLES_PER_BATCH)
         end
-        fclose(fidi);
-        fclose(fido);
+        fclose(fid);
         
     end
     cnt=cnt+1;
