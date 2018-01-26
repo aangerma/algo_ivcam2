@@ -94,7 +94,9 @@ classdef HWinterface <handle
         
        
         
-        
+        function fw=getFirmware(obj)
+            fw=obj.m_fw;
+        end
         
         
         
