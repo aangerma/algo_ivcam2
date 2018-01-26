@@ -1,4 +1,4 @@
-function regs=calibDFZ(d,regs,verbose)
+function [outregs,minerr]=calibDF(d,regs,verbose)
 if(~exist('verbose','var'))
     verbose=true;
 end
@@ -9,7 +9,7 @@ im(im==0)=nan;
 N=3;
 imv = im(Utils.indx2col(size(im),[N N]));
 bd = vec(isnan(im));
-im(bd)=nanmedian(imv(:,bd));
+im(bd)=nanmedian_(imv(:,bd));
 [p,bsz] = detectCheckerboardPoints(normByMax(im));
 
 [~,r] = Pipe.z16toVerts(d.z,regs);
@@ -27,11 +27,17 @@ if(verbose)
 end
 
 x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1)]);
-xL = [20 20 4000];
-xH = [90 90 10000];
-xbest=fminsearchbnd(@(x) errFunc(rtd,it,x),x0,xL,xH,opt);
-[~,v]=errFunc(rtd,it,xbest);
-regs = x2regs(xbest);
+xL = [20 20 0000];
+xH = [90 90 20000];
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(rtd,it,x),x0,xL,xH,opt);
+
+outregs.FRMW.xfov=single(xbest(1));
+outregs.FRMW.yfov=single(xbest(2));
+outregs.DEST.txFRQpd=[1 1 1]*single(xbest(3));
+if(verbose)
+    [~,v]=errFunc(rtd,it,xbest);
+    Calibration.aux.evalGeometricDistortion(v,verbose);
+end
 end
 
 
@@ -43,7 +49,8 @@ trigoRegs.DEST.hbaseline=false;
 trigoRegs.DEST.baseline=30;
 trigoRegs.DEST.baseline2=trigoRegs.DEST.baseline^2;
 trigoRegs.DEST.depthAsRange=false;
-[z,~,x,y]=Pipe.DEST.rtd2depth(rtd,trigoRegs);
+rtd_=rtd-regs.DEST.txFRQpd(1);
+[z,~,x,y]=Pipe.DEST.rtd2depth(rtd_,trigoRegs);
 v=cat(3,it(x),it(y),it(z));
 e=Calibration.aux.evalGeometricDistortion(v);
 end
