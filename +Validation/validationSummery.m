@@ -1,37 +1,88 @@
 function validationSummery(dirPath)
+vis = 'off';
+
+
 if(nargin==0)
-    dirPath = 'C:\Users\ychechik\Desktop\testPlanefit';
+    dirPath = '\\ger\ec\proj\ha\perc\SA_3DCam\Algorithm\YONI\testPlanefit';%'C:\Users\ychechik\Desktop\testPlanefit';
 end
+
+s = build4start(dirPath,vis);
+startHTML(s);
+
 %% Temporal spatial noise
-temporalSpatialNoise(dirPath);
+%  temporalSpatialNoise(s);
 
 %% Spatial distortion
-spatialDistortion(dirPath);
+spatialDistortion(s);
 
 %% Temporal depth noise
-temporalDepthNoise(dirPath);
+temporalDepthNoise(s);
 
 %% zSTD
-zSTD(dirPath);
+zSTD(s);
 
 %% fill rate
-fillRate(dirPath);
+fillRate(s);
+
+
+closeHTML(s)
+end
+
+function s = build4start(dirPath,vis)
+resDirName = fullfile(dirPath,'res');
+if(~exist(resDirName,'dir'))
+    mkdirSafe(resDirName);
+end
+imDirName = fullfile(resDirName,'images');
+if(~exist( imDirName,'dir'))
+    mkdirSafe(imDirName);
+end
+logfn = fullfile(resDirName,'log.html');
+fid = fopen(logfn,'w');
+
+s.dirPath = dirPath;
+s.imDirName = imDirName;
+s.fid = fid;
+s.vis = vis;
+end
+
+function startHTML(s)
+
+fprintf(s.fid,'<!DOCTYPE html><html><body>\n');
 
 end
 
 
-function temporalSpatialNoise(dirPath)
+function writeIm2HTML(s,Ifn)
+dispSize = [480 640];
+% dispSize = dispSize*2;
+fprintf(s.fid,'<img src="%s" alt="" width="%s" height="%s"\n>',Ifn,dispSize(2),dispSize(2));
+end
 
-dirPath = fullfile(dirPath,'checkerboard');
+function writeTitle2HTML(s,tit)
+fprintf(s.fid,'<h1>%s</h1>\n',tit);
+end
+function writeTxt2HTML(s,txt)
+fprintf(s.fid,'<h3>%s</h3>\n',txt);
+end
+
+
+function closeHTML(s)
+fprintf(s.fid,'</body></html>\n');
+fclose(s.fid);
+end
+
+
+function temporalSpatialNoise(s)
+
+dirPath = fullfile(s.dirPath,'checkerboard');
 d = dir(dirPath);
 d = {d.name};
 d = d(contains(d,'.tiff'));
-% d = d(contains(d,'.bin') & contains(d,'IR'));
 d = fullfile(dirPath,d);
 
 
 [gridsX,gridsY] = cellfun(@(x) Validation.findGrid(imread(x)),d,'uni',0);
-% [gridsX,gridsY] = cellfun(@(x) Validation.findGrid(io.readBin(x)),d,'uni',0);
 
 
 szBrd = size(gridsX{1});
@@ -50,14 +101,18 @@ y3d = mat2cell(reshape(cell2mat(yZero),szBrd(1),szBrd(2),[]), ones(szBrd(1),1),o
 %var- var for HALF the principle component
 [pcaMat,~,var] = cellfun(@(x,y) pca([vec(squeeze(x)) vec(squeeze(y))])  ,x3d,y3d,'uni',0);
 
-figure(14145);clf
+f = figure('visible',s.vis);clf;maximize(f);
 hold on;
-cellfun(@(x,y) plot(x,y,'.k'),gridsX,gridsY,'uni',0);
-plot(meanGridX(:),meanGridY(:),'+b')
+
 arrows = cellfun(@(x,y) sqrt(2*y(1))*x(:,1)',pcaMat,var,'uni',0);
 arrows = cell2mat(arrows(:));
-quiver(meanGridX(:),meanGridY(:),arrows(:,1),arrows(:,2),0)
+k = 3;
+quiver(meanGridX(:),meanGridY(:),k*arrows(:,1),k*arrows(:,2),0)
 
+fn = fullfile(s.imDirName ,'temporalSpatialNoise.png');
+saveas(f,fn,'png');
+writeTitle2HTML(s,'temporalSpatialNoise')
+writeIm2HTML(s,fn)
 
 if(0)
     % test
@@ -78,39 +133,41 @@ if(0)
 end
 end
 
-function spatialDistortion(dirPath)
-dirPath = fullfile(dirPath,'checkerboard','fine');
+function spatialDistortion(s)
+dirPath = fullfile(s.dirPath,'checkerboard','fine');
 d = dir(dirPath);
 d = {d.name};
 d = d(contains(d,'.tif'));
-% d = d(contains(d,'.bin') & contains(d,'IR'));
 d = fullfile(dirPath,d);
 
-% imFn = 'C:\Users\ychechik\Desktop\11.tif';
 im = imread(d{1});
 
 
-[e,s,d]=Calibration.aux.evalProjectiveDisotrtion(im);
+[e,ss,d]=Calibration.aux.evalProjectiveDisotrtion(im);
 
-figure(343424);
+f = figure('visible',s.vis);maximize(f);
 aa(1)=subplot(121);
 imagesc(im);title('Input');
 hold on
-plot(d(1,:),d(2,:),'.g',s(1,:),s(2,:),'ro');axis image
+plot(d(1,:),d(2,:),'.g',ss(1,:),ss(2,:),'ro');axis image
 colormap gray
 hold off
 aa(2)=subplot(122);
-quiver(s(1,:),s(2,:),d(1,:)-s(1,:),d(2,:)-s(2,:),'k');title(sprintf('Output (rms err = %f)',e));
+quiver(ss(1,:),ss(2,:),d(1,:)-ss(1,:),d(2,:)-ss(2,:),'k');title(sprintf('Output (rms err = %f)',e));
 set(aa(2),'ydir','reverse');
 axis image
 linkaxes(aa);
 drawnow;
 
+fn = fullfile(s.imDirName ,'spatialDistortion.png');
+saveas(f,fn,'png');
+writeTitle2HTML(s,'spatialDistortion')
+writeIm2HTML(s,fn)
 end
 
 
-function temporalDepthNoise(dirPath)
-dirPath = fullfile(dirPath,'wall25','500');
+function temporalDepthNoise(s)
+dirPath = fullfile(s.dirPath,'wall25','500');
 d = dir(dirPath);
 d = {d.name};
 d = d(contains(d,'.bin') &contains(d,'Depth') );
@@ -118,23 +175,25 @@ d = fullfile(dirPath,d);
 
 
 i = io.readBin(d{1},'type','binz');
-f = figure;imagesc(i);title('choose the plane rect for temporalDepthNoise...')
-rect = getrect();
-rect = round(rect);
-close(f);
-%
 
-Is = cellfun(@(x) x(rect(2):(rect(2)+rect(4)),rect(1):(rect(1)+rect(3))), cellfun(@(x) io.readBin(x,'type','binz'), d,'uni',0), 'uni',0);
+rectMask = findPlaneInIm(i);
 
-stdZIm = std(double(reshape(cell2mat(Is),size(Is{1},1),size(Is{2},2),[])),[],3);
+Is = cellfun(@(x) x(rectMask), cellfun(@(x) io.readBin(x,'type','binz'), d,'uni',0), 'uni',0);
 
+stdZIm = std(double(cell2mat(Is)),[],2);
 
-figure;imagesc(stdZIm)
+f = figure('visible',s.vis);maximize(f);
+imshowpair(i,rectMask);title('chosen mask on depth image')
+fn = fullfile(s.imDirName ,'temporalDepthNoise.png');
+saveas(f,fn,'png');
+writeTitle2HTML(s,'temporalDepthNoise')
+writeTxt2HTML(s,sprintf('mean = %f, std = %f, min = %f, max = %f',mean(stdZIm),std(stdZIm),min(stdZIm),max(stdZIm)));
+writeIm2HTML(s,fn)
 end
 
 
-function zSTD(dirPath)
-dirPath = fullfile(dirPath,'wall25');
+function zSTD(s)
+dirPath = fullfile(s.dirPath,'wall25');
 d = dir(dirPath);
 d(1:2) = []; %'.' '..'
 d = {d.name};
@@ -142,28 +201,17 @@ subdirsNum = sort(  cell2mat( cellfun(@(x) str2double(x),  d,'uni',0)) );
 subdirs = cellfun(@(x) num2str(x), num2cell( subdirsNum ),'uni',0);
 
 imageS = struct();
-% % % figure(2523);clf;
 for i=1:length(subdirs)
     d = dir(fullfile(dirPath,subdirs{i}));
     d = {d.name};
     d = d(contains(d,'.bin') & contains(d,'Depth'));
     imageS.(['I' subdirs{i}]) = io.readBin(fullfile(dirPath,subdirs{i},d{1}),'type','binz');
-    % % %     tabplot;imagesc( imageS.(['I' subdirs{i}]));
 end
 
 sz = size(imageS.(['I' subdirs{1}]));
 [x,y] = meshgrid(1:sz(2),1:sz(1));
 
-%get fovMask
-f = figure(245242);clf;
-imagesc(imageS.(['I' subdirs{end}]));
-title('choose the plane rect for zSTD...');
-rect = round(getrect);
-close(f);
-% rect = [271   175   105   148];
-
-fovMask = false(size(x));
-fovMask(rect(2):(rect(2)+rect(4)),rect(1):(rect(1)+rect(3))) = true;
+fovMask = findPlaneInIm(imageS.(['I' subdirs{end}]));
 
 vect = cell(size(subdirs));
 distFromPlane = cell(size(subdirs));
@@ -173,12 +221,23 @@ for i=1:length(subdirs)
     [vect{i},distFromPlane{i},inliersOut{i}] = planeFitRansac(x,y,double(imageS.(['I' subdirs{i}])),fovMask);
     zstd(i) = std(distFromPlane{i}(fovMask));
 end
-figure;plot(subdirsNum,zstd);title('z std');xlabel('dist from plane [mm]');ylabel('std');
+f = figure('visible',s.vis);maximize(f);
+plot(subdirsNum,zstd);title('z std');xlabel('dist from plane [mm]');ylabel('std');
+fn = fullfile(s.imDirName ,'zSTD.png');
+saveas(f,fn,'png');
+writeTitle2HTML(s,'zSTD')
+writeIm2HTML(s,fn)
+
+f = figure('visible',s.vis);maximize(f);
+imshowpair(imageS.(['I' subdirs{end}]),fovMask);title('chosen mask on depth image');
+fn = fullfile(s.imDirName ,'zSTDpair.png');
+saveas(f,fn,'png');
+writeIm2HTML(s,fn)
 end
 
 
-function fillRate(dirPath)
-dirPath = fullfile(dirPath,'ndfilter');
+function fillRate(s)
+dirPath = fullfile(s.dirPath,'ndfilter');
 d = dir(dirPath);
 d(1:2) = []; %'.' '..'
 d = {d.name};
@@ -189,20 +248,14 @@ for i=1:length(subdirs)
     d = dir(fullfile(dirPath,subdirs{i}));
     d = {d.name};
     d = d(contains(d,'.bin') & contains(d,'Depth'));
-       
+    
     imageS.(subdirs{i}) = io.readBin(fullfile(dirPath,subdirs{i},d{1}),'type','binz');
-%     tabplot;imagesc( imageS.(subdirs{i}));
 end
 
 
-%get fovMask
-f = figure(245242);clf;
-imagesc(imageS.(subdirs{end}));
-title('choose the plane rect for fillRate...');
-rect = round(getrect);
-close(f);
-fovMask = false(size( imageS.(subdirs{end})));
-fovMask(rect(2):(rect(2)+rect(4)),rect(1):(rect(1)+rect(3))) = true;
+
+fovMask = findPlaneInIm(imageS.(subdirs{1}));
+
 
 fillRate = zeros(size(subdirs));
 for i=1:length(subdirs)
@@ -210,7 +263,55 @@ for i=1:length(subdirs)
     fillRate(i) = sum(I(fovMask)~=0)/numel(I(fovMask))*100;
 end
 
-figure;plot(1:length(subdirs),fillRate);title('fill Rate');xlabel('nd type');ylabel('fill rate [%]');
+f = figure('visible',s.vis);maximize(f);
+plot(1:length(subdirs),fillRate);title('fill Rate');xlabel('nd type');ylabel('fill rate [%]');
 xticks(1:length(subdirs));
 xticklabels(subdirs);
+fn = fullfile(s.imDirName ,'fillRate.png');
+saveas(f,fn,'png');
+writeTitle2HTML(s,'fillRate')
+writeIm2HTML(s,fn)
+
+f = figure('visible',s.vis);maximize(f);
+imshowpair(imageS.(subdirs{1}),fovMask);title('chosen mask on depth image');
+fn = fullfile(s.imDirName ,'fillRatepair.png');
+saveas(f,fn,'png');
+writeIm2HTML(s,fn)
+
+end
+
+
+function closeBW = findPlaneInIm(I)
+%%
+fovMaskRatio = 10; %ratio from image that the board is for sure inside
+inliersBoardErrorInMm = 100; %allowd error form plane in mm
+
+
+sz = size(I);
+center = ceil(size(I)/2);
+fovMask = false(sz);
+fovMask(round(center(1)-sz(1)/fovMaskRatio):round(center(1)+sz(1)/fovMaskRatio),round(center(2)-sz(2)/fovMaskRatio):round(center(2)+sz(2)/fovMaskRatio)) = true;
+
+[x,y] = meshgrid(1:size(I,2),1:size(I,1));
+[~,distFromPlane] = planeFitRansac(x,y,double(I),fovMask);
+
+
+inliers = abs(distFromPlane)<inliersBoardErrorInMm;
+
+%get biggest connected component
+CC = bwconncomp(inliers);
+numPixels = cellfun(@numel,CC.PixelIdxList);
+[~,idx] = max(numPixels);
+rectMask = false(sz);
+rectMask(CC.PixelIdxList{idx}) = true;
+
+
+
+se = strel('disk',10);
+closeBW = imclose(rectMask,se);
+
+assert(closeBW(center(1),center(2))==true,'center pixel is not in board for some reason...')
+
+
+% % % figure;subplot(211);imagesc(I);subplot(212);imagesc(closeBW)
 end
