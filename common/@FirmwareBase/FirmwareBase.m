@@ -236,8 +236,11 @@ classdef FirmwareBase <handle
             m = num2cell([[obj.m_registers(indregs).address]' [obj.m_registers(indregs).address]'+4 Firmware.sprivRegstruct2uint32val(obj.m_registers(indregs))]);
             m=[m {obj.m_registers(indregs).regName}']';
             
-            
-            txtout=sprintf('mwd %08x %08x %08x //%s\n',m{:});
+            if(~isempty(m))
+                txtout=sprintf('mwd %08x %08x %08x //%s\n',m{:});
+            else
+                txtout='';
+            end
             for i=indluts
                 if(any(strcmp(obj.m_luts(i).algoBlock,{'FRMW','MTLB'})))
                     continue;

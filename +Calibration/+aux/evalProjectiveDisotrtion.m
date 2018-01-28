@@ -7,7 +7,7 @@ if(nargin==1)
     N=3;
     imv = im(Utils.indx2col(size(im),[N N]));
     bd = vec(isnan(im));
-    im(bd)=nanmedian(imv(:,bd));
+    im(bd)=nanmedian_(imv(:,bd));
 %      im=reshape(nanmedian(imv),size(im));
     
     [s,bsz] = detectCheckerboardPoints(normByMax(im));
