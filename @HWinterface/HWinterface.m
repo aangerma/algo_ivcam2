@@ -148,7 +148,9 @@ classdef HWinterface <handle
         end
         
         
-        
+        function res = runCommand(obj, c)
+            res = obj.cmd(c);
+        end
         
         function runScript(obj,fn)
 %                      sysstr = System.String(fn);
