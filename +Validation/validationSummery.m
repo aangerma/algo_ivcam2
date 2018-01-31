@@ -10,7 +10,7 @@ s = build4start(dirPath,vis);
 startHTML(s);
 
 %% Temporal spatial noise
-%  temporalSpatialNoise(s);
+  temporalSpatialNoise(s);
 
 %% Spatial distortion
 spatialDistortion(s);
@@ -48,27 +48,62 @@ end
 
 function startHTML(s)
 
-fprintf(s.fid,'<!DOCTYPE html><html><body>\n');
-
+% fprintf(s.fid,'<!DOCTYPE html><html><body>\n');
+fprintf(s.fid,...
+['<!DOCTYPE html>\n'...
+'<html>\n'...
+'<head>\n'...
+'<style>\n'...
+'table {\n'...
+'    font-family: arial, sans-serif;\n'...
+'    border-collapse: collapse;\n'...
+'    width: 100%%;\n'...
+'}\n'...
+'\n'...
+'td, th {\n'...
+'    border: 1px solid black;\n'...
+'    text-align: left;\n'...
+'    padding: 8px;\n'...
+'}\n'...
+'\n'...
+'tr:nth-child(odd) {\n'...
+'    background-color: #dddddd;\n'...
+'}\n'...
+'</style>\n'...
+'</head>\n'...
+'<body>\n'...
+'\n'...
+'<table>\n']);
 end
 
 
 function writeIm2HTML(s,Ifn)
-dispSize = [480 640];
-% dispSize = dispSize*2;
-fprintf(s.fid,'<img src="%s" alt="" width="%s" height="%s"\n>',Ifn,dispSize(2),dispSize(2));
+dispSize = 640; %only enter width- will retain aspact ratio
+coeff = 3.5;
+dispSize = round(dispSize*coeff);
+fprintf(s.fid,'<img src="%s" alt="" width="%s">\n',Ifn,num2str(dispSize));% height="%s"\n>',Ifn,num2str(dispSize(2)),num2str(dispSize(1)));
 end
 
 function writeTitle2HTML(s,tit)
-fprintf(s.fid,'<h1>%s</h1>\n',tit);
+ fprintf(s.fid,'<tr><td><h1>%s</h1></td></tr>\n',tit);
+%fprintf(s.fid,'<tr><th>%s</th></tr>\n',tit);
+
 end
 function writeTxt2HTML(s,txt)
-fprintf(s.fid,'<h3>%s</h3>\n',txt);
+ fprintf(s.fid,'<h3>%s</h3>\n',txt);
+% fprintf(s.fid,'<th>%s</th>\n',txt);
+
 end
 
+function startTableCellHTML(s)
+fprintf(s.fid,'<tr><td>\n');
+end
+function endTableCellHTML(s)
+fprintf(s.fid,'</td></tr>\n');
+end
 
 function closeHTML(s)
-fprintf(s.fid,'</body></html>\n');
+fprintf(s.fid,'</table></body></html>\n');
 fclose(s.fid);
 end
 
@@ -111,8 +146,13 @@ quiver(meanGridX(:),meanGridY(:),k*arrows(:,1),k*arrows(:,2),0)
 
 fn = fullfile(s.imDirName ,'temporalSpatialNoise.png');
 saveas(f,fn,'png');
+
 writeTitle2HTML(s,'temporalSpatialNoise')
+startTableCellHTML(s)
+ writeTxt2HTML(s,'over a set of checkerboard images captures. evaluate the std movement of each checkerboard crosspoint set.');
+
 writeIm2HTML(s,fn)
+endTableCellHTML(s)
 
 if(0)
     % test
@@ -161,8 +201,14 @@ drawnow;
 
 fn = fullfile(s.imDirName ,'spatialDistortion.png');
 saveas(f,fn,'png');
+
 writeTitle2HTML(s,'spatialDistortion')
+ startTableCellHTML(s)
+ writeTxt2HTML(s,'Capture an image of checkerboard plane covering the maximal FOV. Evaluate projective residual distortion');
+
 writeIm2HTML(s,fn)
+endTableCellHTML(s)
+
 end
 
 
@@ -186,9 +232,14 @@ f = figure('visible',s.vis);maximize(f);
 imshowpair(i,rectMask);title('chosen mask on depth image')
 fn = fullfile(s.imDirName ,'temporalDepthNoise.png');
 saveas(f,fn,'png');
+
 writeTitle2HTML(s,'temporalDepthNoise')
-writeTxt2HTML(s,sprintf('mean = %f, std = %f, min = %f, max = %f',mean(stdZIm),std(stdZIm),min(stdZIm),max(stdZIm)));
+startTableCellHTML(s)
+writeTxt2HTML(s,'capture a 25% reflectivity wall. For each of the pixels evaluate the standard deviation over time of the depth and IR readouts (with, and without post processing)');
+
+writeTxt2HTML(s,sprintf('Results: mean = %f, std = %f, min = %f, max = %f',mean(stdZIm),std(stdZIm),min(stdZIm),max(stdZIm)));
 writeIm2HTML(s,fn)
+endTableCellHTML(s)
 end
 
 
@@ -225,14 +276,20 @@ f = figure('visible',s.vis);maximize(f);
 plot(subdirsNum,zstd);title('z std');xlabel('dist from plane [mm]');ylabel('std');
 fn = fullfile(s.imDirName ,'zSTD.png');
 saveas(f,fn,'png');
+
 writeTitle2HTML(s,'zSTD')
+startTableCellHTML(s);
+writeTxt2HTML(s,'Capture a 25% reflecticty plane from various distances. Construct the minimum FOV that overlaps all captures, and use only this FOV for the data analysis. In each one of the recordings, find the best describing plane (a.k.a planefit), with outliers removal mechanism (ransac). Estimate the Euclidean distance of each point from the given plane.');
 writeIm2HTML(s,fn)
+
 
 f = figure('visible',s.vis);maximize(f);
 imshowpair(imageS.(['I' subdirs{end}]),fovMask);title('chosen mask on depth image');
 fn = fullfile(s.imDirName ,'zSTDpair.png');
 saveas(f,fn,'png');
+
 writeIm2HTML(s,fn)
+endTableCellHTML(s)
 end
 
 
@@ -264,20 +321,30 @@ for i=1:length(subdirs)
 end
 
 f = figure('visible',s.vis);maximize(f);
-plot(1:length(subdirs),fillRate);title('fill Rate');xlabel('nd type');ylabel('fill rate [%]');
-xticks(1:length(subdirs));
-xticklabels(subdirs);
+plot(1:length(subdirs),fillRate);title('fill Rate');xlabel('OD (optical density)');ylabel('fill rate [%]');
+
+%OD = -log10(1/T);
+%OD - optical density
+%T - transmission rate (0<=T<=1)
+%ex: when writen in the dir name: "f02" -> OD=0.2 -> transmissionRate=63%
+od = cellfun(@(x) [x(2) '.' x(3:end)], subdirs,'uni',0);
+xticks(1:length(od));
+xticklabels(od);
 fn = fullfile(s.imDirName ,'fillRate.png');
 saveas(f,fn,'png');
+
 writeTitle2HTML(s,'fillRate')
+startTableCellHTML(s)
+writeTxt2HTML(s,'Capture 25% reflectivity perpendicular plane at 1m, with Nd filter over the sensor at different opacity levels. In each opacity level calculate the number of valid pixels on the target');
 writeIm2HTML(s,fn)
 
 f = figure('visible',s.vis);maximize(f);
 imshowpair(imageS.(subdirs{1}),fovMask);title('chosen mask on depth image');
 fn = fullfile(s.imDirName ,'fillRatepair.png');
 saveas(f,fn,'png');
-writeIm2HTML(s,fn)
 
+writeIm2HTML(s,fn)
+endTableCellHTML(s)
 end
 
 
