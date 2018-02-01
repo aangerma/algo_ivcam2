@@ -23,7 +23,7 @@ alphaSim = linspace(0,1,N);
 
 % given Mcw measurments with no noise, gamma is constant
 % gamma = (pi/2)^0.25*sqrt(max(m_cw-0,0));%Mcw > Mn always... it's an assumption
-gamma=2; %OHAD: GET NEW WAY TO GET GAMMA
+gamma=0.5; %OHAD: GET NEW WAY TO GET GAMMA
 %% ::0:: init
 [m_n,m_p] = meshgrid(MnSim,alphaSim);
 phi = @(x) cdf('Normal',x,0,1);
@@ -47,7 +47,7 @@ m_s = min(1,max(0,m_s));
 m_s(isnan(m_s))=0;
 if(verbose)
     %%
-    figure(252134);tabplot;
+    figure(252134);clf;tabplot;
     plot3(m_n(:),m_p(:),m_s(:),'.');
     xlabel('M_n');ylabel('\alpha');zlabel('M_s');
     axis square
@@ -90,6 +90,8 @@ if(verbose)
     %%
     tabplot;
     surf(m_nI,m_sI,snrLUT,'edgecolor','none');
+    set(gca,'Ydir','reverse')%,'Ydir','reverse')
+    view(-1,83);
     hold on
     plot3(m_nIv(:),m_sIv(:),snrLUTv(:),'.r');
     hold off
@@ -110,19 +112,23 @@ for i=1:length(regType)
     regs.DCOR.([regType{i} 'Map']) = uint8(cumsum(stepInd)-1);
 end
 
-regs.DCOR.psnr = rot90(fliplr(uint8(round(snrLUTv*63))));
+regs.DCOR.psnr = vec(uint8(round(snrLUTv'*63)));
 
 if(verbose)
     %%
-    tabplot
-    subplot(121);imagesc(snrLUT);colorbar
-    subplot(122);imagesc(regs.DCOR.psnr);colorbar
+    tabplot;
+    subplot(121);imagesc(snrLUT);colorbar;
+    
+    decPSNR4plt = reshape(regs.DCOR.psnr,16,16);
+    subplot(122);imagesc(decPSNR4plt);colorbar;
 end
-%
-% %% for unit test
-% unitTestS.Ms = MsSim;
-% unitTestS.Mn = MnSim;
-% unitTestS.psnrT = psnrT;
+
+
+
+%% for unit test
+unitTestS.Ms = m_s;
+unitTestS.Mn = m_n;
+unitTestS.psnrT = snrLUT;
 end
 
 
