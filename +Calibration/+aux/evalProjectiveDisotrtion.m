@@ -10,10 +10,10 @@ if(nargin==1)
     im(bd)=nanmedian_(imv(:,bd));
 %      im=reshape(nanmedian(imv),size(im));
     
-    [s,bsz] = detectCheckerboardPoints(normByMax(im));
+    [p,bsz] = detectCheckerboardPoints(normByMax(im));
     bsz=bsz-1;
 elseif(nargin==2)
-    s = varargin{1};
+    p = varargin{1};
     bsz = varargin{2};
     im=0; %#ok<*NASGU>
 else
@@ -42,22 +42,26 @@ using LS:
 %}
 
 
-
-oo= [xg(:) yg(:) ones(numel(xg),1)];
-zr = zeros(size(s,1),3);
-h=[oo zr  -oo(:,1:2).*s(:,1);
-    zr oo  -oo(:,1:2).*s(:,2)
-    ];
-x   = h\vec(s);
-hh=reshape([x;1],3,3);
-
-d = oo*hh;
-d=d(:,1:2)./d(:,3);
-
-ev = sqrt(sum((d-s).^2,2));
+inliers=true(numel(xg),1);
+for i=1:3
+    n=nnz(inliers);
+    oo= [xg(inliers) yg(inliers) ones(n,1)];
+    zr = zeros(n,3);
+    h=[oo zr  -oo(:,1:2).*p(inliers,1);
+        zr oo  -oo(:,1:2).*p(inliers,2)
+        ];
+    x   = h\vec(p(inliers,:));
+    hh=reshape([x;1],3,3);
+    d = [xg(:) yg(:) ones(numel(xg),1)]*hh;
+    d=d(:,1:2)./d(:,3);
+    
+    ev = sqrt(sum((d-p).^2,2));
+    inliers = inliers & ev<prctile_(ev,90);
+end
 e = rms(ev);
 
-s=s';
+
+s=p';
 d=d';
 
 if(0)
