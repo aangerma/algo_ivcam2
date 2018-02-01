@@ -149,18 +149,21 @@ classdef HWinterface <handle
             obj.privConfigureStream();
         end
         
+        function res = shadowUpdate(obj)
+            obj.cmd('mwd a00d01f4 a00d01f8 000001f8');%shadow update
+        end
         
         function res = runCommand(obj, c)
             res = obj.cmd(c);
         end
         
-        function runScript(obj,fn)
+        function res = runScript(obj,fn)
 %                      sysstr = System.String(fn);
-            result = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
-%             if(~result.IsCompletedOk)
-%                 error(char(result.ErrorMessage))
+            res = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
+%             if(~res.IsCompletedOk)
+%                 error(char(res.ErrorMessage))
 %             end
-%             res = char(result.ResultFormatted);
+%             res = char(res.ResultFormatted);
         end
     end
 end
