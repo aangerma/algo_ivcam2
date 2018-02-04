@@ -11,16 +11,6 @@ alpha = 2^12/4095*[1-regs.FRMW.xR2L*2 1-regs.FRMW.yflip*2];
 autogenRegs.DIGG.sphericalScale=int16(round(double([regs.FRMW.xres regs.FRMW.yres]).*alpha));
 autogenRegs.DIGG.sphericalOffset=int16(round([double(regs.FRMW.xres)/2-double(regs.FRMW.marginL) double(regs.FRMW.yres)/2-double(regs.FRMW.marginT)].*[4 1]));
 
-%=======================================DIGG - angQ conversion=======================================
-
-xfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
-yfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
-
-autogenRegs.DIGG.angXfactor = xfactor*127/90;
-autogenRegs.DIGG.angYfactor = yfactor*127/90;
-
-autogenRegs.DIGG.ang2Xfactor = xfactor*254/90;
-autogenRegs.DIGG.ang2Yfactor = yfactor*254/90;
 regs = Firmware.mergeRegs(regs,autogenRegs);
 %=======================================DIGG - notch filters=======================================
 
