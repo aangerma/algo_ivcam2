@@ -21,7 +21,7 @@ c=mean(xyzmes(:,in),2);
 pvc=xyzmes-c;
 
 %shift to center, find rotation along PCA
-[u,~,vt]=svd(pvc*ptsOpt(:,in)');
+[u,~,vt]=svd(pvc(:,in)*ptsOpt(:,in)');
 rotmat=u*vt';
 
 ptsOptR = rotmat*ptsOpt;
