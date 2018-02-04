@@ -1,8 +1,4 @@
-function [outregs,minerr]=calibDFZ(d_,regs,verbose)
-collapseM = @(x) median(reshape([d_.(x)],size(d_(1).(x),1),size(d_(1).(x),2),[]),3);
-d.z=collapseM('z');
-d.i=collapseM('i');
-d.c=collapseM('c');
+function [outregs,minerr,irNew]=calibDFZ(d,regs,verbose)
 
 
 
@@ -59,19 +55,20 @@ end
 x0 = double([regs.FRMW.xfov regs.FRMW.yfov 5000 regs.FRMW.laserangleH regs.FRMW.laserangleV]);
 xL = [40 40 0   -3 -3];
 xH = [90 90 20000   3  3];
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x),x0,xL,xH,opt);
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,verbose),x0,xL,xH,opt);
 
 outregs.FRMW.xfov=single(xbest(1));
 outregs.FRMW.yfov=single(xbest(2));
 outregs.DEST.txFRQpd=[1 1 1]*single(xbest(3));
-if(verbose)
-    [~,v]=errFunc(rpt,regs,xbest);
-    Calibration.aux.evalGeometricDistortion(v,verbose);
-end
+
+[~,~,xF,yF]=errFunc(cat(3,rtd,angx,angy),regs,xbest,false);
+ok=~isnan(xF) & ~isnan(yF)  & d.i>1;
+irNew=griddata(double(xF(ok)),double(yF(ok)),double(d.i(ok)),xg,yg);
+
 end
 
 
-function [e,v]=errFunc(rpt,rtlRegs,X)
+function [e,v,xF,yF]=errFunc(rpt,rtlRegs,X,verbose)
 %build registers array
 iterRegs=x2regs([rtlRegs.GNRL.imgVsize rtlRegs.GNRL.imgHsize],X);
 rtlRegs =Firmware.mergeRegs( rtlRegs ,iterRegs);
@@ -100,9 +97,11 @@ y = r.*sinw;
 v=cat(3,x,y,z);
 
 
-e=Calibration.aux.evalGeometricDistortion(v,1);
+e=Calibration.aux.evalGeometricDistortion(v,verbose);
+if(verbose)
 fprintf('%f ',[X e]);
 fprintf('\n');
+end
 drawnow;
 end
 
