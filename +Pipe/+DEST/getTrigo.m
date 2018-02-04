@@ -1,4 +1,21 @@
-function [sinx,cosx,siny,cosy,sinw,cosw,sing]=getTrigo(sz,regs)
+function [sinx,cosx,siny,cosy,sinw,cosw,sing]=getTrigo(varargin)
+if(nargin==2)
+    %[sinx,cosx,siny,cosy,sinw,cosw,sing]=getTrigo(sz,regs)
+    sz=varargin{1};
+    regs=varargin{2};
+    
+    [yi,xi]=ndgrid(0:sz(1)-1,0:sz(2)-1);
+elseif(nargin==3)
+    %     [sinx,cosx,siny,cosy,sinw,cosw,sing]=getTrigo(xi,yi,regs)
+    xi=varargin{1};
+    yi=varargin{2};
+    regs=varargin{3};
+
+else
+    
+end
+%xi and yi are input pixles (intetger, zero based)
+% [yi,xi]=ndgrid(0:sz(1)-1,0:sz(2)-1);
 
 %% hard-coded LUTs
 N_LUT_BIN = 2^7;
@@ -13,7 +30,7 @@ csatn_INTRP = @(x)                    triFuncIntrp(abs(x),csatn_lutdata);
 
 FACT = (N_LUT_BIN-1)/MAX_TAN_VAL; %SHOULD BE PART OF FIRMWARE
 %%
-[yi,xi]=ndgrid(0:sz(1)-1,0:sz(2)-1);
+
 tanx = (regs.DEST.p2axa *xi+ regs.DEST.p2axb);
 tany = (regs.DEST.p2aya *yi+ regs.DEST.p2ayb);
 sinx = snatn_INTRP(tanx*FACT); %INTENAL NON ASIC
