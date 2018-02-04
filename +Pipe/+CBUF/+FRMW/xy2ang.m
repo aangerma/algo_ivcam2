@@ -1,13 +1,17 @@
 function [angx,angy] = xy2ang(x,y,regs)
 %{
-[yg,xg]=ndgrid(0:regs.GNRL.imgVsize-1,0:regs.GNRL.imgHsize-1);
+[yg,xg]=ndgrid(0:single(regs.GNRL.imgVsize)-1,0:single(regs.GNRL.imgHsize)-1);
 [ax,ay]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
+[~,~,xg_,yg_]=Pipe.DIGG.ang2xy(ax,ay,regs,Logger(),[]);
+subplot(121);imagesc(abs(xg_-xg));colorbar;axis image;subplot(122);imagesc(abs(yg_-yg));colorbar;axis image
 %}
+x=single(x);
+y=single(y);
 angXfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
 angYfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
 mirang = atand(regs.FRMW.projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
-invrotmat = [cosd(mirang) -sind(mirang);sind(mirang) cosd(mirang)];
+invrotmat = rotmat^-1;%[cosd(mirang) -sind(mirang);sind(mirang) cosd(mirang)];
 angles2xyz = @(angx,angy) [ sind(angx) cosd(angx).*sind(angy) cosd(angx).*cosd(angy)]';
 marginT = regs.FRMW.marginT;
 marginL = regs.FRMW.marginL;
@@ -38,10 +42,10 @@ xynrm = invrotmat*xy';
 
 
 v = normr([xynrm' ones(size(xynrm,2),1)]);
-n = normr(repmat(laserIncidentDirection',size(v,1),1) - v);
+n = normr(v - repmat(laserIncidentDirection',size(v,1),1) );
 angxQ = asind(n(:,1));
 angyQ = atand(n(:,2)./n(:,3));
 
 angy = reshape(single(angyQ)/angYfactor,size(y));
-angx=  reshape(-single(angxQ)/angXfactor,size(y));
+angx=  reshape(single(angxQ)/angXfactor,size(y));
 end
