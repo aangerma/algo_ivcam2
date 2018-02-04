@@ -1,0 +1,21 @@
+mwd a0020c9c a0020ca0 00000001 //RASTbiltBypass
+mwd a00e0f00 a00e0f04 00000000 //JFILbypass
+mwd a00e0b10 a00e0b14 00000001 //JFILbilt1bypass
+mwd a00e0b18 a00e0b1c 00000001 //JFILbilt2bypass
+mwd a00e0b20 a00e0b24 00000001 //JFILbilt3bypass
+mwd a00e0eb8 a00e0ebc 00000001 //JFILbiltIRbypass
+mwd a00e1024 a00e1028 00000001 //JFILdnnBypass
+mwd a00e1514 a00e1518 00000001 //JFILedge1bypassMode
+mwd a00e152c a00e1530 00000001 //JFILedge4bypassMode
+mwd a00e1520 a00e1524 00000001 //JFILedge3bypassMode
+mwd a00e158c a00e1590 00000001 //JFILgeomBypass
+mwd a00e15f0 a00e15f4 00000001 //JFILgrad1bypass
+mwd a00e166c a00e1670 00000001 //JFILgrad2bypass
+mwd a00e18c0 a00e18c4 00000001 //JFILirShadingBypass
+mwd a00e1708 a00e170c 00000001 //JFILinnBypass
+mwd a00e1b24 a00e1b28 00000001 //JFILsort1bypassMode
+mwd a00e1b40 a00e1b44 00000001 //JFILsort2bypassMode
+mwd a00e1b5c a00e1b60 00000001 //JFILsort3bypassMode
+mwd a00e1bb0 a00e1bb4 00000001 //JFILupscalexyBypass
+mwd a00e1538 a00e153c 00000000 //JFILgammaBypass
+mwd a00d01f4 a00d01f8 000001f8 //shadow update
