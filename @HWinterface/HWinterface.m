@@ -88,7 +88,7 @@ classdef HWinterface <handle
                 obj.cmd(['mwd ' str{2} ' ' str{3} ' ' str{4}]);
             end
             
-            obj.cmd('mwd a00d01f4 a00d01f8 000001f8');%shadow update
+            obj.cmd('mwd a00d01f4 a00d01f8 000005f8');%shadow update
             
         end
         
@@ -137,7 +137,7 @@ classdef HWinterface <handle
         function stopStream(obj)
             obj.m_dotnetcam.Close();
             fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','SW_Reset.txt');
-            obj.runScript(fn)
+            obj.runScript(fn);
         end
         
         
@@ -145,7 +145,7 @@ classdef HWinterface <handle
         
         function restartStream(obj)
             fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','Restart_ma_pipe.txt');
-            obj.runScript(fn)
+            obj.runScript(fn);
             obj.privConfigureStream();
         end
         
