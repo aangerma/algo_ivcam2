@@ -15,6 +15,18 @@ if(regs.GNRL.rangeFinder)
     
     return;
 end
+
+
+xfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
+yfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
+
+newRegs.DIGG.angXfactor = xfactor*127/90;
+newRegs.DIGG.angYfactor = yfactor*127/90;
+
+newRegs.DIGG.ang2Xfactor = xfactor*254/90;
+newRegs.DIGG.ang2Yfactor = yfactor*254/90;
+
+
 mirang = atand(regs.FRMW.projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
 

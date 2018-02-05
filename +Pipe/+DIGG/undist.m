@@ -96,10 +96,10 @@ assert(all(xaddr>=0 & xaddr<=bitshift(32,shift)-1),'udistort: bad LUT x address'
 assert(all(yaddr>=0 & yaddr<=bitshift(32,shift)-1),'udistort: bad LUT y address');
 
 [val,indCol,indRow] = Pipe.DIGG.bicubicFixed(lut, xaddr, yaddr, uint8(shift));
-indRowReal = reshape(indRow(:),16,sz(1));
-indColReal = reshape(indCol(:),16,sz(1));
+indRowReal = reshape(indRow(:),16,numel(X));
+indColReal = reshape(indCol(:),16,numel(X));
 neighbors = lut(sub2ind(size(lut),indRowReal(:)+1,indColReal(:)+1));
-neighbors = reshape(neighbors,[16 sz])';
+neighbors = reshape(neighbors,[16 numel(X)])';
 val = reshape(val,sz);
 %neighbors = reshape(neighbors',[16 sz])';
 val=int32(val);

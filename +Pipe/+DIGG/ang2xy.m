@@ -9,11 +9,11 @@ function [x,y,xF,yF] = ang2xy(angxQ,angyQ,regs,lgr,traceOutDir)
 %  angy = single(vec(angyQ))*regs.DIGG.angYfactor;
 
 
-angxI = single(vec(angxQ))*regs.DIGG.angXfactor;
-angyI = single(vec(angyQ))*regs.DIGG.angYfactor;
+angxI = single((angxQ))*regs.DIGG.angXfactor;
+angyI = single((angyQ))*regs.DIGG.angYfactor;
 
-ang2xI = single(vec(angxQ))*regs.DIGG.ang2Xfactor;
-ang2yI = single(vec(angyQ))*regs.DIGG.ang2Yfactor;
+ang2xI = single((angxQ))*regs.DIGG.ang2Xfactor;
+ang2yI = single((angyQ))*regs.DIGG.ang2Yfactor;
 
 
 

@@ -7,7 +7,7 @@ calibfn = fullfile(configFldr,filesep,'calib.csv');
 if(exist(calibfn,'file'))
     filedate = @(f) f.datenum;
     filedate(dir('D:\data\ivcam20\exp\20180101\config.csv'))
-    movefile(calibfn,[calibfn datestr(filedate(dir(calibfn)),'yyyyMMdd_hhmm')]);
+     movefile(calibfn,[calibfn datestr(filedate(dir(calibfn)),'yyyyMMdd_hhmm')]);
 end
 fprintff('Loading Firmware...');
 fw=Pipe.loadFirmware(configFldr);
@@ -43,7 +43,7 @@ d=hw.getFrame();
 % fw.setRegs(gammaRegs,calibfn);
 %% ::calibrate gamma curve::
 
-%% ::calibrate DDFZ::
+%% ::Get image::
 % undistfn = fullfile(configFldr,filesep,'FRMWundistModel.bin32');
 fprintff('::DDFZ calibration::\n');
 fprintff('init...');
@@ -56,71 +56,32 @@ fw.setRegs(resetregs,[]);
 hw.write('DIGGundistModel');
 
 fprintff('done\n');
+for i=1:30
+d_=hw.getFrame();
+end
+
+collapseM = @(x) median(reshape([d_.(x)],size(d_(1).(x),1),size(d_(1).(x),2),[]),3);
+d.z=collapseM('z');
+d.i=collapseM('i');
+d.c=collapseM('c');
+
 
 for i=1:3
-    %zenith
-    calibregs=calibZenith(hw,verbose);
-    fw.setRegs(calibregs,calibfn);
-    hw.write();
-    %distortion
-    d=hw.getFrame();
-    [udistLUTinc,e]=Calibration.aux.undistFromImg(d.i,verbose);
-    if(0)
-        %% VALIDATE
-        [diggRegs,diggLuts] = Pipe.DIGG.FRMW.buildLensLUT(regs,struct('FRMW',struct('undistModel',udistLUTinc)));
-        diggRegs=FirmwareBase.mergeRegs(regs,diggRegs);
-        [yg,xg]=ndgrid(0:size(d.i,1)-1,0:size(d.i,2)-1);
-        f2i = @(x) int32(round(x-(mod(x,2)==.5)*0.5+(mod(x,2)==1.5)*0.5));
-        shift = single(2^double(regs.DIGG.bitshift));
-        xold_ = f2i (xg*shift);
-        yold_ = f2i (yg*shift);
-        [ xnew,ynew ] = Pipe.DIGG.undist( xold_(:),yold_(:),diggRegs,diggLuts,Logger(),[] );
-        xyQout = double(Pipe.DIGG.ranger(xnew, ynew, regs));
-        xyQout(1,:)=xyQout(1,:)/4;
-        v=griddata(xyQout(1,:),xyQout(2,:),double(d.i(:)),xg,yg);
-        [udistLUTinc,e]=Calibration.aux.undistFromImg(v,verbose);
-        drawnow;
-        
-    end
-    %%
-    fprintff('#%d error: %f\n',i,e);
-    luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
-    fw.setLut(luts);
-    hw.write('DIGG');
-    %delay-fov
-    d=hw.getFrame();
-    regs=fw.get();
-    calibregs=Calibration.aux.calibDF(d,regs);
-    fw.setRegs(calibregs,calibfn);
-    hw.write();%write only update!
+   
+    [outregs,minerr,irNew]=Calibration.aux.calibDFZ(d,regs);
+    regs=Firmware.mergeRegs(regs,outregs);
     
+    [udistLUTinc,e,undistF]=Calibration.aux.undistFromImg(irNew,1);
+    luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
+    d.z=undistF(d.z);
+    d.i=undistF(d.i);
+    d.c=undistF(d.c);
+ 
 end
-[~,luts]=fw.get();
 io.writeBin(undistfn,luts.FRMW.undistModel)
+fw.setRegs(outregs,calibfn);
 fw.writeUpdated(calibfn)
 fprintff('done\n');
 fw.genMWDcmd([],fullfile(configFldr,filesep,'algoConfig.txt'));
 end
 
-function calibregs=calibZenith(hw,verbose)
-x0=[0,0];
-opt.maxIter=1000;
-opt.OutputFcn=[];
-if(verbose)
-    opt.Display='iter';
-end
-xbest=fminsearchbnd(@(x) zenithEF(x,hw),x0,[-3 -3],[3 3],opt);
-calibregs=x2regs(xbest);
-end
-function regs=x2regs(x)
-regs.FRMW.laserangleH=single(x(1));
-regs.FRMW.laserangleV=single(x(2));
-end
-function e = zenithEF(x,hw)
-regs = x2regs(x);
-fw=hw.getFrimware();
-fw.setRegs(regs,[]);
-hw.write('DIGGnx|DIGGnx|DIGGnx|DIGGnx|DIGGnx|DIGGnx|DIGGdx2|DIGGdx3|DIGGdx5|DIGGny|DIGGny|DIGGny|DIGGny|DIGGny|DIGGny|DIGGdy2|DIGGdy3|DIGGdy5|');
-d=hw.getFrame();
-e=Calibration.aux.evalProjectiveDisotrtion(d.i);
-end

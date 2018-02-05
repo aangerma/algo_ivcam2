@@ -525,7 +525,7 @@ fw.setRegHandle(p.regHandle);
 if(isstruct(inputData)) %regs struct
     configOutputFilename = fullfile(p.outputDir,'config.csv');
     fw.setRegs(inputData,configOutputFilename);
-elseif(~isempty(strfind(inputData,'.csv'))) %config.csv
+elseif(contains(inputData,'.csv')) %config.csv
     if(~exist(inputData,'file'))
         error('COuld not find file %s',inputData);
     end

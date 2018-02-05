@@ -1,9 +1,15 @@
-function [udistLUT,e]=undistFromImg(im,verbose)
+function [udistLUT,e,undistF]=undistFromImg(im,verbose)
 if(~exist('verbose','var'))
     verbose=false;
 end
 [e,s,d]=Calibration.aux.evalProjectiveDisotrtion(im);
 [udistLUT,uxg,uyg,undistx,undisty]=Calibration.aux.generateUndistTables(s,d,size(im));
+
+[yg,xg]=ndgrid(0:size(im,1)-1,0:size(im,2)-1);
+
+
+
+undistF = @(v) griddata(xg+interp2(uxg,uyg,undistx,xg,yg),yg+interp2(uxg,uyg,undisty,xg,yg),double(v),xg,yg);
 if(verbose)
     %%
     figure(sum(mfilename));

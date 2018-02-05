@@ -58,7 +58,7 @@ for i=1:3
     ev = sqrt(sum((d-p).^2,2));
     inliers = inliers & ev<prctile_(ev,90);
 end
-e = rms(ev);
+e = sqrt(mean(ev.^2));
 
 
 s=p';

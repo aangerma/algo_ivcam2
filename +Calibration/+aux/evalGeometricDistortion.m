@@ -8,37 +8,61 @@ p=p(:,:,1:3);
 ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
 xyzmes =reshape(p,[],3)';
 
+distMat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
+emat=distMat(xyzmes)-distMat(ptsOpt);
+e = sqrt(mean(vec(emat).^2));
+ptsOut=[];
 
+if(exist('verbose','var') && verbose)
+    subplot(121);
+    imagesc(abs(emat));
+    axis square
+    colorbar;
+    subplot(122);
+    histogram(vec(emat));
+    axis square
+    %     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
+    %     plotPlane(mdl);
+    %     plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
+    drawnow;
+end
 
-    %find best plane
-    [mdl,d,in]=planeFit(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),[],200);
-%     if(nnz(in)/numel(in)<.90)
-%         e=1e3;
-%         ptsOut=xyzmes;
-%         return;
-%     end
-    pvc=xyzmes-mean(xyzmes(:,in),2);
+return
+%find best plane
+% [mdl,d,in]=planeFit(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:));
+% %     if(nnz(in)/numel(in)<.90)
+% %         e=1e3;
+% %         ptsOut=xyzmes;
+% %         return;
+% %     end
+% c=mean(xyzmes(:,in),2);
+% pvc=xyzmes-c;
+% 
+% %shift to center, find rotation along PCA
+% [u,~,vt]=svd(pvc(:,in)*ptsOpt(:,in)');
+% rotmat=u*vt';
+% 
+% ptsOptR = rotmat*ptsOpt;
+% 
+% errVec = vec(sqrt((sum((pvc-ptsOptR).^2))));
+% if(exist('verbose','var') && verbose)
 %     
-    %project all point to plane
-    pvp=pvc(:,in)-mdl(1:3).*d(:,in);
-    
-    pvp=pvp-mean(pvp,2);
-    %shift to center, find rotation along PCA
-    [u,~,vt]=svd(pvp*ptsOpt(:,in)');
-    rotmat=u*vt';
-    
-    ptsOptR = rotmat*ptsOpt;
-    
-    errVec = vec(sqrt((sum((pvc-ptsOptR).^2))));
-    if(exist('verbose','var') && verbose)
-   
-    plot3(pvc(1,in),pvc(2,in),pvc(3,in),'go',pvc(1,~in),pvc(2,~in),pvc(3,~in),'Ro',ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),'b+')
-%     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
-%     plotPlane(mdl);
-%     plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
-    end
-
- e = sqrt((mean(errVec(in).^2)));
-%  e=prctile(errVec,85);
-ptsOut = reshape(ptsOptR'+mean(xyzmes(:,in),2)',size(p,1),size(p,2),3);
+%     plot3(pvc(1,in)+c(1),pvc(2,in)+c(2),pvc(3,in)+c(3),'go',pvc(1,~in)+c(1),pvc(2,~in)+c(2),pvc(3,~in)+c(3),'Ro',ptsOptR(1,in)+c(1),ptsOptR(2,in)+c(2),ptsOptR(3,in)+c(3),'b+')
+%     %     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
+%     %     plotPlane(mdl);
+%     %     plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
+%     L=250;
+%     set(gca,'xlim',[-L L]+c(1));
+%     set(gca,'ylim',[-L L]+c(2));
+%     set(gca,'zlim',[-L L]+c(3));
+%     xlabel('x');
+%     ylabel('y');
+%     zlabel('z');
+%     axis square
+%     grid on
+% end
+% 
+% e = sqrt((mean(errVec(in).^2)));
+% %  e=prctile(errVec,85);
+% ptsOut = reshape(ptsOptR'+mean(xyzmes(:,in),2)',size(p,1),size(p,2),3);
 end
