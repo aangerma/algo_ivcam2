@@ -27,6 +27,7 @@ for ic=1:10
 end
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
+hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
 step = 12;
@@ -58,10 +59,10 @@ end
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
 hw.shadowUpdate();
 
-step = 15;
+step = 16;
 for ic=1:10
     prevDelay = delaySlow;
-    delaySlow = runSampleIterations(hw, delaySlow, step, 'fastFine', verbose);
+    delaySlow = runSampleIterations(hw, delaySlow, step, 'slowFine', verbose);
     step = floor(step/2);
     if (abs(prevDelay - delaySlow) < 2)
         break;
@@ -142,7 +143,7 @@ if (verbose)
         imagesc(irImages{i},prctile_(irImages{i}(irImages{i}~=0),[10 90])+[0 1e-3]);
     end
     subplot(2,3,4:6)
-    plot(delays,errors,'o-');set(gca,'xlim',[delays(1)-step/2 delays(end)+step/2]);
+    plot(delays,errors,'o-'); %set(gca,'xlim',[delays(1)-step/2 delays(end)+step/2]);
     line([baseDelay baseDelay ], minmax(err),'color','r');
     linkaxes(aa);
     drawnow;

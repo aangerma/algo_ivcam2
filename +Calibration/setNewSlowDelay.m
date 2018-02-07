@@ -1,6 +1,7 @@
 function [imgBefore,imgAfter] = setNewSlowDelay(hw, delay)
 
-hw.runCommand('mwd a00e1b24 a00e1b28 00000001 //JFILsort1bypassMode');
+hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
+hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.runCommand('mwd a00e084c a00e0850 00000000 //DESTaltIrEn');
 hw.shadowUpdate();
 
