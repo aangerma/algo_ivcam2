@@ -4,7 +4,7 @@ fNameNoFiltersScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts
 hw.runScript(fNameNoFiltersScript);
 
 
-initFastDelay = hex2dec('00007110');
+initFastDelay = hex2dec('0000719A');
 initSlowDelay = 32;
 
 
@@ -27,6 +27,7 @@ for ic=1:10
 end
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
+hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
 step = 12;
@@ -58,10 +59,10 @@ end
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
 hw.shadowUpdate();
 
-step = 15;
+step = 16;
 for ic=1:10
     prevDelay = delaySlow;
-    delaySlow = runSampleIterations(hw, delaySlow, step, 'fastFine', verbose);
+    delaySlow = runSampleIterations(hw, delaySlow, step, 'slowFine', verbose);
     step = floor(step/2);
     if (abs(prevDelay - delaySlow) < 2)
         break;
@@ -85,7 +86,7 @@ mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateL
 
 fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
 fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
-slowDelayCmd = 'mwd a0060008 a006000c %08x // RegsAnsyncAsLateLatencyFixEn';
+slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
 
 nSampleIterations = 5;
 R = nSampleIterations;
@@ -114,11 +115,13 @@ for i=1:nSampleIterations
         hw.runCommand(sprintf(slowDelayCmd, delays(i)));
     end
     
+    hw.shadowUpdate();
+    
     hw.restartStream();
     pause(0.2);
     
     frame = hw.getFrame();
-    irImages{i} = frame.i;
+    irImages{i} = double(frame.i);
 end
 
 for i=1:nSampleIterations
@@ -140,8 +143,8 @@ if (verbose)
         imagesc(irImages{i},prctile_(irImages{i}(irImages{i}~=0),[10 90])+[0 1e-3]);
     end
     subplot(2,3,4:6)
-    plot(delays,err,'o-');set(gca,'xlim',[delays(1)-step/2 delays(end)+step/2]);
-    line([baseFastDelay baseFastDelay ],minmax(err),'color','r');
+    plot(delays,errors,'o-'); %set(gca,'xlim',[delays(1)-step/2 delays(end)+step/2]);
+    line([baseDelay baseDelay ], minmax(err),'color','r');
     linkaxes(aa);
     drawnow;
 end
