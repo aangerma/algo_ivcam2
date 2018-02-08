@@ -17,61 +17,139 @@ delayFast = initFastDelay;
 hw.runCommand('mwd a00e084c a00e0850 00000001 //DESTaltIrEn');
 hw.shadowUpdate();
 
-for ic=1:10
-    prevDelay = delayFast;
-    delayFast = runSampleIterations(hw, delayFast, step, 'fastCoarse', verbose);
-    step = floor(step/2);
-    if (abs(prevDelay - delayFast) < 3)
-        break;
-    end
-end
+delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose);
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
 hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
-step = 12;
-for ic=1:10
-    prevDelay = delayFast;
-    delayFast = runSampleIterations(hw, delayFast, step, 'fastFine', verbose);
-    step = floor(step/2);
-    if (abs(prevDelay - delayFast) < 1)
-        break;
-    end
-end
+step = 16;
+delayFast = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose);
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000001 //JFILsort1bypassMode');
+hw.runCommand('mwd a00e1b40 a00e1b44 00000001 //JFILsort2bypassMode');
 hw.runCommand('mwd a00e084c a00e0850 00000000 //DESTaltIrEn');
 hw.shadowUpdate();
 
 delaySlow = initSlowDelay;
 step = 32;
 
-for ic=1:10
-    prevDelay = delaySlow;
-    delaySlow = runSampleIterations(hw, delaySlow, step, 'slowCoarse', verbose);
-    step = floor(step/2);
-    if (abs(prevDelay - delaySlow) < 3)
-        break;
-    end
-end
+delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose);
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
+hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
 step = 16;
+delaySlow = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose);
+
+end
+
+function delay = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose)
+
+coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
+fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
+
+%{
+//---------FAST-------------
+mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
+mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
+//--------SLOW-------------
+mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
+%}
+
+fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
+fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
+slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
+
+R = 3;
+range = -1:1;
+
+images = cell(1, 3);
+errors = zeros(1,R);
+
+delay = initDelay;
+step = initStep;
+
 for ic=1:10
-    prevDelay = delaySlow;
-    delaySlow = runSampleIterations(hw, delaySlow, step, 'slowFine', verbose);
-    step = floor(step/2);
-    if (abs(prevDelay - delaySlow) < 2)
+    if (step <= minStep)
         break;
     end
-end
+    
+    delays = max(0, round(delay+range'*step));
+
+    for i=1:R
+        if ~isempty(images{i})
+            continue;
+        end
+        
+        hw.stopStream();
+        pause(0.1);
+        
+        if (fast)
+            mod8 = mod(delays(i),8);
+            hw.runCommand(sprintf(fastDelayCmdMul8, delays(i) - mod8));
+            hw.runCommand(sprintf(fastDelayCmdSub8, mod8));
+        else
+            hw.runCommand(sprintf(slowDelayCmd, delays(i)));
+        end
+        
+        hw.shadowUpdate();
+        
+        hw.restartStream();
+        pause(0.2);
+        
+        frame = hw.getFrame();
+        images{i} = double(frame.i);
+        
+        if (coarse)
+            errors(i) = Calibration.aux.calcDelayCoarseError(images{i});
+        else
+            errors(i) = Calibration.aux.calcDelayFineError(images{i});
+        end
+    end
+    
+    minInd = minind(errors);
+    bestDelay = delays(minInd);
+    err = errors(minInd);
+    
+    if (verbose)
+        figure(11711); 
+        for i=1:R
+            ax(i)=subplot(2,R,i);
+            imagesc(images{i},prctile_(images{i}(images{i}~=0),[10 90])+[0 1e-3]);
+        end
+        linkaxes(ax);
+        subplot(2,3,4:6); plot(delays,errors,'o-');
+        title (sprintf('%s - step: %d', iterType, int32(step)));
+        drawnow;
+    end
+    
+    delay = bestDelay;
+    
+    switch minInd
+        case 1
+            images{3} = images{2};
+            images{2} = images{1};
+            images{1} = [];
+            errors(2:3) = errors(1:2);
+        case 2
+            images{1} = [];
+            images{3} = [];
+            step = floor(step/2);
+        case 3
+            images{1} = images{2};
+            images{2} = images{3};
+            images{3} = [];
+            errors(1:2) = errors(2:3);
+    end
 
 end
 
-function delay = runSampleIterations(hw, baseDelay, step, iterType, verbose)
+end
+
+
+function delay = run5SampleIterations(hw, baseDelay, step, iterType, verbose)
 
 coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
 fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
@@ -133,22 +211,21 @@ for i=1:nSampleIterations
 end
 
 minInd = minind(errors);
-baseDelay = delays(minInd);
+bestDelay = delays(minInd);
 err = errors(minInd);
 
 if (verbose)
     figure(11711);
     for i=1:R
-        aa(i)=subplot(2,R,i);
+        ax(i)=subplot(2,R,i);
         imagesc(irImages{i},prctile_(irImages{i}(irImages{i}~=0),[10 90])+[0 1e-3]);
     end
-    subplot(2,3,4:6)
-    plot(delays,errors,'o-'); %set(gca,'xlim',[delays(1)-step/2 delays(end)+step/2]);
-    line([baseDelay baseDelay ], minmax(err),'color','r');
-    linkaxes(aa);
+    linkaxes(ax);
+    subplot(2,3,4:6); plot(delays,errors,'o-');
+    title iterType;
     drawnow;
 end
 
-delay = baseDelay;
+delay = bestDelay;
 
 end
