@@ -51,7 +51,7 @@ undistfn=fullfile(configFldr,filesep,'FRMWundistModel.bin32');
 luts.FRMW.undistModel=zeros(2048,1,'uint32');
 fw.setLut(luts);
 resetregs.DIGG.undistBypass=false;
-resetregs.DEST.txFRQpd=single([5000 5000 5000]);
+resetregs.DEST.txFRQpd=single([0 0 0]);
 resetregs.JFIL.invConfThr = 0; % return to default at the end
 fw.setRegs(resetregs,[]);
 hw.write('DIGGundistModel');
