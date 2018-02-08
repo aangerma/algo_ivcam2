@@ -52,24 +52,25 @@ luts.FRMW.undistModel=zeros(2048,1,'uint32');
 fw.setLut(luts);
 resetregs.DIGG.undistBypass=false;
 resetregs.DEST.txFRQpd=single([0 0 0]);
+resetregs.JFIL.invConfThr = 0; % return to default at the end
 fw.setRegs(resetregs,[]);
 hw.write('DIGGundistModel');
-
 fprintff('done\n');
-for i=1:30
-d_=hw.getFrame();
-end
+pause(1)% Wait a bit before reading frames. We don't want to use frames 
 
-collapseM = @(x) median(reshape([d_.(x)],size(d_(1).(x),1),size(d_(1).(x),2),[]),3);
-d.z=collapseM('z');
-d.i=collapseM('i');
-d.c=collapseM('c');
+
+
 
 
 for i=1:3
-   
-    [outregs,minerr,irNew]=Calibration.aux.calibDFZ(d,regs);
+    fprintff('Collecting frames...');
+    d = readFrames(hw,N,true);
+    fprintff('done\n');
+    
+    fprintff('Optimizing Delay, FOV and zenith...');
+    [outregs,~,irNew]=Calibration.aux.calibDFZ(d,regs);
     regs=Firmware.mergeRegs(regs,outregs);
+    fprintff('done\n');
     
     [udistLUTinc,e,undistF]=Calibration.aux.undistFromImg(irNew,1);
     luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
@@ -85,3 +86,16 @@ fprintff('done\n');
 fw.genMWDcmd([],fullfile(configFldr,filesep,'algoConfig.txt'));
 end
 
+function stream = readFrames(hw,N,avg)
+for i = 1:N
+   stream(i) = hw.getFrame(); 
+end
+if avg
+    % Use an average of the stream for calibration:
+    collapseM = @(x) median(reshape([dStream.(x)],size(dStream(1).(x),1),size(dStream(1).(x),2),[]),3);
+    avgD.z=collapseM('z');
+    avgD.i=collapseM('i');
+    avgD.c=collapseM('c');
+    stream = avgD;
+end
+end
