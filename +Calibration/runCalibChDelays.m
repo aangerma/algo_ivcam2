@@ -1,4 +1,12 @@
-function [delayFast, delaySlow] = runCalibChDelays(hw, verbose)
+function [delayFast, delaySlow] = runCalibChDelays(hw, verbose, debugOut)
+
+if ~exist('verbose')
+  verbose = false;  
+end
+
+if ~exist('debugOut')
+  debugOut = false;  
+end
 
 fNameNoFiltersScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','irDelayNoFilters.txt');
 hw.runScript(fNameNoFiltersScript);
@@ -17,14 +25,14 @@ delayFast = initFastDelay;
 hw.runCommand('mwd a00e084c a00e0850 00000001 //DESTaltIrEn');
 hw.shadowUpdate();
 
-delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose);
+delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugOut);
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
 hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
 step = 16;
-delayFast = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose);
+delayFast = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugOut);
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000001 //JFILsort1bypassMode');
 hw.runCommand('mwd a00e1b40 a00e1b44 00000001 //JFILsort2bypassMode');
@@ -34,18 +42,18 @@ hw.shadowUpdate();
 delaySlow = initSlowDelay;
 step = 32;
 
-delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose);
+delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugOut);
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
 hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
 step = 16;
-delaySlow = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose);
+delaySlow = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugOut);
 
 end
 
-function delay = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose)
+function delay = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose, debugOut)
 
 coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
 fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
@@ -101,6 +109,11 @@ for ic=1:10
         
         frame = hw.getFrame();
         images{i} = double(frame.i);
+        
+        if (debugOut)
+            irFilename = sprintf('irFrame_%s_%05d.bini', iterType, delay);
+            io.writeBin(irFilename, frame.i);
+        end
         
         if (coarse)
             errors(i) = Calibration.aux.calcDelayCoarseError(images{i});
