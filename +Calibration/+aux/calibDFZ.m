@@ -1,4 +1,4 @@
-function [outregs,minerr,dnew]=calibDFZ(d,regs,verbose)
+function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose)
 
 if(~exist('verbose','var'))
     verbose=true;
@@ -23,11 +23,10 @@ rtd=rtd+regs.DEST.txFRQpd(1);
 [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
 [angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
 
-
 %xy2ang verification
-[~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
-assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
-assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
+% [~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
+% assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
+% assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
 
 %find CB points
 [p,bsz] = detectCheckerboardPoints(normByMax(im)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
@@ -37,52 +36,67 @@ it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Us
 rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
 
 % Define optimization settings
-opt.maxIter=1000;
+%%
+opt.maxIter=10000;
 opt.OutputFcn=[];
-opt.TolFun = 0.025;
+opt.TolFun = 0.0025;
 opt.TolX = inf;
 opt.Display='none';
 
 
-x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV regs.FRMW.xoffset]);
-xL = [40 40 4000   -3 -3 0];
-xH = [90 90 6000   3  3 0];
-
-[e,v,xF,yF]=errFunc(rpt,regs,x0,verbose);
+angXShift = 0;
+x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV angXShift]);
+% x0 = double([68.186935 52.944909 5153.491386 0.299999 -0.283499 angXShift])
+xL = [40 40 4000   -.3 -.3 0];
+xH = [90 90 6000    .3  .3 0];
+[e,eFit]=errFunc(rpt,regs,x0,verbose);
 
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
 % [xbest,minerr]=fminsearch(@(x) errFunc(rpt,regs,x,0),x0,opt);
 outregs = x2regs(xbest,regs);
-
-[e,v,xF,yF]=errFunc(rpt,outregs,xbest,verbose);
+rpt_new = cat(3,it(rtd),it(angx+xbest(6)),it(angy));
+[e,efit]=errFunc(rpt_new,outregs,xbest,verbose);
+%% 
 % 
-% 
-% for zen = 0
-%     xbest(4) = single(zen);
+% for sh = -1000:200:1000
+%     regs.FRMW.marginL = 200;
+%     regs.FRMW.marginR = -200;
+%     
 %     outregs = x2regs(xbest,regs);
-%     [e,v,xF,yF]=errFunc(rpt,outregs,xbest,verbose);
+%     figure
+%     [e,v,xF,yF]=errFunc(cat(3,it(rtd),it(angx),it(angy)),outregs,xbest,verbose);
 %     view([0,90])
 %     
 % end
 
 
-[~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,outregs,Logger(),[]);
+[zNewVals,xF,yF]=rpt2z(cat(3,rtd,angx+xbest(6),angy),outregs);
 
 ok=~isnan(xF) & ~isnan(yF)  & d.i>1;
-dnew.z = griddata(double(xF(ok)),double(yF(ok)),double(d.z(ok)),xg,yg);
+dnew.z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
 dnew.i = griddata(double(xF(ok)),double(yF(ok)),double(d.i(ok)),xg,yg);
 dnew.c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
 
 end
 
 
+function [z,xF,yF] = rpt2z(rpt,rtlRegs)
 
-function [e,v,xF,yF]=errFunc(rpt,rtlRegs,X,verbose)
+[~,~,xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
+rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
+[sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
+r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+z = r.*cosw.*cosx;
+z = z * rtlRegs.GNRL.zNorm;
+end
+function [e,eFit]=errFunc(rpt,rtlRegs,X,verbose)
 %build registers array
 
 rtlRegs = x2regs(X,rtlRegs);
 
-[~,~,xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
+[~,~,xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2)+X(6),rpt(:,:,3),rtlRegs,Logger(),[]);
 
 
 rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
@@ -98,9 +112,12 @@ y = r.*sinw;
 v=cat(3,x,y,z);
 
 
-e=Calibration.aux.evalGeometricDistortion(v,verbose);
+[e,eFit]=Calibration.aux.evalGeometricDistortion(v,verbose);
 if(verbose)
-    fprintf('%f ',[X e]);
+    fprintf('%f ',[X]);
+    fprintf('eAlex: %f ',[e]);
+    fprintf('eFit: %f ',[eFit]);
+    
     fprintf('\n');
 end
 end
@@ -117,8 +134,8 @@ iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
 iterRegs.FRMW.marginL=int16(0);
 iterRegs.FRMW.marginT=int16(0);
 
-iterRegs.FRMW.xoffset=single(x(6));
-% iterRegs.FRMW.yoffset=single(0);
+iterRegs.FRMW.xoffset=single(0);
+iterRegs.FRMW.yoffset=single(0);
 iterRegs.FRMW.undistXfovFactor=single(1);
 iterRegs.FRMW.undistYfovFactor=single(1);
 iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
