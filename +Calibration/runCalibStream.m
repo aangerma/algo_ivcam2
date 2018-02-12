@@ -51,16 +51,8 @@ resetregs.DEST.txFRQpd=single([0 0 0]);
 fw.setRegs(resetregs,[]);
 hw.write();
 fprintff('Done',true);
-for i=1:30
-    d_=hw.getFrame();
-end
+d = readFrames(hw,30,true);
 
-fprintff('DDFZ calibration...',false);
-
-collapseM = @(x) median(reshape([d_.(x)],size(d_(1).(x),1),size(d_(1).(x),2),[]),3);
-d.z=collapseM('z');
-d.i=collapseM('i');
-d.c=collapseM('c');
 
 
 
@@ -92,3 +84,16 @@ fprintff('done\n');
 fw.genMWDcmd([],fullfile(outputFolder,filesep,'algoConfig.txt'));
 end
 
+function stream = readFrames(hw,N,avg)
+for i = 1:N
+   stream(i) = hw.getFrame(); 
+end
+if avg
+    % Use an average of the stream for calibration:
+    collapseM = @(x) median(reshape([dStream.(x)],size(dStream(1).(x),1),size(dStream(1).(x),2),[]),3);
+    avgD.z=collapseM('z');
+    avgD.i=collapseM('i');
+    avgD.c=collapseM('c');
+    stream = avgD;
+end
+end

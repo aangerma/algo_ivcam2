@@ -7,23 +7,24 @@ p=p(:,:,1:3);
 [oy,ox]=ndgrid(linspace(-1,1,h)*(h-1)*tileSizeMM/2,linspace(-1,1,w)*(w-1)*tileSizeMM/2);
 ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
 xyzmes =reshape(p,[],3)';
-
+valid = ~isnan(sum(xyzmes));
 distMat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
-emat=distMat(xyzmes)-distMat(ptsOpt);
-e = sqrt(mean(vec(emat).^2));
+emat=abs(distMat(xyzmes(:,valid))-distMat(ptsOpt(:,valid)));
+e = mean(emat(:));
 ptsOut=[];
 
 if(exist('verbose','var') && verbose)
-    subplot(121);
-    imagesc(abs(emat));
-    axis square
-    colorbar;
-    subplot(122);
-    histogram(vec(emat));
-    axis square
+%     subplot(121);
+%     imagesc(emat);
+%     axis square
+%     colorbar;
+%     subplot(122);
+%     histogram(emat(:));
+%     axis square
     %     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
     %     plotPlane(mdl);
-    %     plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOptR(1,:),ptsOptR(2,:),ptsOptR(3,:),'g.');
+    figure
+    plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOpt(1,:),ptsOpt(2,:),ptsOpt(3,:),'g.');
     drawnow;
 end
 
