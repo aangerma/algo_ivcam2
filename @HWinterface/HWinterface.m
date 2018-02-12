@@ -62,12 +62,15 @@ classdef HWinterface <handle
             meta = obj.m_fw.genMWDcmd(regTokens);
             meta = str2cell(meta,newline);
             meta(end) = [];%only newLine
+%             regStruct=[];
             for i=1:length(meta)
                 str = strsplit(meta{i});
                 res = obj.cmd(['mrd ' str{2} ' ' str{3}]);
                 res = res(end-7:end);
+%                 regStruct.(a(1).algoBlock).(a(1).algoName)=uint32(hex2dec(res));
                 disp([str{5}(3:end) ' = ' res]);
             end
+%             obj.m_fw.setRegs(regStruct);
         end
         
         
