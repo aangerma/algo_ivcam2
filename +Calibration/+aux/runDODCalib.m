@@ -23,7 +23,9 @@ iter = 6;
 dProg = cell(1,iter+1);
 dProg{1} = d;
 regsProg = cell(1,iter+1);
+lutsProg = cell(1,iter+1);
 regsProg{1} = regs;
+lutsProg{1} = luts;
 eProg = zeros(3,iter);
 for i = 1:iter
     fprintff('Optimizing Delay, FOV and zenith...');
@@ -34,15 +36,16 @@ for i = 1:iter
     fprintff('Optimizing undistort map...');
     [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,verbose);
     luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
+    lutsProg{i+1} = luts;
     fprintff('done\n');
 
     dProg{i+1}.z=undistF(dProg{i+1}.z);
     dProg{i+1}.i=undistF(dProg{i+1}.i);
     dProg{i+1}.c=undistF(dProg{i+1}.c);
 end
-
-calibRegs = regsProg{iter+1};
-calibLuts = luts;
+[~,bestI] = min(eProg(1,:));
+calibRegs = regsProg{bestI+1};
+calibLuts = lutsProg{bestI+1};
 
 if verbose
     figure

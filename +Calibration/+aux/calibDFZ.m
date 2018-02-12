@@ -49,7 +49,6 @@ x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.lasera
 % x0 = double([68.186935 52.944909 5153.491386 0.299999 -0.283499 angXShift])
 xL = [40 40 4000   -.3 -.3 0];
 xH = [90 90 6000    .3  .3 0];
-load
 [e,eFit]=errFunc(rpt,regs,x0,verbose);
 
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
