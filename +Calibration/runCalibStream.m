@@ -7,7 +7,7 @@ end
 fprintff('Loading Firmware...',false);
 fw=Pipe.loadFirmware(configFldr);
 fprintff('Done',true);
-fprintff('Connecting HW interface...');
+fprintff('Connecting HW interface...',false);
 hw=HWinterface(fw);
 fprintff('Done',true);
 %% ::calibrate delays::
@@ -54,7 +54,7 @@ fprintff('Done',true);
 d = readFrames(hw,30,true);
 
 
-
+[regs,luts]=fw.get();
 
 
 [~,~,irNew]=Calibration.aux.calibDFZ(d,regs,verbose);
@@ -90,7 +90,7 @@ for i = 1:N
 end
 if avg
     % Use an average of the stream for calibration:
-    collapseM = @(x) median(reshape([dStream.(x)],size(dStream(1).(x),1),size(dStream(1).(x),2),[]),3);
+    collapseM = @(x) median(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
     avgD.z=collapseM('z');
     avgD.i=collapseM('i');
     avgD.c=collapseM('c');
