@@ -1,4 +1,4 @@
-function [e,ptsOut]=evalGeometricDistortion(p,verbose)
+function [e,e_dist,ptsOut]=evalGeometricDistortion(p,verbose)
 %%
 tileSizeMM = 30;
 h=size(p,1);
@@ -12,20 +12,23 @@ distMat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
 emat=abs(distMat(xyzmes(:,valid))-distMat(ptsOpt(:,valid)));
 e = mean(emat(:));
 ptsOut=[];
-
+[e_dist,fitP] = rigidFit(xyzmes,ptsOpt);
 if(exist('verbose','var') && verbose)
-%     subplot(121);
+%     subplot(131);
 %     imagesc(emat);
 %     axis square
 %     colorbar;
-%     subplot(122);
+%     subplot(132);
 %     histogram(emat(:));
 %     axis square
     %     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
     %     plotPlane(mdl);
-    figure
-    plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',ptsOpt(1,:),ptsOpt(2,:),ptsOpt(3,:),'g.');
+%     subplot(133);
+    plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',fitP(1,:),fitP(2,:),fitP(3,:),'g.');
+    xlabel('x'),ylabel('y'),zlabel('z')
+    legend({'Measurements' 'Reference'})
     drawnow;
+    axis equal
 end
 
 return
@@ -66,4 +69,16 @@ return
 % e = sqrt((mean(errVec(in).^2)));
 % %  e=prctile(errVec,85);
 % ptsOut = reshape(ptsOptR'+mean(xyzmes(:,in),2)',size(p,1),size(p,2),3);
+end
+function [e_dist,fitP] = rigidFit(p1,p2)
+% finds optimal rot and translation. Returns the error.
+c = mean(p1,2);
+p1=p1-mean(p1,2);
+p2=p2-mean(p2,2);
+
+%shift to center, find rotation along PCA
+[u,~,vt]=svd(p1*p2');
+rotmat=u*vt';
+e_dist = mean(vec(sqrt((sum((p1-rotmat*p2).^2)))));
+fitP = rotmat*p2+c; 
 end
