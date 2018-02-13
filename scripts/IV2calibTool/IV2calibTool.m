@@ -12,6 +12,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         Button_2                        matlab.ui.control.Button
         Button_3                        matlab.ui.control.Button
         logarea                         matlab.ui.control.TextArea
+        verboseCheckBox                 matlab.ui.control.CheckBox
     end
     
     
@@ -134,10 +135,12 @@ classdef IV2calibTool < matlab.apps.AppBase
             fprintffS=@(varargin) app.fprintff(varargin{:});
             try
                 app.showTargetRequestFig('calibTarget','Adjust target such that the target edges appear within the image');
-                Calibration.runCalibStream(app.Configdirectorty.Value,app.Outputdirectorty.Value,fprintffS);
+                Calibration.runCalibStream(app.Configdirectorty.Value,app.Outputdirectorty.Value,fprintffS,app.verboseCheckBox.Value);
                 app.showTargetRequestFig('undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
             catch e
+                fprintffS('',true);
+                fprintffS(sprintf('[!] ERROR:%s',e.message),true);
                 errordlg(e.message);
             end
             fclose(app.m_logfid);
@@ -200,6 +203,12 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.logarea = uitextarea(app.IV2calibrationtoolUIFigure);
             app.logarea.Editable = 'off';
             app.logarea.Position = [1 1 640 289];
+            
+              % Create verboseCheckBox
+            app.verboseCheckBox = uicheckbox(app.IV2calibrationtoolUIFigure);
+            app.verboseCheckBox.Text = 'verbose';
+            app.verboseCheckBox.Position = [110 368 486 22];
+            
         end
     end
     
