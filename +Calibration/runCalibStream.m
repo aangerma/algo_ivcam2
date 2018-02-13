@@ -8,7 +8,7 @@ fprintff('Loading Firmware...',false);
 fw=Pipe.loadFirmware(configFldr);
 fprintff('Done',true);
 fprintff('Connecting HW interface...',false);
-hw=HWinterface(fw);
+% hw=HWinterface(fw);
 fprintff('Done',true);
 %% ::calibrate delays::
 fprintff('Depth delay calibration...',false);
@@ -41,59 +41,42 @@ fprintff('Done',true);
 
 %% ::Get image::
 
-fprintff('DDFZ init...',false);
-
-
+fprintff('DOD init...\n',false);
+% Update some regs for the optimization
 luts.FRMW.undistModel=zeros(2048,1,'uint32');
+initRegs.JFIL.bypass = false;
+initRegs.DIGG.undistBypass=false;
+initRegs.DEST.txFRQpd=single([5000 5000 5000]);
+initRegs.JFIL.invConfThr = uint8(0); % return to default at the end
+fw.setRegs(initRegs,configFldr);
 fw.setLut(luts);
-resetregs.DIGG.undistBypass=false;
-resetregs.DEST.txFRQpd=single([0 0 0]);
-fw.setRegs(resetregs,[]);
-hw.write();
+[regs,luts] = fw.get();
+% hw.write('FRMWundistModel|JFILbypass|DIGGundistBypass|DESTtxFRQpd|JFILinvConfThr')
+
+nFrames = 30;
+% [~,avgD] = readFrames(hw,nFrames); % Read an average of 30 frames
+[dodRegs,dodLuts,score] = Calibration.aux.runDODCalib(avgD,regs,luts,verbose);
 fprintff('Done',true);
-d = readFrames(hw,30,true);
 
-
-[regs,luts]=fw.get();
-
-
-[~,~,irNew]=Calibration.aux.calibDFZ(d,regs,verbose);
-[udistLUTinc,~,undistF]=Calibration.aux.undistFromImg(irNew,1);
-luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
-d.z=undistF(d.z);
-d.i=undistF(d.i);
-d.c=undistF(d.c);
-[outregs,minerr]=Calibration.aux.calibDFZ(d,regs,verbose);
-
-
-
-fprintff('Done',true);
-score=minerr;
-
-fprintff('[*] Score: %g',minerr,true);
-
-
-
-
+fprintff('[*] DOD Score: %g',score,true);
+fprintff('Saving DOD calibrated configuration...',false);
 calibfn = fullfile(outputFolder,filesep,'calib.csv');
 undistfn=fullfile(outputFolder,filesep,'FRMWundistModel.bin32');
-io.writeBin(undistfn,luts.FRMW.undistModel)
-fw.setRegs(outregs,calibfn);
+io.writeBin(undistfn,dodLuts.FRMW.undistModel)
+fw.setRegs(dodRegs,calibfn);
+fw.setLuts(dodLuts);
 fw.writeUpdated(calibfn)
-fprintff('done\n');
+fprintff('Done',true);
 fw.genMWDcmd([],fullfile(outputFolder,filesep,'algoConfig.txt'));
 end
 
-function stream = readFrames(hw,N,avg)
+function [stream,avgD] = readFrames(hw,N)
 for i = 1:N
    stream(i) = hw.getFrame(); 
 end
-if avg
-    % Use an average of the stream for calibration:
-    collapseM = @(x) median(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
-    avgD.z=collapseM('z');
-    avgD.i=collapseM('i');
-    avgD.c=collapseM('c');
-    stream = avgD;
-end
+collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
+avgD.z=collapseM('z');
+avgD.i=collapseM('i');
+avgD.c=collapseM('c');
+
 end
