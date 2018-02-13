@@ -1,4 +1,4 @@
-function [calibRegs,calibLuts] = runDODCalib(d,regs,luts,verbose)
+function [calibRegs,calibLuts,score] = runDODCalib(d,regs,luts,verbose)
 %RUNDODCALIB calibrates the following properties: 
 % Zenith - The offset angles of the mirror. Affects the IR and Depth.
 % Undistortion Table - a 32x32 tables that remap an x-y locations. Affects the IR and Depth.
@@ -18,8 +18,9 @@ function [calibRegs,calibLuts] = runDODCalib(d,regs,luts,verbose)
 % The calibration iteratively optimize the Zenith,FOV and System delay.
 % After convergence, it calculates the distortion map to fix any residual
 % errors.
+warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 fprintff = @(varargin) verbose&&fprintf(varargin{:});
-iter = 6;
+iter = 2;
 dProg = cell(1,iter+1);
 dProg{1} = d;
 regsProg = cell(1,iter+1);
@@ -28,12 +29,11 @@ regsProg{1} = regs;
 lutsProg{1} = luts;
 eProg = zeros(3,iter);
 for i = 1:iter
-    fprintff('Optimizing Delay, FOV and zenith...');
+    fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
     [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose);
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},outregs);
-    fprintff('done\n');
     
-    fprintff('Optimizing undistort map...');
+    fprintff('#%d Optimizing undistort map... ',i);
     [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,verbose);
     luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
     lutsProg{i+1} = luts;
@@ -43,29 +43,15 @@ for i = 1:iter
     dProg{i+1}.i=undistF(dProg{i+1}.i);
     dProg{i+1}.c=undistF(dProg{i+1}.c);
 end
-[~,bestI] = min(eProg(1,:));
+[score,bestI] = min(eProg(1,:));
 calibRegs = regsProg{bestI+1};
 calibLuts = lutsProg{bestI+1};
 
 if verbose
-    figure
-    for i = 1:iter+1
-        tabplot;
-        imagesc(dProg{i}.i)
-    end
-
-%     figure 
-%     for i = 1:iter+1
-%         tabplot;
-%         cbp = Calibration.aux.getCBPoints3D(dProg{i},regsProg{i});
-%         plot3(cbp(1,:),cbp(2,:),cbp(3,:),'ro');
-%         axis equal
-%     end
-    linkprop(findobj(gcf,'type','axes'),{'xlim','ylim','zlim','CameraTarget','CameraUpVector','CameraPosition'})
-    fprintf('Geometric Error per iter:')
-    eProg(1,:)
-    fprintf('Geometric Fitting Error per iter:')
-    eProg(2,:)
-    fprintf('Distortion Error per iter:')
-    eProg(3,:)
+    fprintf('Geometric Error per iter:         ')
+    fprintf('%5.2f ',eProg(1,:)),fprintf('\n')
+    fprintf('Geometric Fitting Error per iter: ')
+    fprintf('%5.2f ',eProg(2,:)),fprintf('\n')
+    fprintf('Distortion Error per iter:        ')
+    fprintf('%5.2f ',eProg(3,:)),fprintf('\n')
 end

@@ -1,10 +1,11 @@
-xL = [40 40 4000   0 0];
-xH = [90 90 6000    0  0];
-nFov = 10;
-nDelay = 10;
-nZ = 1;
+xL = [40 40 4000   -3  -3];
+xH = [90 90 6000    3   3];
+nFov = 20;
+nDelay = 20;
+nZ = 3;
 resStruct = Calibration.calibrationGridSearch(xL,xH,nFov,nDelay,nZ);
-save 'X:\Users\tmund\Calibration\resSturctOpt.mat' 'resStruct'
+save 'X:\Users\tmund\Calibration\resSturctOptFull.mat' 'resStruct'
+
 
 %% for each delay: Plot eAlex as a function of the fovX and fovY (Using zenith values 0):
 eA = resStruct.eAlex;
