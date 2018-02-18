@@ -1,4 +1,4 @@
-function resDODParams = runDODCalib(hw,verbose)
+function resDODParams = runDODCalib(hw,verbose,varargin)
 %RUNDODCALIB calibrates the following properties: 
 % Zenith - The offset angles of the mirror. Affects the IR and Depth.
 % Undistortion Table - a 32x32 tables that remap an x-y locations. Affects the IR and Depth.
@@ -18,9 +18,15 @@ function resDODParams = runDODCalib(hw,verbose)
 % The calibration iteratively optimize the Zenith,FOV and System delay.
 % After convergence, it calculates the distortion map to fix any residual
 % errors.
-preAlgoConfig = fullfile(fullfile(fileparts(mfilename('fullpath')),'..'),'IVCAM20Scripts','initFW.mat');
-initFW = load(preAlgoConfig);
-
+if nargin == 2
+    preAlgoConfig = fullfile(fullfile(fileparts(mfilename('fullpath')),'..'),'IVCAM20Scripts','initFW.mat');
+    initFW = load(preAlgoConfig);
+    luts = initFW.luts;
+    regs = initFW.regs;
+else
+    fw = varargin{1};
+    [regs, luts] = fw.get();
+end
 d = readAvgFrame(hw,30);
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
@@ -30,8 +36,8 @@ dProg = cell(1,iter+1);
 dProg{1} = d;
 regsProg = cell(1,iter+1);
 lutsProg = cell(1,iter+1);
-regsProg{1} = initFW.regs;
-lutsProg{1} = initFW.luts;
+regsProg{1} = regs;
+lutsProg{1} = luts;
 eProg = zeros(3,iter);
 for i = 1:iter
     fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
@@ -40,8 +46,8 @@ for i = 1:iter
     
     fprintff('#%d Optimizing undistort map... ',i);
     [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,0);
-    initFW.luts.FRMW.undistModel = typecast(typecast(initFW.luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
-    lutsProg{i+1} = initFW.luts;
+    luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
+    lutsProg{i+1} = luts;
     fprintff('done\n');
 
     dProg{i+1}.z=undistF(dProg{i+1}.z);
@@ -51,6 +57,8 @@ end
 [resDODParams.score,bestI] = min(eProg(1,:));
 resDODParams.regs = regsProg{bestI+1};
 resDODParams.luts = lutsProg{bestI+1};
+resDODParams.eFit = eProg(2,bestI);
+resDODParams.eDist = eProg(3,bestI);
 
 if verbose
     fprintf('Geometric Error per iter:         ')

@@ -9,8 +9,8 @@ fw.setLut(resDODParams.luts);
 [regs,luts] = fw.get();
 fw.genMWDcmd([],filename);
 
-dodFW = fullfile(fullfile(fileparts(mfilename('fullpath')),'..'),'IVCAM20Scripts','dodFW.mat');
-save(dodFW,'regs','luts')
+% dodFW = fullfile(filename,'..','dodFW.mat');
+% save(dodFW,'regs','luts')
 
 end
 

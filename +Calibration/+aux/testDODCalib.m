@@ -1,6 +1,5 @@
 %{
 1. A function writes the new configuration to IVCAM20Scripts. Write only relevant regs.
-2. 30 frames should be taken in the function runDODCalib.
 %}
 % This script loads the current configuration, 
 %% Load the current configuration
@@ -31,27 +30,10 @@ hw=HWinterface();
 % mwd  fffe3840 fffe3844 3F0CCCCD  //dsm horizontal shift
 % mwd  fffe3844 fffe3848 457A0000  //dsm horizontal scale
 
+resDODParams = Calibration.aux.runDODCalib(hw,1,fw);
 
-
-%%
-
-md.z = zeros(480,640,'uint16');
-md.i = zeros(480,640,'uint8');
-% md.c = zeros(480,640,'uint8');
-for i = 1:30
-    fprintf('%d \n',i)
-    d(i) = hw.getFrame();
-    md.z = md.z+d(i).z/30;
-    md.i = md.i+d(i).i/30;
-%     md.c = md.c+d(i).c/30;
-end
-
-
-
-[calibRegs,calibLuts,score] = Calibration.aux.runDODCalib(md,regs,luts,1);
-
-fw.setLut(calibLuts);
-fw.setRegs(calibRegs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
+fw.setLut(resDODParams.luts);
+fw.setRegs(resDODParams.regs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
 [regs,luts] = fw.get();
 fw.genMWDcmd([],'C:\$WORK\Per_Unit_Config\Current\algoConfig1.txt');
 

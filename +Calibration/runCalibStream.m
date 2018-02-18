@@ -48,7 +48,7 @@ resDODParams = Calibration.aux.runDODCalib(hw,verbose);
 fnDODParams = fullfile(outputFolder, 'dod_params.txt');
 Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams);
 fprintff('Done',true);
+fprintff('[*] DOD Score: eAlex=%2.2fmm. eFit=%2.2fmm. eDistortion=%2.2fmm.  \n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
 
-fprintff('[*] DOD Score: %2.2f',fnDODParams.score,true);
 
 end
