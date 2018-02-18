@@ -1,4 +1,4 @@
-function [calibRegs,calibLuts,score] = runDODCalib(d,regs,luts,verbose)
+function resDODParams = runDODCalib(hw,verbose)
 %RUNDODCALIB calibrates the following properties: 
 % Zenith - The offset angles of the mirror. Affects the IR and Depth.
 % Undistortion Table - a 32x32 tables that remap an x-y locations. Affects the IR and Depth.
@@ -18,15 +18,20 @@ function [calibRegs,calibLuts,score] = runDODCalib(d,regs,luts,verbose)
 % The calibration iteratively optimize the Zenith,FOV and System delay.
 % After convergence, it calculates the distortion map to fix any residual
 % errors.
+preAlgoConfig = fullfile(fullfile(fileparts(mfilename('fullpath')),'..'),'IVCAM20Scripts','initFW.mat');
+initFW = load(preAlgoConfig);
+
+d = readAvgFrame(hw,30);
+
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 fprintff = @(varargin) verbose&&fprintf(varargin{:});
-iter = 2;
+iter = 5;
 dProg = cell(1,iter+1);
 dProg{1} = d;
 regsProg = cell(1,iter+1);
 lutsProg = cell(1,iter+1);
-regsProg{1} = regs;
-lutsProg{1} = luts;
+regsProg{1} = initFW.regs;
+lutsProg{1} = initFW.luts;
 eProg = zeros(3,iter);
 for i = 1:iter
     fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
@@ -35,17 +40,17 @@ for i = 1:iter
     
     fprintff('#%d Optimizing undistort map... ',i);
     [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,0);
-    luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
-    lutsProg{i+1} = luts;
+    initFW.luts.FRMW.undistModel = typecast(typecast(initFW.luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
+    lutsProg{i+1} = initFW.luts;
     fprintff('done\n');
 
     dProg{i+1}.z=undistF(dProg{i+1}.z);
     dProg{i+1}.i=undistF(dProg{i+1}.i);
-    dProg{i+1}.c=undistF(dProg{i+1}.c);
+%     dProg{i+1}.c=undistF(dProg{i+1}.c);
 end
-[score,bestI] = min(eProg(1,:));
-calibRegs = regsProg{bestI+1};
-calibLuts = lutsProg{bestI+1};
+[resDODParams.score,bestI] = min(eProg(1,:));
+resDODParams.regs = regsProg{bestI+1};
+resDODParams.luts = lutsProg{bestI+1};
 
 if verbose
     fprintf('Geometric Error per iter:         ')
@@ -54,4 +59,16 @@ if verbose
     fprintf('%5.2f ',eProg(2,:)),fprintf('\n')
     fprintf('Distortion Error per iter:        ')
     fprintf('%5.2f ',eProg(3,:)),fprintf('\n')
+end
+
+end
+
+
+function avgD = readAvgFrame(hw,N)
+for i = 1:N
+   stream(i) = hw.getFrame(); 
+end
+collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
+avgD.z=collapseM('z');
+avgD.i=collapseM('i');
 end
