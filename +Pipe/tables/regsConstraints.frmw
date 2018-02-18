@@ -199,5 +199,5 @@ sum([[JFILsort3dWeights]])<128
 
 
 %max fov (non spherical)
-[DIGGundistBypass] | [FRMWyfov]*[FRMWundistYfovFactor]<=60
-[DIGGundistBypass] | [FRMWxfov]*[FRMWundistXfovFactor]<=72
+[DIGGundistBypass] | [FRMWyfov]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov]*[FRMWundistXfovFactor]<=89

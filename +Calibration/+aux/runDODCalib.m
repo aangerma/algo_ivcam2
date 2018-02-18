@@ -34,7 +34,7 @@ for i = 1:iter
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},outregs);
     
     fprintff('#%d Optimizing undistort map... ',i);
-    [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,verbose);
+    [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,0);
     luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
     lutsProg{i+1} = luts;
     fprintff('done\n');

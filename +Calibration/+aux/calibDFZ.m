@@ -56,7 +56,7 @@ printErrAndX(x0,e,eFit,'X0:',verbose)
 % [xbest,minerr]=fminsearch(@(x) errFunc(rpt,regs,x,0),x0,opt);
 outregs = x2regs(xbest,regs);
 rpt_new = cat(3,it(rtd),it(angx+xbest(6)),it(angy));
-[e,eFit]=errFunc(rpt_new,outregs,xbest,0);
+[e,eFit]=errFunc(rpt_new,outregs,xbest,1);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
 
 [zNewVals,xF,yF]=rpt2z(cat(3,rtd,angx+xbest(6),angy),outregs);
@@ -100,9 +100,7 @@ v=cat(3,x,y,z);
 
 
 [e,eFit]=Calibration.aux.evalGeometricDistortion(v,verbose);
-if(verbose)
-    printErrAndX(X,e,eFit)
-end
+
 end
 function printErrAndX(X,e,eFit,preSTR,verbose)
 if verbose 
