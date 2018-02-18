@@ -1,4 +1,4 @@
-function [delayFast, delaySlow] = runCalibChDelays(hw, verbose, debugOut)
+function [res] = runCalibChDelays(hw, verbose, debugOut)
 
 if ~exist('verbose')
   verbose = false;  
@@ -32,7 +32,15 @@ hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
 step = 16;
-delayFast = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugOut);
+try
+    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugOut);
+catch
+    warning('fastFine failed');
+    errFast = 1000; % in pixels
+end
+
+res.delayFast = delayFast;
+res.errFast = errFast;
 
 hw.runCommand('mwd a00e1b24 a00e1b28 00000001 //JFILsort1bypassMode');
 hw.runCommand('mwd a00e1b40 a00e1b44 00000001 //JFILsort2bypassMode');
@@ -49,11 +57,19 @@ hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
 hw.shadowUpdate();
 
 step = 16;
-delaySlow = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugOut);
+try
+    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugOut);
+catch
+    warning('slowFine failed');
+    errSlow = 1000; % in pixels
+end
+
+res.delaySlow = delaySlow;
+res.errSlow = errSlow;
 
 end
 
-function delay = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose, debugOut)
+function [delay, err] = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose, debugOut)
 
 coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
 fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
@@ -92,7 +108,7 @@ for ic=1:10
         end
         
         hw.stopStream();
-        pause(0.1);
+        pause(0.05);
         
         if (fast)
             mod8 = mod(delays(i),8);
@@ -105,13 +121,13 @@ for ic=1:10
         hw.shadowUpdate();
         
         hw.restartStream();
-        pause(0.2);
+        pause(0.1);
         
         frame = hw.getFrame();
         images{i} = double(frame.i);
         
         if (debugOut)
-            irFilename = sprintf('irFrame_%s_%05d.bini', iterType, delay);
+            irFilename = sprintf('irFrame_%s_i%02d-%d_%05d.bini', iterType, ic, i, delays(i));
             io.writeBin(irFilename, frame.i);
         end
         
@@ -124,6 +140,7 @@ for ic=1:10
     
     minInd = minind(errors);
     bestDelay = delays(minInd);
+    delay = bestDelay;
     err = errors(minInd);
     
     if (verbose)
@@ -137,8 +154,6 @@ for ic=1:10
         title (sprintf('%s - step: %d', iterType, int32(step)));
         drawnow;
     end
-    
-    delay = bestDelay;
     
     switch minInd
         case 1

@@ -1,29 +1,25 @@
-function score=runCalibStream(configFldr,outputFolder,fprintff,verbose)
+function score=runCalibStream(hw, configFldr,outputFolder,fprintff,verbose)
 if(~exist('verbose','var'))
     verbose=true;
 end
 % fprintff = @(varargin) verbose&&fprintf(varargin{:});
 
-fprintff('Loading Firmware...',false);
-fw=Pipe.loadFirmware(configFldr);
-fprintff('Done',true);
-fprintff('Connecting HW interface...',false);
+%fprintff('Loading Firmware...',false);
+%fw=Pipe.loadFirmware(configFldr);
+%fprintff('Done',true);
+%fprintff('Connecting HW interface...',false);
 % hw=HWinterface(fw);
-fprintff('Done',true);
+%fprintff('Done',true);
+
 %% ::calibrate delays::
-fprintff('Depth delay calibration...',false);
-
+fprintff('Depth and IR delay calibration...',false);
+resChDelays = Calibration.runCalibChDelays(hw, verbose);
+fnChDelays = fullfile(outputFolder, 'pi_conloc_delays.txt');
+Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow);
 fprintff('Done',true);
 
-fprintff('IR delay calibration...',false);
-
-
-fprintff('Done',true);
-
-
-fprintff('XY delay calibration...',false);
-
-fprintff('Done',true);
+%fprintff('XY delay calibration...',false);
+%fprintff('Done',true);
 
 %% ::calibrate gamma scale shift::
 % fw.setRegs('JFILbypass',false);
@@ -40,6 +36,8 @@ fprintff('Done',true);
 %% ::calibrate gamma curve::
 
 %% ::Get image::
+
+return;
 
 fprintff('DOD init...\n',false);
 % Update some regs for the optimization
