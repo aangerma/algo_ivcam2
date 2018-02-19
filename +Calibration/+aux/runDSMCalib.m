@@ -14,10 +14,10 @@ yShift = 0.5;
 xScale = 3600;
 yScale = 3600;
 
-hw.runCommand('mwd  fffe382c fffe3830 3F000000  //dsm vertical shift')  % ->0.5
-hw.runCommand('mwd  fffe3830 fffe3834 45610000  //dsm vertical scale')  % ->3600
-hw.runCommand('mwd  fffe3840 fffe3844 3F000000  //dsm horizontal shift')% ->0.5
-hw.runCommand('mwd  fffe3844 fffe3848 45610000  //dsm horizontal scale')% ->3600
+hw.runCommand('mwd  fffe382c fffe3830 3F000000  //dsm vertical shift');  % ->0.5
+hw.runCommand('mwd  fffe3830 fffe3834 45610000  //dsm vertical scale');  % ->3600
+hw.runCommand('mwd  fffe3840 fffe3844 3F000000  //dsm horizontal shift');% ->0.5
+hw.runCommand('mwd  fffe3844 fffe3848 45610000  //dsm horizontal scale');% ->3600
 
 % Get first image:
 d = hw.getFrame();
@@ -38,9 +38,9 @@ yxValid = yx(logical(irClean(:)),:);
 corners = [1,1; wh(2),1; wh(2),wh(1); 1,wh(1)];
 closePoints = zeros(4,2);
 for i = 1:4
-    dist = sum((yxValid-corners).^2,2);
+    dist = sum((yxValid-corners(i,:)).^2,2);
     [~,idx] = min(dist);
-    closePoints(i,:) = yxValid(IDX,:);
+    closePoints(i,:) = yxValid(idx,:);
 end
 
 
@@ -53,19 +53,19 @@ nMaxAngY = max(angy)/yScale+yShift;
 
 % The minimal x/y angle should be translated to a marginal distance from
 % the edge of the resolution:
-% a*[minAngX]-b = [-angMax*(1-margin)]
-% a*[maxAngX]-b = [ angMax*(1-margin)]
+% a*[minAngX]-a*b = [-angMax*(1-margin)]
+% a*[maxAngX]-a*b = [ angMax*(1-margin)]
 newXScale = 2*(angMax*(1-margin))/(nMaxAngX-nMinAngX);
 newXShift = (newXScale*nMinAngX + angMax*(1-margin))/newXScale;
 
-newYScale = (angMax*(1-2*margin))/(nMaxAngY-nMinAngY);
-newYShift = newYScale*nMinAngY - angMax*margin;
+newYScale = 2*(angMax*(1-margin))/(nMaxAngY-nMinAngY);
+newYShift = -(newYScale*nMinAngY + angMax*(1-margin))/newYScale;
 
 % New commands:
 hw.runCommand(add2Cmd('mwd  fffe382c fffe3830',newYShift));
-hw.runCommand(add2Cmd('mwd  fffe3830 fffe3834',newYscale));
+hw.runCommand(add2Cmd('mwd  fffe3830 fffe3834',newYScale));
 hw.runCommand(add2Cmd('mwd  fffe3840 fffe3844',newXShift));
-hw.runCommand(add2Cmd('mwd  fffe3844 fffe3848',newXscale));
+hw.runCommand(add2Cmd('mwd  fffe3844 fffe3848',newXScale));
 
 dPost = hw.getFrame();
 figure,
@@ -77,7 +77,7 @@ imagesc(dPost.i)
 
 end
 
-function add2Cmd(str,num)
+function cmd = add2Cmd(str,num)
     nHex = single2hex(num);
-    return [str,sprintf(' %s',nHex{1})];
+    cmd = [str,sprintf(' %s',nHex{1})];
 end

@@ -64,7 +64,7 @@ printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
 ok=~isnan(xF) & ~isnan(yF)  & d.i>1;
 dnew.z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
 dnew.i = griddata(double(xF(ok)),double(yF(ok)),double(d.i(ok)),xg,yg);
-dnew.c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
+% dnew.c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
 
 end
 

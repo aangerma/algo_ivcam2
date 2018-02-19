@@ -2,7 +2,7 @@ function score=runCalibStream(hw, configFldr,outputFolder,fprintff,verbose)
 if(~exist('verbose','var'))
     verbose=true;
 end
-% fprintff = @(varargin) verbose&&fprintf(varargin{:});
+fprintff = @(varargin) verbose&&fprintf(varargin{:});
 
 %fprintff('Loading Firmware...',false);
 %fw=Pipe.loadFirmware(configFldr);
@@ -10,6 +10,14 @@ end
 %fprintff('Connecting HW interface...',false);
 % hw=HWinterface(fw);
 %fprintff('Done',true);
+
+%% ::Set some basic configuration:: %%
+% Makes sure we know the current configuration. Also set a better DSM calib and CBUF mode. 
+fprintff('Setting default configuration. This might take two or three minutes...',false);
+preAlgoScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','algoConfigInitial.txt');
+hw.runScript(preAlgoScript);
+fprintff('Done\n',true);
+
 
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...',false);
@@ -35,45 +43,12 @@ fprintff('Done',true);
 % fw.setRegs(gammaRegs,calibfn);
 %% ::calibrate gamma curve::
 
-%% ::Get image::
-
-return;
-
-fprintff('DOD init...\n',false);
-% Update some regs for the optimization
-luts.FRMW.undistModel=zeros(2048,1,'uint32');
-initRegs.JFIL.bypass = false;
-initRegs.DIGG.undistBypass=false;
-initRegs.DEST.txFRQpd=single([5000 5000 5000]);
-initRegs.JFIL.invConfThr = uint8(0); % return to default at the end
-fw.setRegs(initRegs,configFldr);
-fw.setLut(luts);
-[regs,luts] = fw.get();
-% hw.write('FRMWundistModel|JFILbypass|DIGGundistBypass|DESTtxFRQpd|JFILinvConfThr')
-
-nFrames = 30;
-% [~,avgD] = readFrames(hw,nFrames); % Read an average of 30 frames
-[dodRegs,dodLuts,score] = Calibration.aux.runDODCalib(avgD,regs,luts,verbose);
+fprintff('FOV, System Delay, Zenith and Distortion calibration...\n',false);
+resDODParams = Calibration.aux.runDODCalib(hw,verbose);
+fnDODParams = fullfile(outputFolder, 'dod_params.txt');
+Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams);
 fprintff('Done',true);
+fprintff('[*] DOD Score: eAlex=%2.2fmm. eFit=%2.2fmm. eDistortion=%2.2fmm.  \n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
 
-fprintff('[*] DOD Score: %g',score,true);
-fprintff('Saving DOD calibrated configuration...',false);
-calibfn = fullfile(outputFolder,filesep,'calib.csv');
-undistfn=fullfile(outputFolder,filesep,'FRMWundistModel.bin32');
-io.writeBin(undistfn,dodLuts.FRMW.undistModel)
-fw.setRegs(dodRegs,calibfn);
-fw.setLuts(dodLuts);
-fw.writeUpdated(calibfn)
-fprintff('Done',true);
-fw.genMWDcmd([],fullfile(outputFolder,filesep,'algoConfig.txt'));
-end
-
-function [stream,avgD] = readFrames(hw,N)
-for i = 1:N
-   stream(i) = hw.getFrame(); 
-end
-collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
-avgD.z=collapseM('z');
-avgD.i=collapseM('i');
 
 end

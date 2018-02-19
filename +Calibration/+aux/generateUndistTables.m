@@ -21,6 +21,7 @@ fy = (N-1)/distortionH;
 undist(isnan(undist))=0;
 undistx=reshape(undist(:,1),size(xg));
 undisty=reshape(undist(:,2),size(yg));
+
 udistLUT = typecast(vec(single([undistx(:) undisty(:)]')./wh'),'uint32');
 
 
