@@ -24,6 +24,7 @@ if(exist('verbose','var') && verbose)
     %     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
     %     plotPlane(mdl);
 %     subplot(133);
+    figure;
     plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',fitP(1,:),fitP(2,:),fitP(3,:),'g.');
     xlabel('x'),ylabel('y'),zlabel('z')
     legend({'Measurements' 'Reference'})
