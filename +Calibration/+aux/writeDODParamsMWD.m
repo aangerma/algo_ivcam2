@@ -1,4 +1,9 @@
-function writeDODParamsMWD(filename, resDODParams)
+function writeDODParamsMWD(filename, resDODParams, shortFirmwareFormat)
+            
+if ~exist('shortFirmwareFormat','var')
+    shortFirmwareFormat = false;
+end
+
 if exist(filename, 'file') == 2
     fprintf('%s already exists. Overriding...',filename);
 end
@@ -11,7 +16,7 @@ regsOld = resDODParams.initRegs;
 lutsOld = resDODParams.initLuts;
 
 newRegsNames = getDiffNames(regsNew,regsOld,lutsNew,lutsOld);
-fw.genMWDcmd(newRegsNames,filename);
+fw.genMWDcmd(newRegsNames, filename, shortFirmwareFormat);
 
 % dodFW = fullfile(filename,'..','dodFW.mat');
 % save(dodFW,'regs','luts')

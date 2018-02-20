@@ -1,4 +1,8 @@
-function [] = writeChannelDelaysMWD(filename, delayFast, delaySlow)
+function [] = writeChannelDelaysMWD(filename, delayFast, delaySlow, shortFirmwareFormat)
+            
+if ~exist('shortFirmwareFormat','var')
+    shortFirmwareFormat = false;
+end
 
 %{
 //---------FAST-------------
@@ -8,9 +12,15 @@ mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkR
 mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
 %}
 
-fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay\n';
-fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes\n';
-slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn\n';
+if (shortFirmwareFormat)
+    fastDelayCmdMul8 = 'mwd a0050548 %08x // RegsProjConLocDelay\n';
+    fastDelayCmdSub8 = 'mwd a0050458 %08x // RegsProjConLocDelayHfclkRes\n';
+    slowDelayCmd = 'mwd a0060008 8%07x // RegsAnsyncAsLateLatencyFixEn\n';
+else
+    fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay\n';
+    fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes\n';
+    slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn\n';
+end
 
 [fileID, err] = fopen(filename, 'wt');
 if ~isempty(err)
