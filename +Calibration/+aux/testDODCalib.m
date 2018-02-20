@@ -1,11 +1,9 @@
-%{
-1. A function writes the new configuration to IVCAM20Scripts. Write only relevant regs.
-%}
-% This script loads the current configuration, 
 %% Load the current configuration
 fw=Pipe.loadFirmware('\\invcam450\D\data\ivcam20\exp\20180204_MA');
 [regs,luts] = fw.get();
 luts.FRMW.undistModel=typecast(zeros(2048,1,'single'),'uint32');
+resetregs.FRMW.gaurdBandH = single(0.00);
+resetregs.FRMW.gaurdBandV = single(0.00);
 resetregs.JFIL.bypass = false;
 resetregs.DIGG.undistBypass=false;
 resetregs.DEST.txFRQpd=single([5000 5000 5000]);
@@ -37,10 +35,11 @@ fw.setRegs(resDODParams.regs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
 [regs,luts] = fw.get();
 fw.genMWDcmd([],'C:\$WORK\Per_Unit_Config\Current\algoConfig1.txt');
 
-
-resetregs.FRMW.marginL = int16(00);
-resetregs.FRMW.marginR = int16(00);
-resetregs.FRMW.xres = uint16(640 + resetregs.FRMW.marginL + resetregs.FRMW.marginR);
+resetregs.FRMW.gaurdBandH = single(0.0125);
+resetregs.FRMW.gaurdBandV = single(0.13);
+resetregs.FRMW.marginT = int16(00);
+resetregs.FRMW.marginB = int16(00);
+resetregs.FRMW.yres = uint16(480);% + resetregs.FRMW.marginT + resetregs.FRMW.marginB);
 fw.setRegs(resetregs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
 [regs,luts] = fw.get();
 fw.genMWDcmd([],'C:\$WORK\Per_Unit_Config\Current\algoConfigM.txt');

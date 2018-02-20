@@ -29,6 +29,7 @@ else
 end
 resDODParams.initRegs = regs;
 resDODParams.initLuts = luts;
+gaurdBands = [0.0125 0.13];
 
 d = readAvgFrame(hw,30);
 
@@ -41,11 +42,13 @@ regsProg = cell(1,iter+1);
 lutsProg = cell(1,iter+1);
 regsProg{1} = regs;
 lutsProg{1} = luts;
-eProg = zeros(3,iter);
+eProg = zeros(5,iter);
 for i = 1:iter
     fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
-    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose);
+    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,gaurdBands);
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},outregs);
+    
+    
     
     fprintff('#%d Optimizing undistort map... ',i);
     [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,0);
@@ -56,13 +59,15 @@ for i = 1:iter
     dProg{i+1}.z=undistF(dProg{i+1}.z);
     dProg{i+1}.i=undistF(dProg{i+1}.i);
 %     dProg{i+1}.c=undistF(dProg{i+1}.c);
+    % Eval the erros after distortion
+    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands);
 end
-[resDODParams.score,bestI] = min(eProg(1,:));
+[resDODParams.score,bestI] = min(eProg(4,:));
 resDODParams.regs = regsProg{bestI+1};
 resDODParams.luts = lutsProg{bestI+1};
-resDODParams.eFit = eProg(2,bestI);
-resDODParams.eDist = eProg(3,bestI);
-
+resDODParams.eFit = eProg(4,bestI);
+resDODParams.eDist = eProg(5,bestI);
+resDODParams.eProg = eProg;
 if verbose
     fprintf('Geometric Error per iter:         ')
     fprintf('%5.2f ',eProg(1,:)),fprintf('\n')
@@ -73,7 +78,6 @@ if verbose
 end
 
 end
-
 
 function avgD = readAvgFrame(hw,N)
 for i = 1:N
