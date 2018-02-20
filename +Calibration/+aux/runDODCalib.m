@@ -27,6 +27,9 @@ else
     fw = varargin{1};
     [regs, luts] = fw.get();
 end
+resDODParams.initRegs = regs;
+resDODParams.initLuts = luts;
+
 d = readAvgFrame(hw,30);
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
