@@ -62,7 +62,7 @@ for i = 1:iter
     % Eval the erros after distortion
     [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands);
 end
-[resDODParams.score,bestI] = min(eProg(1,:));
+[resDODParams.score,bestI] = min(eProg(4,:));
 resDODParams.regs = regsProg{bestI+1};
 resDODParams.luts = lutsProg{bestI+1};
 resDODParams.eFit = eProg(4,bestI);
