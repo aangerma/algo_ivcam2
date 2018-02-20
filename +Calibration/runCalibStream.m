@@ -2,7 +2,7 @@ function score=runCalibStream(hw, configFldr,outputFolder,fprintff,verbose)
 if(~exist('verbose','var'))
     verbose=true;
 end
-fprintff = @(varargin) verbose&&fprintf(varargin{:});
+%fprintff = @(varargin) verbose&&fprintf(varargin{:});
 
 %fprintff('Loading Firmware...',false);
 %fw=Pipe.loadFirmware(configFldr);
@@ -15,6 +15,7 @@ fprintff = @(varargin) verbose&&fprintf(varargin{:});
 % Makes sure we know the current configuration. Also set a better DSM calib and CBUF mode. 
 fprintff('Setting default configuration. This might take two or three minutes...',false);
 preAlgoScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','algoConfigInitial.txt');
+%preAlgoScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','preAlgo.txt');
 hw.runScript(preAlgoScript);
 fprintff('Done\n',true);
 
