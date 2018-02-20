@@ -2,7 +2,7 @@ function score=runCalibStream(hw, configFldr,outputFolder,fprintff,verbose)
 if(~exist('verbose','var'))
     verbose=true;
 end
-fprintff = @(varargin) verbose&&fprintf(varargin{:});
+% fprintff = @(varargin) verbose&&fprintf(varargin{:});
 
 %fprintff('Loading Firmware...',false);
 %fw=Pipe.loadFirmware(configFldr);
