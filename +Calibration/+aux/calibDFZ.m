@@ -1,5 +1,7 @@
-function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose,gaurdBands)
-
+function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose,gaurdBands,eval)
+if(~exist('eval','var'))
+    eval=false;
+end
 if(~exist('verbose','var'))
     verbose=true;
 end
@@ -50,6 +52,12 @@ x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.lasera
 xL = [40 40 4000   -.3 -.3 0];
 xH = [90 90 6000    .3  .3 0];
 [e,eFit]=errFunc(rpt,regs,x0,0);
+if eval 
+    outregs = [];
+    minerr = e;
+    dnew =[];
+    return
+end
 printErrAndX(x0,e,eFit,'X0:',verbose)
 [xbest,~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
