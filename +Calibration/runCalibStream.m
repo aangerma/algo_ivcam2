@@ -2,7 +2,7 @@ function score=runCalibStream(hw, configFldr,outputFolder,fprintff,verbose)
 if(~exist('verbose','var'))
     verbose=true;
 end
-% fprintff = @(varargin) verbose&&fprintf(varargin{:});
+%fprintff = @(varargin) verbose&&fprintf(varargin{:});
 
 %fprintff('Loading Firmware...',false);
 %fw=Pipe.loadFirmware(configFldr);
@@ -15,7 +15,8 @@ end
 % Makes sure we know the current configuration. Also set a better DSM calib and CBUF mode. 
 fprintff('Setting default configuration. This might take two or three minutes...',false);
 preAlgoScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','algoConfigInitial.txt');
-hw.runScript(preAlgoScript);
+%preAlgoScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','preAlgo.txt');
+%hw.runScript(preAlgoScript);
 fprintff('Done\n',true);
 
 
@@ -23,8 +24,9 @@ fprintff('Done\n',true);
 fprintff('Depth and IR delay calibration...',false);
 resChDelays = Calibration.runCalibChDelays(hw, verbose);
 fnChDelays = fullfile(outputFolder, 'pi_conloc_delays.txt');
-Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow);
+Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, true);
 fprintff('Done',true);
+fprintff('[*] Delays Score:\n - errFast = %2.2fmm\n - errSlow=%2.2fmm\n',resChDelays.errFast,resChDelays.errSlow, true);
 
 %fprintff('XY delay calibration...',false);
 %fprintff('Done',true);
@@ -46,9 +48,11 @@ fprintff('Done',true);
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n',false);
 resDODParams = Calibration.aux.runDODCalib(hw,verbose);
 fnDODParams = fullfile(outputFolder, 'dod_params.txt');
-Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams);
+Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, true);
 fprintff('Done',true);
-fprintff('[*] DOD Score: eAlex=%2.2fmm. eFit=%2.2fmm. eDistortion=%2.2fmm.  \n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
+fprintff('[*] DOD Score:\n - eAlex = %2.2fmm\n - eFit = %2.2fmm\n - eDistortion = %2.2fmm\n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
 
+fnAlgoCalib = fullfile(outputFolder, 'Algo_Pipe_Calibration_CalibData_Ver_01_01.txt');
+system(['copy ' fnChDelays '+' fnDODParams ' ' fnAlgoCalib]);
 
 end

@@ -149,7 +149,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             try
                 app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
                 Calibration.runCalibStream(hw, app.Configdirectorty.Value,app.Outputdirectorty.Value,fprintffS,app.verboseCheckBox.Value);
-                app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
+                %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
             catch e
                 fprintffS('',true);
