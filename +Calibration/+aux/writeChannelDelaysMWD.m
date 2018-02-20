@@ -27,11 +27,11 @@ if ~isempty(err)
     error([filename ': ' err]);
 end
 
-fprintf(fileID, '//---------FAST-------------\n');
+%fprintf(fileID, '//---------FAST-------------\n');
 mod8 = mod(delayFast, 8);
 fprintf(fileID, fastDelayCmdMul8, delayFast - mod8);
 fprintf(fileID, fastDelayCmdSub8, mod8);
-fprintf(fileID, '//---------SLOW-------------\n');
+%fprintf(fileID, '//---------SLOW-------------\n');
 fprintf(fileID, slowDelayCmd, delaySlow);
 
 fclose(fileID);

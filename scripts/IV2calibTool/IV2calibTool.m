@@ -60,14 +60,15 @@ classdef IV2calibTool < matlab.apps.AppBase
         
         
         function fprintff(app,varargin)
-            fprintf(app.m_logfid,varargin{1:end-1});
-            app.logarea.Value{1}=[ app.logarea.Value{1} sprintf(varargin{1:end-1})];
-            if(varargin{end})
-                app.logarea.Value=[{''};app.logarea.Value];
-                fprintf(app.m_logfid,'\n');
-            else
-                
-            end
+            fprintf(app.m_logfid, varargin{1:end});
+            app.logarea.Value{end+1} = sprintf(varargin{1:end});
+            
+%             fprintf(app.m_logfid,varargin{1:end-1});
+%             app.logarea.Value{1}=[ app.logarea.Value{1} sprintf(varargin{1:end-1})];
+%             if(varargin{end})
+%                 app.logarea.Value=[{''};app.logarea.Value];
+%                 fprintf(app.m_logfid,'\n');
+%             end
             
         end
         
@@ -133,6 +134,10 @@ classdef IV2calibTool < matlab.apps.AppBase
         function StartButtonPushed(app, event)
             app.saveDefaults();
 
+            if ~exist(app.Outputdirectorty.Value, 'dir')
+                mkdir (app.Outputdirectorty.Value);
+            end
+            
             app.m_logfid = fopen(fullfile(app.Outputdirectorty.Value,filesep,'log.log'),'w');
             fprintffS=@(varargin) app.fprintff(varargin{:});
 
@@ -142,7 +147,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             %fprintffS('Connecting HW interface...',false);
             %hw=HWinterface(fw);
             hw=HWinterface();
-            fprintffS('Done',true);
+            %fprintffS('Done',true);
                         
             mkdirSafe(app.Outputdirectorty.Value);
             
@@ -152,8 +157,8 @@ classdef IV2calibTool < matlab.apps.AppBase
                 %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
             catch e
-                fprintffS('',true);
-                fprintffS(sprintf('[!] ERROR:%s',e.message),true);
+                fprintffS('');
+                fprintffS(sprintf('[!] ERROR:%s\n',e.message));
                 errordlg(e.message);
             end
             fclose(app.m_logfid);
