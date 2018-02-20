@@ -1,4 +1,4 @@
-function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose)
+function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose,gaurdBands)
 
 if(~exist('verbose','var'))
     verbose=true;
@@ -25,8 +25,8 @@ rtd=rtd+regs.DEST.txFRQpd(1);
 
 %xy2ang verification
 [~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
-assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
-assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
+% assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
+% assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
 
 %find CB points
 [p,bsz] = detectCheckerboardPoints(normByMax(im)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
@@ -54,7 +54,7 @@ printErrAndX(x0,e,eFit,'X0:',verbose)
 [xbest,~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
 % [xbest,minerr]=fminsearch(@(x) errFunc(rpt,regs,x,0),x0,opt);
-outregs = x2regs(xbest,regs);
+outregs = x2regs(xbest,regs,gaurdBands);
 rpt_new = cat(3,it(rtd),it(angx+xbest(6)),it(angy));
 [e,eFit]=errFunc(rpt_new,outregs,xbest,1);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
@@ -111,14 +111,16 @@ if verbose
     fprintf('\n');
 end
 end
-function rtlRegs = x2regs(x,rtlRegs)
-
+function rtlRegs = x2regs(x,rtlRegs,gaurdBands)
+if(~exist('gaurdBands','var'))
+    gaurdBands=single([0 0]);
+end
 
 
 iterRegs.FRMW.xfov=single(x(1));
 iterRegs.FRMW.yfov=single(x(2));
-iterRegs.FRMW.gaurdBandH=single(0);
-iterRegs.FRMW.gaurdBandV=single(0);
+iterRegs.FRMW.gaurdBandH=single(gaurdBands(1));
+iterRegs.FRMW.gaurdBandV=single(gaurdBands(2));
 iterRegs.FRMW.xres=rtlRegs.GNRL.imgHsize;
 iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
 iterRegs.FRMW.marginL=int16(0);

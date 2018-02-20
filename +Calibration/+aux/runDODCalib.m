@@ -29,6 +29,7 @@ else
 end
 resDODParams.initRegs = regs;
 resDODParams.initLuts = luts;
+gaurdBands = [0.0125 0.13];
 
 d = readAvgFrame(hw,30);
 
@@ -44,8 +45,10 @@ lutsProg{1} = luts;
 eProg = zeros(3,iter);
 for i = 1:iter
     fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
-    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose);
+    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,gaurdBands);
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},outregs);
+    
+    
     
     fprintff('#%d Optimizing undistort map... ',i);
     [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,0);
@@ -73,7 +76,6 @@ if verbose
 end
 
 end
-
 
 function avgD = readAvgFrame(hw,N)
 for i = 1:N

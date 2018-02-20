@@ -8,7 +8,7 @@ assert(axis == 'V' || axis == 'H', 'axis should be in [''H'',''V'']')
 
 bestDiff = inf;
 guardband = 0;
-for gbnd = 0:0.01:0.25
+for gbnd = 0:0.0025:0.15
     [x,y] = xyForGuardband(angx,angy,gbnd,regs,axis);   
     if axis == 'H'
        source = x; 
