@@ -214,7 +214,7 @@ classdef FirmwareBase <handle
             privWrite2file( obj,outputFn,'config');
         end
         
-        function txtout=genMWDcmd(obj,regTokens,outfn,firmwareFormat)
+        function txtout=genMWDcmd(obj,regTokens,outfn, shortFirmwareFormat)
             
             if(~exist('regTokens','var') || isempty(regTokens))
                 regTokens={'.'};
@@ -236,11 +236,11 @@ classdef FirmwareBase <handle
             m = num2cell([[obj.m_registers(indregs).address]' [obj.m_registers(indregs).address]'+4 Firmware.sprivRegstruct2uint32val(obj.m_registers(indregs))]);
             m=[m {obj.m_registers(indregs).regName}']';
             
-            if ~exist('firmwareFormat')
-                firmwareFormat = false;
+            if ~exist('shortFirmwareFormat','var')
+                shortFirmwareFormat = false;
             end
             
-            if (firmwareFormat)
+            if (shortFirmwareFormat)
                 strOutFormat = 'mwd %08x %08x // %s\n';
                 indOut = [1 3 4];
             else

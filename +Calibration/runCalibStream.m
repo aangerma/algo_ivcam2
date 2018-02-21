@@ -57,7 +57,7 @@ fnVer = fullfile(outputFolder, 'ver.txt');
 Calibration.aux.writeVersionReg(fnVer, 1, true);
 
 fnAlgoCalib = fullfile(outputFolder, 'Algo_Pipe_Calibration_CalibData_Ver_01_01.txt');
-system(['copy ' fnVer '+' fnChDelays '+' fnDODParams ' ' fnAlgoCalib]);
+system(['copy /y /b ' fnVer '+' fnChDelays '+' fnDODParams ' ' fnAlgoCalib]);
 
 %% write calib files in full firmware formate
 Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, false);
