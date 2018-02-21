@@ -25,6 +25,8 @@ fprintff('Depth and IR delay calibration...',false);
 resChDelays = Calibration.runCalibChDelays(hw, verbose);
 fnChDelays = fullfile(outputFolder, 'pi_conloc_delays.txt');
 Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, true);
+fnChDelaysLong = fullfile(outputFolder, 'long_pi_conloc_delays.txt'); % Write long format as well for HW interface and ipdev.
+Calibration.aux.writeChannelDelaysMWD(fnChDelaysLong, resChDelays.delayFast, resChDelays.delaySlow, false);
 fprintff('Done',true);
 fprintff('[*] Delays Score:\n - errFast = %2.2fmm\n - errSlow=%2.2fmm\n',resChDelays.errFast,resChDelays.errSlow, true);
 
@@ -49,10 +51,17 @@ fprintff('FOV, System Delay, Zenith and Distortion calibration...\n',false);
 resDODParams = Calibration.aux.runDODCalib(hw,verbose);
 fnDODParams = fullfile(outputFolder, 'dod_params.txt');
 Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, true);
+fnDODParamsLong = fullfile(outputFolder, 'long_dod_params.txt');% Write long format as well for HW interface and ipdev.
+Calibration.aux.writeDODParamsMWD(fnDODParamsLong, resDODParams, false);
+
 fprintff('Done',true);
 fprintff('[*] DOD Score:\n - eAlex = %2.2fmm\n - eFit = %2.2fmm\n - eDistortion = %2.2fmm\n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
 
 fnAlgoCalib = fullfile(outputFolder, 'Algo_Pipe_Calibration_CalibData_Ver_01_01.txt');
 system(['copy ' fnChDelays '+' fnDODParams ' ' fnAlgoCalib]);
 
+fnAlgoCalibLong = fullfile(outputFolder, 'long_Algo_Pipe_Calibration_CalibData_Ver_01_01.txt');
+system(['copy ' fnChDelaysLong '+' fnDODParamsLong ' ' fnAlgoCalibLong]);
+
+Calibration.aux.evaluateAlgoCalib(hw,fnAlgoCalibLong,resDODParams);
 end

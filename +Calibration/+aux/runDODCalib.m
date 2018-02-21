@@ -31,7 +31,7 @@ resDODParams.initRegs = regs;
 resDODParams.initLuts = luts;
 gaurdBands = [0.0125 0.13];
 
-d = readAvgFrame(hw,30);
+d = Calibration.aux.readAvgFrame(hw,30);
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 fprintff = @(varargin) verbose&&fprintf(varargin{:});
@@ -60,7 +60,7 @@ for i = 1:iter
     dProg{i+1}.i=undistF(dProg{i+1}.i);
 %     dProg{i+1}.c=undistF(dProg{i+1}.c);
     % Eval the erros after distortion
-    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands);
+    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands,true);
 end
 [resDODParams.score,bestI] = min(eProg(4,:));
 resDODParams.regs = regsProg{bestI+1};
@@ -77,13 +77,4 @@ if verbose
     fprintf('%5.2f ',eProg(3,:)),fprintf('\n')
 end
 
-end
-
-function avgD = readAvgFrame(hw,N)
-for i = 1:N
-   stream(i) = hw.getFrame(); 
-end
-collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
-avgD.z=collapseM('z');
-avgD.i=collapseM('i');
 end

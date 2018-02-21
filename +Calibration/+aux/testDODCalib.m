@@ -35,6 +35,7 @@ fw.setRegs(resDODParams.regs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
 [regs,luts] = fw.get();
 fw.genMWDcmd([],'C:\$WORK\Per_Unit_Config\Current\algoConfig1.txt');
 
+
 resetregs.FRMW.gaurdBandH = single(0.0125);
 resetregs.FRMW.gaurdBandV = single(0.13);
 resetregs.FRMW.marginT = int16(00);
