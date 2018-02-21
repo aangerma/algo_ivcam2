@@ -63,6 +63,8 @@ system(['copy /y /b ' fnVer '+' fnChDelays '+' fnDODParams ' ' fnAlgoCalib]);
 Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, false);
 Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, false);
 
+% Evalute the DOD and Distortion on captured images.
+Calibration.aux.evaluateDODCalib(hw,fnDODParams,resDODParams);
 
 %% merge all scores outputs
 scores = struct();
@@ -101,8 +103,7 @@ for i=1:length(scoresThresholds)
         
     fprintff(' - %s (%2.2f)): %s\n', sth{1}, s, resStr);
 end
-% Evalute the DOD and Distortion on captured images.
-Calibration.aux.evaluateDODCalib(hw,fnDODParams,resDODParams);
+
 
 fprintff(' Algo calibration summary: %s\n', totalCalibStr);
 
