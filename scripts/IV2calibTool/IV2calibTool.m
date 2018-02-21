@@ -138,9 +138,12 @@ classdef IV2calibTool < matlab.apps.AppBase
                 mkdir (app.Outputdirectorty.Value);
             end
             
-            app.m_logfid = fopen(fullfile(app.Outputdirectorty.Value,filesep,'log.log'),'w');
+            app.m_logfid = fopen(fullfile(app.Outputdirectorty.Value,filesep,'log.log'),'wt');
             fprintffS=@(varargin) app.fprintff(varargin{:});
 
+            % clear log
+            app.logarea.Value = {''};
+            
             %fprintffS('Loading Firmware...',false);
             %fw=Pipe.loadFirmware(configFldr);
             %fprintffS('Done',true);
