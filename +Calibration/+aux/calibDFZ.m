@@ -41,7 +41,7 @@ rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles inst
 %%
 opt.maxIter=10000;
 opt.OutputFcn=[];
-opt.TolFun = 0.0025;
+opt.TolFun = 0.00025;
 opt.TolX = inf;
 opt.Display='none';
 
@@ -49,8 +49,9 @@ opt.Display='none';
 angXShift = 0;
 x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV angXShift]);
 % x0 = double([68.186935 52.944909 5153.491386 0.299999 -0.283499 angXShift])
-xL = [40 40 4000   -.3 -.3 0];
-xH = [90 90 6000    .3  .3 0];
+xL = [40 40 4000   -.3 -.3 -0];
+xH = [90 90 6000    .3  .3  0];
+regs = x2regs(x0,regs,gaurdBands);
 [e,eFit]=errFunc(rpt,regs,x0,0);
 if eval 
     outregs = [];
@@ -62,7 +63,7 @@ printErrAndX(x0,e,eFit,'X0:',verbose)
 [xbest,~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
 % [xbest,minerr]=fminsearch(@(x) errFunc(rpt,regs,x,0),x0,opt);
-outregs = x2regs(xbest,regs,gaurdBands);
+outregs = x2regs(xbest,regs);
 rpt_new = cat(3,it(rtd),it(angx+xbest(6)),it(angy));
 [e,eFit]=errFunc(rpt_new,outregs,xbest,1);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
@@ -120,15 +121,14 @@ if verbose
 end
 end
 function rtlRegs = x2regs(x,rtlRegs,gaurdBands)
-if(~exist('gaurdBands','var'))
-    gaurdBands=single([0 0]);
+if(exist('gaurdBands','var'))
+    iterRegs.FRMW.gaurdBandH=single(gaurdBands(1));
+    iterRegs.FRMW.gaurdBandV=single(gaurdBands(2));
 end
 
 
 iterRegs.FRMW.xfov=single(x(1));
 iterRegs.FRMW.yfov=single(x(2));
-iterRegs.FRMW.gaurdBandH=single(gaurdBands(1));
-iterRegs.FRMW.gaurdBandV=single(gaurdBands(2));
 iterRegs.FRMW.xres=rtlRegs.GNRL.imgHsize;
 iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
 iterRegs.FRMW.marginL=int16(0);
