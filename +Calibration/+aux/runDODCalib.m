@@ -62,10 +62,10 @@ for i = 1:iter
     % Eval the erros after distortion
     [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands,true);
 end
-[resDODParams.score,bestI] = min(eProg(4,:));
+[resDODParams.errGeom,bestI] = min(eProg(4,:));
 
-resDODParams.eFit = eProg(5,bestI);
-resDODParams.eDist = eProg(3,bestI);
+resDODParams.errFit = eProg(5,bestI);
+resDODParams.errDist = eProg(3,bestI);
 resDODParams.eProg = eProg;
 
 warning('off','FIRMWARE:privUpdate:updateAutogen') % Supress checkerboard warning

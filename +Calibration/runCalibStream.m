@@ -4,6 +4,8 @@ if(~exist('verbose','var'))
 end
 %fprintff = @(varargin) verbose&&fprintf(varargin{:});
 
+pxFailThreshold = 5.0;
+
 %fprintff('Loading Firmware...',false);
 %fw=Pipe.loadFirmware(configFldr);
 %fprintff('Done',true);
@@ -28,6 +30,11 @@ Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDe
 fprintff('Done\n');
 fprintff('[*] Delays Score:\n - errFast = %2.2fmm\n - errSlow=%2.2fmm\n',resChDelays.errFast,resChDelays.errSlow);
 
+if (resChDelays.errFast > pxFailThreshold || resChDelays.errSlow > pxFailThreshold)
+    fprintff(' Algo calibration summary: fail\n');
+    return;
+end
+
 %fprintff('XY delay calibration...',false);
 %fprintff('Done',true);
 
@@ -50,7 +57,8 @@ resDODParams = Calibration.aux.runDODCalib(hw,verbose);
 fnDODParams = fullfile(outputFolder, 'dod_params.txt');
 Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, true);
 fprintff('Done\n');
-fprintff('[*] Virtual DOD Score:\n - eGeom = %2.2fmm\n - eFit = %2.2fmm\n - eDistortion = %2.2fmm\n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
+fprintff('[*] Virtual DOD Score:\n - eGeom = %2.2fmm\n - eFit = %2.2fmm\n - eDistortion = %2.2fmm\n',...
+    resDODParams.errGeom,resDODParams.errFit,resDODParams.errDist);
 
 
 fnVer = fullfile(outputFolder, 'ver.txt');
@@ -64,7 +72,7 @@ Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, false);
 Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, false);
 
 % Evalute the DOD and Distortion on captured images.
-Calibration.aux.evaluateDODCalib(hw,fnDODParams,resDODParams);
+errGeomVal = Calibration.aux.validateDODCalib(hw,fnDODParams,resDODParams, fprintff, verbose);
 
 %% merge all scores outputs
 scores = struct();
@@ -78,11 +86,14 @@ for i = 1:length(f)
     scores.(f{i}) = resDODParams.(f{i});
 end
 
+scores.errGeomVal = errGeomVal;
+
 %% define score thresholds, load from xml
 scoresThresholds = {...
     {'errFast', 2.5, 5.0, 'fast delay score (pixels)'},...
     {'errSlow', 2.5, 5.0, 'slow delay score (pixels)'},...
-    {'score', 2.0, 5.0, 'DOD score (mm)'}, ...
+    {'errGeom', 2.0, 5.0, 'DOD optimization score (mm)'}, ...
+    {'errGeomVal', 2.0, 5.0, 'DOD validation score (mm)'}, ...
     };
 
 fprintff('Scores:\n');
@@ -96,12 +107,12 @@ for i=1:length(scoresThresholds)
         resStr = 'fail';
         totalCalibStr = 'fail';
     elseif (s > sth{2})
-        resStr = 'bad';
+        resStr = 'pass (bad)';
     else
         resStr = 'pass';
     end
         
-    fprintff(' - %s (%2.2f)): %s\n', sth{1}, s, resStr);
+    fprintff(' - %s (%2.2f)): %s\n', sth{4}, s, resStr);
 end
 
 
