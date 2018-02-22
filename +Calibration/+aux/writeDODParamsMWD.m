@@ -8,15 +8,11 @@ if exist(filename, 'file') == 2
     fprintf('%s already exists. Overriding...',filename);
 end
 
-fw = Firmware;
-fw.setLut(resDODParams.luts);
-fw.setRegs(resDODParams.regs,filename);
-[regsNew,lutsNew] = fw.get();
-regsOld = resDODParams.initRegs;
-lutsOld = resDODParams.initLuts;
+[regsOld,lutsOld] = resDODParams.initFW.get();
+[regsNew,lutsNew] = resDODParams.fw.get();
 
 newRegsNames = getDiffNames(regsNew,regsOld,lutsNew,lutsOld);
-fw.genMWDcmd(newRegsNames, filename, shortFirmwareFormat);
+resDODParams.fw.genMWDcmd(newRegsNames, filename, shortFirmwareFormat);
 
 % dodFW = fullfile(filename,'..','dodFW.mat');
 % save(dodFW,'regs','luts')

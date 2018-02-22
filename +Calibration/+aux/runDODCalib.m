@@ -21,17 +21,17 @@ function resDODParams = runDODCalib(hw,verbose,varargin)
 if nargin == 2
     preAlgoConfig = fullfile(fullfile(fileparts(mfilename('fullpath')),'..'),'IVCAM20Scripts','initFW.mat');
     initFW = load(preAlgoConfig);
-    luts = initFW.luts;
-    regs = initFW.regs;
+    [regs, luts] = initFW.fw.get();
 else
     fw = varargin{1};
     [regs, luts] = fw.get();
 end
-resDODParams.initRegs = regs;
-resDODParams.initLuts = luts;
+
+d = Calibration.aux.readAvgFrame(hw,30);
+resDODParams.initFW = initFW.fw;
 gaurdBands = [0.0125 0.13];
 
-d = readAvgFrame(hw,30);
+
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 fprintff = @(varargin) verbose&&fprintf(varargin{:});
@@ -60,14 +60,20 @@ for i = 1:iter
     dProg{i+1}.i=undistF(dProg{i+1}.i);
 %     dProg{i+1}.c=undistF(dProg{i+1}.c);
     % Eval the erros after distortion
-    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands);
+    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands,true);
 end
 [resDODParams.score,bestI] = min(eProg(4,:));
-resDODParams.regs = regsProg{bestI+1};
-resDODParams.luts = lutsProg{bestI+1};
-resDODParams.eFit = eProg(4,bestI);
-resDODParams.eDist = eProg(5,bestI);
+
+resDODParams.eFit = eProg(5,bestI);
+resDODParams.eDist = eProg(3,bestI);
 resDODParams.eProg = eProg;
+
+warning('off','FIRMWARE:privUpdate:updateAutogen') % Supress checkerboard warning
+resDODParams.fw = copy(resDODParams.initFW);
+resDODParams.fw.setLut(lutsProg{bestI+1});
+resDODParams.fw.setRegs(regsProg{bestI+1},'');
+resDODParams.fw.get();
+
 if verbose
     fprintf('Geometric Error per iter:         ')
     fprintf('%5.2f ',eProg(1,:)),fprintf('\n')
@@ -77,13 +83,4 @@ if verbose
     fprintf('%5.2f ',eProg(3,:)),fprintf('\n')
 end
 
-end
-
-function avgD = readAvgFrame(hw,N)
-for i = 1:N
-   stream(i) = hw.getFrame(); 
-end
-collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
-avgD.z=collapseM('z');
-avgD.i=collapseM('i');
 end

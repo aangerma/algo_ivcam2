@@ -3,12 +3,12 @@ fw=Pipe.loadFirmware('\\invcam450\D\data\ivcam20\exp\20180204_MA');
 [regs,luts] = fw.get();
 luts.FRMW.undistModel=typecast(zeros(2048,1,'single'),'uint32');
 resetregs.FRMW.gaurdBandH = single(0.00);
-resetregs.FRMW.gaurdBandV = single(0.00);
+resetregs.FRMW.gaurdBandV = single(0.05);
 resetregs.JFIL.bypass = false;
 resetregs.DIGG.undistBypass=false;
 resetregs.DEST.txFRQpd=single([5000 5000 5000]);
 resetregs.JFIL.invConfThr = uint8(0); % return to default at the end
-fw.setRegs(resetregs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
+fw.setRegs(resetregs,'');
 fw.setLut(luts);
 [regs,luts] = fw.get();
 
@@ -29,14 +29,15 @@ hw=HWinterface();
 % mwd  fffe3844 fffe3848 457A0000  //dsm horizontal scale
 
 resDODParams = Calibration.aux.runDODCalib(hw,1,fw);
+% warning('off','FIRMWARE:privUpdate:updateAutogen') % Supress checkerboard warning
+% fw.setLut(resDODParams.luts);
+% fw.setRegs(resDODParams.regs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
+% [regs,luts] = fw.get();
+resDODParams.fw.genMWDcmd([],'C:\$WORK\Per_Unit_Config\Current\algoConfig1.txt');
 
-fw.setLut(resDODParams.luts);
-fw.setRegs(resDODParams.regs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
-[regs,luts] = fw.get();
-fw.genMWDcmd([],'C:\$WORK\Per_Unit_Config\Current\algoConfig1.txt');
 
 resetregs.FRMW.gaurdBandH = single(0.0125);
-resetregs.FRMW.gaurdBandV = single(0.13);
+resetregs.FRMW.gaurdBandV = single(0.13);c
 resetregs.FRMW.marginT = int16(00);
 resetregs.FRMW.marginB = int16(00);
 resetregs.FRMW.yres = uint16(480);% + resetregs.FRMW.marginT + resetregs.FRMW.marginB);

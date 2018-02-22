@@ -25,7 +25,7 @@ fprintff('Depth and IR delay calibration...');
 resChDelays = Calibration.runCalibChDelays(hw, verbose);
 fnChDelays = fullfile(outputFolder, 'pi_conloc_delays.txt');
 Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, true);
-fprintff('Done');
+fprintff('Done\n');
 fprintff('[*] Delays Score:\n - errFast = %2.2fmm\n - errSlow=%2.2fmm\n',resChDelays.errFast,resChDelays.errSlow);
 
 %fprintff('XY delay calibration...',false);
@@ -49,8 +49,9 @@ fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 resDODParams = Calibration.aux.runDODCalib(hw,verbose);
 fnDODParams = fullfile(outputFolder, 'dod_params.txt');
 Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, true);
-fprintff('Done');
-fprintff('[*] DOD Score:\n - eAlex = %2.2fmm\n - eFit = %2.2fmm\n - eDistortion = %2.2fmm\n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
+fprintff('Done\n');
+fprintff('[*] Virtual DOD Score:\n - eGeom = %2.2fmm\n - eFit = %2.2fmm\n - eDistortion = %2.2fmm\n',resDODParams.score,resDODParams.eFit,resDODParams.eDist);
+
 
 fnVer = fullfile(outputFolder, 'ver.txt');
 Calibration.aux.writeVersionReg(fnVer, 1, true);
@@ -59,8 +60,11 @@ fnAlgoCalib = fullfile(outputFolder, 'Algo_Pipe_Calibration_CalibData_Ver_01_01.
 system(['copy /y /b ' fnVer '+' fnChDelays '+' fnDODParams ' ' fnAlgoCalib]);
 
 %% write calib files in full firmware formate
-Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, false);
 Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, false);
+Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, false);
+
+% Evalute the DOD and Distortion on captured images.
+Calibration.aux.evaluateDODCalib(hw,fnDODParams,resDODParams);
 
 %% merge all scores outputs
 scores = struct();
@@ -100,6 +104,9 @@ for i=1:length(scoresThresholds)
     fprintff(' - %s (%2.2f)): %s\n', sth{1}, s, resStr);
 end
 
+
 fprintff(' Algo calibration summary: %s\n', totalCalibStr);
+
+
 
 end
