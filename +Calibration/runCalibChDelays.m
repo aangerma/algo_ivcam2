@@ -74,18 +74,6 @@ function [delay, err] = findBestDelay(hw, initDelay, initStep, minStep, iterType
 coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
 fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
 
-%{
-//---------FAST-------------
-mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
-mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
-//--------SLOW-------------
-mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
-%}
-
-fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
-fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
-slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
-
 R = 3;
 range = -1:1;
 
@@ -94,6 +82,8 @@ errors = zeros(1,R);
 
 delay = initDelay;
 step = initStep;
+
+hwCurrDelay = 0;
 
 for ic=1:10
     if (step <= minStep)
@@ -107,21 +97,8 @@ for ic=1:10
             continue;
         end
         
-        hw.stopStream();
-        pause(0.05);
-        
-        if (fast)
-            mod8 = mod(delays(i),8);
-            hw.runCommand(sprintf(fastDelayCmdMul8, delays(i) - mod8));
-            hw.runCommand(sprintf(fastDelayCmdSub8, mod8));
-        else
-            hw.runCommand(sprintf(slowDelayCmd, delays(i)));
-        end
-        
-        hw.shadowUpdate();
-        
-        hw.restartStream();
-        pause(0.1);
+        hwCurrDelay = delays(i);
+        hwSetDelay(hw, delays(i), fast);
         
         frame = hw.getFrame();
         images{i} = double(frame.i);
@@ -173,6 +150,42 @@ for ic=1:10
     end
 
 end
+
+if (hwCurrDelay ~= delay)
+    hwSetDelay(hw, delay, fast);
+end
+
+end
+
+function hwSetDelay(hw, delay, fast)
+
+%{
+//---------FAST-------------
+mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
+mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
+//--------SLOW-------------
+mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
+%}
+
+fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
+fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
+slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
+
+hw.stopStream();
+pause(0.05);
+
+if (fast)
+    mod8 = mod(delay, 8);
+    hw.runCommand(sprintf(fastDelayCmdMul8, delay - mod8));
+    hw.runCommand(sprintf(fastDelayCmdSub8, mod8));
+else
+    hw.runCommand(sprintf(slowDelayCmd, delay));
+end
+
+hw.shadowUpdate();
+
+hw.restartStream();
+pause(0.1);
 
 end
 
