@@ -1,0 +1,243 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration build-checksum="2698550905" file="C:\git\ivcam2\scripts\IV2calibTool\IV2calibTool.prj" location="C:\git\ivcam2\scripts\IV2calibTool" name="IV2calibTool" preferred-package-location="C:\git\ivcam2\scripts\IV2calibTool\IV2calibTool\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>IV2calibTool</param.appname>
+    <param.icon />
+    <param.icons />
+    <param.version>1.0</param.version>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
+    <param.summary />
+    <param.description />
+    <param.screenshot />
+    <param.guid />
+    <param.installpath.string>\IV2calibTool\</param.installpath.string>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.target.install.notes />
+    <param.intermediate>${PROJECT_ROOT}\IV2calibTool\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\IV2calibTool\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\IV2calibTool\for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}\IV2calibTool</param.logdir>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options>-g</param.user.defined.mcr.options>
+    <param.target.type>subtarget.standalone</param.target.type>
+    <param.support.packages />
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>false</param.windows.command.prompt>
+    <param.create.log>true</param.create.log>
+    <param.log.file>IV2algoCalibTool.log</param.log.file>
+    <param.native.matlab>false</param.native.matlab>
+    <param.checkbox>false</param.checkbox>
+    <param.example />
+    <param.help.text />
+    <unset>
+      <param.icon />
+      <param.icons />
+      <param.version />
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.summary />
+      <param.description />
+      <param.screenshot />
+      <param.guid />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.target.install.notes />
+      <param.intermediate />
+      <param.files.only />
+      <param.output />
+      <param.logdir />
+      <param.enable.clean.build />
+      <param.target.type />
+      <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.native.matlab />
+      <param.checkbox />
+      <param.example />
+      <param.help.text />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\IV2calibTool.m</file>
+    </fileset.main>
+    <fileset.resources>
+      <file>C:\git\ivcam2\+Calibration\+aux\validateDODCalib.m</file>
+      <file>C:\git\ivcam2\+Calibration\IVCAM20Scripts\algoConfigInitial.txt</file>
+      <file>C:\git\ivcam2\+Calibration\IVCAM20Scripts\initFW.mat</file>
+      <file>C:\git\ivcam2\+Calibration\IVCAM20Scripts\irDelayNoFilters.txt</file>
+      <file>C:\git\ivcam2\+Calibration\IVCAM20Scripts\preAlgo.txt</file>
+      <file>C:\git\ivcam2\+Pipe\tables\lutsDefinitions.frmw</file>
+      <file>C:\git\ivcam2\+Pipe\tables\regsConstraints.frmw</file>
+      <file>C:\git\ivcam2\+Pipe\tables\regsDefinitions.frmw</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\CommandsIVCam20.xml</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\DepthCameras.Common.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\DepthCameras.UVC.Cli.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\DepthCameras.UVC.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\DepthCameras.WinUsb.Cli.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\DepthCameras.WinUsb.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\DeviceNotifier.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCam.Tools.CamerasSdk.Cameras.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCam.Tools.CamerasSdk.Cameras.Generic.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCam.Tools.CamerasSdk.Cameras.Generic.IVCam20.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCam.Tools.CamerasSdk.Common.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCam.Tools.CamerasSdk.Images.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCam.Tools.Infrastructure.Logging.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCAM.Tools.SysMate.Infrastructure.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCAM1_5.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCAM1_5.Wrapper.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\IVCamWrapper.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\log4net.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\PerCHW.Tools.CameraHW.Commands.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\PerCHW.Tools.CameraHW.Commands.Generic.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\PerCHW.Tools.CameraHW.Common.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\PerCHW.Tools.CameraHW.Facade.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\PerCHW.Tools.CameraHW.Facade.Interface.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\SensorWrapper.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\System.Numerics.Vectors.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Device\UsbWpfService.dll</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Scripts\Restart_ma_pipe.txt</file>
+      <file>C:\git\ivcam2\@HWinterface\IVCam20Scripts\SW_Reset.txt</file>
+      <file>${PROJECT_ROOT}\res\calibTarget.png</file>
+      <file>${PROJECT_ROOT}\res\undistCalib.png</file>
+    </fileset.resources>
+    <fileset.package />
+    <fileset.depfun>
+      <file>C:\git\ivcam2\+Calibration\+aux\calcDelayCoarseError.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\calcDelayFineError.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\calibDFZ.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\evalGeometricDistortion.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\evalProjectiveDisotrtion.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\generateUndistTables.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\readAvgFrame.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\runDODCalib.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\undistFromImg.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\writeChannelDelaysMWD.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\writeDODParamsMWD.m</file>
+      <file>C:\git\ivcam2\+Calibration\+aux\writeVersionReg.m</file>
+      <file>C:\git\ivcam2\+Calibration\runCalibChDelays.m</file>
+      <file>C:\git\ivcam2\+Calibration\runCalibStream.m</file>
+      <file>C:\git\ivcam2\+Codes\propCode.m</file>
+      <file>C:\git\ivcam2\+io\readBin.m</file>
+      <file>C:\git\ivcam2\+io\writeBin.m</file>
+      <file>C:\git\ivcam2\+Pipe\+CBUF\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+CBUF\+FRMW\xy2ang.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DCOR\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DEST\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DEST\+FRMW\trigoCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DEST\getTrigo.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DIGG\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DIGG\+FRMW\buildLensLUT.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DIGG\+FRMW\getAng2xyCoeffs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DIGG\+FRMW\getNotchFilterCoeffs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+DIGG\ang2xy.m</file>
+      <file>C:\git\ivcam2\+Pipe\+JFIL\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+PCKR\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+RAST\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\+STAT\+FRMW\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\bootCalcs.m</file>
+      <file>C:\git\ivcam2\+Pipe\z16toVerts.m</file>
+      <file>C:\git\ivcam2\+Utils\buildTracer.m</file>
+      <file>C:\git\ivcam2\+Utils\fp20.mexw64</file>
+      <file>C:\git\ivcam2\+Utils\fp32.mexw64</file>
+      <file>C:\git\ivcam2\+Utils\indx2col.m</file>
+      <file>C:\git\ivcam2\+Validation\edgeTrans.m</file>
+      <file>C:\git\ivcam2\@Firmware\Firmware.m</file>
+      <file>C:\git\ivcam2\@HWinterface\HWinterface.m</file>
+      <file>C:\git\ivcam2\@HWinterface\privConfigureStream.m</file>
+      <file>C:\git\ivcam2\@HWinterface\privInitCam.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\dec2binFAST.mexw64</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\FirmwareBase.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\mergeRegs.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privAlgoStruct2AsicStruct.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privBootCalcs.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privConstraints.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privLoadLUTs.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privLoadRegisters.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privRewriteRegisterDefFile.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privUpdate.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\privWrite2file.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\randomize.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivConvertBlockNameId2regName.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivConvertRegName2blockNameId.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivGetBaseVal.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivReadAsicFile.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivReadConfigurationFile.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivReadCSV.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivRegstruct2uint32val.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivRegstruct2val.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivRmData2struct.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivSizeof.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\sprivStringDist.m</file>
+      <file>C:\git\ivcam2\common\@FirmwareBase\writeDefs4asic.m</file>
+      <file>C:\git\ivcam2\common\@Logger\Logger.m</file>
+      <file>C:\git\ivcam2\common\file_utils\dirFiles.m</file>
+      <file>C:\git\ivcam2\common\file_utils\fileTypesIO\stlwriteMatrix.m</file>
+      <file>C:\git\ivcam2\common\file_utils\fileTypesIO\struct2xml.m</file>
+      <file>C:\git\ivcam2\common\file_utils\fileTypesIO\struct2xmlWrapper.m</file>
+      <file>C:\git\ivcam2\common\file_utils\fileTypesIO\xml2struct.m</file>
+      <file>C:\git\ivcam2\common\file_utils\fileTypesIO\xml2structWrapper.m</file>
+      <file>C:\git\ivcam2\common\file_utils\mkdirSafe.m</file>
+      <file>C:\git\ivcam2\common\general\buffer_.m</file>
+      <file>C:\git\ivcam2\common\general\dec2hexFast.m</file>
+      <file>C:\git\ivcam2\common\general\iff.m</file>
+      <file>C:\git\ivcam2\common\gui\maximizeFig.m</file>
+      <file>C:\git\ivcam2\common\image_utils\pad_array.m</file>
+      <file>C:\git\ivcam2\common\math\+fitting\nlinfit.m</file>
+      <file>C:\git\ivcam2\common\math\+fitting\prctile.m</file>
+      <file>C:\git\ivcam2\common\math\+fitting\riseFitting.m</file>
+      <file>C:\git\ivcam2\common\math\butter_.m</file>
+      <file>C:\git\ivcam2\common\math\filtfilt_.m</file>
+      <file>C:\git\ivcam2\common\math\iirnotch_.m</file>
+      <file>C:\git\ivcam2\common\math\minind.m</file>
+      <file>C:\git\ivcam2\common\math\nanmax_.m</file>
+      <file>C:\git\ivcam2\common\math\nanmedian_.m</file>
+      <file>C:\git\ivcam2\common\math\nanmin_.m</file>
+      <file>C:\git\ivcam2\common\math\normByMax.m</file>
+      <file>C:\git\ivcam2\common\math\normr.m</file>
+      <file>C:\git\ivcam2\common\math\prctile_.m</file>
+      <file>C:\git\ivcam2\common\math\vec.m</file>
+      <file>C:\git\ivcam2\common\optimization\fminsearchbnd.m</file>
+      <file>C:\git\ivcam2\common\plot_utils\tabplot.m</file>
+      <file>C:\git\ivcam2\common\string_utils\cell2str.m</file>
+      <file>C:\git\ivcam2\common\string_utils\str2cell.m</file>
+    </fileset.depfun>
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}\IV2calibTool\for_testing" name="splash.png" optional="false">C:\git\ivcam2\scripts\IV2calibTool\IV2calibTool\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\IV2calibTool\for_testing" name="IV2calibTool.exe" optional="false">C:\git\ivcam2\scripts\IV2calibTool\IV2calibTool\for_testing\IV2calibTool.exe</file>
+      <file location="${PROJECT_ROOT}\IV2calibTool\for_testing" name="readme.txt" optional="true">C:\git\ivcam2\scripts\IV2calibTool\IV2calibTool\for_testing\readme.txt</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2017b</root>
+      <toolboxes />
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

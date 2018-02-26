@@ -1,0 +1,6 @@
+mwd A00e0080 A00e0084 3 // cbuf mem size. VGA-->3
+mwd a00d01f4 a00d01f8 00000fff // Depth Shadow update imidiate  all
+mwd  fffe382c fffe3830 3F0CCCCD  //dsm vertical shift
+mwd  fffe3830 fffe3834 45610000  //dsm vertical scale
+mwd  fffe3840 fffe3844 3EB33333  //dsm horizontal shift
+mwd  fffe3844 fffe3848 45A28000  //dsm horizontal scale

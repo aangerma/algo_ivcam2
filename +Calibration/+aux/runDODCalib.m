@@ -1,4 +1,4 @@
-function [calibRegs,calibLuts] = runDODCalib(d,regs,luts,verbose)
+function resDODParams = runDODCalib(hw,verbose,varargin)
 %RUNDODCALIB calibrates the following properties: 
 % Zenith - The offset angles of the mirror. Affects the IR and Depth.
 % Undistortion Table - a 32x32 tables that remap an x-y locations. Affects the IR and Depth.
@@ -18,54 +18,69 @@ function [calibRegs,calibLuts] = runDODCalib(d,regs,luts,verbose)
 % The calibration iteratively optimize the Zenith,FOV and System delay.
 % After convergence, it calculates the distortion map to fix any residual
 % errors.
+if nargin == 2
+    preAlgoConfig = fullfile(fullfile(fileparts(mfilename('fullpath')),'..'),'IVCAM20Scripts','initFW.mat');
+    initFW = load(preAlgoConfig);
+    [regs, luts] = initFW.fw.get();
+else
+    fw = varargin{1};
+    [regs, luts] = fw.get();
+end
+
+d = Calibration.aux.readAvgFrame(hw,30);
+resDODParams.initFW = initFW.fw;
+gaurdBands = [0.0125 0.13];
+
+
+
+warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 fprintff = @(varargin) verbose&&fprintf(varargin{:});
-iter = 6;
+iter = 5;
 dProg = cell(1,iter+1);
 dProg{1} = d;
 regsProg = cell(1,iter+1);
 lutsProg = cell(1,iter+1);
 regsProg{1} = regs;
 lutsProg{1} = luts;
-eProg = zeros(3,iter);
+eProg = zeros(5,iter);
 for i = 1:iter
-    fprintff('Optimizing Delay, FOV and zenith...');
-    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose);
+    fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
+    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,gaurdBands);
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},outregs);
-    fprintff('done\n');
     
-    fprintff('Optimizing undistort map...');
-    [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,verbose);
+    
+    
+    fprintff('#%d Optimizing undistort map... ',i);
+    [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,0);
     luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
     lutsProg{i+1} = luts;
     fprintff('done\n');
 
     dProg{i+1}.z=undistF(dProg{i+1}.z);
     dProg{i+1}.i=undistF(dProg{i+1}.i);
-    dProg{i+1}.c=undistF(dProg{i+1}.c);
+%     dProg{i+1}.c=undistF(dProg{i+1}.c);
+    % Eval the erros after distortion
+    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands,true);
 end
-[~,bestI] = min(eProg(1,:));
-calibRegs = regsProg{bestI+1};
-calibLuts = lutsProg{bestI+1};
+[resDODParams.errGeom,bestI] = min(eProg(4,:));
+
+resDODParams.errFit = eProg(5,bestI);
+resDODParams.errDist = eProg(3,bestI);
+resDODParams.eProg = eProg;
+
+warning('off','FIRMWARE:privUpdate:updateAutogen') % Supress checkerboard warning
+resDODParams.fw = copy(resDODParams.initFW);
+resDODParams.fw.setLut(lutsProg{bestI+1});
+resDODParams.fw.setRegs(regsProg{bestI+1},'');
+resDODParams.fw.get();
 
 if verbose
-    figure
-    for i = 1:iter+1
-        tabplot;
-        imagesc(dProg{i}.i)
-    end
+    fprintf('Geometric Error per iter:         ')
+    fprintf('%5.2f ',eProg(1,:)),fprintf('\n')
+    fprintf('Geometric Fitting Error per iter: ')
+    fprintf('%5.2f ',eProg(2,:)),fprintf('\n')
+    fprintf('Distortion Error per iter:        ')
+    fprintf('%5.2f ',eProg(3,:)),fprintf('\n')
+end
 
-%     figure 
-%     for i = 1:iter+1
-%         tabplot;
-%         cbp = Calibration.aux.getCBPoints3D(dProg{i},regsProg{i});
-%         plot3(cbp(1,:),cbp(2,:),cbp(3,:),'ro');
-%         axis equal
-%     end
-    linkprop(findobj(gcf,'type','axes'),{'xlim','ylim','zlim','CameraTarget','CameraUpVector','CameraPosition'})
-    fprintf('Geometric Error per iter:')
-    eProg(1,:)
-    fprintf('Geometric Fitting Error per iter:')
-    eProg(2,:)
-    fprintf('Distortion Error per iter:')
-    eProg(3,:)
 end

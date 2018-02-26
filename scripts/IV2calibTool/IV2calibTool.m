@@ -1,6 +1,8 @@
 classdef IV2calibTool < matlab.apps.AppBase
 %     mcc -m POC4rangeFinder.m -d \\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4RangeFinder\ -a ..\..\+Pipe\tables\* -a .\*
 
+% \\invcam450\D\data\ivcam20\exp\20180204_MA
+
     % Properties that correspond to app components
     properties (Access = public)
         IV2calibrationtoolUIFigure      matlab.ui.Figure
@@ -58,18 +60,19 @@ classdef IV2calibTool < matlab.apps.AppBase
         
         
         function fprintff(app,varargin)
-            fprintf(app.m_logfid,varargin{1:end-1});
-            app.logarea.Value{1}=[ app.logarea.Value{1} sprintf(varargin{1:end-1})];
-            if(varargin{end})
-                app.logarea.Value=[{''};app.logarea.Value];
-                fprintf(app.m_logfid,'\n');
-            else
-                
-            end
+            fprintf(app.m_logfid, varargin{1:end});
+            app.logarea.Value{end+1} = sprintf(varargin{1:end});
+            
+%             fprintf(app.m_logfid,varargin{1:end-1});
+%             app.logarea.Value{1}=[ app.logarea.Value{1} sprintf(varargin{1:end-1})];
+%             if(varargin{end})
+%                 app.logarea.Value=[{''};app.logarea.Value];
+%                 fprintf(app.m_logfid,'\n');
+%             end
             
         end
         
-        function  showTargetRequestFig(app,imgfn,figTitle)
+        function  showTargetRequestFig(app, hw, imgfn, figTitle)
             
             f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
             maximizeFig(f);
@@ -80,7 +83,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             colormap(gray(256));
             title('Please insert calib target','parent',a(1));
             a(2)=subplot(122);
-             hw=HWinterface();
+            % hw=HWinterface();
             while(ishandle(f) && get(f,'userdata')==0)
                
                 raw=hw.getFrame();
@@ -130,21 +133,39 @@ classdef IV2calibTool < matlab.apps.AppBase
         % Button pushed function: StartButton
         function StartButtonPushed(app, event)
             app.saveDefaults();
-            mkdirSafe(app.Outputdirectorty.Value);
-            app.m_logfid = fopen(fullfile(app.Outputdirectorty.Value,filesep,'log.log'),'w');
+
+            if ~exist(app.Outputdirectorty.Value, 'dir')
+                mkdir (app.Outputdirectorty.Value);
+            end
+            
+            app.m_logfid = fopen(fullfile(app.Outputdirectorty.Value,filesep,'log.log'),'wt');
             fprintffS=@(varargin) app.fprintff(varargin{:});
+
+            % clear log
+            app.logarea.Value = {''};
+            
+            %fprintffS('Loading Firmware...',false);
+            %fw=Pipe.loadFirmware(configFldr);
+            %fprintffS('Done',true);
+            %fprintffS('Connecting HW interface...',false);
+            %hw=HWinterface(fw);
+            hw=HWinterface();
+            %fprintffS('Done',true);
+                        
+            mkdirSafe(app.Outputdirectorty.Value);
+            
             try
-                app.showTargetRequestFig('calibTarget','Adjust target such that the target edges appear within the image');
-                Calibration.runCalibStream(app.Configdirectorty.Value,app.Outputdirectorty.Value,fprintffS,app.verboseCheckBox.Value);
-                app.showTargetRequestFig('undistCalib','Adjust target such that the target edges do not appear within the image');
+                app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
+                Calibration.runCalibStream(hw, app.Configdirectorty.Value,app.Outputdirectorty.Value,fprintffS,app.verboseCheckBox.Value);
+                %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
             catch e
-                fprintffS('',true);
-                fprintffS(sprintf('[!] ERROR:%s',e.message),true);
+                fprintffS('');
+                fprintffS(sprintf('[!] ERROR:%s\n',e.message));
                 errordlg(e.message);
             end
             fclose(app.m_logfid);
-            
+            clear hw;
         end
     end
     

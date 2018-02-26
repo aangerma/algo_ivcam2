@@ -1,5 +1,7 @@
-function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose)
-
+function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose,gaurdBands,eval)
+if(~exist('eval','var'))
+    eval=false;
+end
 if(~exist('verbose','var'))
     verbose=true;
 end
@@ -24,7 +26,7 @@ rtd=rtd+regs.DEST.txFRQpd(1);
 [angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
 
 %xy2ang verification
-% [~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
+[~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
 % assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
 % assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
 
@@ -39,7 +41,7 @@ rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles inst
 %%
 opt.maxIter=10000;
 opt.OutputFcn=[];
-opt.TolFun = 0.0025;
+opt.TolFun = 0.00025;
 opt.TolX = inf;
 opt.Display='none';
 
@@ -47,37 +49,31 @@ opt.Display='none';
 angXShift = 0;
 x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV angXShift]);
 % x0 = double([68.186935 52.944909 5153.491386 0.299999 -0.283499 angXShift])
-xL = [40 40 4000   -.3 -.3 0];
-xH = [90 90 6000    .3  .3 0];
-[e,eFit]=errFunc(rpt,regs,x0,verbose);
-
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
+xL = [40 40 4000   -.3 -.3 -0];
+xH = [90 90 6000    .3  .3  0];
+regs = x2regs(x0,regs,gaurdBands);
+[e,eFit]=errFunc(rpt,regs,x0,0);
+if eval 
+    outregs = [];
+    minerr = e;
+    dnew =[];
+    return
+end
+printErrAndX(x0,e,eFit,'X0:',verbose)
+[xbest,~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
 % [xbest,minerr]=fminsearch(@(x) errFunc(rpt,regs,x,0),x0,opt);
 outregs = x2regs(xbest,regs);
 rpt_new = cat(3,it(rtd),it(angx+xbest(6)),it(angy));
-[e,efit]=errFunc(rpt_new,outregs,xbest,verbose);
-%% 
-% 
-% for sh = -1000:200:1000
-%     regs.FRMW.marginL = 200;
-%     regs.FRMW.marginR = -200;
-%     
-%     outregs = x2regs(xbest,regs);
-%     figure
-%     [e,v,xF,yF]=errFunc(cat(3,it(rtd),it(angx),it(angy)),outregs,xbest,verbose);
-%     view([0,90])
-%     
-% end
-
+[e,eFit]=errFunc(rpt_new,outregs,xbest,1);
+printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
 
 [zNewVals,xF,yF]=rpt2z(cat(3,rtd,angx+xbest(6),angy),outregs);
 
 ok=~isnan(xF) & ~isnan(yF)  & d.i>1;
 dnew.z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
 dnew.i = griddata(double(xF(ok)),double(yF(ok)),double(d.i(ok)),xg,yg);
-dnew.c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
+% dnew.c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
 
 end
 
@@ -113,22 +109,26 @@ v=cat(3,x,y,z);
 
 
 [e,eFit]=Calibration.aux.evalGeometricDistortion(v,verbose);
-if(verbose)
-    fprintf('%f ',[X]);
-    fprintf('eAlex: %f ',[e]);
-    fprintf('eFit: %f ',[eFit]);
-    
+
+end
+function printErrAndX(X,e,eFit,preSTR,verbose)
+if verbose 
+    fprintf('%-8s',preSTR);
+    fprintf('%4.2f ',X);
+    fprintf('eAlex: %.2f ',e);
+    fprintf('eFit: %.2f ',eFit);
     fprintf('\n');
 end
 end
-function rtlRegs = x2regs(x,rtlRegs)
-
+function rtlRegs = x2regs(x,rtlRegs,gaurdBands)
+if(exist('gaurdBands','var'))
+    iterRegs.FRMW.gaurdBandH=single(gaurdBands(1));
+    iterRegs.FRMW.gaurdBandV=single(gaurdBands(2));
+end
 
 
 iterRegs.FRMW.xfov=single(x(1));
 iterRegs.FRMW.yfov=single(x(2));
-iterRegs.FRMW.gaurdBandH=single(0);
-iterRegs.FRMW.gaurdBandV=single(0);
 iterRegs.FRMW.xres=rtlRegs.GNRL.imgHsize;
 iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
 iterRegs.FRMW.marginL=int16(0);

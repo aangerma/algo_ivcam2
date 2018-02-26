@@ -1,29 +1,42 @@
-function score=runCalibStream(configFldr,outputFolder,fprintff,verbose)
+function score=runCalibStream(hw, configFldr,outputFolder,fprintff,verbose)
 if(~exist('verbose','var'))
     verbose=true;
 end
-% fprintff = @(varargin) verbose&&fprintf(varargin{:});
+%fprintff = @(varargin) verbose&&fprintf(varargin{:});
 
-fprintff('Loading Firmware...',false);
-fw=Pipe.loadFirmware(configFldr);
-fprintff('Done',true);
-fprintff('Connecting HW interface...',false);
-hw=HWinterface(fw);
-fprintff('Done',true);
+pxFailThreshold = 5.0;
+
+%fprintff('Loading Firmware...',false);
+%fw=Pipe.loadFirmware(configFldr);
+%fprintff('Done',true);
+%fprintff('Connecting HW interface...',false);
+% hw=HWinterface(fw);
+%fprintff('Done',true);
+
+%% ::Set some basic configuration:: %%
+% Makes sure we know the current configuration. Also set a better DSM calib and CBUF mode. 
+fprintff('Setting default configuration. This might take two or three minutes...');
+preAlgoScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','algoConfigInitial.txt');
+%preAlgoScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','preAlgo.txt');
+%hw.runScript(preAlgoScript);
+fprintff('Done\n');
+
+
 %% ::calibrate delays::
-fprintff('Depth delay calibration...',false);
+fprintff('Depth and IR delay calibration...');
+resChDelays = Calibration.runCalibChDelays(hw, verbose);
+fnChDelays = fullfile(outputFolder, 'pi_conloc_delays.txt');
+Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, true);
+fprintff('Done\n');
+fprintff('[*] Delays Score:\n - errFast = %2.2fmm\n - errSlow=%2.2fmm\n',resChDelays.errFast,resChDelays.errSlow);
 
-fprintff('Done',true);
+if (resChDelays.errFast > pxFailThreshold || resChDelays.errSlow > pxFailThreshold)
+    fprintff(' Algo calibration summary: fail\n');
+    return;
+end
 
-fprintff('IR delay calibration...',false);
-
-
-fprintff('Done',true);
-
-
-fprintff('XY delay calibration...',false);
-
-fprintff('Done',true);
+%fprintff('XY delay calibration...',false);
+%fprintff('Done',true);
 
 %% ::calibrate gamma scale shift::
 % fw.setRegs('JFILbypass',false);
@@ -39,61 +52,72 @@ fprintff('Done',true);
 % fw.setRegs(gammaRegs,calibfn);
 %% ::calibrate gamma curve::
 
-%% ::Get image::
-
-fprintff('DDFZ init...',false);
-
-
-luts.FRMW.undistModel=zeros(2048,1,'uint32');
-fw.setLut(luts);
-resetregs.DIGG.undistBypass=false;
-resetregs.DEST.txFRQpd=single([0 0 0]);
-fw.setRegs(resetregs,[]);
-hw.write();
-fprintff('Done',true);
-d = readFrames(hw,30,true);
+fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
+resDODParams = Calibration.aux.runDODCalib(hw,verbose);
+fnDODParams = fullfile(outputFolder, 'dod_params.txt');
+Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, true);
+fprintff('Done\n');
+fprintff('[*] Virtual DOD Score:\n - eGeom = %2.2fmm\n - eFit = %2.2fmm\n - eDistortion = %2.2fmm\n',...
+    resDODParams.errGeom,resDODParams.errFit,resDODParams.errDist);
 
 
-[regs,luts]=fw.get();
+fnVer = fullfile(outputFolder, 'ver.txt');
+Calibration.aux.writeVersionReg(fnVer, 1, true);
 
+fnAlgoCalib = fullfile(outputFolder, 'Algo_Pipe_Calibration_CalibData_Ver_01_01.txt');
+system(['copy /y /b ' fnVer '+' fnChDelays '+' fnDODParams ' ' fnAlgoCalib]);
 
-[~,~,irNew]=Calibration.aux.calibDFZ(d,regs,verbose);
-[udistLUTinc,~,undistF]=Calibration.aux.undistFromImg(irNew,1);
-luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc,'single'),'uint32');
-d.z=undistF(d.z);
-d.i=undistF(d.i);
-d.c=undistF(d.c);
-[outregs,minerr]=Calibration.aux.calibDFZ(d,regs,verbose);
+%% write calib files in full firmware formate
+Calibration.aux.writeDODParamsMWD(fnDODParams, resDODParams, false);
+Calibration.aux.writeChannelDelaysMWD(fnChDelays, resChDelays.delayFast, resChDelays.delaySlow, false);
 
+% Evalute the DOD and Distortion on captured images.
+errGeomVal = Calibration.aux.validateDODCalib(hw,fnDODParams,resDODParams, fprintff, verbose);
 
-
-fprintff('Done',true);
-score=minerr;
-
-fprintff('[*] Score: %g',minerr,true);
-
-
-
-
-calibfn = fullfile(outputFolder,filesep,'calib.csv');
-undistfn=fullfile(outputFolder,filesep,'FRMWundistModel.bin32');
-io.writeBin(undistfn,luts.FRMW.undistModel)
-fw.setRegs(outregs,calibfn);
-fw.writeUpdated(calibfn)
-fprintff('done\n');
-fw.genMWDcmd([],fullfile(outputFolder,filesep,'algoConfig.txt'));
+%% merge all scores outputs
+scores = struct();
+f = fieldnames(resChDelays);
+for i = 1:length(f)
+    scores.(f{i}) = resChDelays.(f{i});
 end
 
-function stream = readFrames(hw,N,avg)
-for i = 1:N
-   stream(i) = hw.getFrame(); 
+f = fieldnames(resDODParams);
+for i = 1:length(f)
+    scores.(f{i}) = resDODParams.(f{i});
 end
-if avg
-    % Use an average of the stream for calibration:
-    collapseM = @(x) median(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
-    avgD.z=collapseM('z');
-    avgD.i=collapseM('i');
-    avgD.c=collapseM('c');
-    stream = avgD;
+
+scores.errGeomVal = errGeomVal;
+
+%% define score thresholds, load from xml
+scoresThresholds = {...
+    {'errFast', 2.5, 5.0, 'fast delay score (pixels)'},...
+    {'errSlow', 2.5, 5.0, 'slow delay score (pixels)'},...
+    {'errGeom', 2.0, 5.0, 'DOD optimization score (mm)'}, ...
+    {'errGeomVal', 2.0, 5.0, 'DOD validation score (mm)'}, ...
+    };
+
+fprintff('Scores:\n');
+
+totalCalibStr = 'pass';
+
+for i=1:length(scoresThresholds)
+    sth = scoresThresholds{i};
+    s = scores.(sth{1});
+    if (s > sth{3})
+        resStr = 'fail';
+        totalCalibStr = 'fail';
+    elseif (s > sth{2})
+        resStr = 'pass (bad)';
+    else
+        resStr = 'pass';
+    end
+        
+    fprintff(' - %s (%2.2f)): %s\n', sth{4}, s, resStr);
 end
+
+
+fprintff(' Algo calibration summary: %s\n', totalCalibStr);
+
+
+
 end
