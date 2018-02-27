@@ -134,9 +134,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         function StartButtonPushed(app, event)
             app.saveDefaults();
 
-            if ~exist(app.Outputdirectorty.Value, 'dir')
-                mkdir (app.Outputdirectorty.Value);
-            end
+            mkdirSafe(app.Outputdirectorty.Value);
             
             app.m_logfid = fopen(fullfile(app.Outputdirectorty.Value,filesep,'log.log'),'wt');
             fprintffS=@(varargin) app.fprintff(varargin{:});
@@ -152,7 +150,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             hw=HWinterface();
             %fprintffS('Done',true);
                         
-            mkdirSafe(app.Outputdirectorty.Value);
+
             
             try
                 app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
