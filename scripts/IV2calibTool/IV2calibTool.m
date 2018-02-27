@@ -229,6 +229,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.verboseCheckBox = uicheckbox(app.IV2calibrationtoolUIFigure);
             app.verboseCheckBox.Text = 'verbose';
             app.verboseCheckBox.Position = [110 368 486 22];
+            app.verboseCheckBox.Value = true;
             
         end
     end
