@@ -27,10 +27,11 @@ classdef TPS
     properties (Access = private)
         mat
         src
+        dst
         verbose
     end
     properties (Constant, Access = private)
-        N_MAX_POINTS = 1000000; %nominal matrix size
+        N_MAX_POINTS = 200000; %nominal matrix size
     end
     methods (Static, Access = private)
         function d = Ufunc(v)
@@ -53,13 +54,14 @@ classdef TPS
         
         
         function obj = TPS(src, dst,verbose)
-            assert(all(size(src)==size(dst)));
+            assert(all(size(src,1)==size(dst,1)));
             if(~exist('verbose','var'))
                 verbose=false;
             end
             npnts = size(src,1);
             
             dim = size(src,2);
+            dimOut = size(dst,2);
             src = double(src);
             dst = double(dst);
             
@@ -82,8 +84,9 @@ classdef TPS
             P = [ones(npnts,1), src];
             
             L = [ [K, P];[P', zeros(dim+1,dim+1)] ];
-            obj.mat = pinv(L) * [dst; zeros(dim+1,dim)];
+            obj.mat = pinv(L) * [dst; zeros(dim+1,dimOut)];
             obj.src = src;
+            obj.dst = dst;
             obj.verbose=verbose;
         end
         
@@ -102,7 +105,7 @@ classdef TPS
                 L = [K'  P];
                 z = L * obj.mat;
             else
-                z = zeros(size(ptKd));
+                z = zeros(size(ptKd,1),size(obj.dst,2));
                 if(obj.verbose)
                     fprintf('[%5.1f%%]',0);
                 end
@@ -148,8 +151,7 @@ classdef TPS
         end
         
         function tpsinv=inv(obj)
-            dst = obj.at(obj.src);
-            tpsinv = TPS(dst,obj.src);
+            tpsinv = TPS(obj.dst,obj.src);
         end
         
         function tpsC=mtimes(tpsA,tpsB)

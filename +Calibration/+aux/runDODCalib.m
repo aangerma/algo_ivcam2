@@ -21,14 +21,16 @@ function resDODParams = runDODCalib(hw,verbose,varargin)
 if nargin == 2
     preAlgoConfig = fullfile(fullfile(fileparts(mfilename('fullpath')),'..'),'IVCAM20Scripts','initFW.mat');
     initFW = load(preAlgoConfig);
+    resDODParams.initFW = initFW.fw;
     [regs, luts] = initFW.fw.get();
+    
 else
-    fw = varargin{1};
-    [regs, luts] = fw.get();
+    resDODParams.initFW = varargin{1};
+    [regs, luts] = resDODParams.initFW.get();
 end
 
 d = Calibration.aux.readAvgFrame(hw,30);
-resDODParams.initFW = initFW.fw;
+
 gaurdBands = [0.0125 0.13];
 
 
