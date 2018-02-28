@@ -14,8 +14,9 @@ end
 newRegsNames = getDiffNames(regsNew,regsOld,lutsNew,lutsOld);
 resDODParams.fw.genMWDcmd(newRegsNames, filename, shortFirmwareFormat);
 
-% dodFW = fullfile(filename,'..','dodFW.mat');
-% save(dodFW,'regs','luts')
+[filepath,~,~] = fileparts(filename);
+dodRes = fullfile(filepath,'resDODParams.mat');
+save(dodRes,'resDODParams')
 
 end
 
