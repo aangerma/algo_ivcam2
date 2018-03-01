@@ -11,6 +11,7 @@ end
 [regsOld,lutsOld] = resDODParams.initFW.get();
 [regsNew,lutsNew] = resDODParams.fw.get();
 
+newRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWgaurdBandH|FRMWgaurdBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
 newRegsNames = getDiffNames(regsNew,regsOld,lutsNew,lutsOld);
 resDODParams.fw.genMWDcmd(newRegsNames, filename, shortFirmwareFormat);
 
