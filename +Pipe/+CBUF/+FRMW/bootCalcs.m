@@ -44,13 +44,13 @@ autogenRegs.CBUF.xRelease(1:n) = uint16(round(lutData));
 %% ASIC
 
 if(regs.GNRL.imgVsize>960)
-    autogenRegs.EXTL.memBufSz=uint32(0);
+    autogenRegs.EXTL.cbufMemBufSz=uint32(0);
 elseif(regs.GNRL.imgVsize>720)
-    autogenRegs.EXTL.memBufSz=uint32(1);
+    autogenRegs.EXTL.cbufMemBufSz=uint32(1);
 elseif(regs.GNRL.imgVsize>512)
-    autogenRegs.EXTL.memBufSz=uint32(2);
+    autogenRegs.EXTL.cbufMemBufSz=uint32(2);
 else
-    autogenRegs.EXTL.memBufSz=uint32(3);
+    autogenRegs.EXTL.cbufMemBufSz=uint32(3);
 end
 
 autogenRegs.EXTL.valPer=uint32(256);
