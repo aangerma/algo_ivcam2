@@ -71,7 +71,8 @@ else
     
     
     %% ranger
-    xyQout = Pipe.DIGG.ranger(x, y, regs);
+    [xq,yq] = Pipe.DIGG.ranger(x, y, regs);
+    xyQout = [xq(:) yq(:)]';
 end
 % lgr.print2file(sprintf('\t\txyQout ((x, y) ranger output) = %s, %s\n',   dec2hexFast(xyQout(1,1),4),dec2hexFast(xyQout(2,1),4)));
 

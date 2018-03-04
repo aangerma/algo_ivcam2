@@ -214,7 +214,7 @@ classdef FirmwareBase <handle
             privWrite2file( obj,outputFn,'config');
         end
         
-        function txtout=genMWDcmd(obj,regTokens,outfn, shortFirmwareFormat)
+        function txtout=genMWDcmd(obj,regTokens,outfn)
             
             if(~exist('regTokens','var') || isempty(regTokens))
                 regTokens={'.'};
@@ -236,20 +236,11 @@ classdef FirmwareBase <handle
             m = num2cell([[obj.m_registers(indregs).address]' [obj.m_registers(indregs).address]'+4 Firmware.sprivRegstruct2uint32val(obj.m_registers(indregs))]);
             m=[m {obj.m_registers(indregs).regName}']';
             
-            if ~exist('shortFirmwareFormat','var')
-                shortFirmwareFormat = false;
-            end
-            
-            if (shortFirmwareFormat)
-                strOutFormat = 'mwd %08x %08x // %s\n';
-                indOut = [1 3 4];
-            else
                 strOutFormat = 'mwd %08x %08x %08x // %s\n';
-                indOut = 1:4;
-            end
+            
             
             if(~isempty(m))
-                m = m(indOut, :);
+                
                 txtout=sprintf(strOutFormat, m{:});
             else
                 txtout='';
@@ -271,7 +262,7 @@ classdef FirmwareBase <handle
                         
                         error('Unsopported LUT datasize');
                 end
-                m = m(indOut, :);
+                
                 txtout = [txtout sprintf(strOutFormat, m{:})]; %#ok;
             end
             

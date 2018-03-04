@@ -1,0 +1,27 @@
+FRMWcbufConstLUT	b1
+FRMWxfov        	f72
+FRMWyfov        	f56
+FRMWlaserangleH 	f0
+FRMWlaserangleV 	f0
+
+%FRMWgaurdBandH      f0.02
+%FRMWgaurdBandV      f0.1
+
+FRMWgaurdBandH      f0.0
+FRMWgaurdBandV      f0.0500
+
+
+DIGGundistBypass    b0
+
+DESTtxFRQpd_000 	f5000
+DESTtxFRQpd_001 	f5000
+DESTtxFRQpd_002 	f5000
+
+EXTLdsmXscale   f5100
+EXTLdsmYscale   f3600    
+EXTLdsmXoffset  f0.3500  
+EXTLdsmYoffset  f0.5500  
+
+EXTLconLocDelayFastC d29088
+EXTLconLocDelayFastF d4
+EXTLconLocDelaySlow  d104

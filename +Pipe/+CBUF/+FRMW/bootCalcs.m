@@ -41,10 +41,21 @@ end
 autogenRegs.CBUF.xRelease = uint16(zeros(1,16));
 autogenRegs.CBUF.xRelease(1:n) = uint16(round(lutData));
 %
-%%ASIC
-autogenRegs.CBUF.valPer=uint32(256);
+%% ASIC
+
+if(regs.GNRL.imgVsize>960)
+    autogenRegs.EXTL.cbufMemBufSz=uint32(0);
+elseif(regs.GNRL.imgVsize>720)
+    autogenRegs.EXTL.cbufMemBufSz=uint32(1);
+elseif(regs.GNRL.imgVsize>512)
+    autogenRegs.EXTL.cbufMemBufSz=uint32(2);
+else
+    autogenRegs.EXTL.cbufMemBufSz=uint32(3);
+end
+
+autogenRegs.EXTL.valPer=uint32(256);
 if(~regs.JFIL.upscalexyBypass)
-    autogenRegs.CBUF.valPer=uint32(512);
+    autogenRegs.EXTL.valPer=uint32(512);
 end
 %%
 regs = Firmware.mergeRegs(regs,autogenRegs);

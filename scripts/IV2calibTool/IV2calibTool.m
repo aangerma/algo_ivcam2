@@ -15,6 +15,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         Button_3                        matlab.ui.control.Button
         logarea                         matlab.ui.control.TextArea
         verboseCheckBox                 matlab.ui.control.CheckBox
+        doInitCheckBox                  matlab.ui.control.CheckBox
     end
     
     
@@ -83,7 +84,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             colormap(gray(256));
             title('Please insert calib target','parent',a(1));
             a(2)=subplot(122);
-            % hw=HWinterface();
+            
             while(ishandle(f) && get(f,'userdata')==0)
                
                 raw=hw.getFrame();
@@ -146,15 +147,16 @@ classdef IV2calibTool < matlab.apps.AppBase
             %fw=Pipe.loadFirmware(configFldr);
             %fprintffS('Done',true);
             %fprintffS('Connecting HW interface...',false);
-            %hw=HWinterface(fw);
-            hw=HWinterface();
+            
+            
             %fprintffS('Done',true);
-                        
-
             
             try
+                hw=HWinterface();
                 app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
-                Calibration.runCalibStream(hw, app.Configdirectorty.Value,app.Outputdirectorty.Value,fprintffS,app.verboseCheckBox.Value);
+                clear hw;
+
+                Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value);
                 %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
             catch e
@@ -163,7 +165,6 @@ classdef IV2calibTool < matlab.apps.AppBase
                 errordlg(e.message);
             end
             fclose(app.m_logfid);
-            clear hw;
         end
     end
     
@@ -174,7 +175,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         function createComponents(app)
             
             % Create IV2calibrationtoolUIFigure
-            app.IV2calibrationtoolUIFigure = uifigure;
+            app.IV2calibrationtoolUIFigure = uifigure();
             app.IV2calibrationtoolUIFigure.Position = [100 100 640 480];
             centerfig(app.IV2calibrationtoolUIFigure);
             app.IV2calibrationtoolUIFigure.Name = 'IV2 calibration tool';
@@ -228,6 +229,14 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.verboseCheckBox.Text = 'verbose';
             app.verboseCheckBox.Position = [110 368 486 22];
             app.verboseCheckBox.Value = true;
+
+            app.doInitCheckBox = uicheckbox(app.IV2calibrationtoolUIFigure);
+            app.doInitCheckBox.Text = 'init';
+            app.doInitCheckBox.Position = [310 368 486 22];
+            app.doInitCheckBox.Value = false;
+
+            
+            
             
         end
     end

@@ -68,12 +68,16 @@ classdef HWinterface <handle
                 res = obj.cmd(['mrd ' str{2} ' ' str{3}]);
                 res = res(end-7:end);
 %                 regStruct.(a(1).algoBlock).(a(1).algoName)=uint32(hex2dec(res));
-                disp([str{5}(3:end) ' = ' res]);
+                disp([res ' //' str{6}]);
             end
 %             obj.m_fw.setRegs(regStruct);
         end
         
-        
+        function setReg(obj,regName,regVal)
+            obj.m_fw.setRegs(regName,regVal);
+            meta = obj.m_fw.genMWDcmd(regName);
+            obj.cmd(meta);
+        end
         
         
         
@@ -91,7 +95,7 @@ classdef HWinterface <handle
                 obj.cmd(['mwd ' str{2} ' ' str{3} ' ' str{4}]);
             end
             
-            obj.cmd('mwd a00d01f4 a00d01f8 000005f8');%shadow update
+            obj.shadowUpdate()
             
         end
         
@@ -118,12 +122,9 @@ classdef HWinterface <handle
             % get C
             imageObj = imageCollection.Images.Item(2);
             cImByte = imageObj.Item(0).Data;
-            %cIm8 = cast(cImByte,'uint8');
-            %cIm8cell = num2cell(cIm8);
-            %t = cellfun(@(x) [x/2^4; mod(x,2^4)],cIm8cell,'uni',0);
-            %tt = cell2mat(t);
-            %tt = tt(:);
-            %frame.c = reshape(tt,480,640);
+            cIm8 = cast(cImByte,'uint8');
+            frame.c=reshape([bitshift(cIm8(:),-4) bitand(cIm8(:),uint8(15))]',size(frame.i));
+          
             
             if(0)
                 %%
@@ -153,7 +154,7 @@ classdef HWinterface <handle
         end
         
         function res = shadowUpdate(obj)
-            res = obj.cmd('mwd a00d01f4 a00d01f8 000001f8'); % shadow update
+            res = obj.cmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
         end
         
         function res = runCommand(obj, c)

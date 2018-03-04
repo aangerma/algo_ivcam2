@@ -1,16 +1,33 @@
-function [res] = runCalibChDelays(hw, verbose, debugOut)
+function [regs,delayErr] = runCalibChDelays(hw, verbose, debugOut)
 
-if ~exist('verbose')
+if ~exist('verbose','var')
   verbose = false;  
 end
 
-if ~exist('debugOut')
+if ~exist('debugOut','var')
   debugOut = false;  
 end
-
-fNameNoFiltersScript = fullfile(fileparts(mfilename('fullpath')),'IVCAM20Scripts','irDelayNoFilters.txt');
-hw.runScript(fNameNoFiltersScript);
-
+hw.setReg('RASTbiltBypass'     ,true);
+hw.setReg('JFILbypass'         ,false);
+hw.setReg('JFILbilt1bypass'    ,true);
+hw.setReg('JFILbilt2bypass'    ,true);
+hw.setReg('JFILbilt3bypass'    ,true);
+hw.setReg('JFILbiltIRbypass'   ,true);
+hw.setReg('JFILdnnBypass'      ,true);
+hw.setReg('JFILedge1bypassMode',uint8(1));
+hw.setReg('JFILedge4bypassMode',uint8(1));
+hw.setReg('JFILedge3bypassMode',uint8(1));
+hw.setReg('JFILgeomBypass'     ,true);
+hw.setReg('JFILgrad1bypass'    ,true);
+hw.setReg('JFILgrad2bypass'    ,true);
+hw.setReg('JFILirShadingBypass',true);
+hw.setReg('JFILinnBypass'      ,true);
+hw.setReg('JFILsort1bypassMode',uint8(1));
+hw.setReg('JFILsort2bypassMode',uint8(1));
+hw.setReg('JFILsort3bypassMode',uint8(1));
+hw.setReg('JFILupscalexyBypass',true);
+hw.setReg('JFILgammaBypass'    ,false);
+hw.shadowUpdate();
 
 initFastDelay = hex2dec('0000719A');
 initSlowDelay = 32;
@@ -21,14 +38,13 @@ step=ceil(2*qScanLength/5);
 delayFast = initFastDelay;
 
 % alternate IR : correlation peak from DEST 
-
-hw.runCommand('mwd a00e084c a00e0850 00000001 //DESTaltIrEn');
+hw.setReg('DESTaltIrEn'    ,true);
 hw.shadowUpdate();
 
 delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugOut);
 
-hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
-hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
+hw.setReg('JFILsort1bypassMode',uint8(0));
+hw.setReg('JFILsort2bypassMode',uint8(0));
 hw.shadowUpdate();
 
 step = 16;
@@ -37,23 +53,25 @@ try
 catch
     warning('fastFine failed');
     errFast = 1000; % in pixels
+    errSlow = 1000; % in pixels
 end
 
-res.delayFast = delayFast;
-res.errFast = errFast;
-
-hw.runCommand('mwd a00e1b24 a00e1b28 00000001 //JFILsort1bypassMode');
-hw.runCommand('mwd a00e1b40 a00e1b44 00000001 //JFILsort2bypassMode');
-hw.runCommand('mwd a00e084c a00e0850 00000000 //DESTaltIrEn');
+hw.setReg('JFILsort1bypassMode',uint8(1));
+hw.setReg('JFILsort2bypassMode',uint8(1));
+hw.setReg('DESTaltIrEn'    ,false);
 hw.shadowUpdate();
+
+if (errFast >= 1000)
+    return;
+end
 
 delaySlow = initSlowDelay;
 step = 32;
 
 delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugOut);
 
-hw.runCommand('mwd a00e1b24 a00e1b28 00000000 //JFILsort1bypassMode');
-hw.runCommand('mwd a00e1b40 a00e1b44 00000000 //JFILsort2bypassMode');
+hw.setReg('JFILsort1bypassMode',uint8(0));
+hw.setReg('JFILsort2bypassMode',uint8(0));
 hw.shadowUpdate();
 
 step = 16;
@@ -64,8 +82,12 @@ catch
     errSlow = 1000; % in pixels
 end
 
-res.delaySlow = delaySlow;
-res.errSlow = errSlow;
+regs.EXTL.conLocDelaySlow = uint32(delaySlow);
+regs.EXTL.conLocDelayFastC= uint32(delayFast/8)*8;
+regs.EXTL.conLocDelayFastF=uint32(mod(delayFast,8));
+
+
+delayErr=[errSlow errFast];
 
 end
 
@@ -122,6 +144,7 @@ for ic=1:10
     
     if (verbose)
         figure(11711); 
+        ax=nan(1,R);
         for i=1:R
             ax(i)=subplot(2,R,i);
             imagesc(images{i},prctile_(images{i}(images{i}~=0),[10 90])+[0 1e-3]);
@@ -190,83 +213,83 @@ pause(0.1);
 end
 
 
-function delay = run5SampleIterations(hw, baseDelay, step, iterType, verbose)
-
-coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
-fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
-
-%{
-//---------FAST-------------
-mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
-mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
-//--------SLOW-------------
-mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
-%}
-
-fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
-fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
-slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
-
-nSampleIterations = 5;
-R = nSampleIterations;
-range = round(-(R-1)/2:(R-1)/2);
-
-delays = max(0, round(baseDelay+range'*step));
-
-if (all(diff(delays)==0))
-    delay = baseDelay;
-    return;
-end
-
-irImages = cell(1,R);
-errors = zeros(1,R);
-
-for i=1:nSampleIterations
-    
-    hw.stopStream();
-    pause(0.1);
-    
-    if (fast)
-        mod8 = mod(delays(i),8);
-        hw.runCommand(sprintf(fastDelayCmdMul8, delays(i) - mod8));
-        hw.runCommand(sprintf(fastDelayCmdSub8, mod8));
-    else
-        hw.runCommand(sprintf(slowDelayCmd, delays(i)));
-    end
-    
-    hw.shadowUpdate();
-    
-    hw.restartStream();
-    pause(0.2);
-    
-    frame = hw.getFrame();
-    irImages{i} = double(frame.i);
-end
-
-for i=1:nSampleIterations
-    if (coarse)
-        errors(i) = Calibration.aux.calcDelayCoarseError(irImages{i});
-    else
-        errors(i) = Calibration.aux.calcDelayFineError(irImages{i});
-    end
-end
-
-minInd = minind(errors);
-bestDelay = delays(minInd);
-err = errors(minInd);
-
-if (verbose)
-    figure(11711);
-    for i=1:R
-        ax(i)=subplot(2,R,i);
-        imagesc(irImages{i},prctile_(irImages{i}(irImages{i}~=0),[10 90])+[0 1e-3]);
-    end
-    linkaxes(ax);
-    subplot(2,3,4:6); plot(delays,errors,'o-');
-    title iterType;
-    drawnow;
-end
-
-delay = bestDelay;
-
-end
+% function delay = run5SampleIterations(hw, baseDelay, step, iterType, verbose)
+% 
+% coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
+% fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
+% 
+% %{
+% //---------FAST-------------
+% mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
+% mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
+% //--------SLOW-------------
+% mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
+% %}
+% 
+% fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
+% fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
+% slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
+% 
+% nSampleIterations = 5;
+% R = nSampleIterations;
+% range = round(-(R-1)/2:(R-1)/2);
+% 
+% delays = max(0, round(baseDelay+range'*step));
+% 
+% if (all(diff(delays)==0))
+%     delay = baseDelay;
+%     return;
+% end
+% 
+% irImages = cell(1,R);
+% errors = zeros(1,R);
+% 
+% for i=1:nSampleIterations
+%     
+%     hw.stopStream();
+%     pause(0.1);
+%     
+%     if (fast)
+%         mod8 = mod(delays(i),8);
+%         hw.runCommand(sprintf(fastDelayCmdMul8, delays(i) - mod8));
+%         hw.runCommand(sprintf(fastDelayCmdSub8, mod8));
+%     else
+%         hw.runCommand(sprintf(slowDelayCmd, delays(i)));
+%     end
+%     
+%     hw.shadowUpdate();
+%     
+%     hw.restartStream();
+%     pause(0.2);
+%     
+%     frame = hw.getFrame();
+%     irImages{i} = double(frame.i);
+% end
+% 
+% for i=1:nSampleIterations
+%     if (coarse)
+%         errors(i) = Calibration.aux.calcDelayCoarseError(irImages{i});
+%     else
+%         errors(i) = Calibration.aux.calcDelayFineError(irImages{i});
+%     end
+% end
+% 
+% minInd = minind(errors);
+% bestDelay = delays(minInd);
+% err = errors(minInd);
+% 
+% if (verbose)
+%     figure(11711);
+%     for i=1:R
+%         ax(i)=subplot(2,R,i);
+%         imagesc(irImages{i},prctile_(irImages{i}(irImages{i}~=0),[10 90])+[0 1e-3]);
+%     end
+%     linkaxes(ax);
+%     subplot(2,3,4:6); plot(delays,errors,'o-');
+%     title iterType;
+%     drawnow;
+% end
+% 
+% delay = bestDelay;
+% 
+% end
