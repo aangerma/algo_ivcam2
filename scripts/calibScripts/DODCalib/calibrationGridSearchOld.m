@@ -1,17 +1,23 @@
-function [resStruct] = calibrationGridSearch(xL,xH,nFov,nDelay,nZ,hw)
+function [resStruct] = calibrationGridSearchOld(xL,xH,nFov,nDelay,nZ)
 %% Evaluate the geometric error on a  grid of values per each:
-% Receives lower and upper bound for x:
 % [fovX,fovY,delay,zenithX,zenithY]
-% Creates a 5 dimensional grid. 
-% nFov is number of fovs (per each axis)
-% nDelay - number of delays.
-% nZ number of Zenith values.
+
 
 % Load the configuration file that was used to capture the frames %%
-fw = hw.getFirmware();
-[regs, luts] = fw.get();
+fw=Pipe.loadFirmware('\\invcam450\D\data\ivcam20\exp\20180204_MA');
+[regs,luts] = fw.get();
+luts.FRMW.undistModel=zeros(2048,1,'uint32');
+fw.setLut(luts);
+resetregs.JFIL.bypass = false;
+resetregs.DIGG.undistBypass=false;
+resetregs.DEST.txFRQpd=single([5000 5000 5000]);
+resetregs.JFIL.invConfThr = uint8(0); % return to default at the end
+fw.setRegs(resetregs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
+[regs,luts] = fw.get();
 
-d = Calibration.aux.readAvgFrame(hw,30);
+% Load the captured mean frame 'md'
+load('\\invcam450\D\data\ivcam20\exp\20180204_MA\dbgtal_tx_5000.mat') 
+d = md;
 
 %some filtering - remove NANS in the IR image(to make it easier to find
 %checkerboard corners
@@ -77,8 +83,8 @@ for i = 1:numel(fovX)
     end
     x0 = double([fovX(i),fovY(i),delay(i),zX(i),zY(i)]);
     [eAlex(i),eFit(i)] = errFunc(rpt,regs,x0,0);
-%     [outputX(i,:),~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
-%     [eAlexOpt(i),eFitOpt(i)]=errFunc(rpt,x2regs(outputX(i,:),regs),outputX(i,:),0);
+    [outputX(i,:),~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
+    [eAlexOpt(i),eFitOpt(i)]=errFunc(rpt,x2regs(outputX(i,:),regs),outputX(i,:),0);
 end
 
 
@@ -92,10 +98,10 @@ resStruct.zY = reshape(zY,nFov,nFov,nDelay,nZ,nZ);
 resStruct.varsVecs = {vFovX,vFovY,vDelay,vZX,vZY};
 resStruct.varsLength = {nFov,nFov,nDelay,nZ,nZ};
 
-% resStruct.optim.eAlexOpt = eAlexOpt;
-% resStruct.optim.eFitOpt = eFitOpt;
-% resStruct.optim.inputX0 = inputX0;
-% resStruct.optim.outputX = outputX;
+resStruct.optim.eAlexOpt = eAlexOpt;
+resStruct.optim.eFitOpt = eFitOpt;
+resStruct.optim.inputX0 = inputX0;
+resStruct.optim.outputX = outputX;
     
 
 end
@@ -127,8 +133,14 @@ y = r.*sinw;
 v=cat(3,x,y,z);
 
 
-[e,e_dist,~]=Calibration.aux.evalGeometricDistortion(v,verbose);
-
+[e,e_dist]=Calibration.aux.evalGeometricDistortion(v,verbose);
+if(verbose)
+    fprintf('%f ',[X]);
+    fprintf('eAlex: %f ',[e]);
+    fprintf('eFit: %f ',[e_dist]);
+    
+    fprintf('\n');
+end
 end
 function rtlRegs = x2regs(x,rtlRegs)
 

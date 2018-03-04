@@ -4,7 +4,7 @@ function [whiteSquares, blackSquares] = GetSquaresCorners(I)
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 [p,bsz] = detectCheckerboardPoints(normByMax(I)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
 if (size(p,1)~=9*13)
-    B = I; B(I>100) = 255;
+    B = I; B(I>80) = 255;
     [p,bsz] = detectCheckerboardPoints(normByMax(B)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
     assert(size(p,1)==9*13);
 end

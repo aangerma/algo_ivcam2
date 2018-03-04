@@ -79,7 +79,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 X = linspace(0,1,65);
 outLut = X.^(regs.FRMW.diggGammaFactor);
-autogenRegs.DIGG.gamma = uint16([outLut*(2^12-1) 0 ]);
+% autogenRegs.DIGG.gamma = uint16([outLut*(2^12-1) 0 ]);
 
 regs = Firmware.mergeRegs(regs,autogenRegs);
 

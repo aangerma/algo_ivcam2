@@ -1,4 +1,4 @@
-function [e,grads] = p3DtoError(p);
+function [e,grads] = p3DtoError(p)
 
 
 tileSizeMM = 30;

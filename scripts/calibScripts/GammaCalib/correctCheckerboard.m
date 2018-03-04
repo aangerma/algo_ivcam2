@@ -1,4 +1,4 @@
-function [ newI,oldV,newV ] = correctCheckerboard( I, varargin )
+function [ newI,oldV,newV,blackwhite ] = correctCheckerboard( I, varargin )
 
 % Identify Checkerboard and mitigates vignneting(only on the CB)
 [whiteSquares,blackSquares] = GetSquaresCorners(I);
@@ -27,14 +27,14 @@ allPoints = [whitePoints;blackPoints];
 Imed = medfilt2(I,[5 5]);
 values = interp2(1:size(I,2),1:size(I,1),single(Imed),allPoints(:,1),allPoints(:,2));
 
-if nargin == 2
+if nargin >= 2
     minVal = varargin{1}(1);
     maxVal = varargin{1}(2);
-else
+else nargin == 3
     minVal = max(values(end-size(blackPoints,1)+1:end));
     maxVal = max(values);
 end
-
+blackwhite = [minVal,maxVal];
 xyv = [allPoints,values];
 desiredV = [maxVal*ones(size(whitePoints,1),1);minVal*ones(size(blackPoints,1),1)];
 

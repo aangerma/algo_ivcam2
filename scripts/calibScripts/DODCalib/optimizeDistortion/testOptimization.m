@@ -11,4 +11,4 @@ p3D = getCBPoints3D(d,regs);
 [e,grads] = p3DtoError(p3D);
 % create a function that calculates the gradient of the point in 3d in
 % respect to x or y.
-
+[grads] = GradP3toP2(p3,regs);

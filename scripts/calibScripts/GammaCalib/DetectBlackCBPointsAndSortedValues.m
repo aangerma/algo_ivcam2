@@ -1,15 +1,16 @@
-function [cpBlack,ccBlack] = DetectBlackCBPointsAndSortedValues(I)
-
+function [cpBlack,ccBlack,varargout] = DetectBlackCBPointsAndSortedValues(I,p)
+if(~exist('p','var'))
 %find CB points
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 [p,bsz] = detectCheckerboardPoints(normByMax(I)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
 if (size(p,1)~=9*13)
-    B = I; B(I>100) = 255;
+    B = I; B(I>80) = 255;
     [p,bsz] = detectCheckerboardPoints(normByMax(B)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-    assert(size(p,1)==9*13);
+    
 end
-
-
+end
+assert(size(p,1)==9*13);
+bsz = [10,14];
 
 
 pmat = reshape(p,[bsz-1,2]);
@@ -66,6 +67,10 @@ ord = [1,2,3,4,12,20,28,36,44,48,47,46,45,37,29,21,13,5,6,7,8,16,24,32,40,43,42,
 
 cpBlack = cpBlack(ord,:);
 ccBlack = ccBlack(ord);
+
+if nargout == 3
+    varargout{1} = p;
+end
 end
 
 function cc = centerColor(I,squares)
