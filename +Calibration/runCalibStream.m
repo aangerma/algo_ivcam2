@@ -11,28 +11,31 @@ calibParams.errTol.validation = 2.0;
 if(~exist('verbose','var'))
     verbose=true;
 end
+%% :: file names
+fnCalib     = fullfile(outputFolder,filesep,'calib.csv');
+fnUndsitLut = fullfile(outputFolder,filesep,'FRMWundistModel.bin32');
 
+fnAlgoInitMWD  = fullfile(outputFolder,filesep,'algoInit.txt');
+fnCalibMWD = fullfile(outputFolder,filesep,'algoCalib.txt');
 %% ::Init fw
 fprintff('Loading Firmware...',false);
 initConfigCalib = fullfile(fileparts(mfilename('fullpath')),'initScript');
 fw = Pipe.loadFirmware(initConfigCalib);
 hw=HWinterface(fw);
-if(doInit)
+
+fw.get();%run autogen
+fw.genMWDcmd([],fnAlgoInitMWD);
+if(doInit)    
     fprintff('init...',false);
-    tfn = [tempname '.txt'];
-    fw.get();%run autogen
-    fw.genMWDcmd([],tfn);
-    
-    hw.runScript(tfn);
+    hw.runScript(fnAlgoInitMWD);
 end
 fprintff('Done',true);
 
-calibfn = fullfile(outputFolder,filesep,'calib.csv');
-undsitLutFn = fullfile(outputFolder,filesep,'FRMWundistModel.bin32');
+
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...',true);
 [delayRegs,delayErr] = Calibration.runCalibChDelays(hw, verbose);
-fw.setRegs(delayRegs,calibfn);
+fw.setRegs(delayRegs,fnCalib);
 
 if(all(delayErr<[calibParams.errTol.delayS calibParams.errTol.delayF]))
     fprintff('SUCCESS(err fast:%g, err slow:%g)',delayErr,true);
@@ -59,7 +62,7 @@ end
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...',true);
 [dodregs,luts.FRMW.undistModel,geomErr] = Calibration.aux.runDODCalib(hw,verbose);
-fw.setRegs(dodregs,calibfn);
+fw.setRegs(dodregs,fnCalib);
 fw.setLut(luts);
 
 
@@ -73,25 +76,25 @@ end
 
 fprintff('Validating...',true);
 %validate
-tfn = [tempname '.txt'];
+fnAlgoInitMWD = [tempname '.txt'];
 fw.get();%run autogen
-fw.genMWDcmd([],tfn);
-hw.runScript(tfn);
+fw.genMWDcmd([],fnAlgoInitMWD);
+hw.runScript(fnAlgoInitMWD);
 [~,~,geomErr] = Calibration.aux.runDODCalib(hw,verbose);
 %dodregs2 should be equal to dodregs
 
 %write version
 verValue = uint32(floor(calibParams.version)*256+floor(mod(calibParams.version,1)*1000+1e-3));
 verRegs.DIGG.spare=[verValue zeros(1,7,'uint32')];
-fw.setRegs(verRegs,calibfn);
+fw.setRegs(verRegs,fnCalib);
 
 
-fw.writeUpdated(calibfn);
-io.writeBin(undsitLutFn,undistModel);
+fw.writeUpdated(fnCalib);
+io.writeBin(fnUndsitLut,undistModel);
 
-fw.genMWDcmd('EXTLcbufMemBufSz|EXTLconLoc|EXTLdsm',fullfile(outputFolder,filesep,'algoInit.csv'));
 
-fw.genMWDcmd([],fullfile(outputFolder,filesep,'algoCalib.csv'));
+
+fw.genMWDcmd([],fnCalibMWD);
 
 
 VAL_BEST = .5;
