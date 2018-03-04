@@ -5,7 +5,7 @@ function score=runCalibStream(outputFolder,doInit,fprintff,verbose)
 calibParams.version = 001.001;
 calibParams.errTol.delayF = 5.0;
 calibParams.errTol.delayS = 5.0;
-calibParams.errTol.geometric = 1.0;
+calibParams.errTol.geometric = 2.0;
 calibParams.errTol.validation = 2.0;
 
 if(~exist('verbose','var'))
@@ -28,22 +28,23 @@ fw.genMWDcmd([],fnAlgoInitMWD);
 if(doInit)    
     fprintff('init...',false);
     hw.runScript(fnAlgoInitMWD);
+    hw.shadowUpdate();
 end
 fprintff('Done',true);
 
 
 %% ::calibrate delays::
-fprintff('Depth and IR delay calibration...',true);
-[delayRegs,delayErr] = Calibration.runCalibChDelays(hw, verbose);
-fw.setRegs(delayRegs,fnCalib);
-
-if(all(delayErr<[calibParams.errTol.delayS calibParams.errTol.delayF]))
-    fprintff('SUCCESS(err fast:%g, err slow:%g)',delayErr,true);
-else
-    fprintff('FAILED(err fast:%g, err slow:%g)',delayErr,true);
-    score = 0;
-    return;
-end
+% fprintff('Depth and IR delay calibration...',true);
+% [delayRegs,delayErr] = Calibration.runCalibChDelays(hw, verbose);
+% fw.setRegs(delayRegs,fnCalib);
+% 
+% if(all(delayErr<[calibParams.errTol.delayS calibParams.errTol.delayF]))
+%     fprintff('SUCCESS(err fast:%g, err slow:%g)',delayErr,true);
+% else
+%     fprintff('FAILED(err fast:%g, err slow:%g)',delayErr,true);
+%     score = 0;
+%     return;
+% end
 
 
 %% ::calibrate gamma scale shift::
@@ -60,28 +61,53 @@ end
 % fw.setRegs(gammaRegs,calibfn);
 %% ::calibrate DOD curve::
 
+% Make 100% sure the DOD calibration initialization is correct:
+DODRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWgaurdBandH|FRMWgaurdBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
+fnAlgoDODInitMWD  = fullfile(outputFolder,filesep,'dodInit.txt');
+fw.get();%run autogen
+fw.genMWDcmd(DODRegsNames,fnAlgoDODInitMWD);
+if(doInit)    
+    fprintff('init...',false);
+    hw.runScript(fnAlgoDODInitMWD);
+    hw.shadowUpdate();
+end
+
+
+
 fprintff('FOV, System Delay, Zenith and Distortion calibration...',true);
-[dodregs,luts.FRMW.undistModel,geomErr] = Calibration.aux.runDODCalib(hw,verbose);
+nIters = 5;
+hw.runCommand('mwd a00e1894 a00e1898 00000000') % Confidence thresh to 0
+hw.runCommand('mwd a00d01f4 a00d01f8 00000fff') % Depth Shadow update
+[dodregs,luts.FRMW.undistModel,geomErr] = Calibration.aux.runDODCalib(hw,verbose,nIters);
 fw.setRegs(dodregs,fnCalib);
 fw.setLut(luts);
 
 
 if(geomErr<calibParams.errTol.geometric)
-    fprintff('SUCCESS(err :%g)',geomErr,true);
+    fprintff('DOD Training SUCCESS(err: %g)\n',geomErr);
 else
-    fprintff('FAILED(err :%g)',geomErr,true);
+    fprintff('DOD Training FAILED(err: %g)\n',geomErr);
     score = 0;
     return;
 end
 
-fprintff('Validating...',true);
+fprintff('Validating...\n',true);
 %validate
-fnAlgoInitMWD = [tempname '.txt'];
+fnAlgoTmpMWD = fullfile(outputFolder,filesep,'DODresult.txt');
 fw.get();%run autogen
-fw.genMWDcmd([],fnAlgoInitMWD);
-hw.runScript(fnAlgoInitMWD);
-[~,~,geomErr] = Calibration.aux.runDODCalib(hw,verbose);
+fw.genMWDcmd(DODRegsNames,fnAlgoTmpMWD);
+hw.runScript(fnAlgoTmpMWD);
+hw.runCommand('mwd a00d01f4 a00d01f8 00000fff') % Depth Shadow update
+[~,~,geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
 %dodregs2 should be equal to dodregs
+if(geomErrVal<calibParams.errTol.geometric)
+    fprintff('DOD Validation SUCCESS(err: %g)\n',geomErrVal);
+else
+    fprintff('DOD Validation FAILED(err: %g)\n',geomErrVal);
+    score = 0;
+    return;
+end
+
 
 %write version
 verValue = uint32(floor(calibParams.version)*256+floor(mod(calibParams.version,1)*1000+1e-3));

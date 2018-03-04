@@ -1,4 +1,4 @@
-function [outregs,undistModel,geomErr,resDODParams] = runDODCalib(hw,verbose)
+function [outregs,undistModel,geomErr] = runDODCalib(hw,verbose,iter)
 %RUNDODCALIB calibrates the following properties: 
 % Zenith - The offset angles of the mirror. Affects the IR and Depth.
 % Undistortion Table - a 32x32 tables that remap an x-y locations. Affects the IR and Depth.
@@ -23,14 +23,13 @@ resDODParams.initFW = hw.getFirmware();
 
 d = Calibration.aux.readAvgFrame(hw,30);
 
-gaurdBands = [0.0125 0.13];
+% gaurdBands = [0.0125 0.13];
 gaurdBands = [0.00 0.05];
 
 
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 fprintff = @(varargin) verbose&&fprintf(varargin{:});
-iter = 1;
 dProg = cell(1,iter+1);
 dProg{1} = d;
 regsProg = cell(1,iter+1);
@@ -38,9 +37,17 @@ lutsProg = cell(1,iter+1);
 regsProg{1} = regs;
 lutsProg{1} = luts;
 eProg = zeros(5,iter);
+
+if iter == 0
+    
+    [outregs,geomErr,~,~]= Calibration.aux.calibDFZ(dProg{1},regsProg{1},verbose,gaurdBands,true);
+    undistModel = [];
+    return
+end
+
 for i = 1:iter
     fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
-    [dfzregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,gaurdBands);
+    [dfzregs,eProg(1,i),eProg(2,i),dProg{i+1}]= Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,gaurdBands);
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},dfzregs);
     
     
@@ -48,7 +55,6 @@ for i = 1:iter
     fprintff('#%d Optimizing undistort map... ',i);
     [udistLUTinc,eProg(3,i),undistF]=Calibration.aux.undistFromImg(dProg{i+1}.i,0);
     luts.FRMW.undistModel = typecast(typecast(luts.FRMW.undistModel,'single')+typecast(udistLUTinc','single'),'uint32');
-    luts.FRMW.undistModel = 0*luts.FRMW.undistModel;
     lutsProg{i+1} = luts;
     fprintff('done\n');
 
