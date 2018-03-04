@@ -68,12 +68,16 @@ classdef HWinterface <handle
                 res = obj.cmd(['mrd ' str{2} ' ' str{3}]);
                 res = res(end-7:end);
 %                 regStruct.(a(1).algoBlock).(a(1).algoName)=uint32(hex2dec(res));
-                disp([str{5}(3:end) ' = ' res]);
+                disp([res ' //' str{6}]);
             end
 %             obj.m_fw.setRegs(regStruct);
         end
         
-        
+        function setReg(obj,regName,regVal)
+            obj.m_fw.setRegs(regName,regVal);
+            meta = obj.m_fw.genMWDcmd(regName);
+            obj.cmd(meta);
+        end
         
         
         
@@ -91,7 +95,7 @@ classdef HWinterface <handle
                 obj.cmd(['mwd ' str{2} ' ' str{3} ' ' str{4}]);
             end
             
-            obj.cmd('mwd a00d01f4 a00d01f8 000005f8');%shadow update
+            obj.shadowUpdate()
             
         end
         
