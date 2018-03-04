@@ -49,8 +49,8 @@ opt.Display='none';
 angXShift = 0;
 x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV angXShift]);
 % x0 = double([68.186935 52.944909 5153.491386 0.299999 -0.283499 angXShift])
-xL = [40 40 4000   -.3 -.3 -0];
-xH = [90 90 6000    .3  .3  0];
+xL = [40 40 4000   -3 -3 -0];
+xH = [90 90 6000    3  3  0];
 regs = x2regs(x0,regs,gaurdBands);
 [e,eFit]=errFunc(rpt,regs,x0,0);
 if eval 
@@ -109,7 +109,6 @@ v=cat(3,x,y,z);
 
 
 [e,eFit]=Calibration.aux.evalGeometricDistortion(v,verbose);
-
 end
 function printErrAndX(X,e,eFit,preSTR,verbose)
 if verbose 

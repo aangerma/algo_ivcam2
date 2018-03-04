@@ -52,6 +52,7 @@ fw.writeUpdated('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibS
 
 %% Load the FW struct from the csv files, generate MWD with only the relevant regs.
 fw=Pipe.loadFirmware('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\dodInitConfigs');
+% fw=Pipe.loadFirmware('\\invcam450\D\source\ivcam20\+Calibration\initScript');
 [regs,luts] = fw.get();
 neededRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWgaurdBandH|FRMWgaurdBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
 fw.genMWDcmd(neededRegsNames,'C:\$WORK\Per_Unit_Config\Current\dodInit.txt')
@@ -61,7 +62,7 @@ fw.genMWDcmd(neededRegsNames,'C:\$WORK\Per_Unit_Config\Current\dodInit.txt')
 %% In case the above configuration isn't what configured to the unit, configure it.
 fw.genMWDcmd([],'C:\$WORK\Per_Unit_Config\Current\algoConfig0.txt');
 %% Define the HW interface
-hw=HWinterface();
+hw=HWinterface(fw);
 
 % mwd a00d01f4 a00d01f8 00000fff // Depth Shadow update imidiate  all
 % blocks
@@ -70,12 +71,12 @@ hw=HWinterface();
 % mwd  fffe3840 fffe3844 3F0CCCCD  //dsm horizontal shift
 % mwd  fffe3844 fffe3848 457A0000  //dsm horizontal scale
 
-resDODParams = Calibration.aux.runDODCalib(hw,1,fw);
+[~,~,e,resDODParams2] = Calibration.aux.runDODCalib(hw,1);
 % warning('off','FIRMWARE:privUpdate:updateAutogen') % Supress checkerboard warning
 % fw.setLut(resDODParams.luts);
 % fw.setRegs(resDODParams.regs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');
 % [regs,luts] = fw.get();
-resDODParams.fw.genMWDcmd(neededRegsNames,'C:\$WORK\Per_Unit_Config\Current\dodFinal.txt');
+resDODParams2.fw.genMWDcmd(neededRegsNames,'C:\$WORK\Per_Unit_Config\Current\dodFinalNoUndist.txt');
 
 
 resetregs.FRMW.gaurdBandH = single(0.0125);
