@@ -124,6 +124,7 @@ classdef HWinterface <handle
             %tt = cell2mat(t);
             %tt = tt(:);
             %frame.c = reshape(tt,480,640);
+            frame.c=reshape([bitshift(cIm8(:),-4) bitand(cIm8(:),uint8(15))]',size(frame.i));
             
             if(0)
                 %%
