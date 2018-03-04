@@ -120,7 +120,7 @@ if(verbose)
     subplot(121);imagesc(snrLUT);colorbar;
     
     decPSNR4plt = reshape(regs.DCOR.psnr,16,16);
-    subplot(122);imagesc(decPSNR4plt);colorbar;
+    subplot(122);imagesc(decPSNR4plt);colorbar;xlabel('Amp');ylabel('IR');zlabel('PSNR');
 end
 
 
