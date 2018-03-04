@@ -1,6 +1,9 @@
 function v = sprivReadCSV(fn)
 v = fileread(fn);
-v=regexprep(v,'[ \t]*,[ \t]*',',');%kill lead and tail white space
+v=regexprep(v,'[ \t]*,[ \t]*',',');%kill lead and tail white space(csv)
+v=regexprep(v,'[ \t]*\n','\n');%kill tail white space
+v=regexprep(v,'\n[ \t]*','\n');%kill head white space
+
 v=regexprep(v,'[ \t]*\r\n','\r\n');%kill tail at EOL
 v=regexprep(v,'\n%[^\n]+','');%kill comments
 % v=regexprep(v,'(?:\r\n){2,}','\r\n');%kill emptylines (?:\r\n) --> find sequence \r\n     {2,}-->than apears 2 times or more

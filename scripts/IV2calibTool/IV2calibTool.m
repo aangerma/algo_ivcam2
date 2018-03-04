@@ -148,13 +148,14 @@ classdef IV2calibTool < matlab.apps.AppBase
             %fprintffS('Done',true);
             %fprintffS('Connecting HW interface...',false);
             
-            hw=HWinterface();
+            
             %fprintffS('Done',true);
-                        
-
             
             try
+                hw=HWinterface();
                 app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
+                clear hw;
+
                 Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value);
                 %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
@@ -164,7 +165,6 @@ classdef IV2calibTool < matlab.apps.AppBase
                 errordlg(e.message);
             end
             fclose(app.m_logfid);
-            clear hw;
         end
     end
     
