@@ -118,13 +118,9 @@ classdef HWinterface <handle
             % get C
             imageObj = imageCollection.Images.Item(2);
             cImByte = imageObj.Item(0).Data;
-            %cIm8 = cast(cImByte,'uint8');
-            %cIm8cell = num2cell(cIm8);
-            %t = cellfun(@(x) [x/2^4; mod(x,2^4)],cIm8cell,'uni',0);
-            %tt = cell2mat(t);
-            %tt = tt(:);
-            %frame.c = reshape(tt,480,640);
+            cIm8 = cast(cImByte,'uint8');
             frame.c=reshape([bitshift(cIm8(:),-4) bitand(cIm8(:),uint8(15))]',size(frame.i));
+          
             
             if(0)
                 %%
