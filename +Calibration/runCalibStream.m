@@ -89,6 +89,11 @@ fw.setRegs(verRegs,calibfn);
 fw.writeUpdated(calibfn);
 io.writeBin(undsitLutFn,undistModel);
 
+fw.genMWDcmd('EXTLcbufMemBufSz|EXTLconLoc|EXTLdsm',fullfile(outputFolder,filesep,'algoInit.csv'));
+
+fw.genMWDcmd([],fullfile(outputFolder,filesep,'algoCalib.csv'));
+
+
 VAL_BEST = .5;
 VAL_WROST= 4;
 score = round((VAL_WROST-validErr)/(VAL_WROST-VAL_BEST)*4+1);
