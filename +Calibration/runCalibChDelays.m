@@ -1,4 +1,4 @@
-function [regs,delayErr] = runCalibChDelays(hw, verbose, debugOut)
+function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, debugOut)
 
 if ~exist('verbose','var')
   verbose = false;  
@@ -7,6 +7,12 @@ end
 if ~exist('debugOut','var')
   debugOut = false;  
 end
+
+regs = [];
+errFast = 1000; % in pixels
+errSlow = 1000; % in pixels
+
+
 hw.setReg('RASTbiltBypass'     ,true);
 hw.setReg('JFILbypass'         ,false);
 hw.setReg('JFILbilt1bypass'    ,true);
@@ -52,18 +58,16 @@ try
     [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugOut);
 catch
     warning('fastFine failed');
-    errFast = 1000; % in pixels
-    errSlow = 1000; % in pixels
+end
+
+if (errFast >= 1000)
+    return;
 end
 
 hw.setReg('JFILsort1bypassMode',uint8(1));
 hw.setReg('JFILsort2bypassMode',uint8(1));
 hw.setReg('DESTaltIrEn'    ,false);
 hw.shadowUpdate();
-
-if (errFast >= 1000)
-    return;
-end
 
 delaySlow = initSlowDelay;
 step = 32;
@@ -87,7 +91,7 @@ regs.EXTL.conLocDelayFastC= uint32(delayFast/8)*8;
 regs.EXTL.conLocDelayFastF=uint32(mod(delayFast,8));
 
 
-delayErr=[errSlow errFast];
+
 
 end
 
@@ -195,7 +199,7 @@ fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
 slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
 
 hw.stopStream();
-pause(0.05);
+%pause(0.05);
 
 if (fast)
     mod8 = mod(delay, 8);
@@ -208,7 +212,7 @@ end
 hw.shadowUpdate();
 
 hw.restartStream();
-pause(0.1);
+pause(0.2);
 
 end
 

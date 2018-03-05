@@ -155,6 +155,7 @@ classdef HWinterface <handle
         
         function res = shadowUpdate(obj)
             res = obj.cmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
+            pause(0.1);
         end
         
         function res = runCommand(obj, c)

@@ -3,49 +3,69 @@ function score=runCalibStream(outputFolder,doInit,fprintff,verbose)
 
 %% ::caliration configuration
 calibParams.version = 001.001;
-calibParams.errTol.delayF = 5.0;
-calibParams.errTol.delayS = 5.0;
-calibParams.errTol.geometric = 2.0;
-calibParams.errTol.validation = 2.0;
+calibParams.errRange.delayF = [2.5 5.0];
+calibParams.errRange.delayS = [2.5 5.0];
+calibParams.errRange.geomErr = [2.0 5.0];
+calibParams.errRange.geomErrVal = [2.0 5.0];
+
+inrange =@(x,r)  x<r(2);
+results = struct;
+
 
 if(~exist('verbose','var'))
     verbose=true;
 end
 %% :: file names
-fnCalib     = fullfile(outputFolder,filesep,'calib.csv');
-fnUndsitLut = fullfile(outputFolder,filesep,'FRMWundistModel.bin32');
+internalFolder = fullfile(outputFolder,filesep,'AlgoInternal');
+fnCalib     = fullfile(internalFolder,filesep,'calib.csv');
+fnUndsitLut = fullfile(internalFolder,filesep,'FRMWundistModel.bin32');
+initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
+copyfile(fullfile(initFldr,filesep,'*.csv'),internalFolder)
 
-fnAlgoInitMWD  = fullfile(outputFolder,filesep,'algoInit.txt');
-fnCalibMWD = fullfile(outputFolder,filesep,'algoCalib.txt');
+mkdirSafe(outputFolder);
+mkdirSafe(internalFolder);
+
+
 %% ::Init fw
-fprintff('Loading Firmware...',false);
-initConfigCalib = fullfile(fileparts(mfilename('fullpath')),'initScript');
-fw = Pipe.loadFirmware(initConfigCalib);
+fprintff('Loading Firmware...');
+
+fw = Pipe.loadFirmware(internalFolder);
 hw=HWinterface(fw);
 
 fw.get();%run autogen
-fw.genMWDcmd([],fnAlgoInitMWD);
-if(doInit)    
-    fprintff('init...',false);
+
+if(doInit)  
+    fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
+    fw.genMWDcmd([],fnAlgoInitMWD);
+    fprintff('init...');
     hw.runScript(fnAlgoInitMWD);
     hw.shadowUpdate();
 end
-fprintff('Done',true);
+fprintff('Done\n');
 
 
 %% ::calibrate delays::
-% fprintff('Depth and IR delay calibration...',true);
-% [delayRegs,delayErr] = Calibration.runCalibChDelays(hw, verbose);
-% fw.setRegs(delayRegs,fnCalib);
-% 
-% if(all(delayErr<[calibParams.errTol.delayS calibParams.errTol.delayF]))
-%     fprintff('SUCCESS(err fast:%g, err slow:%g)',delayErr,true);
-% else
-%     fprintff('FAILED(err fast:%g, err slow:%g)',delayErr,true);
-%     score = 0;
-%     return;
-% end
+fprintff('Depth and IR delay calibration...\n');
+[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, verbose);
 
+if(inrange(results.delayS,calibParams.errRange.delayS))
+    fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
+else
+    fprintff('[x] slow calib failed[e=%g]\n',results.delayS);
+    score = 0;
+    return;
+end
+
+if(inrange(results.delayF,calibParams.errRange.delayF))
+    fprintff('[v] fast calib passed[e=%g]\n',results.delayF);
+else
+    fprintff('[x] fast calib failed[e=%g]\n',results.delayF);
+    score = 0;
+    return;
+end
+
+
+fw.setRegs(delayRegs,fnCalib);
 
 %% ::calibrate gamma scale shift::
 
@@ -60,51 +80,55 @@ fprintff('Done',true);
 %% ::calibrate DOD curve::
 
 % Make 100% sure the DOD calibration initialization is correct:
-DODRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWgaurdBandH|FRMWgaurdBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
-fnAlgoDODInitMWD  = fullfile(outputFolder,filesep,'dodInit.txt');
-fw.get();%run autogen
-fw.genMWDcmd(DODRegsNames,fnAlgoDODInitMWD);
-if(doInit)    
-    fprintff('init...',false);
-    hw.runScript(fnAlgoDODInitMWD);
-    hw.shadowUpdate();
-end
+% % % DODRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWgaurdBandH|FRMWgaurdBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
+% % % fnAlgoDODInitMWD  = fullfile(outputFolder,filesep,'dodInit.txt');
+% % % fw.get();%run autogen
+% % % fw.genMWDcmd(DODRegsNames,fnAlgoDODInitMWD);
+% % % if(doInit)    
+% % %     fprintff('init...',false);
+% % %     hw.runScript(fnAlgoDODInitMWD);
+% % %     hw.shadowUpdate();
+% % % end
 
-
-
-fprintff('FOV, System Delay, Zenith and Distortion calibration...',true);
 nIters = 5;
-hw.runCommand('mwd a00e1894 a00e1898 00000000') % Confidence thresh to 0
-hw.runCommand('mwd a00d01f4 a00d01f8 00000fff') % Depth Shadow update
-[dodregs,luts.FRMW.undistModel,geomErr] = Calibration.aux.runDODCalib(hw,verbose,nIters);
+
+fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
+
+[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.runDODCalib(hw,verbose,nIters);
 fw.setRegs(dodregs,fnCalib);
 fw.setLut(luts);
 
-
-if(geomErr<calibParams.errTol.geometric)
-    fprintff('DOD Training SUCCESS(err: %g)\n',geomErr);
+if(inrange(results.geomErr,calibParams.errRange.geomErr))
+    fprintff('[v] geom calib passed[e=%g]\n',geomErr);
 else
-    fprintff('DOD Training FAILED(err: %g)\n',geomErr);
+    fprintff('[x] geom calib failed[e=%g]\n',geomErr);
     score = 0;
     return;
 end
 
-fprintff('Validating...\n',true);
+
+
+fprintff('Validating...\n');
 %validate
-fnAlgoTmpMWD = fullfile(outputFolder,filesep,'DODresult.txt');
+regsDODnames='DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|DIGGundist';
+
+fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
 fw.get();%run autogen
-fw.genMWDcmd(DODRegsNames,fnAlgoTmpMWD);
+fw.genMWDcmd(regsDODnames,fnAlgoTmpMWD);
 hw.runScript(fnAlgoTmpMWD);
-hw.runCommand('mwd a00d01f4 a00d01f8 00000fff') % Depth Shadow update
-[~,~,geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
+hw.shadowUpdate();
+[~,~,score.geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
 %dodregs2 should be equal to dodregs
-if(geomErrVal<calibParams.errTol.geometric)
-    fprintff('DOD Validation SUCCESS(err: %g)\n',geomErrVal);
+
+
+if(inrange(score.geomErrVal,calibParams.errRange.geomErrVal))
+    fprintff('[v] geom valid passed[e=%g]\n',geomErrVal);
 else
-    fprintff('DOD Validation FAILED(err: %g)\n',geomErrVal);
+    fprintff('[x] geom valid failed[e=%g]\n',geomErrVal);
     score = 0;
     return;
 end
+
 
 
 %write version
@@ -112,67 +136,40 @@ verValue = uint32(floor(calibParams.version)*256+floor(mod(calibParams.version,1
 verRegs.DIGG.spare=[verValue zeros(1,7,'uint32')];
 fw.setRegs(verRegs,fnCalib);
 
-
 fw.writeUpdated(fnCalib);
-io.writeBin(fnUndsitLut,undistModel);
+io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 
-
-
-fw.genMWDcmd([],fnCalibMWD);
-
-
-VAL_BEST = .5;
-VAL_WROST= 4;
-score = round((VAL_WROST-validErr)/(VAL_WROST-VAL_BEST)*4+1);
-
-fprintff('Done',true);
-
+fprintff('Done\n');
 
 
 %% merge all scores outputs
-scores = struct();
-f = fieldnames(resChDelays);
+
+f = fieldnames(results);
+scores=zeros(length(f),1);
 for i = 1:length(f)
+    scores(i)=round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
     scores.(f{i}) = resChDelays.(f{i});
+    
+
 end
+score = min(scores);
 
-f = fieldnames(resDODParams);
-for i = 1:length(f)
-    scores.(f{i}) = resDODParams.(f{i});
-end
 
-scores.errGeomVal = errGeomVal;
-
-%% define score thresholds, load from xml
-scoresThresholds = {...
-    {'errFast', 2.5, 5.0, 'fast delay score (pixels)'},...
-    {'errSlow', 2.5, 5.0, 'slow delay score (pixels)'},...
-    {'errGeom', 2.0, 5.0, 'DOD optimization score (mm)'}, ...
-    {'errGeomVal', 2.0, 5.0, 'DOD validation score (mm)'}, ...
-    };
-
-fprintff('Scores:\n');
-
-totalCalibStr = 'pass';
-
-for i=1:length(scoresThresholds)
-    sth = scoresThresholds{i};
-    s = scores.(sth{1});
-    if (s > sth{3})
-        resStr = 'fail';
-        totalCalibStr = 'fail';
-    elseif (s > sth{2})
-        resStr = 'pass (bad)';
-    else
-        resStr = 'pass';
+if(verbose)
+    for i = 1:length(f)
+        s04=floor((scores(i)-1)/100*5);
+        asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
+        ll=fprintff('% 10s: %s $g',f{i},asciibar,scores.(f{i}),true);
     end
-        
-    fprintff(' - %s (%2.2f)): %s\n', sth{4}, s, resStr);
+    fprintf('%s',repmat('-',1,ll),true);
+    s04=floor((score-1)/100*5);
+    asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
+    fprintff('% 10s: %s','score',asciibar,true);
+    
 end
 
 
-fprintff(' Algo calibration summary: %s\n', totalCalibStr);
-
 
 
 end
+

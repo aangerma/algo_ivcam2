@@ -1,4 +1,4 @@
-function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose,gaurdBands,eval)
+function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose,eval)
 if(~exist('eval','var'))
     eval=false;
 end
@@ -51,7 +51,7 @@ x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.lasera
 % x0 = double([68.186935 52.944909 5153.491386 0.299999 -0.283499 angXShift])
 xL = [40 40 4000   -3 -3 -0];
 xH = [90 90 6000    3  3  0];
-regs = x2regs(x0,regs,gaurdBands);
+regs = x2regs(x0,regs);
 [e,eFit]=errFunc(rpt,regs,x0,0);
 if eval 
     outregs = [];
@@ -119,11 +119,7 @@ if verbose
     fprintf('\n');
 end
 end
-function rtlRegs = x2regs(x,rtlRegs,gaurdBands)
-if(exist('gaurdBands','var'))
-    iterRegs.FRMW.gaurdBandH=single(gaurdBands(1));
-    iterRegs.FRMW.gaurdBandV=single(gaurdBands(2));
-end
+function rtlRegs = x2regs(x,rtlRegs)
 
 
 iterRegs.FRMW.xfov=single(x(1));
