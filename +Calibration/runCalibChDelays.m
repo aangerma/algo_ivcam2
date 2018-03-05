@@ -199,7 +199,7 @@ fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
 slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
 
 hw.stopStream();
-pause(0.05);
+%pause(0.05);
 
 if (fast)
     mod8 = mod(delay, 8);
@@ -212,7 +212,7 @@ end
 hw.shadowUpdate();
 
 hw.restartStream();
-pause(0.1);
+pause(0.2);
 
 end
 
