@@ -1,4 +1,4 @@
-function [regs,delayErr] = runCalibChDelays(hw, verbose, debugOut)
+function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, debugOut)
 
 if ~exist('verbose','var')
   verbose = false;  
@@ -11,7 +11,7 @@ end
 regs = [];
 errFast = 1000; % in pixels
 errSlow = 1000; % in pixels
-delayErr=[errSlow errFast];
+
 
 hw.setReg('RASTbiltBypass'     ,true);
 hw.setReg('JFILbypass'         ,false);
@@ -91,7 +91,7 @@ regs.EXTL.conLocDelayFastC= uint32(delayFast/8)*8;
 regs.EXTL.conLocDelayFastF=uint32(mod(delayFast,8));
 
 
-delayErr=[errSlow errFast];
+
 
 end
 

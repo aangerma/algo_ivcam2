@@ -9,8 +9,8 @@ classdef IV2calibTool < matlab.apps.AppBase
         StartButton                     matlab.ui.control.Button
         OutputdirectortyEditFieldLabel  matlab.ui.control.Label
         Outputdirectorty                matlab.ui.control.EditField
-        ConfigdirectortyLabel           matlab.ui.control.Label
-        Configdirectorty                matlab.ui.control.EditField
+        
+        
         Button_2                        matlab.ui.control.Button
         Button_3                        matlab.ui.control.Button
         logarea                         matlab.ui.control.TextArea
@@ -27,7 +27,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         
         
         function saveDefaults(app)
-            fields2save={'Configdirectorty','Outputdirectorty'};
+            fields2save={'Outputdirectorty'};
             sinit=[fields2save;cellfun(@(x) app.(x).Value,fields2save,'uni',0)];
             sinit(2,:)=cellfun(@(x) iff(isempty(x),[],x),sinit(2,:),'uni',0);
             s=struct(sinit{:});
@@ -61,9 +61,12 @@ classdef IV2calibTool < matlab.apps.AppBase
         
         
         function fprintff(app,varargin)
-            fprintf(app.m_logfid, varargin{1:end});
-            app.logarea.Value{end+1} = sprintf(varargin{1:end});
-            
+            fprintf(app.m_logfid, varargin{:});
+            txtline = sprintf(varargin{1});
+            app.logarea.Value{end} = [app.logarea.Value{end} txtline];
+            if(~isempty(txtline) && txtline(end)==newline)
+                app.logarea.Value{end+1}='';
+            end
 %             fprintf(app.m_logfid,varargin{1:end-1});
 %             app.logarea.Value{1}=[ app.logarea.Value{1} sprintf(varargin{1:end-1})];
 %             if(varargin{end})
@@ -120,10 +123,6 @@ classdef IV2calibTool < matlab.apps.AppBase
         end
         
         % Button pushed function: Button_2
-        function Button_2Pushed(app, event)
-            app.setFolder(app.Configdirectorty);
-            
-        end
         
         % Button pushed function: Button_3
         function Button_3Pushed(app, event)
@@ -159,6 +158,7 @@ classdef IV2calibTool < matlab.apps.AppBase
                 Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value);
                 %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
+                configurationWriter(fullfile(app.Outputdirectorty.Value,filesep,'AlgoInternal'),app.Outputdirectorty.Value);
             catch e
                 fprintffS('');
                 fprintffS(sprintf('[!] ERROR:%s\n',e.message));
@@ -197,21 +197,9 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.Outputdirectorty = uieditfield(app.IV2calibrationtoolUIFigure, 'text');
             app.Outputdirectorty.Position = [110 398 486 22];
             
-            % Create ConfigdirectortyLabel
-            app.ConfigdirectortyLabel = uilabel(app.IV2calibrationtoolUIFigure);
-            app.ConfigdirectortyLabel.HorizontalAlignment = 'right';
-            app.ConfigdirectortyLabel.Position = [1 432 94 15];
-            app.ConfigdirectortyLabel.Text = 'Config directorty';
             
-            % Create Configdirectorty
-            app.Configdirectorty = uieditfield(app.IV2calibrationtoolUIFigure, 'text');
-            app.Configdirectorty.Position = [110 428 486 22];
             
-            % Create Button_2
-            app.Button_2 = uibutton(app.IV2calibrationtoolUIFigure, 'push');
-            app.Button_2.ButtonPushedFcn = createCallbackFcn(app, @Button_2Pushed, true);
-            app.Button_2.Position = [606 428 21 22];
-            app.Button_2.Text = '...';
+         
             
             % Create Button_3
             app.Button_3 = uibutton(app.IV2calibrationtoolUIFigure, 'push');

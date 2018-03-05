@@ -18,13 +18,18 @@ function [outregs,undistModel,geomErr] = runDODCalib(hw,verbose,iter)
 % The calibration iteratively optimize the Zenith,FOV and System delay.
 % After convergence, it calculates the distortion map to fix any residual
 % errors.
+
+
+hw.setReg('JFILinvBypass',true);
+hw.shadowUpdate();
+
+
 resDODParams.initFW = hw.getFirmware();
 [regs, luts] = resDODParams.initFW.get();
 
 d = Calibration.aux.readAvgFrame(hw,30);
 
-% gaurdBands = [0.0125 0.13];
-gaurdBands = [0.00 0.05];
+
 
 
 
@@ -40,14 +45,14 @@ eProg = zeros(5,iter);
 
 if iter == 0
     
-    [outregs,geomErr,~,~]= Calibration.aux.calibDFZ(dProg{1},regsProg{1},verbose,gaurdBands,true);
+    [outregs,geomErr,~,~]= Calibration.aux.calibDFZ(dProg{1},regsProg{1},verbose,true);
     undistModel = [];
     return
 end
 
 for i = 1:iter
     fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
-    [dfzregs,eProg(1,i),eProg(2,i),dProg{i+1}]= Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,gaurdBands);
+    [dfzregs,eProg(1,i),eProg(2,i),dProg{i+1}]= Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose);
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},dfzregs);
     
     
@@ -62,7 +67,7 @@ for i = 1:iter
     dProg{i+1}.i=undistF(dProg{i+1}.i);
 %     dProg{i+1}.c=undistF(dProg{i+1}.c);
     % Eval the erros after distortion
-    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands,true);
+    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,true);
 end
 [resDODParams.errGeom,bestI] = min(eProg(4,:));
 geomErr = resDODParams.errGeom;
@@ -92,5 +97,5 @@ if verbose
     fprintf('Distortion Error per iter:        ')
     fprintf('%5.2f ',eProg(3,:)),fprintf('\n')
 end
-
+hw.setReg('JFILinvBypass',false);
 end
