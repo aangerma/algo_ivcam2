@@ -53,6 +53,10 @@ classdef FirmwareBase <handle
             indx=regexpi({obj.m_registers.regName},regTokens);
             indx=cellfun(@(x) ~isempty(x),indx);
             regsData = obj.m_registers(indx);
+            vv=arrayfun(@(x) Firmware.sprivRegstruct2uint32val(x),regsData);
+            for i=1:length(regsData)
+                regsData(i).valueUINT32=vv(i);
+            end
         end
         
         function rewriteRegisterFiles(obj)
