@@ -34,18 +34,17 @@ fprintff('Done',true);
 
 
 %% ::calibrate delays::
-% fprintff('Depth and IR delay calibration...',true);
-% [delayRegs,delayErr] = Calibration.runCalibChDelays(hw, verbose);
-% fw.setRegs(delayRegs,fnCalib);
-% 
-% if(all(delayErr<[calibParams.errTol.delayS calibParams.errTol.delayF]))
-%     fprintff('SUCCESS(err fast:%g, err slow:%g)',delayErr,true);
-% else
-%     fprintff('FAILED(err fast:%g, err slow:%g)',delayErr,true);
-%     score = 0;
-%     return;
-% end
+fprintff('Depth and IR delay calibration...',true);
+[delayRegs,delayErr] = Calibration.runCalibChDelays(hw, verbose);
 
+if(all(delayErr<[calibParams.errTol.delayS calibParams.errTol.delayF]))
+    fprintff('SUCCESS(err fast:%g, err slow:%g)',delayErr,true);
+else
+    fprintff('FAILED(err fast:%g, err slow:%g)',delayErr,true);
+    score = 0;
+    return;
+end
+fw.setRegs(delayRegs,fnCalib);
 
 %% ::calibrate gamma scale shift::
 % fw.setRegs('JFILbypass',false);
@@ -114,21 +113,18 @@ verValue = uint32(floor(calibParams.version)*256+floor(mod(calibParams.version,1
 verRegs.DIGG.spare=[verValue zeros(1,7,'uint32')];
 fw.setRegs(verRegs,fnCalib);
 
-
 fw.writeUpdated(fnCalib);
-io.writeBin(fnUndsitLut,undistModel);
-
-
+io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 
 fw.genMWDcmd([],fnCalibMWD);
 
-
 VAL_BEST = .5;
 VAL_WROST= 4;
-score = round((VAL_WROST-validErr)/(VAL_WROST-VAL_BEST)*4+1);
+%score = round((VAL_WROST-validErr)/(VAL_WROST-VAL_BEST)*4+1);
 
 fprintff('Done',true);
 
+return;
 
 
 %% merge all scores outputs

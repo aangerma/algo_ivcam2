@@ -7,6 +7,12 @@ end
 if ~exist('debugOut','var')
   debugOut = false;  
 end
+
+regs = [];
+errFast = 1000; % in pixels
+errSlow = 1000; % in pixels
+delayErr=[errSlow errFast];
+
 hw.setReg('RASTbiltBypass'     ,true);
 hw.setReg('JFILbypass'         ,false);
 hw.setReg('JFILbilt1bypass'    ,true);
@@ -52,18 +58,16 @@ try
     [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugOut);
 catch
     warning('fastFine failed');
-    errFast = 1000; % in pixels
-    errSlow = 1000; % in pixels
+end
+
+if (errFast >= 1000)
+    return;
 end
 
 hw.setReg('JFILsort1bypassMode',uint8(1));
 hw.setReg('JFILsort2bypassMode',uint8(1));
 hw.setReg('DESTaltIrEn'    ,false);
 hw.shadowUpdate();
-
-if (errFast >= 1000)
-    return;
-end
 
 delaySlow = initSlowDelay;
 step = 32;
