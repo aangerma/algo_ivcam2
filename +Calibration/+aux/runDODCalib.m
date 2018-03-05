@@ -69,8 +69,8 @@ for i = 1:iter
     % Eval the erros after distortion
     [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,true);
 end
-[resDODParams.errGeom,bestI] = min(eProg(4,:));
-geomErr = resDODParams.errGeom;
+[resDODParams.geomErr,bestI] = min(eProg(4,:));
+geomErr = resDODParams.geomErr;
 resDODParams.errFit = eProg(5,bestI);
 resDODParams.errDist = eProg(3,bestI);
 resDODParams.eProg = eProg;

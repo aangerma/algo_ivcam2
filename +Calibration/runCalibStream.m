@@ -67,16 +67,7 @@ end
 
 fw.setRegs(delayRegs,fnCalib);
 
-%% ::calibrate gamma scale shift::
 
-% 
-% [gammaregs,gammaError] = Calibration.aux.runGammaCalib(hw,verbose,outputFolder);
-% if gammaError < 1000
-%     fw.setRegs(gammaregs,fnCalib);
-%     fprintff('Gamma calibration SUCCESS (err: %g)\n',gammaError);
-% else
-%     fprintff('Gamma calibration FAILED(err: %g)\n',gammaError);
-% end
 %% ::calibrate DOD curve::
 
 % Make 100% sure the DOD calibration initialization is correct:
@@ -99,9 +90,9 @@ fw.setRegs(dodregs,fnCalib);
 fw.setLut(luts);
 
 if(inrange(results.geomErr,calibParams.errRange.geomErr))
-    fprintff('[v] geom calib passed[e=%g]\n',geomErr);
+    fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
 else
-    fprintff('[x] geom calib failed[e=%g]\n',geomErr);
+    fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
     score = 0;
     return;
 end
@@ -117,21 +108,29 @@ fw.get();%run autogen
 fw.genMWDcmd(regsDODnames,fnAlgoTmpMWD);
 hw.runScript(fnAlgoTmpMWD);
 hw.shadowUpdate();
-[~,~,score.geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
+[~,~,score.geomErr] = Calibration.aux.runDODCalib(hw,verbose,0);
 %dodregs2 should be equal to dodregs
 
 
-if(inrange(score.geomErrVal,calibParams.errRange.geomErrVal))
-    fprintff('[v] geom valid passed[e=%g]\n',geomErrVal);
+if(inrange(score.geomErr,calibParams.errRange.geomErrVal))
+    fprintff('[v] geom valid passed[e=%g]\n',score.geomErr);
 else
-    fprintff('[x] geom valid failed[e=%g]\n',geomErrVal);
+    fprintff('[x] geom valid failed[e=%g]\n',score.geomErr);
     score = 0;
     return;
 end
 
 
+%% ::calibrate gamma scale shift and lut::
+[gammaregs,gammaError] = Calibration.aux.runGammaCalib(hw,verbose,outputFolder);
+if gammaError < 1000
+    fw.setRegs(gammaregs,fnCalib);
+    fprintff('Gamma calibration SUCCESS (err: %g)\n',gammaError);
+else
+    fprintff('Gamma calibration FAILED(err: %g)\n',gammaError);
+end
 
-%write version
+%% write version
 verValue = uint32(floor(calibParams.version)*256+floor(mod(calibParams.version,1)*1000+1e-3));
 verRegs.DIGG.spare=[verValue zeros(1,7,'uint32')];
 fw.setRegs(verRegs,fnCalib);

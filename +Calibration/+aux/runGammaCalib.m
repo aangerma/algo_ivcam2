@@ -43,11 +43,21 @@ tmpFW.genMWDcmd('DIGG.*gamma',fnAlgoGammaFinalMWD);
 hw.runScript(fnAlgoGammaFinalMWD);
 % get new image
 d = Calibration.aux.readAvgFrame(hw,30);
-I = d.i;
+Ifixed = d.i;
 % Evaluate
-[~,ccSource,ccTarget] = gammaCalculation(I,p,bsz,verbose);
+[~,ccSource,ccTarget] = gammaCalculation(Ifixed,p,bsz,verbose);
 [~,S] = polyfit(ccSource,ccTarget,1);
 gammaError = S.normr;
+
+if verbose
+    
+    figure(190790)
+    tabplot;
+    subplot(121);
+    imagesc(I); title('Original');
+    subplot(122);
+    imagesc(Ifixed); title('Gamma Corrected');
+end
 
 
 end
@@ -98,9 +108,8 @@ ord = [1,2,3,4,12,20,28,36,44,48,47,46,45,37,29,21,13,5,6,7,8,16,24,32,40,43,42,
 cpBlack = cpBlack(ord,:);
 ccBlack = ccBlack(ord);
 % In case The board is rotated by 180, we should see it by nonsense we see
-% at the ccBlack. Ideally it should be monotonically increasing, if we see
-% enough mistakes, it is probably flipped.
-if sum((ccBlack(2:end) - ccBlack(1:end-1))<0) > 15
+% at the ccBlack. 
+if mean(ccBlack(1:9)) > mean(ccBlack(10:18))
     I = rot90(I,2);
     whiteSquares(:,1:2:end) = size(I,2) + 1 - whiteSquares(:,1:2:end);
     blackSquares(:,1:2:end) = size(I,2) + 1 - blackSquares(:,1:2:end);
@@ -158,11 +167,14 @@ source = [cpBlack,referenceCC(2:end-1)];
 dest = tps.at(source);
 
 if verbose
+    
     figure(190790)
+    tabplot;
     subplot(121)
     plot([ccBlack,dest],'-o'),title('Intensity per black square - Corrected')
     legend({'Ivcam','IvcamCorrected'},'location','northwest');
-
+    axis([0 50 0 50])
+    
     subplot(122)
     plot(ccBlack,dest,'-o'),xlabel('Corrected IVCAM IR values'), ylabel('Desired IVCAM IR values'), title('IR Transformation Map')
     legend({'Ivcam','IvcamCorrected'},'location','northwest');
@@ -171,7 +183,7 @@ end
 
 % Translate to the true IR range. Use scale and shift to cover more of the
 % valid IR range.
-margin = 0.05;
+margin = 0.025;
 maxIR = 2^12-1;
 minIRVal = margin*maxIR;
 maxIRVal = (1-margin)*maxIR;
@@ -196,7 +208,7 @@ deg = 5;% Polinom degree
 poly = polyfit(ccIvcamT,ccTargetT,deg);
 
 irIn = linspace(0,1,65)*maxIR;
-irOut = max(min(polyval(poly,x1),maxIR),0);
+irOut = max(min(polyval(poly,irIn),maxIR),0);
 if verbose
     figure(190790)
     plot(ccIvcamT,ccTargetT,'o'), xlabel('Corrected IVCAM IR values'), ylabel('Desired IVCAM IR values'), title('IR Transformation Map')
