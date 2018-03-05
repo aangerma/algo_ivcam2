@@ -15,6 +15,11 @@ ivIm = imread('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScr
 [~,ccIvcamCorr] = DetectBlackCBPointsAndSortedValues(ivImCorr,pCorners);
 ccIvcamCorr = [blackwhiteIV(1) ;ccIvcamCorr ;blackwhiteIV(2) ];
 
+subplot(221); imagesc(ivIm); colormap gray; title('IVCAM Orig');
+subplot(222); imagesc(ivImCorr); colormap gray; title('IVCAM Corrected');
+subplot(223); imagesc(pgNeon); colormap gray; title('PG Orig');
+subplot(224); imagesc(pgNeonCorr); colormap gray; title('PG Corrected');
+
 
 subplot(1,2,1)
 plot([ccNeonOrig,ccIvcam],'-o'),title('Intensity per black square - Original')
@@ -24,6 +29,10 @@ plot([ccNeonCorr,ccIvcamCorr],'-o'),title('Intensity per black square - Correcte
 legend({'PG with Neon','Ivcam'},'location','northwest');
 
 plot(ccIvcamCorr,ccNeonCorr,'-o'), xlabel('Corrected IVCAM IR values'), ylabel('Desired IVCAM IR values'), title('IR Transformation Map')
+
+ccLinear = linspace(ccIvcamCorr(1),ccIvcamCorr(end),length(ccIvcamCorr));
+plot(ccIvcamCorr,[ccLinear',ccIvcamCorr],'-o'), xlabel('Corrected IVCAM IR values'), ylabel('Linear IVCAM IR values'), title('IR Transformation Map')
+
 
 
 maxIR = 2^12-1;
@@ -53,6 +62,11 @@ hold on
 plot(x1,y1)
 axis([0 maxIR 0 maxIR])
 
+ir = 1:maxIR;
+ir_out = max(min(polyval(p,ir),maxIR),0);
+figure;
+plot([ir_out(int32(ccIvcamCorrT))',ccNeonCorrT],'o'),title('Expected intensity per black square - After correction')
+legend({'Expected IVAM after lut','PG Corrected'},'location','northwest');
 
 gammaregs.FRMW.diggGammaFactor = single(1.0);
 gammaregs.DIGG.gammaScale = int16([1024*scale 1024]);

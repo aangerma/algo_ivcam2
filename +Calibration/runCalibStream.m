@@ -48,17 +48,15 @@ fprintff('Done',true);
 
 
 %% ::calibrate gamma scale shift::
-% fw.setRegs('JFILbypass',false);
-% fw.setRegs('JFILbypassIr2Conf',true);
-% hw.write('JFILbypass|JFILbypassIr2Conf');
-% d=hw.getFrame();
-%%
-% ir12=(uint16(d.i)+bitshift(uint16(d.c),8));
-% glohi=minmax(ir12(:)).*[.8 1.5];
-% multFact = 2^12/diff(glohi);
-% gammaRegs.DIGG.gammaScale=bitshift(int16([round(multFact) 1]),10);
-% gammaRegs.DIGG.gammaShift=int16([-round(glohi(1)*multFact) 0]);
-% fw.setRegs(gammaRegs,calibfn);
+
+% 
+% [gammaregs,gammaError] = Calibration.aux.runGammaCalib(hw,verbose,outputFolder);
+% if gammaError < 1000
+%     fw.setRegs(gammaregs,fnCalib);
+%     fprintff('Gamma calibration SUCCESS (err: %g)\n',gammaError);
+% else
+%     fprintff('Gamma calibration FAILED(err: %g)\n',gammaError);
+% end
 %% ::calibrate DOD curve::
 
 % Make 100% sure the DOD calibration initialization is correct:
