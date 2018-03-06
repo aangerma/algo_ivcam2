@@ -1,5 +1,5 @@
 function score=runCalibStream(outputFolder,doInit,fprintff,verbose)
-% load dbg
+t=tic;
 
 %% ::caliration configuration
 calibParams.version = 001.001;
@@ -41,7 +41,7 @@ if(doInit)
     hw.runScript(fnAlgoInitMWD);
     hw.shadowUpdate();
 end
-fprintff('Done\n');
+fprintff('Done(%d)\n',round(toc(t)));
 
 
 %% ::calibrate delays::
@@ -63,7 +63,7 @@ else
     score = 0;
     return;
 end
-
+fprintff('Done(%d)\n',round(toc(t)));
 
 fw.setRegs(delayRegs,fnCalib);
 
@@ -101,13 +101,13 @@ fw.setRegs(dodregs,fnCalib);
 fw.setLut(luts);
 
 if(inrange(results.geomErr,calibParams.errRange.geomErr))
-    fprintff('[v] geom calib passed[e=%g]\n',geomErr);
+    fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
 else
-    fprintff('[x] geom calib failed[e=%g]\n',geomErr);
+    fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
     score = 0;
     return;
 end
-
+fprintff('Done(%d)\n',round(toc(t)));
 
 
 fprintff('Validating...\n');
@@ -119,14 +119,14 @@ fw.get();%run autogen
 fw.genMWDcmd(regsDODnames,fnAlgoTmpMWD);
 hw.runScript(fnAlgoTmpMWD);
 hw.shadowUpdate();
-[~,~,score.geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
+[~,~,results.geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
 %dodregs2 should be equal to dodregs
 
 
-if(inrange(score.geomErrVal,calibParams.errRange.geomErrVal))
-    fprintff('[v] geom valid passed[e=%g]\n',geomErrVal);
+if(inrange(results.geomErrVal,calibParams.errRange.geomErrVal))
+    fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
 else
-    fprintff('[x] geom valid failed[e=%g]\n',geomErrVal);
+    fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
     score = 0;
     return;
 end
@@ -141,7 +141,7 @@ fw.setRegs(verRegs,fnCalib);
 fw.writeUpdated(fnCalib);
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 
-fprintff('Done\n');
+fprintff('Done(%d)\n',round(toc(t)));
 
 
 %% merge all scores outputs
@@ -149,8 +149,8 @@ fprintff('Done\n');
 f = fieldnames(results);
 scores=zeros(length(f),1);
 for i = 1:length(f)
-    scores(i)=round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
-    scores.(f{i}) = resChDelays.(f{i});
+    scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
+   
     
 
 end
@@ -161,12 +161,12 @@ if(verbose)
     for i = 1:length(f)
         s04=floor((scores(i)-1)/100*5);
         asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-        ll=fprintff('% 10s: %s $g',f{i},asciibar,scores.(f{i}),true);
+        fprintff('% 10s: %s %g\n',f{i},asciibar,results.(f{i}));
     end
     fprintf('%s',repmat('-',1,ll),true);
     s04=floor((score-1)/100*5);
     asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-    fprintff('% 10s: %s','score',asciibar,true);
+    fprintff('% 10s: %s','score\n',asciibar);
     
 end
 
