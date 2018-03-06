@@ -218,6 +218,30 @@ classdef FirmwareBase <handle
             privWrite2file( obj,outputFn,'config');
         end
         
+        function m=getAddrData(obj,regTokens)
+            if(~exist('regTokens','var') || isempty(regTokens))
+                regTokens={'.'};
+            elseif(~iscell(regTokens))
+                regTokens={regTokens};
+            end
+            indregs=[];
+            indluts=[];
+            for t=regTokens(:)'
+                resregs=regexpi({obj.m_registers.regName},t);
+                resluts=regexpi({obj.m_luts.lutName},t);
+                indregs=[indregs find(cellfun(@(x) ~isempty(x),resregs))];
+                indluts=[indluts find(cellfun(@(x) ~isempty(x),resluts))];
+            end
+            addr=[obj.m_registers(indregs).address];
+            data=vec(Firmware.sprivRegstruct2uint32val(obj.m_registers(indregs)))';
+            name={obj.m_registers(indregs).regName};
+            for j=indluts
+            addr=[addr obj.m_luts(j).address+uint64(4*(0:length(obj.m_luts(j).data)-1))];
+            data=[data obj.m_luts(j).data(:)'];
+            name=[name vec(arrayfun(@(x) sprintf('%s_%03d',obj.m_luts(j).lutName,x),0:length(obj.m_luts(j).data)-1,'uni',0))']; %#ok<*AGROW>
+            end
+            m=[num2cell(addr);num2cell(data);name]';
+        end
         function txtout=genMWDcmd(obj,regTokens,outfn)
             
             if(~exist('regTokens','var') || isempty(regTokens))
@@ -230,8 +254,8 @@ classdef FirmwareBase <handle
             for t=regTokens(:)'
                 resregs=regexpi({obj.m_registers.regName},t);
                 resluts=regexpi({obj.m_luts.lutName},t);
-                indregs=[indregs find(cellfun(@(x) ~isempty(x),resregs))];%#ok
-                indluts=[indluts find(cellfun(@(x) ~isempty(x),resluts))];%#ok
+                indregs=[indregs find(cellfun(@(x) ~isempty(x),resregs))];
+                indluts=[indluts find(cellfun(@(x) ~isempty(x),resluts))];
             end
             
             
