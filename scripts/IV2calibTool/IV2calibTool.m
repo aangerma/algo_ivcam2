@@ -62,9 +62,9 @@ classdef IV2calibTool < matlab.apps.AppBase
         end
         
         
-        function fprintff(app,varargin)
-            fprintf(app.m_logfid, varargin{:});
-            txtline = sprintf(varargin{1});
+        function ll=fprintff(app,varargin)
+            ll=fprintf(app.m_logfid, varargin{:});
+            txtline = sprintf(varargin{:});
             app.logarea.Value{end} = [app.logarea.Value{end} txtline];
             if(~isempty(txtline) && txtline(end)==newline)
                 app.logarea.Value{end+1}='';
@@ -218,7 +218,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.logarea = uitextarea(app.IV2calibrationtoolUIFigure);
             app.logarea.Editable = 'off';
             app.logarea.Position = [1 1 640 289];
-            
+            app.logarea.FontName='courier new';
               % Create verboseCheckBox
             app.verboseCheckBox = uicheckbox(app.IV2calibrationtoolUIFigure);
             app.verboseCheckBox.Text = 'verbose';

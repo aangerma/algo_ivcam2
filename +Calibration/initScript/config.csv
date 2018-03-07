@@ -11,9 +11,12 @@ JFILgeomBypass      b1
 JFILgrad1bypass     b1
 JFILgrad2bypass     b1       
 JFILinnBypass       b1       
-JFILinvConfThr      h3
+JFILinvConfThr      h5
 JFILsort1bypassMode b1
 JFILsort1Edge01     b1
 JFILsort1Edge03     b1
 JFILsort3bypassMode b1
 JFILinvBypass       b0
+
+DESTconfw1			h01000000
+DESTconfIRbitshift  h00000005
