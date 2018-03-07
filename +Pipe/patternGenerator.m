@@ -189,8 +189,8 @@ else
     
     okloc =xA>=0 & xA<size(gt.zImg,2) & yA>=0 & yA<size(gt.zImg,1);
     ind=sub2ind(size(gt.zImg),yA(okloc)+1,xA(okloc)+1);
-    angxg=accumarray(ind,angx(okloc),[numel(gt.zImg) 1],@mean);
-    angyg=accumarray(ind,angy(okloc),[numel(gt.zImg) 1],@mean);
+    angxg=accumarray(vec(ind),vec(angx(okloc)),[numel(gt.zImg) 1],@mean);
+    angyg=accumarray(vec(ind),vec(angy(okloc)),[numel(gt.zImg) 1],@mean);
     angxg = reshape(angxg,size(gt.zImg));
     angyg = reshape(angyg,size(gt.zImg));
     %    [angyg,angxg]=ndgrid(double(linspace(min(angy),max(angy),oh)),double(linspace(min(angx),max(angx),ow)));
