@@ -7,6 +7,7 @@ calibParams.errRange.delayF = [2.5 5.0];
 calibParams.errRange.delayS = [2.5 5.0];
 calibParams.errRange.geomErr = [2.0 5.0];
 calibParams.errRange.geomErrVal = [2.0 5.0];
+calibParams.errRange.gammaErr = [0 1000];
 
 inrange =@(x,r)  x<r(2);
 results = struct;
@@ -122,12 +123,14 @@ end
 
 
 %% ::calibrate gamma scale shift and lut::
-[gammaregs,gammaError] = Calibration.aux.runGammaCalib(hw,verbose,outputFolder);
-if gammaError < 1000
-    fw.setRegs(gammaregs,fnCalib);
-    fprintff('Gamma calibration SUCCESS (err: %g)\n',gammaError);
+[gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,verbose,outputFolder);
+fw.setRegs(gammaregs,fnCalib);
+if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
+    fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
 else
-    fprintff('Gamma calibration FAILED(err: %g)\n',gammaError);
+    fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
+    score = 0;
+    return;
 end
 
 %% write version
