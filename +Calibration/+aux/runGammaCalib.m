@@ -10,15 +10,13 @@ function [gammaregs,gammaError] = runGammaCalib(hw,verbose)
 % calculates a scale and offset so the resulting IR will cover most of the
 % IR valid range.
 
-% Set the default gamma configuration (!!!already set - Ohad)
-% fnAlgoGammaInitMWD = fullfile(outputFolder,filesep,'gammaInit.txt');
-% fw = hw.getFirmware();
-% fw.genMWDcmd('DIGG.*gamma',fnAlgoGammaInitMWD);
-% hw.runScript(fnAlgoGammaInitMWD);
-% hw.shadowUpdate();
+hw.setReg('JFILbypass',true);
+hw.setReg('JFILbypassIr2Conf',true);
+hw.shadowUpdate();
+
 
 % Get avg of 30 frame
-d = Calibration.aux.readAvgFrame(hw,30);
+d = readAvgFrame(hw,30);
 I = d.i;
 
 % Find checkerboard corners
@@ -41,8 +39,9 @@ tmpFW.setRegs(gammaregs,'');
 tmpFW.get();
 tmpFW.genMWDcmd('DIGG.*gamma',fnAlgoGammaFinalMWD);
 hw.runScript(fnAlgoGammaFinalMWD);
+hw.shadowUpdate();
 % get new image
-d = Calibration.aux.readAvgFrame(hw,30);
+d = readAvgFrame(hw,30);
 Ifixed = d.i;
 % Evaluate
 [~,ccSource,ccTarget] = gammaCalculation(Ifixed,p,bsz,verbose);
@@ -59,6 +58,12 @@ if verbose
     imagesc(Ifixed); title('Gamma Corrected');
 end
 
+
+
+
+hw.setReg('JFILbypass',false);
+hw.setReg('JFILbypassIr2Conf',false);
+hw.shadowUpdate();
 
 end
 function [gammaregs,ccSource,ccTarget] = gammaCalculation(I,p,bsz,verbose)
@@ -139,7 +144,9 @@ blackPoints = [(1-r)*blackSquares(:,1:2) + (r)*blackSquares(:,7:8);
                 (r)*blackSquares(:,1:2) + (1-r)*blackSquares(:,7:8);
                 (1-r)*blackSquares(:,3:4) + (r)*blackSquares(:,5:6);
                 (r)*blackSquares(:,3:4) + (1-r)*blackSquares(:,5:6);];
-                      
+
+ 
+            
 % For each point, get the corresponding value from the image. Use 5x5
 % median filtering to reduce the chance we sample a specific point 
 % which is very noisy.
@@ -148,37 +155,62 @@ allPoints = [whitePoints;blackPoints];
 Imed = medfilt2(I,[5 5]);
 trueValues = interp2(1:size(I,2),1:size(I,1),single(Imed),allPoints(:,1),allPoints(:,2));
 
-minVal = max(trueValues(end-size(blackPoints,1)+1:end)); % Max of black squares
-maxVal = max(trueValues);                                % Max of white squares
 
-perfectValues = [maxVal*ones(size(whitePoints,1),1);minVal*ones(size(blackPoints,1),1)];
 
-% Create a perfect Black white IR value map, transform it such that it will
-% fit the values in the captured image.
-xyV = [allPoints,perfectValues];
-targetV = trueValues;
 
-% Get a thin plate spline model for the transformation
-tps=TPS(xyV,targetV);
+%% Fit a 4th order polinomial to the black and white squares. subtract them from the image and normalize by the difference.
+polOrd = 4;
+coeffsWhite = fit2Dpoli(whitePoints(:,1),whitePoints(:,2),trueValues(1:size(whitePoints,1)),polOrd);
+coeffsBlack = fit2Dpoli(blackPoints(:,1),blackPoints(:,2),trueValues(size(whitePoints,1)+1:end),polOrd);
+% High mesh:
+minXY = floor(min(p));
+maxXY = ceil(max(p));
+[gy,gx] = ndgrid(minXY(2):maxXY(2),minXY(1):maxXY(1)  );
+Ih = reshape(apply2Dpoli(gx(:),gy(:),polOrd,coeffsWhite),size(gy));
+Il = reshape(apply2Dpoli(gx(:),gy(:),polOrd,coeffsBlack),size(gy));
 
-% Apply the transformation on the desired image IR values:
-referenceCC = linspace(minVal,maxVal,length(ccBlack)+2)';
-source = [cpBlack,referenceCC(2:end-1)];
-dest = tps.at(source);
+if verbose
+%     figure(190793)
+%     tabplot;
+%     imagesc(I(minXY(2):maxXY(2),minXY(1):maxXY(1) ));
+%     tabplot;
+%     imagesc(Ih),title('I White');
+%     tabplot;
+%     imagesc(Il),title('I Black');
+% 
+%     % Normalize the image:
+%     Iboard = I(minXY(2):maxXY(2),minXY(1):maxXY(1) );
+%     IboardNorm = (Iboard-Il)./(Ih-Il);
+%     tabplot;
+%     imagesc(IboardNorm),title('I board normalized');
+end
+% Convert a reference linear color map to the image plane:
+IlFull = I; IlFull(minXY(2):maxXY(2),minXY(1):maxXY(1)) = Il;
+IhFull = I; IhFull(minXY(2):maxXY(2),minXY(1):maxXY(1)) = Ih;
+
+ccIl = interp2(1:size(I,2),1:size(I,1),single(IlFull),cpBlack(:,1),cpBlack(:,2));
+ccIh = interp2(1:size(I,2),1:size(I,1),single(IhFull),cpBlack(:,1),cpBlack(:,2));
+
+
+referenceCC = linspace(0,1,length(ccBlack)+2)';
+source = ccBlack;
+dest = referenceCC(2:end-1).*(ccIh-ccIl)+ccIl;
+
 
 if verbose
     
-    figure(190790)
+    figure(190791)
     tabplot;
     subplot(121)
-    plot([ccBlack,dest],'-o'),title('Intensity per black square - Corrected')
+    plot([source,dest],'-o'),title('Intensity per black square - Corrected')
     legend({'Ivcam','IvcamCorrected'},'location','northwest');
-    axis([0 50 0 50])
+    axis([0 50 0 4095])
     
     subplot(122)
-    plot(ccBlack,dest,'-o'),xlabel('Corrected IVCAM IR values'), ylabel('Desired IVCAM IR values'), title('IR Transformation Map')
+    plot(source,dest,'-o'),xlabel('Corrected IVCAM IR values'), ylabel('Desired IVCAM IR values'), title('IR Transformation Map')
     legend({'Ivcam','IvcamCorrected'},'location','northwest');
-    axis([0 255 0 255])
+    axis([0 4095 0 4095])
+    axis equal
 end
 
 % Translate to the true IR range. Use scale and shift to cover more of the
@@ -189,8 +221,8 @@ minIRVal = margin*maxIR;
 maxIRVal = (1-margin)*maxIR;
 
 % Scale to 12 bits
-ccTarget = dest*maxIR/255;
-ccIvcamInit = ccBlack*maxIR/255;
+ccTarget = dest;
+ccIvcamInit = source;
 
 % Find the scale and shift for the source value and target values.
 
@@ -211,6 +243,7 @@ irIn = linspace(0,1,65)*maxIR;
 irOut = max(min(polyval(poly,irIn),maxIR),0);
 if verbose
     figure(190790)
+    tabplot;
     plot(ccIvcamT,ccTargetT,'o'), xlabel('Corrected IVCAM IR values'), ylabel('Desired IVCAM IR values'), title('IR Transformation Map')
     hold on
     plot(irIn,irOut)
@@ -235,4 +268,20 @@ end
 function cP = centerPoints(squares)
 % returns the center location of each square (format of nSquaresx8)
 cP = [mean(squares(:,1:2:end),2),mean(squares(:,2:2:end),2)];
+end
+function avgD = readAvgFrame(hw,N)
+for i = 1:N
+   stream(i) = hw.getFrame(); 
+   im = bitshift(double(stream(i).i)+double(stream(i).c)*2^8,-4)*2^4;
+   im(im==0)=nan;
+   N=3;
+   imv = im(Utils.indx2col(size(im),[N N]));
+   bd = vec(isnan(im));
+   im(bd)=nanmedian_(imv(:,bd));
+   stream(i).i = im;
+end
+collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
+avgD.z=collapseM('z');
+avgD.i=collapseM('i');
+avgD.c=collapseM('c');
 end
