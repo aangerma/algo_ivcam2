@@ -31,7 +31,7 @@ if nargin >= 2
     minVal = varargin{1}(1);
     maxVal = varargin{1}(2);
 else nargin == 3
-    minVal = max(values(end-size(blackPoints,1)+1:end));
+    minVal = min(values(end-size(blackPoints,1)+1:end));
     maxVal = max(values);
 end
 blackwhite = [minVal,maxVal];
