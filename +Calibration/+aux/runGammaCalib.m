@@ -1,4 +1,4 @@
-function [gammaregs,gammaError] = runGammaCalib(hw,verbose,outputFolder)
+function [gammaregs,gammaError] = runGammaCalib(hw,verbose)
 %RUNGAMMACALIB calibrates the DIGG gamme block. It's purpose is to align
 %the IR response of different units. 
 % It assumes a default gamma configuration (passing as is).
@@ -10,12 +10,12 @@ function [gammaregs,gammaError] = runGammaCalib(hw,verbose,outputFolder)
 % calculates a scale and offset so the resulting IR will cover most of the
 % IR valid range.
 
-% Set the default gamma configuration
-fnAlgoGammaInitMWD = fullfile(outputFolder,filesep,'gammaInit.txt');
-fw = hw.getFirmware();
-fw.genMWDcmd('DIGG.*gamma',fnAlgoGammaInitMWD);
-hw.runScript(fnAlgoGammaInitMWD);
-hw.shadowUpdate();
+% Set the default gamma configuration (!!!already set - Ohad)
+% fnAlgoGammaInitMWD = fullfile(outputFolder,filesep,'gammaInit.txt');
+% fw = hw.getFirmware();
+% fw.genMWDcmd('DIGG.*gamma',fnAlgoGammaInitMWD);
+% hw.runScript(fnAlgoGammaInitMWD);
+% hw.shadowUpdate();
 
 % Get avg of 30 frame
 d = Calibration.aux.readAvgFrame(hw,30);
@@ -36,7 +36,7 @@ assert(size(p,1)==9*13,'Can not detect all checkerboard corners');
 
 %% Write the gamma regs
 tmpFW = Firmware;
-fnAlgoGammaFinalMWD = fullfile(outputFolder,filesep,'gammaFinal.txt');
+fnAlgoGammaFinalMWD = [tempname '.txt'];
 tmpFW.setRegs(gammaregs,'');
 tmpFW.get();
 tmpFW.genMWDcmd('DIGG.*gamma',fnAlgoGammaFinalMWD);
