@@ -1,4 +1,4 @@
-function score=runCalibStream(outputFolder,doInit,fprintff,verbose)
+function score=runCalibStream(outputFolder,doInit,fprintff,verbose,calibVersion)
 t=tic;
 
 %% ::caliration configuration
@@ -134,9 +134,12 @@ else
 end
 
 %% write version
-verValue = uint32(floor(calibParams.version)*256+floor(mod(calibParams.version,1)*1000+1e-3));
+if(exist('calibVersion','var'))
+verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(calibVersion,'.'),'uni',0));
+verValue = uint32(hex2dec([verhex{:}]));
 verRegs.DIGG.spare=[verValue zeros(1,7,'uint32')];
 fw.setRegs(verRegs,fnCalib);
+end
 
 fw.writeUpdated(fnCalib);
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);

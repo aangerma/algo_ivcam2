@@ -1,10 +1,11 @@
 classdef IV2calibTool < matlab.apps.AppBase
-%     mcc -m POC4rangeFinder.m -d \\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\POC4RangeFinder\ -a ..\..\+Pipe\tables\* -a .\*
+% mcc -m IV2calibTool.m -d \\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\IV2calibTool\ -a ..\..\+Pipe\tables\* -a .\res\*
 
 % \\invcam450\D\data\ivcam20\exp\20180204_MA
 
     % Properties that correspond to app components
     properties (Access = public)
+        VERSION = '1.0.0';
         IV2calibrationtoolUIFigure      matlab.ui.Figure
         StartButton                     matlab.ui.control.Button
         OutputdirectortyEditFieldLabel  matlab.ui.control.Label
@@ -16,6 +17,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         logarea                         matlab.ui.control.TextArea
         verboseCheckBox                 matlab.ui.control.CheckBox
         doInitCheckBox                  matlab.ui.control.CheckBox
+        VersionLabel                    matlab.ui.control.Label
     end
     
     
@@ -125,13 +127,13 @@ classdef IV2calibTool < matlab.apps.AppBase
         % Button pushed function: Button_2
         
         % Button pushed function: Button_3
-        function Button_3Pushed(app, event)
+        function Button_3Pushed(app, ~)
             app.setFolder(app.Outputdirectorty);
             
         end
         
         % Button pushed function: StartButton
-        function StartButtonPushed(app, event)
+        function StartButtonPushed(app, ~)
             app.saveDefaults();
 
             mkdirSafe(app.Outputdirectorty.Value);
@@ -155,7 +157,7 @@ classdef IV2calibTool < matlab.apps.AppBase
                 app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
                 clear hw;
 
-                Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value);
+                Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value,app.VERSION);
                 %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
                 configurationWriter(fullfile(app.Outputdirectorty.Value,filesep,'AlgoInternal'),app.Outputdirectorty.Value);
@@ -197,6 +199,11 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.Outputdirectorty = uieditfield(app.IV2calibrationtoolUIFigure, 'text');
             app.Outputdirectorty.Position = [110 398 486 22];
             
+            % Create VersionLabel
+            app.VersionLabel = uilabel(app.IV2calibrationtoolUIFigure);
+            app.VersionLabel.HorizontalAlignment = 'left';
+            app.VersionLabel.Position = [1 294 94 15];
+            app.VersionLabel.Text = sprintf('version: %s',app.VERSION);
             
             
          
