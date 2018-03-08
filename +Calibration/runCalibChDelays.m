@@ -1,11 +1,18 @@
-function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, debugOut)
+function [regs,errSlow,errFast] = runCalibChDelays(hw, internalFolder, verbose, debugOut)
 
 if ~exist('verbose','var')
   verbose = false;  
 end
 
 if ~exist('debugOut','var')
-  debugOut = false;  
+  debugOut = true;  
+end
+
+if (debugOut)
+    debugFolder = fullfile(internalFolder,filesep,'dbgDelays');
+    mkdirSafe(debugFolder);
+else
+    debugFolder = [];
 end
 
 regs = [];
@@ -47,7 +54,7 @@ delayFast = initFastDelay;
 hw.setReg('DESTaltIrEn'    ,true);
 hw.shadowUpdate();
 
-delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugOut);
+delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
@@ -55,7 +62,7 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugOut);
+    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugFolder);
 catch
     warning('fastFine failed');
 end
@@ -72,7 +79,7 @@ hw.shadowUpdate();
 delaySlow = initSlowDelay;
 step = 32;
 
-delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugOut);
+delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
@@ -80,7 +87,7 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugOut);
+    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugFolder);
 catch
     warning('slowFine failed');
     errSlow = 1000; % in pixels
@@ -96,7 +103,7 @@ regs.EXTL.conLocDelayFastF=uint32(mod8);
 
 end
 
-function [delay, err] = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose, debugOut)
+function [delay, err] = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose, debugFolder)
 
 coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
 fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
@@ -130,9 +137,10 @@ for ic=1:10
         frame = hw.getFrame();
         images{i} = double(frame.i);
         
-        if (debugOut)
+        if (~isempty(debugFolder))
             irFilename = sprintf('irFrame_%s_i%02d-%d_%05d.bini', iterType, ic, i, delays(i));
-            io.writeBin(irFilename, frame.i);
+            irFullpath = fullfile(debugFolder, filesep, irFilename);
+            io.writeBin(irFullpath, frame.i);
         end
         
         if (coarse)

@@ -47,7 +47,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
-[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, verbose);
+[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, internalFolder, verbose);
 
 if(inrange(results.delayS,calibParams.errRange.delayS))
     fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
