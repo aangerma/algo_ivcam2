@@ -113,7 +113,20 @@ classdef HWinterface <handle
         
         
         
-        function frame = getFrame(obj)
+        function frame = getFrame(obj,n)
+            if(exist('n','var'))
+                
+                for i = 1:n
+                    stream(i) = obj.getFrame();%#ok
+                end
+                collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
+                frame.z=collapseM('z');
+                frame.i=collapseM('i');
+                frame.c=collapseM('c');
+                return;
+            end
+            
+            %get single frame
             imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
             % get depth
             imageObj = imageCollection.Images.Item(0);
