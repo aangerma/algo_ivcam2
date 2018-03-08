@@ -87,8 +87,9 @@ catch
 end
 
 regs.EXTL.conLocDelaySlow = uint32(delaySlow);
-regs.EXTL.conLocDelayFastC= uint32(delayFast/8)*8;
-regs.EXTL.conLocDelayFastF=uint32(mod(delayFast,8));
+mod8=mod(delayFast,8);
+regs.EXTL.conLocDelayFastC= uint32(delayFast-mod8);
+regs.EXTL.conLocDelayFastF=uint32(mod8);
 
 
 
