@@ -1,10 +1,10 @@
-function [errStat] = edgeTrans(ir,tunnelWidth,horizontalMargin,verbose)
+function [errStat] = edgeTrans(ir,tunnelWidth, expectedGridSize, verbose)
 ir = double(ir);
 if(~exist('tunnelWidth','var'))
     tunnelWidth=7;
 end
-if(~exist('horizontalMargin','var'))
-    horizontalMargin=3;
+if(~exist('expectedGridSize','var'))
+    expectedGridSize=[];
 end
 if(~exist('verbose','var'))
     verbose=false;
@@ -16,11 +16,22 @@ ir_=ir;
 
 ir_(isnan(ir_))=0;
 ir_ = histeq(normByMax(ir_));
-% pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
-[pt,bsz]=detectCheckerboardPoints(ir_);
 
-boardSize = bsz - 1;
-if(any(boardSize < 2))
+% pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
+
+smoothKers = [2 3 4 6 8];
+I = im2single(ir_);
+for i=1:length(smoothKers)
+    %[pt,bsz]=detectCheckerboardPoints(ir_);
+    [pt,bsz]=vision.internal.calibration.checkerboard.detectCheckerboard(I, smoothKers(i), 0.15);
+    gridSize = bsz - 1;
+    if (isequal(gridSize, expectedGridSize) || (isempty(expectedGridSize) && any(gridSize > 1)))
+        break;
+    end
+end
+
+
+if (any(gridSize < 2))
     error('Board is not detected');
 end
 
@@ -30,7 +41,7 @@ end
 % end
  
  
-pts=reshape(pt(:,1)+1j*pt(:,2),boardSize);
+pts=reshape(pt(:,1)+1j*pt(:,2),gridSize);
 
 if abs(real(pts(1,1)) - real(pts(1,2))) < abs(imag(pts(1,1)) - imag(pts(1,2)))
     pts = pts.';
