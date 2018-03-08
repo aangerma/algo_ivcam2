@@ -145,11 +145,24 @@ classdef HWinterface <handle
         
         
         function stopStream(obj)
-            obj.cmd(obj.getPresetScript('reset'));
+            obj.m_dotnetcam.Close();
+
+             tfn = [tempname '.txt'];
+             fid = fopen(tfn,'w');
+             fprintf(fid,obj.getPresetScript('reset'));
+             fclose(fid);
+             obj.runScript(tfn);
+% obj.cmd(obj.getPresetScript('reset'));
+
         end
         
         function restartStream(obj)
-            obj.cmd(obj.getPresetScript('restart'));
+            tfn = [tempname '.txt'];
+             fid = fopen(tfn,'w');
+             fprintf(fid,obj.getPresetScript('restart'));
+             fclose(fid);
+             obj.runScript(tfn);
+%             obj.cmd(obj.getPresetScript('restart'));
             obj.privConfigureStream();
         end
         
