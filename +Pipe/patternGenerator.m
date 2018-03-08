@@ -552,6 +552,7 @@ elseif(ischar(inputData))
             patgenregs.EPTG.calibVariationsP=single(0);
             patgenregs.DEST.hbaseline=false;
             patgenregs.DEST.baseline=single(30);
+            patgenregs.FRMW.cbufConstLUT=true;
             
         case 'debug'
             patgenregs.EPTG.maxZ = single(1500);

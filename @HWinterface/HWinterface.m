@@ -4,6 +4,7 @@ classdef HWinterface <handle
     properties (Access=private)
         m_dotnetcam;
         m_fw;
+
     end
     
     
@@ -18,7 +19,15 @@ classdef HWinterface <handle
         privInitCam(obj);
         privConfigureStream(obj);
         
-        function res = cmd(obj,str)
+       
+        
+    end
+    
+    
+    
+    methods (Access=public)
+        
+         function res = cmd(obj,str)
             sysstr = System.String(str);
             result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
             if(~result.IsCompletedOk)
@@ -27,32 +36,29 @@ classdef HWinterface <handle
             res = char(result.ResultFormatted);
         end
         
-    end
-    
-    
-    
-    methods (Access=public)
-        
         function delete(obj)
             obj.m_dotnetcam.Close();
         end
         
         
-        
+      
         
         
         function obj = HWinterface(fw)
             if(nargin==0)
                 fw = Firmware;
             end
-            
+           
             obj.m_fw = fw;
             obj.privInitCam();
             obj.privConfigureStream();
+           
         end
         
         
-        
+        function txt=getPresetScript(obj,scriptname)
+            txt=obj.m_fw.getPresetScript(scriptname);
+        end
         
         function read(obj,regTokens)
             if(~exist('regTokens','var'))
@@ -123,7 +129,7 @@ classdef HWinterface <handle
             imageObj = imageCollection.Images.Item(2);
             cImByte = imageObj.Item(0).Data;
             cIm8 = cast(cImByte,'uint8');
-            frame.c=reshape([bitshift(cIm8(:),-4) bitand(cIm8(:),uint8(15))]',size(frame.i));
+            frame.c=reshape([ bitand(cIm8(:),uint8(15)) bitshift(cIm8(:),-4)]',size(frame.i));
           
             
             if(0)
@@ -140,16 +146,23 @@ classdef HWinterface <handle
         
         function stopStream(obj)
             obj.m_dotnetcam.Close();
-            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','SW_Reset.txt');
-            obj.runScript(fn);
+
+             tfn = [tempname '.txt'];
+             fid = fopen(tfn,'w');
+             fprintf(fid,obj.getPresetScript('reset'));
+             fclose(fid);
+             obj.runScript(tfn);
+% obj.cmd(obj.getPresetScript('reset'));
+
         end
         
-        
-        
-        
         function restartStream(obj)
-            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','Restart_ma_pipe.txt');
-            obj.runScript(fn);
+            tfn = [tempname '.txt'];
+             fid = fopen(tfn,'w');
+             fprintf(fid,obj.getPresetScript('restart'));
+             fclose(fid);
+             obj.runScript(tfn);
+%             obj.cmd(obj.getPresetScript('restart'));
             obj.privConfigureStream();
         end
         
@@ -158,9 +171,7 @@ classdef HWinterface <handle
             pause(0.1);
         end
         
-        function res = runCommand(obj, c)
-            res = obj.cmd(c);
-        end
+ 
         
         function res = runScript(obj,fn)
 %                      sysstr = System.String(fn);

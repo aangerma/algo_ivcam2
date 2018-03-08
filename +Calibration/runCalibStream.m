@@ -7,7 +7,7 @@ calibParams.errRange.delayF = [2.5 5.0];
 calibParams.errRange.delayS = [2.5 5.0];
 calibParams.errRange.geomErr = [2.0 5.0];
 calibParams.errRange.geomErrVal = [2.0 5.0];
-calibParams.errRange.gammaErr = [0 1000];
+calibParams.errRange.gammaErr = [0 5000];
 
 inrange =@(x,r)  x<r(2);
 results = struct;
@@ -166,10 +166,10 @@ if(verbose)
         asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
         fprintff('% 10s: %s %g\n',f{i},asciibar,results.(f{i}));
     end
-    fprintf('%s',repmat('-',1,ll),true);
+    fprintff('%s\n',repmat('-',1,ll));
     s04=floor((score-1)/100*5);
     asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-    fprintff('% 10s: %s','score\n',asciibar);
+    fprintff('% 10s: %s\n','score',asciibar);
     
 end
 

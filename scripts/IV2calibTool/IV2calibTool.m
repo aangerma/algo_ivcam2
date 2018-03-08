@@ -62,9 +62,9 @@ classdef IV2calibTool < matlab.apps.AppBase
         end
         
         
-        function fprintff(app,varargin)
-            fprintf(app.m_logfid, varargin{:});
-            txtline = sprintf(varargin{1});
+        function ll=fprintff(app,varargin)
+            ll=fprintf(app.m_logfid, varargin{:});
+            txtline = sprintf(varargin{:});
             app.logarea.Value{end} = [app.logarea.Value{end} txtline];
             if(~isempty(txtline) && txtline(end)==newline)
                 app.logarea.Value{end+1}='';
@@ -153,10 +153,11 @@ classdef IV2calibTool < matlab.apps.AppBase
             %fprintffS('Done',true);
             
             try
+                fprintffS('displaying image...');
                 hw=HWinterface();
                 app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
                 clear hw;
-
+                fprintffS('done\n');
                 Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value,app.VERSION);
                 %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
@@ -178,10 +179,13 @@ classdef IV2calibTool < matlab.apps.AppBase
             
             % Create IV2calibrationtoolUIFigure
             app.IV2calibrationtoolUIFigure = uifigure();
-            app.IV2calibrationtoolUIFigure.Position = [100 100 640 480];
+            app.IV2calibrationtoolUIFigure.Resize='off';
+            app.IV2calibrationtoolUIFigure.Position = [100 100 640 440];
             centerfig(app.IV2calibrationtoolUIFigure);
             app.IV2calibrationtoolUIFigure.Name = 'IV2 calibration tool';
             
+
+
             % Create StartButton
             app.StartButton = uibutton(app.IV2calibrationtoolUIFigure, 'push');
             app.StartButton.ButtonPushedFcn = createCallbackFcn(app, @StartButtonPushed, true);
@@ -202,7 +206,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             % Create VersionLabel
             app.VersionLabel = uilabel(app.IV2calibrationtoolUIFigure);
             app.VersionLabel.HorizontalAlignment = 'left';
-            app.VersionLabel.Position = [1 294 94 15];
+            app.VersionLabel.Position = [5 294 94 15];
             app.VersionLabel.Text = sprintf('version: %s',app.VERSION);
             
             
@@ -218,7 +222,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.logarea = uitextarea(app.IV2calibrationtoolUIFigure);
             app.logarea.Editable = 'off';
             app.logarea.Position = [1 1 640 289];
-            
+            app.logarea.FontName='courier new';
               % Create verboseCheckBox
             app.verboseCheckBox = uicheckbox(app.IV2calibrationtoolUIFigure);
             app.verboseCheckBox.Text = 'verbose';
