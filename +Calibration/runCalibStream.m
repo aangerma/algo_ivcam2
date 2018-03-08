@@ -122,16 +122,16 @@ else
 end
 
 
-%% ::calibrate gamma scale shift and lut::
-[gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,verbose);
-fw.setRegs(gammaregs,fnCalib);
-if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
-    fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
-else
-    fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
-    score = 0;
-    return;
-end
+% % % %% ::calibrate gamma scale shift and lut::
+% % % [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,verbose);
+% % % fw.setRegs(gammaregs,fnCalib);
+% % % if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
+% % %     fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
+% % % else
+% % %     fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
+% % %     score = 0;
+% % %     return;
+% % % end
 
 %% write version
 if(exist('calibVersion','var'))

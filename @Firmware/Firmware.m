@@ -11,7 +11,8 @@ classdef Firmware < FirmwareBase
             scriptsfldr=fullfile(fileparts(mfilename('fullpath')),'presetScripts');
             fns=dirFiles(scriptsfldr,'*.txt',false);
             keys = cellfun(@(x) x(1:end-4),fns,'uni',0);
-            vals = cellfun(@(x) fileread(fullfile(scriptsfldr,x)),fns,'uni',0);
+             vals = cellfun(@(x) fullfile(scriptsfldr,x),fns,'uni',0);
+        
             obj.m_presetScripts=containers.Map(keys,vals);
           end
     end
