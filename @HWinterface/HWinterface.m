@@ -19,7 +19,15 @@ classdef HWinterface <handle
         privInitCam(obj);
         privConfigureStream(obj);
         
-        function res = cmd(obj,str)
+       
+        
+    end
+    
+    
+    
+    methods (Access=public)
+        
+         function res = cmd(obj,str)
             sysstr = System.String(str);
             result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
             if(~result.IsCompletedOk)
@@ -27,12 +35,6 @@ classdef HWinterface <handle
             end
             res = char(result.ResultFormatted);
         end
-        
-    end
-    
-    
-    
-    methods (Access=public)
         
         function delete(obj)
             obj.m_dotnetcam.Close();

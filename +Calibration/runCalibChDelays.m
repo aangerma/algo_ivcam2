@@ -203,10 +203,10 @@ hw.stopStream();
 
 if (fast)
     mod8 = mod(delay, 8);
-    hw.runCommand(sprintf(fastDelayCmdMul8, delay - mod8));
-    hw.runCommand(sprintf(fastDelayCmdSub8, mod8));
+    hw.cmd(sprintf(fastDelayCmdMul8, delay - mod8));
+    hw.cmd(sprintf(fastDelayCmdSub8, mod8));
 else
-    hw.runCommand(sprintf(slowDelayCmd, delay));
+    hw.cmd(sprintf(slowDelayCmd, delay));
 end
 
 hw.shadowUpdate();
