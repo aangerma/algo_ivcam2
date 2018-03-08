@@ -164,7 +164,7 @@ if(verbose)
     for i = 1:length(f)
         s04=floor((scores(i)-1)/100*5);
         asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-        fprintff('% 10s: %s %g\n',f{i},asciibar,results.(f{i}));
+        ll=fprintff('% 10s: %s %g\n',f{i},asciibar,results.(f{i}));
     end
     fprintff('%s\n',repmat('-',1,ll));
     s04=floor((score-1)/100*5);
