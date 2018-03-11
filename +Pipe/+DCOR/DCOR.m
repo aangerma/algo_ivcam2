@@ -105,6 +105,8 @@ else
     kerC = tmplC(1:nC,:);
     kerF = tmplF(1:nF,:);
     
+    kerC =flipud(kerC);%ASIC ALIGNMENT
+    kerF =flipud(kerF);%ASIC ALIGNMENT
     
     cor_dec = Utils.correlator(uint16(cma_dec), kerC, uint32(tmplIndex));
     
