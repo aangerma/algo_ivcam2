@@ -37,6 +37,7 @@ classdef HWinterface <handle
         end
         
         function delete(obj)
+            obj.stopStream();
             obj.m_dotnetcam.Close();
         end
         
@@ -94,13 +95,11 @@ classdef HWinterface <handle
             end
             [regs,luts]=obj.m_fw.get();%force bootcalcs
             meta = obj.m_fw.genMWDcmd(regTokens);
-            meta = str2cell(meta,newline);
-            meta(end) = [];%only newLine
-            for i=1:length(meta)
-                str = strsplit(meta{i});
-                obj.cmd(['mwd ' str{2} ' ' str{3} ' ' str{4}]);
-            end
-            
+            tfn = [tempname '.txt'];
+            fid = fopen(tfn,'w');
+            fprintf(fid,meta);
+            fclose(fid);
+            obj.runScript(tfn);
             obj.shadowUpdate()
             
         end
