@@ -191,7 +191,8 @@ IhFull = I; IhFull(minXY(2):maxXY(2),minXY(1):maxXY(1)) = Ih;
 ccIl = interp2(1:size(I,2),1:size(I,1),single(IlFull),cpBlack(:,1),cpBlack(:,2));
 ccIh = interp2(1:size(I,2),1:size(I,1),single(IhFull),cpBlack(:,1),cpBlack(:,2));
 
-
+% impath = '\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\+Calibration\targets\gammaReferenceImage.png';
+% referenceCC2 = extractCenterColorsFromImage(impath); 
 referenceCC = linspace(0,1,length(ccBlack)+2)';
 source = ccBlack;
 dest = referenceCC(2:end-1).*(ccIh-ccIl)+ccIl;
@@ -260,6 +261,20 @@ ccSource = ccIvcamT;
 ccTarget = ccTargetT;
 
 end
+function refCC = extractCenterColorsFromImage(impath)
+I = imread(impath);
+if size(I,3) == 3
+   I = rgb2grey(I); 
+end
+% Get the black Center points:
+[ blackSquares,~, ~, ~,~,~ ] = Calibration.aux.CBTools.getCBSquares( I );
+% Reorder the black centers by expected albedo intensity;
+albedoOrder =  [1,2,3,4,12,20,28,36,44,48,47,46,45,37,29,21,13,5,6,7,8,16,24,32,40,43,42,41,33,25,17,9,10,11,19,27,35,39,38,30,22,14,15,23,31,34,26,18];
+% get the normalized image:
+[ Inorm,~,~ ] = Calibration.aux.CBTools.normalizedImage( double(I) );
+refCC = centerColor(Inorm,blackSquares(albedoOrder,:));
+
+end
 function cc = centerColor(I,squares)
 % returns the center color per square (format of nSquaresx8)
  cP = centerPoints(squares);
@@ -269,6 +284,7 @@ function cP = centerPoints(squares)
 % returns the center location of each square (format of nSquaresx8)
 cP = [mean(squares(:,1:2:end),2),mean(squares(:,2:2:end),2)];
 end
+
 function avgD = readAvgFrame(hw,N)
 for i = 1:N
    stream(i) = hw.getFrame(); 
