@@ -7,7 +7,7 @@ calibParams.errRange.delayF = [2.5 5.0];
 calibParams.errRange.delayS = [2.5 5.0];
 calibParams.errRange.geomErr = [2.0 5.0];
 calibParams.errRange.geomErrVal = [2.0 5.0];
-calibParams.errRange.gammaErr = [0 1000];
+calibParams.errRange.gammaErr = [0 5000];
 
 inrange =@(x,r)  x<r(2);
 results = struct;
@@ -47,7 +47,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
-[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, verbose);
+[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, internalFolder, verbose);
 
 if(inrange(results.delayS,calibParams.errRange.delayS))
     fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
@@ -122,16 +122,16 @@ else
 end
 
 
-%% ::calibrate gamma scale shift and lut::
-[gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,verbose);
-fw.setRegs(gammaregs,fnCalib);
-if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
-    fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
-else
-    fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
-    score = 0;
-    return;
-end
+% % % %% ::calibrate gamma scale shift and lut::
+% % % [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,verbose);
+% % % fw.setRegs(gammaregs,fnCalib);
+% % % if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
+% % %     fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
+% % % else
+% % %     fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
+% % %     score = 0;
+% % %     return;
+% % % end
 
 %% write version
 if(exist('calibVersion','var'))
@@ -164,12 +164,12 @@ if(verbose)
     for i = 1:length(f)
         s04=floor((scores(i)-1)/100*5);
         asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-        fprintff('% 10s: %s %g\n',f{i},asciibar,results.(f{i}));
+        ll=fprintff('% 10s: %s %g\n',f{i},asciibar,results.(f{i}));
     end
-    fprintf('%s',repmat('-',1,ll),true);
+    fprintff('%s\n',repmat('-',1,ll));
     s04=floor((score-1)/100*5);
     asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-    fprintff('% 10s: %s','score\n',asciibar);
+    fprintff('% 10s: %s\n','score',asciibar);
     
 end
 

@@ -243,7 +243,7 @@ classdef FirmwareBase <handle
             m=[num2cell(addr);num2cell(data);name]';
         end
         function txtout=genMWDcmd(obj,regTokens,outfn)
-            
+            %TODO: replace with getAddrData
             if(~exist('regTokens','var') || isempty(regTokens))
                 regTokens={'.'};
             elseif(~iscell(regTokens))

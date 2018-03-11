@@ -1,4 +1,4 @@
-function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, debugOut)
+function [regs,errSlow,errFast] = runCalibChDelays(hw, internalFolder, verbose, debugOut)
 
 if ~exist('verbose','var')
   verbose = false;  
@@ -6,6 +6,13 @@ end
 
 if ~exist('debugOut','var')
   debugOut = false;  
+end
+
+if (debugOut)
+    debugFolder = fullfile(internalFolder,filesep,'dbgDelays');
+    mkdirSafe(debugFolder);
+else
+    debugFolder = [];
 end
 
 regs = [];
@@ -47,7 +54,7 @@ delayFast = initFastDelay;
 hw.setReg('DESTaltIrEn'    ,true);
 hw.shadowUpdate();
 
-delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugOut);
+delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
@@ -55,7 +62,7 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugOut);
+    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugFolder);
 catch
     warning('fastFine failed');
 end
@@ -72,7 +79,7 @@ hw.shadowUpdate();
 delaySlow = initSlowDelay;
 step = 32;
 
-delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugOut);
+delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
@@ -80,22 +87,23 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugOut);
+    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugFolder);
 catch
     warning('slowFine failed');
     errSlow = 1000; % in pixels
 end
 
-regs.EXTL.conLocDelaySlow = uint32(delaySlow);
-regs.EXTL.conLocDelayFastC= uint32(delayFast/8)*8;
-regs.EXTL.conLocDelayFastF=uint32(mod(delayFast,8));
+regs.EXTL.conLocDelaySlow = uint32(delaySlow)+uint32(bitshift(1,31));
+mod8=mod(delayFast,8);
+regs.EXTL.conLocDelayFastC= uint32(delayFast-mod8);
+regs.EXTL.conLocDelayFastF=uint32(mod8);
 
 
 
 
 end
 
-function [delay, err] = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose, debugOut)
+function [delay, err] = findBestDelay(hw, initDelay, initStep, minStep, iterType, verbose, debugFolder)
 
 coarse = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'slowCoarse'));
 fast = or(strcmp(iterType, 'fastCoarse'), strcmp(iterType, 'fastFine'));
@@ -129,9 +137,10 @@ for ic=1:10
         frame = hw.getFrame();
         images{i} = double(frame.i);
         
-        if (debugOut)
+        if (~isempty(debugFolder))
             irFilename = sprintf('irFrame_%s_i%02d-%d_%05d.bini', iterType, ic, i, delays(i));
-            io.writeBin(irFilename, frame.i);
+            irFullpath = fullfile(debugFolder, filesep, irFilename);
+            io.writeBin(irFullpath, frame.i);
         end
         
         if (coarse)
@@ -193,20 +202,15 @@ mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkR
 //--------SLOW-------------
 mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
 %}
-
-fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
-fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
-slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
-
 hw.stopStream();
 %pause(0.05);
 
 if (fast)
     mod8 = mod(delay, 8);
-    hw.runCommand(sprintf(fastDelayCmdMul8, delay - mod8));
-    hw.runCommand(sprintf(fastDelayCmdSub8, mod8));
+    hw.setReg('EXTLconLocDelayFastC', uint32(delay - mod8));
+    hw.setReg('EXTLconLocDelayFastF', uint32(mod8));
 else
-    hw.runCommand(sprintf(slowDelayCmd, delay));
+    hw.setReg('EXTLconLocDelaySlow', uint32(delay)+uint32(bitshift(1,31)));
 end
 
 hw.shadowUpdate();
