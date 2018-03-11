@@ -5,8 +5,8 @@ function  [corrOffset, corrSegment, psnr_value, iImgRAW,tmplIndex] = DCOR(pflow,
 assert(max(pflow.cma(:))<128); %cma should be always 7b
 cma_ = min(63, bitshift(pflow.cma+1,-1));
 
-    nF = double(regs.GNRL.tmplLength);
-    nC = double(regs.DCOR.coarseTmplLength);
+nF = double(regs.GNRL.tmplLength);
+nC = double(regs.DCOR.coarseTmplLength);
 
 
 uint82uint4 = @(v) vec([bitand(v(:),uint8(15)) bitshift(v(:),-4)]');
@@ -26,12 +26,12 @@ if (regs.DCOR.bypass || isempty(pflow.pixIndOutOrder)) %bypass or no pixels
     cor_dec_masked=zeros(size(cma_)./[2^double(regs.DCOR.decRatio) 1 1],'uint32');
     tmplIndex =  zeros(size(pflow.pipeFlags), 'uint8');
 else
-%     lgrOutPixIndx = [];
-%     if regs.MTLB.loggerOutPixelIndex < length(pflow.pixIndOutOrder)
-%         lgrOutPixIndx = pflow.pixIndOutOrder(regs.MTLB.loggerOutPixelIndex+1);
-%     end
-%     
-%     
+    %     lgrOutPixIndx = [];
+    %     if regs.MTLB.loggerOutPixelIndex < length(pflow.pixIndOutOrder)
+    %         lgrOutPixIndx = pflow.pixIndOutOrder(regs.MTLB.loggerOutPixelIndex+1);
+    %     end
+    %
+    %
     
     % sampleRate = double(regs.GNRL.sampleRate);
     downSamplingR = 2 ^ double(regs.DCOR.decRatio);
@@ -48,8 +48,8 @@ else
     psnrIndex = bitor(bitshift(ambIndex, 4), irIndex);
     psnr_value = map(regs.DCOR.psnr, uint16(psnrIndex)+1);
     
-%     lgr.print2file(sprintf('\tpsnr_value = %X\n',psnr_value(lgrOutPixIndx)));
-   %% 
+    %     lgr.print2file(sprintf('\tpsnr_value = %X\n',psnr_value(lgrOutPixIndx)));
+    %%
     [ys, xs] = ndgrid(0:regs.GNRL.imgVsize-1, 0:regs.GNRL.imgHsize-1);
     
     
@@ -61,7 +61,7 @@ else
         assert(max(tmplIndex(:))<=31);
         tmplC=tmplC(:,1:32);
         tmplF=reshape(tmplF,2048,32);
-
+        
     else
         switch (regs.DCOR.tmplMode)
             case 0% RXONLY
@@ -80,11 +80,11 @@ else
         assert(max(tmplIndex(:))<=63);
     end
     
-%     lgr.print2file(sprintf('\ttmplIndex = %X\n',tmplIndex(lgrOutPixIndx)));
+    %     lgr.print2file(sprintf('\ttmplIndex = %X\n',tmplIndex(lgrOutPixIndx)));
     
     
     
-
+    
     
     if (regs.DCOR.outIRnest)
         iImgRAW = pflow.aImg;
@@ -99,18 +99,17 @@ else
     cma_dec = permute(sum(uint32(cma_dec),1, 'native'),[2 3 4 1]);
     
     
-%     lgr.print2file(sprintf('\tcma_dec = %s\n',sprintf('%08X ',flipud(cma_dec(:,lgrOutPixIndx)))));
+    %     lgr.print2file(sprintf('\tcma_dec = %s\n',sprintf('%08X ',flipud(cma_dec(:,lgrOutPixIndx)))));
     
     
     kerC = tmplC(1:nC,:);
     kerF = tmplF(1:nF,:);
-    
     kerC =flipud(kerC);%ASIC ALIGNMENT
     kerF =flipud(kerF);%ASIC ALIGNMENT
     
     cor_dec = Utils.correlator(uint16(cma_dec), kerC, uint32(tmplIndex));
     
-%     lgr.print2file(sprintf('\tcor_dec = %s\n',sprintf('%08X ',flipud(cor_dec(:,lgrOutPixIndx)))));
+    %     lgr.print2file(sprintf('\tcor_dec = %s\n',sprintf('%08X ',flipud(cor_dec(:,lgrOutPixIndx)))));
     
     %% coarse masking - for crosstalk and other
     %since 000 is the LSB(bin 3), it needs to set 1Ghz (thus need to inverse txmode:
@@ -140,7 +139,7 @@ else
     
     cor_dec_masked = cor_dec.*uint32(maskMat);
     [~, maxIndDec] = max(cor_dec_masked);
-%     lgr.print2file(sprintf('\tmaxIndDec = %X\n',maxIndDec(lgrOutPixIndx)));
+    %     lgr.print2file(sprintf('\tmaxIndDec = %X\n',maxIndDec(lgrOutPixIndx)));
     %%
     %%% tamplate read a = reshape(hex2dec(vec(dec2hex(luts.DCOR.tamplate1(:)).')),64,[]);
     
@@ -155,8 +154,8 @@ else
     zp = uint32(zeros(n,regs.GNRL.imgVsize,regs.GNRL.imgHsize));
     corrSegment = [zp;corrSegment;zp];
     
-%     lgr.print2file(sprintf('\tcorrSegment = %s\n',sprintf('%08X ',flipud(corrSegment(:,lgrOutPixIndx)))));
-%     lgr.print2file(sprintf('\tcorrOffset = %02X\n',corrOffset(lgrOutPixIndx)));
+    %     lgr.print2file(sprintf('\tcorrSegment = %s\n',sprintf('%08X ',flipud(corrSegment(:,lgrOutPixIndx)))));
+    %     lgr.print2file(sprintf('\tcorrOffset = %02X\n',corrOffset(lgrOutPixIndx)));
     
     
     %normalize
