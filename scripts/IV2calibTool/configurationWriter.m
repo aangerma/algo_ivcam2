@@ -43,13 +43,13 @@ fclose(fid);
 
 %set conLocRegs
 fid = fopen(fullfile(algoFldr,filesep,'algoConLocConfigMWD.txt'),'w');
-fprintf(fid,filread(fw.getPresetScript('reset')));
+fprintf(fid,fileread(fw.getPresetScript('reset')));
 fprintf(fid,'\n');
 
 fprintf(fid,fw.genMWDcmd('EXTLconloc'));
 fprintf(fid,'\n');
 
-fprintf(fid,filread(fw.getPresetScript('restart')));
+fprintf(fid,fileread(fw.getPresetScript('restart')));
 fclose(fid);
 
 end
