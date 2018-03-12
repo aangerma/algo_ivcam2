@@ -60,7 +60,7 @@ regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
 x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV angXShift]);
-xL = [40 40 4000   -3 -3 -0];
+xL = [40 40  -200     -3 -3 ];
 xH = [90 90 6000    3  3  0];
 regs = x2regs(x0,regs);
 [e,eFit]=errFunc(rpt,regs,x0,0);
@@ -74,7 +74,7 @@ for i=1:10
 %converge to best fov+delay
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(stream.s,iterRegs,iterLuts,x,0),x0,xL,xH,opt);
 %find error vector
-[e,v,ve]=errFunc(stream.s,x2regs(xbest,regs),iterLuts,xbest,true);
+[e,v,ve]=errFunc(stream.s,x2regs(xbest,regs),iterLuts,xbest,verbose);
 v=reshape(v,[],3)';
 ve=reshape(ve,[],3)';
 %reduce error in r direction
@@ -230,23 +230,27 @@ end
 function stream=getInputStream(d,regs,luts)
 
 
-r=double(d.z)/2^double(regs.GNRL.zMaxSubMMExp);
-r(r==0)=nan;
-rv = r(Utils.indx2col(size(r),[3 3]));
-r = reshape(nanmedian(rv),size(r));
+z=double(d.z)/2^double(regs.GNRL.zMaxSubMMExp);
+z(z==0)=nan;
+rv = z(Utils.indx2col(size(z),[3 3]));
+z = reshape(nanmedian(rv),size(z));
  
 
-sz = size(r);
+sz = size(z);
 [sinx,cosx,singy,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(sz,regs);%#ok
-%  coswx=cosw.*cosx;
+
 [yg,xg]=ndgrid(1:sz(1),1:sz(2));
 
-
-
+if(regs.DEST.depthAsRange)
+r=z;
+else
+r = z./(cosw.*cosx);
+end
 b = -2*r;
 c = -double(2*r*regs.DEST.baseline.*sing + regs.DEST.baseline2);
 stream.rtd = 0.5*(-b+sqrt(b.*b-4*c));
 stream.rtd = stream.rtd+regs.DEST.txFRQpd(1);
+
 if(regs.DIGG.sphericalEn)
 yy = double(yg-1);
 xx=double((xg-1)*4);

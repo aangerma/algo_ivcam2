@@ -33,7 +33,7 @@ fprintff('Loading Firmware...');
 fw = Pipe.loadFirmware(internalFolder);
 hw=HWinterface(fw);
 
-fw.get();%run autogen
+[regs,luts]=fw.get();%run autogen
 
 if(doInit)  
     fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
@@ -86,7 +86,7 @@ nIters = 5;
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 
-[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.runDODCalib(hw,verbose,nIters);
+[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(hw.getFrame(120),regs,luts,verbose);
 fw.setRegs(dodregs,fnCalib);
 fw.setLut(luts);
 
