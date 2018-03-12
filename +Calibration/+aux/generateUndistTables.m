@@ -15,9 +15,9 @@ fy = (N-1)/distortionH;
 
  bdpts=interp1(0:4,[0 0;1 0;1 1;0 1;0 0],(0:0.1:3.9))'.*[distortionW;distortionH]+[x0;y0];
  s=[s bdpts];d=[d bdpts];
-% tps=TPS(s',d'-s');
-% undist=tps.at([xg(:) yg(:)]);
- undist=[vec(griddata(s(1,:),s(2,:),d(1,:)-s(1,:),xg,yg,'cubic')) vec(griddata(s(1,:),s(2,:),d(2,:)-s(2,:),xg,yg, 'cubic')  )];
+ tps=TPS(s',d'-s');
+ undist=tps.at([xg(:) yg(:)]);
+%  undist=[vec(griddata(s(1,:),s(2,:),d(1,:)-s(1,:),xg,yg,'cubic')) vec(griddata(s(1,:),s(2,:),d(2,:)-s(2,:),xg,yg, 'cubic')  )];
 undist(isnan(undist))=0;
 undistx=reshape(undist(:,1),size(xg));
 undisty=reshape(undist(:,2),size(yg));
