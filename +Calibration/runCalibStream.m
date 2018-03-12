@@ -47,7 +47,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
-[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, internalFolder, verbose);
+[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw,  verbose);
 
 if(inrange(results.delayS,calibParams.errRange.delayS))
     fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
@@ -82,13 +82,21 @@ fw.setRegs(delayRegs,fnCalib);
 % % %     hw.shadowUpdate();
 % % % end
 
-nIters = 5;
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 
-[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(hw.getFrame(120),regs,luts,verbose);
+hw.setReg('DESTdepthAsRange',true);
+hw.setReg('DIGGsphericalEn',true);
+[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(hw.getFrame(30),regs,luts,verbose);
+hw.setReg('DESTdepthAsRange',true);
+hw.setReg('DIGGsphericalEn',true);
+
+
+
 fw.setRegs(dodregs,fnCalib);
 fw.setLut(luts);
+% [regs,luts]=fw.get();%run autogen
+
 
 if(inrange(results.geomErr,calibParams.errRange.geomErr))
     fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
@@ -105,11 +113,11 @@ fprintff('Validating...\n');
 regsDODnames='DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|DIGGundist';
 
 fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
-fw.get();%run autogen
+[regs,luts]=fw.get();%run autogen
 fw.genMWDcmd(regsDODnames,fnAlgoTmpMWD);
 hw.runScript(fnAlgoTmpMWD);
 hw.shadowUpdate();
-[~,~,results.geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
+results.geomErrVal = calcGeometricDistortion(hw.getFrame(),regs,verbose);
 %dodregs2 should be equal to dodregs
 
 

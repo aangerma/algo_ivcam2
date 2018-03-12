@@ -49,7 +49,7 @@ rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles inst
     darr(i).angx = angx;
     darr(i).angy = angy;
     darr(i).rtd = rtd;
-    darr(i).valid = Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3));
+luts.FRMW.undistModel=Calibration.aux.generateUndistTables([],[],size(d.i));
     
 end
 % Define optimization settings
@@ -63,18 +63,20 @@ x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.lasera
 xL = [40 40  -200     -3 -3 ];
 xH = [90 90 6000    3  3  0];
 regs = x2regs(x0,regs);
-[e,eFit]=errFunc(rpt,regs,x0,0);
-
+e=errFunc(stream.s,regs,luts,x0,0);
+distErr = distanceMetrics(reshape(v,[],3)',[size(stream.p,1) size(stream.p,2)]);
+printErrAndX(x0,e,'X0:',verbose)
 
 %%
 iterLuts = luts;
     minerr = e;
-
+xbest=x0;
 for i=1:10
 %converge to best fov+delay
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(stream.s,iterRegs,iterLuts,x,0),x0,xL,xH,opt);
+[xbest(1:3),minerr]=fminsearchbnd(@(x) errFunc(stream.s,iterRegs,iterLuts,x,0),xbest(1:3),xL(1:3),xH(1:3),opt);
+
 %find error vector
-[e,v,ve]=errFunc(stream.s,x2regs(xbest,regs),iterLuts,xbest,verbose);
+[~,v,ve]=errFunc(stream.s,x2regs(xbest,regs),iterLuts,xbest,verbose);
 v=reshape(v,[],3)';
 ve=reshape(ve,[],3)';
 %reduce error in r direction
@@ -89,26 +91,28 @@ d=xyz2uv.at((v-ve_)');
 
 
 %d=generateLSH(reshape(permute(v-ve,[3 1 2]),3,[])',1)*(generateLSH(reshape(permute(v,[3 1 2]),3,[])',1)\s(:,1:2));
-[udistLUTinc,uxg,uyg,undistx,undisty]=Calibration.aux.generateUndistTables(s',d',size(stream.ir));
+[udistLUTinc,~,~,undistx,undisty]=Calibration.aux.generateUndistTables(s',d',size(stream.ir));
 % quiver(s(:,1),s(:,2),d(:,1)-s(:,1),d(:,2)-s(:,2),0)
 
-iterLuts.FRMW.undistModel = typecast(typecast(iterLuts.FRMW.undistModel,'single')-typecast(udistLUTinc(:),'single'),'uint32');
+iterLuts.FRMW.undistModel = typecast(typecast(iterLuts.FRMW.undistModel(:),'single')-typecast(udistLUTinc(:),'single'),'uint32');
 [udistRegs,udistLuts] = Pipe.DIGG.FRMW.buildLensLUT(iterRegs,iterLuts);
 iterRegs=Firmware.mergeRegs(iterRegs,udistRegs);
 iterLuts=Firmware.mergeRegs(iterLuts,udistLuts);
+
 if(verbose)
 fprintf('#%02d (%5.3f,%5.3f) %5.3f (%+5.3f,%+5.3f) e_dfz=%5.3f[mm] e_undist=%5.3f[pix]\n',i,xbest,minerr,rms([undistx(:);undisty(:)]));
-% [xq,yq]= ang2xyLocal(imdata.angx,imdata.angy,iterRegs,iterLuts);
-% ok=~isnan(xq) & ~isnan(yq)  & imdata.i>1;
-% warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
-% irNew = griddata(double(xq(ok)),double(yq(ok)),double(imdata.i(ok)),xg,yg);
-% imagesc(irNew);
-    dnew =[];
+% drawnow;
 end
+iterRegs=Firmware.mergeRegs(iterRegs, x2regs(xbest));
+[xbest(4:5),minerr]=fminsearchbnd(@(x) errFunc(stream.s,iterRegs,iterLuts,x,0),xbest(4:5),xL(4:5),xH(4:5),opt);
+if(verbose)
+fprintf('LSR (%5.3f,%5.3f) %5.3f (%+5.3f,%+5.3f) e_dfz=%5.3f[mm] e_undist=%5.3f[pix]\n',xbest,minerr,rms([undistx(:);undisty(:)]));
 end
+
 % quiver3(v(:,:,1),v(:,:,2),v(:,:,3),ve(:,:,1),ve(:,:,2),ve(:,:,3))
 % 
-printErrAndX(xbest,minerr,'Xfinal:',verbose)
+outputErr = distanceMetrics(v,[size(stream.p,1) size(stream.p,2)]);
+printErrAndX(xbest,outputErr,'Xfinal:',verbose)
 
 % Define optimization settings
 opt.maxIter=10000;
@@ -133,7 +137,16 @@ dnew.i = griddata(double(xF(ok)),double(yF(ok)),double(d.i(ok)),xg,yg);
 % dnew.c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
     end
 end
+function e = distanceMetrics(v,sz)
+tileSizeMM = 30;
 
+[oy,ox]=ndgrid(linspace(-1,1,sz(1))*(sz(1)-1)*tileSizeMM/2,linspace(-1,1,sz(2))*(sz(2)-1)*tileSizeMM/2);
+ptsOpt = [ox(:) oy(:) zeros(sz(1)*sz(2),1)]';
+genDmat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
+optMmat = genDmat(ptsOpt );
+mesMmat = genDmat(v );
+e = sqrt(mean(vec((optMmat-mesMmat).^2)));
+end
 function [xq,yq]= ang2xyLocal(angx,angy,regs,luts)
 [x_,y_]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
 [x,y] = Pipe.DIGG.undist(x_,y_,regs,luts,Logger(),[]);
@@ -193,12 +206,21 @@ end
 end
 function rtlRegs = x2regs(x,rtlRegs)
 
-
-iterRegs.FRMW.xfov=single(x(1));
-iterRegs.FRMW.yfov=single(x(2));
-iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
-iterRegs.FRMW.laserangleH=single(x(4));
-iterRegs.FRMW.laserangleV=single(x(5));
+switch(length(x))
+    case 5
+        iterRegs.FRMW.xfov=single(x(1));
+        iterRegs.FRMW.yfov=single(x(2));
+        iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
+        iterRegs.FRMW.laserangleH=single(x(4));
+        iterRegs.FRMW.laserangleV=single(x(5));
+    case 3
+        iterRegs.FRMW.xfov=single(x(1));
+        iterRegs.FRMW.yfov=single(x(2));
+        iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
+    case 2
+        iterRegs.FRMW.laserangleH=single(x(1));
+        iterRegs.FRMW.laserangleV=single(x(2));
+end
 if(~exist('rtlRegs','var'))
     rtlRegs=iterRegs;
     return;
@@ -227,12 +249,12 @@ diggRegs = Pipe.DIGG.FRMW.getAng2xyCoeffs(rtlRegs);
 rtlRegs=Firmware.mergeRegs(rtlRegs,diggRegs);
 end
 
-function stream=getInputStream(d,regs,luts)
+function stream=getInputStream(d,regs,luts)%#ok
 
 
 z=double(d.z)/2^double(regs.GNRL.zMaxSubMMExp);
 z(z==0)=nan;
-rv = z(Utils.indx2col(size(z),[3 3]));
+rv = z(Utils.indx2col(size(z),[1 1]*5));
 z = reshape(nanmedian(rv),size(z));
  
 

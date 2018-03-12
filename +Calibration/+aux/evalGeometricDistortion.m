@@ -33,20 +33,23 @@ d = @(e) (sqrt(sum(e.^2)));
 e=sqrt(mean(d(ve(:))));
 ve=permute(reshape(ve,3,h,w),[2 3 1]);
 if(exist('verbose','var') && verbose)
+    %%
     figure(190789);clf
-    ptsMes=ptsMes+c;
-    ptsoptR=ptsoptR+c;
-    plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',fitP(1,:),fitP(2,:),fitP(3,:),'g.');
+    subplot(1,3,1:2);
+    plot3(ptsMes(1,:),ptsMes(2,:),ptsMes(3,:),'ro',ptsoptR(1,:),ptsoptR(2,:),ptsoptR(3,:),'g.');
     plot3(xyzmes(1,valid),xyzmes(2,valid),xyzmes(3,valid),'ro',fitP(1,:),fitP(2,:),fitP(3,:),'g.',xyzmes(1,logical(1-valid)),xyzmes(2,logical(1-valid)),xyzmes(3,logical(1-valid)),'bo');
     titlestr = sprintf('Checkerboard Points in 3D.\n eGeom = %.2f. Invalid#=%d',e,sum(1-valid));
     xlabel('x'),ylabel('y'),zlabel('z'),title('Checkerboard Points in 3D')
         legend({'Measurements' 'Reference','Invalids'})
     else
-    legend({'Measurements' 'Reference'},'location','best')
-   quiver3(v(:,:,1),v(:,:,2),v(:,:,3),ve(:,:,1),ve(:,:,2),ve(:,:,3),0)
-   hold off;
-    drawnow;
-%     axis equal
+    
+    quiver3(v(:,:,1),v(:,:,2),v(:,:,3),ve(:,:,1),ve(:,:,2),ve(:,:,3),0)
+    hold off;
+    legend({'Measurements' 'Reference','offset'},'location','best');
+    grid on;
+    subplot(1,3,3);
+    imagesc(sqrt(sum(ve.^2,3)));axis image;axis off;colorbar('SouthOutside')
+    %     axis equal
     drawnow;
 end
 
