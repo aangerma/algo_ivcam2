@@ -71,7 +71,7 @@ hw=HWinterface(fw);
 % mwd  fffe3840 fffe3844 3F0CCCCD  //dsm horizontal shift
 % mwd  fffe3844 fffe3848 457A0000  //dsm horizontal scale
 
-[~,~,e,resDODParams2] = Calibration.aux.runDODCalib(hw,1);
+[~,~,e] = Calibration.aux.runDODCalib(hw,1,1);
 % warning('off','FIRMWARE:privUpdate:updateAutogen') % Supress checkerboard warning
 % fw.setLut(resDODParams.luts);
 % fw.setRegs(resDODParams.regs,'\\invcam450\D\data\ivcam20\exp\20180204_MA');

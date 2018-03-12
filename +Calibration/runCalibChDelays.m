@@ -5,7 +5,7 @@ if ~exist('verbose','var')
 end
 
 if ~exist('debugOut','var')
-  debugOut = true;  
+  debugOut = false;  
 end
 
 if (debugOut)
@@ -93,9 +93,10 @@ catch
     errSlow = 1000; % in pixels
 end
 
-regs.EXTL.conLocDelaySlow = uint32(delaySlow);
-regs.EXTL.conLocDelayFastC= uint32(delayFast/8)*8;
-regs.EXTL.conLocDelayFastF=uint32(mod(delayFast,8));
+regs.EXTL.conLocDelaySlow = uint32(delaySlow)+uint32(bitshift(1,31));
+mod8=mod(delayFast,8);
+regs.EXTL.conLocDelayFastC= uint32(delayFast-mod8);
+regs.EXTL.conLocDelayFastF=uint32(mod8);
 
 
 
@@ -201,20 +202,15 @@ mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkR
 //--------SLOW-------------
 mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
 %}
-
-fastDelayCmdMul8 = 'mwd a0050548 a005054c %08x // RegsProjConLocDelay';
-fastDelayCmdSub8 = 'mwd a0050458 a005045c %08x // RegsProjConLocDelayHfclkRes';
-slowDelayCmd = 'mwd a0060008 a006000c 8%07x // RegsAnsyncAsLateLatencyFixEn';
-
 hw.stopStream();
 %pause(0.05);
 
 if (fast)
     mod8 = mod(delay, 8);
-    hw.cmd(sprintf(fastDelayCmdMul8, delay - mod8));
-    hw.cmd(sprintf(fastDelayCmdSub8, mod8));
+    hw.setReg('EXTLconLocDelayFastC', uint32(delay - mod8));
+    hw.setReg('EXTLconLocDelayFastF', uint32(mod8));
 else
-    hw.cmd(sprintf(slowDelayCmd, delay));
+    hw.setReg('EXTLconLocDelaySlow', uint32(delay)+uint32(bitshift(1,31)));
 end
 
 hw.shadowUpdate();
