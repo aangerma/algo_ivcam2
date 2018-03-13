@@ -6,7 +6,7 @@ calibParams.version = 001.001;
 calibParams.errRange.delayF = [2.5 5.0];
 calibParams.errRange.delayS = [2.5 5.0];
 calibParams.errRange.geomErr = [2.0 5.0];
-calibParams.errRange.geomErrVal = [2.0 5.0];
+calibParams.errRange.geomErrVal = [2.0 10.0];
 calibParams.errRange.gammaErr = [0 5000];
 
 inrange =@(x,r)  x<r(2);
@@ -87,10 +87,13 @@ fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 
 hw.setReg('DESTdepthAsRange',true);
 hw.setReg('DIGGsphericalEn',true);
-[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(hw.getFrame(30),regs,luts,verbose);
-hw.setReg('DESTdepthAsRange',true);
-hw.setReg('DIGGsphericalEn',true);
-
+hw.shadowUpdate();
+regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+d=hw.getFrame(30);
+[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(d,regs,luts,verbose);
+hw.setReg('DESTdepthAsRange',false);
+hw.setReg('DIGGsphericalEn',false);
+hw.shadowUpdate();
 
 
 fw.setRegs(dodregs,fnCalib);
@@ -117,7 +120,8 @@ fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
 fw.genMWDcmd(regsDODnames,fnAlgoTmpMWD);
 hw.runScript(fnAlgoTmpMWD);
 hw.shadowUpdate();
-results.geomErrVal = calcGeometricDistortion(hw.getFrame(),regs,verbose);
+d=hw.getFrame(30);
+results.geomErrVal = calcGeometricDistortion(d,regs,verbose);
 %dodregs2 should be equal to dodregs
 
 
