@@ -4,9 +4,7 @@ FRMWyfov        	f56
 FRMWlaserangleH 	f0
 FRMWlaserangleV 	f0
 
-%FRMWgaurdBandH      f0.02
-%FRMWgaurdBandV      f0.1
-
+DESTbaseline		f30.0
 FRMWgaurdBandH      f0.0
 FRMWgaurdBandV      f0.0500
 
