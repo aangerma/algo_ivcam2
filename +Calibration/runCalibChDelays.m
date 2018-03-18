@@ -5,7 +5,7 @@ if ~exist('verbose','var')
 end
 
 if ~exist('debugOut','var')
-  debugOut = false;  
+  debugOut = true;  
 end
 
 if (debugOut)
