@@ -1,99 +1,103 @@
-function [outregs,minerr,eFit,dnew]=calibDFZ(d,regs,verbose,eval)
+function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,verbose,eval,x0)
 if(~exist('eval','var'))
     eval=false;
 end
 if(~exist('verbose','var'))
     verbose=true;
+end 
+if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
+    x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV]);
+end 
+
+
+for i = 1:numel(darr)
+    % Get r from d.z
+    if ~regs.DEST.depthAsRange
+        [~,r] = Pipe.z16toVerts(darr(i).z,regs);
+    else
+        r = double(darr(i).z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
+    end
+    % get rtd from r
+    [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
+    C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
+    rtd=r+sqrt(r.^2-C);
+    rtd=rtd+regs.DEST.txFRQpd(1);
+
+    %calc angles per pixel
+    [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
+    if(regs.DIGG.sphericalEn)
+        yy = double(yg);
+        xx = double((xg)*4);
+        xx = xx-double(regs.DIGG.sphericalOffset(1));
+        yy = yy-double(regs.DIGG.sphericalOffset(2));
+        xx = xx*2^10;%bitshift(xx,+12-2);
+        yy = yy*2^12;%bitshift(yy,+12);
+        xx = xx/double(regs.DIGG.sphericalScale(1));
+        yy = yy/double(regs.DIGG.sphericalScale(2));
+
+        angx = single(xx);
+        angy = single(yy);
+    else
+        [angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
+    end
+
+    %find CB points
+    warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
+    [p,bsz] = detectCheckerboardPoints(normByMax(darr(i).i)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+    it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
+
+    %rtd,phi,theta
+    darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+    darr(i).angx = angx;
+    darr(i).angy = angy;
+    darr(i).rtd = rtd;
+    [~,~,~,darr(i).valid] = Calibration.aux.evalProjectiveDisotrtion(darr(i).i);
+
 end
-
-%some filtering - remove NANS
-im = double(d.i);
-im(im==0)=nan;
-N=3;
-imv = im(Utils.indx2col(size(im),[N N]));
-bd = vec(isnan(im));
-im(bd)=nanmedian_(imv(:,bd));
-
-imz = double(d.z);
-imz(imz==0)=nan;
-N=3;
-imv = imz(Utils.indx2col(size(imz),[N N]));
-bd = vec(isnan(imz));
-imz(bd)=nanmedian_(imv(:,bd));
-d.z = imz;
-
-%calc RTD 
-if ~regs.DEST.depthAsRange
-    [~,r] = Pipe.z16toVerts(d.z,regs);
-else
-    r = double(d.z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
-end
-
-[~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
-C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
-rtd=r+sqrt(r.^2-C);
-rtd=rtd+regs.DEST.txFRQpd(1);
-
-
-%calc angles per pixel
-[yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
-[angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
-
-%xy2ang verification
-% [~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
-% assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
-% assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
-
-%find CB points
-[p,bsz] = detectCheckerboardPoints(normByMax(im)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
-
-%rtd,phi,theta
-rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-
-% Define optimization settings
 
 % Only from here we can change params that affects the 3D calculation (like
-% baseline, gaurdband, ...
-% regs.DEST.baseline = single(40);
-% regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
+% baseline, gaurdband, ... TODO: remove this line when the init script has
+% baseline of 30. 
+regs.DEST.baseline = single(30);
+regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
-
-angXShift = 0;
-x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV angXShift]);
-% x0 = double([63.51	60.76	50.80	0.64	0.44 0]);
-xL = [40 40 4000   -3 -3 -0];
-xH = [90 90 6000    3  3  0];
+xL = [40 40 4000   -3 -3];
+xH = [90 90 6000    3  3];
 regs = x2regs(x0,regs);
-[e,eFit]=errFunc(rpt,regs,x0,0);
 if eval 
+    [minerr,eFit]=errFunc(darr,regs,x0,verbose);
     outregs = [];
-    minerr = e;
-    dnew =[];
+    darrNew = [];
     return
 end
+[e,eFit]=errFunc(darr,regs,x0,0);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
+% Define optimization settings
 opt.maxIter=10000;
 opt.OutputFcn=[];
 opt.TolFun = 1e-6;
-opt.TolX = 1e-3;
+opt.TolX = 1e-6;
 opt.Display='none';
-[xbest,~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
-% [xbest,minerr]=fminsearch(@(x) errFunc(rpt,regs,x,0),x0,opt);
+[xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),x0,xL,xH,opt);
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),xbest,xL,xH,opt);
 outregs = x2regs(xbest,regs);
-rpt_new = cat(3,it(rtd),it(angx+xbest(6)),it(angy));
-[e,eFit]=errFunc(rpt_new,outregs,xbest,1);
+[e,eFit]=errFunc(darr,outregs,xbest,verbose);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
+%% Do it for each in array
+if nargout > 3
+    darrNew = darr;
+    for i = 1:numel(darr)
+        [zNewVals,xF,yF]=rpt2z(cat(3,darrNew(i).rtd,darrNew(i).angx,darrNew(i).angy),outregs);
+        ok=~isnan(xF) & ~isnan(yF)  & darrNew(i).i>1;
+        darrNew(i).z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
+        darrNew(i).i = griddata(double(xF(ok)),double(yF(ok)),double(darrNew(i).i(ok)),xg,yg);
+%         darrNew(i).c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
+    end
+end
 
-[zNewVals,xF,yF]=rpt2z(cat(3,rtd,angx+xbest(6),angy),outregs);
 
-ok=~isnan(xF) & ~isnan(yF)  & d.i>1;
-dnew.z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
-dnew.i = griddata(double(xF(ok)),double(yF(ok)),double(d.i(ok)),xg,yg);
-% dnew.c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
 
 end
 
@@ -111,28 +115,33 @@ else
 end
 z = z * rtlRegs.GNRL.zNorm;
 end
-function [e,eFit]=errFunc(rpt,rtlRegs,X,verbose)
+function [e,eFit]=errFunc(darr,rtlRegs,X,verbose)
 %build registers array
-
+% X(3) = 4981;
 rtlRegs = x2regs(X,rtlRegs);
-
-[~,~,xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2)+X(6),rpt(:,:,3),rtlRegs,Logger(),[]);
-
-
-rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
+for i = 1:numel(darr)
+    d = darr(i);
+    [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,Logger(),[]);
 
 
-[sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
-
-r= (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-
-z = r.*cosw.*cosx;
-x = r.*cosy.*sinx;
-y = r.*sinw;
-v=cat(3,x,y,z);
+    rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
 
 
-[e,eFit]=Calibration.aux.evalGeometricDistortion(v,verbose);
+    [sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
+
+    r= (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+
+    z = r.*cosw.*cosx;
+    x = r.*cosy.*sinx;
+    y = r.*sinw;
+    v=cat(3,x,y,z);
+
+
+    [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d,verbose);
+    
+end
+eFit = mean(eFit);
+e = mean(e);
 end
 function printErrAndX(X,e,eFit,preSTR,verbose)
 if verbose 
