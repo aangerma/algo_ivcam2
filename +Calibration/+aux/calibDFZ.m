@@ -14,19 +14,33 @@ imv = im(Utils.indx2col(size(im),[N N]));
 bd = vec(isnan(im));
 im(bd)=nanmedian_(imv(:,bd));
 
+imz = double(d.z);
+imz(imz==0)=nan;
+N=3;
+imv = imz(Utils.indx2col(size(imz),[N N]));
+bd = vec(isnan(imz));
+imz(bd)=nanmedian_(imv(:,bd));
+d.z = imz;
+
 %calc RTD 
-[~,r] = Pipe.z16toVerts(d.z,regs);
+if ~regs.DEST.depthAsRange
+    [~,r] = Pipe.z16toVerts(d.z,regs);
+else
+    r = double(d.z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
+end
+
 [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
-C=r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
+C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
 rtd=r+sqrt(r.^2-C);
 rtd=rtd+regs.DEST.txFRQpd(1);
+
 
 %calc angles per pixel
 [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
 [angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
 
 %xy2ang verification
-[~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
+% [~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
 % assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
 % assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
 
@@ -34,21 +48,21 @@ rtd=rtd+regs.DEST.txFRQpd(1);
 [p,bsz] = detectCheckerboardPoints(normByMax(im)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
 it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
 
-%rtd,ohi,theta
+%rtd,phi,theta
 rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
 
 % Define optimization settings
-%%
-opt.maxIter=10000;
-opt.OutputFcn=[];
-opt.TolFun = 0.00025;
-opt.TolX = inf;
-opt.Display='none';
 
+% Only from here we can change params that affects the 3D calculation (like
+% baseline, gaurdband, ...
+% regs.DEST.baseline = single(40);
+% regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
+
+%%
 
 angXShift = 0;
 x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV angXShift]);
-% x0 = double([68.186935 52.944909 5153.491386 0.299999 -0.283499 angXShift])
+% x0 = double([63.51	60.76	50.80	0.64	0.44 0]);
 xL = [40 40 4000   -3 -3 -0];
 xH = [90 90 6000    3  3  0];
 regs = x2regs(x0,regs);
@@ -60,6 +74,12 @@ if eval
     return
 end
 printErrAndX(x0,e,eFit,'X0:',verbose)
+
+opt.maxIter=10000;
+opt.OutputFcn=[];
+opt.TolFun = 1e-6;
+opt.TolX = 1e-3;
+opt.Display='none';
 [xbest,~]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),x0,xL,xH,opt);
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(rpt,regs,x,0),xbest,xL,xH,opt);
 % [xbest,minerr]=fminsearch(@(x) errFunc(rpt,regs,x,0),x0,opt);
@@ -82,9 +102,13 @@ function [z,xF,yF] = rpt2z(rpt,rtlRegs)
 
 [~,~,xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
 rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-[sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
+[~,cosx,~,~,~,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
 r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-z = r.*cosw.*cosx;
+if rtlRegs.DEST.depthAsRange
+    z = r;
+else
+    z = r.*cosw.*cosx;
+end
 z = z * rtlRegs.GNRL.zNorm;
 end
 function [e,eFit]=errFunc(rpt,rtlRegs,X,verbose)
