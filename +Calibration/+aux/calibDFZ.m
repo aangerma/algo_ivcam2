@@ -1,4 +1,8 @@
 function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,verbose,eval,x0)
+% When eval == 1: Do not optimize, just evaluate. When it is not there,
+% train.
+
+
 if(~exist('eval','var'))
     eval=false;
 end
@@ -51,8 +55,8 @@ for i = 1:numel(darr)
     darr(i).angx = angx;
     darr(i).angy = angy;
     darr(i).rtd = rtd;
-    [~,~,~,darr(i).valid] = Calibration.aux.evalProjectiveDisotrtion(darr(i).i);
-
+    darr(i).valid = Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3));
+    
 end
 
 % Only from here we can change params that affects the 3D calculation (like
