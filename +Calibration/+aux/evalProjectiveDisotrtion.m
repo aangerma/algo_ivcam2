@@ -1,4 +1,4 @@
-function [e,s,d] = evalProjectiveDisotrtion(varargin)
+function [e,s,d,inliers] = evalProjectiveDisotrtion(varargin)
 if(nargin==1)
     im = varargin{1};
     % find checkboard corners
