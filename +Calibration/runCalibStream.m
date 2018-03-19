@@ -36,6 +36,7 @@ hw=HWinterface(fw);
 fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
+hw.runPresetScript('systemConfig');
 if(doInit)  
     fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
@@ -44,7 +45,7 @@ if(doInit)
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 end
-
+hw.runPresetScript('systemStart');
 
 setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
@@ -144,11 +145,10 @@ if(inrange(results.geomErrVal,calibParams.errRange.geomErrVal))
     fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
 else
     fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
-    score = 0;
-    return;
+
 end
 
-
+dbg.validImg = d;
 % % % %% ::calibrate gamma scale shift and lut::
 % % % [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,verbose);
 % % % fw.setRegs(gammaregs,fnCalib);
