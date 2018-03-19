@@ -37,7 +37,7 @@ classdef HWinterface <handle
         end
         
         function delete(obj)
-            obj.stopStream();
+            
             obj.m_dotnetcam.Close();
         end
         

@@ -1,15 +1,10 @@
-function [regs,errSlow,errFast] = runCalibChDelays(hw, internalFolder, verbose, debugOut)
+function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, debugFolder)
 
 if ~exist('verbose','var')
   verbose = false;  
 end
 
-if ~exist('debugOut','var')
-  debugOut = true;  
-end
-
-if (debugOut)
-    debugFolder = fullfile(internalFolder,filesep,'dbgDelays');
+if (exist('debugFolder','var') && ~isempty(debugFolder))
     mkdirSafe(debugFolder);
 else
     debugFolder = [];

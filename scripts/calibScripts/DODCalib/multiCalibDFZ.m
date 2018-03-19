@@ -1,8 +1,4 @@
-function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,verbose,eval,x0)
-% When eval == 1: Do not optimize, just evaluate. When it is not there,
-% train.
-
-
+function [outregs,minerr,eFit,darrNew]=multiCalibDFZ(darr,regs,verbose,eval,x0)
 if(~exist('eval','var'))
     eval=false;
 end
@@ -15,6 +11,7 @@ end
 
 
 for i = 1:numel(darr)
+    darr(i).sz = 30;
     % Get r from d.z
     if ~regs.DEST.depthAsRange
         [~,r] = Pipe.z16toVerts(darr(i).z,regs);
@@ -55,8 +52,8 @@ for i = 1:numel(darr)
     darr(i).angx = angx;
     darr(i).angy = angy;
     darr(i).rtd = rtd;
-    darr(i).valid = Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3));
-    
+    [~,~,~,darr(i).valid] = Calibration.aux.evalProjectiveDisotrtion(darr(i).i);
+
 end
 
 % Only from here we can change params that affects the 3D calculation (like

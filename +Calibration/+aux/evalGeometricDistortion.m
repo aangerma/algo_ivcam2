@@ -1,4 +1,4 @@
-function [e,e_dist,ptsOut]=evalGeometricDistortion(p,verbose)
+function [e,e_dist,ptsOut]=evalGeometricDistortion(p,d,verbose)
 %%
 tileSizeMM = 30;
 h=size(p,1);
@@ -7,12 +7,21 @@ p=p(:,:,1:3);
 [oy,ox]=ndgrid(linspace(-1,1,h)*(h-1)*tileSizeMM/2,linspace(-1,1,w)*(w-1)*tileSizeMM/2);
 ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
 xyzmes =reshape(p,[],3)';
+
+[~,fitP] = rigidFit(xyzmes,ptsOpt);
+diff = sqrt(sum((xyzmes-fitP).^2));
 valid = ~isnan(sum(xyzmes));
+% Remove outlier points when we are close to the right solution.
+if sum(diff<tileSizeMM/2)>=(w*h-h)
+    valid = logical(valid .* (diff<tileSizeMM/2));
+end
 distMat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
+valid = logical(valid.*d.valid'); % Add the validity map from undistort function.
 emat=abs(distMat(xyzmes(:,valid))-distMat(ptsOpt(:,valid)));
 e = mean(emat(:));
 ptsOut=[];
-[e_dist,fitP] = rigidFit(xyzmes,ptsOpt);
+[e_dist,fitP] = rigidFit(xyzmes(:,valid),ptsOpt(:,valid));
+
 if(exist('verbose','var') && verbose)
 %     subplot(131);
 %     imagesc(emat);
@@ -25,9 +34,15 @@ if(exist('verbose','var') && verbose)
     %     plotPlane(mdl);
 %     subplot(133);
     figure(190789)
-    plot3(xyzmes(1,:),xyzmes(2,:),xyzmes(3,:),'ro',fitP(1,:),fitP(2,:),fitP(3,:),'g.');
-    xlabel('x'),ylabel('y'),zlabel('z'),title('Checkerboard Points in 3D')
-    legend({'Measurements' 'Reference'})
+    tabplot;
+    plot3(xyzmes(1,valid),xyzmes(2,valid),xyzmes(3,valid),'ro',fitP(1,:),fitP(2,:),fitP(3,:),'g.',xyzmes(1,logical(1-valid)),xyzmes(2,logical(1-valid)),xyzmes(3,logical(1-valid)),'bo');
+    titlestr = sprintf('Checkerboard Points in 3D.\n eGeom = %.2f. Invalid#=%d',e,sum(1-valid));
+    xlabel('x'),ylabel('y'),zlabel('z'),title(titlestr)
+    if sum(1-valid)> 1
+        legend({'Measurements' 'Reference','Invalids'})
+    else
+        legend({'Measurements' 'Reference'})
+    end
     drawnow;
     axis equal
 end

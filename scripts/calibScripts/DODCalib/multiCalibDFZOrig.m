@@ -1,27 +1,22 @@
-function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,verbose,eval,x0)
-% When eval == 1: Do not optimize, just evaluate. When it is not there,
-% train.
-
-
+function [outregs,minerr,eFit,darrNew]=multiCalibDFZOrig(darr,regs,verbose,eval,x0)
 if(~exist('eval','var'))
     eval=false;
 end
 if(~exist('verbose','var'))
     verbose=true;
 end 
-if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
+if(~exist('x0','var'))
     x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV]);
 end 
-
-
+warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
 for i = 1:numel(darr)
-    % Get r from d.z
+    
     if ~regs.DEST.depthAsRange
         [~,r] = Pipe.z16toVerts(darr(i).z,regs);
     else
         r = double(darr(i).z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
     end
-    % get rtd from r
+
     [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
     C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
     rtd=r+sqrt(r.^2-C);
@@ -45,34 +40,80 @@ for i = 1:numel(darr)
         [angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
     end
 
-    %find CB points
-    warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-    [p,bsz] = detectCheckerboardPoints(normByMax(darr(i).i)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-    it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
 
+    
+
+    %xy2ang verification
+    % [~,~,xF,yF]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
+    % assert(max(vec(abs(xF-xg)))<0.1,'xy2ang invertion error')
+    % assert(max(vec(abs(yF-yg)))<0.1,'xy2ang invertion error')
+
+    %find CB points
+    [p,bsz] = detectCheckerboardPoints(normByMax(darr(i).i)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+%     if size(p,1) > 150
+%         p = reshape(p,[bsz-1,2]);
+%         p = (p(1:end-1,1:end-1,:)+p(2:end,2:end,:))*0.5;
+%         it = @(k) interp2(xg,yg,k,p(:,:,1),p(:,:,2)); % Used to get depth and ir values at checkerboard locations.
+%     else
+    it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
+%     end
+    
+    
+    
     %rtd,phi,theta
     darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
     darr(i).angx = angx;
     darr(i).angy = angy;
     darr(i).rtd = rtd;
-    darr(i).valid = Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3));
     
+    % From white squares
+    % 1. find corners, get z at corners, from it calculate the R and RTD. And then feed to the optimization. 
+%     assert(~regs.DIGG.sphericalEn);
+%     regs.DEST.depthAsRange = 0;
+%     [z,~,~,~]=Pipe.DEST.rtd2depth(rtd-regs.DEST.txFRQpd(1),regs);
+%     regs.DEST.depthAsRange = 1;
+%     itFromWhiteSquares = @(k) interpFromWhite(darr(i).i,k,1/8);
+%     
+%     [~,cosx,~,~,~,cosw,sing]=Pipe.DEST.getTrigo(size(z),regs);
+%     zCB = itFromWhiteSquares(z);
+%     rCB = zCB./(it(cosx).*it(cosw));
+%     C=2*rCB*regs.DEST.baseline.*it(sing)- regs.DEST.baseline2;
+%     rtd=rCB+sqrt(rCB.^2-C);
+%     rtd=rtd+regs.DEST.txFRQpd(1);
+%     darr(i).rpt=cat(3,rtd,it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+
 end
+% calc the delay by optimization:
+
+
+
 
 % Only from here we can change params that affects the 3D calculation (like
-% baseline, gaurdband, ... TODO: remove this line when the init script has
-% baseline of 30. 
+% baseline, gaurdband, ...
 regs.DEST.baseline = single(30);
 regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
+
+
+% x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV 0 0]);
+% x0 = double([63.02 60.18 5073.33 0.65 0.68 0 0 ]); %eGeom BL 40
+% x0 = double([59.30 56.62 5014.69 0.77 0.78 -0.00 -0.00]); %efit BL 40
+% x0 = double([62.66 59.85 5067.85 1.13 0.76 -0.00 -0.00]); %eGeom BL 30 from Corners
+% x0 = double([63.43 60.62 5079.24 0.99 0.69 -0.00 -0.00]); %eGeom BL 30 from Corners (different starting point)
+% x0 = double([64.89 62.13 5104.42 1.42 0.54 -0.00 -0.00]); %eGeom BL 30 from Corners Joined sizes
+% x0 = double([62.75 59.89 5073.15 1.19 0.77 -0.00 -0.00]); % eGeom BL 30 from white
+% x0 = double([62.88 60.34 5068.11 1.01 1.23 -0.00 -0.00]); % eGeom BL 30 from Corners from image 24 
+% x0 = double([64.32 61.49 5081.62 2.15 0.36 0 0]); % eGeom BL 30 from Corners from training large images.
+% x0 = double([64.68 61.84 5090.45 1.88 0.43 -17.32 -31.63 ]);
 xL = [40 40 4000   -3 -3];
 xH = [90 90 6000    3  3];
 regs = x2regs(x0,regs);
+
 if eval 
-    [minerr,eFit]=errFunc(darr,regs,x0,verbose);
+    [e,eFit]=errFunc(darr,regs,x0,verbose);
     outregs = [];
-    darrNew = [];
+    minerr = e;
     return
 end
 [e,eFit]=errFunc(darr,regs,x0,0);
@@ -82,13 +123,16 @@ printErrAndX(x0,e,eFit,'X0:',verbose)
 opt.maxIter=10000;
 opt.OutputFcn=[];
 opt.TolFun = 1e-6;
-opt.TolX = 1e-6;
+opt.TolX = 1e-3;
 opt.Display='none';
 [xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),x0,xL,xH,opt);
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),xbest,xL,xH,opt);
+% [xbest,minerr]=fminsearch(@(x) errFunc(darr,regs,x,0),x0,opt);
+
 outregs = x2regs(xbest,regs);
 [e,eFit]=errFunc(darr,outregs,xbest,verbose);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
+
 %% Do it for each in array
 if nargout > 3
     darrNew = darr;
@@ -100,9 +144,6 @@ if nargout > 3
 %         darrNew(i).c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
     end
 end
-
-
-
 end
 
 
@@ -121,7 +162,7 @@ z = z * rtlRegs.GNRL.zNorm;
 end
 function [e,eFit]=errFunc(darr,rtlRegs,X,verbose)
 %build registers array
-% X(3) = 4981;
+
 rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
@@ -141,9 +182,10 @@ for i = 1:numel(darr)
     v=cat(3,x,y,z);
 
 
-    [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d,verbose);
+    [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d.sz,verbose);
     
 end
+tmp = eFit;
 eFit = mean(eFit);
 e = mean(e);
 end

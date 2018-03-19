@@ -6,7 +6,7 @@ calibParams.version = 001.001;
 calibParams.errRange.delayF = [2.5 5.0];
 calibParams.errRange.delayS = [2.5 5.0];
 calibParams.errRange.geomErr = [2.0 5.0];
-calibParams.errRange.geomErrVal = [2.0 5.0];
+calibParams.errRange.geomErrVal = [2.0 10.0];
 calibParams.errRange.gammaErr = [0 5000];
 
 inrange =@(x,r)  x<r(2);
@@ -33,7 +33,7 @@ fprintff('Loading Firmware...');
 fw = Pipe.loadFirmware(internalFolder);
 hw=HWinterface(fw);
 
-fw.get();%run autogen
+[regs,luts]=fw.get();%run autogen
 
 if(doInit)  
     fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
@@ -44,10 +44,10 @@ if(doInit)
 end
 fprintff('Done(%d)\n',round(toc(t)));
 
-
+setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
-[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, internalFolder, verbose);
+[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw,  verbose);
 
 if(inrange(results.delayS,calibParams.errRange.delayS))
     fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
@@ -82,13 +82,24 @@ fw.setRegs(delayRegs,fnCalib);
 % % %     hw.shadowUpdate();
 % % % end
 
-nIters = 5;
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 
-[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.runDODCalib(hw,verbose,nIters);
+hw.setReg('DESTdepthAsRange',true);
+hw.setReg('DIGGsphericalEn',true);
+hw.shadowUpdate();
+regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+d=hw.getFrame(120);
+dodluts=struct;
+[dodregs,dodluts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(d,regs,luts,verbose);
+hw.setReg('DESTdepthAsRange',false);
+hw.setReg('DIGGsphericalEn',false);
+hw.shadowUpdate();
+
 fw.setRegs(dodregs,fnCalib);
-fw.setLut(luts);
+fw.setLut(dodluts);
+% [regs,luts]=fw.get();%run autogen
+
 
 if(inrange(results.geomErr,calibParams.errRange.geomErr))
     fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
@@ -102,14 +113,14 @@ fprintff('Done(%d)\n',round(toc(t)));
 
 fprintff('Validating...\n');
 %validate
-regsDODnames='DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|DIGGundist';
 
 fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
-fw.get();%run autogen
-fw.genMWDcmd(regsDODnames,fnAlgoTmpMWD);
+[regs,luts]=fw.get();%run autogen
+fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
 hw.runScript(fnAlgoTmpMWD);
 hw.shadowUpdate();
-[~,~,results.geomErrVal] = Calibration.aux.runDODCalib(hw,verbose,0);
+d=hw.getFrame(30);
+results.geomErrVal = calcGeometricDistortion(d,regs,verbose);
 %dodregs2 should be equal to dodregs
 
 
@@ -178,3 +189,11 @@ end
 
 end
 
+function setLaserProjectionUniformity(hw,uniformProjection)
+if(uniformProjection)
+hw.cmd('Iwb e2 03 01 1E');
+else
+    hw.cmd('Iwb e2 03 00 1E');
+end
+
+end

@@ -1,28 +1,45 @@
 function stlSaver
-%mcc -m stlSaver.m  -a ..\..\..\+Pipe\tables\*
+%mcc -m stlSaver.m  -a ..\..\..\+Pipe\tables\ -a ..\..\..\@Firmware\presetScripts
 wd = [cd filesep];
 stldir = [wd 'stl' filesep];
-rawdir = [wd 'raw' filesep];
-cfgfn = [wd 'config.csv'];
-fprintf('raw directory: %s\nstl directory %s\nconfiguration file:%s\n',stldir,rawdir,cfgfn);
+fns = dirFiles(wd,'*.csv');
+
+
 mkdirSafe(stldir);
-mkdirSafe(rawdir);
+
 fw=Firmware;
-fw.setRegs(cfgfn)
-regs = fw.get();
-while(true)
-    d=io.readZIC(rawdir);
-    for i=1:length(d)
-    stlfn=sprintf('%svertices_%04d.stl',stldir,d(i).index);
-    if(exist(stlfn,'file'))
-        continue;
-    end
-    v=Pipe.z16toVerts(d(i).z,regs);
-    stlwriteMatrix(stlfn,v(:,:,1),v(:,:,2),v(:,:,3),'color',d(i).i,'facetsDirUp',false);
-    fprintf('wrote %s\n',stlfn);
-    end
-    fprintf('.');
-    pause(1);
-    
+fprintf('stl directory %s\n csv files:\n',stldir);
+for i=1:length(fns)
+    fw.setRegs(fns{i});
+    fprintf('%s\n',fns{i});
 end
+hw = HWinterface(fw);
+regs = fw.get();
+f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
+maximizeFig(f);
+counter = 0;
+while(ishandle(f))
+    
+    while(get(f,'userdata')==1)
+        d = hw.getFrame();
+        sbuplot(121);
+        imagesc(d.z);
+        axis image;
+        sbuplot(122);
+        imagesc(d.i);
+        axis image;
+        drawnow;
+        
+    end
+    set(f,'userdata'==1);
+    
+    v=Pipe.z16toVerts(d.z,regs);
+    stlfn = sprintf('%sv%04d.stl',stldir,counter);
+    counter=counter+1;
+    stlwriteMatrix(stlfn,v(:,:,1),v(:,:,2),-v(:,:,3),'color',d.i,'facetsDirUp',true);
+    fprintf('wrote %s\n',stlfn);
+end
+
+
+
 end
