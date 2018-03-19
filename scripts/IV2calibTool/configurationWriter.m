@@ -92,7 +92,7 @@ end
 
 function writeMWD(d,fn)
 
-PL_SZ=510;
+PL_SZ=509;
 
 n = ceil(size(d,1)/PL_SZ);
 for i=0:n-1
