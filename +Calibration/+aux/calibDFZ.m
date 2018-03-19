@@ -102,7 +102,7 @@ if nargout > 3
 end
 
 
-
+outregs = x2regs(xbest);
 end
 
 
@@ -146,6 +146,7 @@ for i = 1:numel(darr)
 end
 eFit = mean(eFit);
 e = mean(e);
+
 end
 function printErrAndX(X,e,eFit,preSTR,verbose)
 if verbose 
@@ -161,22 +162,26 @@ function rtlRegs = x2regs(x,rtlRegs)
 
 iterRegs.FRMW.xfov=single(x(1));
 iterRegs.FRMW.yfov=single(x(2));
-iterRegs.FRMW.xres=rtlRegs.GNRL.imgHsize;
-iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
+iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
+iterRegs.FRMW.laserangleH=single(x(4));
+iterRegs.FRMW.laserangleV=single(x(5));
+if(~exist('rtlRegs','var'))
+    rtlRegs=iterRegs;
+    return;
+end
 iterRegs.FRMW.marginL=int16(0);
 iterRegs.FRMW.marginT=int16(0);
-
+iterRegs.FRMW.xres=rtlRegs.GNRL.imgHsize;
+iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
 iterRegs.FRMW.xoffset=single(0);
 iterRegs.FRMW.yoffset=single(0);
 iterRegs.FRMW.undistXfovFactor=single(1);
 iterRegs.FRMW.undistYfovFactor=single(1);
-iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
+
 iterRegs.DIGG.undistBypass = false;
 iterRegs.GNRL.rangeFinder=false;
 
 
-iterRegs.FRMW.laserangleH=single(x(4));
-iterRegs.FRMW.laserangleV=single(x(5));
 
 rtlRegs =Firmware.mergeRegs( rtlRegs ,iterRegs);
 
