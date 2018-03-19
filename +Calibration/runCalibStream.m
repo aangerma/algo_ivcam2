@@ -44,7 +44,7 @@ if(doInit)
 end
 fprintff('Done(%d)\n',round(toc(t)));
 
-
+setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
 [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw,  verbose);
@@ -89,15 +89,15 @@ hw.setReg('DESTdepthAsRange',true);
 hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
 regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
-d=hw.getFrame(30);
-[dodregs,luts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(d,regs,luts,verbose);
+d=hw.getFrame(120);
+dodluts=struct;
+[dodregs,dodluts.FRMW.undistModel,results.geomErr] = Calibration.aux.calibDFZ(d,regs,luts,verbose);
 hw.setReg('DESTdepthAsRange',false);
 hw.setReg('DIGGsphericalEn',false);
 hw.shadowUpdate();
 
-
 fw.setRegs(dodregs,fnCalib);
-fw.setLut(luts);
+fw.setLut(dodluts);
 % [regs,luts]=fw.get();%run autogen
 
 
@@ -113,11 +113,10 @@ fprintff('Done(%d)\n',round(toc(t)));
 
 fprintff('Validating...\n');
 %validate
-regsDODnames='DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|DIGGundist';
 
 fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
 [regs,luts]=fw.get();%run autogen
-fw.genMWDcmd(regsDODnames,fnAlgoTmpMWD);
+fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
 hw.runScript(fnAlgoTmpMWD);
 hw.shadowUpdate();
 d=hw.getFrame(30);
@@ -190,3 +189,11 @@ end
 
 end
 
+function setLaserProjectionUniformity(hw,uniformProjection)
+if(uniformProjection)
+hw.cmd('Iwb e2 03 01 1E');
+else
+    hw.cmd('Iwb e2 03 00 1E');
+end
+
+end
