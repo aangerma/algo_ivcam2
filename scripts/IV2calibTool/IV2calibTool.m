@@ -120,13 +120,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             % clear log
             app.logarea.Value = {''};
             
-            %fprintffS('Loading Firmware...',false);
-            %fw=Pipe.loadFirmware(configFldr);
-            %fprintffS('Done',true);
-            %fprintffS('Connecting HW interface...',false);
-            
-            
-            %fprintffS('Done',true);
+         
             
             try
                 Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value,app.VERSION);
