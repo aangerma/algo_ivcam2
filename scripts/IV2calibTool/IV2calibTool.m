@@ -1,7 +1,6 @@
 classdef IV2calibTool < matlab.apps.AppBase
-% \\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\IV2calibTool\
-%  mcc -m IV2calibTool.m -d  d:\temp\IV2calibTool\ -a ..\..\+Pipe\tables\* -a ..\..\+Calibration\targets\* -a ..\..\+Calibration\initScript\* -a ..\..\@Firmware\presetScripts\* -a ..\..\@HWinterface\IVCam20Device\*
 
+%  
 
 
     % Properties that correspond to app components
