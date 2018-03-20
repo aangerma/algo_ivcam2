@@ -5,12 +5,12 @@ regs=fw.get();%force autogen
 
 v1=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(15));
 v2=bitand(bitshift(regs.DIGG.spare(1),0),uint32(15));
-filepostfix = sprintf('_ver_%02d_%02d.',v1,v2);
+filepostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
 
 
 %calibration  output spcript
 regs2write='DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|DIGGundist[^?=Model]+|EXTLconLoc';
-d=fw.getAddrData(regs2write);
+d=fw.getAddrData(regs2write)';
 fid = fopen(fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']),'w');
 fprintf(fid,'mwd %08x %08x // %s\n',d{:});
 fclose(fid);
@@ -66,7 +66,6 @@ function s=getLUTdata(addrdata)
 
 %ALL SHOULD BE LITTLE ENDIAN
 data = [addrdata{:,2}];
-data = buffer(data,ceil(length(data)/4)*4)';
 addr = uint32(addrdata{1,1});
 
 touint8 = @(x,n)  vec((reshape(typecast(x,'uint8'),n,[])))';
@@ -92,11 +91,11 @@ end
 
 function writeMWD(d,fn)
 
-PL_SZ=509;
+PL_SZ=510;
 
 n = ceil(size(d,1)/PL_SZ);
 for i=0:n-1
-    fid = fopen(sprintf(strrep(fn,'\','\\'),i),'w');
+    fid = fopen(sprintf(strrep(fn,'\','\\'),i+1),'w');
     ibeg = i*PL_SZ+1;
     iend = min((i+1)*PL_SZ,size(d,1));
     di=d(ibeg:iend,:)';

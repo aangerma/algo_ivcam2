@@ -158,15 +158,15 @@ classdef HWinterface <handle
         
         function stopStream(obj)
             obj.m_dotnetcam.Close();
-
-             obj.runScript(obj.getPresetScript('reset'));
+            obj.runPresetScript('reset');
+            
 % obj.cmd(obj.getPresetScript('reset'));
 
         end
         
         function restartStream(obj)
-
-             obj.runScript(obj.getPresetScript('restart'));
+            obj.runPresetScript('restart');
+             
 %             obj.cmd(obj.getPresetScript('restart'));
             obj.privConfigureStream();
         end
@@ -176,7 +176,9 @@ classdef HWinterface <handle
             pause(0.1);
         end
         
- 
+        function res = runPresetScript(obj,scriptName)
+             res=obj.runScript(obj.getPresetScript(scriptName));
+        end
         
         function res = runScript(obj,fn)
 %                      sysstr = System.String(fn);
