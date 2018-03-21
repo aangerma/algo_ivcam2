@@ -43,7 +43,7 @@ classdef HWinterface <handle
         
         
       
-        
+        burn2device(boj,basedir);
         
         function obj = HWinterface(fw)
             if(nargin==0)

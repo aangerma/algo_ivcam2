@@ -1,7 +1,6 @@
-function configurationWriter(algoFldr,outputFldr)
+function writeFirmwareFiles(obj,outputFldr)
 mkdirSafe(outputFldr);
-fw=Pipe.loadFirmware(algoFldr);
-regs=fw.get();%force autogen
+regs=obj.get();%force autogen
 
 v1=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(15));
 v2=bitand(bitshift(regs.DIGG.spare(1),0),uint32(15));
@@ -10,7 +9,7 @@ filepostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
 
 %calibration  output spcript
 regs2write='EXTL|DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|DIGGundist[^?=Model]+|EXTLconLoc';
-d=fw.getAddrData(regs2write)';
+d=obj.getAddrData(regs2write)';
 fid = fopen(fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']),'w');
 fprintf(fid,'mwd %08x %08x // %s\n',d{:});
 fclose(fid);
@@ -18,7 +17,7 @@ fclose(fid);
 %configuration
 
 configregs2write=['^(?!' regs2write '|JFILdnn|JFILinn|STAT|FRMW|DCORtmpltCrse|DCORtmpltFine|DIGGundistModel).'];
-d=fw.getAddrData(configregs2write);
+d=obj.getAddrData(configregs2write);
 writeMWD(d,fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' filepostfix 'txt']));
 % fid = fopen(fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_1_ConfigData' filepostfix 'txt']),'w');
 % fprintf(fid,'mwd %08x %08x // %s\n',d{:});
@@ -26,40 +25,40 @@ writeMWD(d,fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_Con
 
 
 fid = fopen(fullfile(outputFldr,filesep,['DIGG_Gamma_Info_CalibInfo' filepostfix 'bin']),'w');
-fwrite(fid,getLUTdata(fw.getAddrData('DIGGgamma_')),'uint8');
+fwrite(fid,getLUTdata(obj.getAddrData('DIGGgamma_')),'uint8');
 fclose(fid);
 
-% d=fw.getAddrData('DIGGundistModel');
-% writeLUTbin(d,fullfile(outputFldr,filesep,['DIGG_Undist_%d_Info_CalibInfo' filepostfix 'bin']));
+ d=obj.getAddrData('DIGGundistModel');
+ writeLUTbin(d,fullfile(outputFldr,filesep,['DIGG_Undist_%d_Info_CalibInfo' filepostfix 'bin']));
 
-d=fw.getAddrData('DCORtmpltCrse');
+d=obj.getAddrData('DCORtmpltCrse');
 writeLUTbin(d,fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' filepostfix 'bin']));
 
-d=fw.getAddrData('DCORtmpltFine');
+d=obj.getAddrData('DCORtmpltFine');
 writeLUTbin(d,fullfile(outputFldr,filesep,['DCOR_fml_%d_Info_ConfigInfo' filepostfix 'bin']));
 
-
-%-------------------------INTERNALS-----------------------------------------
-fid = fopen(fullfile(algoFldr,filesep,'algoCalibMWD.txt'),'w');
-fprintf(fid,fw.genMWDcmd('.'));
-fclose(fid);
-
-
-%JFILbypass scripts
-fid = fopen(fullfile(algoFldr,filesep,'algoJFILconfigMWD.txt'),'w');
-fprintf(fid,fw.genMWDcmd('JFIL.+bypass'));
-fclose(fid);
-
-%set conLocRegs
-fid = fopen(fullfile(algoFldr,filesep,'algoConLocConfigMWD.txt'),'w');
-fprintf(fid,fileread(fw.getPresetScript('reset')));
-fprintf(fid,'\n');
-
-fprintf(fid,fw.genMWDcmd('EXTLconloc'));
-fprintf(fid,'\n');
-
-fprintf(fid,fileread(fw.getPresetScript('restart')));
-fclose(fid);
+% 
+% %-------------------------INTERNALS-----------------------------------------
+% fid = fopen(fullfile(algoFldr,filesep,'algoCalibMWD.txt'),'w');
+% fprintf(fid,obj.genMWDcmd('.'));
+% fclose(fid);
+% 
+% 
+% %JFILbypass scripts
+% fid = fopen(fullfile(algoFldr,filesep,'algoJFILconfigMWD.txt'),'w');
+% fprintf(fid,obj.genMWDcmd('JFIL.+bypass'));
+% fclose(fid);
+% 
+% %set conLocRegs
+% fid = fopen(fullfile(algoFldr,filesep,'algoConLocConfigMWD.txt'),'w');
+% fprintf(fid,fileread(obj.getPresetScript('reset')));
+% fprintf(fid,'\n');
+% 
+% fprintf(fid,obj.genMWDcmd('EXTLconloc'));
+% fprintf(fid,'\n');
+% 
+% fprintf(fid,fileread(obj.getPresetScript('restart')));
+% fclose(fid);
 
 end
 function s=getLUTdata(addrdata)

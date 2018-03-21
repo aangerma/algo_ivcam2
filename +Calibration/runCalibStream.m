@@ -36,7 +36,7 @@ hw=HWinterface(fw);
 fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
-hw.runPresetScript('systemConfig');
+% hw.runPresetScript('systemConfig');
 if(doInit)  
     fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
@@ -45,7 +45,7 @@ if(doInit)
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 end
-hw.runPresetScript('systemStart');
+% hw.runPresetScript('systemStart');
 
 setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::

@@ -22,6 +22,8 @@ classdef Firmware < FirmwareBase
     end
     methods (Access=public)
         
+        writeFirmwareFiles(obj,outputFldr);
+            
         function obj = Firmware()
         
             fwFolder = fileparts(fileparts(mfilename('fullpath')));
