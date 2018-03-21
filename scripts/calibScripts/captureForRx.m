@@ -11,7 +11,7 @@ NT = 15;
 Depths = {};
 IRs = {};
 
-iCapture = 0;
+iCapture = 1;
 while (true)
     showTarget(hw);
     
@@ -29,16 +29,16 @@ while (true)
     depth = median(depths, 1);
     ir = median(irs, 1);
     
-    irFilename = sprintf('frame_%03d_ir.bini', iCapture);
+    irFilename = sprintf('frame_%03d.bini', iCapture);
     irFullpath = fullfile(folder, filesep, irFilename);
     io.writeBin(irFullpath, ir);
 
-    dFilename = sprintf('frame_%03d_d.binz', iCapture);
+    dFilename = sprintf('frame_%03d.binz', iCapture);
     irFullpath = fullfile(folder, filesep, dFilename);
     io.writeBin(irFullpath, depth);
     
-    Depths{i} = depth;
-    IRs{i} = ir;
+    Depths{iCapture} = depth;
+    IRs{iCapture} = ir;
     save(fullfile(folder, filesep, 'captures.mat'), 'Depths', 'IRs');
     
     iCapture = iCapture + 1;
