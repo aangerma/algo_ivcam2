@@ -20,8 +20,8 @@ EXTLdsmYscale   f3600
 EXTLdsmXoffset  f0.3500  
 EXTLdsmYoffset  f0.5500  
 
-EXTLconLocDelayFastC d29088
-EXTLconLocDelayFastF d4
-EXTLconLocDelaySlow  d104
+EXTLconLocDelayFastC h0070F8
+EXTLconLocDelayFastF d0
+EXTLconLocDelaySlow  h80000010
 
 DIGGspare_000 h0101

@@ -37,9 +37,11 @@ hw.setReg('JFILupscalexyBypass',true);
 hw.setReg('JFILgammaBypass'    ,false);
 hw.shadowUpdate();
 
-initFastDelay = hex2dec('0000719A');
-initSlowDelay = 32;
+fw = hw.getFirmware();
+regs = fw.get();
 
+initFastDelay = double(regs.EXTL.conLocDelayFastC);
+initSlowDelay = 16;
 
 qScanLength = 1024;
 step=ceil(2*qScanLength/5);
@@ -49,7 +51,7 @@ delayFast = initFastDelay;
 hw.setReg('DESTaltIrEn'    ,true);
 hw.shadowUpdate();
 
-delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugFolder);
+%delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
@@ -57,7 +59,7 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugFolder);
+    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 4, 'fastFine', verbose, debugFolder);
 catch
     warning('fastFine failed');
 end
@@ -74,7 +76,7 @@ hw.shadowUpdate();
 delaySlow = initSlowDelay;
 step = 32;
 
-delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugFolder);
+%delaySlow = findBestDelay(hw, delaySlow, step, 6, 'slowCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
@@ -82,7 +84,7 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugFolder);
+    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 4, 'slowFine', verbose, debugFolder);
 catch
     warning('slowFine failed');
     errSlow = 1000; % in pixels
