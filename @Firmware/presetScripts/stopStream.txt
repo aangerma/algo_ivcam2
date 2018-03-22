@@ -1,0 +1,4 @@
+exec_table 144//stop stream 
+exec_table 145//dis FB
+exec_table 146//dis MEMS
+exec_table 147//dis MEMS drive

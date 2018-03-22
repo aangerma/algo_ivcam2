@@ -9,15 +9,21 @@ classdef Firmware < FirmwareBase
     methods (Access=private)
           function privLoadPresetScripts(obj)
             scriptsfldr=fullfile(fileparts(mfilename('fullpath')),'presetScripts');
+            if(exist(scriptsfldr,'dir'))
             fns=dirFiles(scriptsfldr,'*.txt',false);
             keys = cellfun(@(x) x(1:end-4),fns,'uni',0);
              vals = cellfun(@(x) fullfile(scriptsfldr,x),fns,'uni',0);
-        
+            else
+                keys={};
+                vals={};
+            end
             obj.m_presetScripts=containers.Map(keys,vals);
           end
     end
     methods (Access=public)
         
+        writeFirmwareFiles(obj,outputFldr);
+            
         function obj = Firmware()
         
             fwFolder = fileparts(fileparts(mfilename('fullpath')));

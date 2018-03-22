@@ -100,8 +100,8 @@ else
     end
     tF = (0:length(t)*64-1)*dt/64;
     
-    codevec = vec(fliplr(dec2bin(regs.FRMW.txCode(:),32))')=='1';
-    c = codevec(1:regs.GNRL.codeLength);
+
+    c = Utils.uint322bin(regs.FRMW.txCode,regs.GNRL.codeLength);
     c = vec(repmat(c(:),1,regs.GNRL.sampleRate)');
     % [yg,xg]=ndgrid(linspace(-1,1,size(im.zImg,1)),linspace(-1,1,size(im.zImg,2)));
     % yg = yg*double(regs.FRMW.yfov)/double(regs.FRMW.xfov);
@@ -546,6 +546,7 @@ elseif(ischar(inputData))
             patgenregs.EPTG.maxZ = single(1000);
             patgenregs.FRMW.xres = uint16(320);
             patgenregs.FRMW.yres = uint16(240);
+            patgenregs.FRMW.gaurdBandH = single(0);
             patgenregs.EPTG.frameRate = single(60);
             patgenregs.EPTG.noiseLevel=single(0);
             patgenregs.EPTG.sampleJitter=single(0);

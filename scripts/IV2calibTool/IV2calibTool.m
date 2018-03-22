@@ -1,11 +1,11 @@
 classdef IV2calibTool < matlab.apps.AppBase
-% mcc -m IV2calibTool.m -d \\ger\ec\proj\ha\perc\SA_3DCam\Ohad\share\IV2calibTool\ -a ..\..\+Pipe\tables\* -a .\res\*
 
-% \\invcam450\D\data\ivcam20\exp\20180204_MA
+%  
+
 
     % Properties that correspond to app components
     properties (Access = public)
-        VERSION = '1.0.0';
+        VERSION = '1.1';
         IV2calibrationtoolUIFigure      matlab.ui.Figure
         StartButton                     matlab.ui.control.Button
         OutputdirectortyEditFieldLabel  matlab.ui.control.Label
@@ -77,32 +77,7 @@ classdef IV2calibTool < matlab.apps.AppBase
 %             end
             
         end
-        
-        function  showTargetRequestFig(app, hw, imgfn, figTitle)
-            
-            f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
-            maximizeFig(f);
-            a(1)=subplot(121,'parent',f);
-            imagesc(imread(['./res/' imgfn '.png']),'parent',a(1));
-            axis(a(1),'image');
-            axis(a(1),'off');
-            colormap(gray(256));
-            title('Please insert calib target','parent',a(1));
-            a(2)=subplot(122);
-            
-            while(ishandle(f) && get(f,'userdata')==0)
-               
-                raw=hw.getFrame();
-                imagesc(raw.i);
-                axis(a(2),'image');
-                axis(a(2),'off');
-                title(figTitle);
-                colormap(gray(256));
-                drawnow;
-            end
-            close(f);
-            
-        end
+    
         
     end
     methods (Static=true,Access = private)
@@ -144,28 +119,21 @@ classdef IV2calibTool < matlab.apps.AppBase
             % clear log
             app.logarea.Value = {''};
             
-            %fprintffS('Loading Firmware...',false);
-            %fw=Pipe.loadFirmware(configFldr);
-            %fprintffS('Done',true);
-            %fprintffS('Connecting HW interface...',false);
-            
-            
-            %fprintffS('Done',true);
+         
             
             try
-                fprintffS('displaying image...');
-                hw=HWinterface();
-                app.showTargetRequestFig(hw, 'calibTarget','Adjust target such that the target edges appear within the image');
-                clear hw;
-                fprintffS('done\n');
                 Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value,app.VERSION);
                 %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
                 %TODO: add undist to the enire image
+                
                 configurationWriter(fullfile(app.Outputdirectorty.Value,filesep,'AlgoInternal'),app.Outputdirectorty.Value);
             catch e
                 fprintffS('');
                 fprintffS(sprintf('[!] ERROR:%s\n',e.message));
                 errordlg(e.message);
+                fid = fopen(sprintf('error_%s.log',datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
+                fprintf(fid,getReport(e));
+                fclose(fid);
             end
             fclose(app.m_logfid);
         end
