@@ -178,7 +178,7 @@ if verbose
 %     tabplot;
 %     imagesc(Il),title('I Black');
 % 
-%     % Normalize the image:
+%     Normalize the image:
 %     Iboard = I(minXY(2):maxXY(2),minXY(1):maxXY(1) );
 %     IboardNorm = (Iboard-Il)./(Ih-Il);
 %     tabplot;
@@ -205,12 +205,12 @@ if verbose
     subplot(121)
     plot([source,dest],'-o'),title('Intensity per black square - Corrected')
     legend({'Ivcam','IvcamCorrected'},'location','northwest');
-    axis([0 50 0 4095])
+    axis([0 50 0 255])
     
     subplot(122)
     plot(source,dest,'-o'),xlabel('Corrected IVCAM IR values'), ylabel('Desired IVCAM IR values'), title('IR Transformation Map')
-    legend({'Ivcam','IvcamCorrected'},'location','northwest');
-    axis([0 4095 0 4095])
+    
+    axis([0 255 0 255])
     axis equal
 end
 
@@ -285,10 +285,10 @@ function cP = centerPoints(squares)
 cP = [mean(squares(:,1:2:end),2),mean(squares(:,2:2:end),2)];
 end
 
-function avgD = readAvgFrame(hw,N)
-for i = 1:N
+function avgD = readAvgFrame(hw,K)
+for i = 1:K
    stream(i) = hw.getFrame(); 
-   im = bitshift(double(stream(i).i)+double(stream(i).c)*2^8,-4)*2^4;
+   im = uint16(stream(i).i)+bitshift(uint16(stream(i).c),8);
    im(im==0)=nan;
    N=3;
    imv = im(Utils.indx2col(size(im),[N N]));
