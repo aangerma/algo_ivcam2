@@ -26,9 +26,14 @@ while (true)
         depths(i,:,:) = fillHolesMM(frame.d);
     end
     
-    depth = median(depths, 1);
-    ir = median(irs, 1);
+    depths = double(sort(depths, 1));
+    depths = double(depths(4:end-3,:,:));
+    depth = cast(squeeze(mean(depths, 1)), 'uint16');
     
+    irs = double(sort(irs, 1));
+    irs = double(irs(4:end-3,:,:));
+    ir = cast(squeeze(mean(irs, 1)), 'uint16');
+        
     irFilename = sprintf('frame_%03d.bini', iCapture);
     irFullpath = fullfile(folder, filesep, irFilename);
     io.writeBin(irFullpath, ir);
