@@ -58,7 +58,7 @@ end
 resultTable = zeros(18,7);
 resultTable(1:2:end,:) = [squeeze(mean(xRes,2)),mean(eVal,2),mean(eTest,2)]; 
 resultTable(2:2:end,:) = [squeeze(std(xRes,[],2)),std(eVal,[],2),std(eTest,[],2)]; 
-
+results.Singles = resultTable;
 %% Now take for each combination of distances (6 combinations) 10  random pairs of  images and evaluate them.
 xRes  = zeros(6,10,5);
 eVal  = zeros(6,10);
@@ -89,7 +89,7 @@ resultTable(1:2:end,:) = [squeeze(mean(xRes,2)),mean(eVal,2),mean(eTest,2)];
 resultTable(2:2:end,:) = [squeeze(std(xRes,[],2)),std(eVal,[],2),std(eTest,[],2)]; 
 
 
-
+results.pairs = resultTable;
 %% Now take triplets. 1 from each distance. Take 20 triplets.
 xRes  = zeros(20,5);
 eVal  = zeros(20,1);
@@ -119,3 +119,15 @@ end
 resultTable = zeros(2,7);
 resultTable(1:2:end,:) = [squeeze(mean(xRes)),mean(eVal(:,1)),mean(eTest(:,1))]; 
 resultTable(2:2:end,:) = [squeeze(std(xRes,[],1)),std(eVal(:,1)),std(eTest(:,1))]; 
+results.Triplets = resultTable;
+%% Load the headache targets. Use them for training and test on the regular 45 targets.
+load(fullfile(recordspath,'d_headache','darr.mat'));
+dache = darr;
+tabplot; imagesc(dache(1).i)
+dache(1).sz = 5.1;
+[regsTrain,eTrain,eFitTrain] = multiCalibDFZ(dache(1),regs,1,0);
+xBest = double([regsTrain.FRMW.xfov regsTrain.FRMW.yfov regsTrain.DEST.txFRQpd(1) regsTrain.FRMW.laserangleH regsTrain.FRMW.laserangleV]);
+[~,eVal,eFitVal] = multiCalibDFZ(darr_train,regs,0,1,xBest);
+[~,eTest,eFitTest] = multiCalibDFZ(darr_test,regs,0,1,xBest);
+% eVal is 1.3471
+% eTest is 2.2529

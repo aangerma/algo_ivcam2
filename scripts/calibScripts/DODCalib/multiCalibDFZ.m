@@ -1,4 +1,7 @@
 function [outregs,minerr,eFit,darrNew]=multiCalibDFZ(darr,regs,verbose,eval,x0)
+
+% Lazer power should be constant so the tx delay is constant across the
+% image: Iwb e2 03 01 1E
 if(~exist('eval','var'))
     eval=false;
 end
@@ -11,7 +14,6 @@ end
 
 
 for i = 1:numel(darr)
-    darr(i).sz = 30;
     % Get r from d.z
     if ~regs.DEST.depthAsRange
         [~,r] = Pipe.z16toVerts(darr(i).z,regs);
@@ -52,8 +54,9 @@ for i = 1:numel(darr)
     darr(i).angx = angx;
     darr(i).angy = angy;
     darr(i).rtd = rtd;
-    [~,~,~,darr(i).valid] = Calibration.aux.evalProjectiveDisotrtion(darr(i).i);
-
+    darr(i).valid = Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3));
+      
+    
 end
 
 % Only from here we can change params that affects the 3D calculation (like
