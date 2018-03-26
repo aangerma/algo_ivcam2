@@ -2,13 +2,13 @@ function [score,dbg]=runCalibStream(outputFolder,doInit,fprintff,verbose,calibVe
 t=tic;
 
 %% ::caliration configuration
-calibParams.errRange.delayF =  5.0;
-calibParams.errRange.delayS =  5.0;
-calibParams.errRange.geomErr =  5.0;
-calibParams.errRange.geomErrVal =  10.0;
-calibParams.errRange.gammaErr =  5000;
+calibParams.errRange.delayF =  [0.5 3.0];
+calibParams.errRange.delayS =  [0.5 3.0];
+calibParams.errRange.geomErr = [0.5 3.0];
+calibParams.errRange.geomErrVal =  [0.5 3.0];
+calibParams.errRange.gammaErr =  [1 5000];
+inrange =@(x,r)  x<r(2);
 
-inrange =@(x,r)  x<r;
 results = struct;
 
 
@@ -181,10 +181,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 f = fieldnames(results);
 scores=zeros(length(f),1);
 for i = 1:length(f)
-    %scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
-   
-    
-
+    scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
 end
 score = min(scores);
 
