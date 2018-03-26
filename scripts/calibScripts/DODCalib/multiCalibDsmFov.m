@@ -1,4 +1,4 @@
-function [outregs,minerr,eFit,darrNew]=multiCalibDFZ(darr,regs,verbose,eval,x0)
+function [outregs,eProj,xbest]=multiCalibDsmFov(darr,regs,verbose,eval,x0)
 
 % Lazer power should be constant so the tx delay is constant across the
 % image: Iwb e2 03 01 1E
@@ -9,7 +9,7 @@ if(~exist('verbose','var'))
     verbose=true;
 end 
 if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
-    x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV]);
+    x0 = double([regs.FRMW.xfov regs.FRMW.yfov 0 0 0 0]);
 end 
 
 
@@ -63,19 +63,18 @@ end
 % baseline of 30. 
 regs.DEST.baseline = single(30);
 regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
-
+regs.FRMW.gaurdBandV = single(0);
 %%
-xL = [40 40 4000   -0 -0];
-xH = [90 90 6000    0  0];
+xL = [40 40 -1000 -1000  0 0 ];
+xH = [90 90 1000  1000   0  0 ];
 regs = x2regs(x0,regs);
 if eval 
-    [minerr,eFit]=errFunc(darr,regs,x0,verbose);
+    eProj=errFunc(darr,regs,x0,verbose);
     outregs = [];
-    darrNew = [];
     return
 end
-[e,eFit]=errFunc(darr,regs,x0,0);
-printErrAndX(x0,e,eFit,'X0:',verbose)
+[eProj]=errFunc(darr,regs,x0,0);
+printErrAndX(x0,eProj,'X0:',verbose)
 
 % Define optimization settings
 opt.maxIter=10000;
@@ -86,8 +85,8 @@ opt.Display='none';
 [xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),x0,xL,xH,opt);
 [xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),xbest,xL,xH,opt);
 outregs = x2regs(xbest,regs);
-[e,eFit]=errFunc(darr,outregs,xbest,verbose);
-printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
+eProj=errFunc(darr,outregs,xbest,verbose);
+printErrAndX(xbest,eProj,'Xfinal:',verbose)
 %% Do it for each in array
 if nargout > 3
     darrNew = darr;
@@ -118,13 +117,12 @@ iterRegs.FRMW.xoffset=single(0);
 iterRegs.FRMW.yoffset=single(0);
 iterRegs.FRMW.undistXfovFactor=single(1);
 iterRegs.FRMW.undistYfovFactor=single(1);
-iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
 iterRegs.DIGG.undistBypass = false;
 iterRegs.GNRL.rangeFinder=false;
 
 
-iterRegs.FRMW.laserangleH=single(x(4));
-iterRegs.FRMW.laserangleV=single(x(5));
+iterRegs.FRMW.laserangleH=single(x(5));
+iterRegs.FRMW.laserangleV=single(x(6));
 
 rtlRegs =Firmware.mergeRegs( rtlRegs ,iterRegs);
 
@@ -148,41 +146,27 @@ else
 end
 z = z * rtlRegs.GNRL.zNorm;
 end
-function [e,eFit]=errFunc(darr,rtlRegs,X,verbose)
+function [e]=errFunc(darr,rtlRegs,X,verbose)
 %build registers array
 % X(3) = 4981;
 rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
-    [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,Logger(),[]);
+    [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2)+X(3),d.rpt(:,:,3)+X(4),rtlRegs,Logger(),[]);
     xF = xF*639/640;
     yF = yF*479/480;
 
-    rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-
-
-    [sinx,cosx,siny,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(xF,yF,rtlRegs);
-
-    r= (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-
-    z = r.*cosw.*cosx;
-    x = r.*cosw.*sinx;
-    y = r.*sinw;
-    v=cat(3,x,y,z);
-
-
-    [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d,verbose);
+    [e(i),~,~,~] = evalProjectiveDisotrtion([xF(:),yF(:)],size(xF));
+    
     
 end
-eFit = mean(eFit);
 e = mean(e);
 end
-function printErrAndX(X,e,eFit,preSTR,verbose)
+function printErrAndX(X,e,preSTR,verbose)
 if verbose 
     fprintf('%-8s',preSTR);
     fprintf('%4.2f ',X);
-    fprintf('eAlex: %.2f ',e);
-    fprintf('eFit: %.2f ',eFit);
+    fprintf('eProj: %.2f ',e);
     fprintf('\n');
 end
 end
