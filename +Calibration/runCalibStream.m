@@ -91,6 +91,7 @@ fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 
 
 regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+hw.setReg('JFILinvBypass',true);
 hw.setReg('DESTdepthAsRange',true);
 hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
