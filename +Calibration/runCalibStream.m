@@ -36,7 +36,7 @@ hw=HWinterface(fw);
 fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
-% hw.runPresetScript('systemConfig');
+hw.runPresetScript('systemConfig');
 if(doInit)  
     fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
@@ -45,7 +45,7 @@ if(doInit)
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 end
-% hw.runPresetScript('systemStart');
+hw.runPresetScript('startStream');
 
 setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
@@ -91,6 +91,7 @@ fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 
 
 regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+hw.setReg('JFILinvBypass',true);
 hw.setReg('DESTdepthAsRange',true);
 hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
@@ -169,6 +170,7 @@ fw.setRegs(verRegs,fnCalib);
 end
 
 fw.writeUpdated(fnCalib);
+
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 save(fullfile(internalFolder,'imData.mat'),'dbg');
 fprintff('Done(%d)\n',round(toc(t)));
@@ -179,7 +181,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 f = fieldnames(results);
 scores=zeros(length(f),1);
 for i = 1:length(f)
-    scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
+    %scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
    
     
 
@@ -200,16 +202,16 @@ if(verbose)
     
 end
 
-
+hw.runPresetScript('stopStream');
 
 
 end
 
 function setLaserProjectionUniformity(hw,uniformProjection)
 if(uniformProjection)
-hw.cmd('Iwb e2 03 01 1E');
+    hw.cmd('Iwb e2 03 01 93');
 else
-    hw.cmd('Iwb e2 03 00 1E');
+    hw.cmd('Iwb e2 03 01 13');
 end
 
 end

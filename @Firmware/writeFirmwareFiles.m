@@ -28,8 +28,8 @@ fid = fopen(fullfile(outputFldr,filesep,['DIGG_Gamma_Info_CalibInfo' filepostfix
 fwrite(fid,getLUTdata(obj.getAddrData('DIGGgamma_')),'uint8');
 fclose(fid);
 
- d=obj.getAddrData('DIGGundistModel');
- writeLUTbin(d,fullfile(outputFldr,filesep,['DIGG_Undist_%d_Info_CalibInfo' filepostfix 'bin']));
+d=obj.getAddrData('DIGGundistModel');
+writeLUTbin(d,fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' filepostfix 'bin']),1);
 
 d=obj.getAddrData('DCORtmpltCrse');
 writeLUTbin(d,fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' filepostfix 'bin']));
@@ -72,12 +72,17 @@ touint8 = @(x,n)  vec((reshape(typecast(x,'uint8'),n,[])))';
 s=[uint8(133) uint8(7) touint8(uint32(addr),4) touint8(uint16(length(data)),2) touint8(data,4)];
 end
 
-function ilast=writeLUTbin(d,fn)
+function ilast=writeLUTbin(d,fn,base)
+% Base allows to start the file indexing from a different place. Some tables
+% do not start from 0.
+if ~exist('base','var')
+    base = 0;
+end
 PL_SZ=4072*8/32;
 
 n = ceil(size(d,1)/PL_SZ);
 for i=0:n-1
-    fid = fopen(sprintf(strrep(fn,'\','\\'),i),'w');
+    fid = fopen(sprintf(strrep(fn,'\','\\'),i+base),'w');
     ibeg = i*PL_SZ+1;
     iend = min((i+1)*PL_SZ,size(d,1));
     fwrite(fid,getLUTdata(d(ibeg:iend,:)),'uint8');
