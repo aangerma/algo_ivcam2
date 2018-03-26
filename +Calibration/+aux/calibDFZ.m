@@ -55,7 +55,7 @@ for i = 1:numel(darr)
     darr(i).angx = angx;
     darr(i).angy = angy;
     darr(i).rtd = rtd;
-    darr(i).valid = ones(size(Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3)))));
+    darr(i).valid = ones(size(Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3))));
     
 end
 
@@ -126,7 +126,7 @@ rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
     [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,Logger(),[]);
-    xF = xF*(rtlRegs.FRMW.xfov-1)/rtlRegs.FRMW.xfov;
+    xF = xF*(rtlRegs.FRMW.xres-1)/rtlRegs.FRMW.xres;
     yF = yF*(rtlRegs.FRMW.yres-1)/rtlRegs.FRMW.yres;
 
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);

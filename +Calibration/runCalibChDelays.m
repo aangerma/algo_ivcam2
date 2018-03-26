@@ -1,14 +1,16 @@
-function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, debugFolder)
+function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, internalFolder)
 
 if ~exist('verbose','var')
   verbose = false;  
 end
 
-if (exist('debugFolder','var') && ~isempty(debugFolder))
+if (exist('internalFolder','var') && ~isempty(internalFolder))
+    debugFolder = fullfile(internalFolder,filesep,'dbgDelays');
     mkdirSafe(debugFolder);
 else
     debugFolder = [];
 end
+
 
 regs = [];
 errFast = 1000; % in pixels
@@ -59,7 +61,7 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 4, 'fastFine', verbose, debugFolder);
+    [delayFast, errFast] = findBestDelay(hw, delayFast, step, 2, 'fastFine', verbose, debugFolder);
 catch
     warning('fastFine failed');
 end
@@ -84,7 +86,7 @@ hw.shadowUpdate();
 
 step = 16;
 try
-    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 4, 'slowFine', verbose, debugFolder);
+    [delaySlow, errSlow] = findBestDelay(hw, delaySlow, step, 2, 'slowFine', verbose, debugFolder);
 catch
     warning('slowFine failed');
     errSlow = 1000; % in pixels

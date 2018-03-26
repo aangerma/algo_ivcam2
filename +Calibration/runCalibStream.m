@@ -51,7 +51,7 @@ setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
 showImageRequestDialog(hw,1,diag([.8 .8 1]));
 fprintff('Depth and IR delay calibration...\n');
-[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw,  verbose);
+[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, verbose, internalFolder);
 
 if(inrange(results.delayS,calibParams.errRange.delayS))
     fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
