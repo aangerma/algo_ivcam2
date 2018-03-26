@@ -54,7 +54,7 @@ if ~eval
 end
 %% Read All 24 images into a struct array. Train the DFZ on a all at once.
 
-[xoutTrain,eTrain,eFitTrain] = multiCalibDFZ(darr,regs,1,0);
+[xoutTrain,eTrain,eFitTrain,darrNew] = multiCalibDFZ(darr,regs,1,0);
 
 [xoutTrain2,eTrain2,eFitTrain2,darrNew2] = multiCalibDFZ(darrNew,xoutTrain,1,0);
 
@@ -119,3 +119,18 @@ imagesc(stdErr),title('Pairwise STD Errors'),colorbar
 
 save 'pairsResult.mat' 'meanErr' 'stdErr'
 
+%% Train on all singles and see std
+
+[xoutTrain,eTrain,xBest] = multiCalibDsmFov(darr,regs,1,0);   
+
+outregs = zeros(10,6);
+for i = 1:10
+    i
+    [regsTrain,err(i),xBest] = multiCalibDsmFov(darr(i),regs,1,0);   
+    outregs(i,:) = xBest;
+
+end
+
+mean(err), std(err)
+
+mean(outregs),std(outregs)
