@@ -126,8 +126,8 @@ rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
     [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,Logger(),[]);
-    xF = xF*(rtlRegs.FRMW.xres-1)/rtlRegs.FRMW.xres;
-    yF = yF*(rtlRegs.FRMW.yres-1)/rtlRegs.FRMW.yres;
+    xF = xF*double((rtlRegs.FRMW.xres-1))/double(rtlRegs.FRMW.xres);
+    yF = yF*double((rtlRegs.FRMW.yres-1))/double(rtlRegs.FRMW.yres);
 
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
 
