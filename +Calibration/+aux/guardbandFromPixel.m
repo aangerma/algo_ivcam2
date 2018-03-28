@@ -12,10 +12,10 @@ for gbnd = 0:0.0025:0.15
     [x,y] = xyForGuardband(angx,angy,gbnd,regs,axis);   
     if axis == 'H'
        source = x; 
-       target = single(1 + uint16(angx>0)*(regs.FRMW.xres-2));
+       target = single(0 + uint16(angx>0)*(regs.FRMW.xres));
     else
        source = y; 
-       target = single(1 + uint16(angy>0)*(regs.FRMW.yres-2));
+       target = single(0 + uint16(angy>0)*(regs.FRMW.yres));
     end
     
     if abs(source-target)<bestDiff

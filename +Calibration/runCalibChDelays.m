@@ -46,14 +46,15 @@ initFastDelay = double(regs.EXTL.conLocDelayFastC);
 initSlowDelay = 16;
 
 qScanLength = 1024;
-step=ceil(2*qScanLength/5);
+%step=ceil(2*qScanLength/5);
 delayFast = initFastDelay;
 
 % alternate IR : correlation peak from DEST 
 hw.setReg('DESTaltIrEn'    ,true);
 hw.shadowUpdate();
 
-%delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugFolder);
+step = 64;
+delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
@@ -131,7 +132,7 @@ for ic=1:10
         end
         
         hwCurrDelay = delays(i);
-        hwSetDelay(hw, delays(i), fast);
+        Calibration.aux.hwSetDelay(hw, delays(i), fast);
         
         frame = hw.getFrame();
         images{i} = double(frame.i);
@@ -187,37 +188,37 @@ for ic=1:10
 end
 
 if (hwCurrDelay ~= delay)
-    hwSetDelay(hw, delay, fast);
+    Calibration.aux.hwSetDelay(hw, delay, fast);
 end
 
 end
 
-function hwSetDelay(hw, delay, fast)
-
-%{
-//---------FAST-------------
-mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
-mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
-//--------SLOW-------------
-mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
-%}
-hw.stopStream();
-%pause(0.05);
-
-if (fast)
-    mod8 = mod(delay, 8);
-    hw.setReg('EXTLconLocDelayFastC', uint32(delay - mod8));
-    hw.setReg('EXTLconLocDelayFastF', uint32(mod8));
-else
-    hw.setReg('EXTLconLocDelaySlow', uint32(delay)+uint32(bitshift(1,31)));
-end
-
-hw.shadowUpdate();
-
-hw.restartStream();
-pause(0.2);
-
-end
+% function hwSetDelay(hw, delay, fast)
+% 
+% %{
+% //---------FAST-------------
+% mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
+% mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
+% //--------SLOW-------------
+% mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
+% %}
+% hw.stopStream();
+% %pause(0.05);
+% 
+% if (fast)
+%     mod8 = mod(delay, 8);
+%     hw.setReg('EXTLconLocDelayFastC', uint32(delay - mod8));
+%     hw.setReg('EXTLconLocDelayFastF', uint32(mod8));
+% else
+%     hw.setReg('EXTLconLocDelaySlow', uint32(delay)+uint32(bitshift(1,31)));
+% end
+% 
+% hw.shadowUpdate();
+% 
+% hw.restartStream();
+% pause(0.2);
+% 
+% end
 
 
 % function delay = run5SampleIterations(hw, baseDelay, step, iterType, verbose)

@@ -8,7 +8,6 @@ mwd a00d01f4 a00d01f8 00001ffd //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShado
 mwd a0010100 a0010104 1120003f //[m_regmodel.pmg_pmg.RegsPmgDepthEn] TYPE_REG
 mwd a00c0100 a00c0104 00000011 //[m_regmodel.pmg_dpt_pmg.RegsPmgDptEn] TYPE_REG
 
-// open anclk (afclk) (apbwf <omer_flows>/top_open_afclk_from_afe.txt)
 //mwd a003011c a0030120 00000001  //bgen
 //mwd a0030120 a0030124 00000009 //bg_trim
 //mwd a0030154 a0030158 00000001 //ldo en 
