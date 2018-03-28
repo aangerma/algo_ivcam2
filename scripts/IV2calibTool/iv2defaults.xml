@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
    <Outputdirectorty>D:\temp\ohad</Outputdirectorty>
+   <cb_verbose>true</cb_verbose>
+   <cb_init>false</cb_init>
+   <cb_DSM>true</cb_DSM>
+   <cb_gamma>true</cb_gamma>
+   <cb_coarseDataSync>true</cb_coarseDataSync>
+   <cb_fineDataSync>true</cb_fineDataSync>
+   <cb_DFZ>true</cb_DFZ>
 </struct>

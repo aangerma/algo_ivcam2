@@ -43,7 +43,7 @@ classdef HWinterface <handle
         
         
       
-        burn2device(boj,basedir);
+        burn2device(obj,basedir,burunConfiguration);
         
         function obj = HWinterface(fw)
             if(nargin==0)
@@ -61,7 +61,7 @@ classdef HWinterface <handle
             txt=obj.m_fw.getPresetScript(scriptname);
         end
         
-        function read(obj,regTokens)
+        function disp(obj,regTokens)
             if(~exist('regTokens','var'))
                 regTokens=[];
             end           
