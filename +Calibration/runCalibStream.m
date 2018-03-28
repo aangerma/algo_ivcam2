@@ -1,9 +1,9 @@
-function [score,dbg]=runCalibStream(params,fprintff)
+function [score,dbg]=runCalibStream(params, fprintff)
 t=tic;
 
 %% ::caliration configuration
-calibParams.errRange.delayF =  [0.5 3.0];
-calibParams.errRange.delayS =  [0.5 3.0];
+calibParams.errRange.delayF =  [0.5 4.0];
+calibParams.errRange.delayS =  [0.5 4.0];
 calibParams.errRange.geomErr = [0.5 3.0];
 calibParams.errRange.geomErrVal =  [0.5 3.0];
 calibParams.errRange.gammaErr =  [1 5000];
@@ -23,7 +23,7 @@ mkdirSafe(params.internalFolder);
 fnCalib     = fullfile(params.internalFolder,filesep,'calib.csv');
 fnUndsitLut = fullfile(params.internalFolder,filesep,'FRMWundistModel.bin32');
 initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
-copyfile(fullfile(initFldr,filesep,'*.csv'),params.internalFolder)
+copyfile(fullfile(initFldr,filesep,'*.csv'), params.internalFolder)
 
 %% ::Init fw
 fprintff('Loading Firmware...');
@@ -87,8 +87,9 @@ else
 end
 
 %% ::gamma::
+params.gamma = false;
 fprintff('gamma...\n');
-if(params.gamma)
+if (params.gamma)
     
     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,params.verbose);
     
@@ -222,7 +223,7 @@ if(params.verbose)
     
 end
 
-hw.runPresetScript('stopStream');
+%hw.runPresetScript('stopStream');
 
 
 if(params.burnCalibrationToDevice)

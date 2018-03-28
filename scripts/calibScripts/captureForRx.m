@@ -66,6 +66,7 @@ while(ishandle(f) && get(f,'userdata')==0)
     pos = [310 230 20 20]; 
     rectangle('Position',pos,'Curvature',[1 1], 'EdgeColor','r');
     axis equal
+    hold off;
     drawnow;
 end
 

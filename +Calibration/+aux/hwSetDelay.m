@@ -8,6 +8,8 @@ mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkR
 mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
 %}
 
+hw.runPresetScript('maReset');
+
 if (fast)
     mod8 = mod(delay, 8);
     hw.setReg('EXTLconLocDelayFastC', uint32(delay - mod8));
@@ -16,9 +18,9 @@ else
     hw.setReg('EXTLconLocDelaySlow', uint32(delay)+uint32(bitshift(1,31)));
 end
 
-%hw.shadowUpdate();
+hw.shadowUpdate();
 
-hw.runPresetScript('maReset');
+
 hw.runPresetScript('maRestart');
 
 pause(0.2);

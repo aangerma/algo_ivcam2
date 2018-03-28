@@ -1,18 +1,14 @@
-function [regs,errSlow,errFast] = runCalibChDelays(hw, verbose, internalFolder)
+function [regs,errSlow,errFast] = runCalibChDelays(hw, params)
 
-if ~exist('verbose','var')
-  verbose = false;  
-end
+verbose = params.verbose;
 
-if (exist('internalFolder','var') && ~isempty(internalFolder))
-    debugFolder = fullfile(internalFolder,filesep,'dbgDelays');
+if (params.debug)
+    debugFolder = fullfile(params.internalFolder, filesep, 'dbgDelays');
     mkdirSafe(debugFolder);
 else
     debugFolder = [];
 end
 
-
-regs = [];
 errFast = 1000; % in pixels
 errSlow = 1000; % in pixels
 
@@ -46,18 +42,19 @@ initFastDelay = double(regs.EXTL.conLocDelayFastC);
 initSlowDelay = 16;
 
 qScanLength = 1024;
-%step=ceil(2*qScanLength/5);
 delayFast = initFastDelay;
 
 % alternate IR : correlation peak from DEST 
 hw.setReg('DESTaltIrEn'    ,true);
+hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
 
-step = 64;
-delayFast = findBestDelay(hw, delayFast, step, 6, 'fastCoarse', verbose, debugFolder);
+step=ceil(2*qScanLength/10);
+%delayFast = findBestDelay(hw, delayFast, step, 4, 'fastCoarse', verbose, debugFolder);
 
 hw.setReg('JFILsort1bypassMode',uint8(0));
 hw.setReg('JFILsort2bypassMode',uint8(0));
+hw.setReg('DIGGsphericalEn',false);
 hw.shadowUpdate();
 
 step = 16;
@@ -150,11 +147,6 @@ for ic=1:10
         end
     end
     
-    minInd = minind(errors);
-    bestDelay = delays(minInd);
-    delay = bestDelay;
-    err = errors(minInd);
-    
     if (verbose)
         figure(11711); 
         ax=nan(1,R);
@@ -167,6 +159,11 @@ for ic=1:10
         title (sprintf('%s - step: %d', iterType, int32(step)));
         drawnow;
     end
+
+    minInd = minind(errors);
+    bestDelay = delays(minInd);
+    delay = bestDelay;
+    err = errors(minInd);
     
     switch minInd
         case 1
