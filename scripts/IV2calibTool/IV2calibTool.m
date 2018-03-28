@@ -17,7 +17,25 @@ classdef IV2calibTool < matlab.apps.AppBase
         logarea                         matlab.ui.control.TextArea
         verboseCheckBox                 matlab.ui.control.CheckBox
         doInitCheckBox                  matlab.ui.control.CheckBox
+        cb
         VersionLabel                    matlab.ui.control.Label
+    end
+    
+       methods (Static=true,Access = private)
+        function fn=defaultsFilename()
+            fn='iv2defaults.xml';
+        end
+        
+         
+        function v=getFieldRec(app,x)
+            ii=find(x=='.',1);
+            if(isempty(ii))
+                v=app.(x).Value;
+            else
+                v=IV2calibTool.getFieldRec(app.(x(1:ii-1)),x(ii+1:end));
+            end
+        end
+        
     end
     
     
@@ -26,11 +44,11 @@ classdef IV2calibTool < matlab.apps.AppBase
     end
     
     methods (Access = private)
-        
+       
         
         function saveDefaults(app)
-            fields2save={'Outputdirectorty'};
-            sinit=[fields2save;cellfun(@(x) app.(x).Value,fields2save,'uni',0)];
+            fields2save=['Outputdirectorty',strcat('cb.',fieldnames(app.cb))'];
+            sinit=[strrep(fields2save,'.','_');cellfun(@(x) IV2calibTool.getFieldRec(app,x),fields2save,'uni',0)];
             sinit(2,:)=cellfun(@(x) iff(isempty(x),[],x),sinit(2,:),'uni',0);
             s=struct(sinit{:});
             struct2xmlWrapper(s,app.defaultsFilename());
@@ -42,10 +60,13 @@ classdef IV2calibTool < matlab.apps.AppBase
             end
             s=xml2structWrapper(app.defaultsFilename());
             ff=fieldnames(s);
-            for fld=ff(:)'
-                if(~isempty(s.(fld{1})))
-                    app.(fld{1}).Value=s.(fld{1});
+            for fld_=ff(:)'
+                fld=fld_{1};
+                if(isempty(s.(fld)))
+                    return;
                 end
+                eval(sprintf('app.%s.Value=s.(fld);',strrep(fld,'_','.')));
+                
             end
             
         end
@@ -80,15 +101,7 @@ classdef IV2calibTool < matlab.apps.AppBase
     
         
     end
-    methods (Static=true,Access = private)
-        function fn=defaultsFilename()
-            fn='iv2defaults.xml';
-        end
-        
-        
-        
-    end
-    
+ 
     
     methods (Access = private)
         
@@ -119,14 +132,13 @@ classdef IV2calibTool < matlab.apps.AppBase
             % clear log
             app.logarea.Value = {''};
             
-         
-            
+            params=app.cb;
+            params.Outputdirectorty=app.Outputdirectorty.Value;
+            params.version=app.VERSION;
             try
-                Calibration.runCalibStream(app.Outputdirectorty.Value,app.doInitCheckBox.Value,fprintffS,app.verboseCheckBox.Value,app.VERSION);
-                %app.showTargetRequestFig(hw, 'undistCalib','Adjust target such that the target edges do not appear within the image');
-                %TODO: add undist to the enire image
-                
-                configurationWriter(fullfile(app.Outputdirectorty.Value,filesep,'AlgoInternal'),app.Outputdirectorty.Value);
+                %=======================================================RUN CALIBRATION=======================================================
+                Calibration.runCalibStream(params,fprintffS);
+               
             catch e
                 fprintffS('');
                 fprintffS(sprintf('[!] ERROR:%s\n',e.message));
@@ -147,61 +159,68 @@ classdef IV2calibTool < matlab.apps.AppBase
             
             % Create IV2calibrationtoolUIFigure
             app.IV2calibrationtoolUIFigure = uifigure();
+            sz=[640 440];
+            tg = uitabgroup('Parent',app.IV2calibrationtoolUIFigure,'position',[0 0 sz]);
+            configurationTab=uitab(tg,'Title','configuration');
+            advancedTab=uitab(tg,'Title','Advanced');
             app.IV2calibrationtoolUIFigure.Resize='off';
-            app.IV2calibrationtoolUIFigure.Position = [100 100 640 440];
+            app.IV2calibrationtoolUIFigure.Position = [100 100 sz];
             centerfig(app.IV2calibrationtoolUIFigure);
             app.IV2calibrationtoolUIFigure.Name = 'IV2 calibration tool';
             
 
 
             % Create StartButton
-            app.StartButton = uibutton(app.IV2calibrationtoolUIFigure, 'push');
+            app.StartButton = uibutton(configurationTab, 'push');
             app.StartButton.ButtonPushedFcn = createCallbackFcn(app, @StartButtonPushed, true);
             app.StartButton.FontWeight = 'bold';
             app.StartButton.Position = [1 309 640 52];
             app.StartButton.Text = 'Start';
             
             % Create OutputdirectortyEditFieldLabel
-            app.OutputdirectortyEditFieldLabel = uilabel(app.IV2calibrationtoolUIFigure);
+            app.OutputdirectortyEditFieldLabel = uilabel(configurationTab);
             app.OutputdirectortyEditFieldLabel.HorizontalAlignment = 'right';
-            app.OutputdirectortyEditFieldLabel.Position = [1 402 94 15];
+            app.OutputdirectortyEditFieldLabel.Position = [1 386 94 15];
             app.OutputdirectortyEditFieldLabel.Text = 'Output directorty';
             
             % Create Outputdirectorty
-            app.Outputdirectorty = uieditfield(app.IV2calibrationtoolUIFigure, 'text');
-            app.Outputdirectorty.Position = [110 398 486 22];
+            app.Outputdirectorty = uieditfield(configurationTab, 'text');
+            app.Outputdirectorty.Position = [110 380 486 22];
             
             % Create VersionLabel
-            app.VersionLabel = uilabel(app.IV2calibrationtoolUIFigure);
+            app.VersionLabel = uilabel(configurationTab);
             app.VersionLabel.HorizontalAlignment = 'left';
             app.VersionLabel.Position = [5 294 94 15];
             app.VersionLabel.Text = sprintf('version: %s',app.VERSION);
             
             
-         
-            
             % Create Button_3
-            app.Button_3 = uibutton(app.IV2calibrationtoolUIFigure, 'push');
+            app.Button_3 = uibutton(configurationTab, 'push');
             app.Button_3.ButtonPushedFcn = createCallbackFcn(app, @Button_3Pushed, true);
-            app.Button_3.Position = [606 398 21 22];
+            app.Button_3.Position = [606 380 21 22];
             app.Button_3.Text = '...';
             
             % Create logarea
-            app.logarea = uitextarea(app.IV2calibrationtoolUIFigure);
+            app.logarea = uitextarea(configurationTab);
             app.logarea.Editable = 'off';
             app.logarea.Position = [1 1 640 289];
             app.logarea.FontName='courier new';
               % Create verboseCheckBox
-            app.verboseCheckBox = uicheckbox(app.IV2calibrationtoolUIFigure);
-            app.verboseCheckBox.Text = 'verbose';
-            app.verboseCheckBox.Position = [110 368 486 22];
-            app.verboseCheckBox.Value = true;
+             
+              %checkboxes
+              cbnames = {'verbose','init','DSM','gamma','coarseSlowDataSync','fineSlowDataSync','coarseFastDataSync','fineFastDataSync','DFZ','validation','burnCalibrationToDevice'};
+              cbSz=[200 30];
+              ny = ceil(sz(2)/cbSz(2));
+              for i=1:length(cbnames)
+                  f=cbnames{i};
+                    app.cb.(f) = uicheckbox(advancedTab);
+                    app.cb.(f).Text = f;
+                    app.cb.(f).Position = [cbSz(1)*floor((i-1)/ny)+cbSz(2) cbSz(2)*(mod((ny-i),ny)-2) cbSz];
+                    app.cb.(f).Value = true;
 
-            app.doInitCheckBox = uicheckbox(app.IV2calibrationtoolUIFigure);
-            app.doInitCheckBox.Text = 'init';
-            app.doInitCheckBox.Position = [310 368 486 22];
-            app.doInitCheckBox.Value = false;
-
+                  
+              end
+    
             
             
             

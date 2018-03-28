@@ -37,28 +37,6 @@ writeLUTbin(d,fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' filepos
 d=obj.getAddrData('DCORtmpltFine');
 writeLUTbin(d,fullfile(outputFldr,filesep,['DCOR_fml_%d_Info_ConfigInfo' filepostfix 'bin']));
 
-% 
-% %-------------------------INTERNALS-----------------------------------------
-% fid = fopen(fullfile(algoFldr,filesep,'algoCalibMWD.txt'),'w');
-% fprintf(fid,obj.genMWDcmd('.'));
-% fclose(fid);
-% 
-% 
-% %JFILbypass scripts
-% fid = fopen(fullfile(algoFldr,filesep,'algoJFILconfigMWD.txt'),'w');
-% fprintf(fid,obj.genMWDcmd('JFIL.+bypass'));
-% fclose(fid);
-% 
-% %set conLocRegs
-% fid = fopen(fullfile(algoFldr,filesep,'algoConLocConfigMWD.txt'),'w');
-% fprintf(fid,fileread(obj.getPresetScript('reset')));
-% fprintf(fid,'\n');
-% 
-% fprintf(fid,obj.genMWDcmd('EXTLconloc'));
-% fprintf(fid,'\n');
-% 
-% fprintf(fid,fileread(obj.getPresetScript('restart')));
-% fclose(fid);
 
 end
 function s=getLUTdata(addrdata)

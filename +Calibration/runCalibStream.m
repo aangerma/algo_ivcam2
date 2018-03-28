@@ -1,4 +1,4 @@
-function [score,dbg]=runCalibStream(outputFolder,doInit,fprintff,verbose,calibVersion)
+function [score,dbg]=runCalibStream(params,fprintff)
 t=tic;
 
 %% ::caliration configuration
@@ -11,18 +11,16 @@ inrange =@(x,r)  x<r(2);
 
 results = struct;
 
+dbg.runStarted=datestr(now);
 
-if(~exist('verbose','var'))
-    verbose=true;
-end
 %% :: file names
-internalFolder = fullfile(outputFolder,filesep,'AlgoInternal');
+internalFolder = fullfile(params.outputFolder,filesep,'AlgoInternal');
 fnCalib     = fullfile(internalFolder,filesep,'calib.csv');
 fnUndsitLut = fullfile(internalFolder,filesep,'FRMWundistModel.bin32');
 initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
 copyfile(fullfile(initFldr,filesep,'*.csv'),internalFolder)
 
-mkdirSafe(outputFolder);
+mkdirSafe(params.outputFolder);
 mkdirSafe(internalFolder);
 
 
@@ -37,143 +35,163 @@ fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
 hw.runPresetScript('systemConfig');
-if(doInit)  
+fprintff('init...');
+if(params.doInit)  
     fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
-    fprintff('init...');
+   
     hw.runScript(fnAlgoInitMWD);
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
+else
+    fprintff('skipped\m');
 end
+ 
 hw.runPresetScript('startStream');
 
 setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
 showImageRequestDialog(hw,1,diag([.8 .8 1]));
 fprintff('Depth and IR delay calibration...\n');
-[delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, verbose, internalFolder);
-
-if(inrange(results.delayS,calibParams.errRange.delayS))
-    fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
+if(params.coarseDataSync && params.fineDataSync)
+    [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params.verbose, internalFolder);
+    
+    
+    if(inrange(results.delayS,calibParams.errRange.delayS))
+        fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
+    else
+        fprintff('[x] slow calib failed[e=%g]\n',results.delayS);
+        score = 0;
+        return;
+    end
+    
+    if(inrange(results.delayF,calibParams.errRange.delayF))
+        fprintff('[v] fast calib passed[e=%g]\n',results.delayF);
+    else
+        fprintff('[x] fast calib failed[e=%g]\n',results.delayF);
+        score = 0;
+        return;
+    end
+    fprintff('Done(%d)\n',round(toc(t)));
+    fw.setRegs(delayRegs,fnCalib);
+    
 else
-    fprintff('[x] slow calib failed[e=%g]\n',results.delayS);
-    score = 0;
-    return;
+    results.delayS=inf;
+    results.delayF=inf;
+    fprintff('skipped\m');
 end
 
-if(inrange(results.delayF,calibParams.errRange.delayF))
-    fprintff('[v] fast calib passed[e=%g]\n',results.delayF);
+%% ::gamma::
+fprintff('gamma...\n');
+if(params.gamma)
+    
+    [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,params.verbose);
+    
+    if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
+        fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
+    else
+        fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
+        score = 0;
+        return;
+    end
+    fw.setRegs(gammaregs,fnCalib);
 else
-    fprintff('[x] fast calib failed[e=%g]\n',results.delayF);
-    score = 0;
-    return;
+    results.gammaErr=inf;
+    fprintff('skipped\m');
 end
-fprintff('Done(%d)\n',round(toc(t)));
 
-fw.setRegs(delayRegs,fnCalib);
-
-
-%% ::calibrate DOD curve::
-
-% Make 100% sure the DOD calibration initialization is correct:
-% % % DODRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWgaurdBandH|FRMWgaurdBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
-% % % fnAlgoDODInitMWD  = fullfile(outputFolder,filesep,'dodInit.txt');
-% % % fw.get();%run autogen
-% % % fw.genMWDcmd(DODRegsNames,fnAlgoDODInitMWD);
-% % % if(doInit)    
-% % %     fprintff('init...',false);
-% % %     hw.runScript(fnAlgoDODInitMWD);
-% % %     hw.shadowUpdate();
-% % % end
-
+%% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
-
-
-regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
-hw.setReg('JFILinvBypass',true);
-hw.setReg('DESTdepthAsRange',true);
-hw.setReg('DIGGsphericalEn',true);
-hw.shadowUpdate();
-
-d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
-d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
-d(3)=showImageRequestDialog(hw,1,diag([.5 .5 1]));
-d(4)=showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
-d(5)=showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
-d(6)=showImageRequestDialog(hw,2,diag([2 2 1]));
-dbg.d=d;
-dbg.regs=regs;
-dbg.luts=luts;
-
-% dodluts=struct;
-
-[dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,verbose);
-hw.setReg('DESTdepthAsRange',false);
-hw.setReg('DIGGsphericalEn',false);
-hw.shadowUpdate();
-
-fw.setRegs(dodregs,fnCalib);
-% fw.setLut(dodluts);
-% [regs,luts]=fw.get();%run autogen
-
-
-if(inrange(results.geomErr,calibParams.errRange.geomErr))
-    fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
+if(params.DFZ)
+    
+    regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+    hw.setReg('JFILinvBypass',true);
+    hw.setReg('DESTdepthAsRange',true);
+    hw.setReg('DIGGsphericalEn',true);
+    hw.shadowUpdate();
+    
+    d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
+    d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
+    d(3)=showImageRequestDialog(hw,1,diag([.5 .5 1]));
+    d(4)=showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
+    d(5)=showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
+    d(6)=showImageRequestDialog(hw,2,diag([2 2 1]));
+    dbg.d=d;
+    dbg.regs=regs;
+    dbg.luts=luts;
+    
+    % dodluts=struct;
+    
+    [dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,params.verbose);
+    hw.setReg('DESTdepthAsRange',false);
+    hw.setReg('DIGGsphericalEn',false);
+    hw.shadowUpdate();
+    fw.setRegs(dodregs,fnCalib);
+    if(inrange(results.geomErr,calibParams.errRange.geomErr))
+        fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
+    else
+        fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
+        score = 0;
+        return;
+    end
+    fprintff('Done(%d)\n',round(toc(t)));
 else
-    fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
-    score = 0;
-    return;
+    fprintff('skipped\m');
+    results.geomErr=inf;
 end
-fprintff('Done(%d)\n',round(toc(t)));
+
+
+%% ::validation::
+
+
+
 
 
 fprintff('Validating...\n');
 %validate
-
-fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
-[regs,luts]=fw.get();%run autogen
-fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
-hw.runScript(fnAlgoTmpMWD);
-hw.shadowUpdate();
-d=hw.getFrame(30);
-[~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,verbose,true);
-
-%dodregs2 should be equal to dodregs
-
-
-if(inrange(results.geomErrVal,calibParams.errRange.geomErrVal))
-    fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
+if(params.validation)
+    fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
+    [regs,luts]=fw.get();%run autogen
+    fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
+    hw.runScript(fnAlgoTmpMWD);
+    hw.shadowUpdate();
+    d=hw.getFrame(30);
+    dbg.validImg = d;
+    [~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,params.verbose,true);
+    if(inrange(results.geomErrVal,calibParams.errRange.geomErrVal))
+        fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
+    else
+        fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
+        
+    end
 else
-    fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
-
+    fprintff('skipped\m');
+    results.geomErrVal=inf;
 end
 
-dbg.validImg = d;
-% % % %% ::calibrate gamma scale shift and lut::
-% % % [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,verbose);
-% % % fw.setRegs(gammaregs,fnCalib);
-% % % if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
-% % %     fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
-% % % else
-% % %     fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
-% % %     score = 0;
-% % %     return;
-% % % end
+
+
+
+
+
 
 %% write version
-if(exist('calibVersion','var'))
-verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(calibVersion,'.'),'uni',0));
+
+verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(params.version,'.'),'uni',0));
 verValue = uint32(hex2dec([verhex{:}]));
 verRegs.DIGG.spare=[verValue zeros(1,7,'uint32')];
 fw.setRegs(verRegs,fnCalib);
-end
+
 
 fw.writeUpdated(fnCalib);
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 save(fullfile(internalFolder,'imData.mat'),'dbg');
 fprintff('Done(%d)\n',round(toc(t)));
+
+fw.writeFirmwareFiles(params.outputFolder);
+
 
 
 %% merge all scores outputs
@@ -186,7 +204,7 @@ end
 score = min(scores);
 
 
-if(verbose)
+if(params.verbose)
     for i = 1:length(f)
         s04=floor((scores(i)-1)/100*5);
         asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
@@ -201,6 +219,10 @@ end
 
 hw.runPresetScript('stopStream');
 
+
+if(params.burnCalibrationToDevice)
+    hw.burn2device();
+end
 
 end
 
