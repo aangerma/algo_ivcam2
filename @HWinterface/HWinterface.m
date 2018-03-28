@@ -156,20 +156,17 @@ classdef HWinterface <handle
         
         
         
-        function stopStream(obj)
-            obj.m_dotnetcam.Close();
-            obj.runPresetScript('reset');
-            
-% obj.cmd(obj.getPresetScript('reset'));
-
-        end
+%         function stopStream(obj)
+%             %obj.m_dotnetcam.Close();
+%             obj.runPresetScript('reset');
+%             % obj.cmd(obj.getPresetScript('reset'));
+%         end
         
-        function restartStream(obj)
-            obj.runPresetScript('restart');
-             
-%             obj.cmd(obj.getPresetScript('restart'));
-            obj.privConfigureStream();
-        end
+%         function restartStream(obj)
+%             obj.runPresetScript('restart');
+%             %obj.cmd(obj.getPresetScript('restart'));
+%             %obj.privConfigureStream();
+%         end
         
         function res = shadowUpdate(obj)
             res = obj.cmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
