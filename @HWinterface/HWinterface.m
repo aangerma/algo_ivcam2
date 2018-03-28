@@ -4,13 +4,25 @@ classdef HWinterface <handle
     properties (Access=private)
         m_dotnetcam;
         m_fw;
-
+        m_presetScripts;
     end
     
     
     
-    
-    
+     methods ( Access=private)
+     function privLoadPresetScripts(obj)
+            scriptsfldr=fullfile(fileparts(mfilename('fullpath')),'presetScripts');
+            if(exist(scriptsfldr,'dir'))
+            fns=dirFiles(scriptsfldr,'*.txt',false);
+            keys = cellfun(@(x) x(1:end-4),fns,'uni',0);
+             vals = cellfun(@(x) fullfile(scriptsfldr,x),fns,'uni',0);
+            else
+                keys={};
+                vals={};
+            end
+            obj.m_presetScripts=containers.Map(keys,vals);
+          end
+     end
     methods (Static=true, Access=private)
         %
     end
@@ -34,10 +46,11 @@ classdef HWinterface <handle
                 error(char(result.ErrorMessage))
             end
             res = char(result.ResultFormatted);
-        end
-        
-        function delete(obj)
-            
+         end
+         
+         %destructor
+         function delete(obj)
+            obj.runScript(obj.getPresetScript('stopStream'));
             obj.m_dotnetcam.Close();
         end
         
@@ -53,12 +66,12 @@ classdef HWinterface <handle
             obj.m_fw = fw;
             obj.privInitCam();
             obj.privConfigureStream();
-           
+            obj.privLoadPresetScripts();
         end
         
         
         function txt=getPresetScript(obj,scriptname)
-            txt=obj.m_fw.getPresetScript(scriptname);
+            txt=obj.m_presetScripts(scriptname);
         end
         
         function disp(obj,regTokens)
@@ -154,7 +167,8 @@ classdef HWinterface <handle
         end
         
         
-        
+   
+
         
 %         function stopStream(obj)
 %             %obj.m_dotnetcam.Close();
