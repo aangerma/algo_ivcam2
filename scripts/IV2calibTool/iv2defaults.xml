@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <Outputdirectorty>D:\temp\ohad</Outputdirectorty>
+   <Outputdirectorty>c:\temp\iv2CalibResults</Outputdirectorty>
    <cb_verbose>true</cb_verbose>
    <cb_init>false</cb_init>
    <cb_DSM>true</cb_DSM>
    <cb_gamma>true</cb_gamma>
-   <cb_coarseDataSync>true</cb_coarseDataSync>
-   <cb_fineDataSync>true</cb_fineDataSync>
+   <cb_coarseIrDelay>true</cb_coarseIrDelay>
+   <cb_fineIrDelay>true</cb_fineIrDelay>
+   <cb_coarseDepthDelay>true</cb_coarseDepthDelay>
+   <cb_fineDepthDelay>true</cb_fineDepthDelay>
    <cb_DFZ>true</cb_DFZ>
+   <cb_validation>true</cb_validation>
+   <cb_burnCalibrationToDevice>false</cb_burnCalibrationToDevice>
+   <cb_debug>false</cb_debug>
 </struct>

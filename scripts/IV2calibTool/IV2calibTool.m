@@ -132,8 +132,9 @@ classdef IV2calibTool < matlab.apps.AppBase
             % clear log
             app.logarea.Value = {''};
             
-            params=app.cb;
-            params.Outputdirectorty=app.Outputdirectorty.Value;
+            
+            params=structfun(@(x) x.Value,app.cb,'uni',0);
+            params.outputFolder=app.Outputdirectorty.Value;
             params.version=app.VERSION;
             try
                 %=======================================================RUN CALIBRATION=======================================================
@@ -143,7 +144,7 @@ classdef IV2calibTool < matlab.apps.AppBase
                 fprintffS('');
                 fprintffS(sprintf('[!] ERROR:%s\n',e.message));
                 errordlg(e.message);
-                fid = fopen(sprintf('error_%s.log',datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
+                fid = fopen(sprintf('%s%cerror_%s.log',app.Outputdirectorty.Value,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
                 fprintf(fid,getReport(e));
                 fclose(fid);
             end
@@ -208,7 +209,7 @@ classdef IV2calibTool < matlab.apps.AppBase
               % Create verboseCheckBox
              
               %checkboxes
-              cbnames = {'verbose','init','DSM','gamma','coarseSlowDataSync','fineSlowDataSync','coarseFastDataSync','fineFastDataSync','DFZ','validation','burnCalibrationToDevice','spare1','spare2','spare3','spare4'};
+              cbnames = {'verbose','init','DSM','gamma','coarseIrDelay','fineIrDelay','coarseDepthDelay','fineDepthDelay','DFZ','validation','burnCalibrationToDevice','debug'};
               cbSz=[200 30];
               ny = floor(sz(2)/cbSz(2))-1;
               for i=1:length(cbnames)

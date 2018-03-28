@@ -14,19 +14,20 @@ results = struct;
 dbg.runStarted=datestr(now);
 
 %% :: file names
-internalFolder = fullfile(params.outputFolder,filesep,'AlgoInternal');
-fnCalib     = fullfile(internalFolder,filesep,'calib.csv');
-fnUndsitLut = fullfile(internalFolder,filesep,'FRMWundistModel.bin32');
-initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
-copyfile(fullfile(initFldr,filesep,'*.csv'),internalFolder)
+params.internalFolder = fullfile(params.outputFolder,filesep,'AlgoInternal');
 
 mkdirSafe(params.outputFolder);
-mkdirSafe(internalFolder);
+mkdirSafe(params.internalFolder);
 
+
+fnCalib     = fullfile(params.internalFolder,filesep,'calib.csv');
+fnUndsitLut = fullfile(params.internalFolder,filesep,'FRMWundistModel.bin32');
+initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
+copyfile(fullfile(initFldr,filesep,'*.csv'),params.internalFolder)
 
 %% ::Init fw
 fprintff('Loading Firmware...');
-fw = Pipe.loadFirmware(internalFolder);
+fw = Pipe.loadFirmware(params.internalFolder);
 fprintff('Done(%d)\n',round(toc(t)));
 
 fprintff('Loading HW interface...');
@@ -36,15 +37,15 @@ fprintff('Done(%d)\n',round(toc(t)));
 
 hw.runPresetScript('systemConfig');
 fprintff('init...');
-if(params.doInit)  
-    fnAlgoInitMWD  =  fullfile(internalFolder,filesep,'algoInit.txt');
+if(params.init)  
+    fnAlgoInitMWD  =  fullfile(params.internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
    
     hw.runScript(fnAlgoInitMWD);
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 else
-    fprintff('skipped\m');
+    fprintff('skipped\n');
 end
  
 hw.runPresetScript('startStream');
@@ -53,22 +54,26 @@ setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
 showImageRequestDialog(hw,1,diag([.8 .8 1]));
 fprintff('Depth and IR delay calibration...\n');
-if(params.coarseDataSync && params.fineDataSync)
-    [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params.verbose, internalFolder);
+
+
+
+
+if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.fineDepthDelay]))
+    [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params);
     
     
     if(inrange(results.delayS,calibParams.errRange.delayS))
-        fprintff('[v] slow calib passed[e=%g]\n',results.delayS);
+        fprintff('[v] ir calib passed[e=%g]\n',results.delayS);
     else
-        fprintff('[x] slow calib failed[e=%g]\n',results.delayS);
+        fprintff('[x] ir calib failed[e=%g]\n',results.delayS);
         score = 0;
         return;
     end
     
     if(inrange(results.delayF,calibParams.errRange.delayF))
-        fprintff('[v] fast calib passed[e=%g]\n',results.delayF);
+        fprintff('[v] depth calib passed[e=%g]\n',results.delayF);
     else
-        fprintff('[x] fast calib failed[e=%g]\n',results.delayF);
+        fprintff('[x] depth calib failed[e=%g]\n',results.delayF);
         score = 0;
         return;
     end
@@ -151,7 +156,7 @@ end
 fprintff('Validating...\n');
 %validate
 if(params.validation)
-    fnAlgoTmpMWD =  fullfile(internalFolder,filesep,'algoValidCalib.txt');
+    fnAlgoTmpMWD =  fullfile(params.internalFolder,filesep,'algoValidCalib.txt');
     [regs,luts]=fw.get();%run autogen
     fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
     hw.runScript(fnAlgoTmpMWD);
@@ -187,7 +192,7 @@ fw.setRegs(verRegs,fnCalib);
 fw.writeUpdated(fnCalib);
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
-save(fullfile(internalFolder,'imData.mat'),'dbg');
+save(fullfile(params.internalFolder,'imData.mat'),'dbg');
 fprintff('Done(%d)\n',round(toc(t)));
 
 fw.writeFirmwareFiles(params.outputFolder);
