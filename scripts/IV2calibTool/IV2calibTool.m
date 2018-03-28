@@ -208,14 +208,14 @@ classdef IV2calibTool < matlab.apps.AppBase
               % Create verboseCheckBox
              
               %checkboxes
-              cbnames = {'verbose','init','DSM','gamma','coarseSlowDataSync','fineSlowDataSync','coarseFastDataSync','fineFastDataSync','DFZ','validation','burnCalibrationToDevice'};
+              cbnames = {'verbose','init','DSM','gamma','coarseSlowDataSync','fineSlowDataSync','coarseFastDataSync','fineFastDataSync','DFZ','validation','burnCalibrationToDevice','spare1','spare2','spare3','spare4'};
               cbSz=[200 30];
-              ny = ceil(sz(2)/cbSz(2));
+              ny = floor(sz(2)/cbSz(2))-1;
               for i=1:length(cbnames)
                   f=cbnames{i};
                     app.cb.(f) = uicheckbox(advancedTab);
                     app.cb.(f).Text = f;
-                    app.cb.(f).Position = [cbSz(1)*floor((i-1)/ny)+cbSz(2) cbSz(2)*(mod((ny-i),ny)-2) cbSz];
+                    app.cb.(f).Position = [cbSz(1)*floor((i-1)/ny)+cbSz(2) cbSz(2)*(ny-(mod(i-1,ny)+1)) cbSz];
                     app.cb.(f).Value = true;
 
                   
