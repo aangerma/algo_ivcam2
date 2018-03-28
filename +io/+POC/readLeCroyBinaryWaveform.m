@@ -31,8 +31,8 @@ function wave=ReadLeCroyBinaryWaveform(fn)
 %---------------------------------------------------------------------------------------
 fid=fopen(fn,'r');
 if fid==-1 
-   disp (sprintf('ERROR: file not found: %s', fn));
-   return
+   error('ERROR: file not found: %s', fn);
+   
 end;
 
 %---------------------------------------------------------------------------------------
