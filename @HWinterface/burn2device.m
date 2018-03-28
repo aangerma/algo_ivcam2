@@ -40,9 +40,11 @@ function burn2device(obj,basedir,burunConfiguration)
         if(~exist(fullfile(basedir,filenamesTableIndexLUT{i,2}),'file'))
             continue;
         end
-        %         ok=obj.cmd(sprintf('%s "%s%s"',filenamesTableIndexLUT{i,1},basedir,filenamesTableIndexLUT{i,2}));
-        %         ok=obj.cmd(sprintf('exec_table %s',filenamesTableIndexLUT{i,3}));
-        fprintf('%s "%s%s"\n',filenamesTableIndexLUT{i,1},basedir,filenamesTableIndexLUT{i,2});
-        fprintf('exec_table %s\n',filenamesTableIndexLUT{i,3})
+        cmdA = sprintf('%s "%s%s"\n',filenamesTableIndexLUT{i,1},basedir,filenamesTableIndexLUT{i,2});
+        cmdB = sprintf('exec_table %s\n',filenamesTableIndexLUT{i,3});
+        okA=obj.cmd(cmdA);
+        okB=obj.cmd(cmdB);
+        
+        
     end
 end
