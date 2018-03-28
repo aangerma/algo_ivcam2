@@ -1,4 +1,4 @@
-function [e,s,d] = evalProjectiveDisotrtion(varargin)
+function [e,s,d,inliers] = evalProjectiveDisotrtion(varargin)
 if(nargin==1)
     im = varargin{1};
     % find checkboard corners
@@ -7,13 +7,13 @@ if(nargin==1)
     N=3;
     imv = im(Utils.indx2col(size(im),[N N]));
     bd = vec(isnan(im));
-    im(bd)=nanmedian(imv(:,bd));
+    im(bd)=nanmedian_(imv(:,bd));
 %      im=reshape(nanmedian(imv),size(im));
     
-    [s,bsz] = detectCheckerboardPoints(normByMax(im));
+    [p,bsz] = detectCheckerboardPoints(normByMax(im));
     bsz=bsz-1;
 elseif(nargin==2)
-    s = varargin{1};
+    p = varargin{1};
     bsz = varargin{2};
     im=0; %#ok<*NASGU>
 else
@@ -42,22 +42,26 @@ using LS:
 %}
 
 
+inliers=true(numel(xg),1);
+for i=1:3
+    n=nnz(inliers);
+    oo= [xg(inliers) yg(inliers) ones(n,1)];
+    zr = zeros(n,3);
+    h=[oo zr  -oo(:,1:2).*p(inliers,1);
+        zr oo  -oo(:,1:2).*p(inliers,2)
+        ];
+    x   = h\vec(p(inliers,:));
+    hh=reshape([x;1],3,3);
+    d = [xg(:) yg(:) ones(numel(xg),1)]*hh;
+    d=d(:,1:2)./d(:,3);
+    
+    ev = sqrt(sum((d-p).^2,2));
+    inliers = inliers & ev<prctile_(ev,90);
+end
+e = sqrt(mean(ev.^2));
 
-oo= [xg(:) yg(:) ones(numel(xg),1)];
-zr = zeros(size(s,1),3);
-h=[oo zr  -oo(:,1:2).*s(:,1);
-    zr oo  -oo(:,1:2).*s(:,2)
-    ];
-x   = h\vec(s);
-hh=reshape([x;1],3,3);
 
-d = oo*hh;
-d=d(:,1:2)./d(:,3);
-
-ev = sqrt(sum((d-s).^2,2));
-e = rms(ev);
-
-s=s';
+s=p';
 d=d';
 
 if(0)

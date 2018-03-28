@@ -1,0 +1,20 @@
+mrd a0050828 a005082c 00001000 //[m_regmodel.interrupt_proj.RegsProjHardErrIntStatus] TYPE_REG
+mwd a0050828 a005082c 00001000 //[m_regmodel.interrupt_proj.RegsProjHardErrIntStatus] TYPE_REG
+mwd a001091c a0010920 00000001 //[m_regmodel.pmg_ehw_pmg.RegsPmgSystemSafe] TYPE_REG
+mwd a0050828 a005082c 11111111 //[m_regmodel.interrupt_proj.RegsProjHardErrIntStatus] TYPE_REG
+
+mwd a00d01f0 a00d01f4 000001ff //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUnitEn] TYPE_REG
+mwd a00d01f4 a00d01f8 00001ffd //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG
+mwd a0010100 a0010104 1120003f //[m_regmodel.pmg_pmg.RegsPmgDepthEn] TYPE_REG
+mwd a00c0100 a00c0104 00000011 //[m_regmodel.pmg_dpt_pmg.RegsPmgDptEn] TYPE_REG
+
+//mwd a003011c a0030120 00000001  //bgen
+//mwd a0030120 a0030124 00000009 //bg_trim
+//mwd a0030154 a0030158 00000001 //ldo en 
+//mwd a0030064 a0030068 00000003 //sipo pdo en
+mwd a0030020 a0030024 00000001 // cmp en 
+mwd a00d01f4 a00d01f8 00000800 // shadow update Imm to afe only
+
+mwd a0010050 a0010054 00000011 //[m_regmodel.pmg_pmg.RegsPmgAnalogRstN] TYPE_REG
+mwd a001000c a0010010 fff13373 //[m_regmodel.pmg_pmg.RegsPmgClkEn] TYPE_REG
+

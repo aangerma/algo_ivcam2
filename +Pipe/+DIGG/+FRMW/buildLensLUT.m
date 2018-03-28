@@ -58,7 +58,7 @@ else
     distortionW=x1-x0;
     fx = (N-1)/distortionW;
     fy = (N-1)/distortionH;
-    if(~isfield(luts,'FRMW') || ~isfield(luts.FRMW,'undistModel') || all(luts.FRMW.undistModel)==0)
+    if(~isfield(luts,'FRMW') || ~isfield(luts.FRMW,'undistModel') || all(luts.FRMW.undistModel==0))
         xDisplacment=zeros(32,'single');
         yDisplacment=zeros(32,'single');
     else
@@ -74,12 +74,14 @@ else
     [odgy,odgx]=ndgrid(linspace(y0,y1,N),linspace(x0,x1,N));
     %% build input distortion grid
     %     [idgy,idgx]=ndgrid(linspace(0,wh(2)-1,N),linspace(0,wh(1)-1,N));
-    idgy=odgy;idgx=odgx;
-    %% build output distotion grid
-    xLUT=idgx+interp2(idgx,idgy,xDisplacment,odgx,odgy,'spline');
-    yLUT=idgy+interp2(idgx,idgy,yDisplacment,odgx,odgy,'spline');
-    
-    
+%     idgy=odgy;idgx=odgx;
+%     %% build output distotion grid
+%     xLUT=idgx+interp2(idgx,idgy,xDisplacment,odgx,odgy,'spline');
+%     yLUT=idgy+interp2(idgx,idgy,yDisplacment,odgx,odgy,'spline');
+      xLUT=odgx+xDisplacment;
+      yLUT=odgy+yDisplacment;
+      yLUT=min(y1,max(y0,yLUT));
+      xLUT=min(x1,max(x0,xLUT));
     
 end
 

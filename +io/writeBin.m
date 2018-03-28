@@ -36,9 +36,9 @@ if(~isempty(err))
 end
 switch p.Results.type
     case 'binz'
-        fwrite(f,data,'uint16');
+        fwrite(f,data','uint16');
     case 'bini'
-        fwrite(f,data,'uint16');
+        fwrite(f,data','uint16');
     case 'binr'
         
         data(isnan(data))=0;

@@ -100,8 +100,8 @@ else
     end
     tF = (0:length(t)*64-1)*dt/64;
     
-    codevec = vec(fliplr(dec2bin(regs.FRMW.txCode(:),32))')=='1';
-    c = codevec(1:regs.GNRL.codeLength);
+
+    c = Utils.uint322bin(regs.FRMW.txCode,regs.GNRL.codeLength);
     c = vec(repmat(c(:),1,regs.GNRL.sampleRate)');
     % [yg,xg]=ndgrid(linspace(-1,1,size(im.zImg,1)),linspace(-1,1,size(im.zImg,2)));
     % yg = yg*double(regs.FRMW.yfov)/double(regs.FRMW.xfov);
@@ -189,8 +189,8 @@ else
     
     okloc =xA>=0 & xA<size(gt.zImg,2) & yA>=0 & yA<size(gt.zImg,1);
     ind=sub2ind(size(gt.zImg),yA(okloc)+1,xA(okloc)+1);
-    angxg=accumarray(ind,angx(okloc),[numel(gt.zImg) 1],@mean);
-    angyg=accumarray(ind,angy(okloc),[numel(gt.zImg) 1],@mean);
+    angxg=accumarray(vec(ind),vec(angx(okloc)),[numel(gt.zImg) 1],@mean);
+    angyg=accumarray(vec(ind),vec(angy(okloc)),[numel(gt.zImg) 1],@mean);
     angxg = reshape(angxg,size(gt.zImg));
     angyg = reshape(angyg,size(gt.zImg));
     %    [angyg,angxg]=ndgrid(double(linspace(min(angy),max(angy),oh)),double(linspace(min(angx),max(angx),ow)));
@@ -525,7 +525,7 @@ fw.setRegHandle(p.regHandle);
 if(isstruct(inputData)) %regs struct
     configOutputFilename = fullfile(p.outputDir,'config.csv');
     fw.setRegs(inputData,configOutputFilename);
-elseif(~isempty(strfind(inputData,'.csv'))) %config.csv
+elseif(contains(inputData,'.csv')) %config.csv
     if(~exist(inputData,'file'))
         error('COuld not find file %s',inputData);
     end
@@ -546,12 +546,14 @@ elseif(ischar(inputData))
             patgenregs.EPTG.maxZ = single(1000);
             patgenregs.FRMW.xres = uint16(320);
             patgenregs.FRMW.yres = uint16(240);
+            patgenregs.FRMW.gaurdBandH = single(0);
             patgenregs.EPTG.frameRate = single(60);
             patgenregs.EPTG.noiseLevel=single(0);
             patgenregs.EPTG.sampleJitter=single(0);
             patgenregs.EPTG.calibVariationsP=single(0);
             patgenregs.DEST.hbaseline=false;
             patgenregs.DEST.baseline=single(30);
+            patgenregs.FRMW.cbufConstLUT=true;
             
         case 'debug'
             patgenregs.EPTG.maxZ = single(1500);

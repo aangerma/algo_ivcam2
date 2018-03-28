@@ -1,10 +1,11 @@
 function mdl=generateRandomSecene(seed)
-N_ELEMS=100;
 rng(seed)
+N_ELEMS=randi([10 100],1);
+cubp=rand
 vv=[];
 ff=[];
 cc=[];
-S=1000;
+S=randi([500 5000],1);
 for i=1:N_ELEMS
     if(rand>.25)
         [v,f]=dataGen.Shapes.cube();
