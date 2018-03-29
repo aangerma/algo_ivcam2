@@ -242,58 +242,18 @@ classdef FirmwareBase <handle
             end
             m=[num2cell(addr);num2cell(data);name]';
         end
+        
         function txtout=genMWDcmd(obj,regTokens,outfn)
-            %TODO: replace with getAddrData
-            if(~exist('regTokens','var') || isempty(regTokens))
-                regTokens={'.'};
-            elseif(~iscell(regTokens))
-                regTokens={regTokens};
-            end
-            indregs=[];
-            indluts=[];
-            for t=regTokens(:)'
-                resregs=regexpi({obj.m_registers.regName},t);
-                resluts=regexpi({obj.m_luts.lutName},t);
-                indregs=[indregs find(cellfun(@(x) ~isempty(x),resregs))];
-                indluts=[indluts find(cellfun(@(x) ~isempty(x),resluts))];
-            end
-            
-            
-            
-            
-            m = num2cell([[obj.m_registers(indregs).address]' [obj.m_registers(indregs).address]'+4 Firmware.sprivRegstruct2uint32val(obj.m_registers(indregs))]);
-            m=[m {obj.m_registers(indregs).regName}']';
-            
-                strOutFormat = 'mwd %08x %08x %08x // %s\n';
-            
+            strOutFormat = 'mwd %08x %08x %08x // %s\n';
+            m = obj.getAddrData(regTokens);
             
             if(~isempty(m))
-                
+                m=[m(:,1) num2cell([m{:,1}]'+4) m(:,2:3)]';
                 txtout=sprintf(strOutFormat, m{:});
             else
                 txtout='';
             end
-            for i=indluts
-                if(any(strcmp(obj.m_luts(i).algoBlock,{'FRMW','MTLB'})))
-                    continue;
-                end
-                switch(obj.m_luts(i).elemSize)
-                    case 32
-                        m=[
-                            num2cell(uint64(0:length(obj.m_luts(i).data)-1)*4+uint64([0;4])+obj.m_luts(i).address)
-                            num2cell(typecast(obj.m_luts(i).data(:),'uint32')')
-                            arrayfun(@(k) sprintf('%s_%04d',obj.m_luts(i).lutName,k-1),1:length(obj.m_luts(i).data),'uni',0)
-                            ];
-                    case 3
-                        continue;
-                    otherwise
-                        
-                        error('Unsopported LUT datasize');
-                end
-                
-                txtout = [txtout sprintf(strOutFormat, m{:})]; %#ok;
-            end
-            
+            txtout=[newline txtout];
             if(exist('outfn','var') && ~isempty(outfn))
                 fid=fopen(outfn,'w');
                 fprintf(fid,txtout);
