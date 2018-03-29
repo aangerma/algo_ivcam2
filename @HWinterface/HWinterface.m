@@ -75,22 +75,37 @@ classdef HWinterface <handle
         end
         
         function disp(obj,regTokens)
+            strOutFormat = 'mrd %08x %08x';
             if(~exist('regTokens','var'))
                 regTokens=[];
             end           
             
-            meta = obj.m_fw.genMWDcmd(regTokens);
-            meta = str2cell(meta,newline);
-            meta(end) = [];%only newLine
-%             regStruct=[];
+            meta = obj.m_fw.getAddrData(regTokens);
             for i=1:length(meta)
-                str = strsplit(meta{i});
-                res = obj.cmd(['mrd ' str{2} ' ' str{3}]);
+                cmd = sprintf(strOutFormat,meta{i,1},meta{i,1}+1);
+                res = obj.cmd(cmd);
                 res = res(end-7:end);
-%                 regStruct.(a(1).algoBlock).(a(1).algoName)=uint32(hex2dec(res));
-                disp([res ' //' str{6}]);
+                disp([res ' //' meta{i,3}]);
             end
-%             obj.m_fw.setRegs(regStruct);
+
+        end
+        
+        function vals=read(obj,regTokens)
+            strOutFormat = 'mrd %08x %08x';
+            if(~exist('regTokens','var'))
+                regTokens=[];
+            end
+            
+            meta = obj.m_fw.getAddrData(regTokens);
+            vals = zeros(length(meta),1);
+            for i=1:length(meta)
+                cmd = sprintf(strOutFormat,meta{i,1},meta{i,1}+1);
+                res = obj.cmd(cmd);
+                res = res(end-7:end);
+                vals(i)=uint32(hex2dec(res));
+                
+            end
+            
         end
         
         function setReg(obj,regName,regVal)
