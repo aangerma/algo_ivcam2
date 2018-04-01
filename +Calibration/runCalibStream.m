@@ -52,13 +52,14 @@ hw.runPresetScript('startStream');
 
 setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
-showImageRequestDialog(hw,1,diag([.8 .8 1]));
 fprintff('Depth and IR delay calibration...\n');
 
 
 
 
 if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.fineDepthDelay]))
+    
+    dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
     [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params);
     
     
