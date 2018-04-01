@@ -8,12 +8,11 @@ function [x,y,xF,yF] = ang2xy(angxQ,angyQ,regs,lgr,traceOutDir)
 %  angx = single(vec(angxQ))*regs.DIGG.angXfactor;
 %  angy = single(vec(angyQ))*regs.DIGG.angYfactor;
 
-
-angxI = single(vec(angxQ))*regs.DIGG.angXfactor;
-angyI = single(vec(angyQ))*regs.DIGG.angYfactor;
-
-ang2xI = single(vec(angxQ))*regs.DIGG.ang2Xfactor;
-ang2yI = single(vec(angyQ))*regs.DIGG.ang2Yfactor;
+% Lut Index for trigononometric functions. For x,2x,y and 2y.
+angxI = single((angxQ))*regs.DIGG.angXfactor;
+angyI = single((angyQ))*regs.DIGG.angYfactor;
+ang2xI = single((angxQ))*regs.DIGG.ang2Xfactor;
+ang2yI = single((angyQ))*regs.DIGG.ang2Yfactor;
 
 
 
@@ -42,14 +41,14 @@ ang2yI = single(vec(angyQ))*regs.DIGG.ang2Yfactor;
 
 
 
-csx = (cosINTRPI(angxI));
-csy = (cosINTRPI(angyI));
-sny = (sinINTRPI(angyI));
-csx2 = csx.*csx;
-sn2x = (sinINTRPI(ang2xI));
-cs2x = (cosINTRPI(ang2xI));
-sn2y = (sinINTRPI(ang2yI));
-cs2y = (cosINTRPI(ang2yI));
+csx = (cosINTRPI(angxI));                 % cos(x)
+csy = (cosINTRPI(angyI));                 % cos(y)
+sny = (sinINTRPI(angyI));                 % sin(y)
+csx2 = csx.*csx;                          % cos(x)^2
+sn2x = (sinINTRPI(ang2xI));               % sin(2x)
+cs2x = (cosINTRPI(ang2xI));               % cos(2x)
+sn2y = (sinINTRPI(ang2yI));               % sin(2y)
+cs2y = (cosINTRPI(ang2yI));               % cos(2y)
 
 
 
@@ -60,12 +59,12 @@ cs2y = (cosINTRPI(ang2yI));
 
 
 
-pc1 = -cs2x;
-pc2 = (1 + cs2y).*csx2 - 1;
-pc3 = sn2x.* csy;
-pc4 = sn2x.* sny;
-pc5 = csx2.*sn2y;
-pc6 = (1 - cs2y).*csx2 - 1;
+pc1 = -cs2x;                              % -cos(2x)
+pc2 = (1 + cs2y).*csx2 - 1;               % (1+cos(2y))*cos(x)^2-1
+pc3 = sn2x.* csy;                         % sin(2x)*cos(y)
+pc4 = sn2x.* sny;                         % sin(2x)*sin(y)
+pc5 = csx2.*sn2y;                         % cos(x)^2*sin(2y)
+pc6 = (1 - cs2y).*csx2 - 1;               % (1-cos(2y))*cos(x)^2-1
 
 % if ~isempty(lgr)
 % 	lgr.print2file(sprintf(['\t\t\tpc1 = %s\n\t\t\tpc2 = %s\n\t\t\tpc3 = %s\n',...

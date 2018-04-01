@@ -4,12 +4,25 @@ classdef HWinterface <handle
     properties (Access=private)
         m_dotnetcam;
         m_fw;
+        m_presetScripts;
     end
     
     
     
-    
-    
+     methods ( Access=private)
+     function privLoadPresetScripts(obj)
+            scriptsfldr=fullfile(fileparts(mfilename('fullpath')),'presetScripts');
+            if(exist(scriptsfldr,'dir'))
+            fns=dirFiles(scriptsfldr,'*.txt',false);
+            keys = cellfun(@(x) x(1:end-4),fns,'uni',0);
+             vals = cellfun(@(x) fullfile(scriptsfldr,x),fns,'uni',0);
+            else
+                keys={};
+                vals={};
+            end
+            obj.m_presetScripts=containers.Map(keys,vals);
+          end
+     end
     methods (Static=true, Access=private)
         %
     end
@@ -18,14 +31,7 @@ classdef HWinterface <handle
         privInitCam(obj);
         privConfigureStream(obj);
         
-        function res = cmd(obj,str)
-            sysstr = System.String(str);
-            result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
-            if(~result.IsCompletedOk)
-                error(char(result.ErrorMessage))
-            end
-            res = char(result.ResultFormatted);
-        end
+       
         
     end
     
@@ -33,28 +39,42 @@ classdef HWinterface <handle
     
     methods (Access=public)
         
-        function delete(obj)
+         function res = cmd(obj,str)
+            sysstr = System.String(str);
+            result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
+            if(~result.IsCompletedOk)
+                error(char(result.ErrorMessage))
+            end
+            res = char(result.ResultFormatted);
+         end
+         
+         %destructor
+         function delete(obj)
+            obj.runScript(obj.getPresetScript('stopStream'));
             obj.m_dotnetcam.Close();
         end
         
         
-        
-        
+      
+        burn2device(obj,basedir,burunConfiguration);
         
         function obj = HWinterface(fw)
             if(nargin==0)
                 fw = Firmware;
             end
-            
+           
             obj.m_fw = fw;
             obj.privInitCam();
             obj.privConfigureStream();
+            obj.privLoadPresetScripts();
         end
         
         
+        function txt=getPresetScript(obj,scriptname)
+            txt=obj.m_presetScripts(scriptname);
+        end
         
-        
-        function read(obj,regTokens)
+        function disp(obj,regTokens)
             if(~exist('regTokens','var'))
                 regTokens=[];
             end           
@@ -62,15 +82,22 @@ classdef HWinterface <handle
             meta = obj.m_fw.genMWDcmd(regTokens);
             meta = str2cell(meta,newline);
             meta(end) = [];%only newLine
+%             regStruct=[];
             for i=1:length(meta)
                 str = strsplit(meta{i});
                 res = obj.cmd(['mrd ' str{2} ' ' str{3}]);
                 res = res(end-7:end);
-                disp([str{5}(3:end) ' = ' res]);
+%                 regStruct.(a(1).algoBlock).(a(1).algoName)=uint32(hex2dec(res));
+                disp([res ' //' str{6}]);
             end
+%             obj.m_fw.setRegs(regStruct);
         end
         
-        
+        function setReg(obj,regName,regVal)
+            obj.m_fw.setRegs(regName,regVal);
+            meta = obj.m_fw.genMWDcmd(regName);
+            obj.cmd(meta);
+        end
         
         
         
@@ -81,24 +108,37 @@ classdef HWinterface <handle
             end
             [regs,luts]=obj.m_fw.get();%force bootcalcs
             meta = obj.m_fw.genMWDcmd(regTokens);
-            meta = str2cell(meta,newline);
-            meta(end) = [];%only newLine
-            for i=1:length(meta)
-                str = strsplit(meta{i});
-                obj.cmd(['mwd ' str{2} ' ' str{3} ' ' str{4}]);
-            end
-            
-            obj.cmd('mwd a00d01f4 a00d01f8 000001f8');%shadow update
+            tfn = [tempname '.txt'];
+            fid = fopen(tfn,'w');
+            fprintf(fid,meta);
+            fclose(fid);
+            obj.runScript(tfn);
+            obj.shadowUpdate()
             
         end
         
        
         
+        function fw=getFirmware(obj)
+            fw=obj.m_fw;
+        end
         
         
         
-        
-        function frame = getFrame(obj)
+        function frame = getFrame(obj,n)
+            if(exist('n','var'))
+                
+                for i = 1:n
+                    stream(i) = obj.getFrame();%#ok
+                end
+                collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
+                frame.z=collapseM('z');
+                frame.i=collapseM('i');
+                frame.c=collapseM('c');
+                return;
+            end
+            
+            %get single frame
             imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
             % get depth
             imageObj = imageCollection.Images.Item(0);
@@ -114,11 +154,8 @@ classdef HWinterface <handle
             imageObj = imageCollection.Images.Item(2);
             cImByte = imageObj.Item(0).Data;
             cIm8 = cast(cImByte,'uint8');
-            cIm8cell = num2cell(cIm8);
-            t = cellfun(@(x) [x/2^4; mod(x,2^4)],cIm8cell,'uni',0);
-            tt = cell2mat(t);
-            tt = tt(:);
-            frame.c = reshape(tt,480,640);
+            frame.c=reshape([ bitand(cIm8(:),uint8(15)) bitshift(cIm8(:),-4)]',size(frame.i));
+          
             
             if(0)
                 %%
@@ -130,33 +167,37 @@ classdef HWinterface <handle
         end
         
         
+   
+
         
+%         function stopStream(obj)
+%             %obj.m_dotnetcam.Close();
+%             obj.runPresetScript('reset');
+%             % obj.cmd(obj.getPresetScript('reset'));
+%         end
         
-        function stopStream(obj)
-            obj.m_dotnetcam.Close();
-            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','SW_Reset.txt');
-            obj.runScript(fn)
+%         function restartStream(obj)
+%             obj.runPresetScript('restart');
+%             %obj.cmd(obj.getPresetScript('restart'));
+%             %obj.privConfigureStream();
+%         end
+        
+        function res = shadowUpdate(obj)
+            res = obj.cmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
+            pause(0.1);
         end
         
-        
-        
-        
-        function restartStream(obj)
-            fn = fullfile(fileparts(mfilename('fullpath')),'IVCam20Scripts','Restart_ma_pipe.txt');
-            obj.runScript(fn)
-            obj.privConfigureStream();
+        function res = runPresetScript(obj,scriptName)
+             res=obj.runScript(obj.getPresetScript(scriptName));
         end
         
-        
-        
-        
-        function runScript(obj,fn)
+        function res = runScript(obj,fn)
 %                      sysstr = System.String(fn);
-            result = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
-%             if(~result.IsCompletedOk)
-%                 error(char(result.ErrorMessage))
+            res = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
+%             if(~res.IsCompletedOk)
+%                 error(char(res.ErrorMessage))
 %             end
-%             res = char(result.ResultFormatted);
+%             res = char(res.ResultFormatted);
         end
     end
 end

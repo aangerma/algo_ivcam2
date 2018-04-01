@@ -53,6 +53,10 @@ classdef FirmwareBase <handle
             indx=regexpi({obj.m_registers.regName},regTokens);
             indx=cellfun(@(x) ~isempty(x),indx);
             regsData = obj.m_registers(indx);
+            vv=arrayfun(@(x) Firmware.sprivRegstruct2uint32val(x),regsData);
+            for i=1:length(regsData)
+                regsData(i).valueUINT32=vv(i);
+            end
         end
         
         function rewriteRegisterFiles(obj)
@@ -214,8 +218,7 @@ classdef FirmwareBase <handle
             privWrite2file( obj,outputFn,'config');
         end
         
-        function txtout=genMWDcmd(obj,regTokens,outfn)
-            
+        function m=getAddrData(obj,regTokens)
             if(~exist('regTokens','var') || isempty(regTokens))
                 regTokens={'.'};
             elseif(~iscell(regTokens))
@@ -226,8 +229,33 @@ classdef FirmwareBase <handle
             for t=regTokens(:)'
                 resregs=regexpi({obj.m_registers.regName},t);
                 resluts=regexpi({obj.m_luts.lutName},t);
-                indregs=[indregs find(cellfun(@(x) ~isempty(x),resregs))];%#ok
-                indluts=[indluts find(cellfun(@(x) ~isempty(x),resluts))];%#ok
+                indregs=[indregs find(cellfun(@(x) ~isempty(x),resregs))];
+                indluts=[indluts find(cellfun(@(x) ~isempty(x),resluts))];
+            end
+            addr=[obj.m_registers(indregs).address];
+            data=vec(Firmware.sprivRegstruct2uint32val(obj.m_registers(indregs)))';
+            name={obj.m_registers(indregs).regName};
+            for j=indluts
+            addr=[addr obj.m_luts(j).address+uint64(4*(0:length(obj.m_luts(j).data)-1))];
+            data=[data obj.m_luts(j).data(:)'];
+            name=[name vec(arrayfun(@(x) sprintf('%s_%03d',obj.m_luts(j).lutName,x),0:length(obj.m_luts(j).data)-1,'uni',0))']; %#ok<*AGROW>
+            end
+            m=[num2cell(addr);num2cell(data);name]';
+        end
+        function txtout=genMWDcmd(obj,regTokens,outfn)
+            %TODO: replace with getAddrData
+            if(~exist('regTokens','var') || isempty(regTokens))
+                regTokens={'.'};
+            elseif(~iscell(regTokens))
+                regTokens={regTokens};
+            end
+            indregs=[];
+            indluts=[];
+            for t=regTokens(:)'
+                resregs=regexpi({obj.m_registers.regName},t);
+                resluts=regexpi({obj.m_luts.lutName},t);
+                indregs=[indregs find(cellfun(@(x) ~isempty(x),resregs))];
+                indluts=[indluts find(cellfun(@(x) ~isempty(x),resluts))];
             end
             
             
@@ -236,8 +264,15 @@ classdef FirmwareBase <handle
             m = num2cell([[obj.m_registers(indregs).address]' [obj.m_registers(indregs).address]'+4 Firmware.sprivRegstruct2uint32val(obj.m_registers(indregs))]);
             m=[m {obj.m_registers(indregs).regName}']';
             
+                strOutFormat = 'mwd %08x %08x %08x // %s\n';
             
-            txtout=sprintf('mwd %08x %08x %08x //%s\n',m{:});
+            
+            if(~isempty(m))
+                
+                txtout=sprintf(strOutFormat, m{:});
+            else
+                txtout='';
+            end
             for i=indluts
                 if(any(strcmp(obj.m_luts(i).algoBlock,{'FRMW','MTLB'})))
                     continue;
@@ -256,7 +291,7 @@ classdef FirmwareBase <handle
                         error('Unsopported LUT datasize');
                 end
                 
-                txtout = [txtout sprintf('mwd %08x %08x %08x // %s\n',m{:})];%#ok;
+                txtout = [txtout sprintf(strOutFormat, m{:})]; %#ok;
             end
             
             if(exist('outfn','var') && ~isempty(outfn))

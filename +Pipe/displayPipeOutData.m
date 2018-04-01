@@ -19,6 +19,7 @@ profileYlocs = round(size(po.zImg,1).*(1:1:N-1)/N);
 [planeabcd,pd]=planeFitRansac(po.vImg(:,:,1),po.vImg(:,:,2),po.vImg(:,:,3));
 pd = pd+planeabcd(end);
 pdlims = nanmean(pd(:))+[-1 1]*nanstd(pd(:));
+pdlims(isnan(pdlims))=0;pdlims=pdlims+[0 1e-3];
 profCols = hsv(max(length(profileXlocs),length(profileYlocs)));
 
 subplot(221);
