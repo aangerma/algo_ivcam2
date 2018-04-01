@@ -39,13 +39,18 @@ classdef HWinterface <handle
     
     methods (Access=public)
         
-         function res = cmd(obj,str)
+         function [res,val] = cmd(obj,str)
             sysstr = System.String(str);
             result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
             if(~result.IsCompletedOk)
                 error(char(result.ErrorMessage))
             end
             res = char(result.ResultFormatted);
+            try
+                val = typecast(uint8(result.ResultRawData),'uint32');
+            catch
+                val=nan;
+            end
          end
          
          %destructor
@@ -74,37 +79,80 @@ classdef HWinterface <handle
             txt=obj.m_presetScripts(scriptname);
         end
         
-        function disp(obj,regTokens)
-            strOutFormat = 'mrd %08x %08x';
+        function dispRegs(obj,regTokens)
+            
             if(~exist('regTokens','var'))
                 regTokens=[];
             end           
-            
-            meta = obj.m_fw.getAddrData(regTokens);
-            for i=1:length(meta)
-                cmd = sprintf(strOutFormat,meta{i,1},meta{i,1}+1);
-                res = obj.cmd(cmd);
-                res = res(end-7:end);
-                disp([res ' //' meta{i,3}]);
-            end
+            [vals,algoNames]=obj.read(regTokens);
+            s=[num2cell(vals) algoNames]';
+            fprintf('%08x //%s\n',s{:});
 
         end
         
-        function vals=read(obj,regTokens)
+        function val=writeAddr(obj,addr,val,safeWrite)
+            if(~exist('safeWrite','var'))
+                safeWrite=false;
+            end
+            if(ischar(addr))
+                addr=uint32(hex2dec(addr));
+            elseif(isa(addr,'uint32'))
+            else
+                error('addr should be either hex or uint32');
+            end
+            if(ischar(val))
+                val=uint32(hex2dec(val));
+            elseif(~isa(val,'uint32'))
+                error('Value should be uint32');
+            end
+            
+            if(~safeWrite)
+                [~,val]=obj.cmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                return;
+            end
+            %safe write
+            nAttempts=10;
+            for i=1:nAttempts
+                obj.cmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                val_=obj.readAddr(addr);
+                if(val==val_)
+                    return;
+                end
+                
+            end
+            error('Could not write register');
+        end
+        
+        function val=readAddr(obj,addr)
+            if(ischar(addr))
+                addr=uint32(hex2dec(addr));
+            elseif(isa(addr,'uint32'))
+            else
+                error('addr should be either hex or uint32');
+            end
+            
+            [~,val]=obj.cmd(sprintf('mrd %08x %08x',addr,addr+4));
+        end
+        
+        function [vals,algoNames]=read(obj,regTokens)
             strOutFormat = 'mrd %08x %08x';
             if(~exist('regTokens','var'))
                 regTokens=[];
             end
             
             meta = obj.m_fw.getAddrData(regTokens);
-            vals = zeros(length(meta),1);
-            for i=1:length(meta)
-                cmd = sprintf(strOutFormat,meta{i,1},meta{i,1}+1);
+            vals = zeros(size(meta,1),1,'uint32');
+            for i=1:size(meta,1)
+                if(any(strcmpi(meta{i,3}(1:4),{'MTLB','FRMW','EPTG'})))
+                    continue;
+                end
+                cmd = sprintf(strOutFormat,meta{i,1},meta{i,1}+4);
                 res = obj.cmd(cmd);
                 res = res(end-7:end);
                 vals(i)=uint32(hex2dec(res));
                 
             end
+            algoNames=meta(:,3);
             
         end
         
