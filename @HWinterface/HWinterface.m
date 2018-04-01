@@ -156,8 +156,12 @@ classdef HWinterface <handle
             
         end
         
-        function setReg(obj,regName,regVal)
+        function setReg(obj,regName,regVal,forceUpdate)
+            if(exist('forceUpdate','var') && forceUpdate)
+                obj.m_fw.setRegs(regName,regVal,'forceupdate');
+            else
             obj.m_fw.setRegs(regName,regVal);
+            end
             meta = obj.m_fw.genMWDcmd(regName);
             obj.cmd(meta);
         end
