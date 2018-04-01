@@ -1,13 +1,13 @@
 function mdl=generateRandomSecene(seed)
 rng(seed)
 N_ELEMS=randi([10 100],1);
-cubp=rand
+cubp=rand;
 vv=[];
 ff=[];
 cc=[];
 S=randi([500 5000],1);
 for i=1:N_ELEMS
-    if(rand>.25)
+    if(rand>cubp)
         [v,f]=dataGen.Shapes.cube();
     else
         [v,f]=dataGen.Shapes.icosphere(1);
