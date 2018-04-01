@@ -107,6 +107,12 @@ classdef FirmwareBase <handle
                 s.(blockName).(algoReg)=varargin{3};
                 vals = obj.privAlgoStruct2AsicStruct( s );
                 updatedBy = [];
+            elseif(nargin==4 && isa(varargin{2},'char')) %single reg
+                
+                [blockName,algoReg] = FirmwareBase.sprivConvertRegName2blockNameId(varargin{2});
+                s.(blockName).(algoReg)=varargin{3};
+                vals = obj.privAlgoStruct2AsicStruct( s );
+                updatedBy = varargin{4};            
             else
                 error('incorrect input for FirmwareBase.setRegs');
             end
