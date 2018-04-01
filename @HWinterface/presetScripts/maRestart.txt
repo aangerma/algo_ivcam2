@@ -1,4 +1,3 @@
-mrd a0050828 a005082c 00001000 //[m_regmodel.interrupt_proj.RegsProjHardErrIntStatus] TYPE_REG
 mwd a0050828 a005082c 00001000 //[m_regmodel.interrupt_proj.RegsProjHardErrIntStatus] TYPE_REG
 mwd a001091c a0010920 00000001 //[m_regmodel.pmg_ehw_pmg.RegsPmgSystemSafe] TYPE_REG
 mwd a0050828 a005082c 11111111 //[m_regmodel.interrupt_proj.RegsProjHardErrIntStatus] TYPE_REG
