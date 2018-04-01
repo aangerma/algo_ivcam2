@@ -253,7 +253,7 @@ classdef FirmwareBase <handle
             else
                 txtout='';
             end
-            txtout=[newline txtout];
+            
             if(exist('outfn','var') && ~isempty(outfn))
                 fid=fopen(outfn,'w');
                 fprintf(fid,txtout);
