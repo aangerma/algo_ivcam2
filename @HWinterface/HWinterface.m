@@ -147,22 +147,26 @@ classdef HWinterface <handle
                     continue;
                 end
                 cmd = sprintf(strOutFormat,meta{i,1},meta{i,1}+4);
-                res = obj.cmd(cmd);
-                res = res(end-7:end);
-                vals(i)=uint32(hex2dec(res));
+                [~,vals(i)] = obj.cmd(cmd);
+    
                 
             end
             algoNames=meta(:,3);
             
         end
         
-        function setReg(obj,regName,regVal,forceUpdate)
-            if(exist('forceUpdate','var') && forceUpdate)
-                obj.m_fw.setRegs(regName,regVal,'forceupdate');
-            else
-            obj.m_fw.setRegs(regName,regVal);
+        function setReg(obj,regToken,regVal,forceUpdate)
+            m=obj.m_fw.getMeta(regToken);
+            if(length(m)~=1)
+                error('can set only one register');
             end
-            meta = obj.m_fw.genMWDcmd(regName);
+            regVal_=cast(uint32(regVal),m.type);
+            if(exist('forceUpdate','var') && forceUpdate)
+                obj.m_fw.setRegs(m.regName,regVal_,'forceupdate');
+            else
+            obj.m_fw.setRegs(m.regName,regVal_);
+            end
+            meta = obj.m_fw.genMWDcmd(m.regName);
             obj.cmd(meta);
         end
         
@@ -198,7 +202,8 @@ classdef HWinterface <handle
                 for i = 1:n
                     stream(i) = obj.getFrame();%#ok
                 end
-                collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
+                meanNoZero = @(m) sum(double(m),3)./sum(m~=0,3);
+                collapseM = @(x) meanNoZero(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]));
                 frame.z=collapseM('z');
                 frame.i=collapseM('i');
                 frame.c=collapseM('c');
@@ -255,6 +260,13 @@ classdef HWinterface <handle
         end
         
         function res = runPresetScript(obj,scriptName)
+            if(nargin==1)
+                k=obj.m_presetScripts.keys;
+                k=[k;k];
+                fprintf('Available scripts:\n');
+                fprintf('\t-<a href="matlab:hw.runPresetScript(''%s'');">%s</a>\n',k{:});
+                return;
+            end
              res=obj.runScript(obj.getPresetScript(scriptName));
         end
         
