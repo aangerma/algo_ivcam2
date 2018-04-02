@@ -1,4 +1,4 @@
-function [errStat] = edgeTrans(ir,tunnelWidth, expectedGridSize, verbose)
+function [res] = edgeTrans(ir,tunnelWidth, expectedGridSize, verbose)
 ir = double(ir);
 if(~exist('tunnelWidth','var'))
     tunnelWidth=7;
@@ -10,7 +10,7 @@ if(~exist('verbose','var'))
     verbose=false;
 end
 
-ir(sum(ir(:,2:end-1),2)==0,:)=[];
+%ir(sum(ir(:,2:end-1),2)==0,:)=[];
 
 ir_=ir;
 
@@ -39,7 +39,10 @@ end
 % if(~all(bsz-1==boardSize))
 %     error('Bad binput image/board size');
 % end
- 
+
+res.gridSize = gridSize;
+res.points = pt;
+res.img = I;
  
 pts=reshape(pt(:,1)+1j*pt(:,2),gridSize);
 
@@ -76,15 +79,15 @@ for j=1:vSize(2)
     end
 end
 
-errStat.horizMin = min(hTrans(:));
-errStat.horizMax = max(hTrans(:));
-errStat.horizMean = mean(hTrans(:));
-errStat.horizStd = std(hTrans(:));
+res.horizMin = min(hTrans(:));
+res.horizMax = max(hTrans(:));
+res.horizMean = mean(hTrans(:));
+res.horizStd = std(hTrans(:));
 
-errStat.vertMin = min(vTrans(:));
-errStat.vertMax = max(vTrans(:));
-errStat.vertMean = mean(vTrans(:));
-errStat.vertStd = std(vTrans(:));
+res.vertMin = min(vTrans(:));
+res.vertMax = max(vTrans(:));
+res.vertMean = mean(vTrans(:));
+res.vertStd = std(vTrans(:));
 
 
 end
