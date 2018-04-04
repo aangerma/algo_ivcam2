@@ -1,12 +1,12 @@
 function [regs,ok]=calibrate(hw,verbose)
 SLOW_DELAY_INIT_VAL = 29000;
-FAST_DELAY_OFFSET=80;
+FAST_DELAY_OFFSET=40;
 N_ITR=20;
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 
 %% :::::::::::::::::::::::::::::::SET:::::::::::::::::::::::::::::::
 calibconfig       =struct('name','RASTbiltBypass'     ,'val',true     );
-calibconfig(end+1)=struct('name','JFILbypass'        ,'val',false    );
+calibconfig(end+1)=struct('name','JFILbypass$'        ,'val',false    );
 calibconfig(end+1)=struct('name','JFILbilt1bypass'    ,'val',true     );
 calibconfig(end+1)=struct('name','JFILbilt2bypass'    ,'val',true     );
 calibconfig(end+1)=struct('name','JFILbilt3bypass'    ,'val',true     );
@@ -36,48 +36,48 @@ calibconfig(end+1)=struct('name','DESTaltIrEn'        ,'val',false );
 %% :::::::::::::::::::::::::::::::GET OLD VALUES:::::::::::::::::::::::::::::::
 
 for i=1:length(calibconfig)
-    calibconfig(i).oldval=hw.read([calibconfig(i).name '$']);%exact name
+    calibconfig(i).oldval=hw.read(calibconfig(i).name );%exact name
 end
 
 %% :::::::::::::::::::::::::::::::SET CALIB VALUES:::::::::::::::::::::::::::::::
 for i=1:length(calibconfig)
-    hw.setReg([calibconfig(i).name   '$'] ,calibconfig(i).val,true);
+    hw.setReg(calibconfig(i).name    ,calibconfig(i).val,true);
 end
 hw.shadowUpdate();
 
 %%calibration loop
 
-%% :::::::::::::::::::::::::::::::CALIBRATE:::::::::::::::::::::::::::::::
+%% :::::::::::::::::::::::::::::::CALIBRATE SLOW:::::::::::::::::::::::::::::::
 
-hw.setReg('DESTaltIrEn'    ,false);
+
 delaySlow=SLOW_DELAY_INIT_VAL;
 
 
 ok=false;
-incDir=1;
-dold = nan;
+
+d=nan(N_ITR,1);
 for i=1:N_ITR
-    Calibration.conloc.setAbsDelay(hw,delaySlow,false);
-    [d,im]=calcDelayFix(hw);
-    if(isnan(d))%CB was not found, throw delay forward to find a good location
-        d = 3000;
+    Calibration.dataDelay.setAbsDelay(hw,delaySlow,false);
+    [d(i),im]=calcDelayFix(hw);
+    if(isnan(d(i)))%CB was not found, throw delay forward to find a good location
+        d(i) = 3000;
     end
     if(verbose)
         figure(sum(mfilename));
         imagesc(im);
-        title(sprintf('%d (%d)',delaySlow,d));
+        title(sprintf('%d (%d)',delaySlow,d(i)));
         drawnow;
     end
     
-    if(d==0)
+    if(d(i)==0)
         ok=true;
         break;
     end
-    if(~isnan(dold) && abs(dold)<abs(d))
-        incDir=-incDir;
+    if(i==2 && abs(d(2))>abs(d(1)))
+        warning('delay not converging!');
+        break;
     end
-    dold=d;
-    delaySlow=delaySlow+d*incDir;
+    delaySlow=delaySlow+d(i);
     if(delaySlow<0)
         break;
     end
@@ -86,8 +86,11 @@ end
       close(sum(mfilename));
       drawnow;
   end
+  
+  
+  %% :::::::::::::::::::::::::::::::SET REGISTERS:::::::::::::::::::::::::::::::
+  regs=Calibration.dataDelay.setAbsDelay(hw,delaySlow+FAST_DELAY_OFFSET,true);  
 
-Calibration.conloc.setAbsDelay(hw,delaySlow-FAST_DELAY_OFFSET,false);
 
 
 
@@ -109,6 +112,7 @@ function [im1,im2,d]=getSpeperateScansImgs(hw)
     gainCalibValue  = '000ffff0';
     saveVal(1) =hw.readAddr(scanDir1gainAddr);
     saveVal(2) =hw.readAddr(scanDir2gainAddr);
+%     saveVal=uint32(hex2dec({'03017','04047'}));
     hw.writeAddr(scanDir1gainAddr,gainCalibValue,true);
     d(1)=hw.getFrame(30);
     hw.writeAddr(scanDir1gainAddr,saveVal(1),true);
@@ -122,7 +126,7 @@ end
 function [d,im]=calcDelayFix(hw)
 %im1 - top to bottom
 %im2 - bottom to top
-[im1,im2]=getSpeperateScansImgs(hw);
+[im2,im1]=getSpeperateScansImgs(hw);
 
 %time per pixel in spherical coordinates
 nomMirroFreq = 20e3;
