@@ -2,11 +2,12 @@ function [score,dbg]=runCalibStream(params, fprintff)
 t=tic;
 
 %% ::caliration configuration
-calibParams.errRange.delayF =  [0.5 4.0];
-calibParams.errRange.delayS =  [0.5 4.0];
+calibParams.errRange.delayF =  [0 1.0];
+calibParams.errRange.delayS =  [0 1.0];
 calibParams.errRange.geomErr = [0.5 3.0];
 calibParams.errRange.geomErrVal =  [0.5 3.0];
 calibParams.errRange.gammaErr =  [1 5000];
+calibParams.passScore = 60;
 inrange =@(x,r)  x<r(2);
 
 results = struct;
@@ -59,12 +60,12 @@ fprintff('Depth and IR delay calibration...\n');
 
 if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.fineDepthDelay]))
     
-    dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
+    dbg.preImg=Calibration.aux.showImageRequestDialog(hw,1,diag([.8 .8 1]));
 %     [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params);
     
-    [delayRegs,ok]=Calibration.conloc.calibrate(hw,params.verbose);
-    results.delayS=(1-ok)*100;
-    results.delayF=(1-ok)*100;
+    [delayRegs,ok]=Calibration.dataDelay.calibrate(hw,params.verbose);
+    results.delayS=(1-ok);
+    results.delayF=(1-ok);
     if(ok)
         fprintff('[v] ir calib passed[e=%g]\n',results.delayS);
     else
@@ -86,7 +87,7 @@ if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.f
 else
     results.delayS=inf;
     results.delayF=inf;
-    fprintff('skipped\m');
+    fprintff('skipped\n');
 end
 
 %% ::gamma::
@@ -94,19 +95,20 @@ params.gamma = false;
 fprintff('gamma...\n');
 if (params.gamma)
     
-    [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,params.verbose);
-    
-    if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
-        fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
-    else
-        fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
-        score = 0;
-        return;
-    end
-    fw.setRegs(gammaregs,fnCalib);
+%     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,params.verbose);
+%     
+%     if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
+%         fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
+%     else
+%         fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
+%         score = 0;
+%         return;
+%     end
+%     fw.setRegs(gammaregs,fnCalib);
+    results.gammaErr=0;
 else
     results.gammaErr=inf;
-    fprintff('skipped\m');
+    fprintff('skipped\n');
 end
 
 %% ::DFZ::
@@ -120,12 +122,12 @@ if(params.DFZ)
     hw.setReg('DIGGsphericalEn',true);
     hw.shadowUpdate();
     
-    d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
-    d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
-    d(3)=showImageRequestDialog(hw,1,diag([.5 .5 1]));
-    d(4)=showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
-    d(5)=showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
-    d(6)=showImageRequestDialog(hw,2,diag([2 2 1]));
+    d(1)=Calibration.aux.showImageRequestDialog(hw,1,diag([.7 .7 1]));
+    d(2)=Calibration.aux.showImageRequestDialog(hw,1,diag([.6 .6 1]));
+    d(3)=Calibration.aux.showImageRequestDialog(hw,1,diag([.5 .5 1]));
+    d(4)=Calibration.aux.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
+    d(5)=Calibration.aux.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
+    d(6)=Calibration.aux.showImageRequestDialog(hw,2,diag([2 2 1]));
     dbg.d=d;
     dbg.regs=regs;
     dbg.luts=luts;
@@ -146,7 +148,7 @@ if(params.DFZ)
     end
     fprintff('Done(%d)\n',round(toc(t)));
 else
-    fprintff('skipped\m');
+    fprintff('skipped\n');
     results.geomErr=inf;
 end
 
@@ -175,7 +177,7 @@ if(params.validation)
         
     end
 else
-    fprintff('skipped\m');
+    fprintff('skipped\n');
     results.geomErrVal=inf;
 end
 
@@ -208,7 +210,7 @@ fw.writeFirmwareFiles(params.outputFolder);
 f = fieldnames(results);
 scores=zeros(length(f),1);
 for i = 1:length(f)
-    scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99+1);
+    scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99);
 end
 score = min(scores);
 
@@ -222,15 +224,29 @@ if(params.verbose)
     fprintff('%s\n',repmat('-',1,ll));
     s04=floor((score-1)/100*5);
     asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-    fprintff('% 10s: %s\n','score',asciibar);
+    fprintff('% 10s: %s %g\n','score',asciibar,score);
     
 end
 
 %hw.runPresetScript('stopStream');
-
+fprintff('[!] calibration ended - ');
+if(score==0)
+    fprintff('failed');
+elseif(score<calibParams.passScore)
+    fprintff('quality failed');
+else
+    fprintff('pass');
+end
+    
 
 if(params.burnCalibrationToDevice)
-    hw.burn2device();
+    fprintff('Burning results to device...');
+    if(score>=calibParams.passScore)
+        hw.burn2device();
+        fprintff('Done(%d)\n',round(toc(t)));
+    else
+        fprintff('skiiped, score too low(%d)\n',score);
+    end
 end
 
 end
@@ -260,7 +276,7 @@ maximizeFig(f);
 I = mean(figImgs{figNum},3);
 %%
 
-move2Ncoords = [2/size(I,2) 0 0 ; 0 2/size(I,1) 0; -1 -1 1];
+move2Ncoords = [2/size(I,2) 0 0 ; 0 2/size(I,1) 0; -1/size(I,2)-1 -1/size(I,1)-1 1];
 
 It= imwarp(I, projective2d(move2Ncoords*tformData'),'bicubic','fill',0,'OutputView',imref2d([480 640],[-1 1],[-1 1]));
 It = uint8(It.*permute([0 1 0],[3 1 2]));
@@ -283,3 +299,4 @@ raw=hw.getFrame(30);
 
 
 end
+
