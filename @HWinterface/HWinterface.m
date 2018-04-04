@@ -114,6 +114,7 @@ classdef HWinterface <handle
             nAttempts=10;
             for i=1:nAttempts
                 obj.cmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                pause(0.1);
                 val_=obj.readAddr(addr);
                 if(val==val_)
                     return;
