@@ -35,17 +35,24 @@ if(0)
 end
 %%
 xbest=x0;
-xL = [40 40 0    -3 -3];
-xH = [90 90 8000  3  3];
+xL = [50 50 0    -3 -3];
+xH = [80 80 8000  3  3];
 xeps=[.5 .5 0.1 0.1 0.1];
 xstep = 1;
 
-[xbest(1:3),outputErr]=gradientDecent2(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),x0(1:3),'xStep',[5 5 100],'xeps',xeps(1:3),'plot',verbose,'verbose',verbose);
-[xbest(1:3)]=gradientDecent(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),x0(1:3),'xL',xL(1:3),'xH',xH(1:3),'plot',false,'verbose',verbose,'eStepTol',0.01,'xeps',0.001);
+% [xbest(1:3),outputErr]=gradientDecent2(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),x0(1:3),'xStep',[5 5 100],'xeps',xeps(1:3),'plot',verbose,'verbose',verbose);
 
-regs=Firmware.mergeRegs(regs, Calibration.DFZ.x2regs(xbest));
-[xbest(4:5),outputErr]=gradientDecent2(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),xbest(4:5),'xStep',[.2 .2],'xeps',xeps(4:5),'plot',verbose,'verbose',verbose);
-[xbest(4:5),outputErr]=gradientDecent(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),x0(4:5),'xL',xL(4:5),'xH',xH(4:5),'plot',false,'verbose',true,'eStepTol',0.0001,'xeps',0.0001);
+%%
+xbest=x0;
+% [xbest(1:3),outputErr]=fminsearchbnd(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),xbest(1:3),xL(1:3),xH(1:3));
+[xbest,outputErr]=fminsearchbnd(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),xbest,xL,xH);
+[~,v]=Calibration.DFZ.errFunc(stream.s,regs,luts,xbest,true);
+ outputErr = Calibration.DFZ.distanceMetrics(reshape(v,[],3)',[size(v,1),size(v,2)],verbose);
+%%
+
+% regs=Firmware.mergeRegs(regs, Calibration.DFZ.x2regs(xbest));
+% [xbest(4:5),outputErr]=gradientDecent2(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),xbest(4:5),'xStep',[.2 .2],'xeps',xeps(4:5),'plot',verbose,'verbose',verbose);
+% [xbest(4:5),outputErr]=gradientDecent(@(x) Calibration.DFZ.errFunc(stream.s,regs,luts,x,false),x0(4:5),'xL',xL(4:5),'xH',xH(4:5),'plot',false,'verbose',true,'eStepTol',0.0001,'xeps',0.0001);
 
 
 % if(verbose)
