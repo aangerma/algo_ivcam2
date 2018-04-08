@@ -17,6 +17,6 @@ JFILsort1Edge01     b1
 JFILsort1Edge03     b1
 JFILsort3bypassMode b1
 JFILinvBypass       b0
-
+DIGGnotchBypass		b1
 DESTconfw1			h01000000
 DESTconfIRbitshift  h00000005

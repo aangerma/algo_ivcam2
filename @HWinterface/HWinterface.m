@@ -9,20 +9,20 @@ classdef HWinterface <handle
     
     
     
-     methods ( Access=private)
-     function privLoadPresetScripts(obj)
+    methods ( Access=private)
+        function privLoadPresetScripts(obj)
             scriptsfldr=fullfile(fileparts(mfilename('fullpath')),'presetScripts');
             if(exist(scriptsfldr,'dir'))
-            fns=dirFiles(scriptsfldr,'*.txt',false);
-            keys = cellfun(@(x) x(1:end-4),fns,'uni',0);
-             vals = cellfun(@(x) fullfile(scriptsfldr,x),fns,'uni',0);
+                fns=dirFiles(scriptsfldr,'*.txt',false);
+                keys = cellfun(@(x) x(1:end-4),fns,'uni',0);
+                vals = cellfun(@(x) fullfile(scriptsfldr,x),fns,'uni',0);
             else
                 keys={};
                 vals={};
             end
             obj.m_presetScripts=containers.Map(keys,vals);
-          end
-     end
+        end
+    end
     methods (Static=true, Access=private)
         %
     end
@@ -31,7 +31,7 @@ classdef HWinterface <handle
         privInitCam(obj);
         privConfigureStream(obj);
         
-       
+        
         
     end
     
@@ -39,30 +39,35 @@ classdef HWinterface <handle
     
     methods (Access=public)
         
-         function res = cmd(obj,str)
+        function [res,val] = cmd(obj,str)
             sysstr = System.String(str);
             result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
             if(~result.IsCompletedOk)
                 error(char(result.ErrorMessage))
             end
             res = char(result.ResultFormatted);
-         end
-         
-         %destructor
-         function delete(obj)
+            try
+                val = typecast(uint8(result.ResultRawData),'uint32');
+            catch
+                val=nan;
+            end
+        end
+        
+        %destructor
+        function delete(obj)
             obj.runScript(obj.getPresetScript('stopStream'));
             obj.m_dotnetcam.Close();
         end
         
         
-      
+        
         burn2device(obj,basedir,burunConfiguration);
         
         function obj = HWinterface(fw)
             if(nargin==0)
                 fw = Firmware;
             end
-           
+            
             obj.m_fw = fw;
             obj.privInitCam();
             obj.privConfigureStream();
@@ -74,28 +79,95 @@ classdef HWinterface <handle
             txt=obj.m_presetScripts(scriptname);
         end
         
-        function disp(obj,regTokens)
+        function dispRegs(obj,regTokens)
+            
             if(~exist('regTokens','var'))
                 regTokens=[];
-            end           
-            
-            meta = obj.m_fw.genMWDcmd(regTokens);
-            meta = str2cell(meta,newline);
-            meta(end) = [];%only newLine
-%             regStruct=[];
-            for i=1:length(meta)
-                str = strsplit(meta{i});
-                res = obj.cmd(['mrd ' str{2} ' ' str{3}]);
-                res = res(end-7:end);
-%                 regStruct.(a(1).algoBlock).(a(1).algoName)=uint32(hex2dec(res));
-                disp([res ' //' str{6}]);
             end
-%             obj.m_fw.setRegs(regStruct);
+            [vals,algoNames]=obj.read(regTokens);
+            s=[num2cell(vals) algoNames]';
+            fprintf('%08x //%s\n',s{:});
+            
         end
         
-        function setReg(obj,regName,regVal)
-            obj.m_fw.setRegs(regName,regVal);
-            meta = obj.m_fw.genMWDcmd(regName);
+        function val=writeAddr(obj,addr,val,safeWrite)
+            if(~exist('safeWrite','var'))
+                safeWrite=false;
+            end
+            if(ischar(addr))
+                addr=uint32(hex2dec(addr));
+            elseif(isa(addr,'uint32'))
+            else
+                error('addr should be either hex or uint32');
+            end
+            if(ischar(val))
+                val=uint32(hex2dec(val));
+            elseif(~isa(val,'uint32'))
+                error('Value should be uint32');
+            end
+            
+            if(~safeWrite)
+                [~,val]=obj.cmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                return;
+            end
+            %safe write
+            nAttempts=10;
+            for i=1:nAttempts
+                obj.cmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                pause(0.1);
+                val_=obj.readAddr(addr);
+                if(val==val_)
+                    return;
+                end
+                
+            end
+            error('Could not write register');
+        end
+        
+        function val=readAddr(obj,addr)
+            if(ischar(addr))
+                addr=uint32(hex2dec(addr));
+            elseif(isa(addr,'uint32'))
+            else
+                error('addr should be either hex or uint32');
+            end
+            
+            [~,val]=obj.cmd(sprintf('mrd %08x %08x',addr,addr+4));
+        end
+        
+        function [vals,algoNames]=read(obj,regTokens)
+            strOutFormat = 'mrd %08x %08x';
+            if(~exist('regTokens','var'))
+                regTokens=[];
+            end
+            
+            meta = obj.m_fw.getAddrData(regTokens);
+            vals = zeros(size(meta,1),1,'uint32');
+            for i=1:size(meta,1)
+                if(any(strcmpi(meta{i,3}(1:4),{'MTLB','FRMW','EPTG'})))
+                    continue;
+                end
+                cmd = sprintf(strOutFormat,meta{i,1},meta{i,1}+4);
+                [~,vals(i)] = obj.cmd(cmd);
+                
+                
+            end
+            algoNames=meta(:,3);
+            
+        end
+        
+        function setReg(obj,regToken,regVal,forceUpdate)
+            m=obj.m_fw.getMeta(regToken);
+            if(length(m)~=1)
+                error('can set only one register');
+            end
+            regVal_=cast(uint32(regVal),m.type);
+            if(exist('forceUpdate','var') && forceUpdate)
+                obj.m_fw.setRegs(m.regName,regVal_,'forceupdate');
+            else
+                obj.m_fw.setRegs(m.regName,regVal_);
+            end
+            meta = obj.m_fw.genMWDcmd(m.regName);
             obj.cmd(meta);
         end
         
@@ -117,7 +189,7 @@ classdef HWinterface <handle
             
         end
         
-       
+        
         
         function fw=getFirmware(obj)
             fw=obj.m_fw;
@@ -131,7 +203,8 @@ classdef HWinterface <handle
                 for i = 1:n
                     stream(i) = obj.getFrame();%#ok
                 end
-                collapseM = @(x) mean(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]),3);
+                meanNoZero = @(m) sum(double(m),3)./sum(m~=0,3);
+                collapseM = @(x) meanNoZero(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]));
                 frame.z=collapseM('z');
                 frame.i=collapseM('i');
                 frame.c=collapseM('c');
@@ -155,7 +228,7 @@ classdef HWinterface <handle
             cImByte = imageObj.Item(0).Data;
             cIm8 = cast(cImByte,'uint8');
             frame.c=reshape([ bitand(cIm8(:),uint8(15)) bitshift(cIm8(:),-4)]',size(frame.i));
-          
+            
             
             if(0)
                 %%
@@ -167,20 +240,20 @@ classdef HWinterface <handle
         end
         
         
-   
-
         
-%         function stopStream(obj)
-%             %obj.m_dotnetcam.Close();
-%             obj.runPresetScript('reset');
-%             % obj.cmd(obj.getPresetScript('reset'));
-%         end
         
-%         function restartStream(obj)
-%             obj.runPresetScript('restart');
-%             %obj.cmd(obj.getPresetScript('restart'));
-%             %obj.privConfigureStream();
-%         end
+        
+        %         function stopStream(obj)
+        %             %obj.m_dotnetcam.Close();
+        %             obj.runPresetScript('reset');
+        %             % obj.cmd(obj.getPresetScript('reset'));
+        %         end
+        
+        %         function restartStream(obj)
+        %             obj.runPresetScript('restart');
+        %             %obj.cmd(obj.getPresetScript('restart'));
+        %             %obj.privConfigureStream();
+        %         end
         
         function res = shadowUpdate(obj)
             res = obj.cmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
@@ -188,16 +261,23 @@ classdef HWinterface <handle
         end
         
         function res = runPresetScript(obj,scriptName)
-             res=obj.runScript(obj.getPresetScript(scriptName));
+            if(nargin==1)
+                k=obj.m_presetScripts.keys;
+                k=[k;k];
+                fprintf('Available scripts:\n');
+                fprintf('\t-<a href="matlab:hw.runPresetScript(''%s'');">%s</a>\n',k{:});
+                return;
+            end
+            res=obj.runScript(obj.getPresetScript(scriptName));
         end
         
         function res = runScript(obj,fn)
-%                      sysstr = System.String(fn);
+            %                      sysstr = System.String(fn);
             res = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
-%             if(~res.IsCompletedOk)
-%                 error(char(res.ErrorMessage))
-%             end
-%             res = char(res.ResultFormatted);
+            %             if(~res.IsCompletedOk)
+            %                 error(char(res.ErrorMessage))
+            %             end
+            %             res = char(res.ResultFormatted);
         end
     end
 end
