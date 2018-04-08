@@ -60,7 +60,7 @@ fprintff('Depth and IR delay calibration...\n');
 
 if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.fineDepthDelay]))
     
-    dbg.preImg=Calibration.aux.showImageRequestDialog(hw,1,diag([.8 .8 1]));
+    dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
 %     [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params);
     
     [delayRegs,ok]=Calibration.dataDelay.calibrate(hw,params.verbose);
@@ -122,12 +122,12 @@ if(params.DFZ)
     hw.setReg('DIGGsphericalEn',true);
     hw.shadowUpdate();
     
-    d(1)=Calibration.aux.showImageRequestDialog(hw,1,diag([.7 .7 1]));
-    d(2)=Calibration.aux.showImageRequestDialog(hw,1,diag([.6 .6 1]));
-    d(3)=Calibration.aux.showImageRequestDialog(hw,1,diag([.5 .5 1]));
-    d(4)=Calibration.aux.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
-    d(5)=Calibration.aux.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
-    d(6)=Calibration.aux.showImageRequestDialog(hw,2,diag([2 2 1]));
+    d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
+    d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
+    d(3)=showImageRequestDialog(hw,1,diag([.5 .5 1]));
+    d(4)=showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
+    d(5)=showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
+    d(6)=showImageRequestDialog(hw,2,diag([2 2 1]));
     dbg.d=d;
     dbg.regs=regs;
     dbg.luts=luts;
