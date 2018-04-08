@@ -1,13 +1,19 @@
-function calibrate(outputFolder)
-    if(outputFolder(end)~=filesep)
+function calibrate(params,fprintff)
+    calibparams.rgbExtrinsicsRMSthreshold = 3.0;
+    
+    outputFolder=params.outputFolder;
+    if(isempty(outputFolder) || outputFolder(end)~=filesep)
         outputFolder(end+1)=filesep;
     end
-    intermidiateFldr=fullfile(outputFolder,'algoInternal');
     
+    intermidiateFldr=fullfile(outputFolder,'algoInternal',filesep);
     mkdirSafe(outputFolder);
     mkdirSafe(intermidiateFldr);
+    fprintff('[*] grabbing images...');
     [imgs,k_depth]=rgbCalib.grabImages();
+    fprintff('done\n');
     save(fullfile(intermidiateFldr,'imgs.mat'),imgs);
+    fprintff('[*] finding corneres...');
     
     targetParams = Calibration.getTargetParams();
     tbsz=[targetParams.cornersX targetParams.cornersY];
@@ -24,10 +30,17 @@ function calibrate(outputFolder)
             cbCorners(end+1,:)=crnrns;%#ok
         end
     end
-    
+    fprintff('done (found corners in %d out of %d)\n',size(cbCorners,1),size(imgs,1));
+    fprintff('[*] calibrating...',size(cbCorners,1),size(imgs,1));
     res=runCalibration(cbCorners,targetParams,k_depth);
+    fprintff('done (%d)\n',res.extrinsics.rms);
     struct2xmlWrapper(res,fullfile(outputFolder,'rgbCalib.xml'));
-    
+    fprintff('[*] calibration ended -');
+    if(res.extrinsics.rms>calibparams.rgbExtrinsicsRMSthreshold)
+        fprintff('fail');
+    else
+        fprintff('pass');
+    end
 end
 
 function res = runCalibration(cbCorners,targetInfo,k_depth)
