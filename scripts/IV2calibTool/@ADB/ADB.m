@@ -32,17 +32,20 @@ classdef ADB<handle
         
         function obj = ADB()
             obj.m_adbexe=fullfile(fileparts(mfilename('fullpath')),filesep,'adb.exe');
-            obj.cmd('start-server');
+            [val,ok]=obj.cmd('start-server');%#ok
         end
         
         function im=getCameraFrame(obj)
             remoteCamDir='mnt/sdcard/dcim/Camera';
-            lastimfn_=obj.shell('cd mnt/sdcard/dcim/Camera && ls -Art | tail -n 1');
+            [lastimfn_,failed]=obj.shell('cd mnt/sdcard/dcim/Camera && ls -Art | tail -n 1');
+            if(failed)
+                error(lastimfn_);
+            end
             obj.shell('am start -a android.media.action.STILL_IMAGE_CAMERA');
             obj.shell('input keyevent KEYCODE_FOCUS');
             pause(1);
             obj.shell('input keyevent KEYCODE_CAMERA');
-            pause(2);
+            pause(2.5);
             lastimfn=obj.shell('cd %s && ls -Art | tail -n 1',remoteCamDir);
             if(isequal(lastimfn,lastimfn_))
                 im=[];

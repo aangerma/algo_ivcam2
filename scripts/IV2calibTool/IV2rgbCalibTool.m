@@ -16,6 +16,7 @@ classdef IV2rgbCalibTool < matlab.apps.AppBase
         Button_3                        matlab.ui.control.Button
         logarea                         matlab.ui.control.TextArea
         verboseCheckBox                 matlab.ui.control.CheckBox
+        distortionCheckBox                 matlab.ui.control.CheckBox
         VersionLabel                    matlab.ui.control.Label
     end
     
@@ -135,8 +136,10 @@ classdef IV2rgbCalibTool < matlab.apps.AppBase
             params.outputFolder=app.Outputdirectorty.Value;
             params.version=app.VERSION;
             params.verbose=app.verboseCheckBox.Value;
+            params.distortion=app.distortionCheckBox.Value;
             try
                 %=======================================================RUN CALIBRATION=======================================================
+              
                 rgbCalib.calibrate(params,fprintffS);
                
             catch e
@@ -148,6 +151,7 @@ classdef IV2rgbCalibTool < matlab.apps.AppBase
                 fclose(fid);
             end
             fclose(app.m_logfid);
+           
         end
     end
     
@@ -165,7 +169,7 @@ classdef IV2rgbCalibTool < matlab.apps.AppBase
             app.IV2rgbCalibToolUIFigure.Resize='off';
             app.IV2rgbCalibToolUIFigure.Position = [100 100 sz];
             centerfig(app.IV2rgbCalibToolUIFigure);
-            app.IV2rgbCalibToolUIFigure.Name = 'IV2 calibration tool';
+            app.IV2rgbCalibToolUIFigure.Name = 'IV2 RGB calibration tool';
             
 
 
@@ -205,11 +209,16 @@ classdef IV2rgbCalibTool < matlab.apps.AppBase
             app.logarea.Position = [1 1 640 289];
             app.logarea.FontName='courier new';
               % Create verboseCheckBox
-             
             app.verboseCheckBox = uicheckbox(app.IV2rgbCalibToolUIFigure);
             app.verboseCheckBox.Text = 'verbose';
             app.verboseCheckBox.Position = [110 368 486 22];
             app.verboseCheckBox.Value = true;
+
+            % Create distortionCheckBox
+            app.distortionCheckBox = uicheckbox(app.IV2rgbCalibToolUIFigure);
+            app.distortionCheckBox.Text = 'RGBdistoration';
+            app.distortionCheckBox.Position = [210 368 486 22];
+            app.distortionCheckBox.Value = true;
 
     
             

@@ -36,7 +36,7 @@ hw=HWinterface(fw);
 fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
-hw.runPresetScript('systemConfig');
+% hw.runPresetScript('systemConfig');
 fprintff('init...');
 if(params.init)  
     fnAlgoInitMWD  =  fullfile(params.internalFolder,filesep,'algoInit.txt');
@@ -49,7 +49,7 @@ else
     fprintff('skipped\n');
 end
  
-hw.runPresetScript('startStream');
+% hw.runPresetScript('startStream');
 
 setLaserProjectionUniformity(hw,true);
 %% ::calibrate delays::
@@ -252,10 +252,14 @@ end
 end
 
 function setLaserProjectionUniformity(hw,uniformProjection)
-if(uniformProjection)
-    hw.cmd('Iwb e2 03 01 93');
+if(uniformProjection) %non-safe
+%     [~,val]=hw.cmd('irb e2 0a 01');
+%     newval=uint8(round((double(val(1))/63*150+150)/300*255));
+%     hw.cmd(sprintf('iwb e2 08 01 %02x',newval));
+     hw.cmd('iwb e2 08 01 ff');
+     hw.cmd('iwb e2 03 01 13');
 else
-    hw.cmd('Iwb e2 03 01 13');
+    hw.cmd('iwb e2 03 01 93');
 end
 
 end

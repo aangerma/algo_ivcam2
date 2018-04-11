@@ -21,7 +21,7 @@ function [imacc,k_depth]=grabImages()
     
     imacc=cell(0,2);
     i=1;
-    while(i~=size(shearVals,1))
+    while(i~=size(shearVals,1)+1)
         
         %%
         set(f,'userdata',0);
@@ -32,7 +32,7 @@ function [imacc,k_depth]=grabImages()
             It= imwarp(I, projective2d(move2Ncoords*tformData'),'nearest','fill',0,'OutputView',imref2d([480 640],d,d));
             
              imD=hw.getFrame().i;
-           
+             imD = flipud(imD);
 
             
             imD = cat(3,imD,(imD+It)/2,It);
