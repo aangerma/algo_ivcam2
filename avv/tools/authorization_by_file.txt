@@ -1,12 +1,12 @@
 #Project files:
 
-REDME.md : admin
-rs_hw_algo.iml: admin
++Pipe\: iv2Design
+@Firmware\: Aviad/ohad-intel;Tom
++Calibration\: iv2Design
++Simulator\: iv2Val
++Validation\: iv2Val
+Env\: iv2Val
+avv\: iv2Val
+\: iv2Design:iv2Val
 
-automation\common\: yresnick
-automation\tests\: yresnick
-automation\tools\: yresnick
-automation\tools\resources\authorization_by_file.txt: admin
-automation\tools\resources\users_groups.txt: admin
-
-ivcam2\: admin;ivcam2
+avv\tools\authorization_by_file.txt: admin
