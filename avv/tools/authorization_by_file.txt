@@ -1,0 +1,12 @@
+#Project files:
+
+REDME.md : admin
+rs_hw_algo.iml: admin
+
+automation\common\: yresnick
+automation\tests\: yresnick
+automation\tools\: yresnick
+automation\tools\resources\authorization_by_file.txt: admin
+automation\tools\resources\users_groups.txt: admin
+
+ivcam2\: admin;ivcam2
