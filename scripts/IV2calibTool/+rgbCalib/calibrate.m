@@ -39,7 +39,19 @@ function calibrate(params,fprintff)
     fprintff('[*] calibrating...',size(cbCorners,1),size(imgs,1));
     res=runCalibration(cbCorners,targetParams,k_depth,params.distortion);
     fprintff('done (%d)\n',res.extrinsics.rms);
-    struct2xmlWrapper(res,fullfile(outputFolder,'rgbCalib.xml'));
+    xmlfn=fullfile(outputFolder,'rgbCalib.xml');
+    struct2xmlWrapper(res,xmlfn);
+    
+    fprintff('[*] copying to device...');
+    caminf = ADB;
+    caminf.shell('mkdir /sdcard/rgbcalib');
+    [v,failed]=caminf.cmd('push %s /sdcard/rgbcalib/rgbCalibResults.xml',xmlfn);
+    if(failed)
+        fprintff('Failed(%s)',v);
+    else
+        fprintff('copied to /sdcard/rgbcalib/rgbCalibResults.xml\n');
+    end
+    
     fprintff('[*] calibration ended - ');
     if(res.extrinsics.rms>calibparams.rgbExtrinsicsRMSthreshold)
         fprintff('fail');

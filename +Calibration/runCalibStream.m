@@ -51,7 +51,7 @@ end
  
 % hw.runPresetScript('startStream');
 
-setLaserProjectionUniformity(hw,true);
+
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
 
@@ -115,7 +115,7 @@ end
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 if(params.DFZ)
-    
+    setLaserProjectionUniformity(hw,true);
     regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
     hw.setReg('JFILinvBypass',true);
     hw.setReg('DESTdepthAsRange',true);
@@ -146,6 +146,7 @@ if(params.DFZ)
         score = 0;
         return;
     end
+    setLaserProjectionUniformity(hw,false);
     fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skipped\n');

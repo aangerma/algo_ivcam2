@@ -9,9 +9,9 @@ fname = strrep(fname,'"','');
 defaultSize = [];
 defaultType = ext(2:end);
 
-expectedTypes = {'binz'  ,'bini'  ,'binr'  ,'binv' ,'binc' ,'bint' ,'bin8' ,'bin12' ,'bin16' ,'bin32'};
-readTypes     = {'uint16','uint16','uint16','float','uint16','uint8','ubit8','ubit12','ubit16','float'};
-castType      = {'uint16','uint16','uint16','float','uint16','uint8','uint8','uint16','uint16','single'};
+expectedTypes = {'raw','binz'  ,'bini'  ,'binr'  ,'binv' ,'binc' ,'bint' ,'bin8' ,'bin12' ,'bin16' ,'bin32'};
+readTypes     = {'uint8','uint16','uint16','uint16','float','uint16','uint8','ubit8','ubit12','ubit16','float'};
+castType      = {'uint8','uint16','uint16','uint16','float','uint16','uint8','uint8','uint16','uint16','single'};
 
 addOptional(p,'size',defaultSize,@isnumeric);
 addParameter(p,'type',defaultType,...
@@ -27,6 +27,9 @@ end
 fullname = fullfile(folder,[file,ext]);
 f = fopen(fullname,'rb');
 ind = find(strcmpi(p.type,expectedTypes),1);
+if(isempty(ind))
+    error('unknown file type');
+end
 buffer = fread(f,Inf,readTypes{ind});
 fclose(f);
 
@@ -49,7 +52,7 @@ else
     end
 end
 switch p.type
-    case {'binz','bini','binc','bin8','bin12','bin16','bin32'}
+    case {'raw','binz','bini','binc','bin8','bin12','bin16','bin32'}
         img = reshape(buffer,sz)';
         
     case 'binr'
@@ -66,7 +69,7 @@ end
 
 function n=getNch(s)
 switch s
-    case {'binz','bini','binc','bin8','bin12','bin16','bin32','binr'}
+    case {'raw','binz','bini','binc','bin8','bin12','bin16','bin32','binr'}
         n=1;
     case {'bint','binv'}
         n=3;
