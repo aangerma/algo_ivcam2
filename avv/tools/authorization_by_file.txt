@@ -1,0 +1,12 @@
+#Project files:
+
++Pipe\: iv2Design
+@Firmware\: Aviad/ohad-intel;Tom
++Calibration\: iv2Design
++Simulator\: iv2Val
++Validation\: iv2Val
+Env\: iv2Val
+avv\: iv2Val
+\: iv2Design:iv2Val
+
+avv\tools\authorization_by_file.txt: admin
