@@ -43,3 +43,4 @@ fprintf('Compression ratio: 1:%d\n',prod(sz)/size(P,3));
 % mes = round(mes*2^params.sensor.sampler.nbits)/2^params.sensor.sampler.nbits;
 %% solve
 Solver.run(mes,gt,params);
+
