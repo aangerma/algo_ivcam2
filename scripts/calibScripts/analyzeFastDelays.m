@@ -13,4 +13,4 @@ for i=1:n
     errors(i) = Calibration.aux.calcDelayCoarseError(f);
 end
 
-figure; plot(delays, errors)
+figure(17); plot(delays, errors)
