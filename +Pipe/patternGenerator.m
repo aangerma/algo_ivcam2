@@ -62,6 +62,7 @@ end
 if(regs.GNRL.rangeFinder)
     %%
     [ivs,flag_ld_on,flag_tx_code_start,flag_scandir,flag_txrx_mode] = rangeFinderData(regs);
+    gt = []
 else
     if(regs.EPTG.frameRate==0)
         error('cannot run EPTG with EPTGframeRate == 0');
@@ -347,13 +348,9 @@ if(regs.EPTG.calibVariationsP~=0)
     newregs.FRMW.projectionYshear = randpSafe(regs.FRMW.projectionYshear ,fw.getMeta('FRMWprojectionYshear' ));
     newregs.FRMW.laserangleH      = randpSafe(regs.FRMW.laserangleH      ,fw.getMeta('FRMWlaserangleH'      ));
     newregs.FRMW.laserangleV      = randpSafe(regs.FRMW.laserangleV      ,fw.getMeta('FRMWlaserangleV'      ));
-    newregs.FRMW.undistLensCurve  = randpSafe(regs.FRMW.undistLensCurve  ,fw.getMeta('FRMWundistLensCurve'  ));
     newregs.FRMW.shadingCurve     = randpSafe(regs.FRMW.shadingCurve     ,fw.getMeta('FRMWshadingCurve'     ));
     newregs.FRMW.undistXfovFactor = randpSafe(regs.FRMW.undistXfovFactor ,fw.getMeta('FRMWundistXfovFactor' ));
     newregs.FRMW.undistYfovFactor = randpSafe(regs.FRMW.undistYfovFactor ,fw.getMeta('FRMWundistYfovFactor' ));
-    
-    newregs.FRMW.destRxpdGen    = randpSafe(regs.FRMW.destRxpdGen    ,fw.getMeta('FRMWdestRxpdGen_000'    ));
-    newregs.FRMW.destTxpdGen    = randpSafe(regs.FRMW.destTxpdGen    ,fw.getMeta('FRMWdestTxpdGen_000'    ));
 
 end
 

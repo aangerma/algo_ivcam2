@@ -86,9 +86,11 @@ at([JFILbiltGauss_046],2)~=0
 %even img size (non rangeFinder)
 [GNRLrangeFinder]==1 | ( mod([GNRLimgHsize],2)==0 & mod([GNRLimgVsize],2)==0 )
 %image size is always positive
-[GNRLimgHsize]>0 & [GNRLimgVsize]>0
+[GNRLimgHsize]>0
+[GNRLimgVsize]>0
 %can have margin greater than image
-[FRMWmarginL]<[FRMWxres] & [FRMWmarginT]<[FRMWyres]
+[FRMWmarginL]<[FRMWxres]
+[FRMWmarginT]<[FRMWyres]
 abs([FRMWmarginL]-[FRMWmarginR]) < [FRMWxres]
 abs([FRMWmarginB]-[FRMWmarginT]) < [FRMWyres]
 

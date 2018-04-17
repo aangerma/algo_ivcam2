@@ -250,8 +250,3 @@ dbg.mat
 temp*.m
 *.gif
 *.mat
-
-
-
-# Avv
-Avv/tests/__pycache__/
