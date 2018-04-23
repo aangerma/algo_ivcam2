@@ -16,3 +16,4 @@ function str = struct2string(s,equal_sign,delimiter)
                 delimiter_now = delimiter;
         end
 end
+
