@@ -1,0 +1,7 @@
+1. "C:\$WORK\Tools\IVCAM.2.0.Tool\Run\CloseConnection.lnk"
+2. "C:\$WORK\Tools\IVCAM.2.0.Tool\Run\IVCAM2.0.App.HWMonitor.lnk"
+3. Read in the hw monitor gui.
+If everything works:
+4. "C:\$WORK\Tools\Tools_Development\IVCAM2_Optical_calibration\IVCAM2_Optical_calibration\bin\x64\Debug\IVCAM2_Optical_calibration.exe"
+5. In the gui read.
+6. Open ipdev and play with the values.
