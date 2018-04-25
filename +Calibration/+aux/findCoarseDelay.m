@@ -54,7 +54,7 @@ corr2 = conv2(dir_n, flipud(fliplr(da1_n(ns+1:end-ns,:))), 'valid');
 peak1 = iMax1 + findPeak(corr1(iMax1-1), corr1(iMax1), corr1(iMax1+1));
 peak2 = iMax2 + findPeak(corr2(iMax2-1), corr2(iMax2), corr2(iMax2+1));
 
-delayInPx = peak2 - peak1;
+delayInPx = (peak2 - peak1) / 2;
 
 return;
 
