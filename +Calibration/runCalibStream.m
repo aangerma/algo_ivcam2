@@ -186,16 +186,18 @@ end
 
 
 
-
-
-%% write version
+%% write version+intrinsics
 
 verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(params.version,'.'),'uni',0));
 verValue = uint32(hex2dec([verhex{:}]));
-verRegs.DIGG.spare=[verValue zeros(1,7,'uint32')];
+verRegs.DIGG.spare=zeros(1,8,'uint32');
+verRegs.DIGG.spare(1)=verValue;
+intregs.DIGG.spare(2)=typecast(single(dodregs.FRMW.xres),'uint32');
+intregs.DIGG.spare(3)=typecast(single(dodregs.FRMW.yres),'uint32');
+intregs.DIGG.spare(4)=typecast(single(dodregs.FRMW.laserangleH),'uint32');
+intregs.DIGG.spare(5)=typecast(single(dodregs.FRMW.laserangleV),'uint32');
+fw.setRegs(intregs,fnCalib);
 fw.setRegs(verRegs,fnCalib);
-
-
 fw.writeUpdated(fnCalib);
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
@@ -203,6 +205,10 @@ save(fullfile(params.internalFolder,'imData.mat'),'dbg');
 fprintff('Done(%d)\n',round(toc(t)));
 
 fw.writeFirmwareFiles(params.outputFolder);
+
+
+
+
 
 
 
