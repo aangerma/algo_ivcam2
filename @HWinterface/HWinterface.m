@@ -198,7 +198,7 @@ classdef HWinterface <handle
         
         
         function frame = getFrame(obj,n)
-            if(exist('n','var'))
+            if (exist('n','var') && n > 1)
                 
                 for i = 1:n
                     stream(i) = obj.getFrame();%#ok
