@@ -9,7 +9,7 @@ if(~exist('verbose','var'))
     verbose=true;
 end 
 if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
-    x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV]);
+    x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV 0 0]);
 end 
 
 
@@ -57,16 +57,15 @@ for i = 1:numel(darr)
     darr(i).valid = ones(size(Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3))));
     
 end
-
 % Only from here we can change params that affects the 3D calculation (like
 % baseline, gaurdband, ... TODO: remove this line when the init script has
 % baseline of 30. 
-regs.DEST.baseline = single(30);
-regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
+% regs.DEST.baseline = single(30);
+% regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
-xL = [40 40 4000   -0 -0];
-xH = [90 90 6000    0  0];
+xL = [40 40 4000   -0 -0 0 0];
+xH = [90 90 6000    0  0 0 0];
 regs = x2regs(x0,regs);
 if eval 
     [minerr,eFit]=errFunc(darr,regs,x0,verbose);
@@ -138,6 +137,7 @@ end
 function [z,xF,yF] = rpt2z(rpt,rtlRegs)
 
 [~,~,xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
+
 rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
 [~,cosx,~,~,~,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
 r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
@@ -154,7 +154,8 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,verbose)
 rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
-    [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,Logger(),[]);
+%     [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2)+X(6),d.rpt(:,:,3)+X(7),rtlRegs,Logger(),[]);
+    [xF,yF,~]=myang2xy(d.rpt(:,:,2)+X(6),d.rpt(:,:,3)+X(7),rtlRegs,1);
     xF = xF*639/640;
     yF = yF*479/480;
 

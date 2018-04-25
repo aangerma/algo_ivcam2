@@ -1,12 +1,12 @@
-function [delayInPx, delay2] = findCoarseDelay(ir, a1, a2)
+function [delayInPx] = findCoarseDelay(ir, alt1, alt2)
 
 ir(isnan(ir)) = 0;
-a1(isnan(a1)) = 0;
-a2(isnan(a2)) = 0;
+alt1(isnan(alt1)) = 0;
+alt2(isnan(alt2)) = 0;
 
 dir = diff(ir);
-da1 = diff(a1);
-da2 = diff(a2);
+da1 = diff(alt1);
+da2 = diff(alt2);
 
 %% sigmoid kernel gradient
 %{
@@ -42,19 +42,21 @@ da2_n(da2_n > 0) = 0;
 
 ns = 15; % search range
 
-corr1 = conv2(dir_p, flipud(fliplr(da1_p(ns+1:end-ns,:))), 'valid');
-corr2 = conv2(dir_n, flipud(fliplr(da2_n(ns+1:end-ns,:))), 'valid');
+corr1 = conv2(dir_p, flipud(fliplr(da2_p(ns+1:end-ns,:))), 'valid');
+corr2 = conv2(dir_n, flipud(fliplr(da1_n(ns+1:end-ns,:))), 'valid');
 %figure; plot([corr1 flipud(corr2)]); title (sprintf('delay: %g', iFrame));
 
 [~,iMax1] = max(corr1);
 [~,iMax2] = max(corr2);
 
-delayInPx = iMax2 - iMax1;
+%delayInPx = iMax2 - iMax1;
 
 peak1 = iMax1 + findPeak(corr1(iMax1-1), corr1(iMax1), corr1(iMax1+1));
 peak2 = iMax2 + findPeak(corr2(iMax2-1), corr2(iMax2), corr2(iMax2+1));
 
 delayInPx = peak2 - peak1;
+
+return;
 
 corr1z = conv2(dir_p, flipud(fliplr(da1_n(ns+1:end-ns,:))), 'valid');
 corr2z = conv2(dir_n, flipud(fliplr(da2_p(ns+1:end-ns,:))), 'valid');
