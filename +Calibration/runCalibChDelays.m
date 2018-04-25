@@ -52,7 +52,7 @@ hw.setReg('JFILsort2bypassMode',uint8(0));
 hw.shadowUpdate();
 
 step=ceil(2*qScanLength/16);
-delayFast = findBestDelay(hw, delayFast, step, 4, 'fastCoarse', verbose, debugFolder);
+delayFast = findBestDelay(hw, delayFast, step, 4, 'fastCoarse'c, debugFolder);
 
 % alternate IR : correlation peak from DEST 
 hw.setReg('DESTaltIrEn'    ,true);
