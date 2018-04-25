@@ -27,7 +27,7 @@ hw.setReg('DIGGsphericalEn',true);
 %hw.cmd('mwd a0020bfc a0020c00 00f005E0 // DIGGsphericalOffset'); % 00f00500
 hw.shadowUpdate();
 
-
+hw.cmd('iwb e2 06 01 00'); % set the lowest laser gain to 0
 
 initSlowDelay = bitand(hw.readAddr('a0060008'), hex2dec('7FFFFFFF'));
 Calibration.aux.hwSetDelay(hw, 128, false);
@@ -37,7 +37,9 @@ initFastDelay = double(hw.readAddr('a0050548') + hw.readAddr('a0050458'));
 fastDelay = initFastDelay + 128 - initSlowDelay;
 Calibration.aux.hwSetDelay(hw, fastDelay, true);
 
-delays = fastDelay-120:4:fastDelay+120;
+dRange = 128;
+delays = fastDelay-dRange:4:fastDelay+dRange;
+
 %delays = 29000:4:29100;
 nDelays = length(delays);
 
@@ -58,6 +60,7 @@ for i=1:nDelays
     hw.shadowUpdate();
 
     frames{i,4} = hw.getFrame(30);
+    
     [frames{i,2}, frames{i,3}] = getFrameTwoDirs(hw,30);
     
     figure(11711); 
