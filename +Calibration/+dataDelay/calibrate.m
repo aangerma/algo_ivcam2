@@ -1,7 +1,6 @@
-function [regs,ok]=calibrate(hw,verbose)
-SLOW_DELAY_INIT_VAL = 29000;
-FAST_DELAY_OFFSET=40;
-N_ITR=20;
+function [regs,ok]=calibrate(hw,dataDelayParams,verbose)
+    
+
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 
 %% :::::::::::::::::::::::::::::::SET:::::::::::::::::::::::::::::::
@@ -50,13 +49,13 @@ hw.shadowUpdate();
 %% :::::::::::::::::::::::::::::::CALIBRATE SLOW:::::::::::::::::::::::::::::::
 
 
-delaySlow=SLOW_DELAY_INIT_VAL;
+delaySlow=dataDelayParams.slowDelayInitVal;
 
 
 ok=false;
 
-d=nan(N_ITR,1);
-for i=1:N_ITR
+d=nan(dataDelayParams.nAttempts,1);
+for i=1:dataDelayParams.nAttempts
     Calibration.dataDelay.setAbsDelay(hw,delaySlow,false);
     [d(i),im]=calcDelayFix(hw);
     if(isnan(d(i)))%CB was not found, throw delay forward to find a good location
@@ -89,7 +88,7 @@ end
   
   
   %% :::::::::::::::::::::::::::::::SET REGISTERS:::::::::::::::::::::::::::::::
-  regs=Calibration.dataDelay.setAbsDelay(hw,delaySlow+FAST_DELAY_OFFSET,true);  
+  regs=Calibration.dataDelay.setAbsDelay(hw,delaySlow+dataDelayParams.fastDelatInitOffset,true);  
 
 
 
