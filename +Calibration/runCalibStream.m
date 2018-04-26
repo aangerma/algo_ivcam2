@@ -2,10 +2,14 @@ function [score,dbg]=runCalibStream(params, fprintff)
 t=tic;
 if(ischar(params))
     params=xml2structWrapper(params);
+    params.version = num2str(params.version);%gui consistency
+end
+if(~exist('fprintff','var'))
+    fprintff=@(varargin) fprintf(varargin{:});
 end
 verbose = params.verbose;
 %% ::caliration configuration
-calibParams = xml2structWrapper(sprintf('%s/calbiParams.calibParams.xml',fileparts(mfilename('fullpath'))));
+calibParams = xml2structWrapper(sprintf('%s\\calibParams\\calibParams.xml',fileparts(mfilename('fullpath'))));
 
 
 
@@ -16,7 +20,7 @@ dbg.runStarted=datestr(now);
 %% :: file names
 params.internalFolder = fullfile(params.outputFolder,filesep,'AlgoInternal');
 
-struct2xmlWrapper(params,sprintf('%s/calibrationInputParams.xml',params.internalFolder));
+struct2xmlWrapper(params,sprintf('%s\\calibrationInputParams.xml',params.internalFolder));
 
 mkdirSafe(params.outputFolder);
 mkdirSafe(params.internalFolder);
@@ -60,10 +64,8 @@ fprintff('Depth and IR delay calibration...\n');
 
 
 if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.fineDepthDelay]))
-    Calibration.dataDelay.setAbsDelay(hw,params.dataDelayParams.slowDelayInitVal,false);
+    Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
     dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
-%     [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params);
-    
     [delayRegs,ok]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
     results.delayS=(1-ok);
     results.delayF=(1-ok);
@@ -188,7 +190,6 @@ end
 
 
 %% write version+intrinsics
-
 verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(params.version,'.'),'uni',0));
 verValue = uint32(hex2dec([verhex{:}]));
 verRegs.DIGG.spare=zeros(1,8,'uint32');
@@ -236,7 +237,7 @@ if(verbose)
     
 end
 
-%hw.runPresetScript('stopStream');
+
 fprintff('[!] calibration ended - ');
 if(score==0)
     fprintff('failed');
