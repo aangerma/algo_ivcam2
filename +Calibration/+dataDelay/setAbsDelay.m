@@ -1,4 +1,4 @@
-function regs=setAbsDelay(hw, inputDelay, fast)
+function regs=setAbsDelay(hw, absFast, absSlow)
 
 
 hw.runPresetScript('maReset');
@@ -22,23 +22,35 @@ latelatency
 
 
 %}
-if (fast)
-    
-    absFast = inputDelay;
+
+%no input(just get register value)
+if(isempty(absSlow) && isempty(absFast))
     absSlow = read_conloc(hw)-read_latelate(hw);
+    absFast = read_conloc(hw);
+%both input
+elseif(~isempty(absSlow) && ~isempty(absFast))
     if(absFast<absSlow)
+        %     warning('slow delay cannot get greater value than fast delay,lowering slow delay');
+        mv=round((absFast+absSlow)/2);
+        absSlow=mv;
+        absFast=mv;
+    end
+%only fast input
+elseif(isempty(absSlow))
+    absSlow = read_conloc(hw)-read_latelate(hw);
+     if(absFast<absSlow)
         %     warning('slow delay cannot get greater value than fast delay,lowering slow delay');
         absSlow=absFast;
     end
-    
-else
-    absSlow = inputDelay;
+%only slow input
+elseif(isempty(absFast))
     absFast = read_conloc(hw);
     if(absFast<absSlow)
         %     warning('slow delay cannot get greater value than fast delay,raising fast delay');
         absFast=absSlow;
     end
 end
+
 regs=writeAbsVals(hw,absFast,absSlow);
 hw.runPresetScript('maRestart');
 end

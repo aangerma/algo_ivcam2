@@ -210,7 +210,7 @@ classdef IV2calibTool < matlab.apps.AppBase
               % Create verboseCheckBox
              
               %checkboxes
-              cbnames = {'verbose','init','DSM','gamma','coarseIrDelay','fineIrDelay','coarseDepthDelay','fineDepthDelay','DFZ','validation','burnCalibrationToDevice','debug'};
+              cbnames = {'verbose','init','DSM','gamma','dataDelay','DFZ','validation','burnCalibrationToDevice','debug'};
               cbSz=[200 30];
               ny = floor(sz(2)/cbSz(2))-1;
               for i=1:length(cbnames)

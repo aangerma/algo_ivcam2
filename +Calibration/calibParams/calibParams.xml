@@ -11,6 +11,7 @@
    <dataDelay>
       <slowDelayInitVal>29000</slowDelayInitVal>
       <fastDelatInitOffset>40</fastDelatInitOffset>
+	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
    </dataDelay>
 </struct>
