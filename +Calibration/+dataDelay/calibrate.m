@@ -1,9 +1,9 @@
 function [regs,ok]=calibrate(hw,dataDelayParams,verbose)
-    
+
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 
-%% :::::::::::::::::::::::::::::::SET:::::::::::::::::::::::::::::::
+%% SET
 calibconfig       =struct('name','RASTbiltBypass'     ,'val',true     );
 calibconfig(end+1)=struct('name','JFILbypass$'        ,'val',false    );
 calibconfig(end+1)=struct('name','JFILbilt1bypass'    ,'val',true     );
@@ -32,13 +32,13 @@ calibconfig(end+1)=struct('name','DESTaltIrEn'        ,'val',false );
 
 
 
-%% :::::::::::::::::::::::::::::::GET OLD VALUES:::::::::::::::::::::::::::::::
+%% GET OLD VALUES
 
 for i=1:length(calibconfig)
     calibconfig(i).oldval=hw.read(calibconfig(i).name );%exact name
 end
 
-%% :::::::::::::::::::::::::::::::SET CALIB VALUES:::::::::::::::::::::::::::::::
+%% SET CALIB VALUES
 for i=1:length(calibconfig)
     hw.setReg(calibconfig(i).name    ,calibconfig(i).val,true);
 end
@@ -46,7 +46,7 @@ hw.shadowUpdate();
 
 %%calibration loop
 
-%% :::::::::::::::::::::::::::::::CALIBRATE SLOW:::::::::::::::::::::::::::::::
+%% CALIBRATE SLOW
 
 
 delaySlow=dataDelayParams.slowDelayInitVal;
@@ -81,46 +81,46 @@ for i=1:dataDelayParams.nAttempts
         break;
     end
 end
-  if(verbose)
-      close(sum(mfilename));
-      drawnow;
-  end
-  
-  
-  %% :::::::::::::::::::::::::::::::SET REGISTERS:::::::::::::::::::::::::::::::
-  regs=Calibration.dataDelay.setAbsDelay(hw,delaySlow+dataDelayParams.fastDelatInitOffset,true);  
+if(verbose)
+    close(sum(mfilename));
+    drawnow;
+end
+
+
+%% SET REGISTERS
+regs=Calibration.dataDelay.setAbsDelay(hw,delaySlow+dataDelayParams.fastDelatInitOffset,true);
 
 
 
 
-%% :::::::::::::::::::::::::::::::SET OLD VALUES:::::::::::::::::::::::::::::::
+%% SET OLD VALUES
 for i=1:length(calibconfig)
     hw.setReg(calibconfig(i).name    ,calibconfig(i).oldval);
 end
 
 
 
-  
+
 end
 
 
 
 function [im1,im2,d]=getSpeperateScansImgs(hw)
-    scanDir1gainAddr = '85080000';
-    scanDir2gainAddr = '85080480';
-    gainCalibValue  = '000ffff0';
-    saveVal(1) =hw.readAddr(scanDir1gainAddr);
-    saveVal(2) =hw.readAddr(scanDir2gainAddr);
+scanDir1gainAddr = '85080000';
+scanDir2gainAddr = '85080480';
+gainCalibValue  = '000ffff0';
+saveVal(1) =hw.readAddr(scanDir1gainAddr);
+saveVal(2) =hw.readAddr(scanDir2gainAddr);
 %     saveVal=uint32(hex2dec({'03017','04047'}));
-    hw.writeAddr(scanDir1gainAddr,gainCalibValue,true);
-    d(1)=hw.getFrame(30);
-    hw.writeAddr(scanDir1gainAddr,saveVal(1),true);
-    hw.writeAddr(scanDir2gainAddr,gainCalibValue,true);
-    d(2)=hw.getFrame(30);
-    hw.writeAddr(scanDir2gainAddr,saveVal(2),true);
-    
-    im1=getFilteredImage(d(1));
-    im2=getFilteredImage(d(2));
+hw.writeAddr(scanDir1gainAddr,gainCalibValue,true);
+d(1)=hw.getFrame(30);
+hw.writeAddr(scanDir1gainAddr,saveVal(1),true);
+hw.writeAddr(scanDir2gainAddr,gainCalibValue,true);
+d(2)=hw.getFrame(30);
+hw.writeAddr(scanDir2gainAddr,saveVal(2),true);
+
+im1=getFilteredImage(d(1));
+im2=getFilteredImage(d(2));
 end
 function [d,im]=calcDelayFix(hw)
 %im1 - top to bottom
