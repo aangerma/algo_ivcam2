@@ -63,13 +63,13 @@ fprintff('Depth and IR delay calibration...\n');
 
 
 
-if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.fineDepthDelay]))
+if(params.dataDelay)
     Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
     dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
-    [delayRegs,ok]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
-    results.delayS=(1-ok);
-    results.delayF=(1-ok);
-    if(ok)
+    [delayRegs,okZ,okIR]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
+    results.delayS=(1-okIR);
+    results.delayF=(1-okZ);
+    if(okIR)
         fprintff('[v] ir calib passed[e=%g]\n',results.delayS);
     else
         fprintff('[x] ir calib failed[e=%g]\n',results.delayS);
@@ -77,7 +77,7 @@ if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.f
         return;
     end
     
-    if(results.delayF<calibParams.errRange.delayF(2))
+    if(okZ)
         fprintff('[v] depth calib passed[e=%g]\n',results.delayF);
     else
         fprintff('[x] depth calib failed[e=%g]\n',results.delayF);
