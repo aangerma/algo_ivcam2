@@ -47,7 +47,10 @@ classdef HWinterface <handle
             end
             res = char(result.ResultFormatted);
             try
-                val = typecast(uint8(result.ResultRawData),'uint32');
+                val = uint8(result.ResultRawData);
+                if(length(val)==4)
+                    val = typecast(val,'uint32');
+                end
             catch
                 val=nan;
             end
