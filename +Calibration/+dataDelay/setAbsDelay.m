@@ -27,16 +27,16 @@ if (fast)
     absFast = inputDelay;
     absSlow = read_conloc(hw)-read_latelate(hw);
     if(absFast<absSlow)
-%     warning('slow delay cannot get greater value than fast delay,lowering slow delay');
-    absSlow=absFast;
+        %     warning('slow delay cannot get greater value than fast delay,lowering slow delay');
+        absSlow=absFast;
     end
     
 else
     absSlow = inputDelay;
     absFast = read_conloc(hw);
     if(absFast<absSlow)
-%     warning('slow delay cannot get greater value than fast delay,raising fast delay');
-    absFast=absSlow;
+        %     warning('slow delay cannot get greater value than fast delay,raising fast delay');
+        absFast=absSlow;
     end
 end
 regs=writeAbsVals(hw,absFast,absSlow);
@@ -44,15 +44,15 @@ hw.runPresetScript('maRestart');
 end
 
 function v=read_conloc(hw)
-    v=hw.read('EXTLconLocDelayFastF')+hw.read('EXTLconLocDelayFastC');
+v=hw.read('EXTLconLocDelayFastF')+hw.read('EXTLconLocDelayFastC');
 end
 
 function v=read_latelate(hw)
-    v=bitand(hw.read('EXTLconLocDelaySlow'),hex2dec('7fff'));
+v=bitand(hw.read('EXTLconLocDelaySlow'),hex2dec('7fff'));
 end
 
 function regs=writeAbsVals(hw,absFast,absSlow)
-    %{
+%{
 //---------FAST-------------
 mwd a0050548 a005054c 00007110 //[m_regmodel.proj_proj.RegsProjConLocDelay]                      (moves loc+metadata to Hfsync 8inc)
 mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG     (moves loc+metadata to Hfsync [0-7])
