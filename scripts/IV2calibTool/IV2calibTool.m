@@ -5,7 +5,7 @@ classdef IV2calibTool < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        VERSION = '1.1';
+        VERSION = '1.3';
         IV2calibrationtoolUIFigure      matlab.ui.Figure
         StartButton                     matlab.ui.control.Button
         OutputdirectortyEditFieldLabel  matlab.ui.control.Label
@@ -14,6 +14,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         
         Button_2                        matlab.ui.control.Button
         Button_3                        matlab.ui.control.Button
+        Button_4                        matlab.ui.control.Button
         logarea                         matlab.ui.control.TextArea
         verboseCheckBox                 matlab.ui.control.CheckBox
         doInitCheckBox                  matlab.ui.control.CheckBox
@@ -46,7 +47,7 @@ classdef IV2calibTool < matlab.apps.AppBase
     methods (Access = private)
        
         
-        function saveDefaults(app)
+        function saveDefaults(app,~)
             fields2save=['Outputdirectorty',strcat('cb.',fieldnames(app.cb))'];
             sinit=[strrep(fields2save,'.','_');cellfun(@(x) IV2calibTool.getFieldRec(app,x),fields2save,'uni',0)];
             sinit(2,:)=cellfun(@(x) iff(isempty(x),[],x),sinit(2,:),'uni',0);
@@ -122,7 +123,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         
         % Button pushed function: StartButton
         function StartButtonPushed(app, ~)
-            app.saveDefaults();
+           
 
             mkdirSafe(app.Outputdirectorty.Value);
             
@@ -221,7 +222,11 @@ classdef IV2calibTool < matlab.apps.AppBase
 
                   
               end
-    
+             % Create Button_3
+            app.Button_4 = uibutton(advancedTab, 'push');
+            app.Button_4.ButtonPushedFcn = createCallbackFcn(app, @saveDefaults, true);
+            app.Button_4.Position = [560 10 50 22];
+            app.Button_4.Text = 'save';
             
             
             

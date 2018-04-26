@@ -1,14 +1,17 @@
 function [score,dbg]=runCalibStream(params, fprintff)
 t=tic;
-
+if(ischar(params))
+    params=xml2structWrapper(params);
+    params.version = num2str(params.version);%gui consistency
+end
+if(~exist('fprintff','var'))
+    fprintff=@(varargin) fprintf(varargin{:});
+end
+verbose = params.verbose;
 %% ::caliration configuration
-calibParams.errRange.delayF =  [0 1.0];
-calibParams.errRange.delayS =  [0 1.0];
-calibParams.errRange.geomErr = [0.5 3.0];
-calibParams.errRange.geomErrVal =  [0.5 3.0];
-calibParams.errRange.gammaErr =  [1 5000];
-calibParams.passScore = 60;
-inrange =@(x,r)  x<r(2);
+calibParams = xml2structWrapper(sprintf('%s\\calibParams\\calibParams.xml',fileparts(mfilename('fullpath'))));
+
+
 
 results = struct;
 
@@ -16,6 +19,8 @@ dbg.runStarted=datestr(now);
 
 %% :: file names
 params.internalFolder = fullfile(params.outputFolder,filesep,'AlgoInternal');
+
+struct2xmlWrapper(params,sprintf('%s\\calibrationInputParams.xml',params.internalFolder));
 
 mkdirSafe(params.outputFolder);
 mkdirSafe(params.internalFolder);
@@ -59,11 +64,9 @@ fprintff('Depth and IR delay calibration...\n');
 
 
 if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.fineDepthDelay]))
-    
+    Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
     dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
-%     [delayRegs,results.delayS,results.delayF] = Calibration.runCalibChDelays(hw, params);
-    
-    [delayRegs,ok]=Calibration.dataDelay.calibrate(hw,params.verbose);
+    [delayRegs,ok]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
     results.delayS=(1-ok);
     results.delayF=(1-ok);
     if(ok)
@@ -74,7 +77,7 @@ if(any([params.coarseIrDelay params.fineIrDelay params.coarseDepthDelay params.f
         return;
     end
     
-    if(inrange(results.delayF,calibParams.errRange.delayF))
+    if(results.delayF<calibParams.errRange.delayF(2))
         fprintff('[v] depth calib passed[e=%g]\n',results.delayF);
     else
         fprintff('[x] depth calib failed[e=%g]\n',results.delayF);
@@ -95,9 +98,9 @@ params.gamma = false;
 fprintff('gamma...\n');
 if (params.gamma)
     
-%     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,params.verbose);
+%     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,.verbose);
 %     
-%     if(inrange(results.gammaErr,calibParams.errRange.gammaErr))
+%     if(results.gammaErr,calibParams.errRange.gammaErr(2))
 %         fprintff('[v] gamma passed[e=%g]\n',results.gammaErr);
 %     else
 %         fprintff('[x] gamma failed[e=%g]\n',results.gammaErr);
@@ -134,12 +137,12 @@ if(params.DFZ)
     
     % dodluts=struct;
     
-    [dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,params.verbose);
+    [dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,verbose);
     hw.setReg('DESTdepthAsRange',false);
     hw.setReg('DIGGsphericalEn',false);
     hw.shadowUpdate();
     fw.setRegs(dodregs,fnCalib);
-    if(inrange(results.geomErr,calibParams.errRange.geomErr))
+    if(results.geomErr<calibParams.errRange.geomErr(2))
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
     else
         fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
@@ -168,10 +171,10 @@ if(params.validation)
     fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
     hw.runScript(fnAlgoTmpMWD);
     hw.shadowUpdate();
-    d=hw.getFrame(30);
+    d=showImageRequestDialog(hw,1,diag([.7 .7 1]));
     dbg.validImg = d;
-    [~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,params.verbose,true);
-    if(inrange(results.geomErrVal,calibParams.errRange.geomErrVal))
+    [~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,verbose,true);
+    if(results.geomErrVal<calibParams.errRange.geomErrVal(2))
         fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
     else
         fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
@@ -187,13 +190,12 @@ end
 
 
 %% write version+intrinsics
-
 verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(params.version,'.'),'uni',0));
 verValue = uint32(hex2dec([verhex{:}]));
 verRegs.DIGG.spare=zeros(1,8,'uint32');
 verRegs.DIGG.spare(1)=verValue;
-intregs.DIGG.spare(2)=typecast(single(dodregs.FRMW.xres),'uint32');
-intregs.DIGG.spare(3)=typecast(single(dodregs.FRMW.yres),'uint32');
+intregs.DIGG.spare(2)=typecast(single(dodregs.FRMW.xfov),'uint32');
+intregs.DIGG.spare(3)=typecast(single(dodregs.FRMW.yfov),'uint32');
 intregs.DIGG.spare(4)=typecast(single(dodregs.FRMW.laserangleH),'uint32');
 intregs.DIGG.spare(5)=typecast(single(dodregs.FRMW.laserangleV),'uint32');
 fw.setRegs(intregs,fnCalib);
@@ -222,7 +224,7 @@ end
 score = min(scores);
 
 
-if(params.verbose)
+if(verbose)
     for i = 1:length(f)
         s04=floor((scores(i)-1)/100*5);
         asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
@@ -235,7 +237,7 @@ if(params.verbose)
     
 end
 
-%hw.runPresetScript('stopStream');
+
 fprintff('[!] calibration ended - ');
 if(score==0)
     fprintff('failed');
@@ -252,7 +254,7 @@ if(params.burnCalibrationToDevice)
         hw.burn2device();
         fprintff('Done(%d)\n',round(toc(t)));
     else
-        fprintff('skiiped, score too low(%d)\n',score);
+        fprintff('skiped, score too low(%d)\n',score);
     end
 end
 

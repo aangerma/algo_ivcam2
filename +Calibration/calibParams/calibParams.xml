@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+   <errRange>
+      <delayF>[0 1]</delayF>
+      <delayS>[0 1]</delayS>
+      <geomErr>[0.5 3]</geomErr>
+      <geomErrVal>[0.5 5]</geomErrVal>
+      <gammaErr>[1 5000]</gammaErr>
+   </errRange>
+   <passScore>60</passScore>
+   <dataDelay>
+      <slowDelayInitVal>29000</slowDelayInitVal>
+      <fastDelatInitOffset>40</fastDelatInitOffset>
+      <nAttempts>20</nAttempts>
+   </dataDelay>
+</struct>

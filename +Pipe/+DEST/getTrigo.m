@@ -41,7 +41,7 @@ cosy = csatn_INTRP(tany*FACT);
 
 
 if(regs.MTLB.fastApprox(1))
-    dnm = 1./sqrt(1+tanx.^2);
+    dnm = 1./sqrt(1+tanx.^2); %==cos(x) (x in [-90:90])  cos(atan(X))=1/sqrt(1+X^2); 
 else
     dnm=Utils.fp32('invsqrt',1+tanx.*tanx);
 end
