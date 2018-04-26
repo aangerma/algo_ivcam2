@@ -1,23 +1,21 @@
-function [v,r]=z16toVerts(zUINT16,regs)
+function [verts,r]=z16toVerts(zUINT16,regs)
 
-
-[sinx,cosx,~,~,sinw,cosw,~]=Pipe.DEST.getTrigo(size(zUINT16),regs);
- 
-    
-
-
-% [nyi,nxi]=ndgrid((1:h)/h*2-1,(1:w)/w*2-1);
-% 
-% phi   = atand(tand(regs.FRMW.xfov/2).*nxi);
-% theta = atand(tand(regs.FRMW.yfov/2).*nyi);
+sz=size(zUINT16);
 z = double(zUINT16)/bitshift(1,regs.GNRL.zMaxSubMMExp);
 z(zUINT16==0)=nan;
+[v,u]=ndgrid(0:sz(1)-1,0:sz(2)-1);
 
-r = z./(cosx.*cosw);
-x = z.*sinx./cosx;
-y = z.*sinw./(cosw.*cosx);
+matK=reshape([typecast(regs.DCOR.spare,'single') 1],3,3)';
+matKi=matK^-1;
+tt=z(:)'.*[u(:)';v(:)';ones(1,numel(v))];
+verts=reshape((matKi*tt)',[sz 3]);
+r=sqrt(sum(verts.^2,3));
 
-v = cat(3,x,y,z);
+
+
+
+
+
 end
 
 
