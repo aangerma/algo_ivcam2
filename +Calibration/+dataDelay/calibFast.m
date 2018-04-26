@@ -53,13 +53,10 @@ for i=1:nMaxIterations
     delayDiff = 25*10^3*pxDiff/size(ir,1)/2;
     
     slowDelay = slowDelay + delayDiff;
-    fastDelay = fastDelay + initFastDelay;
+    fastDelay = fastDelay + delayDiff;
     
     Calibration.aux.hwSetDelay(hw, slowDelay, false);
     Calibration.aux.hwSetDelay(hw, fastDelay, true);
-
-    break;
-    
 end
 
 hw.setReg('DESTaltIrEn', false);
