@@ -1,5 +1,5 @@
 clear;
-outputfldr = '\\algonas\Root\Data\cToF\simData2';
+outputfldr = '\\algonas\Root\Data\cToF\simData3';
 mkdirSafe(outputfldr);
 paramsfn = fullfile(outputfldr,filesep,'params.mat');
 if(exist(paramsfn,'file'))
@@ -41,7 +41,7 @@ else
     %sensor
     params.sensor.sampler.nbits=16;
     params.sensor.sampler.v0 = 0;     %v
-    params.sensor.sampler.v1 = 1e-3; %v
+    params.sensor.sampler.v1 = 1e-0; %v
     params.sensor.collectionArea = 1;%mm^2
     save(paramsfn,'params');
 end
@@ -59,7 +59,8 @@ while(true)
             tt= tic;
             randseed = (cnt*N_SAMPLES_PER_BATCH+i-1);
             params.model=dataGen.generateRandomSecene(randseed);
-            [mes,gt]=Sim.run(params);
+%             [mes,gt]=Sim.run(params);
+            [mes,gt]=Sim.runSimple(params);
             mesv=single([mes{1} vec([mes{2};mes{3}])']);
             fwrite(fid,typecast([single([mes{:}]) single([gt.rtdS(:);gt.a(:)])'],'uint32'),'uint32');
             tt=toc(tt);
