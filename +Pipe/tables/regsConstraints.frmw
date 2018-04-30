@@ -6,7 +6,7 @@
 [EPTGreturnTime]*1e-3<1/[EPTGframeRate]
 
 [EPTGminZ] <=[EPTGmaxZ] 
-[EPTGminZ] >=0
+
 [EPTGnMaxSamples] == floor([EPTGnMaxSamples])
 
 %PCQ cant handle different Y value in each chunk - constraint that the minimum pixel scantime is greater than the chunk rate
@@ -32,7 +32,8 @@ any([DCORcoarseTmplLength]==[16 24 32 40 48 52 60 64 68 72 76 80 84 88 92 96 100
 any([GNRLtmplLength]==[128 136 144 152 160 168 176 184 192 200 208 216 224 232 240 248 256 264 272 280 288 304 320 336 352 368 384 400 416 424 432 448 464 480 496 504 512 544 560 576 608 640 672 704 720 736 768 800 832 848 864 896 928 960 992  1024  2048])
 
 %invalidation depth limits
-diff([[JFILinvMinMax]]) > 0
+at([JFILinvMinMax],1)>at([JFILinvMinMax],0)
+
 
 
 %Only one of these modes can be high at a time
@@ -75,9 +76,6 @@ at([JFILbiltGauss_042],0)~=0
 at([JFILbiltGauss_043],2)~=0
 at([JFILbiltGauss_045],0)~=0
 at([JFILbiltGauss_046],2)~=0
-
-
-
 
 %max irOnly should be smaller than template length
 [DCORoutIRcma]<[GNRLtmplLength]
@@ -146,12 +144,6 @@ sum([[JFILsort3iWeights]])<128
 sum([[JFILsort1dWeights]])<128
 sum([[JFILsort2dWeights]])<128
 sum([[JFILsort3dWeights]])<128
-
-%offset is too big for FOV, creating angles greater than +-45
-%original constraint: tand([FRMWxfov]/2)*(1+abs([FRMWxoffset]))<=1 -->  [FRMWxfov]<=2*tand( (1+abs([FRMWxoffset]))^-1  )
-%if we have FOV expander, check the expanded FOV
-%[DIGGsphericalEn] | [FRMWxfov]*[FRMWundistXfovFactor] <= 90 + abs([FRMWxoffset]) * (-57 + abs([FRMWxoffset])*(26 -6.5*abs([FRMWxoffset]))) 
-%[DIGGsphericalEn] | [FRMWyfov]*[FRMWundistYfovFactor] <= 90 + abs([FRMWyoffset]) * (-57 + abs([FRMWyoffset])*(26 -6.5*abs([FRMWyoffset])))
 
 
 %disable RAST outirVar in RF,
