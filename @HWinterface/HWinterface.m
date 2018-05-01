@@ -165,6 +165,7 @@ classdef HWinterface <handle
                 error('can set only one register');
             end
             regVal_=cast(uint32(regVal),m.type);
+            % regVal_=cast(regVal,m.type);
             if(exist('forceUpdate','var') && forceUpdate)
                 obj.m_fw.setRegs(m.regName,regVal_,'forceupdate');
             else

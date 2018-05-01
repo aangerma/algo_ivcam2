@@ -1,4 +1,4 @@
-function [gammaregs,gammaError] = runGammaCalib(hw,verbose)
+function [preImage,postImage,gammaregs,preCC,postCC,gammaError] = runGammaCalib(hw,verbose)
 %RUNGAMMACALIB calibrates the DIGG gamme block. It's purpose is to align
 %the IR response of different units. 
 % It assumes a default gamma configuration (passing as is).
@@ -11,6 +11,7 @@ function [gammaregs,gammaError] = runGammaCalib(hw,verbose)
 % IR valid range.
 
 
+
 hw.setReg('JFILbypass$',true);
 hw.setReg('JFILbypassIr2Conf',true);
 hw.shadowUpdate();
@@ -20,6 +21,7 @@ hw.shadowUpdate();
 d = readAvgFrame(hw,75);
 I = d.i;
 I = rot90(I,2);
+preImage = I;
 % Find checkerboard corners
 [p,bsz] = detectCheckerboardPoints(normByMax(I)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
 %Maybe there is a problem with the function that detects checkerboard
@@ -30,7 +32,7 @@ if (size(p,1)~=9*13)
 end
 assert(size(p,1)==9*13,'Gamma Calib: Can not detect all checkerboard corners');
 
-[gammaregs,~,~] = gammaCalculation(I,p,bsz,verbose);
+[gammaregs,~,~,preCC] = gammaCalculation(I,p,bsz,verbose);
 
 
 %% Write the gamma regs
@@ -45,9 +47,9 @@ hw.shadowUpdate();
 d = readAvgFrame(hw,75);
 Ifixed = d.i;
 Ifixed = rot90(Ifixed,2);
-
+postImage = Ifixed;
 % Evaluate
-[~,ccSource,ccTarget] = gammaCalculation(Ifixed,p,bsz,verbose);
+[~,ccSource,ccTarget,postCC] = gammaCalculation(Ifixed,p,bsz,verbose);
 ccTarget = ccTarget/4095;
 ccSource = ccSource/4095;
 % [~,S] = polyfit(ccSource,ccTarget,1);
@@ -72,7 +74,7 @@ hw.setReg('JFILbypassIr2Conf',false);
 hw.shadowUpdate();
 
 end
-function [gammaregs,ccSource,ccTarget] = gammaCalculation(I,p,bsz,verbose)
+function [gammaregs,ccSource,ccTarget,source] = gammaCalculation(I,p,bsz,verbose)
 pmat = reshape(p,[bsz-1,2]);
 rows = bsz(1)-1; cols = bsz(2)-1;
 % convert each square to a 1x8 vector that has the xy of the 4 corners.
