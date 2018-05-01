@@ -5,5 +5,6 @@ params.fineIrDelay = true;
 params.coarseDepthDelay = true;
 params.fineDepthDelay = true;
 params.verbose = true;
+params.dataDelay = true;
 Calibration.runCalibStream(params, @fprintf)
 

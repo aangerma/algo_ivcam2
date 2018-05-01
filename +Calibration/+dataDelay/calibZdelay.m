@@ -16,26 +16,30 @@ d=nan(dataDelayParams.nAttempts,1);
 for i=1:dataDelayParams.nAttempts
     Calibration.dataDelay.setAbsDelay(hw,delayZ,[]);
     [d(i),im]=calcDelayFix(hw,imB);
-    if(isnan(d(i)))%CB was not found, throw delay forward to find a good location
+    if (isnan(d(i)))%CB was not found, throw delay forward to find a good location
         d(i) = 3000;
     end
-    if(verbose)
+    if (verbose)
         figure(sum(mfilename));
         imagesc(im);
         title(sprintf('%d (%d)',delayZ,d(i)));
         drawnow;
     end
     
-    if(d(i)<=dataDelayParams.iterFixThr)
+    if (abs(d(i))<=dataDelayParams.iterFixThr)
         ok=true;
         break;
     end
-    if(i==2 && abs(d(2))>abs(d(1)))
+    
+    nsEps = 2;
+    if (i>1 && abs(d(i))-nsEps > abs(d(i-1)))
         warning('delay not converging!');
         break;
     end
+    
     delayZ=delayZ+d(i);
-    if(delayZ<0)
+    
+    if (delayZ<0)
         break;
     end
 end

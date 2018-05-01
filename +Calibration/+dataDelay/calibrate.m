@@ -47,7 +47,7 @@ dataDelayParams.slowDelayInitVal = delayIR;
 [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,verbose);
 
 %% SET REGISTERS
-regs=Calibration.dataDelay.setAbsDelay(hw,delayIR,delayZ);
+regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
 
 %% SET OLD VALUES
 for i=1:length(calibconfig)
