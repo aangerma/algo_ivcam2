@@ -23,5 +23,5 @@ K=[regsOut.DEST.p2axa 0                   regsOut.DEST.p2axb;
    0                  regsOut.DEST.p2aya  regsOut.DEST.p2ayb;
    0                  0                   1]^-1;
 
-regsOut.DCOR.spare=typecast(K([1 4 7 2 5 8 3 6]),'uint32');
+regsOut.CBUF.spare=typecast(K([1 4 7 2 5 8 3 6]),'uint32');
 end
