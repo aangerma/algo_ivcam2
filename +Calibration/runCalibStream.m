@@ -114,7 +114,7 @@ else
     fprintff('skipped\n');
 end
 %% ::RX Delay::
-rxregs = Calibration.aux.rxDelay2regs(params.rx,[]); %pass gamma regs when available.
+rxregs.DEST.rxPWRpd = single(params.rx); %pass gamma regs when available.
 fw.setRegs(rxregs,fnCalib);
 %% ::DFZ::
 
