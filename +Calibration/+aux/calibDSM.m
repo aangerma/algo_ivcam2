@@ -1,23 +1,28 @@
-function [dsmregs] = calibDSM(hw)
+function [dsmregs] = calibDSM(hw,verbose)
 %CALIBDSM find DSM scale and offset such that:
-% 1. The zero order reported angles are: [angx,angy] =[0,0] 
+% 1. The zero order reported angles are: [angx,angy] =[0,0]
 % 2. The range of angles cover as much as possible.
-
+if(verbose)
+    figure(sum(mfilename));
+    d = hw.getFrame(30);
+    subplot(121);
+    imagesc(d.i);
+end
 [angxRawZO,angyRawZO] = zeroOrderAngles(hw);
 
 dsmXscale = typecast(hw.read('dsmXscale'),'single');
-dsmYscale = typecast(hw.read('dsmYscale'),'single');  
-dsmXoffset = typecast(hw.read('dsmXoffset'),'single'); 
-dsmYoffset = typecast(hw.read('dsmYoffset'),'single'); 
+dsmYscale = typecast(hw.read('dsmYscale'),'single');
+dsmXoffset = typecast(hw.read('dsmXoffset'),'single');
+dsmYoffset = typecast(hw.read('dsmYoffset'),'single');
 dsm = [dsmXscale,dsmYscale,dsmXoffset,dsmYoffset];
 
 % Turn to spherical, and see the minimal and maximal angles we get per
-% axis. 
+% axis.
 angxZO = (angxRawZO+dsmXoffset)*dsmXscale - 2047;
 angyZO = (angyRawZO+dsmYoffset)*dsmYscale - 2047;
 
 [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO);
-% Calulcate raw angx/y of the edges: 
+% Calulcate raw angx/y of the edges:
 angx = [angmin(1);angmax(1)];
 angy = [angmin(2);angmax(2)];
 
@@ -27,36 +32,29 @@ angyRaw = invertDSM(angy,dsmYscale,dsmYoffset);
 [dsmregs.EXTL.dsmXscale,dsmregs.EXTL.dsmXoffset] = calcDSMScaleAndOffset(angxRawZO,angxRaw,'x');
 [dsmregs.EXTL.dsmYscale,dsmregs.EXTL.dsmYoffset] = calcDSMScaleAndOffset(angyRawZO,angyRaw,'y');
 
-showPrevAndNewImage(hw,dsmregs);
-
-end
-function showPrevAndNewImage(hw,dsmregs)
-    % Set spherical:
-    hw.setReg('DIGGsphericalEn',true);
-    % Shadow update:
-    hw.shadowUpdate();
-    d = hw.getFrame(30);
-    subplot(121);
-    imagesc(d.i);
-    
-    % Update DSM
-    hw.setReg('EXTLdsmXscale',dsmregs.EXTL.dsmXscale);
-    hw.setReg('EXTLdsmYscale',dsmregs.EXTL.dsmYscale);
-    hw.setReg('EXTLdsmXoffset',dsmregs.EXTL.dsmXoffset);
-    hw.setReg('EXTLdsmYoffset',dsmregs.EXTL.dsmYoffset);
-    hw.shadowUpdate();
-
+% Update DSM
+hw.setReg('EXTLdsmXscale',dsmregs.EXTL.dsmXscale);
+hw.setReg('EXTLdsmYscale',dsmregs.EXTL.dsmYscale);
+hw.setReg('EXTLdsmXoffset',dsmregs.EXTL.dsmXoffset);
+hw.setReg('EXTLdsmYoffset',dsmregs.EXTL.dsmYoffset);
+hw.shadowUpdate();
+if(verbose)
     d = hw.getFrame(30);
     subplot(122);
     imagesc(d.i);
+    drawnow;
+   
 end
+end
+
+
 function [scale,offset] = calcDSMScaleAndOffset(ang2zero,angRaw,axis)
 % Find the angle in angRaw that should be mapped to 2047. It is the ang
 % that is the furthest from the zero order.
 [diff,i] = max(abs(angRaw-ang2zero));
 angEdge = angRaw(i);
 edgeTarget = 2047;
-margin = 40; 
+margin = 40;
 if i == 1
     if axis == 'x'
         % Transform angEdge to -2047 and ang2zero to 0.
@@ -98,12 +96,12 @@ d = hw.getFrame(30);
 % handling x.
 for ax = 1:2
     if ax == 1
-       vCenter =  d.i(rowZO,:) > 0;
-       angmin(ax) = ((find(sum(vCenter,ax),1,'first'))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
+        vCenter =  d.i(rowZO,:) > 0;
+        angmin(ax) = ((find(sum(vCenter,ax),1,'first'))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
     else
-       vAll =  d.i > 0;
-       vCenter =  d.i(:,colZO) > 0;
-       angmin(ax) = ((find(sum(vAll,ax),1,'first'))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
+        vAll =  d.i > 0;
+        vCenter =  d.i(:,colZO) > 0;
+        angmin(ax) = ((find(sum(vAll,ax),1,'first'))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
     end
     angmax(ax) = ((find(sum(vCenter,ax),1,'last' ))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
 end
@@ -123,13 +121,13 @@ function [angxRaw,angyRaw] = zeroOrderAngles(hw)
 res = hw.runPresetScript('stopStream');
 res = hw.runPresetScript('setRestAngle');
 % assert(res.IsCompletedOk, 'For DSM calib to work, it should be the first thing that happens after connecting the USB. Before any capturing.' )
-    
-    
-%  Notes: 
-%   - Signal is noisy due to ADC noise, multiple reads should be performed together with averaging 
+
+
+%  Notes:
+%   - Signal is noisy due to ADC noise, multiple reads should be performed together with averaging
 %   - Signal is the PZR voltage before the DSM scale and offset
 for i = 1:100
-%  Read FA (float, 32 bits)
+    %  Read FA (float, 32 bits)
     [~,FA] = hw.cmd('mrd fffe882C fffe8830');
     angyRaw(i) = typecast(FA,'single');
     % Read SA (float, 32 bits)
@@ -139,7 +137,7 @@ end
 angxRaw = mean(angxRaw);
 angyRaw = mean(angyRaw);
 if angxRaw == 0 && angyRaw == 0
-   warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.'); 
+    warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
 end
 % % Disable MC - Disable_MEMS_Driver
 % hw.cmd('execute_table 147');

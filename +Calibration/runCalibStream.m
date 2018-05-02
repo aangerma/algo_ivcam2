@@ -57,8 +57,14 @@ end
 % hw.runPresetScript('startStream');
 
 %% ::dsm calib::
-dsmregs = Calibration.aux.calibDSM(hw);
-fw.setRegs(dsmregs,fnCalib);
+fprintff('DSM calibration...\n');
+if(params.DSM)
+    dsmregs = Calibration.aux.calibDSM(hw,params.verbose);
+    fw.setRegs(dsmregs,fnCalib);
+    fprintff('Done(%d)\n',round(toc(t)));
+else
+    fprintff('skipped\n');
+end
 
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
