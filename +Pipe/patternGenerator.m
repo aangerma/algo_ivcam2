@@ -95,7 +95,7 @@ else
     returnTime = regs.EPTG.returnTime;
     t = (0:dt:1/double(regs.EPTG.frameRate)*1e9-dt);
     if(length(t)>regs.EPTG.nMaxSamples)
-    t = t(1:min(regs.EPTG.nMaxSamples,length(t)));
+    t = t(1:min(single(regs.EPTG.nMaxSamples),length(t)));
     returnTime=0; %if truncating rest of frame - do not add return time
     end
     tF = (0:length(t)*64-1)*dt/64;

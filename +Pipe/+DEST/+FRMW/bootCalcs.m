@@ -16,7 +16,7 @@ speedOfLightMMnsec = 299702547*1000/1e9;
          autogenRegs.DEST.txPWRpdLUTfactor = uint32((2^16-1)*2^16/(double(regs.GNRL.imgVsize)-1));
     end
     rxLUTscale = 1;
-    autogenRegs.DEST.rxPWRpdLUTfactor =uint32(2^16*(2^16-1)/(2^12-1)*rxLUTscale);
+    autogenRegs.DEST.rxPWRpdLUTfactor =uint32(2^6*(2^16)/(2^12-1)*rxLUTscale);
     
     %TODO: ROI (replace regs.GNRL.imgVsize with yres, truncate according to
     %margin)
