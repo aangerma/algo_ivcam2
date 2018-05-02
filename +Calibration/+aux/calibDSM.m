@@ -3,7 +3,7 @@ function [dsmregs] = calibDSM(hw,verbose)
 % 1. The zero order reported angles are: [angx,angy] =[0,0]
 % 2. The range of angles cover as much as possible.
 if(verbose)
-    figure(sum(mfilename));
+    ff=figure(sum(mfilename));
     d = hw.getFrame(30);
     subplot(121);
     imagesc(d.i);
@@ -43,7 +43,8 @@ if(verbose)
     subplot(122);
     imagesc(d.i);
     drawnow;
-   
+    pause(1);
+    close(ff);
 end
 end
 

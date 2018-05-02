@@ -57,7 +57,7 @@ end
 % hw.runPresetScript('startStream');
 
 %% ::dsm calib::
-fprintff('DSM calibration...\n');
+fprintff('DSM calibration...');
 if(params.DSM)
     dsmregs = Calibration.aux.calibDSM(hw,params.verbose);
     fw.setRegs(dsmregs,fnCalib);
@@ -103,7 +103,7 @@ else
 end
 
 %% ::gamma::
-params.gamma = false;
+
 fprintff('gamma...\n');
 if (params.gamma)
     
@@ -123,10 +123,10 @@ else
     fprintff('skipped\n');
 end
 %% ::RX Delay::
-rxregs.DEST.rxPWRpd = single(params.rx); %pass gamma regs when available.
+rxregs.DEST.rxPWRpd = single(calibParams.rx); %pass gamma regs when available.
 fw.setRegs(rxregs,fnCalib);
 %% ::thermal::
-thermalRegs=Calibration.thermal.setThermalRegs(params.theral);
+thermalRegs=Calibration.thermal.setThermalRegs(calibParams.thermal);
 fw.setRegs(thermalRegs,fnCalib);
 %% ::DFZ::
 
