@@ -113,7 +113,9 @@ else
     results.gammaErr=inf;
     fprintff('skipped\n');
 end
-
+%% ::RX Delay::
+rxregs = Calibration.aux.rxDelay2regs(params.rx,[]); %pass gamma regs when available.
+fw.setRegs(rxregs,fnCalib);
 %% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');

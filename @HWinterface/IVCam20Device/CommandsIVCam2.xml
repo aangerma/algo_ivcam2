@@ -329,7 +329,6 @@
   <Command Name="PFD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3B" CmdPermission="Public" Description="Disable power features">
     <Parameter1 Name="0 - Disable, 1 - Enable" />
   </Command>
-  
   <Command Name="PTENABLEMODE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3C" CmdPermission="Public" Description="Set projector tester enable mode">
     <Parameter1 Name="Mode 0 - Dis, 1 - En, Wait for values, 2 - En, Load&Test EEPROM" />
   </Command>
@@ -348,16 +347,66 @@
     <Parameter1 Name="Enable count" />
 	<Parameter2 Name="Disable count" />
   </Command>
-
-  <Command Name="CALIB_READ_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x43" CmdPermission="Public" IsReadCommand="true" Description="Read calibration table">
+  <Command Name="READ_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x43" CmdPermission="Public" IsReadCommand="true" Description="Read table">
     <Parameter1 Name="TableId" />
+	<Parameter2 Name="PhaseId" />
   </Command>
-  <Command Name="CALIB_WRITE_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x44" CmdPermission="Public" Description="Write calibration table">
+  <Command Name="WRITE_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x44" CmdPermission="Public" Description="Write table">
+	<Parameter1 Name="PhaseId" />  
     <Data/>
   </Command>
-    <Command Name="CALIB_EXEC_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x45" CmdPermission="Public" Description="Execute calibration table">
-    <Parameter1 Name="Calibration Table Id" />
+  <Command Name="EXEC_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x45" CmdPermission="Public" Description="Execute table">
+    <Parameter1 Name="Table Id" />
   </Command>
-  
-  
+  <Command Name="DIRTYBITBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x51" CmdPermission="Public" Description="Bypass eye safety dirty bit indication">
+  </Command>
+  <Command Name="DIRTYBITCLEAR" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x52" CmdPermission="Public" Description="Clear eye safety dirty bit indication (tester only)">
+  </Command>
+  <Command Name="DIRTYBITGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x53" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get eye safety dirty bit indication 2B_FLASH/ 2B_EEPROM">
+  </Command>
+  <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
+  </Command>
+  <Command Name="MCSTOP" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA2" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTOP">
+  </Command>
+  <Command Name="MCCONFIG_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA3" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCCONFIG_SET">
+    <Data IsReverseBytes="false" FormatLength="8" />
+  </Command>
+  <Command Name="MCCONFIG_GET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA4" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCCONFIG_GET">
+    <ReadData>
+      <Section Name="
+0_SRC_Type[0-Cv out 1- Rcmd]" Title="SRC Type" Offset="0" Size="1" FormatType="DecByte" />
+      <Section Name="1_Bypass_Flag[0-Off 1-Nldc 2-Sin]" Title="Bypass Flag" Offset="1" Size="1" FormatType="DecByte" />
+      <Section Name="2_Filter_Flag[0-enable 1-overwrite 2-delay]" Title="Bypass Flag" Offset="2" Size="1" FormatType="DecByte" />
+      <Section Name="3_Filter_Num0" Title="Filter Num0" Offset="4" Size="8" FormatType="Double" />
+      <Section Name="4_Filter_Num1" Title="Filter Num1" Offset="12" Size="8" FormatType="Double" />
+      <Section Name="5_Filter_Num2" Title="Filter Num2" Offset="20" Size="8" FormatType="Double" />
+      <Section Name="6_Filter_Den0" Title="Filter Den0" Offset="28" Size="8" FormatType="Double" />
+      <Section Name="7_Filter_Den1" Title="Filter Den1" Offset="36" Size="8" FormatType="Double" />
+      <Section Name="8_Filter_K" Title="Filter K" Offset="44" Size="8" FormatType="Double" />
+      <Section Name="9_InSF" Title="InSF" Offset="52" Size="8" FormatType="Double" />
+      <Section Name="10_Bias" Title="Bias" Offset="60" Size="8" FormatType="Double" />
+      <Section Name="11_SinW_Freq" Title="SinW Freq" Offset="68" Size="8" FormatType="Double" />
+      <Section Name="12_SinW_Amp" Title="SinW Amp" Offset="76" Size="8" FormatType="Double" />
+      <Section Name="13_SinW_Bias" Title="SinW Bias" Offset="84" Size="8" FormatType="Double" />
+    </ReadData>
+  </Command>
+  <Command Name="MCPARAM_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA5" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCPARAM_SET">
+	<Data IsReverseBytes="false" FormatLength="8" />
+  </Command>
+  <Command Name="MCGVD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA6" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCGVD">
+    <Section Name="FwVersion" Title="FW Version" Offset="0" Size="4" FormatType="HexNumber" />
+    <Section Name="AlgoVersion" Title="Algo Version" Offset="4" Size="4" FormatType="HexNumber" />
+  </Command>
+  <Command Name="MCLOG" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA7" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCLOG">
+    <Parameter1 Name="groupNumber" />
+    <Parameter2 Name="sampleRateTime" />
+    <Parameter3 Name="MemoryLength" />
+    <Parameter4 Name="DoubleBuffer" />
+	<Data />
+  </Command>
+  <Command Name="MCREGISTERBATCH" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA8" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCREGISTERBATCH">
+    <Data IsReverseBytes="false" FormatLength="8" />
+  </Command>
+
+
 </Commands>

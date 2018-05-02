@@ -5,6 +5,7 @@ function [dsmregs] = calibDSM(hw)
 
 [angxRawZO,angyRawZO] = zeroOrderAngles(hw);
 
+
 dsmXscale = typecast(hw.read('dsmXscale'),'single');
 dsmYscale = typecast(hw.read('dsmYscale'),'single');  
 dsmXoffset = typecast(hw.read('dsmXoffset'),'single'); 
@@ -13,7 +14,10 @@ dsm = [dsmXscale,dsmYscale,dsmXoffset,dsmYoffset];
 
 % Turn to spherical, and see the minimal and maximal angles we get per
 % axis. 
-[angmin,angmax] = minAndMaxAngs(hw);
+angxZO = (angxRawZO+dsmXoffset)*dsmXscale - 2047;
+angyZO = (angyRawZO+dsmYoffset)*dsmYscale - 2047;
+
+[angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO);
 % Calulcate raw angx/y of the edges: 
 angx = [angmin(1);angmax(1)];
 angy = [angmin(2);angmax(2)];
@@ -21,8 +25,8 @@ angy = [angmin(2);angmax(2)];
 angxRaw = invertDSM(angx,dsmXscale,dsmXoffset);
 angyRaw = invertDSM(angy,dsmYscale,dsmYoffset);
 
-[dsmregs.EXTL.dsmXscale,dsmregs.EXTL.dsmXoffset] = calcDSMScaleAndOffset(angxRawZO,angxRaw);
-[dsmregs.EXTL.dsmYscale,dsmregs.EXTL.dsmYoffset] = calcDSMScaleAndOffset(angyRawZO,angyRaw);
+[dsmregs.EXTL.dsmXscale,dsmregs.EXTL.dsmXoffset] = calcDSMScaleAndOffset(angxRawZO,angxRaw,'x');
+[dsmregs.EXTL.dsmYscale,dsmregs.EXTL.dsmYoffset] = calcDSMScaleAndOffset(angyRawZO,angyRaw,'y');
 
 showPrevAndNewImage(hw,dsmregs);
 
@@ -47,16 +51,23 @@ function showPrevAndNewImage(hw,dsmregs)
     subplot(122);
     imagesc(d.i);
 end
-function [scale,offset] = calcDSMScaleAndOffset(ang2zero,angRaw)
+function [scale,offset] = calcDSMScaleAndOffset(ang2zero,angRaw,axis)
 % Find the angle in angRaw that should be mapped to 2047. It is the ang
 % that is the furthest from the zero order.
 [diff,i] = max(abs(angRaw-ang2zero));
 angEdge = angRaw(i);
 edgeTarget = 2047;
+margin = 40; 
 if i == 1
-    % Transform angEdge to -2047 and ang2zero to 0.
-    offset = single(-angEdge);
-    scale = single(edgeTarget/single(diff));
+    if axis == 'x'
+        % Transform angEdge to -2047 and ang2zero to 0.
+        offset = single(-angEdge);
+        scale = single(edgeTarget/single(diff));
+    elseif axis == 'y'
+        % Transform angEdge to -2047+margin and ang2zero to 0.
+        offset = single( (edgeTarget/margin*angEdge-ang2zero)/(1-edgeTarget/margin));
+        scale = single((edgeTarget-margin)/(ang2zero-angEdge));
+    end
 else
     % Transform angEdge to +2047 and ang2zero to 0.
     offset = single(-ang2zero+diff);
@@ -66,7 +77,13 @@ end
 function [angRaw] = invertDSM(ang,scale,offset)
 angRaw = (ang+2047)/scale - offset;
 end
-function [angmin,angmax] = minAndMaxAngs(hw)
+function [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO)
+% Get the column and row of the zero order in spherical:
+axDim = [640,480];
+
+colZO = uint16(round((1 + angxZO/2047)/2*(axDim(1)-1)+1));
+rowZO = uint16(round((1 + angyZO/2047)/2*(axDim(2)-1)+1));
+
 % Set spherical:
 hw.setReg('DIGGsphericalEn',true);
 % Shadow update:
@@ -74,20 +91,22 @@ hw.shadowUpdate();
 % Get a sample image:
 hw.runPresetScript('startStream');
 d = hw.getFrame(30);
-v = d.i > 0;
-axDim = [640,480];
-% Y angles shouldn't exceel +-2047.
+
+% Y min angle shouldn't exceed -2047. Y Max angle can exceed. We wish that the column of the zero
+% order won't exceed 2047.
 % X angles can exceed. [-fovx,0] and [+fovx,0] are mapped to the edges of
-% the image. So, it makes sense to look only at the middle line when
+% the image. So, it makes sense to look only at the middle line (line of the ZO) when
 % handling x.
 for ax = 1:2
     if ax == 1
-       v =  d.i(uint16([floor(axDim(ax)/2),ceil(axDim(ax)/2)]),:) > 0;
+       vCenter =  d.i(rowZO,:) > 0;
+       angmin(ax) = ((find(sum(vCenter,ax),1,'first'))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
     else
-       v =  d.i > 0;
+       vAll =  d.i > 0;
+       vCenter =  d.i(:,colZO) > 0;
+       angmin(ax) = ((find(sum(vAll,ax),1,'first'))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
     end
-    angmin(ax) = ((find(sum(v,ax),1,'first'))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
-    angmax(ax) = ((find(sum(v,ax),1,'last' ))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
+    angmax(ax) = ((find(sum(vCenter,ax),1,'last' ))-1-(axDim(ax)-1)/2)/((axDim(ax)-1)/2)*2047;
 end
 % Return to regular coordiantes
 hw.setReg('DIGGsphericalEn',false);
@@ -123,6 +142,6 @@ if angxRaw == 0 && angyRaw == 0
 end
 % % Disable MC - Disable_MEMS_Driver
 % hw.cmd('execute_table 147');
-hw.runPresetScript('resetRestAngle');
+res = hw.runPresetScript('resetRestAngle');
 
 end
