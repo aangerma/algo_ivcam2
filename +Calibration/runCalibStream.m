@@ -56,6 +56,9 @@ end
  
 % hw.runPresetScript('startStream');
 
+%% ::dsm calib::
+dsmregs = Calibration.aux.calibDSM(hw);
+fw.setRegs(dsmregs,fnCalib);
 
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
