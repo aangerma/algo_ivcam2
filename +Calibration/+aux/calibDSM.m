@@ -5,7 +5,6 @@ function [dsmregs] = calibDSM(hw)
 
 [angxRawZO,angyRawZO] = zeroOrderAngles(hw);
 
-
 dsmXscale = typecast(hw.read('dsmXscale'),'single');
 dsmYscale = typecast(hw.read('dsmYscale'),'single');  
 dsmXoffset = typecast(hw.read('dsmXoffset'),'single'); 
@@ -120,6 +119,8 @@ function [angxRaw,angyRaw] = zeroOrderAngles(hw)
 % hw.cmd('execute_table 140');
 % % Enable the logger
 % hw.cmd('mclog 01000000 43 13000 1');
+
+res = hw.runPresetScript('stopStream');
 res = hw.runPresetScript('setRestAngle');
 % assert(res.IsCompletedOk, 'For DSM calib to work, it should be the first thing that happens after connecting the USB. Before any capturing.' )
     
@@ -142,6 +143,13 @@ if angxRaw == 0 && angyRaw == 0
 end
 % % Disable MC - Disable_MEMS_Driver
 % hw.cmd('execute_table 147');
-res = hw.runPresetScript('resetRestAngle');
+hw.runPresetScript('resetRestAngle');
+hw.runPresetScript('maRestart');
+% hw.runPresetScript('systemConfig');
+
+hw.cmd('exec_table 140//enable mems drive');
+hw.cmd('exec_table 141//enable mems');
+hw.cmd('exec_table 142//enable FB');
+hw.runPresetScript('startStream');
 
 end
