@@ -1,22 +1,35 @@
 FRMWxres            d640
 FRMWyres            d480 
-JFILbilt1bypass     b1
+
+DIGGnotchBypass		b1
+
+JFILbilt1bypass     b0
 JFILbypass          h0
-JFILbilt2bypass     b1
-JFILbilt3bypass     b1
-JFILbiltIRbypass    b1
+JFILbilt2bypass     b0
+JFILbilt3bypass     b0
+JFILbiltIRbypass    b0
 JFILdnnBypass       b1       
-JFILedge4bypassMode b1       
-JFILgeomBypass      b1       
+JFILgeomBypass      b0
 JFILgrad1bypass     b1
-JFILgrad2bypass     b1       
+JFILgrad2bypass     b0       
 JFILinnBypass       b1       
 JFILinvConfThr      h5
-JFILsort1bypassMode b1
+JFILsort1bypassMode d0
+JFILsort2bypassMode d0
+JFILsort3bypassMode d0
 JFILsort1Edge01     b1
 JFILsort1Edge03     b1
-JFILsort3bypassMode b1
 JFILinvBypass       b0
-DIGGnotchBypass		b1
-DESTconfw1			h01000000
-DESTconfIRbitshift  h00000005
+JFILirShadingBypass b1
+JFILedge1bypassMode d0
+JFILedge4bypassMode d0
+JFILedge3bypassMode d0
+
+DESTconfactIn       h3FC00000
+DESTconfactOt       h000F0000
+DESTconfIRbitshift  h00000006
+DESTconfq           h00000001
+DESTconfw1          h1E230001
+DESTconfw2          h00000000
+DESTconfv           h007F0000
+
