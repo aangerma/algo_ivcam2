@@ -14,7 +14,7 @@ dsmXscale = typecast(hw.read('dsmXscale'),'single');
 dsmYscale = typecast(hw.read('dsmYscale'),'single');
 dsmXoffset = typecast(hw.read('dsmXoffset'),'single');
 dsmYoffset = typecast(hw.read('dsmYoffset'),'single');
-dsm = [dsmXscale,dsmYscale,dsmXoffset,dsmYoffset];
+% dsm = [dsmXscale,dsmYscale,dsmXoffset,dsmYoffset];
 
 % Turn to spherical, and see the minimal and maximal angles we get per
 % axis.
@@ -141,9 +141,8 @@ if angxRaw == 0 && angyRaw == 0
     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
 end
 % % Disable MC - Disable_MEMS_Driver
-% hw.cmd('execute_table 147');
 hw.runPresetScript('resetRestAngle');
-hw.runPresetScript('maRestart');
+% hw.runPresetScript('maRestart');
 % hw.runPresetScript('systemConfig');
 
 hw.cmd('exec_table 140//enable mems drive');

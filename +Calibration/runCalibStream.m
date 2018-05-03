@@ -124,10 +124,10 @@ else
 end
 %% ::RX Delay::
 rxregs.DEST.rxPWRpd = single(calibParams.rx); %pass gamma regs when available.
-fw.setRegs(rxregs,fnCalib);
+%fw.setRegs(rxregs,fnCalib);
 %% ::thermal::
 thermalRegs=Calibration.thermal.setThermalRegs(calibParams.thermal);
-fw.setRegs(thermalRegs,fnCalib);
+%fw.setRegs(thermalRegs,fnCalib);
 %% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');

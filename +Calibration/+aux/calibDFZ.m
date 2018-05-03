@@ -132,7 +132,7 @@ for i = 1:numel(darr)
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
     
     
-    [sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
+    [sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(xF,yF,rtlRegs);
     
     r= (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
     
