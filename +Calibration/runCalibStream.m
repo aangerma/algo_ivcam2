@@ -57,8 +57,14 @@ end
 % hw.runPresetScript('startStream');
 
 %% ::dsm calib::
-dsmregs = Calibration.aux.calibDSM(hw);
-fw.setRegs(dsmregs,fnCalib);
+fprintff('DSM calibration...');
+if(params.DSM)
+    dsmregs = Calibration.aux.calibDSM(hw,params.verbose);
+    fw.setRegs(dsmregs,fnCalib);
+    fprintff('Done(%d)\n',round(toc(t)));
+else
+    fprintff('skipped\n');
+end
 
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
@@ -97,7 +103,7 @@ else
 end
 
 %% ::gamma::
-params.gamma = false;
+
 fprintff('gamma...\n');
 if (params.gamma)
     
@@ -117,8 +123,11 @@ else
     fprintff('skipped\n');
 end
 %% ::RX Delay::
-rxregs.DEST.rxPWRpd = single(params.rx); %pass gamma regs when available.
+rxregs.DEST.rxPWRpd = single(calibParams.rx); %pass gamma regs when available.
 fw.setRegs(rxregs,fnCalib);
+%% ::thermal::
+thermalRegs=Calibration.thermal.setThermalRegs(calibParams.thermal);
+fw.setRegs(thermalRegs,fnCalib);
 %% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');

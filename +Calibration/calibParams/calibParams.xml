@@ -8,6 +8,10 @@
       <gammaErr>[1 5000]</gammaErr>
    </errRange>
    <passScore>60</passScore>
+   <thermal>
+       <t0>32.8</t0>
+       <tslope>0.45</tslope>
+   </thermal>
    <dataDelay>
       <slowDelayInitVal>29000</slowDelayInitVal>
       <fastDelatInitOffset>40</fastDelatInitOffset>
