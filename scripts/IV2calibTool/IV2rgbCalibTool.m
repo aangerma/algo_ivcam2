@@ -5,7 +5,7 @@ classdef IV2rgbCalibTool < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        VERSION = '1.1';
+        VERSION = '1.3';
         IV2rgbCalibToolUIFigure      matlab.ui.Figure
         StartButton                     matlab.ui.control.Button
         OutputdirectortyEditFieldLabel  matlab.ui.control.Label
