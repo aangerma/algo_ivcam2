@@ -123,11 +123,11 @@ else
     fprintff('skipped\n');
 end
 %% ::RX Delay::
-rxregs.DEST.rxPWRpd = single(calibParams.rx); %pass gamma regs when available.
+% rxregs.DEST.rxPWRpd = single(calibParams.rx); %pass gamma regs when available.
 %fw.setRegs(rxregs,fnCalib);
 %% ::thermal::
-thermalRegs=Calibration.thermal.setThermalRegs(calibParams.thermal);
-%fw.setRegs(thermalRegs,fnCalib);
+% thermalRegs=Calibration.thermal.setThermalRegs(calibParams.thermal);
+% fw.setRegs(thermalRegs,fnCalib);
 %% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
