@@ -212,6 +212,7 @@ intregs.DIGG.spare(2)=typecast(single(dodregs.FRMW.xfov),'uint32');
 intregs.DIGG.spare(3)=typecast(single(dodregs.FRMW.yfov),'uint32');
 intregs.DIGG.spare(4)=typecast(single(dodregs.FRMW.laserangleH),'uint32');
 intregs.DIGG.spare(5)=typecast(single(dodregs.FRMW.laserangleV),'uint32');
+verRegs.DIGG.spare(6)=verValue; %config version
 fw.setRegs(intregs,fnCalib);
 fw.setRegs(verRegs,fnCalib);
 fw.writeUpdated(fnCalib);
