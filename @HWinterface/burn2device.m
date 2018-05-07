@@ -37,15 +37,18 @@ function burn2device(obj,basedir,burunConfiguration)
             };
     end
     for i=1:size(filenamesTableIndexLUT,1)
-        fn = dirFiles(fullfile(basedir,filenamesTableIndexLUT{i,2}));
+        fn = dir(fullfile(basedir,filenamesTableIndexLUT{i,2}));
+       
         if(length(fn)~=1)
+            warning('could not burn table %s',filenamesTableIndexLUT{i,2})
             continue;
         end
-        fn=fn{1};
-        cmdA = sprintf('%s "%s%s"\n',filenamesTableIndexLUT{i,1},fn);
-        cmdB = sprintf('exec_table %s\n',filenamesTableIndexLUT{i,3});
-        okA=obj.cmd(cmdA);
-        okB=obj.cmd(cmdB);
+         fn=fullfile(basedir,fn(1).name);
+       
+        cmdA = sprintf('%s "%s"',filenamesTableIndexLUT{i,1},fn);
+        cmdB = sprintf('exec_table %s',filenamesTableIndexLUT{i,3});
+        obj.cmd(cmdA);
+        obj.cmd(cmdB);
         
         
     end
