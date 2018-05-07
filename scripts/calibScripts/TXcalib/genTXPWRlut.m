@@ -48,7 +48,8 @@ tauOut = delayModel(pout);
 %input is per angle - distribute angles from [-yfov/2,yfov/2]
 yangIn = -cos(2*pi*MIRROR_FREQ*gainT)*yfov/2;
 %convert to pixels (approx.). min pxel=0, max pixel=N_LUT_BINS-1
-ypixIn = (tand(yangIn)/tand(yfov/2)+1)*(N_LUT_BINS-1)/2+1;
+ypixIn = single((tand(yangIn)/tand(yfov/2)+1)*(N_LUT_BINS-1)/2+1);
+
 %linear interpolation
 lastIncreasingInd=find(diff(ypixIn)<0,1);
 
