@@ -11,6 +11,12 @@ function writeFirmwareFiles(obj,outputFldr)
     m=obj.getMeta();
     %calibration  output spcript
     
+    
+    dundist=obj.getAddrData('DIGGundistModel');
+    dundist_A=dundist(1:2036,:);
+    dundist_B=dundist(2037:end,:);
+
+    
     calib_regs2write=cell2str({m([m.group]==CALIB_GROUP_KEY).regName},'|');
     %
     assert(nnz([m.group]==CALIB_GROUP_KEY)<=62,'Max lines in calibration file is limited to 62 due to eprom memmory limitation');
@@ -23,7 +29,7 @@ function writeFirmwareFiles(obj,outputFldr)
     config_regs2write=cell2str({m([m.group]==CONFIG_GROUP_KEY).regName},'|');
     
     d=obj.getAddrData(config_regs2write);
-    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' filepostfix 'txt']));
+    writeMWD([d;dundist_B],fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' filepostfix 'txt']));
     % fid = fopen(fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_1_ConfigData' filepostfix 'txt']),'w');
     % fprintf(fid,'mwd %08x %08x // %s\n',d{:});
     % fclose(fid);
@@ -32,8 +38,10 @@ function writeFirmwareFiles(obj,outputFldr)
     fwrite(fid,getLUTdata(obj.getAddrData('DIGGgamma_')),'uint8');
     fclose(fid);
     
-    d=obj.getAddrData('DIGGundistModel');
-    writeLUTbin(d,fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' filepostfix 'bin']),1);
+    writeLUTbin(dundist_A,fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' filepostfix 'bin']),1);
+    
+    
+    
     
     d=obj.getAddrData('DCORtmpltCrse');
     writeLUTbin(d,fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' filepostfix 'bin']));

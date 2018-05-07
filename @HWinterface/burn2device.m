@@ -15,7 +15,6 @@ function burn2device(obj,basedir,burunConfiguration)
         'WrCalibInfo' ,'DIGG_Gamma_Info_CalibInfo_Ver_*.bin'                    ,'030';
         'WrCalibInfo' ,'DIGG_Undist_Info_1_CalibInfo_Ver_*.bin'                 ,'040';
         'WrCalibInfo' ,'DIGG_Undist_Info_2_CalibInfo_Ver_*.bin'                 ,'041';
-        'WrCalibInfo' ,'DIGG_Undist_Info_3_CalibInfo_Ver_*.bin'                 ,'042';
         };
     if(burunConfiguration)
         filenamesTableIndexLUT(end+1:end+15,:)=  {
