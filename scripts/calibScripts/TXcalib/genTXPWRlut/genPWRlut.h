@@ -57,7 +57,8 @@ void genPWRlut(uint32_t* data,size_t n,float* outputLUT)
     for(size_t i=0;i!=n;++i)
     {
 		
-
+		float gainTsave = gainT;
+		float gainVsave = gainV;
 
 
 		gainT += float((data[i] >> 4)&uint32_t(255))*dt;
@@ -76,6 +77,16 @@ void genPWRlut(uint32_t* data,size_t n,float* outputLUT)
 		float binTime = (acos(-atan((binIndex / 64.0 * 2 - 1)*std::tan(yfovRAD / 2)) * 2 / yfovRAD)) / (2 * pi*mirrorFreq);
 		if (binTime < gainT)
 		{
+			float v;
+			if (binTime > gainTsave)
+			{
+				float s0 = (binTime - gainTsave) / (gainT - gainTsave);
+				float s1 = (gainT- binTime) / (gainT - gainTsave);
+				v = gainVsave*s1+gainV*s0;
+			}
+			else
+				v = gainVsave;
+			
 			float pout = (float(gainV) / 255 * float(modulationRef) / 63 * 150 + 150 + ibias)*slopeEfficiency;
 			outputLUT[binIndex] = algo_convertDealyFromGain(pout);
 			++binIndex;
