@@ -2,12 +2,14 @@ function [score,dbg]=runCalibStream(params, fprintff)
 t=tic;
 if(ischar(params))
     params=xml2structWrapper(params);
-    params.version = num2str(params.version);%gui consistency
+    
 end
 if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 verbose = params.verbose;
+
+
 %% ::caliration configuration
 calibParams = xml2structWrapper(sprintf('%s\\calibParams\\calibParams.xml',fileparts(mfilename('fullpath'))));
 
@@ -33,7 +35,7 @@ copyfile(fullfile(initFldr,filesep,'*.csv'), params.internalFolder)
 
 fprintff('Starting calibration:\n');
 fprintff('%-15s %s\n','stated at',datestr(now));
-fprintff('%-15s %s\n','version',params.version);
+fprintff('%-15s 05.2f\n','version',params.version);
 %% ::Init fw
 fprintff('Loading Firmware...');
 fw = Pipe.loadFirmware(params.internalFolder);
@@ -43,6 +45,15 @@ fprintff('Loading HW interface...');
 hw=HWinterface(fw);
 fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
+
+%verify unit's configuration version
+verValue = typecast(uint8([floor(100*mod(params.version,1)) floor(params.version) 0 0]),'uint32');
+
+unitConfigVersion=hw.readReg('DIGGspare_006');;
+if(unitConfigVersion~=verValue)
+    
+end
+
 
 % hw.runPresetScript('systemConfig');
 fprintff('init...');
@@ -208,8 +219,7 @@ end
 
 
 %% write version+intrinsics
-verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(params.version,'.'),'uni',0));
-verValue = uint32(hex2dec([verhex{:}]));
+
 intregs.DIGG.spare=zeros(1,8,'uint32');
 intregs.DIGG.spare(1)=verValue;
 intregs.DIGG.spare(2)=typecast(single(dodregs.FRMW.xfov),'uint32');
