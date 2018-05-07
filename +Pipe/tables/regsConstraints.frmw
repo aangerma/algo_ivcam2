@@ -119,21 +119,21 @@ sum([GNRLsampleRate]/[FRMWcoarseSampleRate]==[2 4 8])==1
 %max coarse template size
 %[GNRLrangeFinder]==0 & [GNRLtmplLength]/2^[DESTdecRatio]<=128 | [GNRLrangeFinder]==1 & [GNRLtmplLength]/2^[DESTdecRatio]<=256
 [STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < [FRMWxres])
-[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipVsize] / ([FRMWxres] -[FRMWmarginL] - [FRMWmarginR]) < ([FRMWyres] -[FRMWmarginB] - [FRMWmarginT]))
+[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipVsize] / [GNRLimgHsize] < [GNRLimgVsize])
 [STATstt1Bypass] == 1 | ([STATstt1src] > 1 | [STATstt1skipHsize] < [MTLBtCamHsize])
 [STATstt1Bypass] == 1 | ([STATstt1src] > 1 | ([STATstt1skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])
 [STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1lowThrPxlNum] < [STATstt1cellHsize]*[STATstt1cellVsize])
-[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 |  mode([STATstt1skipVsize],([FRMWxres] -[FRMWmarginL] - [FRMWmarginR])) == 0)
-[STATstt1Bypass] == 1 | ([STATstt1src] >  1 |  mode([STATstt1skipVsize],[MTLBtCamVsize]) == 0)
+[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 |  mod([STATstt1skipVsize],[GNRLimgHsize]) == 0)
+[STATstt1Bypass] == 1 | ([STATstt1src] >  1 |  mod([STATstt1skipVsize],[MTLBtCamVsize]) == 0)
 [STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < [FRMWxres])
-[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipVsize] < ([FRMWyres] -[FRMWmarginB] - [FRMWmarginT]))
+[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipVsize] < [GNRLimgVsize])
 [STATstt2Bypass] == 1 | ([STATstt2src] > 1 | [STATstt2skipHsize] < [MTLBtCamHsize])
 [STATstt2Bypass] == 1 | ([STATstt2src] > 1 | ([STATstt2skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])
 [STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2lowThrPxlNum] <= [STATstt2cellHsize]*[STATstt2cellVsize])
 [STATstt1lowerThr] < [STATstt1upperThr]
 [STATstt2lowerThr] < [STATstt2upperThr]
-[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 |  mode([STATstt2skipVsize],([FRMWxres] -[FRMWmarginL] - [FRMWmarginR])) == 0)
-[STATstt2Bypass] == 1 | ([STATstt2src] >  1 |  mode([STATstt2skipVsize],[MTLBtCamVsize]) == 0)
+[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 |  mod([STATstt2skipVsize],[GNRLimgHsize]) == 0)
+[STATstt2Bypass] == 1 | ([STATstt2src] >  1 |  mod([STATstt2skipVsize],[MTLBtCamVsize]) == 0)
 %number of shared bin should be smaller than 64
 bitshift([GNRLtmplLength],-int8([RASTsharedDenomExp]))<64
 
