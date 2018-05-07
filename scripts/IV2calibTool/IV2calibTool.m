@@ -193,7 +193,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.VersionLabel = uilabel(configurationTab);
             app.VersionLabel.HorizontalAlignment = 'left';
             app.VersionLabel.Position = [5 294 94 15];
-            app.VersionLabel.Text = sprintf('version: %s',app.VERSION);
+            app.VersionLabel.Text = sprintf('version: %5.2f',app.VERSION);
             
             
             % Create Button_3

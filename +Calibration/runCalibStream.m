@@ -35,7 +35,7 @@ copyfile(fullfile(initFldr,filesep,'*.csv'), params.internalFolder)
 
 fprintff('Starting calibration:\n');
 fprintff('%-15s %s\n','stated at',datestr(now));
-fprintff('%-15s 05.2f\n','version',params.version);
+fprintff('%-15s %5.2f\n','version',params.version);
 %% ::Init fw
 fprintff('Loading Firmware...');
 fw = Pipe.loadFirmware(params.internalFolder);
@@ -49,9 +49,9 @@ fprintff('Done(%d)\n',round(toc(t)));
 %verify unit's configuration version
 verValue = typecast(uint8([floor(100*mod(params.version,1)) floor(params.version) 0 0]),'uint32');
 
-unitConfigVersion=hw.readReg('DIGGspare_006');;
+unitConfigVersion=hw.read('DIGGspare_006');
 if(unitConfigVersion~=verValue)
-    
+    warning('incompatible configuration versions!');
 end
 
 
@@ -279,7 +279,7 @@ end
 if(params.burnCalibrationToDevice)
     fprintff('Burning results to device...');
     if(score>=calibParams.passScore)
-        hw.burn2device();
+        hw.burn2device(params.outputFolder);
         fprintff('Done(%d)\n',round(toc(t)));
     else
         fprintff('skiped, score too low(%d)\n',score);

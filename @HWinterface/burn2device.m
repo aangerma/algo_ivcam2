@@ -1,5 +1,5 @@
 function burn2device(obj,basedir,burunConfiguration)
-    if(~exist('basedir','dir'))
+    if(~exist(basedir,'dir'))
         basedir=tempdir;
     end
     if(~exist('burunConfiguration','var'))
