@@ -31,6 +31,9 @@ fnUndsitLut = fullfile(params.internalFolder,filesep,'FRMWundistModel.bin32');
 initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
 copyfile(fullfile(initFldr,filesep,'*.csv'), params.internalFolder)
 
+fprintff('Starting calibration:\n');
+fprintff('%-15s %s\n','stated at',datestr(now));
+fprintff('%-15s %s\n','version',params.version);
 %% ::Init fw
 fprintff('Loading Firmware...');
 fw = Pipe.loadFirmware(params.internalFolder);
@@ -46,8 +49,9 @@ fprintff('init...');
 if(params.init)  
     fnAlgoInitMWD  =  fullfile(params.internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
-   
+    hw.runPresetScript('maReset');
     hw.runScript(fnAlgoInitMWD);
+    hw.runPresetScript('maRestart');
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 else
@@ -206,15 +210,14 @@ end
 %% write version+intrinsics
 verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(params.version,'.'),'uni',0));
 verValue = uint32(hex2dec([verhex{:}]));
-verRegs.DIGG.spare=zeros(1,8,'uint32');
-verRegs.DIGG.spare(1)=verValue;
+intregs.DIGG.spare=zeros(1,8,'uint32');
+intregs.DIGG.spare(1)=verValue;
 intregs.DIGG.spare(2)=typecast(single(dodregs.FRMW.xfov),'uint32');
 intregs.DIGG.spare(3)=typecast(single(dodregs.FRMW.yfov),'uint32');
 intregs.DIGG.spare(4)=typecast(single(dodregs.FRMW.laserangleH),'uint32');
 intregs.DIGG.spare(5)=typecast(single(dodregs.FRMW.laserangleV),'uint32');
-verRegs.DIGG.spare(6)=verValue; %config version
+intregs.DIGG.spare(6)=verValue; %config version
 fw.setRegs(intregs,fnCalib);
-fw.setRegs(verRegs,fnCalib);
 fw.writeUpdated(fnCalib);
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
@@ -255,11 +258,11 @@ end
 
 fprintff('[!] calibration ended - ');
 if(score==0)
-    fprintff('failed');
+    fprintff('failed\n');
 elseif(score<calibParams.passScore)
-    fprintff('quality failed');
+    fprintff('quality failed\n');
 else
-    fprintff('pass');
+    fprintff('pass\n');
 end
     
 
@@ -313,7 +316,7 @@ It = uint8(It.*permute([0 1 0],[3 1 2]));
 while(ishandle(f) && get(f,'userdata')==0)
     
     raw=hw.getFrame();
-    image(uint8(repmat(raw.i*.8,1,1,3)+It*.25));
+    image(uint8(repmat(rot90(raw.i,2)*.8,1,1,3)+It*.25));
     axis(a,'image');
     axis(a,'off');
     title(figTitle);
