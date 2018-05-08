@@ -21,7 +21,8 @@ end
 
 K=[regsOut.DEST.p2axa 0                   regsOut.DEST.p2axb;
    0                  regsOut.DEST.p2aya  regsOut.DEST.p2ayb;
-   0                  0                   1]^-1;
+   0                  0                   1];
 
-regsOut.CBUF.spare=typecast(K([1 4 7 2 5 8 3 6]),'uint32');
+Kinv=pinv(K);
+regsOut.CBUF.spare=typecast(Kinv([1 4 7 2 5 8 3 6]),'uint32');
 end
