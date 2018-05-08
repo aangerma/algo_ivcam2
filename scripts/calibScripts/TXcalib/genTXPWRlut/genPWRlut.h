@@ -23,7 +23,7 @@ bool bitget(uint32_t v, int n)
 //-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
 float algo_convertDealyFromGain(float p)
 {
-	float tau= -0.000312*p*p + 0.087202*p - 5.743036;
+	float tau=  0.016056 *p - 4.743036;
 	return tau;
 }
 
@@ -36,7 +36,7 @@ void genPWRlut(uint32_t* data,size_t n,float* outputLUT)
 	float yfov = 56;
 	float mirrorFreq = 21e3;
 	float ibias = 3;
-	float slopeEfficiency = 0.25;
+	
 	uint8_t modulationRef = 63;
 	static const float pi = std::acos(0.0f)*2 ;
 	static const float deg2rad = pi / 180.0;
@@ -57,6 +57,8 @@ void genPWRlut(uint32_t* data,size_t n,float* outputLUT)
     for(size_t i=0;i!=n;++i)
     {
 		
+
+
 		gainT += float((data[i] >> 4)&uint32_t(255))*dt;
 		gainV += int16_t(bitget(data[i], 1) * 2 - 1);
 		gainV = std::max(int16_t(0), gainV);
@@ -73,18 +75,9 @@ void genPWRlut(uint32_t* data,size_t n,float* outputLUT)
 		float binTime = (acos(-atan((binIndex / 64.0 * 2 - 1)*std::tan(yfovRAD / 2)) * 2 / yfovRAD)) / (2 * pi*mirrorFreq);
 		if (binTime < gainT)
 		{
-			float v;
-			if (binTime > gainTsave)
-			{
-				float s0 = (binTime - gainTsave) / (gainT - gainTsave);
-				float s1 = (gainT- binTime) / (gainT - gainTsave);
-				v = gainVsave*s1+gainV*s0;
-			}
-			else
-				v = gainVsave;
 			
-			float pout = (float(gainV) / 255 * float(modulationRef) / 63 * 150 + 150 + ibias)*slopeEfficiency;
-			outputLUT[binIndex] = algo_convertDealyFromGain(pout);
+			float iout = (float(gainV) / 255 * (float(modulationRef) / 63 * 150 + 150) + ibias);
+			outputLUT[binIndex] = algo_convertDealyFromGain(iout);
 			++binIndex;
 		}
 
