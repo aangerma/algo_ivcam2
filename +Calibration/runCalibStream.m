@@ -150,10 +150,13 @@ fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 if(params.DFZ)
     setLaserProjectionUniformity(hw,true);
     regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
-    hw.setReg('JFILinvBypass',true);
-    hw.setReg('DESTdepthAsRange',true);
-    hw.setReg('DIGGsphericalEn',true);
-    hw.shadowUpdate();
+    r=Calibration.RegState(hw);
+    
+    r.add('JFILinvBypass',true);
+    r.add('DESTdepthAsRange',true);
+    r.add('DIGGsphericalEn',true);
+    r.set();
+    
     
     d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
     d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
@@ -168,10 +171,8 @@ if(params.DFZ)
     % dodluts=struct;
     
     [dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,verbose);
-    hw.setReg('JFILinvBypass',false);
-    hw.setReg('DESTdepthAsRange',false);
-    hw.setReg('DIGGsphericalEn',false);
-    hw.shadowUpdate();
+    r.reset();
+    
     fw.setRegs(dodregs,fnCalib);
     if(results.geomErr<calibParams.errRange.geomErr(2))
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);

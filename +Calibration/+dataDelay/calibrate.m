@@ -2,42 +2,33 @@ function [regs,delayZsuccess,delayIRsuccess]=calibrate(hw,dataDelayParams,verbos
 
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
-
+r=Calibration.RegState(hw);
 %% SET
-calibconfig       =struct('name','RASTbiltBypass'     ,'val',true     );
-calibconfig(end+1)=struct('name','JFILbypass$'        ,'val',false    );
-calibconfig(end+1)=struct('name','JFILbilt1bypass'    ,'val',true     );
-calibconfig(end+1)=struct('name','JFILbilt2bypass'    ,'val',true     );
-calibconfig(end+1)=struct('name','JFILbilt3bypass'    ,'val',true     );
-calibconfig(end+1)=struct('name','JFILbiltIRbypass'   ,'val',true     );
-calibconfig(end+1)=struct('name','JFILdnnBypass'      ,'val',true     );
-calibconfig(end+1)=struct('name','JFILedge1bypassMode','val',uint8(1) );
-calibconfig(end+1)=struct('name','JFILedge4bypassMode','val',uint8(1) );
-calibconfig(end+1)=struct('name','JFILedge3bypassMode','val',uint8(1) );
-calibconfig(end+1)=struct('name','JFILgeomBypass'     ,'val',true     );
-calibconfig(end+1)=struct('name','JFILgrad1bypass'    ,'val',true     );
-calibconfig(end+1)=struct('name','JFILgrad2bypass'    ,'val',true     );
-calibconfig(end+1)=struct('name','JFILirShadingBypass','val',true     );
-calibconfig(end+1)=struct('name','JFILinnBypass'      ,'val',true     );
-calibconfig(end+1)=struct('name','JFILsort1bypassMode','val',uint8(1) );
-calibconfig(end+1)=struct('name','JFILsort2bypassMode','val',uint8(1) );
-calibconfig(end+1)=struct('name','JFILsort3bypassMode','val',uint8(1) );
-calibconfig(end+1)=struct('name','JFILupscalexyBypass','val',true     );
-calibconfig(end+1)=struct('name','JFILgammaBypass'    ,'val',false    );
-calibconfig(end+1)=struct('name','DIGGsphericalEn'    ,'val',true     );
-calibconfig(end+1)=struct('name','DIGGnotchBypass'    ,'val',true     );
-calibconfig(end+1)=struct('name','DESTaltIrEn'        ,'val',false );
+r.add('RASTbiltBypass'     ,true     );
+r.add('JFILbypass$'        ,false    );
+r.add('JFILbilt1bypass'    ,true     );
+r.add('JFILbilt2bypass'    ,true     );
+r.add('JFILbilt3bypass'    ,true     );
+r.add('JFILbiltIRbypass'   ,true     );
+r.add('JFILdnnBypass'      ,true     );
+r.add('JFILedge1bypassMode',uint8(1) );
+r.add('JFILedge4bypassMode',uint8(1) );
+r.add('JFILedge3bypassMode',uint8(1) );
+r.add('JFILgeomBypass'     ,true     );
+r.add('JFILgrad1bypass'    ,true     );
+r.add('JFILgrad2bypass'    ,true     );
+r.add('JFILirShadingBypass',true     );
+r.add('JFILinnBypass'      ,true     );
+r.add('JFILsort1bypassMode',uint8(1) );
+r.add('JFILsort2bypassMode',uint8(1) );
+r.add('JFILsort3bypassMode',uint8(1) );
+r.add('JFILupscalexyBypass',true     );
+r.add('JFILgammaBypass'    ,false    );
+r.add('DIGGsphericalEn'    ,true     );
+r.add('DIGGnotchBypass'    ,true     );
+r.add('DESTaltIrEn'        ,false    );
+r.set();
 
-%% GET OLD VALUES
-for i=1:length(calibconfig)
-    calibconfig(i).oldval=hw.read(calibconfig(i).name );%exact name
-end
-
-%% SET CALIB VALUES
-for i=1:length(calibconfig)
-    hw.setReg(calibconfig(i).name    ,calibconfig(i).val,true);
-end
-hw.shadowUpdate();
 
 %% CALIBRATE IR
 [delayIR,delayIRsuccess]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
@@ -50,10 +41,7 @@ dataDelayParams.slowDelayInitVal = delayIR;
 regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
 
 %% SET OLD VALUES
-for i=1:length(calibconfig)
-    hw.setReg(calibconfig(i).name    ,calibconfig(i).oldval);
-end
-
+r.reset();
 end
 
 
