@@ -57,8 +57,6 @@ void genPWRlut(uint32_t* data,size_t n,float* outputLUT)
     for(size_t i=0;i!=n;++i)
     {
 		
-
-
 		gainT += float((data[i] >> 4)&uint32_t(255))*dt;
 		gainV += int16_t(bitget(data[i], 1) * 2 - 1);
 		gainV = std::max(int16_t(0), gainV);
