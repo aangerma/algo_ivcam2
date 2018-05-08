@@ -138,7 +138,7 @@ end
 angxRaw = mean(angxRaw);
 angyRaw = mean(angyRaw);
 if angxRaw == 0 && angyRaw == 0
-    warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
+%     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
 end
 % % Disable MC - Disable_MEMS_Driver
 hw.runPresetScript('resetRestAngle');

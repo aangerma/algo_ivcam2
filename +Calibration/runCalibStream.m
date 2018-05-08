@@ -2,12 +2,14 @@ function [score,dbg]=runCalibStream(params, fprintff)
 t=tic;
 if(ischar(params))
     params=xml2structWrapper(params);
-    params.version = num2str(params.version);%gui consistency
+    
 end
 if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 verbose = params.verbose;
+
+
 %% ::caliration configuration
 calibParams = xml2structWrapper(sprintf('%s\\calibParams\\calibParams.xml',fileparts(mfilename('fullpath'))));
 
@@ -31,6 +33,9 @@ fnUndsitLut = fullfile(params.internalFolder,filesep,'FRMWundistModel.bin32');
 initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
 copyfile(fullfile(initFldr,filesep,'*.csv'), params.internalFolder)
 
+fprintff('Starting calibration:\n');
+fprintff('%-15s %s\n','stated at',datestr(now));
+fprintff('%-15s %5.2f\n','version',params.version);
 %% ::Init fw
 fprintff('Loading Firmware...');
 fw = Pipe.loadFirmware(params.internalFolder);
@@ -41,19 +46,30 @@ hw=HWinterface(fw);
 fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
+%verify unit's configuration version
+verValue = typecast(uint8([floor(100*mod(params.version,1)) floor(params.version) 0 0]),'uint32');
+
+unitConfigVersion=hw.read('DIGGspare_006');
+if(unitConfigVersion~=verValue)
+    warning('incompatible configuration versions!');
+end
+
+
 % hw.runPresetScript('systemConfig');
 fprintff('init...');
 if(params.init)  
     fnAlgoInitMWD  =  fullfile(params.internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
-   
+    hw.runPresetScript('maReset');
     hw.runScript(fnAlgoInitMWD);
+    hw.runPresetScript('maRestart');
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skipped\n');
 end
- 
+
+
 % hw.runPresetScript('startStream');
 
 %% ::dsm calib::
@@ -134,10 +150,13 @@ fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
 if(params.DFZ)
     setLaserProjectionUniformity(hw,true);
     regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
-    hw.setReg('JFILinvBypass',true);
-    hw.setReg('DESTdepthAsRange',true);
-    hw.setReg('DIGGsphericalEn',true);
-    hw.shadowUpdate();
+    r=Calibration.RegState(hw);
+    
+    r.add('JFILinvBypass',true);
+    r.add('DESTdepthAsRange',true);
+    r.add('DIGGsphericalEn',true);
+    r.set();
+    
     
     d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
     d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
@@ -152,9 +171,8 @@ if(params.DFZ)
     % dodluts=struct;
     
     [dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,verbose);
-    hw.setReg('DESTdepthAsRange',false);
-    hw.setReg('DIGGsphericalEn',false);
-    hw.shadowUpdate();
+    r.reset();
+    
     fw.setRegs(dodregs,fnCalib);
     if(results.geomErr<calibParams.errRange.geomErr(2))
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
@@ -204,24 +222,22 @@ end
 
 
 %% write version+intrinsics
-verhex=(cellfun(@(x) dec2hex(uint8(str2double(x)),2),strsplit(params.version,'.'),'uni',0));
-verValue = uint32(hex2dec([verhex{:}]));
-verRegs.DIGG.spare=zeros(1,8,'uint32');
-verRegs.DIGG.spare(1)=verValue;
+
+intregs.DIGG.spare=zeros(1,8,'uint32');
+intregs.DIGG.spare(1)=verValue;
 intregs.DIGG.spare(2)=typecast(single(dodregs.FRMW.xfov),'uint32');
 intregs.DIGG.spare(3)=typecast(single(dodregs.FRMW.yfov),'uint32');
 intregs.DIGG.spare(4)=typecast(single(dodregs.FRMW.laserangleH),'uint32');
 intregs.DIGG.spare(5)=typecast(single(dodregs.FRMW.laserangleV),'uint32');
-verRegs.DIGG.spare(6)=verValue; %config version
+intregs.DIGG.spare(6)=verValue; %config version
 fw.setRegs(intregs,fnCalib);
-fw.setRegs(verRegs,fnCalib);
 fw.writeUpdated(fnCalib);
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 save(fullfile(params.internalFolder,'imData.mat'),'dbg');
 fprintff('Done(%d)\n',round(toc(t)));
 
-fw.writeFirmwareFiles(params.outputFolder);
+
 
 
 
@@ -255,23 +271,37 @@ end
 
 fprintff('[!] calibration ended - ');
 if(score==0)
-    fprintff('failed');
+    fprintff('failed\n');
 elseif(score<calibParams.passScore)
-    fprintff('quality failed');
+    fprintff('quality failed\n');
 else
-    fprintff('pass');
+    fprintff('pass\n');
 end
     
 
+doCalibBurn = false;
+fprintff('Burning calibration to device...');
 if(params.burnCalibrationToDevice)
-    fprintff('Burning results to device...');
     if(score>=calibParams.passScore)
-        hw.burn2device();
+        doCalibBurn=true;
         fprintff('Done(%d)\n',round(toc(t)));
     else
         fprintff('skiped, score too low(%d)\n',score);
     end
+else
+    fprintff('skiped\n');
 end
+
+doConfigBurn = false;
+fprintff('Burning calibration to device...');
+if(params.burnCalibrationToDevice)
+        doConfigBurn=true;
+        fprintff('Done(%d)\n',round(toc(t)));
+else
+    fprintff('skiped\n');
+end
+hw.burn2device(params.outputFolder,doCalibBurn,doConfigBurn);
+
 
 end
 
@@ -313,7 +343,7 @@ It = uint8(It.*permute([0 1 0],[3 1 2]));
 while(ishandle(f) && get(f,'userdata')==0)
     
     raw=hw.getFrame();
-    image(uint8(repmat(raw.i*.8,1,1,3)+It*.25));
+    image(uint8(repmat(rot90(raw.i,2)*.8,1,1,3)+It*.25));
     axis(a,'image');
     axis(a,'off');
     title(figTitle);

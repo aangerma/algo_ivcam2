@@ -64,7 +64,7 @@ classdef HWinterface <handle
         
         
         
-        burn2device(obj,basedir,burunConfiguration);
+        burn2device(obj,basedir,burnCalib,burnConfig);
         
         function obj = HWinterface(fw)
             if(nargin==0)

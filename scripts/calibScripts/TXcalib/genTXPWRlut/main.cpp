@@ -156,6 +156,7 @@ unsigned int vertical_gain_data[] = {
 size_t n = sizeof(vertical_gain_data) / sizeof(unsigned int);
 float lut[65];
 genPWRlut(vertical_gain_data, n,lut);
-
+for (int i = 0; i != 65; ++i)
+std::cout << lut[i] << std::endl;
 return 0;
 }

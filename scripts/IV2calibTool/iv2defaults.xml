@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <Outputdirectorty>c:\temp\0082</Outputdirectorty>
+   <Outputdirectorty>c:\temp\ohadTest</Outputdirectorty>
    <cb_verbose>true</cb_verbose>
    <cb_init>true</cb_init>
    <cb_DSM>true</cb_DSM>
