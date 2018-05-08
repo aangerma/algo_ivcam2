@@ -1,22 +1,30 @@
-function burn2device(obj,basedir,burunConfiguration)
+function burn2device(obj,basedir,burnCalib,burnConfig)
     if(~exist(basedir,'dir'))
         basedir=tempdir;
     end
-    if(~exist('burunConfiguration','var'))
-        burunConfiguration=false;
+    if(~exist('burnConfig','var'))
+        burnConfig=false;
     end
+    
+    if(~exist('burnCalib','var'))
+        burnCalib=false;
+    end
+    
     fw=obj.getFirmware();
     fw.writeFirmwareFiles(basedir);
     if(basedir(end)~=filesep)
         basedir(end+1)=filesep;
     end
-    filenamesTableIndexLUT=  {
+    filenamesTableIndexLUT={};
+    if(burnCalib)
+    filenamesTableIndexLUT(end+1:end+4,:)=   {
         'WrCalibData' ,'Algo_Pipe_Calibration_VGA_CalibData_Ver_*.txt'          ,'0a0';
         'WrCalibInfo' ,'DIGG_Gamma_Info_CalibInfo_Ver_*.bin'                    ,'030';
         'WrCalibInfo' ,'DIGG_Undist_Info_1_CalibInfo_Ver_*.bin'                 ,'040';
         'WrCalibInfo' ,'DIGG_Undist_Info_2_CalibInfo_Ver_*.bin'                 ,'041';
         };
-    if(burunConfiguration)
+    end
+    if(burnConfig)
         filenamesTableIndexLUT(end+1:end+15,:)=  {
             'WrConfigData','Algo_Dynamic_Configuration_VGA30_1_ConfigData_Ver_*.txt','133';
             'WrConfigData','Algo_Dynamic_Configuration_VGA30_2_ConfigData_Ver_*.txt','134';

@@ -68,7 +68,8 @@ if(params.init)
 else
     fprintff('skipped\n');
 end
- 
+
+
 % hw.runPresetScript('startStream');
 
 %% ::dsm calib::
@@ -167,6 +168,7 @@ if(params.DFZ)
     % dodluts=struct;
     
     [dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,verbose);
+    hw.setReg('JFILinvBypass',false);
     hw.setReg('DESTdepthAsRange',false);
     hw.setReg('DIGGsphericalEn',false);
     hw.shadowUpdate();
@@ -234,7 +236,7 @@ io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 save(fullfile(params.internalFolder,'imData.mat'),'dbg');
 fprintff('Done(%d)\n',round(toc(t)));
 
-fw.writeFirmwareFiles(params.outputFolder);
+
 
 
 
@@ -276,15 +278,29 @@ else
 end
     
 
+doCalibBurn = false;
+fprintff('Burning calibration to device...');
 if(params.burnCalibrationToDevice)
-    fprintff('Burning results to device...');
     if(score>=calibParams.passScore)
-        hw.burn2device(params.outputFolder);
+        doCalibBurn=true;
         fprintff('Done(%d)\n',round(toc(t)));
     else
         fprintff('skiped, score too low(%d)\n',score);
     end
+else
+    fprintff('skiped\n');
 end
+
+doConfigBurn = false;
+fprintff('Burning calibration to device...');
+if(params.burnCalibrationToDevice)
+        doConfigBurn=true;
+        fprintff('Done(%d)\n',round(toc(t)));
+else
+    fprintff('skiped\n');
+end
+hw.burn2device(params.outputFolder,doCalibBurn,doConfigBurn);
+
 
 end
 
