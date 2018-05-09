@@ -16,7 +16,7 @@ function writeFirmwareFiles(obj,outputFldr)
     %
     d=obj.getAddrData(calib_regs2write);
     assert(length(d)<=62,'Max lines in calibration file is limited to 62 due to eprom memmory limitation');
-    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData__' filepostfix 'txt']));
+    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']));
     
     undistfns=writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' filepostfix 'bin']),true);
     
