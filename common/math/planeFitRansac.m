@@ -22,7 +22,7 @@ function [vec,distFromPlane,inliersOut] = planeFitRansac(x,y,z,fovMask,crit,verb
     end
     A = [xc(:) yc(:) zc(:)];
     
-    [inliers, ~] = ransac(A, @planeRansacEval, @planeRansacErr, 'errorThr', crit, 'iterations', 1000, 'plot', 'off');
+    [inliers, ~] = ransac(A, @planeRansacEval, @planeRansacErr, 'errorThr', crit, 'iterations', 1000, 'plot', false);
     B = A(inliers,:);
     vec = planeRansacEval(B);
     distFromPlane = reshape(planeRansacErr(vec, [x(:) y(:) z(:)]),size(x));

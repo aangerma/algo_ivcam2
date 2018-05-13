@@ -893,7 +893,7 @@ def write_regs_file(file_path, selected_regs, regs_def):
             data.append("{}{}{}{}\n".format(reg, " " * (30 - len(reg)), "h", to_hex(value, 32)[2:]))
 
     print_regs(data)
-    slash.logger.info("writing file: {}".format(file_path))
+    slash.logger.debug("writing file: {}".format(file_path))
     if not os.path.isdir(os.path.dirname(os.path.relpath(file_path))):
         os.makedirs(os.path.dirname(os.path.relpath(file_path)))
     with open(file_path, "w") as txt_file:
@@ -915,7 +915,6 @@ def debug_test():
                    "Randomize_failed": 0}
 
     data_path, file_path = get_data_path()
-
 
     constraints_def_path = r"../../+Pipe/tables/regsConstraints.frmw"
     constraints_list = get_constraints_list(constraints_def_path)
@@ -960,7 +959,7 @@ def debug_test():
             continue
 
         slash.logger.info("test passed")
-        logging.info("test passed")
+
         test_status["pass"] += 1
 
     logging.info(test_status)
@@ -1039,7 +1038,7 @@ def test_random_registers_autogen_100():
     regs_def = read_regs_file(regs_def_path)
     regs_def = clean_regs_list_to_generate(regs_def)
 
-    iterations = 10
+    iterations = 1000
     slash.logger.info("Start test, number of iterations: {}".format(iterations))
 
     reg_order = get_regs_order(regs_def)
@@ -1056,7 +1055,7 @@ def test_random_registers_autogen_100():
         status, reg_order, selected_regs = generate_regs(regs_def, constraints, reg_order)
         if not status:
             test_status["Randomize_failed"] += 1
-            slash.logger.info("test {} failed - generate randomize failed".format(i), extra={"highlight": True})
+            slash.logger.info("test {} failed - generate randomize failed".format(iteration), extra={"highlight": True})
             continue
 
         print_regs(selected_regs)
@@ -1064,20 +1063,20 @@ def test_random_registers_autogen_100():
 
         status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
         if status == 1:
-            slash.logger.info("test {} failed - pattern_generator_constraint".format(i), extra={"highlight": True})
+            slash.logger.info("test {} failed - pattern_generator_constraint".format(iteration), extra={"highlight": True})
             test_status["pattern_generator_constraint"] += 1
             continue
         if status == 2:
-            slash.logger.info("test {} failed - pattern_generator_crash".format(i), extra={"highlight": True})
+            slash.logger.info("test {} failed - pattern_generator_crash".format(iteration), extra={"highlight": True})
             test_status["pattern_generator_crash"] += 1
             continue
 
         if not run_autopipe(eng, ivs_file_name, data_path, iteration):
             test_status["fail"] += 1
-            slash.logger.info("test {} failed - FAIL".format(i), extra={"highlight": True})
+            slash.logger.info("test {} failed - FAIL".format(iteration), extra={"highlight": True})
             continue
 
-        slash.logger.info("test {} passed".format(i), extra={"highlight": True})
+        slash.logger.info("test {} passed".format(iteration), extra={"highlight": True})
         test_status["pass"] += 1
 
     slash.logger.info(test_status, extra={"highlight": True})
