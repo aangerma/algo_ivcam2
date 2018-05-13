@@ -8,5 +8,4 @@
 Env\: iv2Val
 avv\: iv2Val
 \: iv2Design:iv2Val
-
-avv\tools\authorization_by_file.txt: admin
+turn_in.bat: iv2Val
