@@ -1038,7 +1038,7 @@ def test_random_registers_autogen_100():
     regs_def = read_regs_file(regs_def_path)
     regs_def = clean_regs_list_to_generate(regs_def)
 
-    iterations = 1000
+    iterations = 10
     slash.logger.info("Start test, number of iterations: {}".format(iterations))
 
     reg_order = get_regs_order(regs_def)
