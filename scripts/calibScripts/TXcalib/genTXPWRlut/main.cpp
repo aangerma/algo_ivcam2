@@ -153,15 +153,17 @@ unsigned int vertical_gain_data[] = {
 };
 
 
-size_t n = sizeof(vertical_gain_data) / sizeof(unsigned int);
+
+uint16_t n = sizeof(vertical_gain_data) / sizeof(unsigned int);
 float lut[65];
 Params p;
 p.yfov = 56;
-p.ibias = 3;
-p.modulationRef = 63;
+p.laser_BIAS = 70;// irb e2 06 01
+p.laser_MODULATION_REF = 63;//irb e2 08 01
 
 genPWRlut(vertical_gain_data, n,p,lut);
 for (int i = 0; i != 65; ++i)
-std::cout << std::hex << *reinterpret_cast<uint32_t*>(&lut[i]) << std::endl;
+//std::cout << std::hex << *reinterpret_cast<uint32_t*>(&lut[i]) << std::endl;
+std::cout << lut[i]*1024 << std::endl;
 return 0;
 }

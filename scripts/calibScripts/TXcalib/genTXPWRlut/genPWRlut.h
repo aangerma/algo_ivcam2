@@ -3,9 +3,11 @@
 #include <iostream>//std::cout
 
 
-#define VERBOSE_OUT
+//#define VERBOSE_OUT
 #ifdef VERBOSE_OUT
 #include <vector> //debug only
+#include <tuple>
+typedef std::tuple<uint16_t, int16_t, float, uint16_t> Dh;
 #include <fstream>
 #endif
 
@@ -14,9 +16,9 @@
 
 
 //-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
-float algo_convertDealyFromGain(float p)
+float algo_convertDealyFromGain(float i)
 {
-	float tau = -0.000312f*p*p + 0.018293f*p - 5.566810f;
+	float tau = 0.017754f*i - 5.375485f;
 	return tau;
 }
 //-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
@@ -30,8 +32,9 @@ bool bitget(uint32_t v, int n)
 
 struct Dpt
 {
+	uint16_t t[2];
 	int16_t v[2];
-	size_t t[2];
+
 };
 
 Dpt parseVgainTableValue(uint32_t binv)
@@ -56,15 +59,15 @@ Dpt parseVgainTableValue(uint32_t binv)
 	return dpt;
 }
 
-size_t countNticks(uint32_t* vGainTbl, size_t vGainTblSz)
+uint16_t countNticks(uint32_t* vGainTbl, uint16_t vGainTblSz)
 {
 	int16_t gainV = 0;
-	size_t gainT = 0;
+	uint16_t gainT = 0;
 
-	for (size_t i = 0; i != vGainTblSz; ++i)
+	for (uint16_t i = 0; i != vGainTblSz; ++i)
 	{
 
-		Dpt dpt=parseVgainTableValue(vGainTbl[i]);
+		Dpt dpt = parseVgainTableValue(vGainTbl[i]);
 
 		gainT += dpt.t[0];
 		gainV += dpt.v[0];
@@ -80,10 +83,10 @@ size_t countNticks(uint32_t* vGainTbl, size_t vGainTblSz)
 struct Params
 {
 	float yfov;
-	uint8_t ibias;
-	uint8_t modulationRef;
+	uint8_t laser_BIAS;
+	uint8_t laser_MODULATION_REF;
 };
-void genPWRlut(uint32_t* vGainTbl, size_t vGainTblSz, Params p, float* outputLUT)
+void genPWRlut(uint32_t* vGainTbl, uint16_t vGainTblSz, Params p, float* outputLUT)
 {
 	static const int lutSize = 65;
 
@@ -96,63 +99,63 @@ void genPWRlut(uint32_t* vGainTbl, size_t vGainTblSz, Params p, float* outputLUT
 
 	float yfovRADdiv2 = p.yfov * deg2rad / 2;
 
-	
+
 
 	int16_t gainV = 0;
-	size_t gainT = 0;
-
-	float g2i = (float(p.modulationRef) / 63 * 150 + 150) / 255.0f;
+	uint16_t gainT = 0;
 
 
 
-	size_t binIndex = 0;
+
+
+	uint16_t binIndex = 0;
 #ifdef VERBOSE_OUT
-	std::vector<int16_t> dbgV;
-	std::vector<float> dbgT;
-	std::vector<size_t> dbgB;
+	std::vector<Dh> dbg;
 #endif
 
 
-	size_t n = countNticks(vGainTbl, vGainTblSz) * 2;//number of ticks in a full cycle
+	uint16_t n = countNticks(vGainTbl, vGainTblSz) * 2;//number of ticks in a full cycle
 
 
 
-	auto index2time = [&]() {return size_t((acos(-atan((binIndex / float(lutSize - 1) * 2 - 1)*std::tan(yfovRADdiv2)) / yfovRADdiv2))*n / (2 * pi)+0.5f); };//ATAN
 	//auto index2time = [&]() {return (acos(-(float(binIndex) / 64.0 * 2 - 1))) / (2 * pi*mirrorFreq); };//LINEAR
 
 
 
-	for (size_t i = 0; i != vGainTblSz; ++i)
+	for (uint16_t i = 0; i != vGainTblSz; ++i)
 	{
-		
+
 		Dpt dpt = parseVgainTableValue(vGainTbl[i]);
 
 
 		for (int z = 0; z != 2; ++z)
 		{
-			size_t binTic;
-			while (binIndex != lutSize )
+			uint16_t binTic;
+			float iout = float(gainV)  * (float(p.laser_MODULATION_REF) / 63 + 1)*150.0f / 255.0f + float(p.laser_BIAS)*60.0f / 255.0f;
+			while (binIndex != lutSize)
 			{
-				binTic = index2time();
+
+
+				binTic = uint16_t((acos(-atan((float(binIndex) / float(lutSize - 1) * 2 - 1)*std::tan(yfovRADdiv2)) / yfovRADdiv2))*n / (2 * pi) + 0.5f);
 				if (binTic < gainT)
 				{
+					std::cout << "error! did not fill LUT value at " << binIndex << std::endl;
 					++binIndex;
 					continue;
 				}
 				if (binTic > gainT + dpt.t[z])
 					break;
-
-				float iout = (float(gainV)  * g2i + float(p.ibias));
+#ifdef VERBOSE_OUT
+				dbg.push_back(std::make_tuple(0, 0, binTic, iout));
+#endif
 				outputLUT[binIndex] = algo_convertDealyFromGain(iout);
 				++binIndex;
-				
+
 			}
 			if (binIndex == lutSize)
 				break;
 #ifdef VERBOSE_OUT
-			dbgB.push_back(binTic);
-			dbgV.push_back(gainV);
-			dbgT.push_back(gainT);
+			dbg.push_back(std::make_tuple(gainT, iout, 0, 0));
 #endif
 
 			gainT += dpt.t[z];
@@ -169,18 +172,27 @@ void genPWRlut(uint32_t* vGainTbl, size_t vGainTblSz, Params p, float* outputLUT
 
 	}
 
-	if (binIndex != lutSize)
-		std::cout << "error! did not fill all LUT values" << std::endl;
-#ifdef VERBOSE_OUT
-	std::ofstream f("lutdata.txt");
-	for (int i = 0; i != dbgV.size(); ++i)
-	{
-		f << dbgT[i] << " " << dbgV[i] << " " << dbgB[i] << std::endl;
-	}
-	f.close();
-#endif
+
+	for (int i = 0; i != lutSize - 1; ++i)
+		outputLUT[i] = (outputLUT[i] + outputLUT[i + 1]) / 2;
 
 	for (int i = 0; i != lutSize; ++i)
 		outputLUT[i] /= 1024.0;
-	
+
+	if (binIndex != lutSize)
+		std::cout << "error! did not fill all LUT values" << std::endl;
+#ifdef VERBOSE_OUT
+	{
+		std::ofstream f("lutdata.txt");
+		for (int i = 0; i != dbg.size(); ++i)
+		{
+			f << std::get<0>(dbg[i]) << " " << std::get<1>(dbg[i]) << " " << std::get<2>(dbg[i]) << " " << std::get<3>(dbg[i]) << " " << std::endl;
+		}
+		f.close();
+	}
+
+#endif
+
+
+
 }
