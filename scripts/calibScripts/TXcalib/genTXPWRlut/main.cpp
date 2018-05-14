@@ -155,7 +155,12 @@ unsigned int vertical_gain_data[] = {
 
 size_t n = sizeof(vertical_gain_data) / sizeof(unsigned int);
 float lut[65];
-genPWRlut(vertical_gain_data, n,lut);
+Params p;
+p.yfov = 56;
+p.ibias = 3;
+p.modulationRef = 63;
+
+genPWRlut(vertical_gain_data, n,p,lut);
 for (int i = 0; i != 65; ++i)
 std::cout << std::hex << *reinterpret_cast<uint32_t*>(&lut[i]) << std::endl;
 return 0;
