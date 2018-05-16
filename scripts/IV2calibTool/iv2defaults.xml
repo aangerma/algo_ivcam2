@@ -8,7 +8,9 @@
    <cb_dataDelay>true</cb_dataDelay>
    <cb_DFZ>true</cb_DFZ>
    <cb_validation>true</cb_validation>
+   <cb_undist>true</cb_undist>
    <cb_burnCalibrationToDevice>true</cb_burnCalibrationToDevice>
+   <cb_burnConfigurationToDevice>true</cb_burnConfigurationToDevice>
    <cb_debug>true</cb_debug>
    <cb_coarseIrDelay>true</cb_coarseIrDelay>
    <cb_fineIrDelay>true</cb_fineIrDelay>

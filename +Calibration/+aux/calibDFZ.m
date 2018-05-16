@@ -59,23 +59,23 @@ for i = 1:numel(darr)
     
 end
 
-% Only from here we can change params that affects the 3D calculation (like
-% baseline, gaurdband, ... TODO: remove this line when the init script has
-% baseline of 30.
-regs.DEST.baseline = single(30);
-regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
+% % Only from here we can change params that affects the 3D calculation (like
+% % baseline, gaurdband, ... TODO: remove this line when the init script has
+% % baseline of 30.
+% regs.DEST.baseline = single(30);
+% regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
 xL = [40 40 4000   -3 -3];
 xH = [90 90 6000    3  3];
 regs = x2regs(x0,regs);
 if eval
-    [minerr,eFit]=errFunc(darr,regs,x0,verbose);
+    [minerr,eFit]=errFunc(darr,regs,x0);
     outregs = [];
     darrNew = [];
     return
 end
-[e,eFit]=errFunc(darr,regs,x0,0);
+[e,eFit]=errFunc(darr,regs,x0);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 % Define optimization settings
@@ -84,50 +84,50 @@ opt.OutputFcn=[];
 opt.TolFun = 1e-6;
 opt.TolX = 1e-6;
 opt.Display='none';
-[xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),x0,xL,xH,opt);
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x,0),xbest,xL,xH,opt);
+[xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x),x0,xL,xH,opt);
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x),xbest,xL,xH,opt);
 outregs = x2regs(xbest,regs);
-[e,eFit]=errFunc(darr,outregs,xbest,verbose);
+[e,eFit]=errFunc(darr,outregs,xbest);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
-%% Do it for each in array
-if nargout > 3
-    darrNew = darr;
-    for i = 1:numel(darr)
-        [zNewVals,xF,yF]=rpt2z(cat(3,darrNew(i).rtd,darrNew(i).angx,darrNew(i).angy),outregs);
-        ok=~isnan(xF) & ~isnan(yF)  & darrNew(i).i>1;
-        darrNew(i).z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
-        darrNew(i).i = griddata(double(xF(ok)),double(yF(ok)),double(darrNew(i).i(ok)),xg,yg);
-        %         darrNew(i).c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
-    end
-end
-
-
 outregs = x2regs(xbest);
-end
+%% Do it for each in array
+% if nargout > 3
+%     darrNew = darr;
+%     for i = 1:numel(darr)
+%         [zNewVals,xF,yF]=rpt2z(cat(3,darrNew(i).rtd,darrNew(i).angx,darrNew(i).angy),outregs);
+%         ok=~isnan(xF) & ~isnan(yF)  & darrNew(i).i>1;
+%         darrNew(i).z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
+%         darrNew(i).i = griddata(double(xF(ok)),double(yF(ok)),double(darrNew(i).i(ok)),xg,yg);
+%         %         darrNew(i).c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
+%     end
+% end
 
 
-function [z,xF,yF] = rpt2z(rpt,rtlRegs)
+end
 
-[~,~,xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
-rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-[~,cosx,~,~,~,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
-r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-if rtlRegs.DEST.depthAsRange
-    z = r;
-else
-    z = r.*cosw.*cosx;
-end
-z = z * rtlRegs.GNRL.zNorm;
-end
-function [e,eFit]=errFunc(darr,rtlRegs,X,verbose)
+% 
+% function [z,xF,yF] = rpt2z(rpt,rtlRegs)
+% % This function isn't very relevant after fixing the ang2xy bug.
+% [xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
+% rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
+% [~,cosx,~,~,~,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
+% r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+% if rtlRegs.DEST.depthAsRange
+%     z = r;
+% else
+%     z = r.*cosw.*cosx;
+% end
+% z = z * rtlRegs.GNRL.zNorm;
+% end
+function [e,eFit]=errFunc(darr,rtlRegs,X)
 %build registers array
 % X(3) = 4981;
 rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
-    [~,~,xF,yF]=Pipe.DIGG.ang2xy(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,Logger(),[]);
-    xF = xF*double((rtlRegs.FRMW.xres-1))/double(rtlRegs.FRMW.xres);
-    yF = yF*double((rtlRegs.FRMW.yres-1))/double(rtlRegs.FRMW.yres);
+    [xF,yF]=Calibration.aux.ang2xySF(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,true);
+    xF = xF*double((rtlRegs.FRMW.xres-1))/double(rtlRegs.FRMW.xres);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
+    yF = yF*double((rtlRegs.FRMW.yres-1))/double(rtlRegs.FRMW.yres);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
     
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
     

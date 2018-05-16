@@ -218,8 +218,22 @@ else
 end
 
 
-
-
+%% ::Fix ang2xy Bug using undistort table::
+fprintff('Fixing ang2xy using undist table...\n');
+if(params.undist)
+    [undistlut.FRMW.undistModel, results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(regs,verbose);
+    fw.setLut(undistlut);
+    [~,luts]=fw.get();
+    if(results.maxPixelDisplacement<calibParams.errRange.maxPixelDisplacement(2))
+        fprintff('[v] undist calib passed[e=%g]\n',results.maxPixelDisplacement);
+    else
+        fprintff('[x] undist calib failed[e=%g]\n',results.maxPixelDisplacement);
+        
+    end
+else
+    fprintff('skipped\n');
+    results.maxPixelDisplacement=inf;
+end
 
 %% write version+intrinsics
 
