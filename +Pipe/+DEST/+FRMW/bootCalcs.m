@@ -15,22 +15,23 @@ speedOfLightMMnsec = 299702547*1000/1e9;
     else
          autogenRegs.DEST.txPWRpdLUTfactor = uint32((2^16-1)*2^16/(double(regs.GNRL.imgVsize)-1));
     end
-    rxLUTscale = 1;
-    autogenRegs.DEST.rxPWRpdLUTfactor =uint32(2^6*(2^16)/(2^12-1)*rxLUTscale);
+    
+    autogenRegs.DEST.rxPWRpdLUTfactor =uint32(2^6*(2^16)/(2^12-1));
     
     %TODO: ROI (replace regs.GNRL.imgVsize with yres, truncate according to
     %margin)
-    txAxis = single(linspace(0,double(regs.GNRL.imgVsize),65));
+%     txAxis = single(linspace(0,double(regs.GNRL.imgVsize),65));
 %     rxAxis = single(linspace(0,4096/rxLUTscale,65));
 
-    stepFunc = @(x,th) th(1)*(.5-.5*erf((x-th(2))*th(3)));
-     autogenRegs.DEST.txPWRpd =stepFunc(txAxis/double(regs.GNRL.imgVsize),regs.FRMW.destTxpdGen);
+%     stepFunc = @(x,th) th(1)*(.5-.5*erf((x-th(2))*th(3)));
+%      autogenRegs.DEST.txPWRpd =stepFunc(txAxis/double(regs.GNRL.imgVsize),regs.FRMW.destTxpdGen);
 %     autogenRegs.DEST.rxPWRpd =stepFunc(rxAxis,regs.FRMW.destRxpdGen);
 %    plot(rxAxis,autogenRegs.DEST.rxPWRpd)
     %interpolation
-    autogenRegs.DEST.txPWRpd=autogenRegs.DEST.txPWRpd/2^10;
+%     autogenRegs.DEST.txPWRpd=autogenRegs.DEST.txPWRpd/2^10;
 %     autogenRegs.DEST.rxPWRpd=autogenRegs.DEST.rxPWRpd/2^10;
     
+autogenRegs.DEST.txPWRpd=zeros(1,65,'single')/2^10; %set by firmware in runtime from laser power
 %------------sampleDist-----------------%    
  % This should give us the length in mm per sample time, i.e.: the distance travled by light between two samples.
  hfClk = regs.FRMW.pllClock/4;

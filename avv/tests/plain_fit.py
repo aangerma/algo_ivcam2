@@ -1,9 +1,13 @@
 #! python3
 import slash
 import os
-import common
+import sys
 
-@common.ivcam2
+sys.path.insert(0, r"Avv\tests")
+import a_common
+
+
+@a_common.ivcam2
 def test_wall():
     slash.logger.info("Start")
 
