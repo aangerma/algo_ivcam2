@@ -219,12 +219,17 @@ else
     dImg = rtdImg/C; % Round Trip Time
     dImg = dImg + randn(size(dImg))*double(regs.EPTG.sampleJitter);
     dvct = griddata(angxg,angyg,dImg,double(angx),double(angy));
-
+    if(isempty(dvct))
+        dvct=inf(size(angx));
+    end
     dvctF = interp1(t,dvct,tF,'linear','extrap');
     %%
     %genereate slow
     albedoImg = max(0,gt.aImg);
     ivs.slow = griddata(angxg,angyg,albedoImg,angx,angy);
+     if(isempty(ivs.slow))
+        ivs.slow=zeros(size(angx));
+    end
     %genererate fast
     ivs.fast = repmat(c,ceil(length(t)*64/length(c)),1);
     ivs.fast = double(ivs.fast);
