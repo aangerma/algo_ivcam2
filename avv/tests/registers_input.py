@@ -223,12 +223,14 @@ def get_constraints_list(file_path):
                 constraints_list.append(line)
 
     num_of_constraints = len(constraints_list)
-    slash.logger.info("file number of constraints: {}".format(num_of_constraints))
     constraints_list.append("[FRMWxres]-[FRMWmarginL]-[FRMWmarginR]>64")
     constraints_list.append("mod([FRMWxres]-[FRMWmarginL]-[FRMWmarginR],2)==0")
     constraints_list.append("[FRMWyres]-[FRMWmarginT]-[FRMWmarginB]>60")
     constraints_list.append("mod([FRMWyres]-[FRMWmarginT]-[FRMWmarginB],2)==0")
-    slash.logger.info("file number of constraints added: {}".format(len(constraints_list), num_of_constraints))
+    constraints_list.append("mod([FRMWxres],2)==0")
+    constraints_list.append("mod([FRMWyres],2)==0")
+
+    slash.logger.info("file number of constraints: {}, added: {}, total: ".format(num_of_constraints, len(constraints_list) - num_of_constraints, len(constraints_list)))
     return constraints_list
 
 
@@ -602,8 +604,14 @@ def check_constraint(selected_regs={}, constraint=None):
         return modulo(selected_regs["FRMWxres"] - selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"], 2) == 0
     elif constr == "mod([FRMWyres]-[FRMWmarginT]-[FRMWmarginB],2)==0":
         return modulo(selected_regs["FRMWyres"] - selected_regs["FRMWmarginT"] - selected_regs["FRMWmarginB"], 2) == 0
+    elif constr == "[GNRLrangeFinder]==1 | ( mod([FRMWxres],2)==0 & mod([FRMWyres],2)==0 )":
+        return selected_regs["GNRLrangeFinder"]==1 or modulo(selected_regs["FRMWxres"],2)==0 and modulo(selected_regs["FRMWyres"],2)==0
+    elif constr == "mod([FRMWxres],2)==0":
+        return modulo(selected_regs["FRMWxres"],2)==0
+    elif constr == "mod([FRMWyres],2)==0":
+        return modulo(selected_regs["FRMWyres"],2)==0
     else:
-        logging.warning("constraint not recognized: {}".format(constr))
+        slash.logger.warning("constraint not recognized: {}".format(constr))
         return True
 
 
@@ -1038,7 +1046,7 @@ def test_random_registers_autogen_100():
     regs_def = read_regs_file(regs_def_path)
     regs_def = clean_regs_list_to_generate(regs_def)
 
-    iterations = 10
+    iterations = 100
     slash.logger.info("Start test, number of iterations: {}".format(iterations))
 
     reg_order = get_regs_order(regs_def)
