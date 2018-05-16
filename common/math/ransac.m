@@ -1,4 +1,4 @@
-function [bestInliers,bestModel] = ransac(X,generateModel,generateERR,varargin)
+function [bestInliersB,bestModel] = ransac(X,generateModel,generateERR,varargin)
 %{
 general ransac iteration function
 -usage:
@@ -48,7 +48,7 @@ rng(arg.seed);
 bestInliers=[];
 for i = 1:arg.iterations
     %random samples for model generating
-    rand_samples = randperm( nSamples, dim );
+    rand_samples = randperm( nSamples, arg.nModelPoints );
     X_k = arg.X( rand_samples,: );
     
     %generate the model and find his error compered to the samples set
@@ -64,7 +64,8 @@ for i = 1:arg.iterations
     end
 
 end
-
+bestInliersB=false(size(arg.X,1),1);
+bestInliersB(bestInliers)=true;
 if(arg.plot)
     switch(dim)
         case 1
