@@ -3,14 +3,17 @@ regs.FRMW.yres = uint16(480);
 
 regs.FRMW.marginL = int16(0);
 regs.FRMW.marginR = int16(0);
+regs.FRMW.marginT = int16(0);
+regs.FRMW.marginB = int16(0);
+
 regs.FRMW.gaurdBandH = single(0.0);
 regs.FRMW.gaurdBandV = single(0.0500);
 
-regs.FRMW.laserangleH = hex2single('3EB51CC0'); % 0.2852
-regs.FRMW.laserangleV = hex2single('3F8B1F85'); % 0.9344 
+regs.FRMW.laserangleH = hex2single('3E92CF17'); % 0.2852
+regs.FRMW.laserangleV = hex2single('3F831071'); % 0.9344 
 
-regs.FRMW.xfov = hex2single('423C0915'); % 50.5519
-regs.FRMW.yfov = hex2single('422000C5'); % 42.4060
+regs.FRMW.xfov = hex2single('423C573D');
+regs.FRMW.yfov = hex2single('42202152');
 %regs.FRMW.xfov = single(72);
 %regs.FRMW.yfov = single(56);
 
