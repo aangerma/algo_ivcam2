@@ -86,7 +86,7 @@ at([JFILbiltGauss_046],2)~=0
 %even img size (non rangeFinder)
 [GNRLrangeFinder]==1 | ( mod([GNRLimgHsize],2)==0 & mod([GNRLimgVsize],2)==0 )
 %due to packer, output resultion should be even
-[GNRLrangeFinder]==1 | ( mod([FRMWxres],2)==0 & mod([FRMWyres],2)==0 )
+% [GNRLrangeFinder]==1 | ( mod([FRMWxres],2)==0 & mod([FRMWyres],2)==0 )
 
 
 %image size is always positive

@@ -19,8 +19,10 @@ function [udistLUT,maxPixelDisplacement] = calibUndistAng2xyBugFix(regs,verbose)
 % A grid of x-y coordinates in the image plane:
 margin = 10; % In pixels. How far from the image plane to correct the location. 
 dp = 10; % In pixels. Pixel grid spacing. Too small a number will provide insufficient number of examples for fixing, too great a number will take too long to compute.
-dp = double(regs.FRMW.yres+2*margin)/round(double(regs.FRMW.yres+2*margin)/dp);% Make sure the range of pixels divide by dp. Thus the pixel grid will be symmetric.
-[xg,yg] = meshgrid(-margin:dp:double(regs.FRMW.xres+margin),-margin:dp:double(regs.FRMW.yres+margin)); 
+dpy = double(regs.GNRL.imgVsize+2*margin)/round(double(regs.GNRL.imgVsize+2*margin)/dp);% Make sure the range of pixels divide by dp. Thus the pixel grid will be symmetric.
+dpx = double(regs.GNRL.imgHsize+2*margin)/round(double(regs.GNRL.imgHsize+2*margin)/dp);% Make sure the range of pixels divide by dp. Thus the pixel grid will be symmetric.
+
+[xg,yg] = meshgrid(-margin:dpy:double(regs.GNRL.imgHsize+margin),-margin:dpx:double(regs.GNRL.imgVsize+margin)); 
 
 % transform to angx-angy. Using the fixed xy2ang:
 [angxg,angyg] = Calibration.aux.xy2angSF(xg,yg,regs,true);
@@ -32,7 +34,7 @@ dp = double(regs.FRMW.yres+2*margin)/round(double(regs.FRMW.yres+2*margin)/dp);%
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
 % y.
 
-[udistLUT,~,~,~,~]= Calibration.Undist.generateUndistTables([xbug(:),ybug(:)]',[xg(:),yg(:)]',double([regs.FRMW.yres,regs.FRMW.xres]));
+[udistLUT,~,~,~,~]= Calibration.Undist.generateUndistTables([xbug(:),ybug(:)]',[xg(:),yg(:)]',double([regs.GNRL.imgVsize,regs.GNRL.imgHsize]));
 
 % Apply the lut to the bugged x-y and calculate the displacement error:
 luts.FRMW.undistModel = udistLUT;

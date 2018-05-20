@@ -126,8 +126,8 @@ rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
     [xF,yF]=Calibration.aux.ang2xySF(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,true);
-    xF = xF*double((rtlRegs.FRMW.xres-1))/double(rtlRegs.FRMW.xres);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
-    yF = yF*double((rtlRegs.FRMW.yres-1))/double(rtlRegs.FRMW.yres);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
+    xF = xF*double((rtlRegs.GNRL.imgHsize-1))/double(rtlRegs.GNRL.imgHsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
+    yF = yF*double((rtlRegs.GNRL.imgVsize-1))/double(rtlRegs.GNRL.imgVsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
     
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
     
@@ -170,10 +170,6 @@ if(~exist('rtlRegs','var'))
     rtlRegs=iterRegs;
     return;
 end
-iterRegs.FRMW.marginL=int16(0);
-iterRegs.FRMW.marginT=int16(0);
-iterRegs.FRMW.xres=rtlRegs.GNRL.imgHsize;
-iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
 iterRegs.FRMW.xoffset=single(0);
 iterRegs.FRMW.yoffset=single(0);
 iterRegs.FRMW.undistXfovFactor=single(1);
