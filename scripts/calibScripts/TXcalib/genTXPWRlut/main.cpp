@@ -162,8 +162,16 @@ p.laser_BIAS = 70;// irb e2 06 01
 p.laser_MODULATION_REF = 63;//irb e2 08 01
 
 genPWRlut(vertical_gain_data, n,p,lut);
+uint8_t printMode = 2;
+uint32_t bassaddr = 2685274624;
 for (int i = 0; i != 65; ++i)
-std::cout << std::hex << *reinterpret_cast<uint32_t*>(&lut[i]) << std::endl;
-//std::cout << lut[i]*1024 << std::endl;
+{
+	if (printMode == 0)//hex values
+		std::cout << std::hex << *reinterpret_cast<uint32_t*>(&lut[i]) << std::endl;
+	if (printMode == 1)//float values (post normalization
+		std::cout << lut[i] * 1024 << std::endl;
+	if (printMode == 2)//mwd command
+		std::cout << "mwd "<< std::hex << bassaddr+i*4 << " " << bassaddr + (i+1) * 4 << " " << std::hex << *reinterpret_cast<uint32_t*>(&lut[i]) << std::endl;
+}
 return 0;
 }
