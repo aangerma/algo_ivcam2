@@ -28,7 +28,7 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
         filenamesTableIndexLUT(end+1:end+15,:)=  {
             'WrConfigData','Algo_Dynamic_Configuration_VGA30_1_ConfigData_Ver_*.txt','133';
             'WrConfigData','Algo_Dynamic_Configuration_VGA30_2_ConfigData_Ver_*.txt','134';
-            'WrConfigData','Algo_Dynamic_Configuration_VGA30_3_ConfigData_Ver_*.txt','135';
+%           'WrConfigData','Algo_Dynamic_Configuration_VGA30_3_ConfigData_Ver_*.txt','135';
             'WrConfigInfo','DCOR_cml_0_Info_ConfigInfo_Ver_*.bin'                   ,'180';
             'WrConfigInfo','DCOR_cml_1_Info_ConfigInfo_Ver_*.bin'                   ,'181';
             'WrConfigInfo','DCOR_cml_2_Info_ConfigInfo_Ver_*.bin'                   ,'18B';
