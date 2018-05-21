@@ -49,7 +49,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 %verify unit's configuration version
 verValue = typecast(uint8([floor(100*mod(params.version,1)) floor(params.version) 0 0]),'uint32');
 
-unitConfigVersion=hw.read('DIGGspare_006');
+unitConfigVersion=hw.read('DIGGspare_005');
 if(unitConfigVersion~=verValue)
     warning('incompatible configuration versions!');
 end
