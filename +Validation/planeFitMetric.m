@@ -1,5 +1,5 @@
 function s = planeFitMetric(d,kmat,z2mm)
-    load dbg
+    warning('off','vision:calibrate:boardShouldBeAsymmetric')
     p=Calibration.getTargetParams();
     
     ir = normByMax(d.i);
@@ -11,14 +11,18 @@ function s = planeFitMetric(d,kmat,z2mm)
     
     i=convhull(c(:,1),c(:,2));
     msk=poly2mask(c(i,1),c(i,2),size(ir,1),size(ir,2));
-    vim = Pipe.z16toVerts(d.z,kmat,z2mm);
+    mskW=imerode(ir>graythresh(ir(msk)),ones(10))&msk;
+    vim = double(Pipe.z16toVerts(d.z,kmat,z2mm));
+    mx=max(max(vim,[],1),[],2);
+    mn=min(min(vim,[],1),[],2);
+    scl = mean(2./(mx-mn));
+    vim=(vim-mn).*scl-1;
     vall=reshape(vim,[],3);
     v=vall(msk,:);
-    [in,mdl]=ransac(v,@gPlaneModel,@gPlaneError,'nModelPoints',5,'errorThr',3);
+    [in,mdl]=ransac(v,@gPlaneModel,@gPlaneError,'nModelPoints',5,'errorThr',1*scl);
     
-    [yg,xg]=ndgrid(linspace(min(v(:,2)),max(v(:,2)),100),linspace(min(v(:,1)),max(v(:,1)),100));
     
-    mskW=imerode(ir>graythresh(ir(msk)),ones(10))&msk
+    
     
     
     [oy,ox]=ndgrid(linspace(-1,1,bsz(1))*(bsz(1)-1)*p.mmPerUnitY,linspace(-1,1,bsz(2))*(bsz(2)-1)*p.mmPerUnitX);
@@ -27,19 +31,24 @@ function s = planeFitMetric(d,kmat,z2mm)
     vsample=@(I) interp2(ix,iy,vim(:,:,I),c(:,1),c(:,2));
     distMat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
      xyzmes=[vsample(1) vsample(2) vsample(3)];
-    emat=abs(distMat(xyzmes')-distMat(ptsOpt'));
+    emat=abs(distMat(xyzmes'/scl)-distMat(ptsOpt'));
 
     
     if(0)
+        %%
+        [yg,xg] = ndgrid(linspace(min(v(:,2)),max(v(:,2)),100),linspace(min(v(:,1)),max(v(:,1)),100));%#ok
         zg = reshape(qMat([xg(:) yg(:)])*mdl,size(yg));
-        plot3(v(~in,1),v(~in,2),v(~in,3),'r.',v(in,1),v(in,2),v(in,3),'g.');
-        surface(xg,yg,zg,'edgecolor','none','facecolor','b','facealpha',0.2);
-        axis equal
+        plot3(v(~in,1)/scl,v(~in,2)/scl,v(~in,3)/scl,'r.',v(in,1)/scl,v(in,2)/scl,v(in,3)/scl,'g.');
+        surface(xg/scl,yg/scl,zg/scl,'edgecolor','none','facecolor','b','facealpha',0.2);
+        hold on;plot3(xyzmes(:,1)/scl,xyzmes(:,2)/scl,xyzmes(:,3)/scl,'+b');hold off
+         axis square
+grid on
     end
-    s.xcurve=mdl(1);
-    s.ycurve=mdl(2);
-    s.std = std(qMat(v)*mdl-v(:,3));
-    s.stdW = std(qMat(vall(mskW,:))*mdl-vall(mskW,3));
+    eim = reshape(qMat(vall)*mdl-vall(:,3),size(ir))/scl;
+    s.xcurve=mdl(1)*scl;
+    s.ycurve=mdl(2)*scl;
+    s.std = std(eim(msk));
+    s.stdW = std(eim(mskW));
     s.fillfactor=nnz(ir(msk)~=0)/nnz(msk);
     s.geomtricError=rms(emat(:));
     
@@ -55,5 +64,7 @@ function e=gPlaneError(th,X)
 end
 function th=gPlaneModel(X)
     h=qMat(X);
-    th=h\X(:,3);
+    HH=h'*h;
+   
+    th=(HH)^-1*h'*X(:,3);
 end
