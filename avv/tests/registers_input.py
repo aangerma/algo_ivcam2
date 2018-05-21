@@ -10,7 +10,6 @@ import matlab_eng
 import re
 import math
 import struct
-
 sys.path.insert(0, r"Avv\tests")
 import a_common
 
@@ -20,7 +19,7 @@ except:
     pass
 
 
-# slash run -vv -l Avv/logs/ -o log.highlights_subpath={context.session.id}/highlights.log -f Avv/tests/test_list.txt -k registers_1000
+# slash run -vv -l Avv/logs/ -o log.highlights_subpath={context.session.id}/highlights.log -f Avv/tests/test_list.txt -k test_random_registers_autogen_100
 def run_randomize(eng, file_path):
     slash.logger.debug("running matlab randomize")
     try:
