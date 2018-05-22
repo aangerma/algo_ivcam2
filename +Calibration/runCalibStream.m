@@ -144,6 +144,28 @@ end
 %% ::thermal::
 % thermalRegs=Calibration.thermal.setThermalRegs(calibParams.thermal);
 % fw.setRegs(thermalRegs,fnCalib);
+%% ::roi::
+fprintff('Calibrating ROI...\n');
+params.roi = true;
+if (params.roi)
+    roiRegs = Calibration.aux.runROICalib(hw, verbose);
+    fw.setRegs(roiRegs, '');
+    regs = fw.get(); % run bootcalcs
+    fnAlgoTmpMWD =  fullfile(params.internalFolder,filesep,'algoROICalib.txt');
+    fw.genMWDcmd('DIGG',fnAlgoTmpMWD);
+    hw.runScript(fnAlgoTmpMWD);
+    hw.shadowUpdate();
+    roiRegsVal = Calibration.aux.runROICalib(hw, true);
+    mr = roiRegsVal.FRMW;
+    valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
+%     results.roiVal = valSumMargins;
+    if (valSumMargins ~= 0)
+        fprintff('warning: Invalid pixels after ROI calibration');
+    end
+else
+    fprintff('skipped\n');
+%     results.roiVal = inf;
+end
 %% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
@@ -188,28 +210,7 @@ else
     results.geomErr=inf;
 end
 
-%% ::roi::
-fprintff('Calibrating ROI...\n');
-params.roi = true;
-if (params.roi)
-    roiRegs = Calibration.aux.runROICalib(hw, verbose);
-    fw.setRegs(roiRegs, '');
-    regs = fw.get(); % run bootcalcs
-    fnAlgoTmpMWD =  fullfile(params.internalFolder,filesep,'algoROICalib.txt');
-    fw.genMWDcmd('DIGG',fnAlgoTmpMWD);
-    hw.runScript(fnAlgoTmpMWD);
-    hw.shadowUpdate();
-    roiRegsVal = Calibration.aux.runROICalib(hw, true);
-    mr = roiRegsVal.FRMW;
-    valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
-    results.roiVal = valSumMargins;
-    if (valSumMargins ~= 0)
-        fprintff('warning: Invalid pixels after ROI calibration');
-    end
-else
-    fprintff('skipped\n');
-    results.roiVal = inf;
-end
+
 
 
 %% ::validation::
