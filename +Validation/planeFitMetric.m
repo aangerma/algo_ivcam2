@@ -13,12 +13,32 @@ z2mm=2^hw.read('GNRLzMaxsubMMExp');
     ir = normByMax(d.i);
     [c,bsz]=detectCheckerboardPoints(ir);
     bsz=bsz-1;
-    if(~isequal(bsz,[p.cornersY p.cornersX]))
+      if(~isequal(bsz,[p.cornersY p.cornersX]))
         error('Bad target/could not find board');
     end
+ ind = [1  bsz(1)  bsz(1)*bsz(2) bsz(1)*(bsz(2)-1)+1 ];
+ 
     
-    i=convhull(c(:,1),c(:,2));
-    msk=poly2mask(c(i,1),c(i,2),size(ir,1),size(ir,2));
+    S = [c(ind,:) ones(4,1)];
+    D = [-1 -1 ;-1 1 ;1 1 ;1 -1 ];
+
+    % D_ = [k1;k2;k3]*S k3(3)=1; 
+    %D(:,1)*k3*s=k1*s
+    %D(:,2)*k3*s=k2*s
+    %|-S  0 D(:,1)*s| |k1|  |0|
+    %| 0 -S D(:,2)*s| |k2| =|0|
+    %| 0  0 [0 0..1]| |k3|  |1|
+    N=1001;
+    k=reshape([-S zeros(4,3) D(:,1).*S;zeros(4,3) -S D(:,2).*S; zeros(1,8) 1]\[zeros(8,1);1],3,3)';
+    [yg01,xg01]=ndgrid(linspace(-1,1,N),linspace(-1,1,N));
+    XXX=(k^-1*[xg01(:) yg01(:) yg01(:)*0+1]');
+    XXX=reshape((XXX(1:2,:)./XXX(3,:))',[N N ,2]);
+    [yg,xg]=ndgrid(1:size(ir,1),1:size(ir,2));
+    warp2board = @(im) interp2(xg,yg,im,XXX(:,:,1),XXX(:,:,2));
+ 
+ 
+    
+    msk=poly2mask(c(ind,1),c(ind,2),size(ir,1),size(ir,2));
     mskW=imerode(ir>graythresh(ir(msk)),ones(10))&msk;
     vim = double(Pipe.z16toVerts(d.z,kmat,z2mm));
     mx=max(max(vim,[],1),[],2);
@@ -53,11 +73,18 @@ z2mm=2^hw.read('GNRLzMaxsubMMExp');
         plot3(v_(~in,1),v_(~in,2),v_(~in,3),'r.',v_(in,1),v_(in,2),v_(in,3),'g.');
         v_hat=dnrm(cat(3,xg,yg,zg));
          surface(v_hat(:,:,1),v_hat(:,:,2),v_hat(:,:,3),'edgecolor','none','facecolor','b','facealpha',0.2);
-         hold on;plot3(xyzmes(:,1),xyzmes(:,2),xyzmes(:,3),'+b','linewidth',20);hold off
+         hold on;plot3(xyzmes(:,1),xyzmes(:,2),xyzmes(:,3),'+b','linewidth',20);
+%          X=cat(3,warp2board(vim(:,:,1)),warp2board(vim(:,:,2)),warp2board(vim(:,:,3)));
+%          surf(X(:,:,1),X(:,:,2),X(:,:,3),'edgecolor','none')
+         hold off
          axis square
 grid on
     end
     eim = reshape(qMat(vall)*mdl-vall(:,3),size(ir))/scl;
+    
+    
+    eim_=warp2board(eim);
+    
     s.xcurve=mdl(1)*scl;
     s.ycurve=mdl(2)*scl;
     s.std = std(eim(msk));
