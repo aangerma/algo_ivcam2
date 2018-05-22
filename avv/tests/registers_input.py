@@ -797,6 +797,7 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             continue
 
 
+
         reg_added = False
         constraint_fail_index = 0
         while not reg_added:
