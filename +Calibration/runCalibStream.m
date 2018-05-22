@@ -61,13 +61,20 @@ if(params.init)
     fnAlgoInitMWD  =  fullfile(params.internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
     hw.runPresetScript('maReset');
+    pause(0.1);
     hw.runScript(fnAlgoInitMWD);
+    pause(0.1);
     hw.runPresetScript('maRestart');
+    pause(0.1);
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skipped\n');
 end
+
+fprintff('openning stream...');
+hw.getFrame();
+fprintff('Done(%d)\n',round(toc(t)));
 
 
 % hw.runPresetScript('startStream');
@@ -308,7 +315,7 @@ end
     
 
 doCalibBurn = false;
-fprintff('Burning calibration to device...');
+fprintff('setting burn calibration...');
 if(params.burnCalibrationToDevice)
     if(score>=calibParams.passScore)
         doCalibBurn=true;
@@ -321,15 +328,17 @@ else
 end
 
 doConfigBurn = false;
-fprintff('Burning configuration to device...');
-if(params.burnCalibrationToDevice)
+fprintff('setting burn configuration...');
+if(params.burnConfigurationToDevice)
         doConfigBurn=true;
         fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skiped\n');
 end
-hw.burn2device(params.outputFolder,doCalibBurn,doConfigBurn);
 
+fprintff('burnning...');
+hw.burn2device(params.outputFolder,doCalibBurn,doConfigBurn);
+fprintff('Done(%d)\n',round(toc(t)));
 
 end
 
