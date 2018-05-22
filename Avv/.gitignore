@@ -1,3 +1,5 @@
 # Avv
 tests/__pycache__/
-test_data
+test_data/
+tests/Avv/data/
+tests/data

@@ -744,7 +744,6 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             selected_regs[reg_name] = 1
             i += 1
             continue
-
         if reg_name == "DIGGundistBypass":
             selected_regs[reg_name] = 1
             i += 1
