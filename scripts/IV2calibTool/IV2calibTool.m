@@ -12,7 +12,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         Outputdirectorty                matlab.ui.control.EditField
         
         
-        Button_2                        matlab.ui.control.Button
+        Button_2                        matlab.ui.control.Button 
         Button_3                        matlab.ui.control.Button
         Button_4                        matlab.ui.control.Button
         logarea                         matlab.ui.control.TextArea
