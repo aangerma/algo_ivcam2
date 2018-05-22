@@ -178,19 +178,28 @@ classdef HWinterface <handle
         
         
         
-        function [regs,luts]=write(obj,regTokens)
-            if(~exist('regTokens','var'))
-                regTokens=[];
-            end
-            [regs,luts]=obj.m_fw.get();%force bootcalcs
-            meta = obj.m_fw.genMWDcmd(regTokens);
-            tfn = [tempname '.txt'];
-            fid = fopen(tfn,'w');
-            fprintf(fid,meta);
-            fclose(fid);
-            obj.runScript(tfn);
-            obj.shadowUpdate()
-            
+        function write(obj,regName,regVal)
+           
+                m=obj.m_fw.getMeta(regName);
+                if(length(m)~=1)
+                    error('bad register name');
+                end
+                obj.writeAddr(uint32(m.address),regVal);
+          
+%                 warning('FUNCTION IS CANDIDATE FOR REMOVAL')
+%                 
+%                 if(~exist('regTokens','var'))
+%                     regTokens=[];
+%                 end
+%                 [regs,luts]=obj.m_fw.get();%force bootcalcs
+%                 meta = obj.m_fw.genMWDcmd(regTokens);
+%                 tfn = [tempname '.txt'];
+%                 fid = fopen(tfn,'w');
+%                 fprintf(fid,meta);
+%                 fclose(fid);
+%                 obj.runScript(tfn);
+%                 obj.shadowUpdate()
+         
         end
         
         
