@@ -3,8 +3,8 @@
 +Pipe\: iv2Design
 @Firmware\: azabatan/ohadmen;taviram
 +Calibration\: iv2Design
-+Simulator\: iv2Val
-+Validation\: iv2Val
++Simulator\: iv2Design;iv2Val
++Validation\: iv2Design;iv2Val
 Env\: iv2Val
 \: iv2Design;iv2Val
 Avv\: iv2Val
