@@ -5,7 +5,7 @@ classdef IV2calibTool < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        VERSION = 1.05;
+        VERSION = 1.06;
         IV2calibrationtoolUIFigure      matlab.ui.Figure
         StartButton                     matlab.ui.control.Button
         OutputdirectortyEditFieldLabel  matlab.ui.control.Label
@@ -210,7 +210,7 @@ classdef IV2calibTool < matlab.apps.AppBase
               % Create verboseCheckBox
              
               %checkboxes
-              cbnames = {'verbose','init','DSM','gamma','dataDelay','DFZ','validation','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug'};
+              cbnames = {'verbose','init','DSM','gamma','dataDelay','ROI','DFZ','validation','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug'};
               cbSz=[200 30];
               ny = floor(sz(2)/cbSz(2))-1;
               for i=1:length(cbnames)
