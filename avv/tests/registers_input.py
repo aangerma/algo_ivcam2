@@ -72,7 +72,9 @@ def run_autopipe(eng, file_path, data_path, iteration):
     save_ivs_file = False
     slash.logger.debug("start autopipe")
     try:
-        eng.s.Pipe.autopipe(file_path, stdout=out, stderr=err, nargout=0)
+        eng.s.Pipe.autopipe(file_path,stdout=out, stderr=err, nargout=0)
+        # eng.s.Pipe.autopipe(file_path, 'viewResults', False, stdout=out, stderr=err, nargout=0)
+
     except matlab.engine.MatlabExecutionError:
         if save_ivs_file:
             file_name = "ivs_fail_{}".format(iteration)
@@ -84,6 +86,7 @@ def run_autopipe(eng, file_path, data_path, iteration):
             os.rename(file_path, fail_file_path)
         slash.logger.error("autopipe crashed: {}".format(out.getvalue()))
         slash.logger.error("err: {}".format(err.getvalue()))
+
         return False
 
     return True
@@ -131,7 +134,7 @@ def test_random_registers_debug():
 
 def read_regs_file(file_path):
     regs_list = {}
-    logging.info("reading file: {}".format(file_path))
+    slash.logger.info("reading file: {}".format(file_path))
     line_index = 0
     columns_names = list()
     with open(file_path, "r") as dataFile:
@@ -144,7 +147,7 @@ def read_regs_file(file_path):
                     columns_names.append(d.strip())
             else:
                 if len(data) != len(columns_names):
-                    logging.error("file error, line {} doesnt have enough columns".format(index))
+                    slash.logger.error("file error, line {} doesnt have enough columns".format(index))
                     raise IndexError
                 reg_data = {}
                 for index in range(len(columns_names)):
@@ -154,7 +157,7 @@ def read_regs_file(file_path):
 
             line_index += 1
 
-    logging.info("file number of entries: {}".format(len(regs_list)))
+    slash.logger.info("file number of entries: {}".format(len(regs_list)))
     return regs_list
 
 
@@ -170,7 +173,7 @@ def clean_regs_list_to_generate(regs):
         if "x" not in reg["autogen"] and "%" not in reg["uniqueID"]:
             regs_to_generate[reg_name] = reg
 
-    logging.info(
+    slash.logger.info(
         "clean reg list for generate, regs definition: {}, to generate: {}".format(len(regs), len(regs_to_generate)))
     return regs_to_generate
 
@@ -994,6 +997,7 @@ def test_random_registers_randomize_100():
     test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
                    "Randomize_failed": 0}
     eng = slash.g.mat
+    # eng.s.dbug_error(stdout=out, stderr=err, nargout=0)
     data_path, file_path = get_data_path()
     iterations = 100
 
