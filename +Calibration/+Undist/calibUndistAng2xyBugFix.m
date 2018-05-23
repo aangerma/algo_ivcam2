@@ -51,10 +51,12 @@ eMatPost = sqrt((xnew-xg).^2 + (ynew-yg).^2);
 maxPixelDisplacement = max(eMatPost(:));
 
 if verbose
+    ff = figure;
     subplot(121)
     quiver(xbug(:),ybug(:),xg(:)-xbug(:),yg(:)-ybug(:),'autoscale','off'); title(sprintf('Displacement Vector Per Pixel - Pre Fix\n max error %.2f',max(eMatPre(:))));
     subplot(122)
     quiver(xnew(:),ynew(:),xg(:)-xnew(:),yg(:)-ynew(:),'autoscale','off'); title(sprintf('Displacement Vector Per Pixel - Post Fix\n max error %.2f',max(eMatPost(:))));
+    close(ff);
 end
 
 

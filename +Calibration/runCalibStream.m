@@ -113,8 +113,6 @@ if(params.dataDelay)
     fw.setRegs(delayRegs,fnCalib);
     
 else
-    results.delayS=inf;
-    results.delayF=inf;
     fprintff('skipped\n');
 end
 
@@ -135,7 +133,6 @@ if (params.gamma)
 %     fw.setRegs(gammaregs,fnCalib);
     results.gammaErr=0;
 else
-    results.gammaErr=inf;
     fprintff('skipped\n');
 end
 %% ::RX Delay::
@@ -146,13 +143,13 @@ end
 % fw.setRegs(thermalRegs,fnCalib);
 %% ::roi::
 fprintff('Calibrating ROI...\n');
-params.roi = true;
-if (params.roi)
+% params.roi = true;
+if (params.ROI)
     roiRegs = Calibration.aux.runROICalib(hw, verbose);
-    fw.setRegs(roiRegs, '');
+    fw.setRegs(roiRegs, fnCalib);
     regs = fw.get(); % run bootcalcs
     fnAlgoTmpMWD =  fullfile(params.internalFolder,filesep,'algoROICalib.txt');
-    fw.genMWDcmd('DIGG',fnAlgoTmpMWD);
+    fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
     hw.runScript(fnAlgoTmpMWD);
     hw.shadowUpdate();
     roiRegsVal = Calibration.aux.runROICalib(hw, true);
@@ -164,7 +161,6 @@ if (params.roi)
     end
 else
     fprintff('skipped\n');
-%     results.roiVal = inf;
 end
 %% ::DFZ::
 
@@ -207,7 +203,6 @@ if(params.DFZ)
     fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skipped\n');
-    results.geomErr=inf;
 end
 
 
@@ -233,7 +228,6 @@ if(params.validation)
     end
 else
     fprintff('skipped\n');
-    results.geomErrVal=inf;
 end
 
 
@@ -251,7 +245,7 @@ if(params.undist)
     end
 else
     fprintff('skipped\n');
-    results.maxPixelDisplacement=inf;
+%     results.maxPixelDisplacement=inf;
 end
 
 %% write version+intrinsics
@@ -265,6 +259,7 @@ intregs.DIGG.spare(5)=typecast(single(dodregs.FRMW.laserangleV),'uint32');
 intregs.DIGG.spare(6)=verValue; %config version
 fw.setRegs(intregs,fnCalib);
 fw.writeUpdated(fnCalib);
+fw.get();
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 save(fullfile(params.internalFolder,'imData.mat'),'dbg');
@@ -326,7 +321,7 @@ else
 end
 
 doConfigBurn = false;
-fprintff('Burning calibration to device...');
+fprintff('Burning configuration to device...');
 if(params.burnCalibrationToDevice)
         doConfigBurn=true;
         fprintff('Done(%d)\n',round(toc(t)));
