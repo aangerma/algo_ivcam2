@@ -12,7 +12,7 @@ def test_wall():
     slash.logger.info("Start")
 
     eng = slash.g.mat
-    data_path = os.path.join(os.path.dirname(os.path.realpath("__file__")), "tests", "data", "wall")
+    data_path = os.path.join(os.path.dirname(os.path.realpath("__file__")), "Avv", "test_data", "plain_fit")
     slash.logger.info("data: {}".format(data_path))
     slash.logger.info("running pattern generator, might take a wail...")
     ivs_file_name,gt,regs,luts = eng.s.Pipe.patternGenerator('wall', 'outputdir',  data_path, nargout=4)
