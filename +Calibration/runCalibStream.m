@@ -66,6 +66,9 @@ if(params.init)
     pause(0.1);
     hw.runPresetScript('maRestart');
     pause(0.1);
+    
+    Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
+    
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 else
@@ -96,7 +99,7 @@ fprintff('Depth and IR delay calibration...\n');
 
 
 if(params.dataDelay)
-    Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
+    
     dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
     [delayRegs,okZ,okIR]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
     results.delayS=(1-okIR);
@@ -203,8 +206,6 @@ if(params.DFZ)
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
     else
         fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
-        score = 0;
-        return;
     end
     setLaserProjectionUniformity(hw,false);
     fprintff('Done(%d)\n',round(toc(t)));
@@ -340,6 +341,7 @@ fprintff('burnning...');
 hw.burn2device(params.outputFolder,doCalibBurn,doConfigBurn);
 fprintff('Done(%d)\n',round(toc(t)));
 
+fprintff('Calibration finished(%d)\n',round(toc(t)));
 end
 
 function setLaserProjectionUniformity(hw,uniformProjection)

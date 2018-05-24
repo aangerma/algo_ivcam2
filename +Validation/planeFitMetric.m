@@ -4,6 +4,8 @@ usage:
 hw=HWinterface
 kmat=reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
 z2mm=2^hw.read('GNRLzMaxsubMMExp');
+d=hw.getFrame(30);
+s=Validation.planeFitMetric(d,kmat,z2mm);
 %}
     PLANE_FIT_ERR=1.5;
 
@@ -64,26 +66,29 @@ z2mm=2^hw.read('GNRLzMaxsubMMExp');
     xyzmes=[vsample(1) vsample(2) vsample(3)];
     emat=abs(distMat(xyzmes')-distMat(ptsOpt'));
     
-    
+    eim = reshape(qMat(vall)*mdl-vall(:,3),size(ir))/scl;
     if(1)
         %%
-        v_=permute(dnrm(permute(v,[1 3 2])),[1 3 2]);
-        [yg,xg] = ndgrid(linspace(min(v(:,2)),max(v(:,2)),100),linspace(min(v(:,1)),max(v(:,1)),100));%#ok
-        zg = reshape(qMat([xg(:) yg(:)])*mdl,size(yg));
-        plot3(v_(~in,1),v_(~in,2),v_(~in,3),'r.',v_(in,1),v_(in,2),v_(in,3),'g.');
-        v_hat=dnrm(cat(3,xg,yg,zg));
-         surface(v_hat(:,:,1),v_hat(:,:,2),v_hat(:,:,3),'edgecolor','none','facecolor','b','facealpha',0.2);
-         hold on;plot3(xyzmes(:,1),xyzmes(:,2),xyzmes(:,3),'+b','linewidth',20);
-%          X=cat(3,warp2board(vim(:,:,1)),warp2board(vim(:,:,2)),warp2board(vim(:,:,3)));
-%          surf(X(:,:,1),X(:,:,2),X(:,:,3),'edgecolor','none')
-         hold off
+%         v_=permute(dnrm(permute(v,[1 3 2])),[1 3 2]);
+%         [yg,xg] = ndgrid(linspace(min(v(:,2)),max(v(:,2)),100),linspace(min(v(:,1)),max(v(:,1)),100));%#ok
+%         zg = reshape(qMat([xg(:) yg(:)])*mdl,size(yg));
+%         plot3(v_(~in,1),v_(~in,2),v_(~in,3),'r.',v_(in,1),v_(in,2),v_(in,3),'g.');
+%         v_hat=dnrm(cat(3,xg,yg,zg));
+%          surface(v_hat(:,:,1),v_hat(:,:,2),v_hat(:,:,3),'edgecolor','none','facecolor','b','facealpha',0.2);
+         plot3(xyzmes(:,1),xyzmes(:,2),xyzmes(:,3),'+b','linewidth',10);
+         X=cat(3,warp2board(vim(:,:,1)),warp2board(vim(:,:,2)),warp2board(vim(:,:,3)));
+         surface(X(:,:,1),X(:,:,2),X(:,:,3),warp2board(abs(eim)),'edgecolor','none')
+%          
+%         
+%          hold off
          axis square
 grid on
+colorbar
     end
-    eim = reshape(qMat(vall)*mdl-vall(:,3),size(ir))/scl;
     
     
-    eim_=warp2board(eim);
+    
+    
     
     s.xcurve=mdl(1)*scl;
     s.ycurve=mdl(2)*scl;
@@ -91,6 +96,8 @@ grid on
     s.stdW = std(eim(mskW));
     s.fillfactor=nnz(ir(msk)~=0)/nnz(msk);
     s.geomtricError=sqrt(mean(emat(:).^2));
+    s.errImg=eim;
+    s.msk=msk;
     
 end
 
