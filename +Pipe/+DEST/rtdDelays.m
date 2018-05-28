@@ -13,7 +13,7 @@ ci = iff(regs.GNRL.rangeFinder,xi,yi);
 %regs.DEST.txPWRpdLUTfactor - 32b
 %ci - 10b(max, on RF mode discard top bit)
 %after multiplication+bitshift saturate to 16b
-txLUTindex = uint16(bitshift(uint64(ci)           *uint64(regs.DEST.txPWRpdLUTfactor)+2^15,-16));
+txLUTindex = uint16(bitshift(uint64(ci)*uint64(regs.DEST.txPWRpdLUTfactor)+2^15,-16));
 rxLUTindex = uint16(bitshift(uint64(ir)*uint64(regs.DEST.rxPWRpdLUTfactor)+2^15,-16));
 txpdval = interpLUTval(regs.DEST.txPWRpd,txLUTindex).* txPWRpdScale;
 rxpdval = interpLUTval(regs.DEST.rxPWRpd,rxLUTindex).* rxPWRpdScale;

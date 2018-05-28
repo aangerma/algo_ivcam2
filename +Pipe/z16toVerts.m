@@ -13,7 +13,7 @@ function [verts,r]=z16toVerts(varargin)
     end
     
     sz=size(zUINT16);
-    z = double(zUINT16)/z2mm;
+    z = double(zUINT16)/double(z2mm);
     z(zUINT16==0)=nan;
     [v,u]=ndgrid(0:sz(1)-1,0:sz(2)-1);
     

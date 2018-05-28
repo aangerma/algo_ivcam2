@@ -1,4 +1,5 @@
 function img = displayPipeOutData(po,figTitle)
+minmax_ = @(v) [min(v(:)) max(v(:))];
 [h,w]=size(po.zImg);
 
 %     arcball(xImg(:),yImg(:),zImg(:));
@@ -61,7 +62,7 @@ ax=subplot(224);
 
 if(po.regs.JFIL.bypassIr2Conf)
     irImg = uint16(po.iImg) + bitshift(uint16(po.cImg),8);
-    irLims = minmax(irImg)+uint16([0 1]);
+    irLims = minmax_(irImg)+uint16([0 1]);
 else
     irImg = po.iImg;
     irLims = [0 255];
@@ -83,6 +84,7 @@ end
 end
 
 function callabck_setClim(varargin)
+minmax_ = @(v) [min(v(:)) max(v(:))];
 hh=varargin{3};
 imH=findobj(hh,'type','image');
 im=imH.CData;
@@ -90,7 +92,7 @@ sz=size(im);
 roi=round(getrect(hh));
 y = max(1,min(sz(1),roi(2)+(0:roi(4))));
 x = max(1,min(sz(2),roi(1)+(0:roi(3))));
-mm=minmax(vec(im(y,x)));
+mm=minmax_(vec(im(y,x)));
 set(hh,'clim',mm);
 end
 

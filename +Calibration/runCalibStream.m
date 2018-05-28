@@ -49,7 +49,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 %verify unit's configuration version
 verValue = typecast(uint8([floor(100*mod(params.version,1)) floor(params.version) 0 0]),'uint32');
 
-unitConfigVersion=hw.read('DIGGspare_006');
+unitConfigVersion=hw.read('DIGGspare_005');
 if(unitConfigVersion~=verValue)
     warning('incompatible configuration versions!');
 end
@@ -61,13 +61,23 @@ if(params.init)
     fnAlgoInitMWD  =  fullfile(params.internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
     hw.runPresetScript('maReset');
+    pause(0.1);
     hw.runScript(fnAlgoInitMWD);
+    pause(0.1);
     hw.runPresetScript('maRestart');
+    pause(0.1);
+    
+    Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
+    
     hw.shadowUpdate();
     fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skipped\n');
 end
+
+fprintff('openning stream...');
+hw.getFrame();
+fprintff('Done(%d)\n',round(toc(t)));
 
 
 % hw.runPresetScript('startStream');
@@ -89,7 +99,7 @@ fprintff('Depth and IR delay calibration...\n');
 
 
 if(params.dataDelay)
-    Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
+    
     dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
     [delayRegs,okZ,okIR]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
     results.delayS=(1-okIR);
@@ -196,8 +206,6 @@ if(params.DFZ)
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
     else
         fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
-        score = 0;
-        return;
     end
     setLaserProjectionUniformity(hw,false);
     fprintff('Done(%d)\n',round(toc(t)));
@@ -308,7 +316,7 @@ end
     
 
 doCalibBurn = false;
-fprintff('Burning calibration to device...');
+fprintff('setting burn calibration...');
 if(params.burnCalibrationToDevice)
     if(score>=calibParams.passScore)
         doCalibBurn=true;
@@ -321,16 +329,19 @@ else
 end
 
 doConfigBurn = false;
-fprintff('Burning configuration to device...');
-if(params.burnCalibrationToDevice)
+fprintff('setting burn configuration...');
+if(params.burnConfigurationToDevice)
         doConfigBurn=true;
         fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skiped\n');
 end
+
+fprintff('burnning...');
 hw.burn2device(params.outputFolder,doCalibBurn,doConfigBurn);
+fprintff('Done(%d)\n',round(toc(t)));
 
-
+fprintff('Calibration finished(%d)\n',round(toc(t)));
 end
 
 function setLaserProjectionUniformity(hw,uniformProjection)

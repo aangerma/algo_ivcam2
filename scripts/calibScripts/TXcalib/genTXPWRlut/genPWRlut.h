@@ -18,7 +18,7 @@ typedef std::tuple<uint16_t, int16_t, float, uint16_t> Dh;
 //-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
 float algo_convertDealyFromGain(float i)
 {
-	float tau = 0.017754f*i - 5.375485f;
+	float tau = (0.017754f*i - 5.375485f);
 	return tau;
 }
 //-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
@@ -178,6 +178,7 @@ void genPWRlut(uint32_t* vGainTbl, uint16_t vGainTblSz, Params p, float* outputL
 
 	for (int i = 0; i != lutSize; ++i)
 		outputLUT[i] /= 1024.0;
+
 
 	if (binIndex != lutSize)
 		std::cout << "error! did not fill all LUT values" << std::endl;
