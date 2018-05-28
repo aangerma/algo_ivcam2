@@ -1,6 +1,8 @@
 FRMWxres            d640     
 FRMWyres            d480     
 DIGGnotchBypass     b1       
+DCORspare_000       f0.434193
+DCORspare_001       f-30.0   
 DESTconfactIn       h3FC00000
 DESTconfactOt       h000F0000
 DESTconfq           h00000001
@@ -74,10 +76,10 @@ DESTrxPWRpd_064     hBADEF8F0
 DESTconfIRbitshift  h00000006
 DESTconfv           h007F0000
 JFILbypass          h0       
-JFILbilt1bypass     b0       
-JFILbilt2bypass     b0       
-JFILbilt3bypass     b0       
-JFILbiltIRbypass    b0       
+JFILbilt1bypass     b1       
+JFILbilt2bypass     b1       
+JFILbilt3bypass     b1       
+JFILbiltIRbypass    b1       
 JFILdnnBypass       b1       
 JFILedge1bypassMode d0       
 JFILedge4bypassMode d0       
@@ -87,12 +89,10 @@ JFILgrad1bypass     b1
 JFILgrad2bypass     b0       
 JFILinnBypass       b1       
 JFILinvBypass       b0       
-JFILinvConfThr      h5       
+JFILinvConfThr      h00000003
 JFILsort1bypassMode d0       
 JFILsort2bypassMode d0       
 JFILsort3bypassMode d0       
 JFILsort1Edge01     b1       
 JFILsort1Edge03     b1       
 JFILirShadingBypass b1       
-DCORspare_000		f0.434193
-DCORspare_001		f-30.0
