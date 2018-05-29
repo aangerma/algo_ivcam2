@@ -72,8 +72,7 @@ def run_autopipe(eng, file_path, data_path, iteration):
     save_ivs_file = False
     slash.logger.debug("start autopipe")
     try:
-        eng.s.Pipe.autopipe(file_path,stdout=out, stderr=err, nargout=0)
-        # eng.s.Pipe.autopipe(file_path, 'viewResults', False, stdout=out, stderr=err, nargout=0)
+        eng.s.Pipe.autopipe(file_path, 'viewResults', False, stdout=out, stderr=err, nargout=0)
 
     except matlab.engine.MatlabExecutionError:
         if save_ivs_file:
@@ -795,6 +794,11 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             continue
 
         if reg_name in ("FRMWundistYfovFactor", "FRMWundistXfovFactor", "EPTGmultiFocalROI_000", "EPTGmultiFocalROI_001", "EPTGmultiFocalROI_002", "EPTGmultiFocalROI_003","MTLBassertionStop","FRMWxR2L", "MTLBdebug"):
+            selected_regs[reg_name] = convert_to_number(reg["defaultValue"][1:])
+            i += 1
+            continue
+
+        if "MTLB" in reg_name:
             selected_regs[reg_name] = convert_to_number(reg["defaultValue"][1:])
             i += 1
             continue
