@@ -12,6 +12,8 @@
 %PCQ cant handle different Y value in each chunk - constraint that the minimum pixel scantime is greater than the chunk rate
 [EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*[FRMWyres]*(1+2*[FRMWgaurdBandV]))*2/pi>64/[GNRLsampleRate]
 
+% PCQ : the code length in ns is atmost 4 pixels
+4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*[FRMWyres]*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]
 %------------END EPTG constraints--------------%
 
 
