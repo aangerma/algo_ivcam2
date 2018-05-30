@@ -800,7 +800,7 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             i += 1
             continue
 
-        if "MTLB" in reg_name:
+        if "MTLB" in reg_name and "MTLBtxSymbolLength" not in reg_name:
             selected_regs[reg_name] = convert_to_number(reg["defaultValue"][1:])
             i += 1
             continue
