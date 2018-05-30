@@ -611,6 +611,8 @@ def check_constraint(selected_regs={}, constraint=None):
         return modulo(selected_regs["FRMWxres"],2)==0
     elif constr == "mod([FRMWyres],2)==0":
         return modulo(selected_regs["FRMWyres"],2)==0
+    elif constr == "4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*[FRMWyres]*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]":
+        return 4*16/selected_regs["GNRLsampleRate"]*1*10**9/(2*selected_regs["EPTGmirrorFastFreq"]*selected_regs["FRMWyres"]*(1+2*selected_regs["FRMWgaurdBandV"]))*2/math.pi > selected_regs["GNRLcodeLength"]
     else:
         slash.logger.warning("constraint not recognized: {}".format(constr))
         return True
