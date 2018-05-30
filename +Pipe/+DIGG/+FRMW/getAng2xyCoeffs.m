@@ -1,8 +1,8 @@
 function newRegs = getAng2xyCoeffs(regs)
     if(regs.GNRL.rangeFinder)
         %ang2xy is disable in this mode, leave all at default, set image size
-        newRegs.GNRL.imgHsize = uint16(2);
-        newRegs.GNRL.imgVsize = uint16(1);
+        %newRegs.GNRL.imgHsize = uint16(2);
+        %newRegs.GNRL.imgVsize = uint16(1);
         newRegs.DIGG.nx(1:6) = single(0);
         newRegs.DIGG.dx2 = single(0);
         newRegs.DIGG.dx3 = single(0);
@@ -55,13 +55,19 @@ function newRegs = getAng2xyCoeffs(regs)
     rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov*0.25)));rangeT =rangeT (2);
     rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov*0.25)));rangeB=rangeB(2);
     
+    %ROI in pixels
+    xres = uint16(int16(regs.GNRL.imgHsize)+regs.FRMW.marginL+regs.FRMW.marginR);
+    yres = uint16(int16(regs.GNRL.imgVsize)+regs.FRMW.marginT+regs.FRMW.marginB);
+    newRegs.FRMW.xres = xres;
+    newRegs.FRMW.yres = yres;
+
     % guard bands in pixels (originally in %)
-    gaurdXinc = regs.FRMW.gaurdBandH*single(regs.FRMW.xres);
-    gaurdYinc = regs.FRMW.gaurdBandV*single(regs.FRMW.yres);
+    gaurdXinc = regs.FRMW.gaurdBandH*single(xres);
+    gaurdYinc = regs.FRMW.gaurdBandV*single(yres);
     
     % pixel res in the entire resterised area
-    xresN = single(regs.FRMW.xres) + gaurdXinc*2;
-    yresN = single(regs.FRMW.yres) + gaurdYinc*2;
+    xresN = single(xres) + gaurdXinc*2;
+    yresN = single(yres) + gaurdYinc*2;
     
     %total mrgins: ROI_margins+guard_bands (in pixels)
     % marginRN = regs.FRMW.marginR + gaurdXinc;
@@ -69,10 +75,7 @@ function newRegs = getAng2xyCoeffs(regs)
     marginTN = single(regs.FRMW.marginT) + gaurdYinc;
     % marginBN = regs.FRMW.marginB + gaurdYinc;
     
-    %ROI in pixels
-    newRegs.GNRL.imgHsize = uint16(single(regs.FRMW.xres)-single(regs.FRMW.marginR)-single(regs.FRMW.marginL));
-    newRegs.GNRL.imgVsize = uint16(single(regs.FRMW.yres)-single(regs.FRMW.marginT)-single(regs.FRMW.marginB));
-    
+        
     ysign = 1;
     if(regs.FRMW.yflip)
         ysign=-1;
