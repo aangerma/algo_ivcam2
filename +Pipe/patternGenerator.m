@@ -68,8 +68,8 @@ else
         error('cannot run EPTG with EPTGframeRate == 0');
     end
     
-    ow = double(regs.FRMW.xres);
-    oh = double(regs.FRMW.yres);
+    ow = double(regs.GNRL.imgHsize);
+    oh = double(regs.GNRL.imgVsize);
     osz = [oh ow];
     
     if ~isempty(p.zImg)
@@ -546,8 +546,8 @@ elseif(ischar(inputData))
             patgenregs.EPTG.irImageType = uint8(1);
             patgenregs.EPTG.minZ = single(1000);
             patgenregs.EPTG.maxZ = single(1000);
-            patgenregs.FRMW.xres = uint16(320);
-            patgenregs.FRMW.yres = uint16(240);
+            patgenregs.GNRL.imgHsize = uint16(320);
+            patgenregs.GNRL.imgVsize = uint16(240);
             patgenregs.FRMW.gaurdBandH = single(0);
             patgenregs.EPTG.frameRate = single(60);
             patgenregs.EPTG.noiseLevel=single(0);
@@ -562,8 +562,8 @@ elseif(ischar(inputData))
             patgenregs.EPTG.zImageType = uint8(2);
             patgenregs.EPTG.irImageType = uint8(1);
             patgenregs.EPTG.noiseLevel = single(0.01);
-            patgenregs.FRMW.xres=uint16(64);
-            patgenregs.FRMW.yres=uint16(64);
+            patgenregs.GNRL.imgHsize=uint16(64);
+            patgenregs.GNRL.imgVsize=uint16(64);
             patgenregs.JFIL.dnnBypass=true;
             patgenregs.EPTG.frameRate=single(600);
             
@@ -593,8 +593,8 @@ elseif(ischar(inputData))
         case 'rangefinder'
             
             patgenregs.GNRL.rangeFinder= true;
-            patgenregs.FRMW.xres=uint16(2);
-            patgenregs.FRMW.yres=uint16(1);
+            patgenregs.GNRL.imgHsize=uint16(2);
+            patgenregs.GNRL.imgVsize=uint16(1);
             patgenregs.RAST.biltBypass=true;
             patgenregs.CBUF.bypass=true;
             [patgenregs.FRMW.txCode, patgenregs.GNRL.codeLength] = Utils.bin2uint32( Codes.propCode(128,1) );

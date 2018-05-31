@@ -10,8 +10,8 @@ albdoFiles=albdoFiles(ok);
 depthFiles=depthFiles(ok);
 nframes = nnz(ok);
 %% REGS SET
-regs.FRMW.xres = uint16(640);
-regs.FRMW.yres = uint16(480);
+regs.GNRL.imgHsize = uint16(640);
+regs.GNRL.imgVsize = uint16(480);
 regs.FRMW.xfov = single(72);
 regs.FRMW.gaurdBandV = single(0);
 regs.FRMW.gaurdBandH = single(0);
