@@ -1,5 +1,8 @@
-regs.FRMW.xres = uint16(640);
-regs.FRMW.yres = uint16(480);
+%regs.FRMW.xres = uint16(640);
+%regs.FRMW.yres = uint16(480);
+
+regs.GNRL.imgHsize = uint16(640);
+regs.GNRL.imgVsize = uint16(640);
 
 regs.FRMW.marginL = int16(0);
 regs.FRMW.marginR = int16(0);
