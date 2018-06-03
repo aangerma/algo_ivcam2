@@ -865,6 +865,17 @@ def get_regs_order(regs_def):
                       "JFILedge1maxTh", "JFILedge1detectTh", "JFILedge4maxTh", "JFILedge4detectTh",
                       "JFILedge3maxTh", "JFILedge3detectTh", "DIGGsphericalEn", "RASTbiltBypass", "CBUFbypass",
                       "MTLBxyRasterInput"))
+    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "FRMWmarginT",
+                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "GNRLimgHsize", "FRMWyfov", "FRMWgaurdBandV", "GNRLsampleRate",
+                      "EPTGmirrorFastFreq",
+                      "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov", "FRMWgaurdBandH",
+                      "DIGGundistBypass",
+                      "FRMWundistYfovFactor", "FRMWundistXfovFactor", "DCORoutIRnest", "DCORoutIRcma", "DESTaltIrEn",
+                      "RASToutIRvar", "JFILbypass", "DCORbypass", "DIGGnestBypass", "FRMWtxCode_000", "FRMWtxCode_001",
+                      "FRMWtxCode_002", "FRMWtxCode_003", "EPTGreturnTime", "EPTGminZ", "EPTGmaxZ", "EPTGnMaxSamples",
+                      "JFILedge1maxTh", "JFILedge1detectTh", "JFILedge4maxTh", "JFILedge4detectTh",
+                      "JFILedge3maxTh", "JFILedge3detectTh", "DIGGsphericalEn", "RASTbiltBypass", "CBUFbypass",
+                      "MTLBxyRasterInput"))
     for reg_name in regs_def.keys():
         if reg_name not in reg_order:
             reg_order.append(reg_name)
