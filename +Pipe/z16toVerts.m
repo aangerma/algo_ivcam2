@@ -1,4 +1,12 @@
 function [verts,r]=z16toVerts(varargin)
+%{
+k=reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
+z2mm=hw.read('GNRLzMaxSubMMExp');
+z16=hw.getFrame(30).z;
+v=Pipe.z16toVerts(z16,k,z2mm);
+stlwriteMatrix('\\invcam450\D\temp\11.stl',v(:,:,1),v(:,:,2),v(:,:,3))
+
+%}
     if(nargin==2)
         zUINT16=varargin{1};
         regs = varargin{2};
