@@ -10,10 +10,10 @@
 [EPTGnMaxSamples] == floor([EPTGnMaxSamples])
 
 %PCQ cant handle different Y value in each chunk - constraint that the minimum pixel scantime is greater than the chunk rate
-[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*[FRMWyres]*(1+2*[FRMWgaurdBandV]))*2/pi>64/[GNRLsampleRate]
+[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi>64/[GNRLsampleRate]
 
 % PCQ : the code length in ns is atmost 4 pixels
-4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*[FRMWyres]*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]
+4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]
 %------------END EPTG constraints--------------%
 
 
@@ -88,17 +88,17 @@ at([JFILbiltGauss_046],2)~=0
 %even img size (non rangeFinder)
 [GNRLrangeFinder]==1 | ( mod([GNRLimgHsize],2)==0 & mod([GNRLimgVsize],2)==0 )
 %due to packer, output resultion should be even
-% [GNRLrangeFinder]==1 | ( mod([FRMWxres],2)==0 & mod([FRMWyres],2)==0 )
+% [GNRLrangeFinder]==1 | ( mod(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]),2)==0 & mod(([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB]),2)==0 )
 
 
 %image size is always positive
 [GNRLimgHsize]>0
 [GNRLimgVsize]>0
 %can have margin greater than image
-[FRMWmarginL]<[FRMWxres]
-[FRMWmarginT]<[FRMWyres]
-abs([FRMWmarginL]-[FRMWmarginR]) < [FRMWxres]
-abs([FRMWmarginB]-[FRMWmarginT]) < [FRMWyres]
+[FRMWmarginL]<([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])
+[FRMWmarginT]<([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])
+abs([FRMWmarginL]-[FRMWmarginR]) < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])
+abs([FRMWmarginB]-[FRMWmarginT]) < ([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])
 
 %range finder image size
 [GNRLrangeFinder]==0 | ( [GNRLimgHsize]==2 & [GNRLimgVsize]==1 )
@@ -126,14 +126,14 @@ sum([GNRLsampleRate]/[FRMWcoarseSampleRate]==[2 4 8])==1
 
 %max coarse template size
 %[GNRLrangeFinder]==0 & [GNRLtmplLength]/2^[DESTdecRatio]<=128 | [GNRLrangeFinder]==1 & [GNRLtmplLength]/2^[DESTdecRatio]<=256
-[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < [FRMWxres])
+[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))
 [STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipVsize] / [GNRLimgHsize] < [GNRLimgVsize])
 [STATstt1Bypass] == 1 | ([STATstt1src] > 1 | [STATstt1skipHsize] < [MTLBtCamHsize])
 [STATstt1Bypass] == 1 | ([STATstt1src] > 1 | ([STATstt1skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])
 [STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1lowThrPxlNum] < [STATstt1cellHsize]*[STATstt1cellVsize])
 [STATstt1Bypass] == 1 | ([STATstt1src] <=  1 |  mod([STATstt1skipVsize],[GNRLimgHsize]) == 0)
 [STATstt1Bypass] == 1 | ([STATstt1src] >  1 |  mod([STATstt1skipVsize],[MTLBtCamVsize]) == 0)
-[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < [FRMWxres])
+[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))
 [STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipVsize] < [GNRLimgVsize])
 [STATstt2Bypass] == 1 | ([STATstt2src] > 1 | [STATstt2skipHsize] < [MTLBtCamHsize])
 [STATstt2Bypass] == 1 | ([STATstt2src] > 1 | ([STATstt2skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])
@@ -195,7 +195,7 @@ sum([[JFILsort3dWeights]])<128
 ~[DCORoutIRnest] |  ~[DCORbypass]
 
 %pixel squreness
-[GNRLrangeFinder] | abs([FRMWxres]/[FRMWyres]*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWgaurdBandV])/(1+2*[FRMWgaurdBandH])-1)<0.8
+[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWgaurdBandV])/(1+2*[FRMWgaurdBandH])-1)<0.8
 
 
 %max fov (non spherical)
