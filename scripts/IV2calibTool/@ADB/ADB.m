@@ -37,7 +37,7 @@ classdef ADB<handle
         
         function im=getCameraFrame(obj)
             remoteCamDir='mnt/sdcard/dcim/Camera';
-            [lastimfn_,failed]=obj.shell('cd mnt/sdcard/dcim/Camera && ls -Art | tail -n 1');
+            [lastimfn_,failed]=obj.shell('cd %s && ls -Art | tail -n 1',remoteCamDir);
             if(failed)
                 error(lastimfn_);
             end
@@ -45,7 +45,7 @@ classdef ADB<handle
             obj.shell('input keyevent KEYCODE_FOCUS');
             pause(1);
             obj.shell('input keyevent KEYCODE_CAMERA');
-            pause(2.5);
+            pause(0.5);
             lastimfn=obj.shell('cd %s && ls -Art | tail -n 1',remoteCamDir);
             if(isequal(lastimfn,lastimfn_))
                 im=[];
