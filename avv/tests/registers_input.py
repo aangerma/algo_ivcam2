@@ -187,8 +187,6 @@ def convert_to_number(str_number):
 
 
 def get_reg_range(reg={}):
-    array_size = int(reg["arraySize"])
-    reg_tyep = reg["type"]
     reg_range = str(reg["range"]).strip().replace("{", "").replace("}", "").replace("[", "").replace("]", "")
     ranages = reg_range.split(";")
     reg_ranges = list()
@@ -224,12 +222,8 @@ def get_constraints_list(file_path):
                 constraints_list.append(line)
 
     num_of_constraints = len(constraints_list)
-    constraints_list.append("[FRMWxres]-[FRMWmarginL]-[FRMWmarginR]>64")
-    constraints_list.append("mod([FRMWxres]-[FRMWmarginL]-[FRMWmarginR],2)==0")
-    constraints_list.append("[FRMWyres]-[FRMWmarginT]-[FRMWmarginB]>60")
-    constraints_list.append("mod([FRMWyres]-[FRMWmarginT]-[FRMWmarginB],2)==0")
-    constraints_list.append("mod([FRMWxres],2)==0")
-    constraints_list.append("mod([FRMWyres],2)==0")
+    constraints_list.append("mod([GNRLimgHsize],2)==0")
+    constraints_list.append("mod([GNRLimgVsize],2)==0")
 
     slash.logger.info("file number of constraints: {}, added: {}, total: ".format(num_of_constraints, len(constraints_list) - num_of_constraints, len(constraints_list)))
     return constraints_list
@@ -274,7 +268,7 @@ def check_for_all_regs(selected_regs={}, regs=list()):
 def check_constraint(selected_regs={}, constraint=None):
     constr = constraint.get_constraint()
     if constr == "[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>32":
-        return True
+        return selected_regs["EPTGframeRate"]==0 |  1*10**9/(selected_regs["GNRLimgHsize"]*selected_regs["GNRLimgVsize"])*(1/selected_regs["EPTGframeRate"]-selected_regs["EPTGreturnTime"]/1000)>32
     elif constr == "mod([GNRLcodeLength],2)==0":
         return modulo(selected_regs["GNRLcodeLength"], 2) == 0
     elif constr == "([GNRLcodeLength]*[GNRLsampleRate]<=1024 & [GNRLcodeLength]*[GNRLsampleRate]>=128) | ([GNRLrangeFinder]==1 & [GNRLcodeLength]*[GNRLsampleRate]==2048)":
@@ -421,46 +415,13 @@ def check_constraint(selected_regs={}, constraint=None):
         return selected_regs["EPTGnMaxSamples"] == int(selected_regs["EPTGnMaxSamples"])
     elif constr == "[EPTGreturnTime]*1e-3<1/[EPTGframeRate]":
         return selected_regs["EPTGreturnTime"] * 1 * 10 ** -3 < 1 / selected_regs["EPTGframeRate"]
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < [FRMWxres])":
-        return selected_regs["STATstt1Bypass"] == 1 or (
-                selected_regs["STATstt1src"] <= 1 or selected_regs["STATstt1skipHsize"] < selected_regs["FRMWxres"])
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < [FRMWxres])":
-        return selected_regs["STATstt2Bypass"] == 1 or (
-                selected_regs["STATstt2src"] <= 1 or selected_regs["STATstt2skipHsize"] < selected_regs["FRMWxres"])
-    elif constr == "[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*[FRMWyres]*(1+2*[FRMWgaurdBandV]))*2/pi>64/[GNRLsampleRate]":
-        return selected_regs["EPTGframeRate"] == 0 or 1 * 10 ** 9 / (
-                2 * selected_regs["EPTGmirrorFastFreq"] * selected_regs["FRMWyres"] * (
-                1 + 2 * selected_regs["FRMWgaurdBandV"])) * 2 / math.pi > 64 / selected_regs["GNRLsampleRate"]
-    elif constr == "[GNRLrangeFinder] | abs([FRMWxres]/[FRMWyres]*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWgaurdBandV])/(1+2*[FRMWgaurdBandH])-1)<0.8":
-        return selected_regs["GNRLrangeFinder"] or abs(
-            selected_regs["FRMWxres"] / selected_regs["FRMWyres"] * selected_regs["FRMWyfov"] / selected_regs[
-                "FRMWxfov"] * (1 + 2 * selected_regs["FRMWgaurdBandV"]) / (
-                    1 + 2 * selected_regs["FRMWgaurdBandH"]) - 1) < 0.8
-    elif constr == "abs([FRMWmarginL]-[FRMWmarginR]) < [FRMWxres]":
-        return abs(selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"]) < selected_regs["FRMWxres"]
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 |  mod([STATstt1skipVsize],([FRMWxres] -[FRMWmarginL] - [FRMWmarginR])) == 0)":
-        return selected_regs["STATstt1Bypass"] == 1 or (
-                selected_regs["STATstt1src"] <= 1 or modulo(selected_regs["STATstt1skipVsize"], (
-                selected_regs["FRMWxres"] - selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"])) == 0)
     elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 |  mod([STATstt2skipVsize],[MTLBtCamVsize])) == 0)":
         return selected_regs["STATstt2Bypass"] == 1 or (selected_regs["STATstt2src"] <= 1 or (
             modulo(selected_regs["STATstt2skipVsize"], selected_regs["MTLBtCamVsize"])) == 0)
-    elif constr == "[FRMWmarginL]<[FRMWxres]":
-        return selected_regs["FRMWmarginL"] < selected_regs["FRMWxres"]
-    elif constr == "[FRMWmarginT]<[FRMWyres]":
-        return selected_regs["FRMWmarginT"] < selected_regs["FRMWyres"]
-    elif constr == "abs([FRMWmarginB]-[FRMWmarginT]) < [FRMWyres]":
-        return abs(selected_regs["FRMWmarginB"] - selected_regs["FRMWmarginT"]) < selected_regs["FRMWyres"]
     elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipVsize] / [GNRLimgHsize] < [GNRLimgVsize])":
         return selected_regs["STATstt1Bypass"] == 1 or (
                 selected_regs["STATstt1src"] <= 1 or selected_regs["STATstt1skipVsize"] / selected_regs[
             "GNRLimgHsize"] < selected_regs["GNRLimgVsize"])
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipVsize] / ([FRMWxres] -[FRMWmarginL] - [FRMWmarginR]) < ([FRMWyres] -[FRMWmarginB] - [FRMWmarginT]))":
-        return selected_regs["STATstt2Bypass"] == 1 or (
-                selected_regs["STATstt2src"] <= 1 or selected_regs["STATstt2skipVsize"] / (
-                selected_regs["FRMWxres"] - selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"]) < (
-                        selected_regs["FRMWyres"] - selected_regs["FRMWmarginB"] - selected_regs[
-                    "FRMWmarginT"]))
     elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipVsize] < [GNRLimgVsize])":
         return selected_regs["STATstt2Bypass"] == 1 or (
                 selected_regs["STATstt2src"] <= 1 or selected_regs["STATstt2skipVsize"] < selected_regs[
@@ -597,22 +558,30 @@ def check_constraint(selected_regs={}, constraint=None):
         return selected_regs["STATstt2Bypass"] == 1 or (
                 selected_regs["STATstt2src"] <= 1 or modulo(selected_regs["STATstt2skipVsize"],
                                                             selected_regs["GNRLimgHsize"]) == 0)
-    elif constr == "[FRMWxres]-[FRMWmarginL]-[FRMWmarginR]>64":
-        return selected_regs["FRMWxres"] - selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"] > 64
-    elif constr == "[FRMWyres]-[FRMWmarginT]-[FRMWmarginB]>60":
-        return selected_regs["FRMWyres"] - selected_regs["FRMWmarginT"] - selected_regs["FRMWmarginB"] > 60
-    elif constr == "mod([FRMWxres]-[FRMWmarginL]-[FRMWmarginR],2)==0":
-        return modulo(selected_regs["FRMWxres"] - selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"], 2) == 0
-    elif constr == "mod([FRMWyres]-[FRMWmarginT]-[FRMWmarginB],2)==0":
-        return modulo(selected_regs["FRMWyres"] - selected_regs["FRMWmarginT"] - selected_regs["FRMWmarginB"], 2) == 0
-    elif constr == "[GNRLrangeFinder]==1 | ( mod([FRMWxres],2)==0 & mod([FRMWyres],2)==0 )":
-        return selected_regs["GNRLrangeFinder"]==1 or modulo(selected_regs["FRMWxres"],2)==0 and modulo(selected_regs["FRMWyres"],2)==0
-    elif constr == "mod([FRMWxres],2)==0":
-        return modulo(selected_regs["FRMWxres"],2)==0
-    elif constr == "mod([FRMWyres],2)==0":
-        return modulo(selected_regs["FRMWyres"],2)==0
-    elif constr == "4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*[FRMWyres]*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]":
-        return 4*16/selected_regs["GNRLsampleRate"]*1*10**9/(2*selected_regs["EPTGmirrorFastFreq"]*selected_regs["FRMWyres"]*(1+2*selected_regs["FRMWgaurdBandV"]))*2/math.pi > selected_regs["GNRLcodeLength"]
+    elif constr == "mod([GNRLimgHsize],2)==0":
+        return modulo(selected_regs["GNRLimgHsize"],2) ==0
+    elif constr == "mod([GNRLimgVsize],2)==0":
+        return modulo(selected_regs["GNRLimgVsize"],2) ==0
+
+    elif constr == "[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi>64/[GNRLsampleRate]":
+        return selected_regs["EPTGframeRate"]==0 or 1*10**9 / (2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWgaurdBandV"]))*2/math.pi>64/selected_regs["GNRLsampleRate"]
+    elif constr =="4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]":
+        return 4*16/selected_regs["GNRLsampleRate"]*1*10**9/(2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWgaurdBandV"]))*2/math.pi > selected_regs["GNRLcodeLength"]
+    elif constr =="[FRMWmarginT]<([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
+        return selected_regs["FRMWmarginT"]<(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
+    elif constr =="[FRMWmarginL]<([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
+        return selected_regs["FRMWmarginL"]<(selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
+    elif constr == "abs([FRMWmarginB]-[FRMWmarginT]) < ([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
+        return abs(selected_regs["FRMWmarginB"]-selected_regs["FRMWmarginT"]) < (selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
+    elif constr == "abs([FRMWmarginL]-[FRMWmarginR]) < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
+        return abs(selected_regs["FRMWmarginL"]-selected_regs["FRMWmarginR"]) < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
+    elif constr == "[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWgaurdBandV])/(1+2*[FRMWgaurdBandH])-1)<0.8":
+        return  selected_regs["GNRLrangeFinder"] or abs((selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])/(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*selected_regs["FRMWyfov"]/selected_regs["FRMWxfov"]*(1+2*selected_regs["FRMWgaurdBandV"])/(1+2*selected_regs["FRMWgaurdBandH"])-1)<0.8
+    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
+        return selected_regs["STATstt1Bypass"] == 1 or (selected_regs["STATstt1src"] <=  1 or selected_regs["STATstt1skipHsize"] < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
+    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
+        return selected_regs["STATstt2Bypass"] == 1 or (selected_regs["STATstt2src"] <=  1 or selected_regs["STATstt2skipHsize"] < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
+
     else:
         slash.logger.warning("constraint not recognized: {}".format(constr))
         return True
@@ -707,16 +676,6 @@ def get_random_value(reg, selected_regs):
                     "JFILgrad2thrMinDy", "JFILgrad2thrSpike"):
                 if selected_regs.get("GNRLzMaxSubMMExp") is not None:
                     end = 2 ** (16 - selected_regs["GNRLzMaxSubMMExp"])
-
-            if reg_name == "FRMWmarginL":
-                end = selected_regs["FRMWxres"] - selected_regs["FRMWmarginR"] + 64
-                if end < start:
-                    end = start
-            if reg_name == "FRMWmarginB":
-                end = selected_regs["FRMWyres"] - selected_regs["FRMWmarginT"] + 60
-                if end < start:
-                    end = start
-
 
             if type(start) == int and type(end) == int:
                 num.append(random.randint(start, end))
@@ -853,20 +812,8 @@ def generate_regs(regs_def, constraints, reg_order):
 def get_regs_order(regs_def):
     slash.logger.info("setting regs generation order")
     reg_order = list()
-    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "FRMWyres", "FRMWmarginT",
-                      "FRMWmarginB", "GNRLimgVsize", "FRMWxres",
-                      "FRMWmarginR", "FRMWmarginL", "GNRLimgHsize", "FRMWyfov", "FRMWgaurdBandV", "GNRLsampleRate",
-                      "EPTGmirrorFastFreq",
-                      "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov", "FRMWgaurdBandH",
-                      "DIGGundistBypass",
-                      "FRMWundistYfovFactor", "FRMWundistXfovFactor", "DCORoutIRnest", "DCORoutIRcma", "DESTaltIrEn",
-                      "RASToutIRvar", "JFILbypass", "DCORbypass", "DIGGnestBypass", "FRMWtxCode_000", "FRMWtxCode_001",
-                      "FRMWtxCode_002", "FRMWtxCode_003", "EPTGreturnTime", "EPTGminZ", "EPTGmaxZ", "EPTGnMaxSamples",
-                      "JFILedge1maxTh", "JFILedge1detectTh", "JFILedge4maxTh", "JFILedge4detectTh",
-                      "JFILedge3maxTh", "JFILedge3detectTh", "DIGGsphericalEn", "RASTbiltBypass", "CBUFbypass",
-                      "MTLBxyRasterInput"))
-    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "FRMWmarginT",
-                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "GNRLimgHsize", "FRMWyfov", "FRMWgaurdBandV", "GNRLsampleRate",
+    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "GNRLimgHsize", "FRMWmarginT",
+                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "FRMWyfov", "FRMWgaurdBandV", "GNRLsampleRate",
                       "EPTGmirrorFastFreq",
                       "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov", "FRMWgaurdBandH",
                       "DIGGundistBypass",
