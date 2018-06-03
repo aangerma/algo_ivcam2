@@ -1,17 +1,25 @@
-function [score,dbg]=runCalibStream(params, fprintff)
+function [score,dbg]=runCalibStream(runParams,calibParams, fprintff)
 t=tic;
-if(ischar(params))
-    params=xml2structWrapper(params);
+if(ischar(runParams))
+    runParams=xml2structWrapper(runParams);
     
+end
+if(~exist('calibParams','var') || isempty(calibParams))
+    %% ::load default caliration configuration
+    calibParams = xml2structWrapper('calibParams.xml');
+
 end
 if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
-verbose = params.verbose;
+verbose = runParams.verbose;
+if(exist(runParams.outputFolder,'dir'))
+    if(~isempty(dirFiles(runParams.outputFolder,'*.bin')))
+        fprintff('[x] Error! directory %s is not empty\n',runParams.outputFolder);
+        return;
+    end
+end
 
-
-%% ::caliration configuration
-calibParams = xml2structWrapper(sprintf('%s\\calibParams\\calibParams.xml',fileparts(mfilename('fullpath'))));
 
 
 
@@ -20,25 +28,25 @@ results = struct;
 dbg.runStarted=datestr(now);
 
 %% :: file names
-params.internalFolder = fullfile(params.outputFolder,filesep,'AlgoInternal');
+runParams.internalFolder = fullfile(runParams.outputFolder,filesep,'AlgoInternal');
 
-struct2xmlWrapper(params,sprintf('%s\\calibrationInputParams.xml',params.internalFolder));
+struct2xmlWrapper(runParams,sprintf('%s\\calibrationInputParams.xml',runParams.internalFolder));
 
-mkdirSafe(params.outputFolder);
-mkdirSafe(params.internalFolder);
+mkdirSafe(runParams.outputFolder);
+mkdirSafe(runParams.internalFolder);
 
 
-fnCalib     = fullfile(params.internalFolder,filesep,'calib.csv');
-fnUndsitLut = fullfile(params.internalFolder,filesep,'FRMWundistModel.bin32');
+fnCalib     = fullfile(runParams.internalFolder,filesep,'calib.csv');
+fnUndsitLut = fullfile(runParams.internalFolder,filesep,'FRMWundistModel.bin32');
 initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
-copyfile(fullfile(initFldr,filesep,'*.csv'), params.internalFolder)
+copyfile(fullfile(initFldr,filesep,'*.csv'), runParams.internalFolder)
 
 fprintff('Starting calibration:\n');
 fprintff('%-15s %s\n','stated at',datestr(now));
-fprintff('%-15s %5.2f\n','version',params.version);
+fprintff('%-15s %5.2f\n','version',runParams.version);
 %% ::Init fw
 fprintff('Loading Firmware...');
-fw = Pipe.loadFirmware(params.internalFolder);
+fw = Pipe.loadFirmware(runParams.internalFolder);
 fprintff('Done(%d)\n',round(toc(t)));
 
 fprintff('Loading HW interface...');
@@ -47,7 +55,7 @@ fprintff('Done(%d)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
 %verify unit's configuration version
-verValue = typecast(uint8([floor(100*mod(params.version,1)) floor(params.version) 0 0]),'uint32');
+verValue = typecast(uint8([floor(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
 
 unitConfigVersion=hw.read('DIGGspare_005');
 if(unitConfigVersion~=verValue)
@@ -57,8 +65,8 @@ end
 
 % hw.runPresetScript('systemConfig');
 fprintff('init...');
-if(params.init)  
-    fnAlgoInitMWD  =  fullfile(params.internalFolder,filesep,'algoInit.txt');
+if(runParams.init)  
+    fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
     fw.genMWDcmd([],fnAlgoInitMWD);
     hw.runPresetScript('maReset');
     pause(0.1);
@@ -84,8 +92,8 @@ fprintff('Done(%d)\n',round(toc(t)));
 
 %% ::dsm calib::
 fprintff('DSM calibration...');
-if(params.DSM)
-    dsmregs = Calibration.aux.calibDSM(hw,params.verbose);
+if(runParams.DSM)
+    dsmregs = Calibration.aux.calibDSM(hw,calibParams,verbose);
     fw.setRegs(dsmregs,fnCalib);
     fprintff('Done(%d)\n',round(toc(t)));
 else
@@ -98,7 +106,7 @@ fprintff('Depth and IR delay calibration...\n');
 
 
 
-if(params.dataDelay)
+if(runParams.dataDelay)
     
     dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
     [delayRegs,okZ,okIR]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
@@ -129,7 +137,7 @@ end
 %% ::gamma::
 
 fprintff('gamma...\n');
-if (params.gamma)
+if (runParams.gamma)
     
 %     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,.verbose);
 %     
@@ -154,11 +162,11 @@ end
 %% ::roi::
 fprintff('Calibrating ROI...\n');
 % params.roi = true;
-if (params.ROI)
+if (runParams.ROI)
     roiRegs = Calibration.aux.runROICalib(hw, verbose);
     fw.setRegs(roiRegs, fnCalib);
     regs = fw.get(); % run bootcalcs
-    fnAlgoTmpMWD =  fullfile(params.internalFolder,filesep,'algoROICalib.txt');
+    fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
     fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
     hw.runScript(fnAlgoTmpMWD);
     hw.shadowUpdate();
@@ -175,7 +183,7 @@ end
 %% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
-if(params.DFZ)
+if(runParams.DFZ)
     setLaserProjectionUniformity(hw,true);
     regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
     r=Calibration.RegState(hw);
@@ -219,8 +227,8 @@ end
 %% ::validation::
 fprintff('Validating...\n');
 %validate
-if(params.validation)
-    fnAlgoTmpMWD =  fullfile(params.internalFolder,filesep,'algoValidCalib.txt');
+if(runParams.validation)
+    fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
     [regs,luts]=fw.get();%run autogen
     fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
     hw.runScript(fnAlgoTmpMWD);
@@ -241,7 +249,7 @@ end
 
 %% ::Fix ang2xy Bug using undistort table::
 fprintff('Fixing ang2xy using undist table...\n');
-if(params.undist)
+if(runParams.undist)
     [undistlut.FRMW.undistModel, results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(regs,verbose);
     fw.setLut(undistlut);
     [~,luts]=fw.get();
@@ -270,7 +278,7 @@ fw.writeUpdated(fnCalib);
 fw.get();
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
-save(fullfile(params.internalFolder,'imData.mat'),'dbg');
+save(fullfile(runParams.internalFolder,'imData.mat'),'dbg');
 fprintff('Done(%d)\n',round(toc(t)));
 
 
@@ -317,7 +325,7 @@ end
 
 doCalibBurn = false;
 fprintff('setting burn calibration...');
-if(params.burnCalibrationToDevice)
+if(runParams.burnCalibrationToDevice)
     if(score>=calibParams.passScore)
         doCalibBurn=true;
         fprintff('Done(%d)\n',round(toc(t)));
@@ -330,7 +338,7 @@ end
 
 doConfigBurn = false;
 fprintff('setting burn configuration...');
-if(params.burnConfigurationToDevice)
+if(runParams.burnConfigurationToDevice)
         doConfigBurn=true;
         fprintff('Done(%d)\n',round(toc(t)));
 else
@@ -338,7 +346,7 @@ else
 end
 
 fprintff('burnning...');
-hw.burn2device(params.outputFolder,doCalibBurn,doConfigBurn);
+hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
 fprintff('Done(%d)\n',round(toc(t)));
 
 fprintff('Calibration finished(%d)\n',round(toc(t)));
