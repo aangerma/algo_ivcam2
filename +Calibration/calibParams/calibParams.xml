@@ -14,8 +14,7 @@
        <tslope>0.45</tslope>
    </thermal>
    <dataDelay>
-      <!--<slowDelayInitVal>28915</slowDelayInitVal> -->
-	  <slowDelayInitVal>52430</slowDelayInitVal>
+      <slowDelayInitVal>28915</slowDelayInitVal> 
       <fastDelatInitOffset>40</fastDelatInitOffset>
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
