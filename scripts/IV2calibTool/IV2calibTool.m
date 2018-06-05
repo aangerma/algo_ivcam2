@@ -5,7 +5,6 @@ classdef IV2calibTool < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        VERSION = 1.06;
         IV2calibrationtoolUIFigure      matlab.ui.Figure
         StartButton                     matlab.ui.control.Button
         OutputdirectortyEditFieldLabel  matlab.ui.control.Label
@@ -136,10 +135,10 @@ classdef IV2calibTool < matlab.apps.AppBase
             
             params=structfun(@(x) x.Value,app.cb,'uni',0);
             params.outputFolder=app.Outputdirectorty.Value;
-            params.version=app.VERSION;
+            params.version=calibToolVersion();
             try
                 %=======================================================RUN CALIBRATION=======================================================
-                Calibration.runCalibStream(params,fprintffS);
+                Calibration.runCalibStream(params,[],fprintffS);
                
             catch e
                 fprintffS('');
@@ -193,7 +192,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.VersionLabel = uilabel(configurationTab);
             app.VersionLabel.HorizontalAlignment = 'left';
             app.VersionLabel.Position = [5 294 94 15];
-            app.VersionLabel.Text = sprintf('version: %5.2f',app.VERSION);
+            app.VersionLabel.Text = sprintf('version: %5.2f',calibToolVersion());
             
             
             % Create Button_3
