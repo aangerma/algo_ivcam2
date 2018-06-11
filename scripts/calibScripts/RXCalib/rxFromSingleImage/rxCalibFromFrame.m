@@ -1,21 +1,11 @@
-clear
-fw = Pipe.loadFirmware('\\tmund-MOBL1\C$\source\algo_ivcam2\scripts\calibScripts\DODCalib\DODCalibDataset\initScript');
-recordspath = 'X:\Users\tmund\calibScripts\DODCalib\DODCalibDataset\recordedData';
-
-[regs,luts] = fw.get();
-verbose = 1;
-useLarge = 0;
-
-
-baseName = 'regularCB_';
-N = 24;
-
-fname = fullfile(recordspath,strcat(baseName,num2str(0,'%0.2d'),'.mat'));
-load(fname);
-
-%% Use d.z and regs to get the 3d points
+function [rxregs,results] = rxCalibFromFrame(d,regs,rtddelay)
+if ~exist('rtddelay','var')
+    rtddelay = zeros(1,64);
+end
 msk = cbMask(d.i);
-
+edg = edge(d.i,'Canny');
+nonEdgePix = ~imdilate(edg,ones(3));
+msk = logical(msk.*nonEdgePix);
 if ~regs.DEST.depthAsRange
     [~,r] = Pipe.z16toVerts(d.z,regs);
 else
@@ -26,6 +16,10 @@ end
 C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
 rtd=r+sqrt(r.^2-C);
 
+IR = floor(d.i(msk)/4)+1;
+rtd(msk) = rtd(msk) - rtddelay(IR)';
+
+
 r= (0.5*(rtd.^2 - regs.DEST.baseline2))./(rtd - regs.DEST.baseline.*sing);
 z = r.*cosw.*cosx;
 x = r.*cosw.*sinx;
@@ -35,33 +29,7 @@ x(~msk) = inf;y(~msk) = inf;z(~msk) = inf;
 tabplot;
 mesh(x,y,z)
 
-%% use a 2d parametrization
-hold on 
-[u,v] = meshgrid(1:size(d.i,2),1:size(d.i,1));
-[polyx,xfit] = polyFit2D(u(msk),v(msk),x(msk));
-[polyy,yfit] = polyFit2D(u(msk),v(msk),y(msk));
-[polyz,zfit] = polyFit2D(u(msk),v(msk),z(msk));
-
-xfixed  = x; xfixed(msk) = xfit;
-yfixed  = y; yfixed(msk) = yfit;
-zfixed  = z; zfixed(msk) = zfit;
-tabplot;
-mesh(xfixed,yfixed,zfixed)
-
-%% Doesn't look good, I shall try a 3D polinomial fit
-[polyvars,polyfunc] = polyFit3D(x(msk),y(msk),z(msk));
-
-[xx,yy] = meshgrid(linspace(min(x(msk)),max(x(msk))),linspace(min(y(msk)),max(y(msk))));
-[zmi,zpl] = polyfunc(xx,yy);
-
-tabplot;
-hold on
-mesh(xx,yy,reshape(zmi,size(xx)));
-hold on
-mesh(xx,yy,reshape(zpl,size(xx)));
-
-%% Doesn't look good enough, and has 2 z values per xy and has holes.  
-% I shall try a 3D ellipsoid fit, the only difference is the constrain that
+%% I shall try a 3D ellipsoid fit, the only difference is the constrain that
 % the coefficients of the second power are positive.
 
 [polyvars,polyfunc] = ellipsoidFit3D(x(msk),y(msk),z(msk));
@@ -111,24 +79,48 @@ plot3(intersetion(randint,1),intersetion(randint,2),intersetion(randint,3),'go',
 
 tabplot;
 C = inf(size(x)); 
-tmpdist = dist; tmpdist(tmpdist>5) = 5;
+tmpdist = dist; tmpdist(tmpdist>10) = 10;
 C(msk) = tmpdist;
 mesh(x,y,z,C),colorbar
 hold on
 
-
+results.errorIm = nan(size(x));
+results.errorIm(msk) = dist;
 %% For each point in the CB, get its IR and dist;
 
 % The dist is positive if t is below 1:
 signDist = dist.*(-1*(t>1) + 1*(t<=1));
-IR = floor(d.i(msk)/4)+1;
 
 
 
-
-
+ 
+rmsk = r(msk);
 RX = zeros(64,1);
 for i = 1:64
+    
     RX(i) = mean(signDist(IR==i));
+    results.rxMean(i) = RX(i);
+    results.rxSTD(i) = std(signDist(IR==i));
+    if ~isnan(RX(i))
+        rxrtd(i) = mean(rtdFromR(rmsk(IR==i),regs) -  rtdFromR(rmsk(IR==i)-RX(i),regs));
+        results.rtdMean(i) = rxrtd(i);
+        results.rtdStd(i) = std(rtdFromR(rmsk(IR==i),regs) -  rtdFromR(rmsk(IR==i)-RX(i),regs));
+        
+    end
+    
 end
-plot(RX)
+rxregs.DEST.rxPWRpd = single([rxrtd,0])/1024;
+
+% Let us compute the reduction in error if we apply the rx delay transform
+if  all(rtddelay==0)
+    [~,res] = rxCalibFromFrame(d,regs,rxrtd);
+    results.errorImTheoryFix = res.errorIm;
+end
+end
+
+function rtd = rtdFromR(r,regs)
+% get rtd from r
+[~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
+C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
+rtd=r+sqrt(r.^2-C);
+end
