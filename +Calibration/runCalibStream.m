@@ -72,6 +72,7 @@ if(runParams.init)
     pause(0.1);
     hw.runScript(fnAlgoInitMWD);
     pause(0.1);
+    % mwd a0010104 a0010108 19DDDDFD // Force disables JFIL
     hw.runPresetScript('maRestart');
     pause(0.1);
     
