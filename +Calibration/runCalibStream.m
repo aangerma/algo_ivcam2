@@ -1,5 +1,7 @@
-function [score,dbg]=runCalibStream(runParams,calibParams, fprintff)
+function [calibPassed,dbg]=runCalibStream(runParams,calibParams, fprintff)
+
 t=tic;
+calibPassed = 0; dbg = [];
 if(ischar(runParams))
     runParams=xml2structWrapper(runParams);
     
@@ -16,6 +18,7 @@ verbose = runParams.verbose;
 if(exist(runParams.outputFolder,'dir'))
     if(~isempty(dirFiles(runParams.outputFolder,'*.bin')))
         fprintff('[x] Error! directory %s is not empty\n',runParams.outputFolder);
+        calibPassed = 0;
         return;
     end
 end
@@ -47,11 +50,11 @@ fprintff('%-15s %5.2f\n','version',runParams.version);
 %% ::Init fw
 fprintff('Loading Firmware...');
 fw = Pipe.loadFirmware(runParams.internalFolder);
-fprintff('Done(%d)\n',round(toc(t)));
+fprintff('Done(%ds)\n',round(toc(t)));
 
 fprintff('Loading HW interface...');
 hw=HWinterface(fw);
-fprintff('Done(%d)\n',round(toc(t)));
+fprintff('Done(%ds)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
 %verify unit's configuration version
@@ -79,14 +82,19 @@ if(runParams.init)
     Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
     
     hw.shadowUpdate();
-    fprintff('Done(%d)\n',round(toc(t)));
+    fprintff('Done(%ds)\n',round(toc(t)));
 else
     fprintff('skipped\n');
 end
 
-fprintff('openning stream...');
+fprintff('opening stream...');
 hw.getFrame();
-fprintff('Done(%d)\n',round(toc(t)));
+ 
+capturingFailure = checkAndFixAbsDelay(hw,fprintff);
+if capturingFailure
+   return 
+end
+fprintff('Done(%ds)\n',round(toc(t)));
 
 
 % hw.runPresetScript('startStream');
@@ -96,7 +104,7 @@ fprintff('DSM calibration...');
 if(runParams.DSM)
     dsmregs = Calibration.aux.calibDSM(hw,calibParams,verbose);
     fw.setRegs(dsmregs,fnCalib);
-    fprintff('Done(%d)\n',round(toc(t)));
+    fprintff('Done(%ds)\n',round(toc(t)));
 else
     fprintff('skipped\n');
 end
@@ -117,7 +125,7 @@ if(runParams.dataDelay)
         fprintff('[v] ir calib passed[e=%g]\n',results.delayS);
     else
         fprintff('[x] ir calib failed[e=%g]\n',results.delayS);
-        score = 0;
+        calibPassed = 0;
         return;
     end
     
@@ -125,10 +133,10 @@ if(runParams.dataDelay)
         fprintff('[v] depth calib passed[e=%g]\n',results.delayF);
     else
         fprintff('[x] depth calib failed[e=%g]\n',results.delayF);
-        score = 0;
+        calibPassed = 0;
         return;
     end
-    fprintff('Done(%d)\n',round(toc(t)));
+    fprintff('Done(%ds)\n',round(toc(t)));
     fw.setRegs(delayRegs,fnCalib);
     
 else
@@ -217,7 +225,7 @@ if(runParams.DFZ)
         fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
     end
     setLaserProjectionUniformity(hw,false);
-    fprintff('Done(%d)\n',round(toc(t)));
+    fprintff('Done(%ds)\n',round(toc(t)));
 else
     fprintff('skipped\n');
 end
@@ -280,7 +288,7 @@ fw.get();
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
 save(fullfile(runParams.internalFolder,'imData.mat'),'dbg');
-fprintff('Done(%d)\n',round(toc(t)));
+fprintff('Done(%ds)\n',round(toc(t)));
 
 
 
@@ -316,20 +324,20 @@ end
 
 fprintff('[!] calibration ended - ');
 if(score==0)
-    fprintff('failed\n');
+    fprintff('FAILED.\n');
 elseif(score<calibParams.passScore)
-    fprintff('quality failed\n');
+    fprintff('QUALITY FAILED.\n');
 else
-    fprintff('pass\n');
+    fprintff('PASSED.\n');
 end
     
-
+calibPassed = (score>=calibParams.passScore);
 doCalibBurn = false;
 fprintff('setting burn calibration...');
 if(runParams.burnCalibrationToDevice)
     if(score>=calibParams.passScore)
         doCalibBurn=true;
-        fprintff('Done(%d)\n',round(toc(t)));
+        fprintff('Done(%ds)\n',round(toc(t)));
     else
         fprintff('skiped, score too low(%d)\n',score);
     end
@@ -341,14 +349,14 @@ doConfigBurn = false;
 fprintff('setting burn configuration...');
 if(runParams.burnConfigurationToDevice)
         doConfigBurn=true;
-        fprintff('Done(%d)\n',round(toc(t)));
+        fprintff('Done(%ds)\n',round(toc(t)));
 else
     fprintff('skiped\n');
 end
 
 fprintff('burnning...');
 hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
-fprintff('Done(%d)\n',round(toc(t)));
+fprintff('Done(%ds)\n',round(toc(t)));
 
 fprintff('Calibration finished(%d)\n',round(toc(t)));
 end
@@ -406,3 +414,20 @@ raw=hw.getFrame(30);
 
 end
 
+function failure = checkAndFixAbsDelay(hw,fprintff)
+    failure = false;
+    frame = hw.getFrame;
+    CC = bwconncomp(frame.i>0);
+    nValidPixels = numel(CC.PixelIdxList{1});
+    if nValidPixels < 0.7*numel(frame.i)
+        Calibration.dataDelay.setAbsDelay(hw,52000,false);
+        fprintff('\nCan''t work with startup image, trying different initial delay(52000)...\n');
+        frame = hw.getFrame;
+        CC = bwconncomp(frame.i>0);
+        nValidPixels = numel(CC.PixelIdxList{1});
+        if nValidPixels < 0.7*numel(frame.i)
+            fprintff('New delay didn''t fix the issue. Terminating Calibration.\n');
+            failure = true;
+        end
+    end
+end

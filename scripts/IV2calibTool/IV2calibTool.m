@@ -123,7 +123,7 @@ classdef IV2calibTool < matlab.apps.AppBase
         % Button pushed function: StartButton
         function StartButtonPushed(app, ~)
            
-
+            app.logarea.BackgroundColor = [1,1,1];% reset textbox color
             mkdirSafe(app.Outputdirectorty.Value);
             
             app.m_logfid = fopen(fullfile(app.Outputdirectorty.Value,filesep,'log.log'),'wt');
@@ -138,7 +138,12 @@ classdef IV2calibTool < matlab.apps.AppBase
             params.version=calibToolVersion();
             try
                 %=======================================================RUN CALIBRATION=======================================================
-                Calibration.runCalibStream(params,[],fprintffS);
+                [calibPassed,~] = Calibration.runCalibStream(params,[],fprintffS);
+                if calibPassed
+                   app.logarea.BackgroundColor = [0 0.8 0]; % Color green 
+                else
+                   app.logarea.BackgroundColor = [0.8 0 0]; % Color red 
+                end
                
             catch e
                 fprintffS('');
@@ -160,7 +165,8 @@ classdef IV2calibTool < matlab.apps.AppBase
             
             % Create IV2calibrationtoolUIFigure
             app.IV2calibrationtoolUIFigure = uifigure();
-            sz=[640 440];
+            app.IV2calibrationtoolUIFigure.Position(4) = 700;
+            sz=[640 700];
             tg = uitabgroup('Parent',app.IV2calibrationtoolUIFigure,'position',[0 0 sz]);
             configurationTab=uitab(tg,'Title','configuration');
             advancedTab=uitab(tg,'Title','Advanced');
@@ -175,36 +181,36 @@ classdef IV2calibTool < matlab.apps.AppBase
             app.StartButton = uibutton(configurationTab, 'push');
             app.StartButton.ButtonPushedFcn = createCallbackFcn(app, @StartButtonPushed, true);
             app.StartButton.FontWeight = 'bold';
-            app.StartButton.Position = [1 309 640 52];
+            app.StartButton.Position = [1 sz(2)-131 640 52];
             app.StartButton.Text = 'Start';
             
             % Create OutputdirectortyEditFieldLabel
             app.OutputdirectortyEditFieldLabel = uilabel(configurationTab);
             app.OutputdirectortyEditFieldLabel.HorizontalAlignment = 'right';
-            app.OutputdirectortyEditFieldLabel.Position = [1 386 94 15];
+            app.OutputdirectortyEditFieldLabel.Position = [1 sz(2)-54 94 15];
             app.OutputdirectortyEditFieldLabel.Text = 'Output directorty';
             
             % Create Outputdirectorty
             app.Outputdirectorty = uieditfield(configurationTab, 'text');
-            app.Outputdirectorty.Position = [110 380 486 22];
+            app.Outputdirectorty.Position = [110 sz(2)-60 486 22];
             
             % Create VersionLabel
             app.VersionLabel = uilabel(configurationTab);
             app.VersionLabel.HorizontalAlignment = 'left';
-            app.VersionLabel.Position = [5 294 94 15];
+            app.VersionLabel.Position = [5 sz(2)-146 94 15];
             app.VersionLabel.Text = sprintf('version: %5.2f',calibToolVersion());
             
             
             % Create Button_3
             app.Button_3 = uibutton(configurationTab, 'push');
             app.Button_3.ButtonPushedFcn = createCallbackFcn(app, @Button_3Pushed, true);
-            app.Button_3.Position = [606 380 21 22];
+            app.Button_3.Position = [606 sz(2)-60 21 22];
             app.Button_3.Text = '...';
             
             % Create logarea
             app.logarea = uitextarea(configurationTab);
             app.logarea.Editable = 'off';
-            app.logarea.Position = [1 1 640 289];
+            app.logarea.Position = [1 1 640 sz(2)-151];
             app.logarea.FontName='courier new';
               % Create verboseCheckBox
              
