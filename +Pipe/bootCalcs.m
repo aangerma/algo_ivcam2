@@ -16,6 +16,7 @@ function [regs,autogenRegs] = generalRegisters(regs,autogenRegs)
 autogenRegs.GNRL.tmplLength = uint16(double(regs.GNRL.codeLength)*double(regs.GNRL.sampleRate));
 autogenRegs.GNRL.zNorm = single(bitshift(1,regs.GNRL.zMaxSubMMExp));
 autogenRegs.EXTL.auxPItxCode=regs.FRMW.txCode;
+autogenRegs.EXTL.auxPItxCodeLength=uint32(regs.GNRL.codeLength);
 regs = FirmwareBase.mergeRegs(regs,autogenRegs);
 end
 
