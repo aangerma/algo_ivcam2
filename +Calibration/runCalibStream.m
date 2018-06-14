@@ -1,4 +1,5 @@
-function [calibPassed,dbg]=runCalibStream(runParams,calibParams, fprintff)
+function  [calibPassed,dbg]=runCalibStream(runParams,calibParams, fprintff)
+
 
 t=tic;
 calibPassed = 0; dbg = [];
@@ -102,9 +103,9 @@ fprintff('Done(%ds)\n',round(toc(t)));
 %% ::dsm calib::
 fprintff('DSM calibration...');
 if(runParams.DSM)
-    dsmregs = Calibration.aux.calibDSM(hw,calibParams,verbose);
+    dsmregs = Calibration.aux.calibDSM(hw,verbose);
     fw.setRegs(dsmregs,fnCalib);
-    fprintff('Done(%ds)\n',round(toc(t)));
+    fprintff('Done(%d)\n',round(toc(t)));
 else
     fprintff('skipped\n');
 end

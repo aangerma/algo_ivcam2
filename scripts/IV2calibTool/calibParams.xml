@@ -1,23 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <passScore>60</passScore>
-	<dsm>
-		<margin>50</margin>
-	</dsm>
-
-   <thermal>
-       <t0>32.8</t0>
-       <tslope>0.45</tslope>
-   </thermal>
-
-
-   <dataDelay>
-	  <slowDelayInitVal>28915</slowDelayInitVal>
-      <fastDelatInitOffset>40</fastDelatInitOffset>
-	  <iterFixThr>1</iterFixThr>
-      <nAttempts>20</nAttempts>
-   </dataDelay>
-
    <errRange>
       <delayF>[0 1]</delayF>
       <delayS>[0 1]</delayS>
@@ -26,7 +8,16 @@
       <gammaErr>[1 5000]</gammaErr>
       <maxPixelDisplacement>[0.25 1]</maxPixelDisplacement>
    </errRange>
-
-
-   
+   <passScore>60</passScore>
+   <thermal>
+       <t0>32.8</t0>
+       <tslope>0.45</tslope>
+   </thermal>
+   <dataDelay>
+      <slowDelayInitVal>28915</slowDelayInitVal> 
+      <fastDelatInitOffset>40</fastDelatInitOffset>
+	  <iterFixThr>1</iterFixThr>
+      <nAttempts>20</nAttempts>
+   </dataDelay>
+  
 </struct>
