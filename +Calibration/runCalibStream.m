@@ -1,4 +1,5 @@
-function [score,dbg]=runCalibStream(params, fprintff)
+function  [calibPassed,dbg]=runCalibStream(runParams,calibParams, fprintff)
+
 
 t=tic;
 calibPassed = 0; dbg = [];
