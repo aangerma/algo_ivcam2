@@ -19,5 +19,7 @@
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
    </dataDelay>
-  
+   <dsm>
+     <margin>200</margin>  
+   </dsm>
 </struct>

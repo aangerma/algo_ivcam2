@@ -138,7 +138,14 @@ classdef IV2calibTool < matlab.apps.AppBase
             params.version=calibToolVersion();
             try
                 %=======================================================RUN CALIBRATION=======================================================
-                [calibPassed,~] = Calibration.runCalibStream(params,fprintffS);
+                calibfn =  fullfile(pwd,'calibParams.xml');
+                if exist(calibfn, 'file') == 2
+                    calibParams = xml2structWrapper(calibfn);
+                else
+                    calibParams = [];
+                end
+                
+                [calibPassed,~] = Calibration.runCalibStream(params,calibParams,fprintffS);
                 if calibPassed
                    app.logarea.BackgroundColor = [0 0.8 0]; % Color green 
                 else
