@@ -51,7 +51,7 @@ tmplF = templates;
 % replicate to 1024
 tmplF = tmplF(mod(0:1023,nF)+1,:);
 tmplF  = circshift(tmplF ,[nF-16,-16]);
-if(all(luts.DCOR.tmpltFine==0))%already set using aux file, do not set!
+if(~regs.FRMW.dcorTemplatesFromFile || all(luts.DCOR.tmpltFine==0))%already set using aux file, do not set!
     autogenLuts.DCOR.tmpltFine = tbl2uint32(tmplF);
 end
 %% gen coarse
@@ -60,7 +60,7 @@ end
 tmplC=bitshift(uint8(permute(sum(reshape(templates,downSamplingR,[],size(templates,2))),[2 3 1])),-double(autogenRegs.DCOR.decRatio));
 % replicate to 256
 tmplC = tmplC(mod(0:255,nC)+1,:);
-if(all(luts.DCOR.tmpltCrse==0))%already set using aux file, do not set!
+if(~regs.FRMW.dcorTemplatesFromFile || all(luts.DCOR.tmpltCrse==0))%already set using aux file, do not set!
     autogenLuts.DCOR.tmpltCrse = tbl2uint32(tmplC);
 end
 %% PSNR

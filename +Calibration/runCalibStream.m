@@ -1,11 +1,10 @@
-function  [calibPassed,dbg]=runCalibStream(runParams,calibParams, fprintff)
+function  [calibPassed,dbg] = runCalibStream(runParams,calibParams, fprintff)
 
 
 t=tic;
 calibPassed = 0; dbg = [];
 if(ischar(runParams))
     runParams=xml2structWrapper(runParams);
-    
 end
 if(~exist('calibParams','var') || isempty(calibParams))
     %% ::load default caliration configuration
@@ -103,7 +102,7 @@ fprintff('Done(%ds)\n',round(toc(t)));
 %% ::dsm calib::
 fprintff('DSM calibration...');
 if(runParams.DSM)
-    dsmregs = Calibration.aux.calibDSM(hw,verbose);
+    dsmregs = Calibration.aux.calibDSM(hw,calibParams,verbose);
     fw.setRegs(dsmregs,fnCalib);
     fprintff('Done(%d)\n',round(toc(t)));
 else
