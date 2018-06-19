@@ -17,12 +17,17 @@ function [dsmregs] = calibDSM(hw,params,verbose)
     dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single');
     hw.shadowUpdate();
     
-    [angxRawZO,angyRawZO] = zeroOrderAngles(hw);
+    [angxRawZO,angyRawZO,restFailed] = zeroOrderAngles(hw);
     % Turn to spherical, and see the minimal and maximal angles we get per
     % axis.
     angxZO = (angxRawZO+dsmXoffset)*dsmXscale - 2047;
     angyZO = (angyRawZO+dsmYoffset)*dsmYscale - 2047;
     
+    if restFailed
+        [angxZO,angyZO] = centerProjectZO(hw);
+        angxRawZO = invertDSM(angxZO,dsmXscale,dsmXoffset);
+        angyRawZO = invertDSM(angyZO,dsmYscale,dsmYoffset);
+    end
     % Set spherical:
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
@@ -82,7 +87,30 @@ function [dsmregs] = calibDSM(hw,params,verbose)
     hw.shadowUpdate();
 end
 
-
+function [angxZO,angyZO] = centerProjectZO(hw)
+    % Set spherical:
+    hw.setReg('DIGGsphericalEn',true);
+    % Shadow update:
+    hw.shadowUpdate();
+    d = hw.getFrame(30);
+    valid = d.i>0;
+    rowsVal = sum(valid,2)>0;
+    rowC = uint16(0.5*(find(rowsVal,1,'first')+find(rowsVal,1,'last')));
+    colsVal = sum(valid,1)>0;
+    colC = uint16(0.5*(find(colsVal,1,'first')+find(colsVal,1,'last')));
+    
+    rowZO = single(0.5*(find(valid(:,colC),1,'first')+find(valid(:,colC),1,'last')));
+    colZO = single(0.5*(find(valid(rowC,:),1,'first')+find(valid(rowC,:),1,'last')));
+    
+    angxZO = ((colZO-1)*2/(640-1)-1)*2047;
+    angyZO = ((rowZO-1)*2/(480-1)-1)*2047;
+    
+    
+    % Undo spherical:
+    hw.setReg('DIGGsphericalEn',false);
+    % Shadow update:
+    hw.shadowUpdate();
+end
 function [scale,offset] = calcDSMScaleAndOffset(ang2zero,angRaw,margin,axis)
     % Find the angle in angRaw that should be mapped to 2047. It is the ang
     % that is the furthest from the zero order.
@@ -113,17 +141,20 @@ function [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO)
     % Get the column and row of the zero order in spherical:
     axDim = [640,480];
     
-    colZO = uint16(round((1 + angxZO/2047)/2*(axDim(1)-1)+1));
-    rowZO = uint16(round((1 + angyZO/2047)/2*(axDim(2)-1)+1));
+    
     % Get a sample image:
     hw.runPresetScript('startStream');
     d = hw.getFrame(30);
-    
+    colZO = uint16(round((1 + angxZO/2047)/2*(axDim(1)-1)+1));
+    rowZO = uint16(round((1 + angyZO/2047)/2*(axDim(2)-1)+1));
+   
     % Y min angle shouldn't exceed -2047. Y Max angle can exceed. We wish that the column of the zero
     % order won't exceed 2047.
     % X angles can exceed. [-fovx,0] and [+fovx,0] are mapped to the edges of
     % the image. So, it makes sense to look only at the middle line (line of the ZO) when
     % handling x.
+    
+        
     for ax = 1:2
         if ax == 1
             vCenter =  d.i(rowZO,:) > 0;
@@ -137,9 +168,10 @@ function [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO)
     end
     
     
+    
 end
 
-function [angxRaw,angyRaw] = zeroOrderAngles(hw)
+function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     % % Enable the MC - Enable_MEMS_Driver
     % hw.cmd('execute_table 140');
     % % Enable the logger
@@ -163,9 +195,7 @@ function [angxRaw,angyRaw] = zeroOrderAngles(hw)
     end
     angxRaw = mean(angxRaw);
     angyRaw = mean(angyRaw);
-    if angxRaw == 0 && angyRaw == 0
-        %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
-    end
+    
     % % Disable MC - Disable_MEMS_Driver
     hw.runPresetScript('resetRestAngle');
     % hw.runPresetScript('maRestart');
@@ -175,6 +205,8 @@ function [angxRaw,angyRaw] = zeroOrderAngles(hw)
     hw.cmd('exec_table 141//enable mems');
     hw.cmd('exec_table 142//enable FB');
     hw.runPresetScript('startStream');
+    restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
+    %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
     
 end
 %

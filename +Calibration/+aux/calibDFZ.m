@@ -142,7 +142,7 @@ for i = 1:numel(darr)
     v=cat(3,x,y,z);
     
     
-    [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d,false);
+    [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);
     
 end
 eFit = mean(eFit);

@@ -1,4 +1,4 @@
-function [e,e_dist,ptsOut]=evalGeometricDistortion(p,d,verbose)
+function [e,e_dist,ptsOut]=evalGeometricDistortion(p,verbose)
 %%
 tileSizeMM = 30;
 h=size(p,1);
@@ -16,7 +16,6 @@ if sum(diff<tileSizeMM/2)>=(w*h-h)
     valid = logical(valid .* (diff<tileSizeMM/2));
 end
 distMat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
-valid = logical(valid.*d.valid'); % Add the validity map from undistort function.
 emat=abs(distMat(xyzmes(:,valid))-distMat(ptsOpt(:,valid)));
 e = mean(emat(:));
 ptsOut=[];
