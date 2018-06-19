@@ -21,7 +21,7 @@ cbxyz = cat(3,cbx,cby,cbz);
 % Calculate the range for each point (include the delay)
 cbr = sqrt(sum(cbxyz.^2,3));
 % get rtd from r
-[~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(cbr),regs);
+sing = cbxyz(:,:,1)./sqrt(cbxyz(:,:,2).^2+cbxyz(:,:,3).^2);
 C=2*cbr*regs.DEST.baseline.*sing - regs.DEST.baseline2;
 rtd=cbr+sqrt(cbr.^2-C);
 rtd=rtd+regs.DEST.txFRQpd(1);

@@ -9,10 +9,10 @@ CBParams.size = 30;
 CBParams.bsz = [9,13];
 dist = 500;
 [rpt,cbxyz] = simulateCB(dist,regs,CBParams);
-[outregs,minerr,eFit]=calibDFZFromRPT(rpt,regs,1,1);
-% The error when there is no noise is 1.46!!!
-% After optimization we get to 0.07, which is not 0.
-% I need to find the source of the error. 
+[outregs,minerr,eFit]=calibDFZFromRPT(rpt,regs,1,0);
+% The error when there is no noise is 0.04!!!
+% After optimization we get to 0.01, which is not 0.
+% It is interesting to find the source of the error. 
 
 % Option 1 - getTrigo function is too crude. 
 % I shall take the rpt, calculate the points using getTrigo and see the

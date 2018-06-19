@@ -29,7 +29,7 @@ if eval
     outregs = [];
     return
 end
-[e,eFit]=errFunc(rpt,regs,x0);
+[e,eFit] = errFunc(rpt,regs,x0);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 % Define optimization settings
