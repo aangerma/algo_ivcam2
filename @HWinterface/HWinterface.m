@@ -237,9 +237,9 @@ classdef HWinterface <handle
                 end
                 meanNoZero = @(m) sum(double(m),3)./sum(m~=0,3);
                 collapseM = @(x) meanNoZero(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]));
-                frame.z=collapseM('z');
-                frame.i=collapseM('i');
-                frame.c=collapseM('c');
+                frame.z=uint16(collapseM('z'));
+                frame.i=uint8(collapseM('i'));
+                frame.c=uint8(collapseM('c'));
                 return;
             end
             
