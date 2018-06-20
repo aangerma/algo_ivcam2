@@ -154,10 +154,10 @@ classdef IV2calibTool < matlab.apps.AppBase
                
             catch e
                 fprintffS('');
-                fprintffS(sprintf('[!] ERROR:%s\n',e.message));
+                fprintffS('[!] ERROR:%s\n',e.message);
                 errordlg(e.message);
                 fid = fopen(sprintf('%s%cerror_%s.log',app.Outputdirectorty.Value,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
-                fprintf(fid,getReport(e));
+                fprintf(fid,strrep(getReport(e),'\','\\'));
                 fclose(fid);
             end
             fclose(app.m_logfid);
