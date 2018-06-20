@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 FRMWxfov             f72      
 FRMWyfov             f56      
 FRMWgaurdBandH       f0.0     
@@ -15,6 +16,32 @@ EXTLdsmXscale        f5100
 EXTLdsmYscale        f3600    
 EXTLdsmXoffset       f0.3500  
 EXTLdsmYoffset       f0.5500  
+=======
+FRMWcbufConstLUT	b1
+FRMWxfov        	f72
+FRMWyfov        	f56
+FRMWlaserangleH 	f0
+FRMWlaserangleV 	f0
+
+DESTbaseline		f30.0
+FRMWguardBandH      f0.0
+FRMWguardBandV      f0.0
+
+
+DIGGundistBypass    b0
+
+DESTtxFRQpd_000 	f5000
+DESTtxFRQpd_001 	f5000
+DESTtxFRQpd_002 	f5000
+
+EXTLdsmXscale   f5100
+EXTLdsmYscale   f3600    
+EXTLdsmXoffset  f0.3500  
+EXTLdsmYoffset  f0.5500  
+
+EXTLconLocDelayFastC h0070F8
+EXTLconLocDelayFastF d0
+>>>>>>> guardband deprecation
 EXTLconLocDelaySlow  h80000010
 EXTLconLocDelayFastC h0070F8  
 EXTLconLocDelayFastF d0       
