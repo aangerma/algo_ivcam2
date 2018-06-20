@@ -1,4 +1,4 @@
-function e = gridError(v, squareSize)
+function [e1, e2] = gridError(v, squareSize)
 
 
 
@@ -14,6 +14,7 @@ Y = iy(:);
 dv = sqrt((v(X,1)-v(Y,1)).^2 + (v(X,2)-v(Y,2)).^2 + (v(X,3)-v(Y,3)).^2);
 ds = sqrt((sx(X)-sx(Y)).^2 + (sy(X)-sy(Y)).^2);
 
-e = sqrt(sum((dv-ds).^2))/n;
+e1 = mean(abs(dv-ds));
+e2 = sqrt(mean((dv-ds).^2));
 
 end

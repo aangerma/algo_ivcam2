@@ -29,7 +29,20 @@ imageSize = [size(IRs{i}.i, 1), size(IRs{i}.i, 2)];
     'ImageSize', imageSize);
 
 showReprojectionErrors(params);
-                                 
+showExtrinsics(params);
+
+%% estimate errors
+errors = zeros(nImages,4);
+for i=1:nImages
+    gridPoints = imagePoints(:,:,i);
+    vP = toVertices(gridPoints, fliplr(IRs{i}.z), K);
+    vM = toVertices(gridPoints, fliplr(IRs{i}.z), params.IntrinsicMatrix');
+    [errors(i,1), errors(i,2)] = gridError(vP, squareSize);
+    [errors(i,3), errors(i,4)] = gridError(vM, squareSize);
+end
+
+figure; plot(errors); legend('L1 K', 'L2 K', 'L1 Matlab', 'L2 Matlab');
+
 %% K computation
 
 xfov = 72;
