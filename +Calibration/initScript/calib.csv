@@ -1,8 +1,7 @@
-<<<<<<< HEAD
 FRMWxfov             f72      
 FRMWyfov             f56      
 FRMWgaurdBandH       f0.0     
-FRMWgaurdBandV       h00000000
+FRMWgaurdBandV       f0.0     
 FRMWlaserangleH      f0       
 FRMWlaserangleV      f0       
 FRMWcbufConstLUT     b1       
@@ -16,7 +15,7 @@ EXTLdsmXscale        f5100
 EXTLdsmYscale        f3600    
 EXTLdsmXoffset       f0.3500  
 EXTLdsmYoffset       f0.5500  
-=======
+
 FRMWcbufConstLUT	b1
 FRMWxfov        	f72
 FRMWyfov        	f56
@@ -34,7 +33,7 @@ DESTtxFRQpd_000 	f5000
 DESTtxFRQpd_001 	f5000
 DESTtxFRQpd_002 	f5000
 
-EXTLdsmXscale   f5100
+
 EXTLdsmYscale   f3600    
 EXTLdsmXoffset  f0.3500  
 EXTLdsmYoffset  f0.5500  
