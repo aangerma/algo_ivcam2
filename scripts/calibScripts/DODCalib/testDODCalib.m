@@ -2,8 +2,8 @@
 % fw=Pipe.loadFirmware('\\invcam450\D\data\ivcam20\exp\20180204_MA');
 % [regs,luts] = fw.get();
 % luts.FRMW.undistModel=typecast(zeros(2048,1,'single'),'uint32');
-% resetregs.FRMW.gaurdBandH = single(0.00);
-% resetregs.FRMW.gaurdBandV = single(0.05);
+% resetregs.FRMW.guardBandH = single(0.00);
+% resetregs.FRMW.guardBandV = single(0.05);
 % resetregs.JFIL.bypass = false;
 % resetregs.DIGG.undistBypass=false;
 % resetregs.DEST.txFRQpd=single([5000 5000 5000]);
@@ -21,8 +21,8 @@ dodregs.FRMW.xfov = single(72);
 dodregs.FRMW.yfov = single(56);
 dodregs.DEST.txFRQpd = single([5000 5000 5000]);
 dodregs.JFIL.invConfThr = uint8(0); 
-dodregs.FRMW.gaurdBandH = single(0.00);
-dodregs.FRMW.gaurdBandV = single(0.05);
+dodregs.FRMW.guardBandH = single(0.00);
+dodregs.FRMW.guardBandV = single(0.05);
 dodregs.FRMW.laserangleH = single(0.00);
 dodregs.FRMW.laserangleV = single(0.00);
 dodregs.FRMW.xres = uint16(640);
@@ -54,7 +54,7 @@ fw.writeUpdated('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibS
 fw=Pipe.loadFirmware('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\dodInitConfigs');
 % fw=Pipe.loadFirmware('\\invcam450\D\source\ivcam20\+Calibration\initScript');
 [regs,luts] = fw.get();
-neededRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWgaurdBandH|FRMWgaurdBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
+neededRegsNames = 'DESTp2axa|DESTp2axb|DESTp2aya|DESTp2ayb|DESTtxFRQpd|DIGGang2Xfactor|DIGGang2Yfactor|DIGGangXfactor|DIGGangYfactor|DIGGdx2|DIGGdx3|DIGGdx5|DIGGdy2|DIGGdy3|DIGGdy5|DIGGnx|DIGGny|FRMWguardBandH|FRMWguardBandV|FRMWlaserangleH|FRMWlaserangleV|FRMWxfov|FRMWyfov|DIGGundistModel|FRMWundistModel';
 fw.genMWDcmd(neededRegsNames,'C:\$WORK\Per_Unit_Config\Current\dodInit.txt')
 
 
@@ -79,8 +79,8 @@ hw=HWinterface(fw);
 resDODParams2.fw.genMWDcmd(neededRegsNames,'C:\$WORK\Per_Unit_Config\Current\dodFinalNoUndist.txt');
 
 
-resetregs.FRMW.gaurdBandH = single(0.0125);
-resetregs.FRMW.gaurdBandV = single(0.13);c
+resetregs.FRMW.guardBandH = single(0.0125);
+resetregs.FRMW.guardBandV = single(0.13);c
 resetregs.FRMW.marginT = int16(00);
 resetregs.FRMW.marginB = int16(00);
 resetregs.FRMW.yres = uint16(480);% + resetregs.FRMW.marginT + resetregs.FRMW.marginB);

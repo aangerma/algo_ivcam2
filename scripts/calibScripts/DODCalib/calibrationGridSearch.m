@@ -136,8 +136,8 @@ function rtlRegs = x2regs(x,rtlRegs)
 
 iterRegs.FRMW.xfov=single(x(1));
 iterRegs.FRMW.yfov=single(x(2));
-iterRegs.FRMW.gaurdBandH=single(0);
-iterRegs.FRMW.gaurdBandV=single(0);
+iterRegs.FRMW.guardBandH=single(0);
+iterRegs.FRMW.guardBandV=single(0);
 iterRegs.FRMW.xres=rtlRegs.GNRL.imgHsize;
 iterRegs.FRMW.yres=rtlRegs.GNRL.imgVsize;
 iterRegs.FRMW.marginL=int16(0);

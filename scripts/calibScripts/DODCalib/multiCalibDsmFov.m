@@ -59,11 +59,11 @@ for i = 1:numel(darr)
 end
 
 % Only from here we can change params that affects the 3D calculation (like
-% baseline, gaurdband, ... TODO: remove this line when the init script has
+% baseline, guardband, ... TODO: remove this line when the init script has
 % baseline of 30. 
 regs.DEST.baseline = single(30);
 regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
-regs.FRMW.gaurdBandV = single(0);
+regs.FRMW.guardBandV = single(0);
 %%
 xL = [40 40 -1000 -1000  0 0 ];
 xH = [90 90 1000  1000   0  0 ];

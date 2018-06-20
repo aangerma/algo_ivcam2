@@ -156,11 +156,11 @@ rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-regs.FRMW.xfov*0.25,      
 rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov*0.25)));rangeT =rangeT (2);
 rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov*0.25)));rangeB=rangeB(2);
 
-gaurdXinc = regs.FRMW.gaurdBandH*single(regs.FRMW.xres);
-gaurdYinc = regs.FRMW.gaurdBandV*single(regs.FRMW.yres);
+guardXinc = regs.FRMW.guardBandH*single(regs.FRMW.xres);
+guardYinc = regs.FRMW.guardBandV*single(regs.FRMW.yres);
 
-xresN = single(regs.FRMW.xres) + gaurdXinc*2;
-yresN = single(regs.FRMW.yres) + gaurdYinc*2;
+xresN = single(regs.FRMW.xres) + guardXinc*2;
+yresN = single(regs.FRMW.yres) + guardYinc*2;
 
 [angyQ,angxQ ] = ndgrid(-2047:2047);
 angyQ(:,1:2:end)=flipud(angyQ(:,1:2:end));
@@ -174,7 +174,7 @@ xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;
 xy = bsxfun(@minus,xynrm,xy00);
 xy    = bsxfun(@times,xy,xys);
-xy = bsxfun(@minus,xy,double([marginL+int16(gaurdXinc);marginT+int16(gaurdYinc)]));
+xy = bsxfun(@minus,xy,double([marginL+int16(guardXinc);marginT+int16(guardYinc)]));
 plot(xy(1,:),xy(2,:));
 rectangle('position',[0 0 double(regs.GNRL.imgHsize) double(regs.GNRL.imgVsize)])
 %}

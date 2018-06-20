@@ -10,10 +10,10 @@
 [EPTGnMaxSamples] == floor([EPTGnMaxSamples])
 
 %PCQ cant handle different Y value in each chunk - constraint that the minimum pixel scantime is greater than the chunk rate
-[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi>64/[GNRLsampleRate]
+[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi>64/[GNRLsampleRate]
 
 % PCQ : the code length in ns is atmost 4 pixels
-4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]
+4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi > [GNRLcodeLength]
 %------------END EPTG constraints--------------%
 
 
@@ -195,7 +195,7 @@ sum([[JFILsort3dWeights]])<128
 ~[DCORoutIRnest] |  ~[DCORbypass]
 
 %pixel squreness
-[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWgaurdBandV])/(1+2*[FRMWgaurdBandH])-1)<0.8
+[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
 
 
 %max fov (non spherical)

@@ -62,18 +62,18 @@ function newRegs = getAng2xyCoeffs(regs)
     newRegs.FRMW.yres = yres;
 
     % guard bands in pixels (originally in %)
-    gaurdXinc = regs.FRMW.gaurdBandH*single(xres);
-    gaurdYinc = regs.FRMW.gaurdBandV*single(yres);
+    guardXinc = regs.FRMW.guardBandH*single(xres);
+    guardYinc = regs.FRMW.guardBandV*single(yres);
     
     % pixel res in the entire resterised area
-    xresN = single(xres) + gaurdXinc*2;
-    yresN = single(yres) + gaurdYinc*2;
+    xresN = single(xres) + guardXinc*2;
+    yresN = single(yres) + guardYinc*2;
     
     %total mrgins: ROI_margins+guard_bands (in pixels)
-    % marginRN = regs.FRMW.marginR + gaurdXinc;
-    marginLN = single(regs.FRMW.marginL) + gaurdXinc;
-    marginTN = single(regs.FRMW.marginT) + gaurdYinc;
-    % marginBN = regs.FRMW.marginB + gaurdYinc;
+    % marginRN = regs.FRMW.marginR + guardXinc;
+    marginLN = single(regs.FRMW.marginL) + guardXinc;
+    marginTN = single(regs.FRMW.marginT) + guardYinc;
+    % marginBN = regs.FRMW.marginB + guardYinc;
     
         
     ysign = 1;

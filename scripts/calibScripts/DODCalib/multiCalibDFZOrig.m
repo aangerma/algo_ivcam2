@@ -89,7 +89,7 @@ end
 
 
 % Only from here we can change params that affects the 3D calculation (like
-% baseline, gaurdband, ...
+% baseline, guardband, ...
 regs.DEST.baseline = single(30);
 regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
