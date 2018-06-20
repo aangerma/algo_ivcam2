@@ -3,8 +3,8 @@ FRMWyfov             h42600000
 FRMWxoffset          h00000000
 FRMWyoffset          h00000000
 FRMWprojectionYshear h00000000
-FRMWgaurdBandH       h00000000
-FRMWgaurdBandV       h3D4CCCCD
+FRMWguardBandH       h00000000
+FRMWguardBandV       h3D4CCCCD
 FRMWxres             h00000280
 FRMWyres             h000001E0
 FRMWlaserangleH      h00000000
