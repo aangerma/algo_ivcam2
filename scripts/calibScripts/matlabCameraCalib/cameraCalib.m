@@ -1,3 +1,5 @@
+%IRs = {};
+%IRs{i} = hw.getFrame(30); figure; imagesc(IRs{i}.i); i = i + 1;
 % K=reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
 
 load('checkerboard_ivcam2.mat');
