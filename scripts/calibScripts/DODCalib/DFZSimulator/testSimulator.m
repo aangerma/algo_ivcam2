@@ -40,7 +40,40 @@ Calibration.aux.evalGeometricDistortion(reshape(xyz,9,13,3),1)
 % The problem seems to be: going to image plane and back to 3D.
 % My primary suspect is the sing. I shall calculate the sing directly and
 % from xF,yF and see if it is the same.
-singAcc = cbxyz(:,:,1)./sqrt(cbxyz(:,:,2).^2+cbxyz(:,:,3).^2);
+singAcc = cbxyz(:,:,1)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,2).^2+cbxyz(:,:,3).^2);
 tabplot; imagesc(sing,[-0.4,0.4]),colorbar;
 tabplot; imagesc(singAcc,[-0.4,0.4]),colorbar;
 tabplot; imagesc(singAcc-sing),colorbar;
+
+
+% I shall check the angles of get trigo.
+% tanx should be linear with the pixel index.
+tanxAcc = cbxyz(:,:,1)./cbxyz(:,:,3);
+tanx = sinx./cosx;
+tabplot; imagesc(tanxAcc,[-0.4,0.4]),colorbar;
+tabplot; imagesc(tanx,[-0.4,0.4]),colorbar;
+tabplot; plot(tanxAcc(7,:)),hold on , plot(tanx(7,:))
+tabplot; plot(tanxAcc(7,:)-tanx(7,:))
+
+acc = cbxyz(:,:,1)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,3).^2);
+trig = sinx;
+tabplot; imagesc(acc,[-0.4,0.4]),colorbar;
+tabplot; imagesc(trig,[-0.4,0.4]),colorbar;
+tabplot; plot(acc(7,:)),hold on , plot(trig(7,:))
+tabplot; plot(acc(7,:)-trig(7,:))
+
+acc = cbxyz(:,:,1)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,3).^2);
+trig = sinx;
+tabplot; imagesc(acc,[-0.4,0.4]),colorbar;
+tabplot; imagesc(trig,[-0.4,0.4]),colorbar;
+tabplot; plot(acc(7,:)),hold on , plot(trig(7,:))
+tabplot; plot(acc(7,:)-trig(7,:))
+
+
+% Check w
+acc = sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,3).^2)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,2).^2+cbxyz(:,:,3).^2);
+trig = cosw;
+tabplot; imagesc(acc,[-0.4,0.4]),colorbar;
+tabplot; imagesc(trig,[-0.4,0.4]),colorbar;
+tabplot; plot(acc(7,:)),hold on , plot(trig(7,:))
+tabplot; plot(acc(7,:)-trig(7,:))
