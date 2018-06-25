@@ -47,16 +47,16 @@ rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , regs.
 rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov*0.25)));rangeB=rangeB(2);
 
 if axis == 'H'
-    gaurdXinc = gbnd*single(regs.FRMW.xres);
-    gaurdYinc = regs.FRMW.gaurdBandV*single(regs.FRMW.yres);
+    guardXinc = gbnd*single(regs.FRMW.xres);
+    guardYinc = regs.FRMW.guardBandV*single(regs.FRMW.yres);
 else
-    gaurdXinc = regs.FRMW.gaurdBandH*single(regs.FRMW.xres);
-    gaurdYinc = gbnd*single(regs.FRMW.yres);
+    guardXinc = regs.FRMW.guardBandH*single(regs.FRMW.xres);
+    guardYinc = gbnd*single(regs.FRMW.yres);
 end
 
 
-xresN = single(regs.FRMW.xres) + gaurdXinc*2;
-yresN = single(regs.FRMW.yres) + gaurdYinc*2;
+xresN = single(regs.FRMW.xres) + guardXinc*2;
+yresN = single(regs.FRMW.yres) + guardYinc*2;
 
 
 angx = single(angx)*angXfactor;
@@ -68,6 +68,6 @@ xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;
 xy = bsxfun(@minus,xynrm,xy00);
 xy = bsxfun(@times,xy,xys);
-xy = bsxfun(@minus,xy,double([marginL+int16(gaurdXinc);marginT+int16(gaurdYinc)]));
+xy = bsxfun(@minus,xy,double([marginL+int16(guardXinc);marginT+int16(guardYinc)]));
 x = xy(1);y=xy(2);
 end

@@ -1,6 +1,6 @@
 function regsOut = trigoCalcs(regs)
-xfovPix = regs.FRMW.xfov * (1-regs.FRMW.gaurdBandH*2);
-yfovPix = regs.FRMW.yfov * (1-regs.FRMW.gaurdBandV*2);
+xfovPix = regs.FRMW.xfov * (1-regs.FRMW.guardBandH*2);
+yfovPix = regs.FRMW.yfov * (1-regs.FRMW.guardBandV*2);
 if(regs.DIGG.undistBypass==0)
     xfovPix = xfovPix*regs.FRMW.undistXfovFactor;
     yfovPix = yfovPix*regs.FRMW.undistYfovFactor;
@@ -19,10 +19,10 @@ regsOut.DEST.p2aya = ( tand(yfovPix/2)* 2    / single(regs.FRMW.yres-1));
 regsOut.DEST.p2ayb = (-tand(yfovPix/2)*(1-2 *single(regs.FRMW.marginT) / single(regs.FRMW.yres) + single(regs.FRMW.yoffset) ));
 end
 
-K=[regsOut.DEST.p2axa 0                   regsOut.DEST.p2axb;
+Kinv=[regsOut.DEST.p2axa 0                   regsOut.DEST.p2axb;
    0                  regsOut.DEST.p2aya  regsOut.DEST.p2ayb;
    0                  0                   1];
 
-Kinv=pinv(K);
-regsOut.CBUF.spare=typecast(Kinv([1 4 7 2 5 8 3 6]),'uint32');
+K=pinv(Kinv);
+regsOut.CBUF.spare=typecast(K([1 4 7 2 5 8 3 6]),'uint32');
 end

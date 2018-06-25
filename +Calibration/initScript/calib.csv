@@ -1,7 +1,7 @@
 FRMWxfov             f72      
 FRMWyfov             f56      
 FRMWgaurdBandH       f0.0     
-FRMWgaurdBandV       h00000000
+FRMWgaurdBandV       f0.0     
 FRMWlaserangleH      f0       
 FRMWlaserangleV      f0       
 FRMWcbufConstLUT     b1       

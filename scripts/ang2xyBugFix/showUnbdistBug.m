@@ -7,7 +7,7 @@ The bug makes it so the mapping is wrong.
 clear, close all
 % Load some fw
 fw = Pipe.loadFirmware('\\tmund-MOBL1\C$\source\algo_ivcam2\+Calibration\initScript');
-regs2.FRMW.gaurdBandV = single(0);
+regs2.FRMW.guardBandV = single(0);
 fw.setRegs(regs2,'');
 [regs,luts] = fw.get();
 % Create a grid of angles:

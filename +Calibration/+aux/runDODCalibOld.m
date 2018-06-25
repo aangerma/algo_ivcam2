@@ -31,7 +31,7 @@ end
 
 d = Calibration.aux.readAvgFrame(hw,30);
 
-gaurdBands = [0.0125 0.13];
+guardBands = [0.0125 0.13];
 
 
 
@@ -47,7 +47,7 @@ lutsProg{1} = luts;
 eProg = zeros(5,iter);
 for i = 1:iter
     fprintff('#%d Optimizing Delay, FOV and zenith... \n',i);
-    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,gaurdBands);
+    [outregs,eProg(1,i),eProg(2,i),dProg{i+1}]=Calibration.aux.calibDFZ(dProg{i},regsProg{i},verbose,guardBands);
     regsProg{i+1} = Firmware.mergeRegs(regsProg{i},outregs);
     
     
@@ -62,7 +62,7 @@ for i = 1:iter
     dProg{i+1}.i=undistF(dProg{i+1}.i);
 %     dProg{i+1}.c=undistF(dProg{i+1}.c);
     % Eval the erros after distortion
-    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,gaurdBands,true);
+    [~,eProg(4,i),eProg(5,i),~]=Calibration.aux.calibDFZ(dProg{i+1},regsProg{i+1},verbose,guardBands,true);
 end
 [resDODParams.errGeom,bestI] = min(eProg(4,:));
 

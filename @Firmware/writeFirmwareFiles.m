@@ -16,7 +16,7 @@ function writeFirmwareFiles(obj,outputFldr)
     %
     d=obj.getAddrData(calib_regs2write);
     assert(length(d)<=62,'Max lines in calibration file is limited to 62 due to eprom memmory limitation');
-    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']));
+    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']),1);
     
     undistfns=writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' filepostfix 'bin']),true);
     
@@ -32,7 +32,7 @@ function writeFirmwareFiles(obj,outputFldr)
     
     config_regs2write=cell2str({m([m.group]==CONFIG_GROUP_KEY).regName},'|');
     
-    writeMWD(obj.getAddrData(config_regs2write),fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' filepostfix 'txt']));
+    writeMWD(obj.getAddrData(config_regs2write),fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' filepostfix 'txt']),3);
     
     writeLUTbin(obj.getAddrData('DCORtmpltCrse'),fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' filepostfix 'bin']));
     
@@ -84,17 +84,22 @@ function fns=writeLUTbin(d,fn,oneBaseCount)
     
 end
 
-function writeMWD(d,fn)
+function writeMWD(d,fn,nMax)
     
     PL_SZ=510;
     
     n = ceil(size(d,1)/PL_SZ);
-    for i=0:n-1
-        fid = fopen(sprintf(strrep(fn,'\','\\'),i+1),'w');
-        ibeg = i*PL_SZ+1;
-        iend = min((i+1)*PL_SZ,size(d,1));
-        di=d(ibeg:iend,:)';
-        fprintf(fid,'mwd %08x %08x // %s\n',di{:});
+    if(n>nMax)
+        error('error, too many registers to write!');
+    end
+    for i=1:nMax
+        fid = fopen(sprintf(strrep(fn,'\','\\'),i),'w');
+        ibeg = (i-1)*PL_SZ+1;
+        iend = min(i*PL_SZ,size(d,1));
+        if(i<=n)
+            di=d(ibeg:iend,:)';
+            fprintf(fid,'mwd %08x %08x // %s\n',di{:});
+        end
         fclose(fid);
     end
     

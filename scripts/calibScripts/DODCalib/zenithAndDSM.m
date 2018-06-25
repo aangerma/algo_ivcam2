@@ -1,9 +1,9 @@
 % Load some fw
 fw = Pipe.loadFirmware('\\tmund-MOBL1\C$\source\algo_ivcam2\scripts\calibScripts\DODCalib\DODCalibDataset\initScript');
-regs2.FRMW.gaurdBandV = single(0);
+regs2.FRMW.guardBandV = single(0);
 fw.setRegs(regs2,'');
 [regs,luts] = fw.get();
-regs.FRMW.gaurdBandV
+regs.FRMW.guardBandV
 % Create a grid of angles:
 [angx,angy] = meshgrid([-2047,0,2047],[-2047,0,2047]);
 

@@ -563,10 +563,10 @@ def check_constraint(selected_regs={}, constraint=None):
     elif constr == "mod([GNRLimgVsize],2)==0":
         return modulo(selected_regs["GNRLimgVsize"],2) ==0
 
-    elif constr == "[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi>64/[GNRLsampleRate]":
-        return selected_regs["EPTGframeRate"]==0 or 1*10**9 / (2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWgaurdBandV"]))*2/math.pi>64/selected_regs["GNRLsampleRate"]
-    elif constr =="4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWgaurdBandV]))*2/pi > [GNRLcodeLength]":
-        return 4*16/selected_regs["GNRLsampleRate"]*1*10**9/(2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWgaurdBandV"]))*2/math.pi > selected_regs["GNRLcodeLength"]
+    elif constr == "[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi>64/[GNRLsampleRate]":
+        return selected_regs["EPTGframeRate"]==0 or 1*10**9 / (2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWguardBandV"]))*2/math.pi>64/selected_regs["GNRLsampleRate"]
+    elif constr =="4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi > [GNRLcodeLength]":
+        return 4*16/selected_regs["GNRLsampleRate"]*1*10**9/(2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWguardBandV"]))*2/math.pi > selected_regs["GNRLcodeLength"]
     elif constr =="[FRMWmarginT]<([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
         return selected_regs["FRMWmarginT"]<(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
     elif constr =="[FRMWmarginL]<([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
@@ -575,8 +575,8 @@ def check_constraint(selected_regs={}, constraint=None):
         return abs(selected_regs["FRMWmarginB"]-selected_regs["FRMWmarginT"]) < (selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
     elif constr == "abs([FRMWmarginL]-[FRMWmarginR]) < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
         return abs(selected_regs["FRMWmarginL"]-selected_regs["FRMWmarginR"]) < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
-    elif constr == "[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWgaurdBandV])/(1+2*[FRMWgaurdBandH])-1)<0.8":
-        return  selected_regs["GNRLrangeFinder"] or abs((selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])/(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*selected_regs["FRMWyfov"]/selected_regs["FRMWxfov"]*(1+2*selected_regs["FRMWgaurdBandV"])/(1+2*selected_regs["FRMWgaurdBandH"])-1)<0.8
+    elif constr == "[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8":
+        return  selected_regs["GNRLrangeFinder"] or abs((selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])/(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*selected_regs["FRMWyfov"]/selected_regs["FRMWxfov"]*(1+2*selected_regs["FRMWguardBandV"])/(1+2*selected_regs["FRMWguardBandH"])-1)<0.8
     elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
         return selected_regs["STATstt1Bypass"] == 1 or (selected_regs["STATstt1src"] <=  1 or selected_regs["STATstt1skipHsize"] < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
     elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
@@ -813,9 +813,9 @@ def get_regs_order(regs_def):
     slash.logger.info("setting regs generation order")
     reg_order = list()
     reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "GNRLimgHsize", "FRMWmarginT",
-                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "FRMWyfov", "FRMWgaurdBandV", "GNRLsampleRate",
+                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "FRMWyfov", "FRMWguardBandV", "GNRLsampleRate",
                       "EPTGmirrorFastFreq",
-                      "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov", "FRMWgaurdBandH",
+                      "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov", "FRMWguardBandH",
                       "DIGGundistBypass",
                       "FRMWundistYfovFactor", "FRMWundistXfovFactor", "DCORoutIRnest", "DCORoutIRcma", "DESTaltIrEn",
                       "RASToutIRvar", "JFILbypass", "DCORbypass", "DIGGnestBypass", "FRMWtxCode_000", "FRMWtxCode_001",

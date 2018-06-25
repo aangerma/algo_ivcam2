@@ -9,8 +9,8 @@ regs.FRMW.marginR = int16(0);
 regs.FRMW.marginT = int16(0);
 regs.FRMW.marginB = int16(0);
 
-regs.FRMW.gaurdBandH = single(0.0);
-regs.FRMW.gaurdBandV = single(0.0500);
+regs.FRMW.guardBandH = single(0.0);
+regs.FRMW.guardBandV = single(0.0500);
 
 regs.FRMW.laserangleH = hex2single('3E92CF17'); % 0.2852
 regs.FRMW.laserangleV = hex2single('3F831071'); % 0.9344 

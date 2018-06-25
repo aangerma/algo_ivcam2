@@ -25,13 +25,32 @@ classdef HWinterface <handle
     end
     methods (Static=true, Access=private)
         %
+        function sprivDispFigClose(t)
+            stop(t)
+            closereq();
+        end
+       
     end
     
     methods (Access=private)
         privInitCam(obj);
         privConfigureStream(obj);
         
-        
+         function privDispFigRefresh(obj,f)
+            d=obj.getFrame();
+            aa(1)=subplot(121,'parent',f);
+            z=double(d.z)/8;
+            lims = prctile_(z(~isnan(z)),[5 95])+[0 1e-3];
+            imagesc(z,'parent',aa(1),lims);
+            axis(aa(1),'image');
+            colorbar('SouthOutside','parent',f);
+            aa(2)=subplot(122,'parent',f);
+            imagesc(d.i,'parent',aa(2),[0 255]);
+            axis(aa(2),'image');
+            colorbar('SouthOutside','parent',f);
+            colormap(gray(256))
+            drawnow;
+        end
         
     end
     
@@ -218,9 +237,9 @@ classdef HWinterface <handle
                 end
                 meanNoZero = @(m) sum(double(m),3)./sum(m~=0,3);
                 collapseM = @(x) meanNoZero(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]));
-                frame.z=collapseM('z');
-                frame.i=collapseM('i');
-                frame.c=collapseM('c');
+                frame.z=uint16(collapseM('z'));
+                frame.i=uint8(collapseM('i'));
+                frame.c=uint8(collapseM('c'));
                 return;
             end
             
@@ -291,6 +310,16 @@ classdef HWinterface <handle
             %                 error(char(res.ErrorMessage))
             %             end
             %             res = char(res.ResultFormatted);
+        end
+        
+        function displayStream(obj)
+            f=figure('numbertitle','off','menubar','none');
+            t = timer;
+            t.TimerFcn = @(varargin) obj.privDispFigRefresh(f);
+            t.Period = 1;
+            t.ExecutionMode = 'fixedRate';
+            f.CloseRequestFcn =@(varargin) HWinterface.sprivDispFigClose(t);
+            start(t);
         end
     end
 end

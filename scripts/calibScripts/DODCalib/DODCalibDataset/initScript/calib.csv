@@ -4,11 +4,11 @@ FRMWyfov        	f56
 FRMWlaserangleH 	f0
 FRMWlaserangleV 	f0
 
-%FRMWgaurdBandH      f0.02
-%FRMWgaurdBandV      f0.1
+%FRMWguardBandH      f0.02
+%FRMWguardBandV      f0.1
 
-FRMWgaurdBandH      f0.0
-FRMWgaurdBandV      f0.0500
+FRMWguardBandH      f0.0
+FRMWguardBandV      f0.0500
 
 
 DIGGundistBypass    b0

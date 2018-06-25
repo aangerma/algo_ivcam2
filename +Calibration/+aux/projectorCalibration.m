@@ -7,8 +7,8 @@ fw.setRegs('D:\ohad\data\lidar\EXP\20160915\calib.csv');
 
 
 %%
-%  fw.setRegs('FRMWgaurdBandH',1.1);
-%  fw.setRegs('FRMWgaurdBandV',0.8);
+%  fw.setRegs('FRMWguardBandH',1.1);
+%  fw.setRegs('FRMWguardBandV',0.8);
 %  fw.setRegs('GNRLxoffset',22);
   fw.setRegs('FRMWxoffset',22);
 %   fw.setRegs('FRMWxfov',50);

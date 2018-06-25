@@ -130,8 +130,8 @@ end
 function regs=x2regs(sz,x)
 regs.FRMW.xfov=x(1);
 regs.FRMW.yfov=x(2);
-regs.FRMW.gaurdBandH=0;
-regs.FRMW.gaurdBandV=0;
+regs.FRMW.guardBandH=0;
+regs.FRMW.guardBandV=0;
 regs.FRMW.xres=sz(2);
 regs.FRMW.yres=sz(1);
 regs.FRMW.marginL=0;

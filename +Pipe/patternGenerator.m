@@ -163,8 +163,8 @@ else
 %     regs4digg.FRMW.marginR=int16(0);
 %     regs4digg.FRMW.marginT=int16(0);
 %     regs4digg.FRMW.marginB=int16(0);
-%     regs4digg.FRMW.gaurdBandH=single(0);
-%     regs4digg.FRMW.gaurdBandV=single(0);
+%     regs4digg.FRMW.guardBandH=single(0);
+%     regs4digg.FRMW.guardBandV=single(0);
     regs4digg = Firmware.mergeRegs(regs4digg,Pipe.DIGG.FRMW.getAng2xyCoeffs(regs4digg));
     [regs4digg_,luts4digg_] = Pipe.DIGG.FRMW.buildLensLUT(regs4digg,[]);
     regs4digg = Firmware.mergeRegs(regs4digg,regs4digg_);
@@ -548,7 +548,7 @@ elseif(ischar(inputData))
             patgenregs.EPTG.maxZ = single(1000);
             patgenregs.GNRL.imgHsize = uint16(320);
             patgenregs.GNRL.imgVsize = uint16(240);
-            patgenregs.FRMW.gaurdBandH = single(0);
+            patgenregs.FRMW.guardBandH = single(0);
             patgenregs.EPTG.frameRate = single(60);
             patgenregs.EPTG.noiseLevel=single(0);
             patgenregs.EPTG.sampleJitter=single(0);
