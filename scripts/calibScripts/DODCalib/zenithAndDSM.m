@@ -8,7 +8,7 @@ regs.FRMW.guardBandV
 [angx,angy] = meshgrid([-2047,0,2047],[-2047,0,2047]);
 
 % Show them on the xy image plane
-[xf,yf] = myang2xy(angx,angy,regs);
+[xf,yf] = myang2xy(angx,angy,regs,0);
 plot(xf(:),yf(:),'*');
 rectangle('position',[0 0 double(regs.GNRL.imgHsize-1) double(regs.GNRL.imgVsize-1)])
 
@@ -24,14 +24,14 @@ offSetAngle = (regs.FRMW.xfov/4);
 figure
 % Get the x,y coordinates with xOffset 
 xoffset = offSetAngle / (regs.FRMW.xfov/4) * 2047;
-[xfOff,yfOff,xynrmOff] = myang2xy(angx+xoffset,angy,regs);
+[xfOff,yfOff,xynrmOff] = myang2xy(angx+xoffset,angy,regs,1);
 plot(xfOff(:),yfOff(:),'*'); 
 hold on;
 rectangle('position',[0 0 double(regs.GNRL.imgHsize-1) double(regs.GNRL.imgVsize-1)])
 % Get the x,y coordinates with zenith of the same angle
 regsZ = regs;
 regsZ.FRMW.laserangleH = -single(offSetAngle);
-[xfZ,yfZ,xynrmZ] = myang2xy(angx,angy,regsZ);
+[xfZ,yfZ,xynrmZ] = myang2xy(angx,angy,regsZ,1);
 plot(xfZ(:),yfZ(:),'*');
 
 % rescale points after offset
@@ -46,3 +46,34 @@ plot(xfOffTr(:),yfOffTr(:),'g*');
 %% I know! Even when the mirror is aimed at the zenith, the vertical scanline won't be a vertical line in the image plane. However, I do believe the 3d representation of the images is the same.
 % I shall load a CB image, calculate its (range,angx,angy) , and calculate
 % the 3D error with a zenith and its angle.
+for i = 1:1000
+angx1 = randi(2047*2)-2047;
+angy1 = randi(2047*2)-2047;
+r1 = 500;
+
+angx2 = randi(2047*2)-2047;
+angy2 = randi(2047*2)-2047;
+r2 = 400;
+
+angx = [angx1,angx2];
+angy = [angy1,angy2];
+r = [r1,r2];
+
+offSetAngle = (regs.FRMW.xfov/8);
+% Get the x,y coordinates with xOffset 
+xoffset = offSetAngle / (regs.FRMW.xfov/4) * 2047;
+angxOff = angx+xoffset;
+angyOff = angy;
+vecOff = ang2vec(angxOff,angyOff,regs);
+distOff = norm(  vecOff(1,:)*r(1)-vecOff(2,:)*r(2));
+% Get the x,y coordinates with zenith of the same angle
+regsZ = regs;
+regsZ.FRMW.laserangleH = -single(offSetAngle);
+vecZ = ang2vec(angx,angy,regsZ);
+distZ = norm(  vecZ(1,:)*r(1)-vecZ(2,:)*r(2));
+
+e(i) = abs(distZ-distOff);
+
+end
+plot(e)
+

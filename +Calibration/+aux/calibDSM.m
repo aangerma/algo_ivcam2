@@ -23,6 +23,7 @@ function [dsmregs] = calibDSM(hw,params,verbose)
     angyZO = (angyRawZO+dsmYoffset)*dsmYscale - 2047;
     
     if restFailed
+        warning('Raw rest angle is zero. This is not likely. setRestAngle script failed.')
         [angxZO,angyZO] = centerProjectZO(hw);
         angxRawZO = invertDSM(angxZO,dsmXscale,dsmXoffset);
         angyRawZO = invertDSM(angyZO,dsmYscale,dsmYoffset);

@@ -90,33 +90,20 @@ end
 fprintff('opening stream...');
 hw.getFrame();
  
-[capturingFailure, fixedDelay] = checkAndFixAbsDelay(hw,fprintff);
-if capturingFailure 
-        return;
-end
-if fixedDelay 
-    calibParams.dataDelay.slowDelayInitVal = fixedDelay;
-end
+% [capturingFailure, fixedDelay] = checkAndFixAbsDelay(hw,fprintff);
+% if capturingFailure 
+%         return;
+% end
+% if fixedDelay 
+%     calibParams.dataDelay.slowDelayInitVal = fixedDelay;
+% end
 fprintff('Done(%ds)\n',round(toc(t)));
 
 
 % hw.runPresetScript('startStream');
 
-%% ::dsm calib::
-fprintff('DSM calibration...');
-if(runParams.DSM)
-    dsmregs = Calibration.aux.calibDSM(hw,calibParams,verbose);
-    fw.setRegs(dsmregs,fnCalib);
-    fprintff('Done(%d)\n',round(toc(t)));
-else
-    fprintff('skipped\n');
-end
-
 %% ::calibrate delays::
 fprintff('Depth and IR delay calibration...\n');
-
-
-
 
 if(runParams.dataDelay)
     
@@ -145,7 +132,15 @@ if(runParams.dataDelay)
 else
     fprintff('skipped\n');
 end
-
+%% ::dsm calib::
+fprintff('DSM calibration...');
+if(runParams.DSM)
+    dsmregs = Calibration.aux.calibDSM(hw,calibParams,verbose);
+    fw.setRegs(dsmregs,fnCalib);
+    fprintff('Done(%d)\n',round(toc(t)));
+else
+    fprintff('skipped\n');
+end
 %% ::gamma::
 
 fprintff('gamma...\n');
