@@ -234,7 +234,7 @@ end
 %% ::validation::
 fprintff('Validating...\n');
 %validate
-if(runParams.validation)
+if(runParams.DFZ && runParams.validation)
     fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
     [regs,luts]=fw.get();%run autogen
     fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
