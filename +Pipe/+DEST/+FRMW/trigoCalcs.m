@@ -47,6 +47,6 @@ rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-yfov*
 p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
 p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
 p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres-1);
-p2ayb = rangeB  + single(regs.FRMW.marginT) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
+p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
 
 end
