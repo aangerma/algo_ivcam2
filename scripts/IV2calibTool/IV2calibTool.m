@@ -136,6 +136,18 @@ classdef IV2calibTool < matlab.apps.AppBase
             params=structfun(@(x) x.Value,app.cb,'uni',0);
             params.outputFolder=app.Outputdirectorty.Value;
             params.version=calibToolVersion();
+            
+            s=Spark('Algo','AlgoCalibration');
+            s.addTestProperty('ClibVersion',calibToolVersion)
+            s.startDUTsession('UnitSerialGoesHere');
+            
+            %%
+             s.addDTSproperty('TargetType','IRcalibrationChart');
+
+           
+            
+         
+            
             try
                 %=======================================================RUN CALIBRATION=======================================================
                 calibfn =  fullfile(pwd,'calibParams.xml');
@@ -145,7 +157,8 @@ classdef IV2calibTool < matlab.apps.AppBase
                     calibParams = [];
                 end
                 
-                [calibPassed,~] = Calibration.runCalibStream(params,calibParams,fprintffS);
+                [calibPassed,score] = Calibration.runCalibStream(params,calibParams,fprintffS);
+                s.AddMetrics('score', score,1,100,false);
                 if calibPassed
                    app.logarea.BackgroundColor = [0 0.8 0]; % Color green 
                 else
@@ -159,7 +172,9 @@ classdef IV2calibTool < matlab.apps.AppBase
                 fid = fopen(sprintf('%s%cerror_%s.log',app.Outputdirectorty.Value,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
                 fprintf(fid,strrep(getReport(e),'\','\\'));
                 fclose(fid);
+                s.endDUTsession([], true);
             end
+            s.endDUTsession();
             fclose(app.m_logfid);
         end
     end
