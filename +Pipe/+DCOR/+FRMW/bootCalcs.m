@@ -29,8 +29,8 @@ autogenRegs.DCOR.coarseMasking = coarseMasking(:).';
 
 codevec = vec(fliplr(dec2bin(regs.FRMW.txCode(:),32))')=='1';
 codevec = codevec(1:regs.GNRL.codeLength);
-
 codevec =flipud(codevec);%ASIC ALIGNMENT
+
 
 kF = double(vec(repmat(codevec,1,regs.GNRL.sampleRate)'));
 nF =  length(kF)  ; 
@@ -50,7 +50,10 @@ tbl2uint32 = @(t) typecast(vec(flipud(reshape(uint8(sum(bsxfun(@bitshift,reshape
 tmplF = templates;
 % replicate to 1024
 tmplF = tmplF(mod(0:1023,nF)+1,:);
-tmplF  = circshift(tmplF ,[nF-16,-16]);
+tmplF = circshift(tmplF,[mod(1024,nF),0]);
+tmplF(1:mod(1024,nF),:) = tmplF(end-mod(1024,nF)+1:end,:);
+
+tmplF  = circshift(tmplF ,[(nF-16),0]);
 if(~regs.FRMW.dcorTemplatesFromFile || all(luts.DCOR.tmpltFine==0))%already set using aux file, do not set!
     autogenLuts.DCOR.tmpltFine = tbl2uint32(tmplF);
 end
@@ -60,6 +63,8 @@ end
 tmplC=bitshift(uint8(permute(sum(reshape(templates,downSamplingR,[],size(templates,2))),[2 3 1])),-double(autogenRegs.DCOR.decRatio));
 % replicate to 256
 tmplC = tmplC(mod(0:255,nC)+1,:);
+tmplC = circshift(tmplC,[mod(256,nC),0]);
+tmplC(1:mod(256,nC),:) = tmplC(end-mod(256,nC)+1:end,:);
 if(~regs.FRMW.dcorTemplatesFromFile || all(luts.DCOR.tmpltCrse==0))%already set using aux file, do not set!
     autogenLuts.DCOR.tmpltCrse = tbl2uint32(tmplC);
 end

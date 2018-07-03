@@ -323,6 +323,28 @@ classdef HWinterface <handle
             f.CloseRequestFcn =@(varargin) HWinterface.sprivDispFigClose(t);
             start(t);
         end
+        function hwa = assertions(obj)
+            % Read hwa status and second level per block
+            blocks = {'top','io','pmg','afe','apdctl','proj','ansync','digg','rast','dcor','dest','cbuf','jfil','algo','fg','lcp','secc','soc','pmg_depth','vdf','usb','mipit_tx','tproc','dma','stat','imu','jpeg','fsu','NA','NA','cam_pmg','webcam_isp'};
+            [~,status] = obj.cmd('mrd A0070308 A007030c');% // HWA status
+            status = fliplr(logical(dec2bin(status)-'0'));
+            status = [status,false(1,numel(blocks)-numel(status))];
+            fprintf('\n');
+            % Top address is A007030c A0070310
+            topAddr = hex2dec('A007030c');
+            shift = 4*(0:32)';
+            shift(11) = [];% CBUF skips 1 address according to document, but it looks like a mistake. dest skips 1. 
+            shift(14:end) = shift(14:end) - 4; % Algo is the same as jfil? makes no sense. 
+            hwa = struct;
+            for i = 1:numel(blocks)
+                if status(i)
+                    [~,blockStatus] = obj.cmd(sprintf('mrd %x %x',topAddr+shift(i),topAddr++shift(i)+4));
+%                     fprintf(' -%s status: %08x.\n',blocks{i},blockStatus);
+                    hwa.(blocks{i}) = sprintf('%08x',blockStatus);
+                end
+            end
+
+        end
     end
 end
 
