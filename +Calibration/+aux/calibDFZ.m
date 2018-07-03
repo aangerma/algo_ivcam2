@@ -126,6 +126,7 @@ rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
     [xF,yF]=Calibration.aux.ang2xySF(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,true);
+    % Update scale to take margins into acount.
     xF = xF*double((rtlRegs.GNRL.imgHsize-1))/double(rtlRegs.GNRL.imgHsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
     yF = yF*double((rtlRegs.GNRL.imgVsize-1))/double(rtlRegs.GNRL.imgVsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
     

@@ -16,20 +16,21 @@ for iCMA = (1:tmplLength)-1
     hw.cmd(sprintf(strCmdIndex, uint8(floor(mod(iCMA,84))), uint8(floor(iCMA/84))));
     hw.shadowUpdate();
 
-    [cmaBin, cmaC,cmaST] = getBin(hw, 3, imSize);
+    [cmaBin, cmaC,cmaST] = getBin(hw, 1, imSize);
     cma(iCMA+1,:,:) = cmaBin;
     cmaSTD(iCMA+1,:,:) = cmaST;
 
-
+    tStr = sprintf('Bin %u of %u. cmaC min and max = [%d,%d,].\n', iCMA, tmplLength,min(cmaC(:)),max(cmaC(:)));
     figure(11711);        
     subplot(1,3,1); imagesc(cmaBin);colorbar;
     subplot(1,3,2); imagesc(cmaC);colorbar;
-    subplot(1,3,3); imagesc(cmaST);colorbar;
-    tStr = sprintf('Bin %u of %u', iCMA, tmplLength);
+%     subplot(1,3,3); imagesc(cmaST);colorbar;
+    
     subplot(1,3,1); title(tStr);
+%     fprintf(tStr);
     drawnow;
 end
-
+hw.setReg('DCORoutIRcma$', false);
 end
 
 function [cmaBin, cmaC,cmaSTD] = getBin(hw, nExp, imSize)

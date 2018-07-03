@@ -168,27 +168,7 @@ end
 %% ::thermal::
 % thermalRegs=Calibration.thermal.setThermalRegs(calibParams.thermal);
 % fw.setRegs(thermalRegs,fnCalib);
-%% ::roi::
-fprintff('Calibrating ROI...\n');
-% params.roi = true;
-if (runParams.ROI)
-    roiRegs = Calibration.aux.runROICalib(hw, verbose);
-    fw.setRegs(roiRegs, fnCalib);
-    regs = fw.get(); % run bootcalcs
-    fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
-    fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
-    hw.runScript(fnAlgoTmpMWD);
-    hw.shadowUpdate();
-    roiRegsVal = Calibration.aux.runROICalib(hw, true);
-    mr = roiRegsVal.FRMW;
-    valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
-%     results.roiVal = valSumMargins;
-    if (valSumMargins ~= 0)
-        fprintff('warning: Invalid pixels after ROI calibration');
-    end
-else
-    fprintff('skipped\n');
-end
+
 %% ::DFZ::
 
 fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
@@ -221,6 +201,11 @@ if(runParams.DFZ)
     fw.setRegs(dodregs,fnCalib);
     if(results.geomErr<calibParams.errRange.geomErr(2))
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
+        fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
+        [regs,luts]=fw.get();%run autogen
+        fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
+        hw.runScript(fnAlgoTmpMWD);
+        hw.shadowUpdate();
     else
         fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
     end
@@ -231,17 +216,32 @@ else
 end
 
 
-
+%% ::roi::
+fprintff('Calibrating ROI...\n');
+% params.roi = true;
+if (runParams.ROI)
+    roiRegs = Calibration.aux.runROICalib(hw, verbose);
+    fw.setRegs(roiRegs, fnCalib);
+    regs = fw.get(); % run bootcalcs
+    fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
+    fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
+    hw.runScript(fnAlgoTmpMWD);
+    hw.shadowUpdate();
+    roiRegsVal = Calibration.aux.runROICalib(hw, true);
+    mr = roiRegsVal.FRMW;
+    valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
+%     results.roiVal = valSumMargins;
+    if (valSumMargins ~= 0)
+        fprintff('warning: Invalid pixels after ROI calibration');
+    end
+else
+    fprintff('skipped\n');
+end
 
 %% ::validation::
 fprintff('Validating...\n');
 %validate
 if(runParams.DFZ && runParams.validation)
-    fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
-    [regs,luts]=fw.get();%run autogen
-    fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
-    hw.runScript(fnAlgoTmpMWD);
-    hw.shadowUpdate();
     d=showImageRequestDialog(hw,1,diag([.7 .7 1]));
     dbg.validImg = d;
     [~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,verbose,true);
