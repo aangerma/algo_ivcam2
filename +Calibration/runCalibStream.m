@@ -1,8 +1,10 @@
-function  [calibPassed,dbg] = runCalibStream(runParams,calibParams, fprintff)
+function  [calibPassed,score,dbg] = runCalibStream(runParams,calibParams, fprintff)
 
 
 t=tic;
-calibPassed = 0; dbg = [];
+score=0;
+
+dbg = [];
 if(ischar(runParams))
     runParams=xml2structWrapper(runParams);
 end

@@ -194,7 +194,9 @@ classdef HWinterface <handle
             obj.cmd(meta);
         end
         
-        
+        function k=getIntrinsics(obj)
+            k=reshape([typecast(obj.read('CBUFspare'),'single');1],3,3)';
+        end
         
         
         function write(obj,regName,regVal)
