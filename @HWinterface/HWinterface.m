@@ -314,6 +314,16 @@ classdef HWinterface <handle
             %             res = char(res.ResultFormatted);
         end
         
+        function tmptr=getTemperature(obj)
+            [~,val]=obj.cmd('irb e2 13 02');
+            tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
+
+        end
+        
+        
+        function readVersion(obj)
+            [~,v]=obj.cmd('rdcalibinfo 1');vec(dec2hex(fliplr(v(17:24)),2)')';
+        end
         function displayStream(obj)
             f=figure('numbertitle','off','menubar','none');
             t = timer;
