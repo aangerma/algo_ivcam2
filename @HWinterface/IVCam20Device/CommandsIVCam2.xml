@@ -129,7 +129,6 @@
       <Section Name="StructureVersion" Title="Structure version" Offset="2" Size="1" FormatType="DecByte" />
       <Section Name="ProductType" Title="Product type" Offset="3" Size="1" FormatType="productType" />
       <Section Name="ProductID" Title="Product ID" Offset="4" Size="1" FormatType="HexNumber" />
-      <Section Name="AdvancedModeEnabled" Title="Advanced Mode" Offset="5" Size="1" FormatType="Boolean" />
       <Section Name="FunctionalPayloadVersion" Title="FunctionalPayloadVersion" Offset="12" Size="4" FormatType="ChangeSetVersion" />
       <Section Name="EyeSafetyPayloadVersion" Title="EyeSafety payload version" Offset="16" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="DfuPayloadVersion" Title="DFU payload version" Offset="20" Size="2" FormatType="MajorMinorVersion" />
@@ -139,22 +138,12 @@
       <Section Name="StrapState" Title="Strap state" Offset="28" Size="4" FormatType="HexNumber" />
       <Section Name="OemId" Title="OEM ID" Offset="32" Size="4" FormatType="HexNumber" />
       <Section Name="ControlVendor" Title="Control vendor" Offset="36" Size="4" FormatType="HexNumber" />
-      <Section Name="MipiConfig" Title="MIPI config" Offset="40" Size="4" FormatType="HexNumber" />
-      <Section Name="MipiFrequencies" Title="MIPI Frequencies" Offset="44" Size="4" FormatType="HexNumber" />
-      <Section Name="OpticModuleSerial" Title="OpticModuleSerial" Offset="48" Size="6" FormatType="BarCodeSerial12Char" />
-      <Section Name="StereoModuleVersion" Title="Stereo module version" Offset="56" Size="1" FormatType="HexNumber" />
-      <Section Name="StereoModuleMm" Title="Stereo module mm#" Offset="60" Size="4" FormatType="HexNumber" />
-      <Section Name="AsicModuleSerial" Title="AsicModuleSerial" Offset="64" Size="6" FormatType="BarCodeSerial12Char" />
-      <Section Name="AsicModuleChipID" Title="Asic module chip ID" Offset="72" Size="6" FormatType="BarCodeSerial12Char" />
+      <Section Name="OpticalHeadModuleSN" Title="OpticModuleSerial" Offset="48" Size="8" FormatType="BarCodeSerial12Char" />
+      <Section Name="OpticalModuleVersion" Title="Stereo module version" Offset="56" Size="1" FormatType="HexNumber" />
+      <Section Name="AsicModuleSerial" Title="AsicModuleSerial" Offset="64" Size="8" FormatType="BarCodeSerial12Char" />
+      <Section Name="AsicModuleChipID" Title="Asic module chip ID" Offset="72" Size="8" FormatType="BarCodeSerial12Char" />
       <Section Name="AsicModuleVersion" Title="Asic module version" Offset="80" Size="1" FormatType="HexNumber" />
       <Section Name="AsicModuleMm" Title="Asic module mm#" Offset="84" Size="4" FormatType="HexNumber" />
-      <Section Name="LeftSensorID" Title="Left sensor ID" Offset="88" Size="2" FormatType="HexNumber" />
-      <Section Name="LeftSensorVersion" Title="Left sensor version" Offset="90" Size="1" FormatType="HexNumber" />
-      <Section Name="RightSensorID" Title="Right sensor ID" Offset="100" Size="2" FormatType="HexNumber" />
-      <Section Name="RightSensorVersion" Title="Right sensor version" Offset="102" Size="1" FormatType="HexNumber" />
-      <Section Name="FishEyeSensorID" Title="FishEye sensor ID" Offset="112" Size="2" FormatType="HexNumber" />
-      <Section Name="FishEyeSensorVersion" Title="FishEye sensor version" Offset="114" Size="1" FormatType="HexNumber" />
-      <Section Name="FishEyeSensorSN" Title="FishEye Sensor SN" Offset="116" Size="6" FormatType="BarCodeSerial12Char" />
       <Section Name="ImuModuleID" Title="Imu module ID" Offset="124" Size="2" FormatType="HexNumber" />
       <Section Name="ImuModuleVersion" Title="Imu module version" Offset="126" Size="1" FormatType="HexNumber" />
       <Section Name="ImuModuleSN" Title="Imu module SN" Offset="130" Size="6" FormatType="BarCodeSerial12Char" />
@@ -175,10 +164,8 @@
       <Section Name="EepromModuleInfoVersion" Title="EEPROM module info version" Offset="188" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="AsicModuleInfoTableVersion" Title="Asic module info table version" Offset="190" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="CalibrationTableVersion" Title="Calibration table version" Offset="192" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="CoefficientsVersion" Title="--&gt;Coefficients sub table version" Offset="194" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="DepthVersion" Title="--&gt;Depth sub table  version" Offset="196" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="RgbVersion" Title="--&gt;RGB sub table  version" Offset="198" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="FishEyeVersion" Title="--&gt;FishEye sub table version" Offset="200" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="ImuVersion" Title="--&gt;IMU sub table version" Offset="202" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="LensShadingVersion" Title="--&gt;Lens Shading sub table  version" Offset="204" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="ProjectorVersion" Title="--&gt;Projector sub table version" Offset="206" Size="2" FormatType="MajorMinorVersion" />
@@ -285,16 +272,11 @@
     <Parameter1 Name="opcode" />
     <Parameter2 Name="dataType" />
   </Command>
-  <Command Name="UAME" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2D" CmdPermission="Public" Description="USB Advanced Mode Enable">
-    <Parameter1 Name="Advanced Mode enable" />
-  </Command>
   <Command Name="TS_HEADER" Opcode="0x2E" Description="Set header timestamp">
     <Parameter1 Name="STC start count" />
   </Command>
   <Command Name="TS_UNITS" Opcode="0x2F" Description="Set timestamp unit">
     <Parameter1 Name="sclk units number ( must be &gt; 0 )" />
-  </Command>
-  <Command Name="UAMG" Opcode="0x30" IsReadCommand="true" Description="USB Advanced Mode Get">
   </Command>
   <Command Name="SETDEMOSAIC" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x31" CmdPermission="Public" Description="Update demosaic mode">
     <Parameter1 Name="0 - Demosaic off, 1 - Demosaic on" />
@@ -358,23 +340,63 @@
   <Command Name="EXEC_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x45" CmdPermission="Public" Description="Execute table">
     <Parameter1 Name="Table Id" />
   </Command>
+  <Command Name="THERMLOOPSTART" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x46" CmdPermission="Public" Description="Thermal loop start">
+  </Command>
+  <Command Name="THERMLOOPSTOP" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x47" CmdPermission="Public" Description="Thermal loop stop">
+  </Command>
+  <Command Name="THERMLOOPGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x49" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Thermal loop get parameters">
+	<Parameter1 Name="PZR" />
+  </Command>
+  <Command Name="THERMLOOPINDXSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x50" CmdPermission="Public" Description="Thermal loop updated parameter according to index">
+    <Parameter1 Name="PZR" />
+	<Parameter2 Name="Index" />
+	<Parameter3 Name="value" />
+  </Command>
   <Command Name="DIRTYBITBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x51" CmdPermission="Public" Description="Bypass eye safety dirty bit indication">
   </Command>
   <Command Name="DIRTYBITCLEAR" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x52" CmdPermission="Public" Description="Clear eye safety dirty bit indication (tester only)">
   </Command>
   <Command Name="DIRTYBITGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x53" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get eye safety dirty bit indication 2B_FLASH/ 2B_EEPROM">
   </Command>
+  <Command Name="HWASSERTSTIMERSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x54" CmdPermission="Public" Description="Set new HwAsserts time interval">
+    <Parameter1 Name="HwAsserts time interval ms" />
+  </Command>
+  <Command Name="PVTTIMERSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x55" CmdPermission="Public" Description="Set new PVT time interval">
+    <Parameter1 Name="PVT time interval ms" />
+  </Command>
+  <Command Name="GTI" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x56" I2cRegOffset="0x200" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="Get Table Info (Version and Size)">
+    <Parameter1 Name="Table ID (hex)" />  
+    <ReadData>
+      <Section Name="TableVersion" Title="Table Version" Offset="0" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="TableSize" Title="Table size" Offset="4" Size="4" FormatType="HexNumber" />
+    </ReadData>
+  </Command>
+  <Command Name="GET_FW_VERSIONS" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x57" I2cRegOffset="0x200" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="Get Fw payloads versions">
+    <ReadData>
+      <Section Name="TableVersion" Title="Table Version" Offset="0" Size="4" FormatType="ChangeSetVersion" />
+      <Section Name="EyeSafetyFwVersion" Title="EyeSafety Payload Version" Offset="4" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="DfuFwVersion" Title="DFU Payload Version" Offset="8" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="McFwVersion"  Title="MC Payload Version" Offset="12" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="SecuredCtrlFwVersion"  Title="Secured Controller Payload Version" Offset="16" Size="2" FormatType="MajorMinorVersion" />
+    </ReadData>
+  </Command>
+  <Command Name="THERMLOOPINDXGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x58" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Thermal loop read parameter according to index">
+    <Parameter1 Name="PZR" />
+	<Parameter2 Name="Index" />
+  </Command>
+  <Command Name="ALGO_THERMLOOP_EN" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x59" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Algo Thermal Loop enable">
+    <Parameter1 Name="Update Frequency (times per seconds, 0 for disable)" />
+  </Command>
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
   </Command>
   <Command Name="MCSTOP" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA2" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTOP">
   </Command>
-  <Command Name="MCCONFIG_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA3" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCCONFIG_SET">
+  <Command Name="MCCONFIG_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA3" CmdPermission="Public" IsReadCommand="false" Description="MCCONFIG_SET">
     <Data IsReverseBytes="false" FormatLength="8" />
   </Command>
   <Command Name="MCCONFIG_GET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA4" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCCONFIG_GET">
     <ReadData>
-      <Section Name="
-0_SRC_Type[0-Cv out 1- Rcmd]" Title="SRC Type" Offset="0" Size="1" FormatType="DecByte" />
+      <Section Name="0_SRC_Type[0-Cv out 1- Rcmd]" Title="SRC Type" Offset="0" Size="1" FormatType="DecByte" />
       <Section Name="1_Bypass_Flag[0-Off 1-Nldc 2-Sin]" Title="Bypass Flag" Offset="1" Size="1" FormatType="DecByte" />
       <Section Name="2_Filter_Flag[0-enable 1-overwrite 2-delay]" Title="Bypass Flag" Offset="2" Size="1" FormatType="DecByte" />
       <Section Name="3_Filter_Num0" Title="Filter Num0" Offset="4" Size="8" FormatType="Double" />
@@ -390,7 +412,8 @@
       <Section Name="13_SinW_Bias" Title="SinW Bias" Offset="84" Size="8" FormatType="Double" />
     </ReadData>
   </Command>
-  <Command Name="MCPARAM_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA5" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCPARAM_SET">
+  <Command Name="MCPARAM_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA5" CmdPermission="Public" IsReadCommand="false" Description="MCPARAM_SET">
+	<Parameter1 Name="Index" />
 	<Data IsReverseBytes="false" FormatLength="8" />
   </Command>
   <Command Name="MCGVD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA6" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCGVD">
