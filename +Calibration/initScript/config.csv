@@ -2,7 +2,7 @@ FRMWcoarseSampleRate h00000001
 GNRLimgHsize         d640     
 GNRLimgVsize         d480     
 DIGGnotchBypass      b1       
-DCORspare_000        f0.434193
+DCORspare_000        f-0.434193
 DCORspare_001        f-30.0   
 DESTconfactIn        h3FC00000
 DESTconfactOt        h000F0000
