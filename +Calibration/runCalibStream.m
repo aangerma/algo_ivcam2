@@ -413,25 +413,3 @@ raw=hw.getFrame(30);
 
 
 end
-
-function [failure, fixedDelay] = checkAndFixAbsDelay(hw,fprintff)
-    fixedDelay = 0;
-    failure = false;
-    frame = hw.getFrame;
-    CC = bwconncomp(frame.i>0);
-    nValidPixels = numel(CC.PixelIdxList{1});
-    if nValidPixels < 0.7*numel(frame.i)
-        fixedDelay = 52000;
-        Calibration.dataDelay.setAbsDelay(hw,fixedDelay,false);
-        hw.shadowUpdate();
-        fprintff('\nCan''t work with startup image, trying different initial delay(52000)...');
-        frame = hw.getFrame;
-        CC = bwconncomp(frame.i>0);
-        nValidPixels = numel(CC.PixelIdxList{1});
-        if nValidPixels < 0.7*numel(frame.i)
-            fprintff('New delay didn''t fix the issue. Terminating Calibration.\n');
-            failure = true;
-            fixedDelay = 0;
-        end
-    end
-end
