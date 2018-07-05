@@ -21,7 +21,7 @@ function writeFirmwareFiles(obj,outputFldr)
     writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']),1,510);
     
     d=obj.getAddrData(calibR_regs2write);
-    writeMWD(d,fullfile(outputFldr,filesep,['Reserved_512_Calibration_%d_CalibData_Ver_' filepostfix 'txt']),2,62);
+    writeMWD(d,fullfile(outputFldr,filesep,['Reserved_512_Calibration_%d_CalibData' filepostfix 'txt']),2,62);
     
     
     undistfns=writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' filepostfix 'bin']),true);
