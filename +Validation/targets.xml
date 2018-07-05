@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+   <target1>
+      <target>minRange</target>
+      <imgFile>calibrationChart.png</imgFile>
+      <title>Place the wall target with 80% reflectivity at 20cm</title>
+   </target1>
+   <target2>
+      <target>maxRange</target>
+      <imgFile>calibrationChart.png</imgFile>
+      <title>Place the wall target with 80% reflectivity at 7m</title>
+   </target2>
+   <target3>
+      <target>range1000</target>
+      <imgFile>calibrationChart.png</imgFile>
+      <title>Place the wall target with 10% reflectivity at 1.0m</title>
+   </target3>
+   <target4>
+      <target>range1800</target>
+      <imgFile>calibrationChart.png</imgFile>
+      <title>Place the wall target with 10% reflectivity at 1.8m</title>
+   </target4>
+</struct>
