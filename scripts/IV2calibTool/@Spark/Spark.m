@@ -24,7 +24,7 @@ classdef Spark<handle
                 outputFolder='c:\temp';
             end
             obj.m_outputFolder=outputFolder;
-            mkdirSafe(obj.m_outputFolder);
+            
             
             p = fullfile(fileparts(mfilename('fullpath')),filesep);
             dnet = dirFiles(p,'*.dll',false);
@@ -38,7 +38,12 @@ classdef Spark<handle
             
         end
         
+        function setOutputFolder(obj,fldr)
+            obj.m_outputFolder=fldr;
+        end
+        
         function delete(obj)
+            mkdirSafe(obj.m_outputFolder);
             obj.m_gen.EndSession(obj.m_outputFolder);
         end
         

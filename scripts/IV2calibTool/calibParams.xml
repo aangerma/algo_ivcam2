@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
+    <sparkOutputFolder>c:\temp</sparkOutputFolder>
    <errRange>
       <delayF>[0 1]</delayF>
       <delayS>[0 1]</delayS>

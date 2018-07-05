@@ -138,7 +138,7 @@ classdef IV2calibTool < matlab.apps.AppBase
             params.version=calibToolVersion();
             
             s=Spark('Algo','AlgoCalibration');
-            s.addTestProperty('ClibVersion',calibToolVersion)
+            s.addTestProperty('CalibVersion',calibToolVersion)
             s.startDUTsession('UnitSerialGoesHere');
             
             %%
@@ -153,6 +153,7 @@ classdef IV2calibTool < matlab.apps.AppBase
                 calibfn =  fullfile(pwd,'calibParams.xml');
                 if exist(calibfn, 'file') == 2
                     calibParams = xml2structWrapper(calibfn);
+                    s.setOutputFolder(calibParams.sparkOutputFolder);
                 else
                     calibParams = [];
                 end
