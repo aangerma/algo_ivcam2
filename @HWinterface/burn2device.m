@@ -18,6 +18,8 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
     filenamesTableIndexLUT={};
     if(burnCalib)
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibData' ,'Algo_Pipe_Calibration_VGA_CalibData_Ver_*.txt'          ,'0a0'};
+        filenamesTableIndexLUT(end+1,:)={ 'WrCalibData' ,'Reserved_512_Calibration_1_CalibData_Ver_*.txt'         ,'0a1'};
+        filenamesTableIndexLUT(end+1,:)={ 'WrCalibData' ,'Reserved_512_Calibration_2_CalibData_Ver_*.txt'         ,'0a2'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Gamma_Info_CalibInfo_Ver_*.bin'                    ,'030'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_1_CalibInfo_Ver_*.bin'                 ,'040'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_2_CalibInfo_Ver_*.bin'                 ,'041'};
