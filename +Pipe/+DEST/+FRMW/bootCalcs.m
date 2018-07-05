@@ -31,7 +31,7 @@ speedOfLightMMnsec = 299702547*1000/1e9;
 %     autogenRegs.DEST.txPWRpd=autogenRegs.DEST.txPWRpd/2^10;
 %     autogenRegs.DEST.rxPWRpd=autogenRegs.DEST.rxPWRpd/2^10;
     
-autogenRegs.DEST.txPWRpd=zeros(1,65,'single')/2^10; %set by firmware in runtime from laser power
+% % % autogenRegs.DEST.txPWRpd=zeros(1,65,'single')/2^10; %set by firmware in runtime from laser power
 %------------sampleDist-----------------%    
  % This should give us the length in mm per sample time, i.e.: the distance travled by light between two samples.
  hfClk = regs.FRMW.pllClock/4;

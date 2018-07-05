@@ -273,6 +273,12 @@ else
 %     results.maxPixelDisplacement=inf;
 end
 
+%%apply txLUT
+fprintff('generating TX power LUT table...');
+txLUTregs=genTXlut(hw);
+fw.setRegs(txLUTregs,fnCalib);
+fprintff('done\n');
+
 %% write version+intrinsics
 
 intregs.DIGG.spare=zeros(1,8,'uint32');

@@ -1,6 +1,7 @@
 function writeFirmwareFiles(obj,outputFldr)
     
     CALIB_GROUP_KEY='0';
+    CALIBR_GROUP_KEY='R';
     CONFIG_GROUP_KEY='1';
     mkdirSafe(outputFldr);
     regs=obj.get();%force autogen
@@ -13,10 +14,15 @@ function writeFirmwareFiles(obj,outputFldr)
     
     %-------------------CALIBRATION-------------------
     calib_regs2write=cell2str({m([m.group]==CALIB_GROUP_KEY).regName},'|');
+    calibR_regs2write=cell2str({m([m.group]==CALIBR_GROUP_KEY).regName},'|');
     %
     d=obj.getAddrData(calib_regs2write);
     assert(length(d)<=62,'Max lines in calibration file is limited to 62 due to eprom memmory limitation');
-    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']),1);
+    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' filepostfix 'txt']),1,510);
+    
+    d=obj.getAddrData(calibR_regs2write);
+    writeMWD(d,fullfile(outputFldr,filesep,['Reserved_512_Calibration_%d_CalibData_Ver_' filepostfix 'txt']),2,62);
+    
     
     undistfns=writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' filepostfix 'bin']),true);
     
@@ -32,7 +38,7 @@ function writeFirmwareFiles(obj,outputFldr)
     
     config_regs2write=cell2str({m([m.group]==CONFIG_GROUP_KEY).regName},'|');
     
-    writeMWD(obj.getAddrData(config_regs2write),fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' filepostfix 'txt']),3);
+    writeMWD(obj.getAddrData(config_regs2write),fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' filepostfix 'txt']),3,510);
     
     writeLUTbin(obj.getAddrData('DCORtmpltCrse'),fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' filepostfix 'bin']));
     
@@ -84,9 +90,10 @@ function fns=writeLUTbin(d,fn,oneBaseCount)
     
 end
 
-function writeMWD(d,fn,nMax)
+function writeMWD(d,fn,nMax,PL_SZ)
     
-    PL_SZ=510;
+    
+
     
     n = ceil(size(d,1)/PL_SZ);
     if(n>nMax)
