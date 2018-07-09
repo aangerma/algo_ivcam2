@@ -20,4 +20,9 @@
       <imgFile>calibrationChart.png</imgFile>
       <title>Place the wall target with 10% reflectivity at 1.8m</title>
    </target4>
+   <target5>
+      <target>interDist7x7x50</target>
+      <imgFile>checkerboard42x42.png</imgFile>
+      <title>Place the 7x7 checkerboard with 50mm squares at any distance at any angle</title>
+   </target5>
 </struct>

@@ -1,25 +1,25 @@
-function  [valPassed, dbg] = runValidation(runParams, valParams, fprintff)
+function  [valPassed, dbg] = runValidation(valConfig, fprintff)
 
 
 t=tic;
 valPassed = 0; dbg = [];
-if(ischar(runParams))
-    runParams=xml2structWrapper(runParams);
+if(ischar(valConfig))
+    valConfig=xml2structWrapper(valConfig);
 end
 
 if(~exist('valParams','var') || isempty(valParams))
     %% ::load default configuration
-    valParams = xml2structWrapper('valParams.xml');
+    valConfig = xml2structWrapper('valConfig.xml');
 end
 
 if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 
-verbose = runParams.verbose;
-if(exist(runParams.outputFolder,'dir'))
-    if(~isempty(dirFiles(runParams.outputFolder,'*.bin')))
-        fprintff('[x] Error! directory %s is not empty\n',runParams.outputFolder);
+verbose = valConfig.verbose;
+if(exist(valConfig.outputFolder,'dir'))
+    if(~isempty(dirFiles(valConfig.outputFolder,'*.bin')))
+        fprintff('[x] Error! directory %s is not empty\n',valConfig.outputFolder);
         valPassed = 0;
         return;
     end
@@ -45,12 +45,35 @@ for i=1:length(testTargets)
     targetFrames{i} = Validation.showImageRequest(hw, targets(iTarget));
 end
 
+%% read camera config
+if (~isempty(hw))
+    cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
+else
+    cameraConfig.K = diag([1 1 1]);
+end
+
+
 %% run tests
 for i=1:length(tests)
     iTarget = find(strcmp(testTargets, tests{i}.target),1);
-    runTest(tests{i}.metrics, targetFrames{iTarget});
+    runTest(tests{i}.metrics, targetFrames{iTarget}, valConfig, cameraConfig);
 end
 
 results = struct;
+
+end
+
+function [score, res] = runTest(metrics, frames, valConfig, cameraConfig)
+
+switch metrics
+    case 'fillRate'
+        [score, res] = Validation.metrics.fillRate(frames);
+    case 'interDist7x7x50'
+        params.squareSize = 50;
+        params.K = cameraConfig.K;
+        [score, res] = Validation.metrics.fillRate(frames, params);
+    otherwise
+        error('Validation:runValidation', 'unknown metrics ''%s\''', metrics);
+end
 
 end
