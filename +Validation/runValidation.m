@@ -3,26 +3,28 @@ function  [valPassed, dbg] = runValidation(valConfig, fprintff)
 
 t=tic;
 valPassed = 0; dbg = [];
-if(ischar(valConfig))
-    valConfig=xml2structWrapper(valConfig);
-end
 
-if(~exist('valParams','var') || isempty(valParams))
+if (~exist('valConfig','var') || isempty(valConfig))
     %% ::load default configuration
-    valConfig = xml2structWrapper('valConfig.xml');
-end
-
-if(~exist('fprintff','var'))
-    fprintff=@(varargin) fprintf(varargin{:});
+    fnValConfig = fullfile(fileparts(mfilename('fullpath')),filesep,'valConfig.xml');
+    if (exist(fnValConfig,'file'))
+        valConfig = xml2structWrapper(fnValConfig);
+    else
+        valConfig.verbose = true;
+        valConfig.outputFolder = 'c:\temp\valTest';
+        valConfig.internalFolder = 'internal';
+        valConfig.saveTargets = true;
+    end
 end
 
 verbose = valConfig.verbose;
-if(exist(valConfig.outputFolder,'dir'))
-    if(~isempty(dirFiles(valConfig.outputFolder,'*.bin')))
-        fprintff('[x] Error! directory %s is not empty\n',valConfig.outputFolder);
-        valPassed = 0;
-        return;
-    end
+
+mkdirSafe(valConfig.outputFolder);
+dirInternal = fullfile(valConfig.outputFolder, valConfig.internalFolder);
+mkdirSafe(dirInternal);
+
+if(~exist('fprintff','var'))
+    fprintff=@(varargin) fprintf(varargin{:});
 end
 
 targets = cell2mat(struct2cell(xml2structWrapper('targets.xml')));
@@ -36,13 +38,28 @@ end
 
 %% find all the targets needed for the tests
 tests = (struct2cell(xml2structWrapper('tests.xml')));
+% skip first struct
+tests = tests(2:end);
 testTargets = unique(cellfun(@(t)(str2mat(t.target)),tests,'UniformOutput',false));
+
+%% init camera
+%hw = HWinterface;
+hw = [];
 
 %% capture frames
 targetFrames = cell(length(testTargets),1);
 for i=1:length(testTargets)
     iTarget = find(strcmp({targets.target}, testTargets{i}),1);
-    targetFrames{i} = Validation.showImageRequest(hw, targets(iTarget));
+    t = targets(iTarget);
+    fnTarget = fullfile(dirInternal, [t.target '.mat']);
+    if (exist(fnTarget,'file'))
+        targetFrames{i} = load(fnTarget);
+    else
+        frames = Validation.showImageRequest(hw, t);
+        save(fnTarget, 'frames');
+        targetFrames{i} = frames;
+    end
+        
 end
 
 %% read camera config

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tests>
+	<config>
+		<nameFormat>x_x_x_x</nameFormat>
+		<saveLocation>"c:\temp\valTest"</saveLocation>
+	</config>
    <test1>
       <target>minRange</target>
       <metrics>zAccuracy</metrics>
@@ -19,15 +23,21 @@
       <errorUnits>%</errorUnits>
    </test3>
    <test4>
-      <target>range1000</target>
+      <target>wall_1000_80_VGA30</target>
       <metrics>zAccuracy</metrics>
       <error>[1 100]</error>
       <errorUnits>mm</errorUnits>
    </test4>
    <test5>
-      <target>range1000</target>
+      <target>wall_1000_80_VGA30</target>
       <metrics>tempNoise</metrics>
       <error>[1 10]</error>
       <errorUnits>%</errorUnits>
    </test5>
+   <test6>
+      <target>wall_1000_80_VGA30</target>
+      <metrics>fillRate</metrics>
+      <error>[1 10]</error>
+      <errorUnits>%</errorUnits>
+   </test6>
 </tests>
