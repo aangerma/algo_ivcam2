@@ -3,28 +3,30 @@ function [score, results] = fillRate(frames, params)
 % frames 1xN struct array with fields: z, i, c
 %   - z, i, c images e.g. 480x640
 % params : struct
-%   - roi - regions of interest
-%   - K - intrinsic matrix
+%   - roi - regions of interest, percentage [0..1] or [left top width height]
 
-sz = size(frames(1).z);
 
-if (~exist('params','var') || ~isfield(params, 'roi'))
-    % 80 percent
-    roi = [sz(2)*0.1+1 sz(1)*0.1+1 sz(2)*0.8 sz(1)*0.8];
-else
-    roi = params.roi;
+imgSize = size(frames(1).z);
+
+if ~exist('params','var')
+    params = struct;
 end
 
-sz = size(frames(1).z);
+mask = Validation.aux.getRoiCircle(imgSize, params);
 
-roiV = round(roi(2)):round(roi(2)+roi(4)-1);
-roiH = round(roi(1)):round(roi(1)+roi(3)-1);
+n = length(frames);
 
-img = frames(1).z(roiV, roiH);
+fillRate = zeros(1,n); 
+for i = 1:n
+   img = frames(i).z(mask);
+   fillRate(i) = sum(img(:)~=0) / numel(img);
+end
 
-score = sum(img(:)~=0) / numel(img);
+results.frameFillRate = fillRate(1);
+results.meanFillRate = mean(fillRate);
+results.stdFillRate = std(fillRate);
 
-results.fillRate = score;
-
+score = results.frameFillRate;
+results.score = 'frameFillRate';
 end
 

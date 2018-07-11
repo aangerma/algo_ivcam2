@@ -3,7 +3,7 @@ function  [valPassed, dbg] = runValidation(valConfig, fprintff)
 
 t=tic;
 valPassed = 0; dbg = [];
-
+%% init
 if (~exist('valConfig','var') || isempty(valConfig))
     %% ::load default configuration
     fnValConfig = fullfile(fileparts(mfilename('fullpath')),filesep,'valConfig.xml');
@@ -27,6 +27,7 @@ if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 
+%% define targets
 targets = cell2mat(struct2cell(xml2structWrapper('targets.xml')));
 targetPath = fullfile(fileparts(mfilename('fullpath')),filesep,'targets',filesep);
 for i=1:length(targets)
@@ -63,12 +64,18 @@ for i=1:length(testTargets)
 end
 
 %% read camera config
-if (~isempty(hw))
-    cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
-else
-    cameraConfig.K = diag([1 1 1]);
-end
 
+fnCameraConfig = fullfile(dirInternal, ['cameraConfig.mat']);
+if (exist(fnCameraConfig,'file'))
+    cameraConfig = load(fnCameraConfig);
+else
+    if (~isempty(hw))
+        cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
+    else
+        cameraConfig.K = diag([1 1 1]);
+    end
+    save(fnCameraConfig, 'cameraConfig');
+end
 
 %% run tests
 for i=1:length(tests)

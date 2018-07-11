@@ -1,7 +1,7 @@
 function frames = showImageRequest(hw, target, nFrames)
 
 if (~exist('nFrames','var'))
-    nFrames = 30;
+    nFrames = 100;
 end
 
 f=figure('NumberTitle','off', 'WindowState', 'maximized', 'ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
@@ -19,7 +19,7 @@ It = (It.*permute([0 1 0],[3 1 2]));
 while(ishandle(f) && get(f,'userdata')==0)
     
     if (~isempty(hw))
-        ir = hw.getFrame();
+        ir = double(hw.getFrame().i);
     else
         ir = zeros(480, 640);
     end
@@ -34,7 +34,7 @@ close(f);
 
 if (~isempty(hw))
     for i = 1:nFrames
-        frames(i) = hw.getFrame(30);
+        frames(i) = hw.getFrame();
     end
 else
     for i = 1:nFrames
