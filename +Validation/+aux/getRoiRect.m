@@ -1,10 +1,6 @@
 function [mask] = getRoiRect(imgSize, params)
 
-if (~exist('params','var') || ~isfield(params, 'roi'))
-    roi = 0.8;
-else
-    roi = params.roi;
-end
+roi = params.roi;
 
 if (length(roi) == 1)
     roiMargin = (1 - roi) / 2;

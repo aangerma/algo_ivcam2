@@ -10,7 +10,7 @@ zMaxSubMM = 8;
 imgSize = size(frames(1).z);
 
 if ~exist('params','var')
-    params = struct;
+    params = Validation.aux.defaultMetricsParams();
 end
 
 mask = Validation.aux.getRoiMask(imgSize, params);
@@ -19,10 +19,6 @@ n = length(frames);
 
 Z = cat(3, frames.z);
 noiseStd = nanstd(double(Z)/zMaxSubMM, 0, 3);
-
-%Z = reshape(cat(3, frames.z), imgSize(1)*imgSize(2),[]);
-%Z = double(Z(find(mask), :)) / zMaxSubMM;
-%noiseStd = nanstd(Z, 0, 2);
 
 results.meanTempNoise = nanmean(noiseStd(mask));
 results.maxTempNoise = nanmax(noiseStd(mask));

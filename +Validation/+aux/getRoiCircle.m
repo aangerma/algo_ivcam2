@@ -1,10 +1,6 @@
 function [mask] = getRoiCircle(imgSize, params)
 
-if (~exist('params','var') || ~isfield(params, 'roi'))
-    roi = 0.8;
-else
-    roi = params.roi;
-end
+roi = params.roi;
 
 [Y, X] = ndgrid(1:imgSize(1),1:imgSize(2));
 Y = Y - imgSize(1)/2 - 0.5;
