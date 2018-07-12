@@ -25,10 +25,9 @@ for i = 1:n
     Z = frames(i).z;
 
     v = Validation.aux.imgToVertices(Z, params.K, mask);
-    zMask = and(v(:,3) ~= 0, ~isnan(v(:,3)));
-    x = v(zMask,1);
-    y = v(zMask,2);
-    z = v(zMask,3);
+    x = v(:,1);
+    y = v(:,2);
+    z = v(:,3);
     
     % plane fit
     A = [x y ones(length(x),1)];
