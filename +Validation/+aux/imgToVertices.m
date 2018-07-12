@@ -12,14 +12,14 @@ zImg = double(zImg)/double(zMaxSubMM);
 [v,u]=ndgrid(0:sz(1)-1,0:sz(2)-1);
 
 if (exist('mask', 'var'))
-    z = zImg(mask);
-    u = u(mask);
-    v = v(mask);
+    mask = and(mask, zImg ~= 0);
 else
-    z = zImg(:);
-    u = u(:);
-    v = v(:);
+    mask = (zImg ~= 0);
 end
+
+z = zImg(mask);
+u = u(mask);
+v = v(mask);
 
 matKi=double(matK)^-1;
 tt = z'.*[u';v';ones(1,numel(v))];
