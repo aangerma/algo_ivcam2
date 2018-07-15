@@ -1,103 +1,150 @@
-function  [valPassed, dbg] = runValidation(valConfig, fprintff)
+function  out = runValidation(testNames, varargin)
+    % testName: string array of test names, if empty test will fail
+    % Run validation tests
+    % config:
+    %  sourceFilesPath: string
+    %  verbose: bool
+    %  outputFolder: string
+    %  picturesFolder: string
 
+    % set config params
+    p = inputParser;
+    addRequired(p, 'testNames', @(x) ~isempty(x))
+    addParameter(p, 'config', struct())
+    parse(p, testNames, varargin{:})
+    config = checkConfig(p.Results.config);
 
-t=tic;
-valPassed = 0; dbg = [];
-%% init
-if (~exist('valConfig','var') || isempty(valConfig))
-    %% ::load default configuration
-    fnValConfig = fullfile(fileparts(mfilename('fullpath')),filesep,'valConfig.xml');
-    if (exist(fnValConfig,'file'))
-        valConfig = xml2structWrapper(fnValConfig);
-    else
-        valConfig.verbose = true;
-        valConfig.outputFolder = 'c:\temp\valTest';
-        valConfig.internalFolder = 'internal';
-        valConfig.saveTargets = true;
+    if ~exist('testNames','var') || isempty(testNames)
+        ME = MException('Validation:testsName', 'No tests where specified');
+        throw(ME);
+    end
+
+    dataFullPath = createOutFolder(config);
+
+    % get test list
+    testList = getTestList(config.testFilePath,testNames);
+
+    % prepare target list
+    requierdTargets = {testList.target};
+    testTargets = getTargets(config.fullTargetListPath, requierdTargets, config.targetFilesPath );
+
+    % get pictures
+    [testTargets, cameraConfig] = captureFrames(config.dataSource, testTargets, dataFullPath);
+
+    % run tests
+    for iTest=1:length(testList)
+        iTarget = testTargets(strcmp({testTargets.target}, testList(iTest).target));
+        [~,out.(testList(iTest).name)] = runTest(testList(iTest).metrics, iTarget, cameraConfig);
+    end
+    
+    testOut = fieldnames(out)
+    for i=1:length(testOut)
+        out.(cell2str(testOut(1)))
+    end
+ end
+
+function [score, res] = runTest(metrics, target, cameraConfig)
+    params = Validation.aux.defaultMetricsParams;
+    params.cameraConfig = cameraConfig;
+    params.targetConfig=target.params;
+    met = @(m,t,p) Validation.metrics.(m)(t.frames, p);
+    [score, res] = met(metrics,target,params);
+end
+
+function [config] = checkConfig(config)
+    if ~isstruct(config)
+        config=struct();
+    end
+    if ~isfield(config, 'outputFolder')
+        config.outputFolder = 'c:\temp\valTest';
+    end
+    if ~isfield(config, 'dataFolder')
+        config.dataFolder = 'data';
+    end
+    if ~isfield(config, 'dataSource')
+        config.dataSource = 'HW';
+    end
+    if ~isfield(config, 'testFilePath')
+        config.testFilePath = fullfile(fileparts(mfilename('fullpath')), 'tests.xml');
+    end
+    if ~isfield(config, 'fullTargetListPath')
+        config.fullTargetListPath = fullfile(fileparts(mfilename('fullpath')), 'targets.xml');
+    end
+    if ~isfield(config, 'targetFilesPath')
+        config.targetFilesPath = fullfile(fileparts(mfilename('fullpath')), 'targets', filesep);
     end
 end
 
-verbose = valConfig.verbose;
-
-mkdirSafe(valConfig.outputFolder);
-dirInternal = fullfile(valConfig.outputFolder, valConfig.internalFolder);
-mkdirSafe(dirInternal);
-
-if(~exist('fprintff','var'))
-    fprintff=@(varargin) fprintf(varargin{:});
+function dataFullPath = createOutFolder(config)
+    mkdirSafe(config.outputFolder);
+    dataFullPath = fullfile(config.outputFolder, config.dataFolder);
+    mkdirSafe(dataFullPath);
 end
 
-%% define targets
-targets = cell2mat(struct2cell(xml2structWrapper('targets.xml')));
-targetPath = fullfile(fileparts(mfilename('fullpath')),filesep,'targets',filesep);
-for i=1:length(targets)
-    targets(i).img = imread([targetPath targets(i).imgFile]);
-    if ~isfield(targets(i), 'tForm') || isempty(targets(i).tForm)
-        targets(i).tForm = diag([.7 .7 1]);
+function testList = getTestList(testFilePath,testNames)
+    fullTestList = xml2structWrapper(testFilePath);
+    removeTests = rmfield(fullTestList,testNames);
+    testList = rmfield(fullTestList, fields(removeTests));
+    testList = cellfun(@(c)(setfield(testList.(c),'name',c)), fieldnames(testList),'uni', false);
+    if length(testList)~=length(testNames)
+        ME = MException('Validation:getTestList', sprintf('number of tests after filter (%d) dosent mach requested tests (%d)',length(testList),length(testNames)));
+        throw(ME)
+    end
+    testList = cell2mat(testList);
+end
+
+function testTargets = getTargets(fullTargetListPath, requierdTargets,targetFilesPath )
+    fullTargetsList = xml2structWrapper(fullTargetListPath);
+    removeTargets = rmfield(fullTargetsList,requierdTargets);
+    testTargets = rmfield(fullTargetsList, fields(removeTargets));
+    testTargets = cell2mat(struct2cell(testTargets));
+    
+    for i=1:length(testTargets)
+        testTargets(i).img = imread([targetFilesPath testTargets(i).imgFile]);
+        if ~isfield(testTargets(i), 'tForm') || isempty(testTargets(i).tForm)
+            testTargets(i).tForm = diag([.7 .7 1]);
+        end
     end
 end
 
-%% find all the targets needed for the tests
-tests = (struct2cell(xml2structWrapper('tests.xml')));
-% skip first struct
-tests = tests(2:end);
-testTargets = unique(cellfun(@(t)(str2mat(t.target)),tests,'UniformOutput',false));
-
-%% init camera
-%hw = HWinterface;
-hw = [];
-
-%% capture frames
-targetFrames = cell(length(testTargets),1);
-for i=1:length(testTargets)
-    iTarget = find(strcmp({targets.target}, testTargets{i}),1);
-    t = targets(iTarget);
-    fnTarget = fullfile(dirInternal, [t.target '.mat']);
-    if (exist(fnTarget,'file'))
-        targetFrames{i} = load(fnTarget);
-    else
-        frames = Validation.showImageRequest(hw, t);
-        save(fnTarget, 'frames');
-        targetFrames{i} = frames;
+function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dataFullPath);
+    % camera config    
+    fnCameraConfig = fullfile(dataFullPath, ['cameraConfig.mat']);
+    switch dataSource
+        case 'HW'
+            hw = HWinterface;
+            cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
+            save(fnCameraConfig, 'cameraConfig');
+        case 'file'
+            if ~exist(fnCameraConfig, 'file')
+                ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', fnCameraConfig));
+                throw(ME)
+            else
+                cameraConfig = load(fnCameraConfig);
+            end
+        otherwise
+            ME = MException('Validation:captureFramse', sprintf('%s option not supported', dataSource));
+            throw(ME)
     end
-        
-end
-
-%% read camera config
-
-fnCameraConfig = fullfile(dirInternal, ['cameraConfig.mat']);
-if (exist(fnCameraConfig,'file'))
-    cameraConfig = load(fnCameraConfig);
-else
-    if (~isempty(hw))
-        cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
-    else
-        cameraConfig.K = diag([1 1 1]);
+    
+    % capture frames
+    for i=1:length(testTargets)
+        fnTarget = fullfile(dataFullPath, [testTargets(i).target, '.mat']);
+        switch dataSource
+            case 'file'
+                if ~exist(fnTarget,'file')
+                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', fnTarget));
+                    throw(ME)
+                end
+                imgFrames = load(fnTarget);
+                testTargets(i).frames = imgFrames.frames;
+            case 'HW'
+                frames = Validation.showImageRequest(hw, testTargets(i));
+                save(fnTarget, 'frames');
+                testTargets(i).frames = frames;
+            case 'PG'
+                ME = MException('Validation:captureFramse:PG', sprintf('%s option not supported', dataSource));
+                throw(ME)
+        end
     end
-    save(fnCameraConfig, 'cameraConfig');
-end
-
-%% run tests
-for i=1:length(tests)
-    iTarget = find(strcmp(testTargets, tests{i}.target),1);
-    runTest(tests{i}.metrics, targetFrames{iTarget}, valConfig, cameraConfig);
-end
-
-results = struct;
-
-end
-
-function [score, res] = runTest(metrics, frames, valConfig, cameraConfig)
-
-switch metrics
-    case 'fillRate'
-        [score, res] = Validation.metrics.fillRate(frames);
-    case 'interDist7x7x50'
-        params.squareSize = 50;
-        params.K = cameraConfig.K;
-        [score, res] = Validation.metrics.fillRate(frames, params);
-    otherwise
-        error('Validation:runValidation', 'unknown metrics ''%s\''', metrics);
-end
-
 end

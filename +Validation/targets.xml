@@ -1,28 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <target1>
+   <minRange>
       <target>minRange</target>
       <imgFile>calibrationChart.png</imgFile>
+	  <params></params>
       <title>Place the wall target with 80% reflectivity at 20cm</title>
-   </target1>
-   <target2>
+   </minRange>
+   <maxRange>
       <target>maxRange</target>
       <imgFile>calibrationChart.png</imgFile>
+	  <params></params>
       <title>Place the wall target with 80% reflectivity at 7m</title>
-   </target2>
-   <target3>
+   </maxRange>
+   <wall_1000_80_VGA30>
       <target>wall_1000_80_VGA30</target>
       <imgFile>calibrationChart.png</imgFile>
+	  <params></params>
       <title>Place the wall target with 10% reflectivity at 1.0m</title>
-   </target3>
-   <target4>
+   </wall_1000_80_VGA30>
+   <range1800>
       <target>range1800</target>
       <imgFile>calibrationChart.png</imgFile>
+	  <params></params>
       <title>Place the wall target with 10% reflectivity at 1.8m</title>
-   </target4>
-   <target5>
+   </range1800>
+   <interDist7x7x50>
       <target>interDist7x7x50</target>
       <imgFile>checkerboard42x42.png</imgFile>
+	  <params>
+			  <squareSize>50</squareSize>
+	  </params>
       <title>Place the 7x7 checkerboard with 50mm squares at any distance at any angle</title>
-   </target5>
+   </interDist7x7x50>
 </struct>

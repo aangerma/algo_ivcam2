@@ -13,7 +13,7 @@ if (~exist('verbose','var'))
 end
 
 
-f=figure('NumberTitle','off', 'WindowState', 'maximized', 'ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
+f=figure('NumberTitle','off', 'ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
 a=axes('parent',f);
 maximizeFig(f);
 I = mean(target.img, 3);
@@ -32,7 +32,7 @@ while(ishandle(f) && get(f,'userdata')==0)
     else
         ir = zeros(480, 640);
     end
-    image((repmat(rot90(ir,2)*.8,1,1,3)+It*.25));
+    image(uint8(repmat(rot90(ir,2)*.8,1,1,3)+It*.25));
     axis(a,'image');
     axis(a,'off');
     title(target.title);
