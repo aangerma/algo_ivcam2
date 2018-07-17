@@ -45,6 +45,7 @@ results.maxPlaneFitDist = mean(maxPlaneFitDist);
 
 score = results.rmsPlaneFitDist;
 results.score = 'rmsPlaneFitDist';
+results.error = false;
 
 end
 

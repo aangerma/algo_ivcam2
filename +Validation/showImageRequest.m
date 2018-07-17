@@ -1,8 +1,13 @@
-function frames = showImageRequest(hw, target, nFrames)
+function frames = showImageRequest(hw, target, nFrames, delay)
 
 if (~exist('nFrames','var'))
     nFrames = 100;
 end
+
+if (~exist('delay','var'))
+    delay = 0;
+end
+
 
 f=figure('NumberTitle','off', 'WindowState', 'maximized', 'ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
 a=axes('parent',f);
@@ -35,6 +40,9 @@ close(f);
 if (~isempty(hw))
     for i = 1:nFrames
         frames(i) = hw.getFrame();
+        if (delay ~= 0)
+            pause(delay);
+        end
     end
 else
     for i = 1:nFrames

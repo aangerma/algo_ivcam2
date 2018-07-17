@@ -25,6 +25,7 @@ results.maxTempNoise = nanmax(noiseStd(mask));
 
 score = results.meanTempNoise;
 results.score = 'meanTempNoise';
+results.error = false;
 
 end
 
