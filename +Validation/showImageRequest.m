@@ -1,4 +1,4 @@
-function frames = showImageRequest(hw, target, nFrames, delay)
+function frames = showImageRequest(hw, target, nFrames, delay, verbose)
 
 if (~exist('nFrames','var'))
     nFrames = 100;
@@ -6,6 +6,10 @@ end
 
 if (~exist('delay','var'))
     delay = 0;
+end
+
+if (~exist('verbose','var'))
+    verbose = false;
 end
 
 
@@ -42,6 +46,9 @@ if (~isempty(hw))
         frames(i) = hw.getFrame();
         if (delay ~= 0)
             pause(delay);
+        end
+        if (verbose)
+            figure(171); imagesc(frames(i).i); title(sprintf('frame %g of %g', i, nFrames)); 
         end
     end
 else

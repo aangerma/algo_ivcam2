@@ -45,7 +45,7 @@ for i = 1:n
     
     if (isempty(gridPoints) || ~isequal(gsz, gridSize))
         if (params.verbose)
-            warning('los: grid does not match the first detected grid');
+            warning('los: grid %g does not match the first detected grid', i);
             close(fig);
         end
         score = nan;
@@ -73,6 +73,9 @@ results.meanStdY = mean(pStd(:,2));
 
 driftX = sum(diff(squeeze(points(:,1,:)), 1, 2),2);
 driftY = sum(diff(squeeze(points(:,2,:)), 1, 2),2);
+
+absDriftX = sum(abs(diff(squeeze(points(:,1,:)), 1, 2)),2);
+absDriftY = sum(abs(diff(squeeze(points(:,2,:)), 1, 2)),2);
 
 results.driftX = mean(driftX);
 results.driftY = mean(driftY);
