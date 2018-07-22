@@ -1,28 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
+	<wall_20_80>
+		<target>wall_20_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 20cm</title>
+	</wall_20_80>
+	<wall_100_80>
+		<target>wall_100_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 1m</title>
+	</wall_100_80>
+	<wall_400_80>
+		<target>wall_400_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 4m</title>
+	</wall_400_80>
+	<wall_700_80>
+		<target>wall_700_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 7m</title>
+	</wall_700_80>
+	<wall_250_10>
+		<target>wall_250_10</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 10% reflectivity at 250m</title>
+	</wall_250_10>
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   <wall_20>
+      <target>wall_20cm</target>
+      <imgFile>calibrationChart.png</imgFile>
+	  <params></params>
+      <title>Place the wall target with 80% reflectivity at 20cm</title>
+	  <tForm></tForm>
+   </wall_20>
    <minRange>
       <target>minRange</target>
       <imgFile>calibrationChart.png</imgFile>
 	  <params></params>
       <title>Place the wall target with 80% reflectivity at 20cm</title>
+	  <tForm></tForm>
    </minRange>
    <maxRange>
       <target>maxRange</target>
       <imgFile>calibrationChart.png</imgFile>
 	  <params></params>
       <title>Place the wall target with 80% reflectivity at 7m</title>
+	  <tForm></tForm>
    </maxRange>
    <wall_1000_80_VGA30>
       <target>wall_1000_80_VGA30</target>
       <imgFile>calibrationChart.png</imgFile>
 	  <params></params>
       <title>Place the wall target with 10% reflectivity at 1.0m</title>
+	  <tForm></tForm>
    </wall_1000_80_VGA30>
    <range1800>
       <target>range1800</target>
       <imgFile>calibrationChart.png</imgFile>
 	  <params></params>
       <title>Place the wall target with 10% reflectivity at 1.8m</title>
+	  <tForm></tForm>
    </range1800>
    <interDist7x7x50>
       <target>interDist7x7x50</target>
@@ -31,5 +81,6 @@
 			  <squareSize>50</squareSize>
 	  </params>
       <title>Place the 7x7 checkerboard with 50mm squares at any distance at any angle</title>
+	  <tForm></tForm>
    </interDist7x7x50>
 </struct>

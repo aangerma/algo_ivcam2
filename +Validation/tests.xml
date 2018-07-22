@@ -1,39 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tests>
-   <test1>
-      <target>minRange</target>
-      <metrics>zAccuracy</metrics>
-      <error>[1 10]</error>
-      <errorUnits>mm</errorUnits>
-   </test1>
-   <test2>
-      <target>maxRange</target>
-      <metrics>fillRate</metrics>
-      <error>[1 80]</error>
-      <errorUnits>%</errorUnits>
-   </test2>
-   <test3>
-      <target>range1800</target>
-      <metrics>fillRate</metrics>
-      <error>[1 80]</error>
-      <errorUnits>%</errorUnits>
-   </test3>
-   <test4>
-      <target>wall_1000_80_VGA30</target>
-      <metrics>zAccuracy</metrics>
-      <error>[1 100]</error>
-      <errorUnits>mm</errorUnits>
-   </test4>
-   <test5>
-      <target>wall_1000_80_VGA30</target>
-      <metrics>tempNoise</metrics>
-      <error>[1 10]</error>
-      <errorUnits>%</errorUnits>
-   </test5>
-   <fillRate>
-      <target>minRange</target>
-      <metrics>fillRate</metrics>
-      <error>[1 10]</error>
-      <errorUnits>%</errorUnits>
-   </fillRate>
+	<MinDistance>
+		<target>wall_20_80</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>mm</errorUnits>
+	</MinDistance>
+	<Range_700_80>
+		<target>wall_700_80</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>mm</errorUnits>
+	</Range_700_80>
+	<Range_250_10>
+		<target>wall_250_10</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>mm</errorUnits>
+	</Range_250_10>
+	<TemporalNoise_100>
+		<target>wall_100_80</target>
+		<metrics>zStd</metrics>
+		<errorUnits>mm</errorUnits>
+	</TemporalNoise_100>
+	<TemporalNoise_400>
+		<target>wall_400_80</target>
+		<metrics>zStd</metrics>
+		<errorUnits>mm</errorUnits>
+	</TemporalNoise_400>
+	
+	
+	
+	<test2>
+		<target>maxRange</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>%</errorUnits>
+	</test2>
+	<test3>
+		<target>range1800</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>%</errorUnits>
+	</test3>
+	<test4>
+		<target>wall_1000_80_VGA30</target>
+		<metrics>zAccuracy</metrics>
+		<errorUnits>mm</errorUnits>
+	</test4>
+	<test5>
+		<target>wall_1000_80_VGA30</target>
+		<metrics>tempNoise</metrics>
+		<errorUnits>%</errorUnits>
+	</test5>
+	<fillRate>
+		<target>minRange</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>%</errorUnits>
+	</fillRate>
 </tests>

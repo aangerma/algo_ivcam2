@@ -39,14 +39,14 @@ function  out = runValidation(testNames, varargin)
     
     testOut = fieldnames(out)
     for i=1:length(testOut)
-        out.(cell2str(testOut(1)))
+        out.(cell2str(testOut(i)))
     end
  end
 
 function [score, res] = runTest(metrics, target, cameraConfig)
     params = Validation.aux.defaultMetricsParams;
     params.cameraConfig = cameraConfig;
-    params.targetConfig=target.params;
+    params.targetConfig = target.params;
     met = @(m,t,p) Validation.metrics.(m)(t.frames, p);
     [score, res] = met(metrics,target,params);
 end
@@ -100,12 +100,29 @@ function testTargets = getTargets(fullTargetListPath, requierdTargets,targetFile
     testTargets = cell2mat(struct2cell(testTargets));
     
     for i=1:length(testTargets)
-        testTargets(i).img = imread([targetFilesPath testTargets(i).imgFile]);
-        if ~isfield(testTargets(i), 'tForm') || isempty(testTargets(i).tForm)
-            testTargets(i).tForm = diag([.7 .7 1]);
+        testTargets(i).img=[];
+        if ~isempty(testTargets(i).imgFile)
+            testTargets(i).img = imread([targetFilesPath testTargets(i).imgFile]);
         end
+        testTargets(i).params = checkTargetParams(testTargets(i).params);
     end
 end
+
+function [params] = checkTargetParams(params)
+    if ~isstruct(params)
+        params=struct();
+    end
+    if ~isfield(params, 'tForm')
+        params.tForm = diag([.7 .7 1]);
+    end
+    if ~isfield(params, 'nFrames')
+        params.nFrames = 100;
+    end
+    if ~isfield(params, 'delay')
+        params.delay = 0;
+    end
+end
+
 
 function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dataFullPath);
     % camera config    
@@ -139,7 +156,7 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 imgFrames = load(fnTarget);
                 testTargets(i).frames = imgFrames.frames;
             case 'HW'
-                frames = Validation.showImageRequest(hw, testTargets(i));
+                frames = Validation.showImageRequest(hw, testTargets(i),testTargets(i).params.nFrames, testTargets(i).params.delay);
                 save(fnTarget, 'frames');
                 testTargets(i).frames = frames;
             case 'PG'
