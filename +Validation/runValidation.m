@@ -1,11 +1,13 @@
 function  out = runValidation(testNames, varargin)
-    % testName: string array of test names, if empty test will fail
+    % testName: string array of test names, if empty test will fail, All for all tests from xml file
     % Run validation tests
     % config:
-    %  sourceFilesPath: string
-    %  verbose: bool
-    %  outputFolder: string
-    %  picturesFolder: string
+    %  outputFolder: (string), defult: c:\temp\valTest
+    %  dataFolder: (string), defult: data
+    %  dataSource: (string), defult: HW, options: HW/file
+    %  testFilePath: (string), defult: reletive file path + tests.xml
+    %  fullTargetListPath: (string), reletive file path + targets.xml
+    %  targetFilesPath: (string), reletive file path + targets
 
     % set config params
     p = inputParser;
@@ -83,13 +85,17 @@ end
 
 function testList = getTestList(testFilePath,testNames)
     fullTestList = xml2structWrapper(testFilePath);
-    removeTests = rmfield(fullTestList,testNames);
-    testList = rmfield(fullTestList, fields(removeTests));
-    testList = cellfun(@(c)(setfield(testList.(c),'name',c)), fieldnames(testList),'uni', false);
-    if length(testList)~=length(testNames)
-        ME = MException('Validation:getTestList', sprintf('number of tests after filter (%d) dosent mach requested tests (%d)',length(testList),length(testNames)));
-        throw(ME)
+    if ~strcmpi(testNames,'all')
+        removeTests = rmfield(fullTestList,testNames);
+        testList = rmfield(fullTestList, fields(removeTests));
+        if length(testList)~=length(testNames)
+            ME = MException('Validation:getTestList', sprintf('number of tests after filter (%d) dosent mach requested tests (%d)',length(testList),length(testNames)));
+            throw(ME)
+        end
+    else
+        testList = fullTestList;
     end
+    testList = cellfun(@(c)(setfield(testList.(c),'name',c)), fieldnames(testList),'uni', false);
     testList = cell2mat(testList);
 end
 

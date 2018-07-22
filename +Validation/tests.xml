@@ -25,32 +25,4 @@
 		<metrics>zStd</metrics>
 		<errorUnits>mm</errorUnits>
 	</TemporalNoise_400>
-	
-	
-	
-	<test2>
-		<target>maxRange</target>
-		<metrics>fillRate</metrics>
-		<errorUnits>%</errorUnits>
-	</test2>
-	<test3>
-		<target>range1800</target>
-		<metrics>fillRate</metrics>
-		<errorUnits>%</errorUnits>
-	</test3>
-	<test4>
-		<target>wall_1000_80_VGA30</target>
-		<metrics>zAccuracy</metrics>
-		<errorUnits>mm</errorUnits>
-	</test4>
-	<test5>
-		<target>wall_1000_80_VGA30</target>
-		<metrics>tempNoise</metrics>
-		<errorUnits>%</errorUnits>
-	</test5>
-	<fillRate>
-		<target>minRange</target>
-		<metrics>fillRate</metrics>
-		<errorUnits>%</errorUnits>
-	</fillRate>
 </tests>
