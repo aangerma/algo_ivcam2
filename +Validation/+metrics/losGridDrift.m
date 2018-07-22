@@ -1,4 +1,4 @@
-function [score, results] = los(frames, params)
+function [score, results] = losLaserFOVDrift(frames, params)
 
 % frames 1xN struct array with fields: z, i, c
 %   - z, i, c images e.g. 480x640
