@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tests>
+	<MinDistance>
+		<target>wall_20_80</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>mm</errorUnits>
+	</MinDistance>
+	<Range_700_80>
+		<target>wall_700_80</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>mm</errorUnits>
+	</Range_700_80>
+	<Range_250_10>
+		<target>wall_250_10</target>
+		<metrics>fillRate</metrics>
+		<errorUnits>mm</errorUnits>
+	</Range_250_10>
+	<TemporalNoise_100>
+		<target>wall_100_80</target>
+		<metrics>zStd</metrics>
+		<errorUnits>mm</errorUnits>
+	</TemporalNoise_100>
+	<TemporalNoise_400>
+		<target>wall_400_80</target>
+		<metrics>zStd</metrics>
+		<errorUnits>mm</errorUnits>
+	</TemporalNoise_400>
+</tests>

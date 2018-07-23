@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+	<wall_20_80>
+		<target>wall_20_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 20cm</title>
+	</wall_20_80>
+	<wall_100_80>
+		<target>wall_100_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 1m</title>
+	</wall_100_80>
+	<wall_400_80>
+		<target>wall_400_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 4m</title>
+	</wall_400_80>
+	<wall_700_80>
+		<target>wall_700_80</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 80% reflectivity at 7m</title>
+	</wall_700_80>
+	<wall_250_10>
+		<target>wall_250_10</target>
+		<imgFile></imgFile>
+		<params></params>
+		<title>Place the wall target with 10% reflectivity at 2.5m</title>
+	</wall_250_10>
+</struct>

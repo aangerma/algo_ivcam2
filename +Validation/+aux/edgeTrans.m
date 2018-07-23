@@ -1,4 +1,4 @@
-function [res] = edgeTrans(ir,tunnelWidth, expectedGridSize, verbose)
+function [res] = edgeTrans(ir, tunnelWidth, expectedGridSize, verbose)
 ir = double(ir);
 if(~exist('tunnelWidth','var'))
     tunnelWidth=7;
@@ -10,29 +10,14 @@ if(~exist('verbose','var'))
     verbose=false;
 end
 
-%ir(sum(ir(:,2:end-1),2)==0,:)=[];
-
-ir_=ir;
-
-ir_(isnan(ir_))=0;
-ir_ = histeq(normByMax(ir_));
-
-% pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
-
-smoothKers = [2 3 4 6 8];
-I = im2single(ir_);
-for i=1:length(smoothKers)
-    %[pt,bsz]=detectCheckerboardPoints(ir_);
-    [pt,bsz]=vision.internal.calibration.checkerboard.detectCheckerboard(I, smoothKers(i), 0.15);
-    gridSize = bsz - 1;
-    if (isequal(gridSize, expectedGridSize) || (isempty(expectedGridSize) && any(gridSize > 1)))
-        break;
-    end
-end
-
+[pt, gridSize] = Validation.aux.findCheckerboard(ir, expectedGridSize);
 
 if (any(gridSize < 2))
-    error('Board is not detected');
+    if verbose
+        warning('Board is not detected');
+        res = [];
+        return;
+    end
 end
 
 % boardSize=[9 13];%bsz-1
@@ -42,7 +27,6 @@ end
 
 res.gridSize = gridSize;
 res.points = pt;
-res.img = I;
  
 pts=reshape(pt(:,1)+1j*pt(:,2),gridSize);
 
