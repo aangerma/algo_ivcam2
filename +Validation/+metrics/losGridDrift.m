@@ -1,10 +1,8 @@
-function [score, results] = losLaserFOVDrift(frames, params)
+function [score, results] = losGridDrift(frames, params)
 
 % frames 1xN struct array with fields: z, i, c
 %   - z, i, c images e.g. 480x640
 % params : defined as in aux.defaultMetricsParams
-
-zMaxSubMM = 8;
 
 imgSize = size(frames(1).z);
 
@@ -12,13 +10,7 @@ if ~exist('params','var')
     params = Validation.aux.defaultMetricsParams();
 end
 
-mask = Validation.aux.getRoiMask(imgSize, params);
-
 n = length(frames);
-
-%Z = cat(3, frames.z);
-%Z(Z==0) = nan;
-%Z = nanmean(Z, 3);
 
 [gridPoints, gridSize] = Validation.aux.findCheckerboard(frames(1).i, []);
 if (isempty(gridPoints))
@@ -38,8 +30,8 @@ for i = 1:n
     [gridPoints, gsz] = Validation.aux.findCheckerboard(ir, []);
     
     if (params.verbose)
-        fig = figure(17); imagesc(ir); hold on;
-        plot(gridPoints(:,1), gridPoints(:,2), '+r');
+        fig = figure(17); imagesc(ir); hold on; 
+        plot(gridPoints(:,1), gridPoints(:,2), '+r'); hold off;
         title(sprintf('grid for frame %g', i));
     end
     
@@ -65,26 +57,39 @@ end
 % figure; plot(squeeze(points(:,1,:))', squeeze(points(:,2,:))')
 % figure; imagesc(ir); hold on; plot(pMean(:,1), pMean(:,2), '+r');
 
+nPoints = size(points,1);
+
+pXFits = cell2mat(arrayfun(@(p) polyfit(1:n,squeeze(points(p,1,:))',1),1:nPoints, 'UniformOutput',false)');
+pYFits = cell2mat(arrayfun(@(p) polyfit(1:n,squeeze(points(p,2,:))',1),1:nPoints, 'UniformOutput',false)');
+
+pX0 = arrayfun(@(p) polyval(pXFits(p,:),1),1:nPoints);
+pX1 = arrayfun(@(p) polyval(pXFits(p,:),n),1:nPoints);
+driftX = pX1 - pX0;
+
+pY0 = arrayfun(@(p) polyval(pYFits(p,:),1),1:nPoints);
+pY1 = arrayfun(@(p) polyval(pYFits(p,:),n),1:nPoints);
+driftY = pY1 - pY0;
+
+
+if (params.verbose)
+    figure; imagesc(reshape(driftX,gridSize)); title('Drift X');
+    figure; imagesc(reshape(driftY,gridSize)); title('Drift Y');
+end
+
 pStd = std(points, 0, 3);
-pMean = mean(points, 3);
 
 results.meanStdX = mean(pStd(:,1));
 results.meanStdY = mean(pStd(:,2));
 
-driftX = sum(diff(squeeze(points(:,1,:)), 1, 2),2);
-driftY = sum(diff(squeeze(points(:,2,:)), 1, 2),2);
+results.meanDriftX = mean(abs(driftX));
+results.meanDriftY = mean(abs(driftY));
 
-absDriftX = sum(abs(diff(squeeze(points(:,1,:)), 1, 2)),2);
-absDriftY = sum(abs(diff(squeeze(points(:,2,:)), 1, 2)),2);
+results.maxDriftX = max(abs(driftX));
+results.maxDriftY = max(abs(driftY));
 
-results.driftX = mean(driftX);
-results.driftY = mean(driftY);
-
-results.absDriftX = mean(abs(driftX));
-results.absDriftY = mean(abs(driftY));
-
-score = results.meanStdX;
-results.score = 'meanStdX';
+score = results.maxDriftX;
+results.score = 'maxDriftX';
+results.units = 'pixels';
 results.error = false;
 
 end
