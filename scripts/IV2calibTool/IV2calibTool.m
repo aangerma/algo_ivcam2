@@ -182,8 +182,15 @@ function statrtButton_callback(varargin)
     app=guidata(varargin{1});
     fprintffS=@(varargin) fprintff(app,varargin{:});
      try
+         
+         if(exist(app.Outputdirectorty.String,'dir') && app.cb.overwriteExisting.Value)
+             rmdir(app.Outputdirectorty.String,'s');
+         end
+         mkdirSafe(app.Outputdirectorty.String);
+         
+         
         app.logarea.BackgroundColor=app.logarea.UserData;
-        mkdirSafe(app.Outputdirectorty.String);
+        
         
         app.m_logfid = fopen(fullfile(app.Outputdirectorty.String,filesep,'log.log'),'wt');
         
