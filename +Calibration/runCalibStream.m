@@ -17,10 +17,7 @@ if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 verbose = runParams.verbose;
-if(exist(runParams.outputFolder,'dir') && runParams.overwriteExisting)
-    rmdir(runParams.outputFolder,'s');
-    mkdirSafe(runParams.outputFolder);
-end
+
 
 
 
