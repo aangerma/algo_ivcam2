@@ -18,7 +18,7 @@ typedef std::tuple<uint16_t, int16_t, float, uint16_t> Dh;
 //-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
 float algo_convertDealyFromGain(float i)
 {
-	float tau = (0.017754f*i - 5.375485f);
+	float tau = (0.016754f*i - 3.5f);
 	return tau;
 }
 //-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----8<-----
@@ -83,6 +83,8 @@ uint16_t countNticks(uint32_t* vGainTbl, uint16_t vGainTblSz)
 struct Params
 {
 	float yfov;
+    float pixMarginTprcnt;
+    float pixMarginBprcnt;
 	uint8_t laser_BIAS;
 	uint8_t laser_MODULATION_REF;
 };
@@ -98,7 +100,7 @@ void genPWRlut(uint32_t* vGainTbl, uint16_t vGainTblSz, Params p, float* outputL
 
 
 	float yfovRADdiv2 = p.yfov * deg2rad / 2;
-
+	float tanyfovRADdiv2 = std::tan(yfovRADdiv2);
 
 
 	int16_t gainV = 0;
@@ -131,12 +133,15 @@ void genPWRlut(uint32_t* vGainTbl, uint16_t vGainTblSz, Params p, float* outputL
 		for (int z = 0; z != 2; ++z)
 		{
 			uint16_t binTic;
-			float iout = float(gainV)  * (float(p.laser_MODULATION_REF) / 63 + 1)*150.0f / 255.0f + float(p.laser_BIAS)*60.0f / 255.0f;
+			float iout = float(gainV)/ 255.0f  * (float(p.laser_MODULATION_REF) / 63 + 1)*150.0f  + float(p.laser_BIAS)*60.0f / 255.0f;
 			while (binIndex != lutSize)
 			{
 
-
-				binTic = uint16_t((acos(-atan((float(binIndex) / float(lutSize - 1) * 2 - 1)*std::tan(yfovRADdiv2)) / yfovRADdiv2))*n / (2 * pi) + 0.5f);
+				float binIndex01 = float(binIndex) / float(lutSize - 1);
+				binIndex01 = (binIndex01 + p.pixMarginTprcnt )/(1 + p.pixMarginTprcnt+ p.pixMarginBprcnt);
+				//float binIndex01 = float(binIndex) /  float(lutSize - 1);
+                binIndex01 = std::min(1.0f,std::max(0.0f,binIndex01));
+				binTic = uint16_t((acos(-atan((binIndex01 * 2 - 1)*tanyfovRADdiv2) / yfovRADdiv2))*n / (2 * pi) + 0.5f);
 				if (binTic < gainT)
 				{
 					std::cout << "error! did not fill LUT value at " << binIndex << std::endl;

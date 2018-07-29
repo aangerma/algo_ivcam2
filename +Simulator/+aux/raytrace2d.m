@@ -109,9 +109,8 @@ a = albdo(ind);
 %reduce albedo acording to angle between projector and surface normal.
 %assumin lambertian surfaces, all intensitiny is pearded evnangly to all
 %directions
-% patchNorm = cross(v(tri(ind,2),:)-v(tri(ind,1),:),v(tri(ind,3),:)-v(tri(ind,1),:),2);
-% patchNorm = bsxfun(@times,patchNorm,1./sqrt(sum(patchNorm.^2,2)));
-%a = a.*max(0,sum(xyz.*patchNorm,2))
+ patchNorm = normr(cross(v(tri(ind,2),:)-v(tri(ind,1),:),v(tri(ind,3),:)-v(tri(ind,1),:),2));
+ a = a.*abs(sum(xyz.*patchNorm,2));
 a(any(isinf(r),2))=0;
 end
 

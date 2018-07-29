@@ -106,6 +106,8 @@ function writeMWD(d,fn,nMax,PL_SZ)
         if(i<=n)
             di=d(ibeg:iend,:)';
             fprintf(fid,'mwd %08x %08x // %s\n',di{:});
+        else
+            fprintf(fid,'mwd a00e0870 00000000 // DO NOTHING\n');%prevent empty file
         end
         fclose(fid);
     end

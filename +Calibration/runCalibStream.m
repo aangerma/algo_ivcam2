@@ -1,10 +1,10 @@
-function  [calibPassed,score,dbg] = runCalibStream(runParams,calibParams, fprintff)
+function  [calibPassed,score] = runCalibStream(runParams,calibParams, fprintff)
 
 
 t=tic;
 score=0;
 
-dbg = [];
+
 if(ischar(runParams))
     runParams=xml2structWrapper(runParams);
 end
@@ -17,12 +17,9 @@ if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 verbose = runParams.verbose;
-if(exist(runParams.outputFolder,'dir'))
-    if(~isempty(dirFiles(runParams.outputFolder,'*.bin')))
-        fprintff('[x] Error! directory %s is not empty\n',runParams.outputFolder);
-        calibPassed = 0;
-        return;
-    end
+if(exist(runParams.outputFolder,'dir') && runParams.overwriteExisting)
+    rmdir(runParams.outputFolder,'s');
+    mkdirSafe(runParams.outputFolder);
 end
 
 
@@ -30,7 +27,7 @@ end
 
 results = struct;
 
-dbg.runStarted=datestr(now);
+
 
 %% :: file names
 runParams.internalFolder = fullfile(runParams.outputFolder,filesep,'AlgoInternal');
@@ -55,7 +52,13 @@ fw = Pipe.loadFirmware(runParams.internalFolder);
 fprintff('Done(%ds)\n',round(toc(t)));
 
 fprintff('Loading HW interface...');
-hw=HWinterface(fw);
+hwRecFile = fullfile(runParams.internalFolder,filesep,'hwinterfaceRec.mat');
+if(exist(hwRecFile,'file'))
+    %run recorded session
+    hw=HWinterfaceFile(hwRecFile);
+else
+hw=HWinterface(fw,hwRecFile);
+end
 fprintff('Done(%ds)\n',round(toc(t)));
 [regs,luts]=fw.get();%run autogen
 
@@ -105,11 +108,11 @@ fprintff('Done(%ds)\n',round(toc(t)));
 % hw.runPresetScript('startStream');
 
 %% ::calibrate delays::
-fprintff('Depth and IR delay calibration...\n');
+fprintff('[-] Depth and IR delay calibration...\n');
 
 if(runParams.dataDelay)
     
-    dbg.preImg=showImageRequestDialog(hw,1,diag([.8 .8 1]));
+    showImageRequestDialog(hw,1,diag([.8 .8 1]));
     [delayRegs,okZ,okIR]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,verbose);
     results.delayS=(1-okIR);
     results.delayF=(1-okZ);
@@ -128,24 +131,24 @@ if(runParams.dataDelay)
         calibPassed = 0;
         return;
     end
-    fprintff('Done(%ds)\n',round(toc(t)));
+    
     fw.setRegs(delayRegs,fnCalib);
     
 else
     fprintff('skipped\n');
 end
 %% ::dsm calib::
-fprintff('DSM calibration...');
+fprintff('[-] DSM calibration...\n');
 if(runParams.DSM)
     dsmregs = Calibration.aux.calibDSM(hw,calibParams,verbose);
     fw.setRegs(dsmregs,fnCalib);
-    fprintff('Done(%d)\n',round(toc(t)));
+    fprintff('[v] Done(%d)\n',round(toc(t)));
 else
-    fprintff('skipped\n');
+    fprintff('[?] skipped\n');
 end
 %% ::gamma::
 
-fprintff('gamma...\n');
+fprintff('[-] gamma...\n');
 if (runParams.gamma)
     
 %     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,.verbose);
@@ -159,8 +162,9 @@ if (runParams.gamma)
 %     end
 %     fw.setRegs(gammaregs,fnCalib);
     results.gammaErr=0;
+    fprintff('[v] Done(%ds)\n',round(toc(t)));
 else
-    fprintff('skipped\n');
+    fprintff('[?] skipped\n');
 end
 %% ::RX Delay::
 % rxregs.DEST.rxPWRpd = single(calibParams.rx); %pass gamma regs when available.
@@ -171,9 +175,9 @@ end
 
 %% ::DFZ::
 
-fprintff('FOV, System Delay, Zenith and Distortion calibration...\n');
+fprintff('[-] FOV, System Delay, Zenith and Distortion calibration...\n');
 if(runParams.DFZ)
-    setLaserProjectionUniformity(hw,true);
+    Calibration.aux.setLaserProjectionUniformity(hw,true);
     regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
     r=Calibration.RegState(hw);
     
@@ -189,12 +193,9 @@ if(runParams.DFZ)
     d(4)=showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
     d(5)=showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
     d(6)=showImageRequestDialog(hw,2,diag([2 2 1]));
-    dbg.d=d;
-    dbg.regs=regs;
-    dbg.luts=luts;
+
     
     % dodluts=struct;
-    
     [dodregs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,verbose);
     r.reset();
     
@@ -209,56 +210,58 @@ if(runParams.DFZ)
     else
         fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
     end
-    setLaserProjectionUniformity(hw,false);
-    fprintff('Done(%ds)\n',round(toc(t)));
+    Calibration.aux.setLaserProjectionUniformity(hw,false);
+    
 else
-    fprintff('skipped\n');
+    fprintff('[?] skipped\n');
 end
 
 
 %% ::roi::
-fprintff('Calibrating ROI...\n');
+fprintff('[-] Calibrating ROI...\n');
 % params.roi = true;
 if (runParams.ROI)
-    roiRegs = Calibration.aux.runROICalib(hw, verbose);
+    d = hw.getFrame(10);
+    [regs,luts]=fw.get();
+
+    
+    roiRegs = Calibration.aux.runROICalib(d,true);
     fw.setRegs(roiRegs, fnCalib);
     regs = fw.get(); % run bootcalcs
     fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
     fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
     hw.runScript(fnAlgoTmpMWD);
     hw.shadowUpdate();
-    roiRegsVal = Calibration.aux.runROICalib(hw, true);
+    d = hw.getFrame(10);
+    roiRegsVal = Calibration.aux.runROICalib(d,false);
     mr = roiRegsVal.FRMW;
     valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
 %     results.roiVal = valSumMargins;
     if (valSumMargins ~= 0)
         fprintff('warning: Invalid pixels after ROI calibration');
     end
+    fprintff('[v] Done(%ds)\n',round(toc(t)));
 else
-    fprintff('skipped\n');
+    fprintff('[?] skipped\n');
 end
 
-%% ::validation::
-fprintff('Validating...\n');
-%validate
-if(runParams.DFZ && runParams.validation)
-    d=showImageRequestDialog(hw,1,diag([.7 .7 1]));
-    dbg.validImg = d;
-    [~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,verbose,true);
-    if(results.geomErrVal<calibParams.errRange.geomErrVal(2))
-        fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
-    else
-        fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
-        
-    end
-else
-    fprintff('skipped\n');
-end
+%%apply txLUT
+% % % fprintff('generating TX power LUT table...');
+% % % regs = fw.get(); % run bootcalcs
+% % % txLUTregs=Calibration.txPWR.genTXlut(hw,regs.FRMW.yfov,regs.FRMW.marginB,regs.FRMW.marginT);
+% % % fw.setRegs(txLUTregs,fnCalib);
+% % % ttt=[tempname '.txt'];
+% % % fw.genMWDcmd('DESTtxPWRpd_',ttt);
+% % % hw.runScript(ttt);
+% % % fprintff('done\n');
+
 
 
 %% ::Fix ang2xy Bug using undistort table::
-fprintff('Fixing ang2xy using undist table...\n');
+fprintff('[-] Fixing ang2xy using undist table...\n');
 if(runParams.undist)
+% % %     undistlut.FRMW.undistModel=zeros(2048,1,'uint32');
+% % %      fw.setLut(undistlut);
     [undistlut.FRMW.undistModel, results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(regs,verbose);
     fw.setLut(undistlut);
     [~,luts]=fw.get();
@@ -268,16 +271,33 @@ if(runParams.undist)
         fprintff('[x] undist calib failed[e=%g]\n',results.maxPixelDisplacement);
         
     end
+    ttt=[tempname '.txt'];
+    fw.genMWDcmd('DIGGundist_',ttt);
+    hw.runScript(ttt);
+    hw.shadowUpdate();
+    fprintff('[v] Done(%ds)\n',round(toc(t)));
+    
 else
-    fprintff('skipped\n');
-%     results.maxPixelDisplacement=inf;
+    fprintff('[?] skipped\n');
+    results.maxPixelDisplacement=inf;
 end
 
-%%apply txLUT
-fprintff('generating TX power LUT table...');
-txLUTregs=genTXlut(hw);
-fw.setRegs(txLUTregs,fnCalib);
-fprintff('done\n');
+%% ::validation::
+fprintff('[-] Validating...\n');
+%validate
+if(runParams.DFZ && runParams.validation)
+    d=showImageRequestDialog(hw,1,diag([.7 .7 1]));
+    
+    [~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,verbose,true);
+    if(results.geomErrVal<calibParams.errRange.geomErrVal(2))
+        fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
+    else
+        fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
+        
+    end
+else
+    fprintff('[?] skipped\n');
+end
 
 %% write version+intrinsics
 
@@ -293,8 +313,8 @@ fw.writeUpdated(fnCalib);
 fw.get();
 
 io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
-save(fullfile(runParams.internalFolder,'imData.mat'),'dbg');
-fprintff('Done(%ds)\n',round(toc(t)));
+
+
 
 
 
@@ -339,7 +359,7 @@ end
     
 calibPassed = (score>=calibParams.passScore);
 doCalibBurn = false;
-fprintff('setting burn calibration...');
+fprintff('[!] setting burn calibration...');
 if(runParams.burnCalibrationToDevice)
     if(score>=calibParams.passScore)
         doCalibBurn=true;
@@ -352,7 +372,7 @@ else
 end
 
 doConfigBurn = false;
-fprintff('setting burn configuration...');
+fprintff('[!] setting burn configuration...');
 if(runParams.burnConfigurationToDevice)
         doConfigBurn=true;
         fprintff('Done(%ds)\n',round(toc(t)));
@@ -360,25 +380,16 @@ else
     fprintff('skiped\n');
 end
 
-fprintff('burnning...');
+fprintff('[!] burnning...');
 hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
 fprintff('Done(%ds)\n',round(toc(t)));
 
 fprintff('Calibration finished(%d)\n',round(toc(t)));
-end
-
-function setLaserProjectionUniformity(hw,uniformProjection)
-if(uniformProjection) %non-safe
-%     [~,val]=hw.cmd('irb e2 0a 01');
-%     newval=uint8(round((double(val(1))/63*150+150)/300*255));
-%     hw.cmd(sprintf('iwb e2 08 01 %02x',newval));
-     hw.cmd('iwb e2 08 01 ff');
-     hw.cmd('iwb e2 03 01 13');
-else
-    hw.cmd('iwb e2 03 01 93');
-end
 
 end
+
+
+
 
 
 function raw=showImageRequestDialog(hw,figNum,tformData)
@@ -404,7 +415,11 @@ It = uint8(It.*permute([0 1 0],[3 1 2]));
 %%
 while(ishandle(f) && get(f,'userdata')==0)
     
-    raw=hw.getFrame();
+    raw=hw.getFrame(-1);
+    %recored stream
+    if(all(raw.i(:)==0))
+        break;
+    end
     image(uint8(repmat(rot90(raw.i,2)*.8,1,1,3)+It*.25));
     axis(a,'image');
     axis(a,'off');

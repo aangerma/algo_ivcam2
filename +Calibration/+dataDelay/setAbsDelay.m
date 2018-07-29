@@ -79,8 +79,8 @@ regs.EXTL.conLocDelaySlow = uint32(latelate)+uint32(bitshift(1,31));
 mod8=mod(absFast,8);
 regs.EXTL.conLocDelayFastC= uint32(absFast-mod8);
 regs.EXTL.conLocDelayFastF=uint32(mod8);
-hw.setReg('EXTLconLocDelaySlow',regs.EXTL.conLocDelaySlow);
-hw.setReg('EXTLconLocDelayFastC',regs.EXTL.conLocDelayFastC);
-hw.setReg('EXTLconLocDelayFastF',regs.EXTL.conLocDelayFastF);
+hw.write('EXTLconLocDelaySlow',regs.EXTL.conLocDelaySlow);
+hw.write('EXTLconLocDelayFastC',regs.EXTL.conLocDelayFastC);
+hw.write('EXTLconLocDelayFastF',regs.EXTL.conLocDelayFastF);
 end
 

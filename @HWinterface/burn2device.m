@@ -27,7 +27,7 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
     if(burnConfig)
             filenamesTableIndexLUT(end+1,:)={'WrConfigData','Algo_Dynamic_Configuration_VGA30_1_ConfigData_Ver_*.txt','133'};
             filenamesTableIndexLUT(end+1,:)={'WrConfigData','Algo_Dynamic_Configuration_VGA30_2_ConfigData_Ver_*.txt','134'};
-%              filenamesTableIndexLUT(end+1,:)={'WrConfigData','Algo_Dynamic_Configuration_VGA30_3_ConfigData_Ver_*.txt','135'};
+            filenamesTableIndexLUT(end+1,:)={'WrConfigData','Algo_Dynamic_Configuration_VGA30_3_ConfigData_Ver_*.txt','135'};
             filenamesTableIndexLUT(end+1,:)={'WrConfigInfo','DCOR_cml_0_Info_ConfigInfo_Ver_*.bin'                   ,'180'};
             filenamesTableIndexLUT(end+1,:)={'WrConfigInfo','DCOR_cml_1_Info_ConfigInfo_Ver_*.bin'                   ,'181'};
             filenamesTableIndexLUT(end+1,:)={'WrConfigInfo','DCOR_cml_2_Info_ConfigInfo_Ver_*.bin'                   ,'18B'};
@@ -53,9 +53,10 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
        
         cmdA = sprintf('%s "%s"',filenamesTableIndexLUT{i,1},fn);
         cmdB = sprintf('exec_table %s',filenamesTableIndexLUT{i,3});
-        obj.cmd(cmdA);
-        obj.cmd(cmdB);
+        ret=obj.cmd(cmdA);
+%         ret=obj.cmd(cmdB);
         
         
     end
+     
 end

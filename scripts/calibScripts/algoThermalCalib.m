@@ -12,8 +12,10 @@ hw.shadowUpdate();
 sz=[480 640];
 msk=imdilate(padarray(ones(2),sz/2-1,0,'both'),strel('disk',25,8))>0;
 hw.cmd('algo_thermloop_en 10');
-hw.write('DCORspare_000',typecast(single(-0.81),'uint32'))
+ hw.write('DCORspare_000',typecast(single(-0.5),'uint32'))
 t0=tic;
+
+
 while(true)
     d=hw.getFrame(30);
     vZ(end+1)=mean(d.z(msk))/8 *2; %rtd like

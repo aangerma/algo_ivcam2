@@ -32,12 +32,12 @@ function [dsmregs] = calibDSM(hw,params,verbose)
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
     hw.shadowUpdate();
-    
+     d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     if(verbose)
         ff=figure(sum(mfilename));
-        d = hw.getFrame(30);
-        subplot(121);
-        imagesc(d.i>0);
+        pre_contour=(d_pre.i>0)-imerode(d_pre.i>0,ones(5));
+        imagesc(cat(3,pre_contour,pre_contour*0,pre_contour*0));
+      
         title('Spherical Validity Before DSM Calib')
         
         colZO = (1 + angxZO/2047)/2*(640-1)+1;
@@ -71,11 +71,12 @@ function [dsmregs] = calibDSM(hw,params,verbose)
     hw.setReg('EXTLdsmXoffset',dsmregs.EXTL.dsmXoffset);
     hw.setReg('EXTLdsmYoffset',dsmregs.EXTL.dsmYoffset);
     hw.shadowUpdate();
+    d_post=hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     if(verbose)
-        d = hw.getFrame(30);
-        subplot(122);
-        imagesc(d.i>0);
+        post_contour=(d_post.i>0)-imerode(d_post.i>0,ones(5));
+        imagesc(cat(3,pre_contour,post_contour,post_contour*0));
         title('Spherical Validity After DSM Calib')
+        axis image;
         drawnow;
         pause(1);
         close(ff);

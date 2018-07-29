@@ -160,7 +160,8 @@ Params p;
 p.yfov = 56;
 p.laser_BIAS = 70;// irb e2 06 01
 p.laser_MODULATION_REF = 63;//irb e2 08 01
-
+p.pixMarginBprcnt = float(0) / 480;
+p.pixMarginTprcnt = float(0) / 480;
 genPWRlut(vertical_gain_data, n,p,lut);
 uint8_t printMode = 2;
 uint32_t bassaddr = 2685274624;
