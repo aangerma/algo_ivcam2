@@ -8,7 +8,7 @@ function obj=privInitCam(obj)
             
             dnet(cellfun(@(x) any(strcmpi(x,not_net_dll)),dnet))=[];
             dnet=strcat(p,dnet);
-            cellfun(@(x) NET.addAssembly(x),dnet,'uni',0);
+            res=cellfun(@(x) NET.addAssembly(x),dnet,'uni',0);%#ok
           
             %% create cam obj
             dm = NET.createGeneric('IVCam.Tools.CamerasSdk.Cameras.DeviceManager',...
