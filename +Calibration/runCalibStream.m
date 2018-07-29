@@ -17,10 +17,9 @@ if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 verbose = runParams.verbose;
-if(exist(runParams.outputFolder,'dir'))
-    if(~isempty(dirFiles(runParams.outputFolder,'*.bin')))
-        fprintff('[!] warning directory %s is already exists\n',runParams.outputFolder);
-    end
+if(exist(runParams.outputFolder,'dir') && runParams.overwriteExisting)
+    rmdir(runParams.outputFolder,'s');
+    mkdirSafe(runParams.outputFolder);
 end
 
 

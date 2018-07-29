@@ -8,7 +8,7 @@ function outputFolderChange_callback(varargin)
     app=guidata(varargin{1});
     
     hwRecFile = fullfile(app.Outputdirectorty.String,filesep,'AlgoInternal',filesep,'hwinterfaceRec.mat');
-    if(exist(hwRecFile ,'file'))
+    if(exist(hwRecFile ,'file') && ~app.cb.overwriteExisting.Value)
         app.StartButton.BackgroundColor=[.5 .94 .94];
         
         app.logarea.String={''};
@@ -140,7 +140,7 @@ function app=createComponents()
     % Create verboseCheckBox
     
     %checkboxes
-    cbnames = {'verbose','init','DSM','gamma','dataDelay','ROI','DFZ','validation','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug'};
+    cbnames = {'overwriteExisting','verbose','init','DSM','gamma','dataDelay','ROI','DFZ','validation','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -150,6 +150,7 @@ function app=createComponents()
         app.cb.(f).String = f;
         app.cb.(f).Position = [cbSz(1)*floor((i-1)/ny)+cbSz(2) cbSz(2)*(ny-(mod(i-1,ny)+1)) cbSz];
         app.cb.(f).Value = true;
+        app.cb.(f).Callback=@outputFolderChange_callback;
         
         
     end
