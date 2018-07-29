@@ -362,10 +362,10 @@ classdef HWinterface <handle
         end
         
         
-        function v=readVersion(obj)
+        function v=getVersion(obj)
             [~,v]=obj.cmd('ERB 210 8');
             v=vec(dec2hex(fliplr(v))')';
-            
+            v=v(1:8);
         end
         function displayStream(obj)
             f=figure('numbertitle','off','menubar','none');
