@@ -1,6 +1,6 @@
 %------------EPTG constraints--------------%
 %minimum pixel time 
-[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>32
+[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>27
 
 %return time should be smaller than frameRate
 [EPTGreturnTime]*1e-3<1/[EPTGframeRate]
