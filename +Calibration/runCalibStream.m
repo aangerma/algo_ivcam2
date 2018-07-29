@@ -225,7 +225,7 @@ if (runParams.ROI)
     [regs,luts]=fw.get();
 
     
-    roiRegs = Calibration.aux.runROICalib(d,true);
+    roiRegs = Calibration.roi.runROICalib(d,true);
     fw.setRegs(roiRegs, fnCalib);
     regs = fw.get(); % run bootcalcs
     fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
@@ -233,7 +233,7 @@ if (runParams.ROI)
     hw.runScript(fnAlgoTmpMWD);
     hw.shadowUpdate();
     d = hw.getFrame(10);
-    roiRegsVal = Calibration.aux.runROICalib(d,false);
+    roiRegsVal = Calibration.roi.runROICalib(d,false);
     mr = roiRegsVal.FRMW;
     valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
 %     results.roiVal = valSumMargins;

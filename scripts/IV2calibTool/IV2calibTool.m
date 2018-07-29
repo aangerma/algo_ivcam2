@@ -181,7 +181,7 @@ end
 function statrtButton_callback(varargin)
     app=guidata(varargin{1});
     fprintffS=@(varargin) fprintff(app,varargin{:});
-%     try
+     try
         app.logarea.BackgroundColor=app.logarea.UserData;
         mkdirSafe(app.Outputdirectorty.String);
         
@@ -224,17 +224,17 @@ function statrtButton_callback(varargin)
         else
             app.logarea.BackgroundColor = [0.8 0 0]; % Color red
         end
-        
-%     catch e
-%         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
-%         errordlg(e.message);
-%         fid = fopen(sprintf('%s%cerror_%s.log',app.Outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
-%         if(fid~=-1)
-%         fprintf(fid,strrep(getReport(e),'\','\\'));
-%         fclose(fid);
-%         end
-%         s.endDUTsession([], true);
-%     end
+       
+     catch e
+        fprintffS('[!] ERROR:%s\n',strtrim(e.message));
+        errordlg(e.message);
+        fid = fopen(sprintf('%s%cerror_%s.log',app.Outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
+        if(fid~=-1)
+        fprintf(fid,strrep(getReport(e),'\','\\'));
+        fclose(fid);
+        end
+        s.endDUTsession([], true);
+    end
     s.endDUTsession();
     fclose(app.m_logfid);
     set_watches(app.figH,true);
