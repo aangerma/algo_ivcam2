@@ -5,11 +5,40 @@ classdef HWinterface <handle
         m_dotnetcam;
         m_fw;
         m_presetScripts;
+        m_recData
+        m_recfn
     end
     
     
     
     methods ( Access=private)
+        
+        function frame=privGetSingleFrame(obj)
+            %get single frame
+            imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
+            % get depth
+            imageObj = imageCollection.Images.Item(0);
+            dImByte = imageObj.Item(0).Data;
+            frame.z = reshape(typecast(cast(dImByte,'uint8'),'uint16'),480,640);
+            
+            % get IR
+            imageObj = imageCollection.Images.Item(1);
+            iImByte = imageObj.Item(0).Data;
+            frame.i = reshape(cast(iImByte,'uint8'),480,640);
+            
+            % get C
+            imageObj = imageCollection.Images.Item(2);
+            cImByte = imageObj.Item(0).Data;
+            cIm8 = cast(cImByte,'uint8');
+            frame.c=reshape([ bitand(cIm8(:),uint8(15)) bitshift(cIm8(:),-4)]',size(frame.i));
+        end
+        
+        function privRecFunc(obj,caller,varin,varout)
+            if(~isempty(obj.m_recfn))
+                obj.m_recData(end+1,:)={caller,varin,varout};
+            end
+        end
+        
         function privLoadPresetScripts(obj)
             scriptsfldr=fullfile(fileparts(mfilename('fullpath')),'presetScripts');
             if(exist(scriptsfldr,'dir'))
@@ -22,21 +51,11 @@ classdef HWinterface <handle
             end
             obj.m_presetScripts=containers.Map(keys,vals);
         end
-    end
-    methods (Static=true, Access=private)
-        %
-        function sprivDispFigClose(t)
-            stop(t)
-            closereq();
-        end
-       
-    end
-    
-    methods (Access=private)
+        
         privInitCam(obj);
         privConfigureStream(obj);
         
-         function privDispFigRefresh(obj,f)
+        function privDispFigRefresh(obj,f)
             d=obj.getFrame();
             aa(1)=subplot(121,'parent',f);
             z=double(d.z)/8;
@@ -52,13 +71,8 @@ classdef HWinterface <handle
             drawnow;
         end
         
-    end
-    
-    
-    
-    methods (Access=public)
         
-        function [res,val] = cmd(obj,str)
+        function [res,val] = privCmd(obj,str)
             sysstr = System.String(str);
             result = obj.m_dotnetcam.HwFacade.CommandsService.Send(sysstr);
             if(~result.IsCompletedOk)
@@ -73,32 +87,69 @@ classdef HWinterface <handle
             catch
                 val=nan;
             end
+            
+        end
+    end
+    methods (Static=true, Access=private)
+        %
+        function sprivDispFigClose(t)
+            stop(t)
+            closereq();
+        end
+        
+    end
+    
+    
+    
+    
+    
+    
+    
+    methods (Access=public)
+        
+        function [res,val] = cmd(obj,str)
+            [res,val]=obj.privCmd(str);
+            
+            obj.privRecFunc('cmd',{str},{res,val});
         end
         
         %destructor
         function delete(obj)
             obj.runScript(obj.getPresetScript('stopStream'));
             obj.m_dotnetcam.Close();
+            if(~isempty(obj.m_recfn))
+                recData = obj.m_recData;%#ok
+                save(obj.m_recfn,'recData');
+            end
         end
         
         
         
         burn2device(obj,basedir,burnCalib,burnConfig);
         
-        function obj = HWinterface(fw)
+        function obj = HWinterface(fw,recfn)
             if(nargin==0)
                 fw = Firmware;
             end
-            
+            if(nargin<=1)
+                recfn=[];
+            end
+            obj.m_recfn=recfn;
             obj.m_fw = fw;
             obj.privInitCam();
             obj.privConfigureStream();
             obj.privLoadPresetScripts();
+            obj.m_recData={};
+            obj.privRecFunc('HWinterface',{fw},{});
+            
         end
         
         
         function txt=getPresetScript(obj,scriptname)
+            
             txt=obj.m_presetScripts(scriptname);
+            
+            
         end
         
         function dispRegs(obj,regTokens)
@@ -112,7 +163,8 @@ classdef HWinterface <handle
             
         end
         
-        function val=writeAddr(obj,addr,val,safeWrite)
+        function writeAddr(obj,addr,val,safeWrite)
+            
             if(~exist('safeWrite','var'))
                 safeWrite=false;
             end
@@ -129,24 +181,31 @@ classdef HWinterface <handle
             end
             
             if(~safeWrite)
-                [~,val]=obj.cmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
-                return;
-            end
-            %safe write
-            nAttempts=10;
-            for i=1:nAttempts
-                obj.cmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
-                pause(0.1);
-                val_=obj.readAddr(addr);
-                if(val==val_)
-                    return;
+                obj.privCmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+            else
+                %safe write
+                nAttempts=10;
+                ok=false;
+                for i=1:nAttempts
+                    obj.privCmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                    pause(0.1);
+                    [~,val_]=obj.privCmd(sprintf('mrd %08x %08x',addr,addr+4));
+                    if(val==val_)
+                        ok=true;
+                        break;
+                    end
+                    
+                end
+                if(~ok)
+                    error('Could not write register');
                 end
                 
             end
-            error('Could not write register');
+            
         end
         
-        function val=readAddr(obj,addr)
+        function val=readAddr(obj,addr_)
+            addr=addr_;
             if(ischar(addr))
                 addr=uint32(hex2dec(addr));
             elseif(isa(addr,'uint32'))
@@ -155,6 +214,7 @@ classdef HWinterface <handle
             end
             
             [~,val]=obj.cmd(sprintf('mrd %08x %08x',addr,addr+4));
+            
         end
         
         function [vals,algoNames]=read(obj,regTokens)
@@ -176,101 +236,80 @@ classdef HWinterface <handle
             end
             algoNames=meta(:,3);
             
+            
         end
         
         function setReg(obj,regToken,regVal,forceUpdate)
+            
             m=obj.m_fw.getMeta(regToken);
             if(length(m)~=1)
                 error('can set only one register');
             end
-%             regVal_=cast(uint32(regVal),m.type);
+            if(~exist('forceUpdate','var'))
+                forceUpdate=false;
+            end
+            %             regVal_=cast(uint32(regVal),m.type);
             regVal_=cast(regVal,m.type);
-            if(exist('forceUpdate','var') && forceUpdate)
+            if(forceUpdate)
                 obj.m_fw.setRegs(m.regName,regVal_,'forceupdate');
             else
                 obj.m_fw.setRegs(m.regName,regVal_);
             end
             meta = obj.m_fw.genMWDcmd(m.regName);
-            obj.cmd(meta);
+            obj.privCmd(meta);
+
         end
         
         function k=getIntrinsics(obj)
             k=reshape([typecast(obj.read('CBUFspare'),'single');1],3,3)';
+            obj.privRecFunc('getIntrinsics',{},{k});
         end
         
         
         function write(obj,regName,regVal)
-           
-                m=obj.m_fw.getMeta(regName);
-                if(length(m)~=1)
-                    error('bad register name');
-                end
-                obj.writeAddr(uint32(m.address),regVal);
-          
-%                 warning('FUNCTION IS CANDIDATE FOR REMOVAL')
-%                 
-%                 if(~exist('regTokens','var'))
-%                     regTokens=[];
-%                 end
-%                 [regs,luts]=obj.m_fw.get();%force bootcalcs
-%                 meta = obj.m_fw.genMWDcmd(regTokens);
-%                 tfn = [tempname '.txt'];
-%                 fid = fopen(tfn,'w');
-%                 fprintf(fid,meta);
-%                 fclose(fid);
-%                 obj.runScript(tfn);
-%                 obj.shadowUpdate()
-         
+            
+            m=obj.m_fw.getMeta(regName);
+            if(length(m)~=1)
+                error('bad register name');
+            end
+            obj.writeAddr(uint32(m.address),regVal);
+            
+            
+            
         end
         
         
         
         function fw=getFirmware(obj)
             fw=obj.m_fw;
+            obj.privRecFunc('getFirmware',{},{fw});
         end
         
         
         
         function frame = getFrame(obj,n)
-            if (exist('n','var') && n > 1)
-                
-                for i = 1:n
-                    stream(i) = obj.getFrame();%#ok
-                end
+            if(~exist('n','var'))
+                n=1;
+            end
+            stream(1) = obj.privGetSingleFrame();%capture atleast 1
+            for i = 2:n
+                stream(i) = obj.privGetSingleFrame();%#ok
+            end
+            if(length(stream)>1)
                 meanNoZero = @(m) sum(double(m),3)./sum(m~=0,3);
                 collapseM = @(x) meanNoZero(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]));
                 frame.z=uint16(collapseM('z'));
                 frame.i=uint8(collapseM('i'));
                 frame.c=uint8(collapseM('c'));
-                return;
+            else
+                frame=stream;
             end
             
-            %get single frame
-            imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
-            % get depth
-            imageObj = imageCollection.Images.Item(0);
-            dImByte = imageObj.Item(0).Data;
-            frame.z = reshape(typecast(cast(dImByte,'uint8'),'uint16'),480,640);
             
-            % get IR
-            imageObj = imageCollection.Images.Item(1);
-            iImByte = imageObj.Item(0).Data;
-            frame.i = reshape(cast(iImByte,'uint8'),480,640);
-            
-            % get C
-            imageObj = imageCollection.Images.Item(2);
-            cImByte = imageObj.Item(0).Data;
-            cIm8 = cast(cImByte,'uint8');
-            frame.c=reshape([ bitand(cIm8(:),uint8(15)) bitshift(cIm8(:),-4)]',size(frame.i));
-            
-            
-            if(0)
-                %%
-                figure(2525232);clf;%#ok
-                tabplot;imagesc(frame.z);
-                tabplot;imagesc(frame.i);
-                tabplot;imagesc(frame.c);
+            if(n~=-1)%do not save it to rec stream (for display usages)
+                obj.privRecFunc('getFrame',{n},{frame});
             end
+            
         end
         
         
@@ -290,7 +329,7 @@ classdef HWinterface <handle
         %         end
         
         function res = shadowUpdate(obj)
-            res = obj.cmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
+            res = obj.privCmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
             pause(0.1);
         end
         
@@ -303,6 +342,7 @@ classdef HWinterface <handle
                 return;
             end
             res=obj.runScript(obj.getPresetScript(scriptName));
+            
         end
         
         function res = runScript(obj,fn)
@@ -312,17 +352,20 @@ classdef HWinterface <handle
             %                 error(char(res.ErrorMessage))
             %             end
             %             res = char(res.ResultFormatted);
+            
         end
         
         function tmptr=getTemperature(obj)
             [~,val]=obj.cmd('irb e2 13 02');
             tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
-
+            obj.privRecFunc('getTemperature',{},{tmptr});
         end
         
         
-        function readVersion(obj)
-            [~,v]=obj.cmd('rdcalibinfo 1');vec(dec2hex(fliplr(v(17:24)),2)')';
+        function v=readVersion(obj)
+            [~,v]=obj.cmd('ERB 210 8');
+            v=vec(dec2hex(fliplr(v))')';
+            
         end
         function displayStream(obj)
             f=figure('numbertitle','off','menubar','none');
@@ -343,17 +386,17 @@ classdef HWinterface <handle
             % Top address is A007030c A0070310
             topAddr = hex2dec('A007030c');
             shift = 4*(0:32)';
-            shift(11) = [];% CBUF skips 1 address according to document, but it looks like a mistake. dest skips 1. 
-            shift(14:end) = shift(14:end) - 4; % Algo is the same as jfil? makes no sense. 
+            shift(11) = [];% CBUF skips 1 address according to document, but it looks like a mistake. dest skips 1.
+            shift(14:end) = shift(14:end) - 4; % Algo is the same as jfil? makes no sense.
             hwa = struct;
             for i = 1:numel(blocks)
                 if status(i)
                     [~,blockStatus] = obj.cmd(sprintf('mrd %x %x',topAddr+shift(i),topAddr++shift(i)+4));
-%                     fprintf(' -%s status: %08x.\n',blocks{i},blockStatus);
+                    %                     fprintf(' -%s status: %08x.\n',blocks{i},blockStatus);
                     hwa.(blocks{i}) = sprintf('%08x',blockStatus);
                 end
             end
-
+            
         end
     end
 end

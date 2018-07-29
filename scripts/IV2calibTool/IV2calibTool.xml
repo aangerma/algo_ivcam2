@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+   <verbose>1</verbose>
+   <init>1</init>
+   <DSM>1</DSM>
+   <gamma>1</gamma>
+   <dataDelay>1</dataDelay>
+   <ROI>1</ROI>
+   <DFZ>1</DFZ>
+   <validation>1</validation>
+   <undist>1</undist>
+   <burnCalibrationToDevice>0</burnCalibrationToDevice>
+   <burnConfigurationToDevice>0</burnConfigurationToDevice>
+   <debug>1</debug>
+   <Outputdirectorty>c:\temp\calib0033_6</Outputdirectorty>
+</struct>

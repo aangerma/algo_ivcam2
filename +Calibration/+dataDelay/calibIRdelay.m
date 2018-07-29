@@ -15,7 +15,7 @@ function [delayIR,ok] = calibIRdelay(hw,dataDelayParams,verbose)
         if (verbose)
             figure(sum(mfilename));
             imagesc(im);
-            title(sprintf('%d (%d)',delayIR,d(i)));
+            title(sprintf('IR delay: %d (%d)',delayIR,d(i)));
             drawnow;
         end
         
@@ -45,20 +45,20 @@ end
 function [d,im]=calcDelayFix(hw)
     %im1 - top to bottom
     %im2 - bottom to top
-    [im2,im1]=Calibration.dataDelay.getScanDirImgs(hw);
+    [imU,imD]=Calibration.dataDelay.getScanDirImgs(hw);
     
     %time per pixel in spherical coordinates
     nomMirroFreq = 20e3;
-    t=@(px)acos(-(px/size(im1,1)*2-1))/(2*pi*nomMirroFreq);
+    t=@(px)acos(-(px/size(imD,1)*2-1))/(2*pi*nomMirroFreq);
     
-    p1 = detectCheckerboardPoints(im1);
-    p2 = detectCheckerboardPoints(im2);
+    p1 = detectCheckerboardPoints(imD);
+    p2 = detectCheckerboardPoints(imU);
     if(isempty(p1) || numel(p1)~=numel(p2))
         d=nan;
     else
         d=round(mean(t(p1(:,2))-t(p2(:,2)))/2*1e9);
     end
     
-    im=cat(3,im1,(im1+im2)/2,im2);
+    im=cat(3,imD,(imD+imU)/2,imU);
     
 end

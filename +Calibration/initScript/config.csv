@@ -1,8 +1,8 @@
-FRMWcoarseSampleRate h00000001
+FRMWcoarseSampleRate h00000002
 GNRLimgHsize         d640     
 GNRLimgVsize         d480     
 DIGGnotchBypass      b1       
-DCORspare_000        f-0.81
+DCORspare_000        f-0.9
 DCORspare_001        f-30.0   
 DESTconfactIn        h3FC00000
 DESTconfactOt        h000F0000
@@ -97,3 +97,5 @@ JFILsort3bypassMode  d0
 JFILsort1Edge01      b1       
 JFILsort1Edge03      b1       
 JFILirShadingBypass  b1       
+EXTLhwaMaskCBUF      h3000
+EXTLhwaMaskJFIL      h60

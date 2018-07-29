@@ -20,12 +20,42 @@ oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,
 angXfactor = regs.FRMW.xfov*(0.25/(2^11-1));
 angYfactor = regs.FRMW.yfov*(0.25/(2^11-1));
 
-[p,~]=Calibration.getTargetParams();
-ny=p.cornersY+2;
-nx=p.cornersX+2;
 
- [oy,ox]=ndgrid(linspace(-1,1,ny)*(ny-1)*p.mmPerUnitY/2,linspace(-1,1,nx)*(nx-1)*p.mmPerUnitX/2);
-    og = [ox(:) oy(:) zeros(numel(ox),1)]';
+% sqMM=30;
+% ny=9+2;
+% nx=13+2;
+% [oy,ox]=ndgrid(linspace(-1,1,ny)*(ny-1)*sqMM/2,linspace(-1,1,nx)*(nx-1)*sqMM/2);
+% og = [ox(:) oy(:) zeros(numel(ox),1)]';
+
+
+
+%%
+
+sqMM=30;
+
+n=5;
+l=(n-1)*3;
+[oy,ox]=ndgrid(linspace(0,1,n)*(n-1)*sqMM,linspace(0,1,n)*(n-1)*sqMM);
+og_ = [ox(:) oy(:) zeros(numel(ox),1)]';
+og_=[og_ [1 0 0;1 1 0;0 1 0;0 2 0;2 2 0;2 1 0;2 0 0]'*sqMM/3+[0;0;1e-3]];
+og_=[og_ [l-1 0 0;l-1 1 0;l 1 0;l 2 0;l-2 2 0;l-2 1 0;l-2 0 0]'*sqMM/3+[0;0;1e-3]];
+og_=[og_ [1 l 0;1 l-1 0;0 l-1 0;0 l-2 0;2 l-2 0;2 l-1 0;2 l 0]'*sqMM/3+[0;0;1e-3]];
+og_=[og_ [0 0 0; 0 l 0 ; l l 0 ; l 0 0]'*sqMM/3*1.1-[0;0;1e-1]];
+
+s2i = @(y,x) sub2ind([n,n],vec(oy(1:end-1,1:end-1)/sqMM+1)+y,vec(ox(1:end-1,1:end-1)/sqMM+1)+x);
+tri=[s2i(0,0) s2i(1,0) s2i(1,1);s2i(0,0) s2i(1,1) s2i(0,1)];
+tri=[tri;[1 7 6;1 6 2;3 4 5;3 5 6]+size(ox(:),1)];
+tri=[tri;[1 7 6;1 6 2;3 4 5;3 5 6]+7+size(ox(:),1)];
+tri=[tri;[1 7 6;1 6 2;3 4 5;3 5 6]+14+size(ox(:),1)];
+ tri=[tri;[1 2 3;1 3 4]+21+size(ox(:),1)];
+tri=[tri;tri+size(og_,2);tri+2*size(og_,2)];
+og_=[og_ og_([3 2 1],:) og_([1 3 2],:)];
+a=[repmat((-1).^(s2i(0,0)),2,1);ones(4,1);-1*ones(8,1);-1*ones(2,1)];
+a=repmat(a,3,1);
+hh=trisurf(tri,og_(1,:),og_(2,:),og_(3,:),a);set(hh,'edgecolor','none');axis equal;view(144,33);
+%%
+
+
 
 planeRotMat=rotationVectorToMatrix(normc(cross(normc(targetVector),[0;0;1])+[0;0;eps])*acos(normc(targetVector)'*[0;0;1]));
 og=planeRotMat*og;
@@ -45,10 +75,10 @@ angyQ=(angy/angYfactor);
 
 rtd=sqrt(sum(og.^2))+sqrt(sum((og-[double(regs.DEST.baseline);0;0]).^2))+tau;
 rxy=[rtd;double(angxQ');double(angyQ')];
-rxy=reshape(rxy,3,ny,nx);
-rxy=rxy(:,2:end-1,2:end-1);
-rxy=reshape(rxy,3,[]);
-
+% rxy=reshape(rxy,3,ny,nx);
+% rxy=rxy(:,2:end-1,2:end-1);
+% rxy=reshape(rxy,3,[]);
+% 
 
 
 mirang = atand(regs.FRMW.projectionYshear);
@@ -85,10 +115,10 @@ set(gca,'xlim',[1 regs.FRMW.xres],'ylim',[1 regs.FRMW.yres])
 rms(sqrt(sum(uv-xy).^2))
 %}
 
-ii=im2col(reshape(1:ny*nx,[ny nx]),[2 2],'sliding');
-ii=ii(:,vec((1:2:ny-1)'+(0:nx-2)*ny-floor((0:nx-2)/2)*2));
+ii=im2col(reshape(1:n*n,[n n]),[2 2],'sliding');
+ii=ii(:,vec((1:2:n-1)'+(0:n-2)*n-floor((0:n-2)/2)*2));
 pgons=arrayfun(@(i) double(xy(:,ii([1 2 4 3 1],i))),1:size(ii,2),'uni',0);
-margin=xy(:,[1 ny nx*ny (nx-1)*ny+1 1 ]);
+margin=xy(:,[1 n n*n (n-1)*n+1 1 ]);
 margin=[(margin-mean(margin,2))*0.95 (margin-mean(margin,2))*1.09]+mean(margin,2);
  pgons{end+1}=double(margin);
 

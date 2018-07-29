@@ -15,11 +15,17 @@ cmd = sprintf([
     '-a ..\\..\\+Calibration\\initScript\\* '...
     '-a ..\\..\\@HWinterface\\presetScripts\\* '...
     '-a ..\\..\\@HWinterface\\IVCam20Device\\* '...
+    '-a .\\@Spark\\* '...
 	],outputFolder);
 eval(cmd);
+
+
+
 copyfile('calibParams.xml',outputFolder);
 fw = Pipe.loadFirmware('../../+Calibration/initScript');
-vreg= [typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion) 0 0]),'uint32') zeros(1,7,'uint32')];
+
+verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion()) 0 0]),'uint32');
+vreg= [verReg 0 0 0 0 verReg 0 0 ];
 fw.setRegs('DIGGspare',vreg);
 fw.writeFirmwareFiles(fullfile(outputFolder,'configFiles'));
 % %%

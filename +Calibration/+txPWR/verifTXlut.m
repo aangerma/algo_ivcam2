@@ -1,0 +1,2 @@
+clear;
+hw=HWinterface;

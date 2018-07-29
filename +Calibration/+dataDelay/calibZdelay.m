@@ -22,7 +22,7 @@ for i=1:dataDelayParams.nAttempts
     if (verbose)
         figure(sum(mfilename));
         imagesc(im);
-        title(sprintf('%d (%d)',delayZ,d(i)));
+        title(sprintf('Z delay: %d (%d)',delayZ,d(i)));
         drawnow;
     end
     
@@ -69,8 +69,8 @@ delaynsec = round(25*10^3*delayPx/size(imB,1)/2);
 %     t=@(px)acos(-(px/size(im1,1)*2-1))/(2*pi*nomMirroFreq);
 
 
+im=cat(3,imD,(imD+imU)/2,imU);
 
-im=uint8(255*cat(3,imU,imB,imD));
 
 end
 

@@ -40,7 +40,7 @@ autogenRegs.DEST.sampleDist =[1 2 4]./single(regs.GNRL.sampleRate)*speedOfLightM
 autogenRegs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 
-C = double(regs.EXTL.corSaturationPrc);% of max to saturate to maximum
+C = double(regs.FRMW.corSaturationPrc);% of max to saturate to maximum
 
 %------------ALT IR-----------------%
 maxPeakVal=2^12-1;
