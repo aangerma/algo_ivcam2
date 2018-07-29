@@ -164,6 +164,11 @@ Params p;
 p.yfov = *reinterpret_cast<float*>(mxGetData(prhs[0]));;
 p.laser_BIAS = *reinterpret_cast<uint8_t*>(mxGetData(prhs[1]));
 p.laser_MODULATION_REF = *reinterpret_cast<uint8_t*>(mxGetData(prhs[2]));
+uint16_t yres = *reinterpret_cast<uint16_t *>(mxGetData(prhs[3]));
+uint16_t marginT = *reinterpret_cast<uint16_t*>(mxGetData(prhs[4]));
+uint16_t marginB = *reinterpret_cast<uint16_t*>(mxGetData(prhs[5]));
+p.pixMarginTprcnt=float(marginT)/float(yres-1);
+p.pixMarginBprcnt=float(marginB)/float(yres-1);
 
 
 
