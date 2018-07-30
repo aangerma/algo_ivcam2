@@ -23,7 +23,7 @@
  [u,v]=ndgrid(1:480,1:640);
 
  %%
-  r=sqrt(320.^2+240.^2)*0.8;
+  r=sqrt(320.^2+240.^2)*0.1;
  msk=(u-240).^2+(v-320).^2<r.^2;
  M=10;
  msk = msk.*(abs(u-240.5)<239.5-M & abs(v-320.5)<319.5-M);
@@ -47,12 +47,12 @@
      
      zaac=nanmedian(imM(msk)-zgt(msk));
      zstd=sqrt(nanmean(imS(msk).^2));
-     
+     fr = nnz((im.*double(msk)>0))./(nnz(msk)*size(im,3));
 %      [~,rgt]=Pipe.z16toVerts(zgt,k,1);
 %      [~,rmes]=Pipe.z16toVerts(imM,k,1);
      z_eval=rd_(i).zexp;
      
-     mes(end+1,:)=[z_eval(1) zaac zstd];
+     mes(end+1,:)=[z_eval(1) zaac zstd fr];
      [z_eval(1) zaac zstd]
  end
  %%
@@ -61,7 +61,7 @@
  plot(mes_(:,1),mes_(:,3));
  grid on
 grid minor
-title('80% ROI')
+title('10% ROI')
 xlabel('distance[mm]');
 ylabel('z-std error[mm]');
 set(gca,'xlim',[0 5000]);
@@ -69,7 +69,7 @@ set(gca,'xlim',[0 5000]);
  plot(mes_(:,1),mes_(:,2)./mes_(:,1)*100);
  grid on
 grid minor
-title('80% ROI')
+title('10% ROI')
 xlabel('distance[mm]');
 ylabel('z-accuracy error[%]');
 set(gca,'xlim',[0 5000]);
