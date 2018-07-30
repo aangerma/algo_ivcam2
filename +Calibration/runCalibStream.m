@@ -1,13 +1,11 @@
-function  [calibPassed,score] = runCalibStream(runParams,calibParams, fprintff)
+function  [calibPassed,score] = runCalibStream(runParamsFn,calibParams, fprintff)
 
 
 t=tic;
 score=0;
 
 
-if(ischar(runParams))
-    runParams=xml2structWrapper(runParams);
-end
+runParams=xml2structWrapper(runParamsFn);
 if(~exist('calibParams','var') || isempty(calibParams))
     %% ::load default caliration configuration
     calibParams = xml2structWrapper('calibParams.xml');
@@ -29,7 +27,6 @@ results = struct;
 %% :: file names
 runParams.internalFolder = fullfile(runParams.outputFolder,filesep,'AlgoInternal');
 
-struct2xmlWrapper(runParams,sprintf('%s\\calibrationInputParams.xml',runParams.internalFolder));
 
 mkdirSafe(runParams.outputFolder);
 mkdirSafe(runParams.internalFolder);
@@ -49,10 +46,11 @@ fw = Pipe.loadFirmware(runParams.internalFolder);
 fprintff('Done(%ds)\n',round(toc(t)));
 
 fprintff('Loading HW interface...');
-hwRecFile = fullfile(runParams.internalFolder,filesep,'hwinterfaceRec.mat');
+hwRecFile = fullfile(fileparts(runParamsFn),filesep,'sessionRecord.mat');
 if(exist(hwRecFile,'file'))
     %run recorded session
     hw=HWinterfaceFile(hwRecFile);
+    fprintf('Loading recorded capture(%s)\n',hwRecFile);
 else
 hw=HWinterface(fw,hwRecFile);
 end

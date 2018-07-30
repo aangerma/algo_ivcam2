@@ -7,7 +7,7 @@ end
 function outputFolderChange_callback(varargin)
     app=guidata(varargin{1});
     
-    hwRecFile = fullfile(app.Outputdirectorty.String,filesep,'AlgoInternal',filesep,'hwinterfaceRec.mat');
+    hwRecFile = fullfile(app.Outputdirectorty.String,filesep,'sessionRecord.mat');
     if(exist(hwRecFile ,'file') && ~app.cb.overwriteExisting.Value)
         app.StartButton.BackgroundColor=[.5 .94 .94];
         
@@ -199,9 +199,12 @@ function statrtButton_callback(varargin)
         outputFolderChange_callback(app.figH);
         
         
-        params=structfun(@(x) x.Value,app.cb,'uni',0);
-        params.outputFolder=app.Outputdirectorty.String;
-        params.version=calibToolVersion();
+        runparams=structfun(@(x) x.Value,app.cb,'uni',0);
+        runparams.version=calibToolVersion();
+        runparams.outputFolder=app.Outputdirectorty.String;
+        runparamsFn = fullfile(runparams.outputFolder,filesep,'sessionParams.xml');
+        struct2xmlWrapper(runparams,runparamsFn);
+        
         
         s=Spark('Algo','AlgoCalibration');
         s.addTestProperty('CalibVersion',calibToolVersion)
@@ -224,7 +227,7 @@ function statrtButton_callback(varargin)
             calibParams = [];
         end
         
-        [calibPassed,score] = Calibration.runCalibStream(params,calibParams,fprintffS);
+        [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibParams,fprintffS);
         s.AddMetrics('score', score,1,100,false);
         if calibPassed
             app.logarea.BackgroundColor = [0 0.8 0]; % Color green
