@@ -1,33 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-	<wall_20_80>
-		<target>wall_20_80</target>
+	<wall_80Reflectivity>
+		<target>wall_80Reflectivity</target>
+		<title>wall 80% Reflectivity</title>
 		<imgFile></imgFile>
 		<params></params>
-		<title>Place the wall target with 80% reflectivity at 20cm</title>
-	</wall_20_80>
-	<wall_100_80>
-		<target>wall_100_80</target>
+	</wall_80Reflectivity>
+	<wall_20Reflectivity>
+		<target>wall_20Reflectivity</target>
+		<title>wall 20% Reflectivity</title>
 		<imgFile></imgFile>
 		<params></params>
-		<title>Place the wall target with 80% reflectivity at 1m</title>
-	</wall_100_80>
-	<wall_400_80>
-		<target>wall_400_80</target>
-		<imgFile></imgFile>
+	</wall_20Reflectivity>
+	<checker_80Reflectivity>
+		<target>checker_80Reflectivity</target>
+		<title>checker bored 80% Reflectivity</title>
+		<imgFile>calibrationChart.png</imgFile>
 		<params></params>
-		<title>Place the wall target with 80% reflectivity at 4m</title>
-	</wall_400_80>
-	<wall_700_80>
-		<target>wall_700_80</target>
-		<imgFile></imgFile>
-		<params></params>
-		<title>Place the wall target with 80% reflectivity at 7m</title>
-	</wall_700_80>
-	<wall_250_10>
-		<target>wall_250_10</target>
-		<imgFile></imgFile>
-		<params></params>
-		<title>Place the wall target with 10% reflectivity at 2.5m</title>
-	</wall_250_10>
+	</checker_80Reflectivity>
+	
 </struct>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="yes">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>c:\temp\valTest\data</dataFolder>
+        <dataSource>HW</dataSource>
+    </params>
+    <tests>
+        <test name="minRange" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="0.9" />
+        <test name="losGridDrift" metrics="losGridDrift" target="checker_80Reflectivity" distance="100cm" threshold="0.5" />
+    </tests>
+</root>

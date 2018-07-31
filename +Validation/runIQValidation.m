@@ -1,52 +1,65 @@
-function  out = runValidation(testNames, varargin)
-    % testName: string array of test names, if empty test will fail, All for all tests from xml file
+function  [score, out] = runIQValidation(testConfig, varargin)
     % Run validation tests
+    % testConfig: struct for test defenition:
+    %  name: (string), test name
+    %  metrics: (string), metrics to run on target
+    %  target: (string), target name from target xml
+    %  distance: (string), distance form target
+    %  example: testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflective', 'distance', '20cm')
     % config:
     %  outputFolder: (string), defult: c:\temp\valTest
     %  dataFolder: (string), defult: data
     %  dataSource: (string), defult: HW, options: HW/file
-    %  testFilePath: (string), defult: reletive file path + tests.xml
     %  fullTargetListPath: (string), reletive file path + targets.xml
     %  targetFilesPath: (string), reletive file path + targets
+    %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
     % set config params
     p = inputParser;
-    addRequired(p, 'testNames', @(x) ~isempty(x))
+    addRequired(p, 'testConfig', @(x) ~isempty(x))
     addParameter(p, 'config', struct())
-    parse(p, testNames, varargin{:})
+    parse(p, testConfig, varargin{:})
     config = checkConfig(p.Results.config);
 
-    if ~exist('testNames','var') || isempty(testNames)
-        ME = MException('Validation:testsName', 'No tests where specified');
+    if ~exist('testConfig','var') || isempty(testConfig)
+        ME = MException('Validation:testConfig', 'No tests where specified');
         throw(ME);
     end
 
     dataFullPath = createOutFolder(config);
 
-    % get test list
-    testList = getTestList(config.testFilePath,testNames);
-
     % prepare target list
-    requierdTargets = {testList.target};
+    tests = struct2array(testConfig);
+    
+    requierdTargets = struct();
+    for i=1:length(tests)
+        n = strcat(tests(i).target, '_', tests(i).distance);
+        v = struct('target', tests(i).target, 'distance', tests(i).distance);
+        tests(i).targetName = n;
+        requierdTargets.(n)=v;
+    end
     testTargets = getTargets(config.fullTargetListPath, requierdTargets, config.targetFilesPath );
 
     % get pictures
     [testTargets, cameraConfig] = captureFrames(config.dataSource, testTargets, dataFullPath);
 
     % run tests
-    for iTest=1:length(testList)
-        iTarget = testTargets(strcmp({testTargets.target}, testList(iTest).target));
-        [~,out.(testList(iTest).name)] = runTest(testList(iTest).metrics, iTarget, cameraConfig);
+    for iTest=1:length(tests)
+        iTarget = testTargets(strcmp({testTargets.name}, tests(iTest).targetName));
+        [score.(tests(iTest).name),out.(tests(iTest).name)] = runTest(tests(iTest).metrics, iTarget, cameraConfig);
     end
     
-    testOut = fieldnames(out)
+    testOut = fieldnames(out);
     for i=1:length(testOut)
+        testOut(i)
         out.(cell2str(testOut(i)))
+        score.(cell2str(testOut(i)))
     end
  end
 
 function [score, res] = runTest(metrics, target, cameraConfig)
     params = Validation.aux.defaultMetricsParams;
+    params.verbose = false;
     params.cameraConfig = cameraConfig;
     params.targetConfig = target.params;
     met = @(m,t,p) Validation.metrics.(m)(t.frames, p);
@@ -66,9 +79,6 @@ function [config] = checkConfig(config)
     if ~isfield(config, 'dataSource')
         config.dataSource = 'HW';
     end
-    if ~isfield(config, 'testFilePath')
-        config.testFilePath = fullfile(fileparts(mfilename('fullpath')), 'tests.xml');
-    end
     if ~isfield(config, 'fullTargetListPath')
         config.fullTargetListPath = fullfile(fileparts(mfilename('fullpath')), 'targets.xml');
     end
@@ -79,38 +89,22 @@ end
 
 function dataFullPath = createOutFolder(config)
     mkdirSafe(config.outputFolder);
-    dataFullPath = fullfile(config.outputFolder, config.dataFolder);
+    dataFullPath = config.dataFolder;
     mkdirSafe(dataFullPath);
 end
 
-function testList = getTestList(testFilePath,testNames)
-    fullTestList = xml2structWrapper(testFilePath);
-    if ~strcmpi(testNames,'all')
-        removeTests = rmfield(fullTestList,testNames);
-        testList = rmfield(fullTestList, fields(removeTests));
-        if length(testList)~=length(testNames)
-            ME = MException('Validation:getTestList', sprintf('number of tests after filter (%d) dosent mach requested tests (%d)',length(testList),length(testNames)));
-            throw(ME)
-        end
-    else
-        testList = fullTestList;
-    end
-    testList = cellfun(@(c)(setfield(testList.(c),'name',c)), fieldnames(testList),'uni', false);
-    testList = cell2mat(testList);
-end
-
-function testTargets = getTargets(fullTargetListPath, requierdTargets,targetFilesPath )
+function targets = getTargets(fullTargetListPath, requierdTargets,targetFilesPath )
     fullTargetsList = xml2structWrapper(fullTargetListPath);
-    removeTargets = rmfield(fullTargetsList,requierdTargets);
-    testTargets = rmfield(fullTargetsList, fields(removeTargets));
-    testTargets = cell2mat(struct2cell(testTargets));
-    
-    for i=1:length(testTargets)
-        testTargets(i).img=[];
-        if ~isempty(testTargets(i).imgFile)
-            testTargets(i).img = imread([targetFilesPath testTargets(i).imgFile]);
+    targets = struct2array(requierdTargets);
+    names = fieldnames(requierdTargets);
+    for i=1:length(targets)
+        targets(i).name = cell2str(names(i));
+        targets(i).params = checkTargetParams(fullTargetsList.(targets(i).target).params);
+        targets(i).title = ['Place ', fullTargetsList.(targets(i).target).title, ' at ', targets(i).distance];
+        targets(i).img=[];
+        if ~isempty(fullTargetsList.(targets(i).target).imgFile)
+            targets(i).img = imread([targetFilesPath fullTargetsList.(targets(i).target).imgFile]);
         end
-        testTargets(i).params = checkTargetParams(testTargets(i).params);
     end
 end
 
@@ -130,7 +124,7 @@ function [params] = checkTargetParams(params)
 end
 
 
-function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dataFullPath);
+function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dataFullPath)
     % camera config    
     fnCameraConfig = fullfile(dataFullPath, ['cameraConfig.mat']);
     switch dataSource
@@ -152,8 +146,12 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
     
     % capture frames
     for i=1:length(testTargets)
-        fnTarget = fullfile(dataFullPath, [testTargets(i).target, '.mat']);
+        fnTarget = fullfile(dataFullPath, [cell2str(testTargets(i).name), '.mat']);
         switch dataSource
+            case 'HW'
+                frames = Validation.showImageRequest(hw, testTargets(i),testTargets(i).params.nFrames, testTargets(i).params.delay);
+                save(fnTarget, 'frames');
+                testTargets(i).frames = frames;
             case 'file'
                 if ~exist(fnTarget,'file')
                     ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', fnTarget));
@@ -161,10 +159,6 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 end
                 imgFrames = load(fnTarget);
                 testTargets(i).frames = imgFrames.frames;
-            case 'HW'
-                frames = Validation.showImageRequest(hw, testTargets(i),testTargets(i).params.nFrames, testTargets(i).params.delay);
-                save(fnTarget, 'frames');
-                testTargets(i).frames = frames;
             case 'PG'
                 ME = MException('Validation:captureFramse:PG', sprintf('%s option not supported', dataSource));
                 throw(ME)

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>c:\temp\valTest\data</dataFolder>
+        <dataSource>file</dataSource>
+    </params>
+    <tests>
+        <test name="minRange" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="0.9" />
+        <test name="" metrics="fillRate" target="wall_80Reflectivity" distance="4m" threshold="0.1" />
+        <test metrics="fillRate" target="wall_80Reflectivity" distance="400cm" threshold="0.8" />
+    </tests>
+</root>

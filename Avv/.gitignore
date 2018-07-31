@@ -3,3 +3,4 @@ tests/__pycache__/
 test_data/
 tests/Avv/data/
 tests/data
+tests/validation/__pycache__/

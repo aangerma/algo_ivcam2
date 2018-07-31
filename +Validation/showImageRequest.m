@@ -26,7 +26,7 @@ else
     I = mean(target.img, 3);
     move2Ncoords = [2/size(I,2) 0 0 ; 0 2/size(I,1) 0; -1/size(I,2)-1 -1/size(I,1)-1 1];
     
-    It= imwarp(I, projective2d(move2Ncoords*target.tForm'),'bicubic','fill',0,'OutputView',imref2d([480 640],[-1 1],[-1 1]));
+    It= imwarp(I, projective2d(move2Ncoords*target.params.tForm'),'bicubic','fill',0,'OutputView',imref2d([480 640],[-1 1],[-1 1]));
     It = (It.*permute([0 1 0],[3 1 2]));
 end
 
