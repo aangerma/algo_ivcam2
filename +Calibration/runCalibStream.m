@@ -1,4 +1,4 @@
-function  [calibPassed,score] = runCalibStream(runParamsFn,calibParams, fprintff)
+function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprintff)
 
 
 t=tic;
@@ -6,11 +6,11 @@ score=0;
 
 
 runParams=xml2structWrapper(runParamsFn);
-if(~exist('calibParams','var') || isempty(calibParams))
+if(~exist('calibParamsFn','var') || isempty(calibParamsFn))
     %% ::load default caliration configuration
-    calibParams = xml2structWrapper('calibParams.xml');
-
+    calibParamsFn='calibParams.xml'
 end
+calibParams = xml2structWrapper(calibParamsFn);
 if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
