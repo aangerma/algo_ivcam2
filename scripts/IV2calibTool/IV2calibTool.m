@@ -220,14 +220,8 @@ function statrtButton_callback(varargin)
         
         %=======================================================RUN CALIBRATION=======================================================
         calibfn =  fullfile(pwd,'calibParams.xml');
-        if exist(calibfn, 'file') == 2
-            calibParams = xml2structWrapper(calibfn);
-            s.setOutputFolder(calibParams.sparkOutputFolder);
-        else
-            calibParams = [];
-        end
         
-        [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibParams,fprintffS);
+        [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS);
         s.AddMetrics('score', score,1,100,false);
         if calibPassed
             app.logarea.BackgroundColor = [0 0.8 0]; % Color green
