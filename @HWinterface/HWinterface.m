@@ -346,6 +346,14 @@ classdef HWinterface <handle
         end
         
         function res = runScript(obj,fn)
+            if(~exist(fn,'file'))
+                tt=tempname;
+                fid=fopen(tt,'w');
+                fprintf(fid,fn);
+                fclose(fid);
+                fn=tt;
+            end
+                
             %                      sysstr = System.String(fn);
             res = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
             %             if(~res.IsCompletedOk)
