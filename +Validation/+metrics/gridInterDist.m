@@ -18,10 +18,9 @@ v = Validation.aux.pointsToVertices(gridPoints, z, params.camera.K);
 results.meanError = e1;
 results.rmsError = e2;
 
-results.fidelety = min(1/max(eps, results.meanError), 1000);
-score = results.fidelety;
-results.score = 'fidelety';
-results.units = '1/mm';
+score = results.meanError;
+results.score = 'meanError';
+results.units = 'mm';
 results.error = false;
 
 end

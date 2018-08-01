@@ -110,8 +110,11 @@ def validation(xmlPath):
     for test in tests.keys():
         try:
             tScore = float(score[test])
-            tThreshold = float(tests[test]["threshold"])
-            testStatus = tScore > tThreshold
+            thresholds = tests[test]["threshold"].replace('[','').replace(']','').replace(' ','').split(':')
+            tbottomThreshold = float(thresholds[0])
+            tTopThreshold = float(thresholds[1])
+
+            testStatus = tbottomThreshold < tScore < tTopThreshold
             s = "test: {}, score: {}, threshold: {}, result: {}".format(test, score[test], tests[test]["threshold"],
                                                                     testStatus)
         except TypeError:
@@ -141,4 +144,9 @@ def test_validation_regression():
 
 def test_validation_turn_in():
     filePath = r'Avv/tests/validation/turn_in.xml'
+    validation(filePath)
+
+
+def test_validation_es2():
+    filePath = r'Avv/tests/validation/es2.xml'
     validation(filePath)

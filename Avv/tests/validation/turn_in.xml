@@ -7,12 +7,12 @@
         <dataSource>file</dataSource>
     </params>
     <tests>
-        <test name="fillRate" metrics="fillRate" target="checkerboard_30" distance="50cm" threshold="0.9" />
-        <test name="gridEdgeSharp" metrics="gridEdgeSharp" target="checkerboard_30" distance="50cm" threshold="0.3" />
-        <test name="gridInterDist" metrics="gridInterDist" target="checkerboard_30" distance="50cm" threshold="0.3" />
-        <test name="losGridDrift" metrics="losGridDrift" target="checkerboard_30" distance="50cm" threshold="0.3" />
-        <test name="losLaserFOVDrift" metrics="losLaserFOVDrift" target="checkerboard_30_spherical" distance="50cm" threshold="0.3" />
-        <test name="planeFit" metrics="planeFit" target="checkerboard_30" distance="50cm" threshold="0.2" />
-        <test name="zStd" metrics="zStd" target="checkerboard_30" distance="50cm" threshold="0.2" />
+        <test name="fillRate" metrics="fillRate" target="checkerboard_30" distance="50cm" threshold="[0.95 : 1]" />
+        <test name="gridEdgeSharp" metrics="gridEdgeSharp" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
+        <test name="gridInterDist" metrics="gridInterDist" target="checkerboard_30" distance="50cm" threshold="[0 : 1.8]" />
+        <test name="losGridDrift" metrics="losGridDrift" target="checkerboard_30" distance="50cm" threshold="[0 : 1.2]" />
+        <test name="losLaserFOVDrift" metrics="losLaserFOVDrift" target="checkerboard_30_spherical" distance="50cm" threshold="[0 : 0.7]" />
+        <test name="planeFit" metrics="planeFit" target="checkerboard_30" distance="50cm" threshold="[0 : 4]" />
+        <test name="zStd" metrics="zStd" target="checkerboard_30" distance="50cm" threshold="[0 : 4.5]" />
     </tests>
 </root>

@@ -129,11 +129,10 @@ end
 
 
 results.maxDrift = max([abs(results.stdFovL), abs(results.stdFovR),abs(results.stdFovT),abs(results.stdFovB)]);
-results.stability = min(1/max(eps, results.maxDrift),1000);
 
-score = results.stability;
-results.score = 'stability';
-results.units = '1/pixels';
+score = results.maxDrift;
+results.score = 'maxDrift';
+results.units = 'pixels';
 results.error = false;
 
 end

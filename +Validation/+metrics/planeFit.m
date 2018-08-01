@@ -43,10 +43,9 @@ end
 results.rmsPlaneFitDist = mean(rmsPlaneFitDist);
 results.maxPlaneFitDist = mean(maxPlaneFitDist);
 
-results.fidelety = min(1/max(eps, results.rmsPlaneFitDist), 1000);
-score = results.fidelety;
-results.score = 'fidelety';
-results.units = '1/mm';
+score = results.rmsPlaneFitDist;
+results.score = 'rmsPlaneFitDist';
+results.units = 'mm';
 results.error = false;
 
 end
