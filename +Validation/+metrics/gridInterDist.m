@@ -12,14 +12,16 @@ if (isempty(gridPoints))
     return;
 end
 
-v = Validation.aux.toVertices(gridPoints, z, params.K);
-[e1, e2] = Validation.aux.gridError(v, gridSize, params.squareSize);
+v = Validation.aux.pointsToVertices(gridPoints, z, params.camera.K);
+[e1, e2] = Validation.aux.gridError(v, gridSize, params.target.squareSize);
 
 results.meanError = e1;
 results.rmsError = e2;
 
-score = results.meanError;
-results.score = 'meanError';
+results.fidelety = min(1/max(eps, results.meanError), 1000);
+score = results.fidelety;
+results.score = 'fidelety';
+results.units = '1/mm';
 results.error = false;
 
 end

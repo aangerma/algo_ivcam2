@@ -87,9 +87,12 @@ results.meanDriftY = mean(abs(driftY));
 results.maxDriftX = max(abs(driftX));
 results.maxDriftY = max(abs(driftY));
 
-score = results.maxDriftX;
-results.score = 'maxDriftX';
-results.units = 'pixels';
+results.maxDrift = max(results.maxDriftX, results.maxDriftY);
+results.stability = min(1/max(eps, results.maxDrift),1000);
+
+score = results.stability;
+results.score = 'stability';
+results.units = '1/pixels';
 results.error = false;
 
 end

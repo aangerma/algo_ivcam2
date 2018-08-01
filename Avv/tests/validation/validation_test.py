@@ -95,6 +95,7 @@ def validation(xmlPath):
     try:
         score, validationResults = eng.s.Validation.runIQValidation(tests, params, stdout=out, stderr=err, nargout=2)
     except Exception as e:
+        slash.logger.debug('matlab out: {}'.format(out.getvalue()))
         slash.logger.error('matlab error: {}'.format(err.getvalue()))
         raise e
 
@@ -107,11 +108,16 @@ def validation(xmlPath):
 
     testFailed = False
     for test in tests.keys():
-        tScore = float(score[test])
-        tThreshold = float(tests[test]["threshold"])
-        testStatus = tScore > tThreshold
-        s = "test: {}, score: {}, threshold: {}, result: {}".format(test, score[test], tests[test]["threshold"],
+        try:
+            tScore = float(score[test])
+            tThreshold = float(tests[test]["threshold"])
+            testStatus = tScore > tThreshold
+            s = "test: {}, score: {}, threshold: {}, result: {}".format(test, score[test], tests[test]["threshold"],
                                                                     testStatus)
+        except TypeError:
+            testStatus = False
+            s = "test: {}, failed converting result: {}".format(test, score[test])
+
         if testStatus:
             slash.logger.info(s, extra={"highlight": True})
         else:
@@ -130,4 +136,9 @@ def test_validation_debug():
 
 def test_validation_regression():
     filePath = r'Avv/tests/validation/regression.xml'
+    validation(filePath)
+
+
+def test_validation_turn_in():
+    filePath = r'Avv/tests/validation/turn_in.xml'
     validation(filePath)

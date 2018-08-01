@@ -12,11 +12,21 @@
 		<imgFile></imgFile>
 		<params></params>
 	</wall_20Reflectivity>
-	<checker_80Reflectivity>
-		<target>checker_80Reflectivity</target>
-		<title>checker bored 80% Reflectivity</title>
+	<checkerboard_30>
+		<target>checkerboard_30</target>
+		<title>checkerboard 30mm</title>
 		<imgFile>calibrationChart.png</imgFile>
-		<params></params>
-	</checker_80Reflectivity>
+		<params>
+			<squareSize>30</squareSize>
+		</params>
+	</checkerboard_30>
+	<checkerboard_30_spherical>
+		<target>checkerboard_30_spherical</target>
+		<title>checkerboard 30mm spherical</title>
+		<imgFile>calibrationChart.png</imgFile>
+		<params>
+			<squareSize>30</squareSize>
+		</params>
+	</checkerboard_30_spherical>
 	
 </struct>

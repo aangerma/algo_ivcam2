@@ -23,8 +23,10 @@ noiseStd = nanstd(double(Z)/zMaxSubMM, 0, 3);
 results.meanTempNoise = nanmean(noiseStd(mask));
 results.maxTempNoise = nanmax(noiseStd(mask));
 
-score = results.meanTempNoise;
-results.score = 'meanTempNoise';
+results.stability = min(1/max(eps, results.meanTempNoise), 1000);
+score = results.stability;
+results.score = 'stability';
+results.units = '1/mm';
 results.error = false;
 
 end

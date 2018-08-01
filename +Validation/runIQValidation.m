@@ -45,8 +45,13 @@ function  [score, out] = runIQValidation(testConfig, varargin)
 
     % run tests
     for iTest=1:length(tests)
-        iTarget = testTargets(strcmp({testTargets.name}, tests(iTest).targetName));
-        [score.(tests(iTest).name),out.(tests(iTest).name)] = runTest(tests(iTest).metrics, iTarget, cameraConfig);
+        try
+            iTarget = testTargets(strcmp({testTargets.name}, tests(iTest).targetName));
+            [score.(tests(iTest).name),out.(tests(iTest).name)] = runTest(tests(iTest).metrics, iTarget, cameraConfig);
+        catch e
+            score.(tests(iTest).name) = struct('identifier', e.identifier, 'massage', e.message);
+            out.(tests(iTest).name) = struct('identifier', e.identifier, 'massage', e.message);
+        end
     end
     
     testOut = fieldnames(out);
@@ -60,8 +65,8 @@ function  [score, out] = runIQValidation(testConfig, varargin)
 function [score, res] = runTest(metrics, target, cameraConfig)
     params = Validation.aux.defaultMetricsParams;
     params.verbose = false;
-    params.cameraConfig = cameraConfig;
-    params.targetConfig = target.params;
+    params.camera = cameraConfig;
+    params.target = target.params;
     met = @(m,t,p) Validation.metrics.(m)(t.frames, p);
     [score, res] = met(metrics,target,params);
 end
@@ -123,7 +128,6 @@ function [params] = checkTargetParams(params)
     end
 end
 
-
 function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dataFullPath)
     % camera config    
     fnCameraConfig = fullfile(dataFullPath, ['cameraConfig.mat']);
@@ -137,7 +141,8 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', fnCameraConfig));
                 throw(ME)
             else
-                cameraConfig = load(fnCameraConfig);
+                % load camera config
+                load(fnCameraConfig);
             end
         otherwise
             ME = MException('Validation:captureFramse', sprintf('%s option not supported', dataSource));
