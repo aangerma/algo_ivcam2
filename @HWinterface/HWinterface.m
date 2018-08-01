@@ -370,7 +370,7 @@ classdef HWinterface <handle
         end
         
         
-        function v=getVersion(obj)
+        function v=getSerial(obj)
             [~,v]=obj.cmd('ERB 210 8');
             v=vec(dec2hex(fliplr(v))')';
             v=v(1:8);
