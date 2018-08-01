@@ -7,6 +7,9 @@ import slash_common
 
 ivcam2 = slash.tag('ivcam2')
 
+class TestFail(Exception):
+    pass
+
 @slash.hooks.session_start.register
 def session_start_handler():
     slash.logger.info("add algo_ivcam2 to matlab path".format(slash.context.session.id))

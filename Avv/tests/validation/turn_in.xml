@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>X:\Avv\sources\validation_turn_in</dataFolder>
+        <dataSource>file</dataSource>
+    </params>
+    <tests>
+        <test name="fillRate" metrics="fillRate" target="checkerboard_30" distance="50cm" threshold="[0.95 : 1]" />
+        <test name="gridEdgeSharp" metrics="gridEdgeSharp" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
+        <test name="gridInterDist" metrics="gridInterDist" target="checkerboard_30" distance="50cm" threshold="[0 : 1.8]" />
+        <test name="losGridDrift" metrics="losGridDrift" target="checkerboard_30" distance="50cm" threshold="[0 : 1.2]" />
+        <test name="losLaserFOVDrift" metrics="losLaserFOVDrift" target="checkerboard_30_spherical" distance="50cm" threshold="[0 : 0.7]" />
+        <test name="planeFit" metrics="planeFit" target="checkerboard_30" distance="50cm" threshold="[0 : 4]" />
+        <test name="zStd" metrics="zStd" target="checkerboard_30" distance="50cm" threshold="[0 : 4.5]" />
+    </tests>
+</root>

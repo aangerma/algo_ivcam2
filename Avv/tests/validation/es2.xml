@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="yes">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>c:\temp\valTest\dat</dataFolder>
+        <dataSource>HW</dataSource>
+    </params>
+    <tests>
+        <test name="zStd_1" metrics="zStd" target="checkerboard_30" distance="1m" threshold="[0:5]" />
+        <test name="zStd_4" metrics="zStd" target="checkerboard_30" distance="4m" threshold="[0:10]" />
+        <test name="minDistance" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="[0.95:1]" />
+        <test name="planeFit" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:15]" />
+        <test name="fillRate" metrics="fillRate" target="wall_80Reflectivity" distance="3m" threshold="[0.8:1]" />
+    </tests>
+</root>

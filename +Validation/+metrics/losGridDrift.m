@@ -87,8 +87,10 @@ results.meanDriftY = mean(abs(driftY));
 results.maxDriftX = max(abs(driftX));
 results.maxDriftY = max(abs(driftY));
 
-score = results.maxDriftX;
-results.score = 'maxDriftX';
+results.maxDrift = max(results.maxDriftX, results.maxDriftY);
+
+score = results.maxDrift;
+results.score = 'maxDrift';
 results.units = 'pixels';
 results.error = false;
 

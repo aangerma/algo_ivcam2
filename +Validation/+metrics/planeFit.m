@@ -24,7 +24,7 @@ n = length(frames);
 for i = 1:n
     Z = frames(i).z;
 
-    v = Validation.aux.imgToVertices(Z, params.K, mask);
+    v = Validation.aux.imgToVertices(Z, params.camera.K, mask);
     x = v(:,1);
     y = v(:,2);
     z = v(:,3);
@@ -45,6 +45,7 @@ results.maxPlaneFitDist = mean(maxPlaneFitDist);
 
 score = results.rmsPlaneFitDist;
 results.score = 'rmsPlaneFitDist';
+results.units = 'mm';
 results.error = false;
 
 end

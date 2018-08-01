@@ -127,8 +127,11 @@ if (params.verbose)
     line([1 imgSize(2)], [LdOnB(1) LdOnB(1)], 'Color','red');
 end
 
-score = results.driftLdOnL;
-results.score = 'driftLdOnL';
+
+results.maxDrift = max([abs(results.stdFovL), abs(results.stdFovR),abs(results.stdFovT),abs(results.stdFovB)]);
+
+score = results.maxDrift;
+results.score = 'maxDrift';
 results.units = 'pixels';
 results.error = false;
 
