@@ -29,4 +29,5 @@ scwList.Add(scwC)
 camConfig = IVCam.Tools.CamerasSdk.Cameras.Configuration.CameraConfiguration(scwList);
 
 obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
+obj.m_isStreaming=true;
 end
