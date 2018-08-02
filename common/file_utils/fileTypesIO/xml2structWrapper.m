@@ -5,7 +5,11 @@ if(nargin>1)
 else
     attrib={};
 end
-
+if ~exist(xml_fn, 'file')
+    xml_fn
+    ME = MException('xml2structWrapper:checkFile', 'file dosent exist');
+    throw(ME);
+end
 p = xml2struct(xml_fn);
 f = fieldnames(p);
 if(length(f)==1)
