@@ -1,79 +1,64 @@
 clear
 fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
-changedregs.FRMW.gaurdBandV = single(0);
-changedregs.DEST.baseline = single(30);
-fw.setRegs(changedregs,'');
+baseline = single(0);
+regs.DEST.baseline = baseline;
+fw.setRegs(regs,'');
 [regs,luts] = fw.get();
 
 CBParams.size = 30;
 CBParams.bsz = [9,13];
 dist = 500;
 [rpt,cbxyz] = simulateCB(dist,regs,CBParams);
-[outregs,minerr,eFit]=calibDFZFromRPT(rpt,regs,1,0);
-% The error when there is no noise is 0.04!!!
-% After optimization we get to 0.01, which is not 0.
-% It is interesting to find the source of the error. 
+[~,minerr]=calibDFZFromRPT(rpt,regs,1,0);
 
-% Option 1 - getTrigo function is too crude. 
-% I shall take the rpt, calculate the points using getTrigo and see the
-% difference.
-[xF,yF]=Calibration.aux.ang2xySF(rpt(:,:,2),rpt(:,:,3),regs,true);
-xF = xF*double((regs.FRMW.xres-1))/double(regs.FRMW.xres);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
-yF = yF*double((regs.FRMW.yres-1))/double(regs.FRMW.yres);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
-rtd_= rpt(:,:,1)-regs.DEST.txFRQpd(1);
-    
-[sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(xF,yF,regs);
-r = (0.5*(rtd_.^2 - regs.DEST.baseline2))./(rtd_ - regs.DEST.baseline.*sing);
-    
-z = r.*cosw.*cosx;
-x = r.*cosw.*sinx;
-y = r.*sinw;
-v=cat(3,x,y,z);
-norm(v(:)-cbxyz(:))
-
-% Straight forward - skipping the image plane
-xyzn = ang2vec(rpt(:,:,2),rpt(:,:,3),regs);
-cbr = sqrt(sum(cbxyz.^2,3));
-xyz = normr(xyzn).*repmat(cbr(:),1,3);
-Calibration.aux.evalGeometricDistortion(reshape(xyz,9,13,3),1)
-
-% The problem seems to be: going to image plane and back to 3D.
-% My primary suspect is the sing. I shall calculate the sing directly and
-% from xF,yF and see if it is the same.
-singAcc = cbxyz(:,:,1)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,2).^2+cbxyz(:,:,3).^2);
-tabplot; imagesc(sing,[-0.4,0.4]),colorbar;
-tabplot; imagesc(singAcc,[-0.4,0.4]),colorbar;
-tabplot; imagesc(singAcc-sing),colorbar;
+% Show that the error doesn't change under zenith and shift in DSM
+% In addition, show the xy image of the corners for each pair of zenith and
+% offset
+for zenith = -15:15
+    regs2.FRMW.laserangleH = single(zenith);
+    fw.setRegs(regs2,'');
+    [regs,luts] = fw.get();
+    % [~,minerr]=calibDFZFromRPT(rpt,regs,1,0);
+    rptShift = rpt; rptShift(:,:,2) = rptShift(:,:,2) + zenith/(regs.FRMW.xfov/4)*2047;
+    [~,minerr]=calibDFZFromRPT(rptShift,regs,1,1);
+    [x,y] = Calibration.aux.ang2xySF(rptShift(:,:,2),rptShift(:,:,3),regs,1);
+    tabplot;
+    plot(x,y,'*');
+    title(sprintf('%2f',minerr));
+    axis([0,640,0,480])
+end
 
 
-% I shall check the angles of get trigo.
-% tanx should be linear with the pixel index.
-tanxAcc = cbxyz(:,:,1)./cbxyz(:,:,3);
-tanx = sinx./cosx;
-tabplot; imagesc(tanxAcc,[-0.4,0.4]),colorbar;
-tabplot; imagesc(tanx,[-0.4,0.4]),colorbar;
-tabplot; plot(tanxAcc(7,:)),hold on , plot(tanx(7,:))
-tabplot; plot(tanxAcc(7,:)-tanx(7,:))
+%%
+clear
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+baseline = single(30);
+regs.DEST.baseline = baseline;
+fw.setRegs(regs,'');
+[regs,luts] = fw.get();
 
-acc = cbxyz(:,:,1)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,3).^2);
-trig = sinx;
-tabplot; imagesc(acc,[-0.4,0.4]),colorbar;
-tabplot; imagesc(trig,[-0.4,0.4]),colorbar;
-tabplot; plot(acc(7,:)),hold on , plot(trig(7,:))
-tabplot; plot(acc(7,:)-trig(7,:))
+CBParams.size = 30;
+CBParams.bsz = [9,13];
+dist = 500;
+[rpt,cbxyz] = simulateCB(dist,regs,CBParams);
+[~,minerr]=calibDFZFromRPT(rpt,regs,1,0);
 
-acc = cbxyz(:,:,1)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,3).^2);
-trig = sinx;
-tabplot; imagesc(acc,[-0.4,0.4]),colorbar;
-tabplot; imagesc(trig,[-0.4,0.4]),colorbar;
-tabplot; plot(acc(7,:)),hold on , plot(trig(7,:))
-tabplot; plot(acc(7,:)-trig(7,:))
-
-
-% Check w
-acc = sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,3).^2)./sqrt(cbxyz(:,:,1).^2+cbxyz(:,:,2).^2+cbxyz(:,:,3).^2);
-trig = cosw;
-tabplot; imagesc(acc,[-0.4,0.4]),colorbar;
-tabplot; imagesc(trig,[-0.4,0.4]),colorbar;
-tabplot; plot(acc(7,:)),hold on , plot(trig(7,:))
-tabplot; plot(acc(7,:)-trig(7,:))
+% Show that the error doesn't change under zenith and shift in DSM
+% In addition, show the xy image of the corners for each pair of zenith and
+% offset
+i = 1;
+for zenith = -15:15
+    regs2.FRMW.laserangleH = single(zenith);
+    fw.setRegs(regs2,'');
+    [regs,luts] = fw.get();
+    % [~,minerr]=calibDFZFromRPT(rpt,regs,1,0);
+    rptShift = rpt; rptShift(:,:,2) = rptShift(:,:,2) + zenith/(regs.FRMW.xfov/4)*2047;
+    [~,minerr(i)]=calibDFZFromRPT(rptShift,regs,1,1);
+    [x,y] = Calibration.aux.ang2xySF(rptShift(:,:,2),rptShift(:,:,3),regs,1);
+    tabplot;
+    plot(x,y,'*');
+    title(sprintf('zenith = %d, e=%2f',zenith,minerr));
+    axis([0,640,0,480])
+    i = i+1;
+end
+plot(zenith,minerr);
