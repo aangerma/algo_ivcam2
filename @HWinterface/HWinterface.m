@@ -3,10 +3,11 @@ classdef HWinterface <handle
     
     properties (Access=private)
         m_dotnetcam;
-        m_fw;
-        m_presetScripts;
+        m_fw                     Firmware
+        m_presetScripts
         m_recData
-        m_recfn
+        m_recfn                  char
+        m_isStreaming            logical
     end
     
     
@@ -127,6 +128,8 @@ classdef HWinterface <handle
         
         burn2device(obj,basedir,burnCalib,burnConfig);
         
+        
+        %----------------------CONSTRUCTOR----------------------
         function obj = HWinterface(fw,recfn)
             if(nargin==0)
                 fw = Firmware;
@@ -134,10 +137,11 @@ classdef HWinterface <handle
             if(nargin<=1)
                 recfn=[];
             end
+            obj.m_isStreaming=false;
             obj.m_recfn=recfn;
             obj.m_fw = fw;
             obj.privInitCam();
-            obj.privConfigureStream();
+            
             obj.privLoadPresetScripts();
             obj.m_recData={};
             obj.privRecFunc('HWinterface',{fw},{});
@@ -187,7 +191,9 @@ classdef HWinterface <handle
                 nAttempts=10;
                 ok=false;
                 for i=1:nAttempts
+                    
                     obj.privCmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                    obj.shadowUpdate();
                     pause(0.1);
                     [~,val_]=obj.privCmd(sprintf('mrd %08x %08x',addr,addr+4));
                     if(val==val_)
@@ -288,6 +294,9 @@ classdef HWinterface <handle
         
         
         function frame = getFrame(obj,n)
+            if(~obj.m_isStreaming)
+                obj.privConfigureStream();
+            end
             if(~exist('n','var'))
                 n=1;
             end
