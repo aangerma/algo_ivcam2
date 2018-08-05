@@ -13,7 +13,7 @@ function ok = struct2xmlWrapper(s,fn,sname)
         return;
     end
     fclose(fid);
-    struct2xml(s4saveHeader,fn);
+    struct2xml_(s4saveHeader,fn);
     ok = true;
 end
 

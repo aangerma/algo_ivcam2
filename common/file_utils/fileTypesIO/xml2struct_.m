@@ -1,6 +1,6 @@
-function [ s ] = xml2struct( file )
+function [ s ] = xml2struct_( file )
 %Convert xml file into a MATLAB structure
-% [ s ] = xml2struct( file )
+% [ s ] = xml2struct_( file )
 %
 % A file containing:
 % <XMLname attrib1="Some value">
@@ -29,7 +29,7 @@ function [ s ] = xml2struct( file )
 
 if (nargin < 1)
     clc;
-    help xml2struct
+    help xml2struct_
     return
 end
 
