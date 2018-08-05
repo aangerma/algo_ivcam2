@@ -1,7 +1,7 @@
-function varargout = struct2xml( s, varargin )
+function varargout = struct2xml_( s, varargin )
 %Convert a MATLAB structure into a xml file 
-% [ ] = struct2xml( s, file )
-% xml = struct2xml( s )
+% [ ] = struct2xml_( s, file )
+% xml = struct2xml_( s )
 %
 % A structure containing:
 % s.XMLname.Attributes.attrib1 = "Some value";
@@ -30,8 +30,8 @@ function varargout = struct2xml( s, varargin )
     if (nargin ~= 2)
         if(nargout ~= 1 || nargin ~= 1)
             error(['Supported function calls:' sprintf('\n')...
-                   '[ ] = struct2xml( s, file )' sprintf('\n')...
-                   'xml = struct2xml( s )']);
+                   '[ ] = struct2xml_( s, file )' sprintf('\n')...
+                   'xml = struct2xml_( s )']);
         end
     end
 
