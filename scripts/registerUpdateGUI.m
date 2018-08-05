@@ -13,22 +13,22 @@ function editFIeldUpdate(app,trgt)
     
     v=uint32(app.data(ri).value);
     if(~isempty(v))
-    switch(app.data(ri).type)
-        case 'logical'
-            cc=get(trgt,'children');
-            set(cc,'BackgroundColor',bgcolor);
-            cc(1+v).Value=1;
-            
-        case 'single'
-            trgt.String=sprintf('%f',typecast(v,'single'));
-            trgt.TooltipString=dec2hex(v);
-            set(trgt,'BackgroundColor',bgcolor);
-        otherwise
-            trgt.String=dec2hex(v);
-            trgt.TooltipString=num2str(v);
-            set(trgt,'BackgroundColor',bgcolor);
-
-    end
+        switch(app.data(ri).type)
+            case 'logical'
+                cc=get(trgt,'children');
+                set(cc,'BackgroundColor',bgcolor);
+                cc(1+v).Value=1;
+                
+            case 'single'
+                trgt.String=sprintf('%f',typecast(v,'single'));
+                trgt.TooltipString=dec2hex(v);
+                set(trgt,'BackgroundColor',bgcolor);
+            otherwise
+                trgt.String=dec2hex(v);
+                trgt.TooltipString=num2str(v);
+                set(trgt,'BackgroundColor',bgcolor);
+                
+        end
     end
 end
 
@@ -52,15 +52,15 @@ function valueWrite_callback(trgt)
     app.data(ri).value=v;
     guidata(app.figH,app);
     try
-    app.hw.writeAddr(uint32(app.data(ri).address),v,true);
-     if(app.shadowUpdateSelect.Value==1)
-        app.hw.shadowUpdate();
-    end
+        app.hw.writeAddr(uint32(app.data(ri).address),v,true);
+        if(app.shadowUpdateSelect.Value==1)
+            app.hw.shadowUpdate();
+        end
     catch
         fprintf('could not set register!\n');
     end
     valueRead_callback(trgt);
-   
+    
 end
 
 function valueRead_callback(trgt)
@@ -101,7 +101,7 @@ end
 
 function regNameEdit_callback(varargin)
     app=guidata(varargin{1});
-    set_watches(app.figH,false);
+%      set_watches(app.figH,false);
     H=17;
     M=5;
     regtoken=app.regNameEdit.String;
@@ -118,9 +118,10 @@ function regNameEdit_callback(varargin)
     app.innerPanel.Position = [0 app.regpanel.Position(4)-h w h];
     app.innerPanel.BorderType='none';
     sliderstep = app.regpanel.Position(4)/max(0,(h-app.regpanel.Position(4)));  %  visible length /(total length - visible length)
+    
     app.hslider.SliderStep=[min(1/length(r),1),sliderstep];
     
-
+    
     
     btndata = 1-double(repmat(str2img('<'),1,1,3));
     btndata(btndata==1)=nan;
@@ -131,39 +132,41 @@ function regNameEdit_callback(varargin)
         a.Position = [3 h-i*(H+5) 150 H];
         a.String = app.data(r(i)).regName;
         a.UserData=r(i);
+    end
+    b=cell(length(r),1);
+    for i=1:length(r)
+        
         
         valueBxSz= [160 h-i*(H+M) w-170-H H];
-        
-        
-        
         switch(app.data(r(i)).type)
             case 'logical'
-                b = uibuttongroup('parent',app.innerPanel,'units','pixels','position',valueBxSz);
-                ra(1)=uicontrol('style','radiobutton','units','normalized','parent',b,'position',[0 0 .5 1],'string','on');
-                ra(2)=uicontrol('style','radiobutton','units','normalized','parent',b,'position',[0.5 0 .5 1],'string','off');
-                b.SelectedObject=[];
-                b.SelectionChangedFcn=@(s,e) valueWrite_callback(b);
+                b{i} = uibuttongroup('parent',app.innerPanel,'units','pixels','position',valueBxSz);
+                ra(1)=uicontrol('style','radiobutton','units','normalized','parent',b{i},'position',[0 0 .5 1],'string','on');
+                ra(2)=uicontrol('style','radiobutton','units','normalized','parent',(i),'position',[0.5 0 .5 1],'string','off');
+                b{i}.SelectedObject=[];
+                b{i}.SelectionChangedFcn=@(s,e) valueWrite_callback(b{i});
                 
             otherwise
-                b=uicontrol('style','edit','parent',app.innerPanel,'position',valueBxSz);
-                b.Callback=@(s,e) valueWrite_callback(b);
+                b{i}=uicontrol('style','edit','parent',app.innerPanel,'position',valueBxSz);
+                b{i}.Callback=@(s,e) valueWrite_callback(b{i});
                 
                 
                 
         end
-        b.UserData=r(i);
-        editFIeldUpdate(app,b);
-        
+        b{i}.UserData=r(i);
+        editFIeldUpdate(app,b{i});
+    end
+    for i=1:length(r)
         
         readBtn = uicontrol('style','pushbutton','parent',app.innerPanel);
-        readBtn.Callback = @(s,e) valueRead_callback(b);
+        readBtn.Callback = @(s,e) valueRead_callback(b{i});
         readBtn.Position = [w-H-5 h-i*(H+5) H H];
         readBtn.CData=btndata;
         
     end
     guidata(app.figH,app);
     drawnow;
-    set_watches(app.figH,true);
+%      set_watches(app.figH,true);
     uicontrol(app.regNameEdit);
 end
 
@@ -213,7 +216,7 @@ function app=createComponents()
     app.innerPanel=[];
     
     app.hslider = uicontrol('Style','Slider','Parent',app.figH,'Units','Pixels','Position',[sz(1)-20 0 20 app.regpanel.Position(4)],'Value',1);
-
+    
     app.hslider.Callback=@(s,e)slider_callback(app.figH);
     addlistener(app.hslider,'Value','PostSet',@(s,e)slider_callback(app.figH)); % makes the scrolling movement continuous
     app.figH.WindowScrollWheelFcn=@(s,e) winScroll_callback(e,app.hslider);
