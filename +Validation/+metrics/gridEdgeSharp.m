@@ -16,11 +16,10 @@ end
 irs = cat(3, frames.i);
 irMean = mean(irs, 3);
 results.meanFrame = Validation.aux.edgeTrans(irMean);
-results.sharpness = results.horizMean;
 
 
-score = results.sharpness;
-results.score = 'sharpness';
+score = results.horizMean;
+results.score = 'horizMean';
 results.units = 'pixels';
 results.error = false;
 

@@ -12,7 +12,7 @@ if ~exist('params','var')
     params = struct;
 end
 
-mask = Validation.aux.getRoiCircle(imgSize, params);
+mask = Validation.aux.getRoiMask(imgSize, params);
 
 n = length(frames);
 
@@ -22,11 +22,14 @@ for i = 1:n
    fillRate(i) = sum(img(:)~=0) / numel(img);
 end
 
-results.frameFillRate = fillRate(1);
-results.meanFillRate = mean(fillRate);
-results.stdFillRate = std(fillRate);
+results.frameFillRate = fillRate(1) * 100;
+results.meanFillRate = mean(fillRate) * 100;
+results.stdFillRate = std(fillRate) * 100;
 
 score = results.frameFillRate;
 results.score = 'frameFillRate';
+results.units = 'percentage';
+results.error = false;
+
 end
 
