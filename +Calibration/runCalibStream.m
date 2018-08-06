@@ -70,7 +70,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fprintff('init...');
     if(runParams.init)
         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-        fw.genMWDcmd([],fnAlgoInitMWD);
+        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW.*$).*',fnAlgoInitMWD);
         hw.runPresetScript('maReset');
         pause(0.1);
         hw.runScript(fnAlgoInitMWD);
