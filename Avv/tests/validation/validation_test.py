@@ -114,7 +114,7 @@ def validation(xmlPath):
             tbottomThreshold = float(thresholds[0])
             tTopThreshold = float(thresholds[1])
 
-            testStatus = tbottomThreshold < tScore < tTopThreshold
+            testStatus = tbottomThreshold <= tScore <= tTopThreshold
             s = "test: {}, score: {}, threshold: {}, result: {}".format(test, score[test], tests[test]["threshold"],
                                                                     testStatus)
         except TypeError:
