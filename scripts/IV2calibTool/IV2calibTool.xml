@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
+   <overwriteExisting>1</overwriteExisting>
    <verbose>1</verbose>
    <init>1</init>
    <DSM>1</DSM>
@@ -9,8 +10,9 @@
    <DFZ>1</DFZ>
    <validation>1</validation>
    <undist>1</undist>
-   <burnCalibrationToDevice>0</burnCalibrationToDevice>
-   <burnConfigurationToDevice>0</burnConfigurationToDevice>
+   <burnCalibrationToDevice>1</burnCalibrationToDevice>
+   <burnConfigurationToDevice>1</burnConfigurationToDevice>
    <debug>1</debug>
+   <uniformProjectionDFZ>0</uniformProjectionDFZ>
    <Outputdirectorty>c:\temp\calib0033_6</Outputdirectorty>
 </struct>

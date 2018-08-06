@@ -142,7 +142,7 @@ function regNameEdit_callback(varargin)
             case 'logical'
                 b{i} = uibuttongroup('parent',app.innerPanel,'units','pixels','position',valueBxSz);
                 ra(1)=uicontrol('style','radiobutton','units','normalized','parent',b{i},'position',[0 0 .5 1],'string','on');
-                ra(2)=uicontrol('style','radiobutton','units','normalized','parent',(i),'position',[0.5 0 .5 1],'string','off');
+                ra(2)=uicontrol('style','radiobutton','units','normalized','parent',b{i},'position',[0.5 0 .5 1],'string','off');
                 b{i}.SelectedObject=[];
                 b{i}.SelectionChangedFcn=@(s,e) valueWrite_callback(b{i});
                 

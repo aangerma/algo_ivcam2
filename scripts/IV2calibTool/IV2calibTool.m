@@ -58,6 +58,10 @@ end
 
 
 function ll=fprintff(app,varargin)
+    if(app.AbortButton.UserData==0)
+        app.AbortButton.UserData=1;%next call will not enter here
+        error('USER ABORT');
+    end
     logAreaH=app.logarea;
     if(~isempty(app.m_logfid))
         ll=fprintf(app.m_logfid, varargin{:});
@@ -99,9 +103,18 @@ function app=createComponents()
     app.StartButton = uicontrol('style','pushbutton','parent',configurationTab);
     app.StartButton.Callback = @statrtButton_callback;
     app.StartButton.FontWeight = 'bold';
-    %     app.StartButton.FontSize=12;
     app.StartButton.Position = [1 sz(2)-131 sz(1)-4 52];
     app.StartButton.String = 'Start';
+    
+    
+    % Create abort
+    app.AbortButton = uicontrol('style','pushbutton','parent',configurationTab);
+    app.AbortButton.Callback = @abortButton_callback;
+    app.AbortButton.FontWeight = 'bold';
+    app.AbortButton.Position = [1 sz(2)-131 sz(1)-4 52];
+    app.AbortButton.String = 'Abort';
+    app.AbortButton.Visible='off';
+    
     
     % Create OutputdirectortyEditFieldLabel
     app.OutputdirectortyEditFieldLabel = uicontrol('style','text','parent',configurationTab);
@@ -112,7 +125,7 @@ function app=createComponents()
     % Create Outputdirectorty
     app.Outputdirectorty =  uicontrol('style','edit','parent',configurationTab);
     app.Outputdirectorty.HorizontalAlignment='left';
-    app.Outputdirectorty.Position = [110 sz(2)-60 486 22];
+    app.Outputdirectorty.Position = [110 sz(2)-60 410 22];
     app.Outputdirectorty.KeyReleaseFcn=@outputFolderChange_callback;
     
     % Create VersionLabel
@@ -128,6 +141,13 @@ function app=createComponents()
     app.outputFldrBrowseBtn.Position = [606 sz(2)-60 21 22];
     app.outputFldrBrowseBtn.String = '...';
     
+    % Create outputFldrBrowseBtn
+    app.outputFldrBrowseBtn =  uicontrol('style','pushbutton','parent',configurationTab);
+    app.outputFldrBrowseBtn.Callback = @addPoxtFix_callback;
+    app.outputFldrBrowseBtn.Position = [520 sz(2)-60 81 22];
+    app.outputFldrBrowseBtn.String = 'add unit postfix';
+    
+    
     % Create logarea
     app.logarea =uicontrol('style','edit','parent',configurationTab);
     app.logarea.HorizontalAlignment='left';
@@ -140,7 +160,7 @@ function app=createComponents()
     % Create verboseCheckBox
     
     %checkboxes
-    cbnames = {'overwriteExisting','verbose','init','DSM','gamma','dataDelay','ROI','DFZ','validation','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug'};
+    cbnames = {'overwriteExisting','verbose','init','DSM','gamma','dataDelay','ROI','DFZ','validation','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','uniformProjectionDFZ'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -164,6 +184,25 @@ function app=createComponents()
     
 end
 
+
+function addPoxtFix_callback(varargin)
+    
+    app=guidata(varargin{1});
+    set_watches(app.figH,false);
+    
+    if(isempty(app.Outputdirectorty.String) || app.Outputdirectorty.String(end)~=filesep)
+        app.Outputdirectorty.String(end+1)=filesep;
+    end
+    try
+        hw = HWinterface;
+        s=hw.getSerial();
+    catch
+    end
+    app.Outputdirectorty.String=fullfile(app.Outputdirectorty.String,s,filesep);
+    set_watches(app.figH,true);
+end
+
+
 function saveDefaults(varargin)
     app=guidata(varargin{1});
     
@@ -174,21 +213,27 @@ function saveDefaults(varargin)
     
     
     
- 
     
+    
+end
+
+function abortButton_callback(varargin)
+    app=guidata(varargin{1});
+    app.AbortButton.UserData=0;
+    app.AbortButton.Enable='off';
 end
 
 function statrtButton_callback(varargin)
     app=guidata(varargin{1});
     fprintffS=@(varargin) fprintff(app,varargin{:});
-     try
-         
-         if(exist(app.Outputdirectorty.String,'dir') && app.cb.overwriteExisting.Value)
-             rmdir(app.Outputdirectorty.String,'s');
-         end
-         mkdirSafe(app.Outputdirectorty.String);
-         
-         
+    try
+        
+        if(exist(app.Outputdirectorty.String,'dir') && app.cb.overwriteExisting.Value)
+            rmdir(app.Outputdirectorty.String,'s');
+        end
+        mkdirSafe(app.Outputdirectorty.String);
+        
+        
         app.logarea.BackgroundColor=app.logarea.UserData;
         
         
@@ -217,7 +262,9 @@ function statrtButton_callback(varargin)
         
         
         set_watches(app.figH,false);
-        
+        app.AbortButton.Visible='on';
+        app.AbortButton.Enable='on';
+        app.AbortButton.UserData=1;
         %=======================================================RUN CALIBRATION=======================================================
         calibfn =  fullfile(pwd,'calibParams.xml');
         
@@ -228,17 +275,19 @@ function statrtButton_callback(varargin)
         else
             app.logarea.BackgroundColor = [0.8 0 0]; % Color red
         end
-       
-     catch e
+        
+    catch e
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         errordlg(e.message);
         fid = fopen(sprintf('%s%cerror_%s.log',app.Outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
         if(fid~=-1)
-        fprintf(fid,strrep(getReport(e),'\','\\'));
-        fclose(fid);
+            fprintf(fid,strrep(getReport(e),'\','\\'));
+            fclose(fid);
         end
         s.endDUTsession([], true);
     end
+    app.AbortButton.Visible='off';
+    app.AbortButton.Enable='off';
     s.endDUTsession();
     fclose(app.m_logfid);
     set_watches(app.figH,true);
