@@ -1,3 +1,6 @@
+%{
+iwb e2 01 06 // turn laser off
+%}
 % Concrete singleton implementation
 classdef HWinterface <handle
     
@@ -7,7 +10,7 @@ classdef HWinterface <handle
         m_presetScripts
         m_recData
         m_recfn                  char
-        m_isStreaming            logical
+        
     end
     
     
@@ -54,7 +57,7 @@ classdef HWinterface <handle
         end
         
         privInitCam(obj);
-        privConfigureStream(obj);
+        
         
         function privDispFigRefresh(obj,f)
             d=obj.getFrame();
@@ -114,10 +117,19 @@ classdef HWinterface <handle
             obj.privRecFunc('cmd',{str},{res,val});
         end
         
+        startStream(obj);
+        function stopStream(obj)
+            if(obj.m_dotnetcam.Stream.IsDepthPlaying)
+                obj.runScript(obj.getPresetScript('stopStream'));
+                obj.m_dotnetcam.Close();
+            end
+            
+            
+        end
+        
         %destructor
         function delete(obj)
-            obj.runScript(obj.getPresetScript('stopStream'));
-            obj.m_dotnetcam.Close();
+            obj.stopStream();
             if(~isempty(obj.m_recfn))
                 recData = obj.m_recData;%#ok
                 save(obj.m_recfn,'recData');
@@ -137,7 +149,7 @@ classdef HWinterface <handle
             if(nargin<=1)
                 recfn=[];
             end
-            obj.m_isStreaming=false;
+            
             obj.m_recfn=recfn;
             obj.m_fw = fw;
             obj.privInitCam();
@@ -263,7 +275,7 @@ classdef HWinterface <handle
             end
             meta = obj.m_fw.genMWDcmd(m.regName);
             obj.privCmd(meta);
-
+            
         end
         
         function k=getIntrinsics(obj)
@@ -294,9 +306,7 @@ classdef HWinterface <handle
         
         
         function frame = getFrame(obj,n)
-            if(~obj.m_isStreaming)
-                obj.privConfigureStream();
-            end
+            obj.startStream();
             if(~exist('n','var'))
                 n=1;
             end
@@ -362,7 +372,7 @@ classdef HWinterface <handle
                 fclose(fid);
                 fn=tt;
             end
-                
+            
             %                      sysstr = System.String(fn);
             res = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
             %             if(~res.IsCompletedOk)
