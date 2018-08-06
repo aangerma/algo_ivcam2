@@ -790,6 +790,9 @@ uniqueID    , regName                      , type   , arraySize,group, defaultVa
 990.018.000 , EXTLhwaMaskCBUF              , uint32 , 1        ,  1  , h00000000                        ,2684814364,        ,{[0:2147483647]}                                                       ,Hardware assertion mask CBUF
 990.019.000 , EXTLhwaMaskJFIL              , uint32 , 1        ,  1  , h00000000                        ,2684814368,        ,{[0:2147483647]}                                                       ,Hardware assertion mask JFIL
 
+990.021.000 , EXTLvAPD                     , uint32 , 1        ,  1  , d2000                        ,2684616836,        ,{[2000:8000]}                                                       ,APD voltage
+
+
 100.001.000 , DIGGgamma_000                , uint12 , 2        ,  7  , h040000                          ,2684488308,        ,{[0:4096]}                                                            ,                                                                                                                                                                    
 100.001.001 , DIGGgamma_001                , uint12 , 2        ,  7  , h0C0080                          ,2684488312,        ,{[0:4096]}                                                              ,                                                                                                                                                                    
 100.001.002 , DIGGgamma_002                , uint12 , 2        ,  7  , h140100                          ,2684488316,        ,{[0:4096]}                                                              ,                                                                                                                                                                    
