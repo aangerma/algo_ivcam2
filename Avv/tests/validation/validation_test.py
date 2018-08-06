@@ -141,7 +141,7 @@ def test_validation_regression():
     filePath = r'Avv/tests/validation/regression.xml'
     validation(filePath)
 
-
+@slash.tag('turn_in')
 def test_validation_turn_in():
     filePath = r'Avv/tests/validation/turn_in.xml'
     validation(filePath)
