@@ -7,7 +7,7 @@ end
 function outputFolderChange_callback(varargin)
     app=guidata(varargin{1});
     
-    hwRecFile = fullfile(app.Outputdirectorty.String,filesep,'sessionRecord.mat');
+    hwRecFile = fullfile(app.outputdirectorty.String,filesep,'sessionRecord.mat');
     if(exist(hwRecFile ,'file') && ~app.cb.overwriteExisting.Value)
         app.StartButton.BackgroundColor=[.5 .94 .94];
         
@@ -116,17 +116,17 @@ function app=createComponents()
     app.AbortButton.Visible='off';
     
     
-    % Create OutputdirectortyEditFieldLabel
-    app.OutputdirectortyEditFieldLabel = uicontrol('style','text','parent',configurationTab);
-    app.OutputdirectortyEditFieldLabel.HorizontalAlignment = 'right';
-    app.OutputdirectortyEditFieldLabel.Position = [1 sz(2)-54 94 15];
-    app.OutputdirectortyEditFieldLabel.String = 'Output directorty';
+    % Create outputdirectortyEditFieldLabel
+    app.outputdirectortyEditFieldLabel = uicontrol('style','text','parent',configurationTab);
+    app.outputdirectortyEditFieldLabel.HorizontalAlignment = 'right';
+    app.outputdirectortyEditFieldLabel.Position = [1 sz(2)-54 94 15];
+    app.outputdirectortyEditFieldLabel.String = 'Output directorty';
     
-    % Create Outputdirectorty
-    app.Outputdirectorty =  uicontrol('style','edit','parent',configurationTab);
-    app.Outputdirectorty.HorizontalAlignment='left';
-    app.Outputdirectorty.Position = [110 sz(2)-60 410 22];
-    app.Outputdirectorty.KeyReleaseFcn=@outputFolderChange_callback;
+    % Create outputdirectorty
+    app.outputdirectorty =  uicontrol('style','edit','parent',configurationTab);
+    app.outputdirectorty.HorizontalAlignment='left';
+    app.outputdirectorty.Position = [110 sz(2)-60 410 22];
+    app.outputdirectorty.KeyReleaseFcn=@outputFolderChange_callback;
     
     % Create VersionLabel
     app.VersionLabel = uicontrol('style','text','parent',configurationTab);
@@ -137,7 +137,7 @@ function app=createComponents()
     
     % Create outputFldrBrowseBtn
     app.outputFldrBrowseBtn =  uicontrol('style','pushbutton','parent',configurationTab);
-    app.outputFldrBrowseBtn.Callback = {@setFolder,app.Outputdirectorty};
+    app.outputFldrBrowseBtn.Callback = {@setFolder,app.outputdirectorty};
     app.outputFldrBrowseBtn.Position = [606 sz(2)-60 21 22];
     app.outputFldrBrowseBtn.String = '...';
     
@@ -190,15 +190,15 @@ function addPoxtFix_callback(varargin)
     app=guidata(varargin{1});
     set_watches(app.figH,false);
     
-    if(isempty(app.Outputdirectorty.String) || app.Outputdirectorty.String(end)~=filesep)
-        app.Outputdirectorty.String(end+1)=filesep;
+    if(isempty(app.outputdirectorty.String) || app.outputdirectorty.String(end)~=filesep)
+        app.outputdirectorty.String(end+1)=filesep;
     end
     try
         hw = HWinterface;
         s=hw.getSerial();
     catch
     end
-    app.Outputdirectorty.String=fullfile(app.Outputdirectorty.String,s,filesep);
+    app.outputdirectorty.String=fullfile(app.outputdirectorty.String,s,filesep);
     set_watches(app.figH,true);
 end
 
@@ -207,8 +207,11 @@ function saveDefaults(varargin)
     app=guidata(varargin{1});
     
     s=structfun(@(x) x.Value,app.cb,'uni',0);
-    s.Outputdirectorty=app.Outputdirectorty.String;
-    
+    s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
+    s.outputdirectorty=app.outputdirectorty.String;
+    if(isempty(s.outputdirectorty))
+        s.outputdirectorty=' ';%structxml bug
+    end
     struct2xmlWrapper(s,app.defaultsFilename);
     
     
@@ -228,16 +231,16 @@ function statrtButton_callback(varargin)
     fprintffS=@(varargin) fprintff(app,varargin{:});
     try
         
-        if(exist(app.Outputdirectorty.String,'dir') && app.cb.overwriteExisting.Value)
-            rmdir(app.Outputdirectorty.String,'s');
+        if(exist(app.outputdirectorty.String,'dir') && app.cb.overwriteExisting.Value)
+            rmdir(app.outputdirectorty.String,'s');
         end
-        mkdirSafe(app.Outputdirectorty.String);
+        mkdirSafe(app.outputdirectorty.String);
         
         
         app.logarea.BackgroundColor=app.logarea.UserData;
         
         
-        app.m_logfid = fopen(fullfile(app.Outputdirectorty.String,filesep,'log.log'),'wt');
+        app.m_logfid = fopen(fullfile(app.outputdirectorty.String,filesep,'log.log'),'wt');
         
         
         % clear log
@@ -246,7 +249,7 @@ function statrtButton_callback(varargin)
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
         runparams.version=calibToolVersion();
-        runparams.outputFolder=app.Outputdirectorty.String;
+        runparams.outputFolder=app.outputdirectorty.String;
         runparamsFn = fullfile(runparams.outputFolder,filesep,'sessionParams.xml');
         struct2xmlWrapper(runparams,runparamsFn);
         
@@ -279,7 +282,7 @@ function statrtButton_callback(varargin)
     catch e
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         errordlg(e.message);
-        fid = fopen(sprintf('%s%cerror_%s.log',app.Outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
+        fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
         if(fid~=-1)
             fprintf(fid,strrep(getReport(e),'\','\\'));
             fclose(fid);

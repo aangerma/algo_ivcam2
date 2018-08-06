@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <overwriteExisting>1</overwriteExisting>
-   <verbose>1</verbose>
-   <init>1</init>
-   <DSM>1</DSM>
-   <gamma>1</gamma>
-   <dataDelay>1</dataDelay>
-   <ROI>1</ROI>
-   <DFZ>1</DFZ>
-   <validation>1</validation>
-   <undist>1</undist>
-   <burnCalibrationToDevice>1</burnCalibrationToDevice>
-   <burnConfigurationToDevice>1</burnConfigurationToDevice>
-   <debug>1</debug>
-   <uniformProjectionDFZ>0</uniformProjectionDFZ>
-   <Outputdirectorty>c:\temp\calib0033_6</Outputdirectorty>
+   <cb_overwriteExisting>1</cb_overwriteExisting>
+   <cb_verbose>1</cb_verbose>
+   <cb_init>1</cb_init>
+   <cb_DSM>1</cb_DSM>
+   <cb_gamma>1</cb_gamma>
+   <cb_dataDelay>1</cb_dataDelay>
+   <cb_ROI>1</cb_ROI>
+   <cb_DFZ>1</cb_DFZ>
+   <cb_validation>1</cb_validation>
+   <cb_undist>1</cb_undist>
+   <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
+   <cb_burnConfigurationToDevice>1</cb_burnConfigurationToDevice>
+   <cb_debug>1</cb_debug>
+   <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
+   <outputdirectorty>D:\temp\unitCalib\F8200079\</outputdirectorty>
 </struct>
