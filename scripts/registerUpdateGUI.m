@@ -22,7 +22,7 @@ function editFIeldUpdate(app,trgt)
                 
             case 'single'
                 trgt.String=sprintf('%f',typecast(v,'single'));
-                trgt.TooltipString=dec2hex(v);
+                trgt.TooltipString=['0x' dec2hex(v)];
                 set(trgt,'BackgroundColor',bgcolor);
             otherwise
                 trgt.String=dec2hex(v);
@@ -59,7 +59,7 @@ function valueWrite_callback(trgt)
         end
         if(app.maresetrestart.Value==1)
             app.hw.runPresetScript('maReset');
-%             pause(1);
+            %             pause(1);
             app.hw.runPresetScript('maRestart');
         end
     catch
@@ -107,7 +107,7 @@ end
 
 function regNameEdit_callback(varargin)
     app=guidata(varargin{1});
-%      set_watches(app.figH,false);
+    %      set_watches(app.figH,false);
     H=17;
     M=5;
     regtoken=app.regNameEdit.String;
@@ -138,6 +138,7 @@ function regNameEdit_callback(varargin)
         a.Position = [3 h-i*(H+5) 150 H];
         a.String = app.data(r(i)).regName;
         a.UserData=r(i);
+        a.TooltipString=['0x' dec2hex(app.data(r(i)).address)];
     end
     b=cell(length(r),1);
     for i=1:length(r)
@@ -170,15 +171,39 @@ function regNameEdit_callback(varargin)
         readBtn.CData=btndata;
         
     end
+    
+    if(isempty(app.history.String)|| ~isequal(app.history.String{1},regtoken))
+        if(ischar(app.history.String))
+            app.history.String={regtoken;app.history.String};
+        else
+            app.history.String=[regtoken;app.history.String];
+        end
+        app.history.String=app.history.String(1:min(length(app.history.String),5));
+    end
     guidata(app.figH,app);
     drawnow;
-%      set_watches(app.figH,true);
+    %      set_watches(app.figH,true);
     uicontrol(app.regNameEdit);
+    
+    
+    
+    s.regexpHistory=cell2str(app.history.String,',');
+    if(isempty(s.regexpHistory))
+        s.regexpHistory=' ';
+    end
+    struct2xmlWrapper(s,app.loadFileName);
+    
 end
 
+function historySelect_callback(varargin)
+    app=guidata(varargin{1});
+    app.regNameEdit.String=app.history.String{app.history.Value};
+    regNameEdit_callback(varargin{1});
+end
 
 function app=createComponents()
     sz=[300 600];
+    app.loadFileName='registerUpdateGUI.xml';
     % Create figH
     app.figH = figure('units','pixels',...
         'menubar','none',...
@@ -223,15 +248,26 @@ function app=createComponents()
     
     app.regpanel = uipanel('Parent',app.figH);
     app.regpanel .Units='pixels';
-    app.regpanel.Position = [5 5 sz(1)-27 sz(2)-50];
+    app.regpanel.Position = [5 75 sz(1)-27 sz(2)-120];
     
     app.innerPanel=[];
     
-    app.hslider = uicontrol('Style','Slider','Parent',app.figH,'Units','Pixels','Position',[sz(1)-20 0 20 app.regpanel.Position(4)],'Value',1);
-    
+    app.hslider = uicontrol('Style','Slider','Parent',app.figH,'Units','Pixels','Position',[sz(1)-20 75 20 app.regpanel.Position(4)],'Value',1);
     app.hslider.Callback=@(s,e)slider_callback(app.figH);
     addlistener(app.hslider,'Value','PostSet',@(s,e)slider_callback(app.figH)); % makes the scrolling movement continuous
     app.figH.WindowScrollWheelFcn=@(s,e) winScroll_callback(e,app.hslider);
+    
+    
+    app.history = uicontrol('Style','listbox','Parent',app.figH,'Units','Pixels','Position',[5 5 sz(1)-10 70]);
+    app.history.FontSize=10;
+    app.history.Callback=@historySelect_callback;
+    if(exist(app.loadFileName,'file'))
+        s=xml2structWrapper(app.loadFileName);
+        app.history.String=str2cell(s.regexpHistory,',');
+    end
+    
+    
+    
     
     
     fw=Firmware;

@@ -12,7 +12,7 @@ if(~exist('n','var'))
 end
 
 
-i = dirFiles(fldr,'IR*.bin');
+i = dirFiles(fldr,'I*.bin');
 z = dirFiles(fldr,'Depth*.bin');
 c = dirFiles(fldr,'Conf*.bin');
 if(isempty([i;z;c]))
