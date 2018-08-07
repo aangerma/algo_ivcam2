@@ -1,3 +1,4 @@
+% mcc -m registerUpdateGUI.m -d \\ger\ec\proj\ha\RSG\SA_3DCam\ohad\ -a ..\+Pipe\tables\* -a ..\@HWinterface\IVCam20Device\* -a ..\@HWinterface\\presetScripts\*
 function registerUpdateGUI
     createComponents();
     
@@ -55,6 +56,11 @@ function valueWrite_callback(trgt)
         app.hw.writeAddr(uint32(app.data(ri).address),v,true);
         if(app.shadowUpdateSelect.Value==1)
             app.hw.shadowUpdate();
+        end
+        if(app.maresetrestart.Value==1)
+            app.hw.runPresetScript('maReset');
+%             pause(1);
+            app.hw.runPresetScript('maRestart');
         end
     catch
         fprintf('could not set register!\n');
@@ -206,8 +212,14 @@ function app=createComponents()
     
     app.shadowUpdateSelect = uicontrol('style','checkbox','parent',app.figH);
     app.shadowUpdateSelect.String = 'Shadow update';
-    app.shadowUpdateSelect.Position = [5 sz(2)-45 sz(1)-35 20];
+    app.shadowUpdateSelect.Position = [5 sz(2)-45 110 20];
     app.shadowUpdateSelect.Value = true;
+    
+    app.maresetrestart = uicontrol('style','checkbox','parent',app.figH);
+    app.maresetrestart.String = 'MA reset';
+    app.maresetrestart.Position = [125 sz(2)-45 sz(1)-35 20];
+    app.maresetrestart.Value = true;
+    
     
     app.regpanel = uipanel('Parent',app.figH);
     app.regpanel .Units='pixels';
