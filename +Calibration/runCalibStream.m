@@ -6,6 +6,12 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     
     
     runParams=xml2structWrapper(runParamsFn);
+    
+    %backward compatibility
+    if(~isfield(runParams,'uniformProjectionDFZ'))
+        runParams.uniformProjectionDFZ=true;
+    end
+    
     if(~exist('calibParamsFn','var') || isempty(calibParamsFn))
         %% ::load default caliration configuration
         calibParamsFn='calibParams.xml';
