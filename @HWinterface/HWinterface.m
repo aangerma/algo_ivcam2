@@ -1,12 +1,16 @@
+%{
+iwb e2 01 06 // turn laser off
+%}
 % Concrete singleton implementation
 classdef HWinterface <handle
     
     properties (Access=private)
         m_dotnetcam;
-        m_fw;
-        m_presetScripts;
+        m_fw                     Firmware
+        m_presetScripts
         m_recData
-        m_recfn
+        m_recfn                  char
+        
     end
     
     
@@ -53,7 +57,7 @@ classdef HWinterface <handle
         end
         
         privInitCam(obj);
-        privConfigureStream(obj);
+        
         
         function privDispFigRefresh(obj,f)
             d=obj.getFrame();
@@ -113,10 +117,19 @@ classdef HWinterface <handle
             obj.privRecFunc('cmd',{str},{res,val});
         end
         
+        startStream(obj);
+        function stopStream(obj)
+            if(obj.m_dotnetcam.Stream.IsDepthPlaying)
+                obj.runScript(obj.getPresetScript('stopStream'));
+                obj.m_dotnetcam.Close();
+            end
+            
+            
+        end
+        
         %destructor
         function delete(obj)
-            obj.runScript(obj.getPresetScript('stopStream'));
-            obj.m_dotnetcam.Close();
+            obj.stopStream();
             if(~isempty(obj.m_recfn))
                 recData = obj.m_recData;%#ok
                 save(obj.m_recfn,'recData');
@@ -127,6 +140,8 @@ classdef HWinterface <handle
         
         burn2device(obj,basedir,burnCalib,burnConfig);
         
+        
+        %----------------------CONSTRUCTOR----------------------
         function obj = HWinterface(fw,recfn)
             if(nargin==0)
                 fw = Firmware;
@@ -134,10 +149,11 @@ classdef HWinterface <handle
             if(nargin<=1)
                 recfn=[];
             end
+            
             obj.m_recfn=recfn;
             obj.m_fw = fw;
             obj.privInitCam();
-            obj.privConfigureStream();
+            
             obj.privLoadPresetScripts();
             obj.m_recData={};
             obj.privRecFunc('HWinterface',{fw},{});
@@ -187,7 +203,9 @@ classdef HWinterface <handle
                 nAttempts=10;
                 ok=false;
                 for i=1:nAttempts
+                    
                     obj.privCmd(sprintf('mwd %08x %08x %08x',addr,addr+4,val));
+                    obj.shadowUpdate();
                     pause(0.1);
                     [~,val_]=obj.privCmd(sprintf('mrd %08x %08x',addr,addr+4));
                     if(val==val_)
@@ -257,7 +275,7 @@ classdef HWinterface <handle
             end
             meta = obj.m_fw.genMWDcmd(m.regName);
             obj.privCmd(meta);
-
+            
         end
         
         function k=getIntrinsics(obj)
@@ -288,6 +306,7 @@ classdef HWinterface <handle
         
         
         function frame = getFrame(obj,n)
+            obj.startStream();
             if(~exist('n','var'))
                 n=1;
             end
@@ -346,6 +365,14 @@ classdef HWinterface <handle
         end
         
         function res = runScript(obj,fn)
+            if(~exist(fn,'file'))
+                tt=tempname;
+                fid=fopen(tt,'w');
+                fprintf(fid,fn);
+                fclose(fid);
+                fn=tt;
+            end
+            
             %                      sysstr = System.String(fn);
             res = obj.m_dotnetcam.HwFacade.CommandsService.SendScript(fn);
             %             if(~res.IsCompletedOk)
@@ -362,7 +389,7 @@ classdef HWinterface <handle
         end
         
         
-        function v=getVersion(obj)
+        function v=getSerial(obj)
             [~,v]=obj.cmd('ERB 210 8');
             v=vec(dec2hex(fliplr(v))')';
             v=v(1:8);
