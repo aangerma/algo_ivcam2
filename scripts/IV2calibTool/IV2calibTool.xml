@@ -8,11 +8,11 @@
    <cb_dataDelay>1</cb_dataDelay>
    <cb_ROI>1</cb_ROI>
    <cb_DFZ>1</cb_DFZ>
-   <cb_validation>1</cb_validation>
    <cb_undist>1</cb_undist>
    <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
    <cb_burnConfigurationToDevice>1</cb_burnConfigurationToDevice>
    <cb_debug>1</cb_debug>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
-   <outputdirectorty>D:\temp\unitCalib\F8200079\</outputdirectorty>
+   <cb_validation>1</cb_validation>
+   <outputdirectorty>C:\temp\unitCalib\F8200079_1\</outputdirectorty>
 </struct>

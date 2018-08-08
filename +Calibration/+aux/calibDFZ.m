@@ -66,8 +66,8 @@ end
 % regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
-xL = [40 40 4000   -6 -3];
-xH = [90 90 6000    6  3];
+xL = [40 40 4000   -3 -3];
+xH = [90 90 6000    +3  3];
 regs = x2regs(x0,regs);
 if eval
     [minerr,eFit]=errFunc(darr,regs,x0);
