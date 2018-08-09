@@ -39,7 +39,11 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fprintff('opening stream...');
     hw.getFrame();
     fprintff('Done(%ds)\n',round(toc(t)));
-       
+     
+    %% Set coarse DSM values 
+    coarseDSMRegs = calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
+    fw.setRegs(coarseDSMRegs,fnCalib);
+    [regs,luts]=fw.get();
     %% ::calibrate delays::
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
@@ -49,7 +53,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% ::dsm calib::
     dsmRegs = calibrateDSM(hw, runParams, calibParams, fprintff,t);
     fw.setRegs(dsmRegs,fnCalib);
-    [regs,luts]=fw.get();
+    regs=fw.get();
    
     %% ::gamma:: 
     results = calibrateGamma(runParams, calibParams, results, fprintff, t);
@@ -110,24 +114,24 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
     %% Validation
-    hw.cmd('rst');
     clear hw
-    hw = HWinterface();
-    validateCalibration(hw)
+    validateCalibration(runParams,fprintff);
     
 end
 
-function validateCalibration(hw,runParams,fprintff)
+function validateCalibration(runParams,fprintff)
     if runParams.validation
+        hw = HWinterface();
+        
         fprintff('[-] Validation...\n');
         frame = showImageRequestDialog(hw,1,diag([.7 .7 1]));
         params.camera.K = getKMat(hw);
         params.target.squareSize = 30;
         [score, results] = Validation.metrics.gridInterDist(frame, params);
-        fprintff('%s: %g\n','eGeom',score);
+        fprintff('%s: %2.2g\n','eGeom',score);
         [score, results] = Validation.metrics.gridEdgeSharp(frame, params);
-        fprintff('%s: %g\n','horizSharpnessMean',results.horizMean);
-        fprintff('%s: %g\n','vertSharpnessMean',results.vertMean);
+        fprintff('%s: %2.2g\n','horizSharpnessMean',results.horizMean);
+        fprintff('%s: %2.2g\n','vertSharpnessMean',results.vertMean);
         fprintff('Validation finished.\n');
     end
 
@@ -276,7 +280,17 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     end
     
 end
-
+function dsmregs = calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
+    % Set a DSM value that makes the valid area of the image in spherical
+    % mode to be above a certain threshold.
+    fprintff('[-] Coarse DSM calibration...\n');
+    if(runParams.DSM)
+        dsmregs = Calibration.aux.calibCoarseDSM(hw,calibParams,runParams.verbose);
+        fprintff('[v] Done(%d)\n',round(toc(t)));
+    else
+        fprintff('[?] skipped\n');
+    end
+end
 function dsmregs = calibrateDSM(hw, runParams, calibParams, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
@@ -372,7 +386,7 @@ function [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results
         valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
         %     results.roiVal = valSumMargins;
         if (valSumMargins ~= 0)
-            fprintff('warning: Invalid pixels after ROI calibration');
+            fprintff('warning: Invalid pixels after ROI calibration\n');
         end
         fprintff('[v] Done(%ds)\n',round(toc(t)));
     else
