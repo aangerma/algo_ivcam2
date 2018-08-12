@@ -254,25 +254,36 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     if(runParams.dataDelay)
         
         showImageRequestDialog(hw,1,diag([.8 .8 1]));
-        [delayRegs,okZ,okIR]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,runParams.verbose);
+        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,runParams.verbose);
+        
         fw.setRegs(delayRegs,fnCalib);
         regs = fw.get();
-        results.delayS=(1-okIR);
-        results.delayF=(1-okZ);
-        if(okIR)
-            fprintff('[v] ir calib passed[e=%g]\n',results.delayS);
+        
+        results.delayS = (1- delayCalibResults.slowDelayCalibSuccess);
+        results.delaySlowPixelVar = delayCalibResults.delaySlowPixelVar;
+        results.delayF = (1-delayCalibResults.fastDelayCalibSuccess);
+        
+        if delayCalibResults.slowDelayCalibSuccess 
+            fprintff('[v] ir delay calib passed [e=%g]\n',results.delayS);
         else
-            fprintff('[x] ir calib failed[e=%g]\n',results.delayS);
+            fprintff('[x] ir delay calib failed [e=%g]\n',results.delayS);
             calibPassed = 0;
-            return;
         end
         
-        if(okZ)
-            fprintff('[v] depth calib passed[e=%g]\n',results.delayF);
+        pixVarRange = calibParams.errRange.delaySlowPixelVar;
+        if  results.delaySlowPixelVar >= pixVarRange(1) &&...
+                results.delaySlowPixelVar <= pixVarRange(2)
+            fprintff('[v] ir vertical pixel alignment variance [e=%g]\n',results.delaySlowPixelVar);
         else
-            fprintff('[x] depth calib failed[e=%g]\n',results.delayF);
+            fprintff('[x] ir vertical pixel alignment variance [e=%g]\n',results.delaySlowPixelVar);
             calibPassed = 0;
-            return;
+        end
+        
+        if delayCalibResults.fastDelayCalibSuccess
+            fprintff('[v] depth delay calib passed [e=%g]\n',results.delayF);
+        else
+            fprintff('[x] depth delay calib failed [e=%g]\n',results.delayF);
+            calibPassed = 0;
         end
         
     else

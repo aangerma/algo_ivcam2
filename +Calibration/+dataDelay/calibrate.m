@@ -1,5 +1,6 @@
-function [regs,delayZsuccess,delayIRsuccess]=calibrate(hw,dataDelayParams,verbose)
+function [regs, results]=calibrate(hw,dataDelayParams,verbose)
 
+results = struct('fastDelayCalibSuccess',[],'slowDelayCalibSuccess',[],'delaySlowPixelVar',[]);
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 r=Calibration.RegState(hw);
@@ -31,11 +32,14 @@ r.set();
 
 
 %% CALIBRATE IR
-[delayIR,delayIRsuccess]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
+[delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
+results.slowDelayCalibSuccess = delayIRsuccess;
+results.delaySlowPixelVar = pixelVar;
 
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;
 [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,verbose);
+results.fastDelayCalibSuccess = delayZsuccess;
 
 %% SET REGISTERS
 regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
