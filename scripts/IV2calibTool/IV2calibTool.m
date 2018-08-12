@@ -257,7 +257,12 @@ function statrtButton_callback(varargin)
         runparamsFn = fullfile(runparams.outputFolder,filesep,'sessionParams.xml');
         struct2xmlWrapper(runparams,runparamsFn);
         
-        calibfn =  fullfile(pwd,'calibParams.xml');
+        if isdeployed
+            toolDir = ctfroot;
+        else
+            toolDir = fileparts(mfilename('fullpath'));
+        end
+        calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
         s=Spark('Algo','AlgoCalibration',calibParams.sparkOutputFolder);
         s.addTestProperty('CalibVersion',calibToolVersion)
@@ -274,11 +279,7 @@ function statrtButton_callback(varargin)
         app.AbortButton.Enable='on';
         app.AbortButton.UserData=1;
         %=======================================================RUN CALIBRATION=======================================================
-        if isdeployed
-            toolDir = ctfroot;
-        else
-            toolDir = fileparts(mfilename('fullpath'));
-        end
+        
         calibfn =  fullfile(toolDir,'calibParams.xml');
         
         [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS);
