@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-    <sparkOutputFolder>c:\temp</sparkOutputFolder>
+   <sparkOutputFolder>c:\temp</sparkOutputFolder>
    <errRange>
       <delayF>[0 1]</delayF>
       <delayS>[0 1]</delayS>
@@ -21,7 +21,25 @@
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
    </dataDelay>
+   <coarseDSM>
+      <nSamples>200</nSamples>  
+      <margin>150</margin>  
+   </coarseDSM>
    <dsm>
      <margin>100</margin>  
    </dsm>
+    <dfz>
+        <fovxRange>[40,90]</fovxRange> 
+        <fovyRange>[40,90]</fovyRange> 
+        <delayRange>[4000, 6000]</delayRange> 
+        <zenithxRange>[0, 0]</zenithxRange> 
+        <zenithyRange>[0, 0]</zenithyRange> 
+    </dfz>
+    <roi>
+     <useExtraMargins>1</useExtraMargins>  
+     <extraMarginL>3</extraMarginL>  
+     <extraMarginR>3</extraMarginR>  
+     <extraMarginT>3</extraMarginT>  
+     <extraMarginB>3</extraMarginB>       
+   </roi>
 </struct>

@@ -257,8 +257,9 @@ function statrtButton_callback(varargin)
         runparamsFn = fullfile(runparams.outputFolder,filesep,'sessionParams.xml');
         struct2xmlWrapper(runparams,runparamsFn);
         
-        
-        s=Spark('Algo','AlgoCalibration');
+        calibfn =  fullfile(pwd,'calibParams.xml');
+        calibParams = xml2structWrapper(calibfn);
+        s=Spark('Algo','AlgoCalibration',calibParams.sparkOutputFolder);
         s.addTestProperty('CalibVersion',calibToolVersion)
         s.startDUTsession('UnitSerialGoesHere');
         

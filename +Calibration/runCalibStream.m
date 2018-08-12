@@ -114,32 +114,15 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
     %% Validation
-    clear hw
-    validateCalibration(runParams,fprintff);
+    hw.cmd('rst');
+    clear hw;
+    pause(1);
+    Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
 end
 
-function validateCalibration(runParams,fprintff)
-    if runParams.validation
-        hw = HWinterface();
-        
-        fprintff('[-] Validation...\n');
-        frame = showImageRequestDialog(hw,1,diag([.7 .7 1]));
-        params.camera.K = getKMat(hw);
-        params.target.squareSize = 30;
-        [score, results] = Validation.metrics.gridInterDist(frame, params);
-        fprintff('%s: %2.2g\n','eGeom',score);
-        [score, results] = Validation.metrics.gridEdgeSharp(frame, params);
-        fprintff('%s: %2.2g\n','horizSharpnessMean',results.horizMean);
-        fprintff('%s: %2.2g\n','vertSharpnessMean',results.vertMean);
-        fprintff('Validation finished.\n');
-    end
 
-end
-function K = getKMat(hw)
-    CBUFspare = typecast(hw.read('CBUFspare'),'single');
-    K = reshape([CBUFspare;1],3,3)';
-end
+
 
 
 function raw=showImageRequestDialog(hw,figNum,tformData)
@@ -196,6 +179,7 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
         calibParamsFn='calibParams.xml';
     end
     calibParams = xml2structWrapper(calibParamsFn);
+    
 end
 function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams)
     runParams.internalFolder = fullfile(runParams.outputFolder,filesep,'AlgoInternal');  
@@ -348,15 +332,18 @@ function [results,calibPassed,regs,luts] = calibrateDFZ(hw, regs, runParams, cal
         
         
         d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff);
         d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff);
         d(3)=showImageRequestDialog(hw,1,diag([.5 .5 1]));
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff);
         d(4)=showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
         d(5)=showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
         d(6)=showImageRequestDialog(hw,2,diag([2 2 1]));
         
         
         % dodluts=struct;
-        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,runParams.verbose);
+        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,runParams.verbose);
         r.reset();
         
         
@@ -384,7 +371,7 @@ function [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results
     fprintff('[-] Calibrating ROI...\n');
     if (runParams.ROI)
         d = hw.getFrame(10);
-        roiRegs = Calibration.roi.runROICalib(d,true);
+        roiRegs = Calibration.roi.runROICalib(d,calibParams);
         fw.setRegs(roiRegs, fnCalib);
         regs = fw.get(); % run bootcalcs
         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
@@ -392,7 +379,7 @@ function [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results
         hw.runScript(fnAlgoTmpMWD);
         hw.shadowUpdate();
         d = hw.getFrame(10);
-        roiRegsVal = Calibration.roi.runROICalib(d,false);
+        roiRegsVal = Calibration.roi.runROICalib(d,calibParams);
         mr = roiRegsVal.FRMW;
         valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
         %     results.roiVal = valSumMargins;

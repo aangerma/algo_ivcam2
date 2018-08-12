@@ -1,9 +1,9 @@
-function [regs] = runROICalib(frame,useExtraMargins)
-extraMarginL=3;
-extraMarginR=13;
-extraMarginT=3;
-extraMarginB=3;
-
+function [regs] = runROICalib(frame,calibParams)
+extraMarginL=calibParams.roi.extraMarginL;
+extraMarginR=calibParams.roi.extraMarginR;
+extraMarginT=calibParams.roi.extraMarginT;
+extraMarginB=calibParams.roi.extraMarginB;
+useExtraMargins=calibParams.roi.useExtraMargins;
 
 sz = size(frame.i);
 invPixels = (frame.i==0);

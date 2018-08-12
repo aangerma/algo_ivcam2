@@ -1,13 +1,16 @@
-function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,verbose,eval,x0)
+function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,verbose,eval,x0)
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
-
+par = calibParams.dfz;
 
 if(~exist('eval','var'))
     eval=false;
 end
 if(~exist('verbose','var'))
-    verbose=true;
+    verbose=false;
+end
+if(~exist('fprintff','var'))
+    fprintff=@(varargin) fprintf(varargin{:});
 end
 if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
     x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV]);
@@ -48,6 +51,9 @@ for i = 1:numel(darr)
     %find CB points
     warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
     [p,bsz] = detectCheckerboardPoints(normByMax(darr(i).i)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+    if isempty(p)
+        fprintff('Error: checkerboard not detected!');
+    end
     it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
     
     %rtd,phi,theta
@@ -66,8 +72,10 @@ end
 % regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
-xL = [40 40 4000   -3 -3];
-xH = [90 90 6000    +3  3];
+% xL = [40 40 4000   -3 -3];
+% xH = [90 90 6000    +3  3];
+xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1)]; 
+xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2)]; 
 regs = x2regs(x0,regs);
 if eval
     [minerr,eFit]=errFunc(darr,regs,x0);
@@ -90,6 +98,8 @@ outregs = x2regs(xbest,regs);
 [e,eFit]=errFunc(darr,outregs,xbest);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
 outregs = x2regs(xbest);
+fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f , eGeom=%.2f.\n',...
+    outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,e);
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
