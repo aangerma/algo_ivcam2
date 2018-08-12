@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <cb_overwriteExisting>1</cb_overwriteExisting>
+   <cb_replayMode>0</cb_replayMode>
    <cb_verbose>1</cb_verbose>
    <cb_init>1</cb_init>
    <cb_DSM>1</cb_DSM>
@@ -14,5 +14,5 @@
    <cb_debug>1</cb_debug>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_validation>1</cb_validation>
-   <outputdirectorty>C:\temp\unitCalib\F8200079_1\</outputdirectorty>
+   <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
 </struct>

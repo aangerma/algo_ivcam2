@@ -192,18 +192,26 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
     copyfile(fullfile(initFldr,filesep,'*.csv'), runParams.internalFolder)
 end
+
 function hw = loadHWInterface(runParams,fw,fprintff,t)
     fprintff('Loading HW interface...');
-    hwRecFile = fullfile(runParams.outputFolder,filesep,'sessionRecord.mat');
-    if(exist(hwRecFile,'file'))
-        % Use recorded session
-        hw=HWinterfaceFile(hwRecFile);
-        fprintff('Loading recorded capture(%s)\n',hwRecFile);
+    hwRecFile = fullfile(runParams.outputFolder);
+    if runParams.replayMode
+        if(exist(hwRecFile,'file'))
+            % Use recorded session
+            hw=HWinterfaceFile(hwRecFile);
+            fprintff('Loading recorded capture(%s)\n',hwRecFile);
+            
+        else
+            error('no file found in %s\n',hwRecFile)
+        end
     else
         hw=HWinterface(fw,hwRecFile);
+        
     end
     fprintff('Done(%ds)\n',round(toc(t)));
 end
+
 function verValue = getVersion(hw,runParams)
     verValue = typecast(uint8([floor(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
     

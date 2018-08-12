@@ -8,11 +8,12 @@ function outputFolderChange_callback(varargin)
     app=guidata(varargin{1});
     
     hwRecFile = fullfile(app.outputdirectorty.String,filesep,'sessionRecord.mat');
-    if(exist(hwRecFile ,'file') && ~app.cb.overwriteExisting.Value)
+    if app.cb.replayMode.Value
         app.StartButton.BackgroundColor=[.5 .94 .94];
-        
         app.logarea.String={''};
-        fprintff(app,'-=RECORD MODE=-\n loading file %s\n',hwRecFile);
+        if exist(hwRecFile ,'file')
+            fprintff(app,'-=REPLAY MODE=-\n loading file %s\n',hwRecFile);
+        end
     else
         app.logarea.String={''};
         app.StartButton.BackgroundColor=[.94 .94 .94];
@@ -44,15 +45,25 @@ function loadDefaults(app)
     end
     
 end
+
 function setFolder(varargin)
     textboxH = varargin{3};
-    f=uigetdir(textboxH.String);
-    if(f==0)
-        return;
+    app = guidata(varargin{1});
+    if app.cb.replayMode.Value
+        [fname, pathStr] = uigetfile('*.mat', 'Replay Mode',textboxH.String);
+        if ~isempty(fname)
+            f = fullfile(pathStr,fname);
+        end
+    else
+        f = uigetdir(textboxH.String);
     end
     
-    textboxH.String=f;
-    outputFolderChange_callback(textboxH);
+    if f~=0
+        textboxH.String=f;
+        outputFolderChange_callback(textboxH);
+    end
+    
+    
     
 end
 
@@ -129,7 +140,7 @@ function app=createComponents()
     % Create outputdirectorty
     app.outputdirectorty =  uicontrol('style','edit','parent',configurationTab);
     app.outputdirectorty.HorizontalAlignment='left';
-    app.outputdirectorty.Position = [110 sz(2)-60 410 22];
+    app.outputdirectorty.Position = [110 sz(2)-60 490 22];
     app.outputdirectorty.KeyReleaseFcn=@outputFolderChange_callback;
     
     % Create VersionLabel
@@ -145,12 +156,13 @@ function app=createComponents()
     app.outputFldrBrowseBtn.Position = [606 sz(2)-60 21 22];
     app.outputFldrBrowseBtn.String = '...';
     
+    %{
     % Create outputFldrBrowseBtn
     app.outputFldrBrowseBtn =  uicontrol('style','pushbutton','parent',configurationTab);
     app.outputFldrBrowseBtn.Callback = @addPoxtFix_callback;
     app.outputFldrBrowseBtn.Position = [520 sz(2)-60 81 22];
     app.outputFldrBrowseBtn.String = 'add unit postfix';
-    
+    %}
     
     % Create logarea
     app.logarea =uicontrol('style','edit','parent',configurationTab);
@@ -164,7 +176,7 @@ function app=createComponents()
     % Create verboseCheckBox
     
     %checkboxes
-    cbnames = {'overwriteExisting','verbose','init','DSM','gamma','dataDelay','ROI','DFZ','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','validation','uniformProjectionDFZ'};
+    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','ROI','DFZ','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','validation','uniformProjectionDFZ'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -235,28 +247,53 @@ function statrtButton_callback(varargin)
     fprintffS=@(varargin) fprintff(app,varargin{:});
     try
         
-        if(exist(app.outputdirectorty.String,'dir') && app.cb.overwriteExisting.Value)
-            rmdir(app.outputdirectorty.String,'s');
+        runparams=structfun(@(x) x.Value,app.cb,'uni',0);
+        runparams.version=calibToolVersion();
+        runparams.outputFolder = [];
+        origOutputFolder = app.outputdirectorty.String;
+        
+        if app.cb.replayMode.Value
+            seesionFile = app.outputdirectorty.String;
+            [pathStr,~, extensionStr] = fileparts(seesionFile);
+            if ~(exist(seesionFile,'file') && strcmp(extensionStr,'.mat'))
+                msg = sprintf( 'the file %s does not existor is not a valid session recording\n',app.outputdirectorty.String);
+                fprintffS('[!] ERROR: %s',msg);
+                errordlg(msg);
+                return;
+            end
+            runparams.outputFolder=app.outputdirectorty.String;
+            runparamsFn = fullfile(pathStr,'sessionParams.xml');
+            logFn = fullfile(pathStr,'log.log');
+        else
+            serialStr = '00000000';
+            try
+                hw = HWinterface;
+                serialStr = hw.getSerial();
+                clear hw;
+            catch e
+                fprintffS('[!] ERROR:%s\n',strtrim(e.message));
+                errordlg(e.message);
+                return;
+            end
+            revisionList = dirFolders(fullfile(app.outputdirectorty.String,serialStr),'PC*');
+            revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'PC(?<rev>\d+)','names'));
+            currRev = sprintf('PC%02d',round(max([0;revInt(:)])+1));
+            app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
+            mkdirSafe(app.outputdirectorty.String);
+            
+            runparams.outputFolder=app.outputdirectorty.String;
+            runparamsFn = fullfile(runparams.outputFolder,'sessionParams.xml');
+            logFn = fullfile(app.outputdirectorty.String,'log.log');
         end
-        mkdirSafe(app.outputdirectorty.String);
         
+        outputFolderChange_callback(app.figH);
         
+        struct2xmlWrapper(runparams,runparamsFn);
         app.logarea.BackgroundColor=app.logarea.UserData;
-        
-        
-        app.m_logfid = fopen(fullfile(app.outputdirectorty.String,filesep,'log.log'),'wt');
+        app.m_logfid = fopen(logFn,'wt');
         
         
         % clear log
-        outputFolderChange_callback(app.figH);
-        
-        
-        runparams=structfun(@(x) x.Value,app.cb,'uni',0);
-        runparams.version=calibToolVersion();
-        runparams.outputFolder=app.outputdirectorty.String;
-        runparamsFn = fullfile(runparams.outputFolder,filesep,'sessionParams.xml');
-        struct2xmlWrapper(runparams,runparamsFn);
-        
         if isdeployed
             toolDir = ctfroot;
         else
@@ -264,32 +301,31 @@ function statrtButton_callback(varargin)
         end
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
-        s=Spark('Algo','AlgoCalibration',calibParams.sparkOutputFolder);
-        s.addTestProperty('CalibVersion',calibToolVersion)
-        s.startDUTsession('UnitSerialGoesHere');
-        
-        %%
-        s.addDTSproperty('TargetType','IRcalibrationChart');
-        
-        
-        
+        if app.cb.replayMode.Value==0
+            s=Spark('Algo','AlgoCalibration',calibParams.sparkOutputFolder);
+            s.addTestProperty('CalibVersion',calibToolVersion)
+            s.startDUTsession(serialStr);
+            s.addDTSproperty('TargetType','IRcalibrationChart');
+        end
         
         set_watches(app.figH,false);
         app.AbortButton.Visible='on';
         app.AbortButton.Enable='on';
         app.AbortButton.UserData=1;
+        %%
         %=======================================================RUN CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
         
         [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS);
-        s.AddMetrics('score', score,1,100,false);
         if calibPassed
             app.logarea.BackgroundColor = [0 0.8 0]; % Color green
         else
             app.logarea.BackgroundColor = [0.8 0 0]; % Color red
         end
-        
+        if app.cb.replayMode.Value == 0
+            s.AddMetrics('score', score,1,100,false);
+        end
     catch e
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         errordlg(e.message);
@@ -298,11 +334,20 @@ function statrtButton_callback(varargin)
             fprintf(fid,strrep(getReport(e),'\','\\'));
             fclose(fid);
         end
-        s.endDUTsession([], true);
+        if app.cb.replayMode.Value == 0
+            s.endDUTsession([], true);
+        end
     end
+    
+    %restore original folder
+    app.outputdirectorty.String = origOutputFolder;
+    outputFolderChange_callback(app.figH);
+
     app.AbortButton.Visible='off';
     app.AbortButton.Enable='off';
-    s.endDUTsession();
+    if app.cb.replayMode.Value == 0
+        s.endDUTsession();
+    end
     fclose(app.m_logfid);
     set_watches(app.figH,true);
 end
