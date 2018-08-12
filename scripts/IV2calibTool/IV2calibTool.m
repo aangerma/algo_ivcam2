@@ -12,7 +12,7 @@ function outputFolderChange_callback(varargin)
         app.StartButton.BackgroundColor=[.5 .94 .94];
         
         app.logarea.String={''};
-        fprintff(app,'-=RECORD MODE=-\n loading file%s\n',hwRecFile);
+        fprintff(app,'-=RECORD MODE=-\n loading file %s\n',hwRecFile);
     else
         app.logarea.String={''};
         app.StartButton.BackgroundColor=[.94 .94 .94];
@@ -86,10 +86,14 @@ function app=createComponents()
         'resize','off',...
         'numbertitle','off',...
         'name','IV2 Calibration Tool');
-    
-    app.figH.Position(3)=sz(1);
+    if isdeployed
+        toolDir = ctfroot;
+    else
+        toolDir = fileparts(mfilename('fullpath'));
+    end
+    app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
-    app.defaultsFilename='IV2calibTool.xml';
+    app.defaultsFilename= fullfile(toolDir,'IV2calibTool.xml');
     centerfig(app.figH );
     
     tg = uitabgroup('Parent',app.figH);
@@ -269,7 +273,12 @@ function statrtButton_callback(varargin)
         app.AbortButton.Enable='on';
         app.AbortButton.UserData=1;
         %=======================================================RUN CALIBRATION=======================================================
-        calibfn =  fullfile(pwd,'calibParams.xml');
+        if isdeployed
+            toolDir = ctfroot;
+        else
+            toolDir = fileparts(mfilename('fullpath'));
+        end
+        calibfn =  fullfile(toolDir,'calibParams.xml');
         
         [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS);
         s.AddMetrics('score', score,1,100,false);
