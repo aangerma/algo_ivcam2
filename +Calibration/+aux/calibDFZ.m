@@ -50,7 +50,7 @@ for i = 1:numel(darr)
     
     %find CB points
     warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-    [p,bsz] = detectCheckerboardPoints(normByMax(darr(i).i)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+    [p,bsz] = detectCheckerboardPoints(double(normByMax(darr(i).i))); % p - 3 checkerboard points. bsz - checkerboard dimensions.
     if isempty(p)
         fprintff('Error: checkerboard not detected!');
     end

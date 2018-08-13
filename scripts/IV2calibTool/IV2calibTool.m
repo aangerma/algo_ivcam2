@@ -244,7 +244,6 @@ end
 
 function statrtButton_callback(varargin)
     app=guidata(varargin{1});
-    fprintffS=@(varargin) fprintff(app,varargin{:});
     try
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
@@ -263,7 +262,7 @@ function statrtButton_callback(varargin)
             end
             runparams.outputFolder=app.outputdirectorty.String;
             runparamsFn = fullfile(pathStr,'sessionParams.xml');
-            logFn = fullfile(pathStr,'log.log');
+            logFn = fullfile(pathStr,'replayLog.log');
         else
             serialStr = '00000000';
             try
@@ -291,7 +290,8 @@ function statrtButton_callback(varargin)
         struct2xmlWrapper(runparams,runparamsFn);
         app.logarea.BackgroundColor=app.logarea.UserData;
         app.m_logfid = fopen(logFn,'wt');
-        
+        fprintffS=@(varargin) fprintff(app,varargin{:});
+
         
         % clear log
         if isdeployed
@@ -341,7 +341,6 @@ function statrtButton_callback(varargin)
     
     %restore original folder
     app.outputdirectorty.String = origOutputFolder;
-    outputFolderChange_callback(app.figH);
 
     app.AbortButton.Visible='off';
     app.AbortButton.Enable='off';
