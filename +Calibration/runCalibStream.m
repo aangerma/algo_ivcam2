@@ -306,7 +306,7 @@ function [results,calibPassed,regs,luts] = calibrateDFZ(hw, regs, runParams, cal
         
         
         % dodluts=struct;
-        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,runParams.verbose);
+        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,0);
         r.reset();
         
         
