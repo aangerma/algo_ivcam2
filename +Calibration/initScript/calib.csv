@@ -5,7 +5,7 @@ FRMWlaserangleV      f0
 FRMWcbufConstLUT     b1       
 DIGGundistBypass     b0       
 DIGGspare_000        h0101    
-DESTbaseline         f30.0    
+DESTbaseline         f31.0    
 DESTtxFRQpd_000      f5000    
 DESTtxFRQpd_001      f5000    
 DESTtxFRQpd_002      f5000    

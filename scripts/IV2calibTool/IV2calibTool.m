@@ -98,7 +98,7 @@ function app=createComponents()
         'numbertitle','off',...
         'name','IV2 Calibration Tool');
     if isdeployed
-        toolDir = ctfroot;
+        toolDir = pwd;
     else
         toolDir = fileparts(mfilename('fullpath'));
     end
@@ -295,7 +295,7 @@ function statrtButton_callback(varargin)
         
         % clear log
         if isdeployed
-            toolDir = ctfroot;
+            toolDir = pwd;
         else
             toolDir = fileparts(mfilename('fullpath'));
         end
