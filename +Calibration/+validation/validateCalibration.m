@@ -4,7 +4,7 @@ function validateCalibration(runParams,calibParams,fprintff)
         waitfor(msgbox('Please disconnect and reconnect the unit. Press ok when done.'));
         hw = HWinterface();
         fprintff('opening stream...');
-        hw.getFrame();
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
         fprintff('Done.\n');
         
         
