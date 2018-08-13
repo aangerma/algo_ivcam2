@@ -114,9 +114,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
     %% Validation
-    hw.cmd('rst');
     clear hw;
-    pause(1);
     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
 end
@@ -246,7 +244,7 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     if(runParams.dataDelay)
         
         showImageRequestDialog(hw,1,diag([.8 .8 1]));
-        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,runParams.verbose);
+        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams.verbose);
         
         fw.setRegs(delayRegs,fnCalib);
         regs = fw.get();

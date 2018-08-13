@@ -83,17 +83,20 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
         close(ff);
     end
     
+    
+    
+    
+    st = regionprops(d_post.i>0, 'BoundingBox' );
+    colxMinMax = [st.BoundingBox(1)+0.5, st.BoundingBox(1)+st.BoundingBox(3)-0.5];
+    rowyMinMax = [st.BoundingBox(2)+0.5, st.BoundingBox(2)+st.BoundingBox(4)-0.5];
+    angxMinMax = round((colxMinMax-1)/639*2047*2-2047);
+    angyMinMax = round((rowyMinMax-1)/479*2047*2-2047);
+    fprintff('DSM: minAngX=%d, maxAngX=%d, minAngY=%d, maxAngY=%d\n.',angxMinMax(1),angxMinMax(2),angyMinMax(1),angyMinMax(2));   
+    
     % Return to regular coordiantes
     hw.setReg('DIGGsphericalEn',false);
     % Shadow update:
     hw.shadowUpdate();
-    
-    st = regionprops(d_post.i>0, 'BoundingBox' );
-    colxMinMax = [st.BoundingBox(1), st.BoundingBox(1)+st.BoundingBox(3)];
-    rowyMinMax = [st.BoundingBox(2), st.BoundingBox(2)+st.BoundingBox(4)];
-    angxMinMax = round((colxMinMax-1)/639*2047*2-2047);
-    angyMinMax = round((rowyMinMax-1)/639*2047*2-2047);
-    fprintff('DSM: minAngX=%d, maxAngX=%d, minAngY=%d, maxAngY=%d\n.',angxMinMax(1),angxMinMax(2),angyMinMax(1),angyMinMax(2));   
 end
 
 function [angxZO,angyZO] = centerProjectZO(hw)

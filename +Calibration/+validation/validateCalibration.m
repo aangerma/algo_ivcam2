@@ -1,7 +1,12 @@
 function validateCalibration(runParams,calibParams,fprintff)
     if runParams.validation
-        hw = HWinterface();
         fprintff('[-] Validation...\n');
+        waitfor(msgbox('Please disconnect and reconnect the unit. Press ok when done.'));
+        hw = HWinterface();
+        fprintff('opening stream...');
+        hw.getFrame();
+        fprintff('Done(%ds)\n',round(toc(t)));
+        
         
         Calibration.validation.validateDSM(hw,fprintff);
         Calibration.validation.validateDelays(hw,calibParams,fprintff);

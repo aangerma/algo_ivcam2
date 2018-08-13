@@ -1,4 +1,4 @@
-function [regs, results]=calibrate(hw,dataDelayParams,verbose)
+function [regs, results]=calibrate(hw,dataDelayParams,fprintff,verbose)
 
 results = struct('fastDelayCalibSuccess',[],'slowDelayCalibSuccess',[],'delaySlowPixelVar',[]);
 
@@ -37,12 +37,13 @@ results.slowDelayCalibSuccess = delayIRsuccess;
 results.delaySlowPixelVar = pixelVar;
 
 % Metrics - edge width on one direction vs final image
-[frameU,~]=Calibration.dataDelay.getScanDirImgs(hw);
+[imU,~]=Calibration.dataDelay.getScanDirImgs(hw);
+frameU.i = imU; frameU.z = imU; 
 frame = hw.getFrame(10);
-[~, results] = Validation.metrics.gridEdgeSharp(frame, []);
-[~, resultsU] = Validation.metrics.gridEdgeSharp(frameU, []);
-fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horizSharpnessMean',resultsU.horizMean,results.horizMean);
-fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','vertSharpnessMean',resultsU.vertMean,results.vertMean);
+[~, metricsResults] = Validation.metrics.gridEdgeSharp(frame, []);
+[~, metricsResultsU] = Validation.metrics.gridEdgeSharp(frameU, []);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horizSharpnessMean',metricsResultsU.horizMean,metricsResults.horizMean);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','vertSharpnessMean',metricsResultsU.vertMean,metricsResults.vertMean);
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;
 [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,verbose);

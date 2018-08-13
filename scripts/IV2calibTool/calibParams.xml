@@ -32,8 +32,8 @@
         <fovxRange>[40,90]</fovxRange> 
         <fovyRange>[40,90]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 
-        <zenithxRange>[0, 0]</zenithxRange> 
-        <zenithyRange>[0, 0]</zenithyRange> 
+        <zenithxRange>[-1,1]</zenithxRange> 
+        <zenithyRange>[-1,1]</zenithyRange> 
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
