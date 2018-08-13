@@ -180,15 +180,18 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     
 end
 function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams)
-    runParams.internalFolder = fullfile(runParams.outputFolder,filesep,'AlgoInternal');  
-    mkdirSafe(runParams.outputFolder);
+    if runParams.replayMode
+        runParams.internalFolder = tempname;
+    else
+        runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');  
+        mkdirSafe(runParams.outputFolder);
+    end
     mkdirSafe(runParams.internalFolder);
-    
-    
-    fnCalib     = fullfile(runParams.internalFolder,filesep,'calib.csv');
-    fnUndsitLut = fullfile(runParams.internalFolder,filesep,'FRMWundistModel.bin32');
+    fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
+    fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
     initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
-    copyfile(fullfile(initFldr,filesep,'*.csv'), runParams.internalFolder)
+    copyfile(fullfile(initFldr,'*.csv'), runParams.internalFolder)
+    
 end
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
@@ -204,7 +207,7 @@ function hw = loadHWInterface(runParams,fw,fprintff,t)
             error('no file found in %s\n',hwRecFile)
         end
     else
-        hw=HWinterface(fw,hwRecFile);
+        hw=HWinterface(fw,fullfile(hwRecFile,'sessionRecord.mat'));
         
     end
     fprintff('Done(%ds)\n',round(toc(t)));
