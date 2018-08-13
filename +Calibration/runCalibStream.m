@@ -224,7 +224,7 @@ function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)
     fprintff('init hw configuration...');
     if(runParams.init)
         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW.*$).*',fnAlgoInitMWD);
+        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|DSM.*$).*',fnAlgoInitMWD);
         hw.runPresetScript('maReset');
         pause(0.1);
         hw.runScript(fnAlgoInitMWD);
@@ -297,7 +297,7 @@ end
 function dsmregs = calibrateDSM(hw, runParams, calibParams, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
-        dsmregs = Calibration.aux.calibDSM(hw,calibParams,runParams.verbose);
+        dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams.verbose);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
         fprintff('[?] skipped\n');
@@ -338,13 +338,13 @@ function [results,calibPassed,regs,luts] = calibrateDFZ(hw, regs, runParams, cal
         r.add('DIGGsphericalEn',true);
         r.set();
         
-        
+        nCorners = 9*13;
         d(1)=showImageRequestDialog(hw,1,diag([.7 .7 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff);
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
         d(2)=showImageRequestDialog(hw,1,diag([.6 .6 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff);
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
         d(3)=showImageRequestDialog(hw,1,diag([.5 .5 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff);
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
         d(4)=showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
         d(5)=showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
         d(6)=showImageRequestDialog(hw,2,diag([2 2 1]));

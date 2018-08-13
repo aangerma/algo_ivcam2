@@ -47,14 +47,14 @@ end
 %regs = struct();
 
 rx = sz(2) / (sz(2) - marginR - marginL);
-regs.FRMW.marginR = int16(ceil(marginR * rx))+extraMarginR*useExtraMargins;
-regs.FRMW.marginL = int16(ceil(marginL * rx))+extraMarginL*useExtraMargins;
+regs.FRMW.marginR = int16(ceil(marginR * rx))+extraMarginR*(marginR~=0)*useExtraMargins;
+regs.FRMW.marginL = int16(ceil(marginL * rx))+extraMarginL*(marginL~=0)*useExtraMargins;
 %regs.FRMW.xres = uint16(sz(2)) + uint16(regs.FRMW.marginR) + uint16(regs.FRMW.marginL);
 %assert(int16(regs.FRMW.xres) - regs.FRMW.marginR - regs.FRMW.marginL == sz(2), 'wrong xres to be set');
 
 ry = sz(1) / (sz(1) - marginT - marginB);
-regs.FRMW.marginT = int16(ceil(marginT * ry))+extraMarginT*useExtraMargins;
-regs.FRMW.marginB = int16(ceil(marginB * ry))+extraMarginB*useExtraMargins;
+regs.FRMW.marginT = int16(ceil(marginT * ry))+extraMarginT*(marginT~=0)*useExtraMargins;
+regs.FRMW.marginB = int16(ceil(marginB * ry))+extraMarginB*(marginB~=0)*useExtraMargins;
 %regs.FRMW.yres = uint16(sz(1)) + uint16(regs.FRMW.marginT) + uint16(regs.FRMW.marginB);
 %assert(int16(regs.FRMW.yres) - regs.FRMW.marginT - regs.FRMW.marginB == sz(1), 'wrong yres to be set');
 

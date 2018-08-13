@@ -12,7 +12,6 @@
    <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
    <cb_burnConfigurationToDevice>1</cb_burnConfigurationToDevice>
    <cb_debug>1</cb_debug>
-   <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_validation>1</cb_validation>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
 </struct>

@@ -36,6 +36,13 @@ r.set();
 results.slowDelayCalibSuccess = delayIRsuccess;
 results.delaySlowPixelVar = pixelVar;
 
+% Metrics - edge width on one direction vs final image
+[frameU,~]=Calibration.dataDelay.getScanDirImgs(hw);
+frame = hw.getFrame(10);
+[~, results] = Validation.metrics.gridEdgeSharp(frame, []);
+[~, resultsU] = Validation.metrics.gridEdgeSharp(frameU, []);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horizSharpnessMean',resultsU.horizMean,results.horizMean);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','vertSharpnessMean',resultsU.vertMean,results.vertMean);
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;
 [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,verbose);

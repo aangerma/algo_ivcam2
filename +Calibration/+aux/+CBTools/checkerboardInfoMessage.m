@@ -1,7 +1,9 @@
-function [  ] = checkerboardInfoMessage( frame,fprintff )
+function [  ] = checkerboardInfoMessage( frame,fprintff ,th )
 warning('off','vision:calibrate:boardShouldBeAsymmetric'); % Supress checkerboard warning
 [p,~] = detectCheckerboardPoints(normByMax(frame.i)); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-fprintff('%d CB corners detected.\n',size(p,1));
+if size(p,1)<th
+    fprintff('%d/%d CB corners detected.\n',size(p,1),th);
+end
 
 
 end
