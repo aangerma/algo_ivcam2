@@ -5,7 +5,7 @@ function validateCalibration(runParams,calibParams,fprintff)
         hw = HWinterface();
         fprintff('opening stream...');
         hw.getFrame();
-        fprintff('Done(%ds)\n',round(toc(t)));
+        fprintff('Done.\n');
         
         
         Calibration.validation.validateDSM(hw,fprintff);
