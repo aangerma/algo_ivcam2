@@ -306,8 +306,8 @@ function statrtButton_callback(varargin)
             s.addTestProperty('CalibVersion',calibToolVersion)
             s.startDUTsession(serialStr);
             s.addDTSproperty('TargetType','IRcalibrationChart');
+
         end
-        
         set_watches(app.figH,false);
         app.AbortButton.Visible='on';
         app.AbortButton.Enable='on';
@@ -316,16 +316,22 @@ function statrtButton_callback(varargin)
         %=======================================================RUN CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
-        
         [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS);
-        if calibPassed
+        if calibPassed == 1
             app.logarea.BackgroundColor = [0 0.8 0]; % Color green
-        else
+        elseif calibPassed == 0
             app.logarea.BackgroundColor = [0.8 0 0]; % Color red
         end
         if app.cb.replayMode.Value == 0
-            s.AddMetrics('score', score,1,100,false);
+            s.AddMetrics('score', score,calibParams.passScore,100,true);
         end
+        if calibPassed~=0 && runparams.validation
+            waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
+            Calibration.validation.validateCalibration(runparams,calibParams,fprintffS);
+        end
+        
+        
+        
     catch e
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         errordlg(e.message);

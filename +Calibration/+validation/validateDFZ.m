@@ -1,5 +1,4 @@
-function [  ] = validateDFZ( hw,fprintff )
-frame = hw.getFrame(30);
+function [  ] = validateDFZ( hw,frame,fprintff )
 params.camera.K = getKMat(hw);
 params.target.squareSize = 30;
 [score, results] = Validation.metrics.gridInterDist(frame, params);

@@ -16,16 +16,11 @@ classdef Spark<handle
     
     methods (Access=public)
         
-        
-        
-        
         function obj = Spark(operatorName,workOrder,outputFolder)
             if(~exist('outputFolder','var'))
                 outputFolder='c:\temp';
             end
             obj.m_outputFolder=outputFolder;
-            
-            
             p = fullfile(fileparts(mfilename('fullpath')),filesep);
             dnet = dirFiles(p,'*.dll',false);
             dnet=strcat(p,dnet);

@@ -11,7 +11,10 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
-    
+    if noCalibrations(runParams)
+        calibPassed = -1;
+        return;
+    end
     
     %% Calibration file names
     [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams);
@@ -42,8 +45,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
      
     %% Set coarse DSM values 
     coarseDSMRegs = calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
-    fw.setRegs(coarseDSMRegs,fnCalib);
-    [regs,luts]=fw.get();
+
     %% ::calibrate delays::
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
@@ -115,7 +117,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     
     %% Validation
     clear hw;
-    Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
+%     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
 end
 
@@ -246,6 +248,7 @@ function dsmregs = calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
         dsmregs = Calibration.aux.calibCoarseDSM(hw,calibParams,runParams.verbose);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
+        dsmregs = [];
         fprintff('[?] skipped\n');
     end
 end
@@ -438,4 +441,7 @@ function burn2Device(hw,score,runParams,calibParams,fprintff,t)
     fprintff('[!] burnning...');
     hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
     fprintff('Done(%ds)\n',round(toc(t)));
+end
+function res = noCalibrations(runParams)
+    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist);
 end
