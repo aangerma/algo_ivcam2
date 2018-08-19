@@ -49,7 +49,7 @@ function [rawXmin,rawXmax,rawYmin,rawYmax] = memsRawData(hw,nSamples)
         angxRaw(i) = typecast(SA,'single');
         hw.cmd('mwd fffe2cf4 fffe2cf8 00');
     end
-    [rawXmin,rawXmax] = minmax(angxRaw);
-    [rawYmin,rawYmax] = minmax(angyRaw);
+    [rawXmin,rawXmax] = minmax_(angxRaw);
+    [rawYmin,rawYmax] = minmax_(angyRaw);
     
 end

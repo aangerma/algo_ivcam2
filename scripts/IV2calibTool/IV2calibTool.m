@@ -249,20 +249,24 @@ function statrtButton_callback(varargin)
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
         runparams.version=calibToolVersion();
         runparams.outputFolder = [];
+        runparams.replayFile = [];
+
+        %temporary until we have valid log file
+        app.m_logfid = 1;
+        fprintffS=@(varargin) fprintff(app,varargin{:});
+
         origOutputFolder = app.outputdirectorty.String;
-        
         if app.cb.replayMode.Value
             seesionFile = app.outputdirectorty.String;
-            [pathStr,~, extensionStr] = fileparts(seesionFile);
+            [~,~, extensionStr] = fileparts(seesionFile);
             if ~(exist(seesionFile,'file') && strcmp(extensionStr,'.mat'))
                 msg = sprintf( 'the file %s does not existor is not a valid session recording\n',app.outputdirectorty.String);
                 fprintffS('[!] ERROR: %s',msg);
                 errordlg(msg);
                 return;
             end
-            runparams.outputFolder=app.outputdirectorty.String;
-            runparamsFn = fullfile(pathStr,'sessionParams.xml');
-            logFn = fullfile(pathStr,'replayLog.log');
+            runparams.outputFolder = tempname;
+            runparams.replayFile = app.outputdirectorty.String;
         else
             serialStr = '00000000';
             try
@@ -278,13 +282,12 @@ function statrtButton_callback(varargin)
             revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'PC(?<rev>\d+)','names'));
             currRev = sprintf('PC%02d',round(max([0;revInt(:)])+1));
             app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
-            mkdirSafe(app.outputdirectorty.String);
-            
             runparams.outputFolder=app.outputdirectorty.String;
-            runparamsFn = fullfile(runparams.outputFolder,'sessionParams.xml');
-            logFn = fullfile(app.outputdirectorty.String,'log.log');
+
         end
-        
+        mkdirSafe(runparams.outputFolder);
+        runparamsFn = fullfile(runparams.outputFolder,'sessionParams.xml');
+        logFn = fullfile(runparams.outputFolder,'log.log');
         outputFolderChange_callback(app.figH);
         
         struct2xmlWrapper(runparams,runparamsFn);
@@ -325,7 +328,7 @@ function statrtButton_callback(varargin)
         if app.cb.replayMode.Value == 0
             s.AddMetrics('score', score,calibParams.passScore,100,true);
         end
-        if calibPassed~=0 && runparams.validation
+        if calibPassed~=0 && runparams.validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
             Calibration.validation.validateCalibration(runparams,calibParams,fprintffS);
         end
