@@ -44,22 +44,24 @@ end
 
 hSize = [size(pts,1) size(pts,2)-1];
 hTrans = zeros(hSize);
+hCont = zeros(hSize);
 for j=1:hSize(2)
     for i=1:hSize(1)
         p0 = pts(i, j);
         p1 = pts(i, j+1);
-        hTrans(i,j) = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth);
+        [hTrans(i,j),hCont(i,j)] = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth);
     end
 end
 
 vSize = [size(pts,1)-1 size(pts,2)];
 vTrans = zeros(vSize);
+vCont = zeros(vSize);
 irT = ir';
 for j=1:vSize(2)
     for i=1:vSize(1)
         p0 = pts(i, j)'*1j;
         p1 = pts(i+1, j)'*1j;
-        vTrans(i,j) = analyzeHorizontalEdge(irT, p0, p1, tunnelWidth);
+        [vTrans(i,j),vCont(i,j)] = analyzeHorizontalEdge(irT, p0, p1, tunnelWidth);
     end
 end
 
@@ -73,10 +75,15 @@ res.vertMax = max(vTrans(:));
 res.vertMean = mean(vTrans(:));
 res.vertStd = std(vTrans(:));
 
+cont = [vCont(:);hCont(:)];
+res.contMin = min(cont(:));
+res.contMax = max(cont(:));
+res.contMean = mean(cont(:));
+res.contStd = std(cont(:));
 
 end
     
-function width = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth)
+function [width,contrast] = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth)
 
     hLine = polyfit([real(p0) real(p1)], [imag(p0) imag(p1)], 1);
     
@@ -96,6 +103,7 @@ function width = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth)
     yTrans = mean(yTransImg,2);
     [fitCurve,~,~, rise, sigm_params] = fitting.riseFitting(yTrans);
     width = rise / 4;
+    contrast = abs(fitCurve(end)-fitCurve(1));
 end
 
 
