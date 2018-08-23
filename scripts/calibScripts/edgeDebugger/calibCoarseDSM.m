@@ -2,7 +2,7 @@ function dsmregs = calibCoarseDSM(hw)
 % Set regs such that -angmax,+angmax will cover the entire image
 % Look at the image, calculate the true angle range and set the scale and
 % offset accordingly.
-calibParams.coarseDSM.margin = 100;
+calibParams.coarseDSM.nSamples = 100;
 calibParams.coarseDSM.margin = 300;
 [rawXmin,rawXmax,rawYmin,rawYmax] = memsRawData(hw,calibParams.coarseDSM.nSamples);
 [dsmregs.EXTL.dsmXscale,dsmregs.EXTL.dsmXoffset] = stretch2margin(rawXmin,rawXmax,calibParams.coarseDSM.margin);
