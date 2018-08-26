@@ -1,5 +1,6 @@
-function [regs,delayZsuccess,delayIRsuccess]=calibrate(hw,dataDelayParams,verbose)
+function [regs, results]=calibrate(hw,dataDelayParams,fprintff,verbose)
 
+results = struct('fastDelayCalibSuccess',[],'slowDelayCalibSuccess',[],'delaySlowPixelVar',[]);
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
 r=Calibration.RegState(hw);
@@ -31,11 +32,22 @@ r.set();
 
 
 %% CALIBRATE IR
-[delayIR,delayIRsuccess]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
+[delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
+results.slowDelayCalibSuccess = delayIRsuccess;
+results.delaySlowPixelVar = pixelVar;
 
+% Metrics - edge width on one direction vs final image
+[imU,~]=Calibration.dataDelay.getScanDirImgs(hw);
+frameU.i = imU; frameU.z = imU; 
+frame = hw.getFrame(10);
+[~, metricsResults] = Validation.metrics.gridEdgeSharp(frame, []);
+[~, metricsResultsU] = Validation.metrics.gridEdgeSharp(frameU, []);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horizSharpnessMean',metricsResultsU.horizMean,metricsResults.horizMean);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','vertSharpnessMean',metricsResultsU.vertMean,metricsResults.vertMean);
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;
 [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,verbose);
+results.fastDelayCalibSuccess = delayZsuccess;
 
 %% SET REGISTERS
 regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);

@@ -1,4 +1,4 @@
-function [dsmregs] = calibDSM(hw,params,verbose)
+function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     %CALIBDSM find DSM scale and offset such that:
     % 1. The zero order reported angles are: [angx,angy] =[0,0]
     % 2. The range of angles cover as much as possible.
@@ -32,7 +32,7 @@ function [dsmregs] = calibDSM(hw,params,verbose)
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
     hw.shadowUpdate();
-     d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
+    d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     if(verbose)
         ff=figure(sum(mfilename));
         pre_contour=(d_pre.i>0)-imerode(d_pre.i>0,ones(5));
@@ -72,6 +72,7 @@ function [dsmregs] = calibDSM(hw,params,verbose)
     hw.setReg('EXTLdsmYoffset',dsmregs.EXTL.dsmYoffset);
     hw.shadowUpdate();
     d_post=hw.getFrame(30); %should be out of verbose so it will always happen (for log)
+    
     if(verbose)
         post_contour=(d_post.i>0)-imerode(d_post.i>0,ones(5));
         imagesc(cat(3,pre_contour,post_contour,post_contour*0));
@@ -81,6 +82,16 @@ function [dsmregs] = calibDSM(hw,params,verbose)
         pause(1);
         close(ff);
     end
+    
+    
+    
+    
+    st = regionprops(d_post.i>0, 'BoundingBox' );
+    colxMinMax = [st.BoundingBox(1)+0.5, st.BoundingBox(1)+st.BoundingBox(3)-0.5];
+    rowyMinMax = [st.BoundingBox(2)+0.5, st.BoundingBox(2)+st.BoundingBox(4)-0.5];
+    angxMinMax = round((colxMinMax-1)/639*2047*2-2047);
+    angyMinMax = round((rowyMinMax-1)/479*2047*2-2047);
+    fprintff('DSM: minAngX=%d, maxAngX=%d, minAngY=%d, maxAngY=%d.\n',angxMinMax(1),angxMinMax(2),angyMinMax(1),angyMinMax(2));   
     
     % Return to regular coordiantes
     hw.setReg('DIGGsphericalEn',false);

@@ -1,4 +1,4 @@
-function varargout = minmax(v)
+function varargout = minmax_(v)
 if(nargout<2)
     varargout{1}=[min(v(:)) max(v(:))];
 else

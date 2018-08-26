@@ -15,8 +15,8 @@ import a_common
 def calibration(xmlPath):
     # c=Calibration.runCalibStream('D:\temp\calib0033_3\AlgoInternal\calibrationInputParams.xml','D:\gitsource\algo_ivcam2\scripts\IV2calibTool\calibParams.xml');
     calibFilePath = path.join(path.dirname(path.abspath(__file__)), '..\..\..\scripts\IV2calibTool\calibParams.xml')
-    slash.logger.info(
-        "check xml's files: calibrationInputParams.xml: {}, calibParams.xml: {}".format(xmlPath, calibFilePath),
+    slash.logger.info("check calibrationInputParams.xml: {}".format(xmlPath),extra={"highlight": True})
+    slash.logger.info("check calibParams.xml: {}".format(calibFilePath),
         extra={"highlight": True})
     if not path.exists(xmlPath):
         raise FileNotFoundError(xmlPath)
@@ -47,7 +47,7 @@ def calibration(xmlPath):
         slash.logger.error("calibration: failed converting result: {}".format(score), extra={"highlight": True})
         raise a_common.TestFail("Test failed please review log")
 
-    threshold = 95
+    threshold = 80
     s = "calibration: score: {}, threshold: {}, calibration out: {}".format(score, threshold, status(calibPassed))
     if score < threshold:
         slash.logger.error(s, extra={"highlight": True})
@@ -59,5 +59,5 @@ def calibration(xmlPath):
 # slash run -vv -l Avv/logs/ -o log.highlights_subpath={context.session.id}/highlights.log -f Avv/tests/test_list.txt -k test_calibration_basic
 @slash.tag('turn_in')
 def test_calibration_basic():
-    filePath = r'X:\Avv\sources\calibration_record\calibrationInputParams.xml'
+    filePath = r'X:\Avv\sources\calibration_record\F8140115\PC01\sessionParams.xml'
     calibration(filePath)
