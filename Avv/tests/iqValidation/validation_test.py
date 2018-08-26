@@ -133,20 +133,20 @@ def validation(xmlPath):
 
 # slash run -vv -l Avv/logs/ -o log.highlights_subpath={context.session.id}/highlights.log -f Avv/tests/test_list.txt -k test_validation_debug
 def test_validation_debug():
-    filePath = r'Avv/tests/validation/debug.xml'
+    filePath = r'Avv/tests/iqValidation/debug.xml'
     validation(filePath)
 
 
 def test_validation_regression():
-    filePath = r'Avv/tests/validation/regression.xml'
+    filePath = r'Avv/tests/iqValidation/regression.xml'
     validation(filePath)
 
 @slash.tag('turn_in')
 def test_validation_turn_in():
-    filePath = r'Avv/tests/validation/turn_in.xml'
+    filePath = r'Avv/tests/iqValidation/turn_in.xml'
     validation(filePath)
 
 
 def test_validation_es2():
-    filePath = r'Avv/tests/validation/es2.xml'
+    filePath = r'Avv/tests/iqValidation/es2.xml'
     validation(filePath)

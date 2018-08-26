@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>X:\Avv\sources\validation_turn_in</dataFolder>
+        <dataSource>ivs</dataSource>
+    </params>
+    <tests>
+        <test name="fillRate" metrics="fillRate" target="checkerboard_30" distance="50cm" threshold="[95 : 100]" />
+    </tests>
+</root>
