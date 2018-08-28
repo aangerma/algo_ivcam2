@@ -59,5 +59,5 @@ def calibration(xmlPath):
 # slash run -vv -l Avv/logs/ -o log.highlights_subpath={context.session.id}/highlights.log -f Avv/tests/test_list.txt -k test_calibration_basic
 @slash.tag('turn_in')
 def test_calibration_basic():
-    filePath = r'X:\Avv\sources\calibration_record\sessionParams.xml'
+    filePath = r'X:\Avv\sources\calibration_record\basic\sessionParams.xml'
     calibration(filePath)
