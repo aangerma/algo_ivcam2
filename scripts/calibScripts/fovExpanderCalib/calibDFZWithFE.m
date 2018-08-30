@@ -1,14 +1,11 @@
-function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,verbose,eval,x0)
+function [ outregs,minerr,eFit ] = calibDFZWithFE( darr,regs,eval,FE)
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
-par = calibParams.dfz;
 
 if(~exist('eval','var'))
     eval=false;
 end
-if(~exist('verbose','var'))
-    verbose=false;
-end
+verbose=true;
 if(~exist('fprintff','var'))
     fprintff=@(varargin) fprintf(varargin{:});
 end
@@ -45,16 +42,16 @@ for i = 1:numel(darr)
         angx = single(xx);
         angy = single(yy);
     else
-        [angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
+        [angx,angy]=Calibration.aux.xy2angSf(xg,yg,regs,0);
     end
     
     %find CB points
     warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-    [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+    [p,bsz] = detectCheckerboardPoints(normByMax(double(darr(i).i))); % p - 3 checkerboard points. bsz - checkerboard dimensions.
     if isempty(p)
         fprintff('Error: checkerboard not detected!');
     end
-    it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz),reshape(p(:,2)-1,bsz)); % Used to get depth and ir values at checkerboard locations.
+    it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
     
     %rtd,phi,theta
     darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
@@ -65,92 +62,51 @@ for i = 1:numel(darr)
     
 end
 
-% % Only from here we can change params that affects the 3D calculation (like
-% % baseline, guardband, ... TODO: remove this line when the init script has
-% % baseline of 30.
-% regs.DEST.baseline = single(30);
-% regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 
 %%
-% xL = [40 40 4000   -3 -3];
-% xH = [90 90 6000    +3  3];
-xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1)]; 
-xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2)]; 
+xL = [40 40 4000   -3 -3];
+xH = [90 90 6000    +3  3];
+% xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1)]; 
+% xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2)]; 
 regs = x2regs(x0,regs);
 if eval
-    [minerr,eFit]=errFunc(darr,regs,x0);
+    [minerr,eFit]=errFunc(darr,regs,x0,FE);
     outregs = [];
-    darrNew = [];
     return
 end
-[e,eFit]=errFunc(darr,regs,x0);
+[e,eFit]=errFunc(darr,regs,x0,FE);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 % Define optimization settings
 opt.maxIter=10000;
 opt.OutputFcn=[];
-opt.TolFun = 1e-6;
-opt.TolX = 1e-6;
+opt.TolFun = 1e-7;
+opt.TolX = 1e-7;
 opt.Display='none';
-[xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x),x0,xL,xH,opt);
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x),xbest,xL,xH,opt);
+[xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x,FE),x0,xL,xH,opt);
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x,FE),xbest,xL,xH,opt);
 outregs = x2regs(xbest,regs);
-[e,eFit]=errFunc(darr,outregs,xbest);
+[e,eFit]=errFunc(darr,outregs,xbest,FE);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
 outregs = x2regs(xbest);
 fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f , eGeom=%.2f.\n',...
     outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,e);
-%% Do it for each in array
-% if nargout > 3
-%     darrNew = darr;
-%     for i = 1:numel(darr)
-%         [zNewVals,xF,yF]=rpt2z(cat(3,darrNew(i).rtd,darrNew(i).angx,darrNew(i).angy),outregs);
-%         ok=~isnan(xF) & ~isnan(yF)  & darrNew(i).i>1;
-%         darrNew(i).z = griddata(double(xF(ok)),double(yF(ok)),double(zNewVals(ok)),xg,yg);
-%         darrNew(i).i = griddata(double(xF(ok)),double(yF(ok)),double(darrNew(i).i(ok)),xg,yg);
-%         %         darrNew(i).c = griddata(double(xF(ok)),double(yF(ok)),double(d.c(ok)),xg,yg);
-%     end
-% end
+
 
 
 end
 
-% 
-% function [z,xF,yF] = rpt2z(rpt,rtlRegs)
-% % This function isn't very relevant after fixing the ang2xy bug.
-% [xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
-% rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-% [~,cosx,~,~,~,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
-% r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-% if rtlRegs.DEST.depthAsRange
-%     z = r;
-% else
-%     z = r.*cosw.*cosx;
-% end
-% z = z * rtlRegs.GNRL.zNorm;
-% end
-function [e,eFit]=errFunc(darr,rtlRegs,X)
+function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
 %build registers array
 % X(3) = 4981;
 rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
-    [xF,yF]=Calibration.aux.ang2xySF(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,true);
+    [vUnit]=ang2vec(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,FE);
     % Update scale to take margins into acount.
-    xF = xF*double((rtlRegs.GNRL.imgHsize-1))/double(rtlRegs.GNRL.imgHsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
-    yF = yF*double((rtlRegs.GNRL.imgVsize-1))/double(rtlRegs.GNRL.imgVsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
-    
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-    
-    
-    [sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(xF,yF,rtlRegs);
-    
     r= (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-    
-    z = r.*cosw.*cosx;
-    x = r.*cosw.*sinx;
-    y = r.*sinw;
-    v=cat(3,x,y,z);
+    v = vUnit.*r;
     
     
     [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);

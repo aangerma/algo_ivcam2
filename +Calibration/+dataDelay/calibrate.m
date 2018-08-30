@@ -30,6 +30,8 @@ r.add('DIGGnotchBypass'    ,true     );
 r.add('DESTaltIrEn'        ,false    );
 r.set();
 
+origBias = zeroBias(hw);
+
 
 %% CALIBRATE IR
 [delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
@@ -54,8 +56,15 @@ regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
 
 %% SET OLD VALUES
 r.reset();
+setBias(hw,origBias);
 end
 
-
-
+function origBias = zeroBias(hw)
+res = hw.cmd('irb e2 06 01');
+origBias = res(end-1:end);
+hw.cmd('iwb e2 06 01 00'); % Set laser bias to 0
+end
+function setBias(hw,value)
+hw.cmd(['iwb e2 06 01 ',value]); % Set laser bias to value
+end
 

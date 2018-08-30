@@ -392,7 +392,11 @@ classdef HWinterface <handle
         function v=getSerial(obj)
             [~,v]=obj.cmd('ERB 210 8');
             v=vec(dec2hex(fliplr(v))')';
-            v=v(1:8);
+            if strcmp(v(1:8),'00000000')
+                v = v(9:end);
+            else
+                v = v(1:8);
+            end
         end
         function displayStream(obj)
             f=figure('numbertitle','off','menubar','none');
