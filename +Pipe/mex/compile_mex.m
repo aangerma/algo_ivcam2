@@ -30,9 +30,9 @@ for i=1:length(f)
                 dbgf='';
             end
             if(isunix)
-                mex(f{i},dbgf,'-outdir',bd,['-I',thisinc],'-silent','-largeArrayDims');
+                mex(f{i},dbgf,'-outdir',bd,['-I',thisinc],['-I',bd],'-silent','-largeArrayDims');
             else
-                mex(f{i},dbgf,'-outdir',bd,['-I',thisinc],'-silent','-largeArrayDims');
+                mex(f{i},dbgf,'-outdir',bd,['-I',thisinc],['-I',bd],'-silent','-largeArrayDims');
             end
         end
         fprintf('SUCCESS\n');
