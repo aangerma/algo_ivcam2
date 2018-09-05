@@ -101,9 +101,13 @@ else
     
     %     lgr.print2file(sprintf('\tcma_dec = %s\n',sprintf('%08X ',flipud(cma_dec(:,lgrOutPixIndx)))));
     
-    
-    kerC = tmplC(1:nC,:);
-    kerF = tmplF(1:nF,:);
+    if(0)% gen2 compliance
+        kerC = tmplC(1:nC,:);
+        kerF = tmplF(1:nF,:);
+    else
+        kerC = tmplC(256-nC+1:256,:);
+        kerF = tmplF(1024-nF+1:1024,:);
+    end
     kerC =flipud(kerC);%ASIC ALIGNMENT
     kerF =flipud(kerF);%ASIC ALIGNMENT
     
