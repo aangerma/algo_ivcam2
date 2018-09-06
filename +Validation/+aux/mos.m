@@ -47,6 +47,22 @@ if (ir(round(centers(1,1,2)),round(centers(1,1,1))) < ir(round(centers(1,2,2)),r
     horiz = true;
 end
 
+%% cell iteratons
+hTrans = zeros(hSize);
+hCont = zeros(hSize);
+for j=1:size(pts,1)-1
+    for ib=1:2:size(pts,2)-1
+        i = iff(bitand(ib+j+horiz,1) == 0, ib, ib+1);
+        c = (pts(j,i,:) + pts(j,i+1,:) +...
+            pts(j+1,i,:) + pts(j+1,i+1,:))/4;
+        plot(c(1), c(2), 'Or');
+        
+        %p0 = pts(i, j);
+        %p1 = pts(i, j+1);
+        %[hTrans(i,j),hCont(i,j)] = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth);
+    end
+end
+
 
 xPts(1,:) = reshape(pt(:,1), gridSize);
 
