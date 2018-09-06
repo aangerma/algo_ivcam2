@@ -13,8 +13,8 @@ function [d,im,pixVar] = calcIRDelayFix(hw)
     nomMirroFreq = 20e3;
     t=@(px)acos(-(px/size(imD,1)*2-1))/(2*pi*nomMirroFreq);
     
-    p1 = detectCheckerboardPoints(imD);
-    p2 = detectCheckerboardPoints(imU);
+    p1 = Calibration.aux.CBTools.findCheckerboard(imD, [9,13]);
+    p2 = Calibration.aux.CBTools.findCheckerboard(imU, [9,13]);
     if ~isempty(p1) && numel(p1)== numel(p2)  
         d=round(mean(t(p1(:,2))-t(p2(:,2)))/2*1e9);
         pixVar = var((p1(:,2))-(p2(:,2)));
