@@ -9,11 +9,15 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     % config:
     %  outputFolder: (string), defult: c:\temp\valTest
     %  dataFolder: (string), defult: data
-    %  dataSource: (string), defult: HW, options: HW/file
+    %  dataSource: (string), defult: HW, options: HW/file/ivs
     %  fullTargetListPath: (string), reletive file path + targets.xml
     %  targetFilesPath: (string), reletive file path + targets
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
+    
+%     varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'X:\Avv\sources\ivs\gen1', 'dataSource', 'ivs'))}
+%     testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
+    
     % set config params
     p = inputParser;
     addRequired(p, 'testConfig', @(x) ~isempty(x))
@@ -136,7 +140,7 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
             hw = HWinterface;
             cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
             save(fnCameraConfig, 'cameraConfig');
-        case 'file'
+        case {'file', 'ivs'}
             if ~exist(fnCameraConfig, 'file')
                 ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', fnCameraConfig));
                 throw(ME)
@@ -164,9 +168,10 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 end
                 imgFrames = load(fnTarget);
                 testTargets(i).frames = imgFrames.frames;
-            case 'PG'
-                ME = MException('Validation:captureFramse:PG', sprintf('%s option not supported', dataSource));
-                throw(ME)
+            case 'ivs'
+                fnTarget = fullfile(dataFullPath, [cell2str(testTargets(i).name), '.ivs']);
+                p = Pipe.autopipe(fnTarget, 'viewResults', 0 ,'outputdir',  'C:\temp\pipeOutDir\');
+                testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg)
         end
     end
 end

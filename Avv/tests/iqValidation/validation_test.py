@@ -75,7 +75,7 @@ def validation(xmlPath):
     tests = get_tests_from_xml(root)
     db = to_save_data(root)
 
-    systemName = "camera"
+    systemName = test_params['dataSource']
     if db is not None:
         systemName = input("Camera name: ")
         if not systemName:
@@ -149,4 +149,9 @@ def test_validation_turn_in():
 
 def test_validation_es2():
     filePath = r'Avv/tests/iqValidation/es2.xml'
+    validation(filePath)
+
+@slash.tag('turn_in')
+def test_validation_ivs():
+    filePath = r'Avv/tests/iqValidation/ivs.xml'
     validation(filePath)
