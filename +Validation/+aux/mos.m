@@ -47,18 +47,34 @@ if (ir(round(centers(1,1,2)),round(centers(1,1,1))) < ir(round(centers(1,2,2)),r
     horiz = true;
 end
 
+fCrop = 0.45;
+
 %% cell iteratons
-hTrans = zeros(hSize);
-hCont = zeros(hSize);
 for j=1:size(pts,1)-1
     for ib=1:2:size(pts,2)-1
         i = iff(bitand(ib+j+horiz,1) == 0, ib, ib+1);
-        c = (pts(j,i,:) + pts(j,i+1,:) +...
-            pts(j+1,i,:) + pts(j+1,i+1,:))/4;
+        R = squeeze([pts(j,i,:) pts(j,i+1,:) pts(j+1,i,:) pts(j+1,i+1,:)]);
+        c = sum(R,1)/4;
+        R = R*(1-fCrop) + c*fCrop;
         plot(c(1), c(2), 'Or');
+        patch(R(:,1), R(:,2), 'r');
         
-        %p0 = pts(i, j);
-        %p1 = pts(i, j+1);
+        [x0 i0] = max([R(1,1) R(3,1)]);
+        i0Min = iff(i0 == 1, 3, 1);
+        x0t = (R(i0Min+1,1) - x0)/(R(i0Min+1,1) - R(i0Min,1));
+        
+        [x1 i1] = min([R(2,1) R(4,1)]);
+        i1Max = iff(i1 == 1, 4, 2);
+        x1t = (R(i1Max-1,1) - x1)/(R(i1Max-1,1) - R(i1Max,1));
+        
+        RR = R; % R rectified
+        RR(i0Min,:) = R(i0Min,:)*x0t + R(i0Min+1,:)*(1-x0t);
+        RR(i1Max,:) = R(i1Max,:)*x1t + R(i1Max-1,:)*(1-x1t);
+        
+        p0 = (RR(1,:) + RR(3,:))/2;
+        p1 = (RR(2,:) + RR(4,:))/2;
+        height = min(RR(3,2) - RR(1,2), RR(4,2) - RR(2,2));
+        
         %[hTrans(i,j),hCont(i,j)] = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth);
     end
 end
