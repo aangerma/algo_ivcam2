@@ -75,7 +75,7 @@ for j=1:size(pts,1)-1
         p1 = (RR(2,:) + RR(4,:))/2;
         height = min(RR(3,2) - RR(1,2), RR(4,2) - RR(2,2));
         
-        %[hTrans(i,j),hCont(i,j)] = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth);
+        %[hTrans(i,j),hCont(i,j)] = analyzeHorizontalMos(ir, p0, p1, tunnelWidth);
     end
 end
 
@@ -130,27 +130,48 @@ res.contStd = std(cont(:));
 
 end
     
-function [width,contrast] = analyzeHorizontalMos(ir, p0, p1)
+function [width,contrast] = analyzeHorizontalMos(zImg, p0, p1, tunnelWidth)
+x0 = p0(1); x1 = p1(1);
+y0 = p0(2); y1 = p1(2);
 
-    hLine = polyfit([real(p0) real(p1)], [imag(p0) imag(p1)], 1);
+hLine = polyfit([x0 x1], [y0 y1], 1);
     
-    xRange = ceil(real(p0)+2):floor(real(p1)-2);
-    yCenters = polyval(hLine, xRange);
-    yCenter = mean([yCenters(1) yCenters(end)]);
-    yRangeLen = tunnelWidth + ceil(abs(yCenters(1)-yCenters(end))) + 2;
-    yRange0 = floor(yCenter - yRangeLen/2);
-    yRange1 = yRange0 + yRangeLen;
-    yRange = yRange0:yRange1;
-    yInterpRange = -tunnelWidth/2:0.25:tunnelWidth/2;
-    yTransImg = zeros(length(yInterpRange), length(xRange));
-    for ix=1:length(xRange)
-        x = xRange(ix);
-        yTransImg(:,ix) = interp1(yRange, ir(yRange,x),yInterpRange+yCenters(ix));
-    end
-    yTrans = mean(yTransImg,2);
-    [fitCurve,~,~, rise, sigm_params] = fitting.riseFitting(yTrans);
-    width = rise / 4;
-    contrast = abs(fitCurve(end)-fitCurve(1));
+xRange = ceil(x0):floor(x1);
+yCenters = polyval(hLine, xRange);
+yCenter = mean([yCenters(1) yCenters(end)]);
+yRangeLen = tunnelWidth + ceil(abs(yCenters(1)-yCenters(end))) + 2;
+yRange0 = floor(yCenter - yRangeLen/2);
+yRange1 = yRange0 + yRangeLen;
+yRange = yRange0:yRange1;
+yInterpRange = -tunnelWidth/2:0.25:tunnelWidth/2;
+zInterp = zeros(length(yInterpRange), length(xRange));
+for ix=1:length(xRange)
+    x = xRange(ix);
+    zInterp(:,ix) = interp1(yRange, zImg(yRange,x),yInterpRange+yCenters(ix));
+end
+
+% plane fit
+[Y, X] = ndgrid(1:size(zInterp,1),1:size(zInterp,2));
+N = size(zInterp,1);
+RM = floor(N/3); % fit plane to 1 third from top and bottom
+R = [1:RM N-RM+1:N];
+A = [vec(Y(R,:)) vec(X(R,:)) ones(numel(R)*size(zInterp,2),1)];
+p = (A'*A)\(A'*vec(zInterp(R,:)));
+zf = Y(:)*p(1)+X(:)*p(2)+p(3);
+%figure; mesh(zInterp);
+%hold on; mesh(reshape(zf, size(zInterp)));
+
+zInterp = zInterp - reshape(zf, size(zInterp));
+%figure; imagesc(zInterp);
+
+zCurve = mean(zInterp,2);
+zIntegral = cumsum(zCurve);
+
+[fitCurve,~,~, rise, sigm_params] = fitting.riseFitting(zIntegral);
+width = rise / 4;
+contrast = abs(fitCurve(end)-fitCurve(1));
+%figure; plot([zIntegral fitCurve]);
+
 end
 
 
