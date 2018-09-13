@@ -1,4 +1,4 @@
-function [rpt,cbxyz] = simulateCB(dist,regs,CBParams)
+function [rpt,cbxyz] = simulateCB(dist,regs,CBParams,fe)
 % SimulateSB receives:
 % 1. Distance from board in mm
 % 2. The DFZ parameters
@@ -11,7 +11,9 @@ if ~exist('CBParams','var')
     CBParams.size = 30;
     CBParams.bsz = [9,13];
 end
-
+if ~exist('fe','var')
+    fe = [0:90;0:90]';
+end
 
 [cbx,cby] = meshgrid(linspace(-(CBParams.bsz(2)-1)/2*CBParams.size,(CBParams.bsz(2)-1)/2*CBParams.size,CBParams.bsz(2)),...
                      linspace(-(CBParams.bsz(1)-1)/2*CBParams.size,(CBParams.bsz(1)-1)/2*CBParams.size,CBParams.bsz(1)));
@@ -27,6 +29,7 @@ rtd=cbr+sqrt(cbr.^2-C);
 rtd=rtd+regs.DEST.txFRQpd(1);
 % Calculate angx and angy
 vec = reshape(cbxyz,[],3);
+vec = applyExpander(vec,fliplr(fe));
 [angx,angy] = vec2ang(vec,regs);
 rpt = cat(3,rtd,reshape(angx,size(rtd)),reshape(angy,size(rtd)));
 end

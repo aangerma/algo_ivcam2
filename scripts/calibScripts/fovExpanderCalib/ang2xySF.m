@@ -44,7 +44,10 @@ angx = single(angxQ)*angXfactor;
 angy = single(angyQ)*angYfactor;
 xy00 = [rangeL;rangeB];
 xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];% xys = [xresN-1;yresN-1]./[rangeR-rangeL;rangeT-rangeB];
-oXYZ = applyExpander(oXYZfunc(angles2xyz(angx,angy)),fovExpander);
+oXYZ = oXYZfunc(angles2xyz(angx,angy));
+if ~isempty(fovExpander)
+    oXYZ = applyExpander(oXYZ,fovExpander);
+end
 xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;
 xy = bsxfun(@minus,xynrm,xy00);

@@ -5,7 +5,7 @@ if(~exist('expectedGridSize','var'))
 end
 
 
-ir_=ir;
+ir_=double(ir);
 
 ir_(isnan(ir_))=0;
 ir_ = histeq(normByMax(ir_));
