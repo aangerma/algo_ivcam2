@@ -4,7 +4,7 @@
    <errRange>
       <delayF>[0 1]</delayF>
       <delayS>[0 1]</delayS>
-      <delaySlowPixelVar>[0.0001 1.5]</delaySlowPixelVar>
+      <delaySlowPixelVar>[0.0001 1.7]</delaySlowPixelVar>
       <geomErr>[0.5 3]</geomErr>
       <geomErrVal>[0.5 5]</geomErrVal>
       <gammaErr>[1 5000]</gammaErr>
