@@ -1,21 +1,15 @@
-function [angx,angy] = xy2angSF(x,y,regs,fovExpander,useFix)
-%{
-A Straight forward calculation of xy2ang.
-Performs an inverse to ang2xy function. If useFix is False, it invereses
-the bugged version, otherwise it is inversing as if ang2xy is not bugged.
+function [ v ] = xy2vec( x,y,regs )
+%{ A Straight forward calculation of a unit vector v from its pixel location and current configuration.
 %}
+
 x=single(x);
 y=single(y);
-angXfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
-angYfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
 mirang = atand(regs.FRMW.projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
 invrotmat = rotmat^-1;%[cosd(mirang) -sind(mirang);sind(mirang) cosd(mirang)];
-if ~useFix
-    angles2xyz = @(angx,angy) [             sind(angx) cosd(angx).*sind(angy) cosd(angy).*cosd(angx)]';
-else
-    angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
-end
+
+angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
+
 
 marginT = regs.FRMW.marginT;
 marginL = regs.FRMW.marginL;
@@ -44,23 +38,5 @@ xy = bsxfun(@rdivide,xy,xys');
 xy = bsxfun(@plus,xy,xy00');
 xynrm = invrotmat*xy';
 v = normr([xynrm' ones(size(xynrm,2),1)]);
-if ~isempty(fovExpander)
-    if numel(fovExpander) == 1
-        v = applyExpander(v,1/fovExpander);
-    else
-        v = applyExpander(v,fliplr(fovExpander));
-    end
-end
-n = normr(v - repmat(laserIncidentDirection',size(v,1),1) );
-
-if ~useFix
-    angxQ = asind(n(:,1));
-    angyQ = atand(n(:,2)./n(:,3));
-else
-    angyQ = asind(n(:,2));
-    angxQ = atand(n(:,1)./n(:,3));
-end
-
-angy = reshape(single(angyQ)/angYfactor,size(y));
-angx=  reshape(single(angxQ)/angXfactor,size(y));
+v = reshape(v,[size(x),3]);
 end

@@ -1,4 +1,4 @@
-function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFixWithFE(fw,FE)
+function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFixWithFE(fw,calibParams)
 
 % When fixing the ang2xy bug using the undististortion table the following
 % steps need to be taken:
@@ -8,13 +8,25 @@ function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFixWith
 % 4. Find an undistortion table that moves the bugged x-y coordinates to
 %    their true location.
 regs = fw.get();
-
-udistRegs.FRMW.xfov = regs.FRMW.xfov*FE;
-udistRegs.FRMW.yfov = regs.FRMW.yfov*FE;
-
-fw.setRegs(udistRegs,'');
-regs = fw.get();
-
+origregs = regs;
+FE = [];
+if calibParams.fovExpander.valid
+    FE = calibParams.fovExpander.table;
+end
+if ~isempty(FE)
+    if numel(FE) == 1
+        udistRegs.FRMW.xfov = regs.FRMW.xfov*FE;
+        udistRegs.FRMW.yfov = regs.FRMW.yfov*FE;
+    else
+        udistRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
+        udistRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;
+    end
+    fw.setRegs(udistRegs,'');
+    regs = fw.get();
+else
+    udistRegs.FRMW.xfov = regs.FRMW.xfov;
+    udistRegs.FRMW.yfov = regs.FRMW.yfov;
+end
 % A grid of x-y coordinates in the image plane:
 margin = 10; % In pixels. How far from the image plane to correct the location. 
 dp = 10; % In pixels. Pixel grid spacing. Too small a number will provide insufficient number of examples for fixing, too great a number will take too long to compute.
@@ -24,10 +36,14 @@ dpx = double(regs.GNRL.imgHsize+2*margin)/round(double(regs.GNRL.imgHsize+2*marg
 [xg,yg] = meshgrid(-margin:dpy:double(regs.GNRL.imgHsize+margin),-margin:dpx:double(regs.GNRL.imgVsize+margin)); 
 
 % transform to angx-angy. Using the fixed xy2ang:
-[angxg,angyg] = xy2angSF(xg,yg,regs,FE,true);
-
+if ~isempty(FE)
+    v = xy2vec(xg,yg,regs); % for each pixel, get the unit vector in space corresponding to it.
+    [angxg,angyg] = vec2ang(v,origregs,FE);
+else
+    [angxg,angyg] = xy2angSF(xg,yg,origregs,[],true);
+end
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
-[xbug,ybug] = Calibration.aux.ang2xySF(angxg,angyg,regs,false);
+[xbug,ybug] = ang2xySF(angxg,angyg,regs,[],false);
 
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
@@ -49,7 +65,7 @@ eMatPost = sqrt((xnew-xg).^2 + (ynew-yg).^2);
 
 maxPixelDisplacement = max(eMatPost(:));
 
-if verbose
+if 1
     ff = figure;
     subplot(121)
     quiver(xbug(:),ybug(:),xg(:)-xbug(:),yg(:)-ybug(:),'autoscale','off'); title(sprintf('Displacement Vector Per Pixel - Pre Fix\n max error %.2f',max(eMatPre(:))));

@@ -1,7 +1,9 @@
-function [ outregs,minerr,eFit ] = calibDFZWithFE( darr,regs,eval,FE)
+function [ outregs,minerr,eFit ] = calibDFZWithFE( darr,regs,eval,FE,x0,useRPT)
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
-
+if(~exist('useRPT','var'))
+    useRPT=false;
+end
 if(~exist('eval','var'))
     eval=false;
 end
@@ -13,59 +15,59 @@ if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
     x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV]);
 end
 
+if ~useRPT
+    for i = 1:numel(darr)
+        % Get r from d.z
+        if ~regs.DEST.depthAsRange
+            [~,r] = Pipe.z16toVerts(darr(i).z,regs);
+        else
+            r = double(darr(i).z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
+        end
+        % get rtd from r
+        [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
+        C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
+        rtd=r+sqrt(r.^2-C);
+        rtd=rtd+regs.DEST.txFRQpd(1);
 
-for i = 1:numel(darr)
-    % Get r from d.z
-    if ~regs.DEST.depthAsRange
-        [~,r] = Pipe.z16toVerts(darr(i).z,regs);
-    else
-        r = double(darr(i).z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
+        %calc angles per pixel
+        [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
+        if(regs.DIGG.sphericalEn)
+            yy = double(yg);
+            xx = double((xg)*4);
+            xx = xx-double(regs.DIGG.sphericalOffset(1));
+            yy = yy-double(regs.DIGG.sphericalOffset(2));
+            xx = xx*2^10;%bitshift(xx,+12-2);
+            yy = yy*2^12;%bitshift(yy,+12);
+            xx = xx/double(regs.DIGG.sphericalScale(1));
+            yy = yy/double(regs.DIGG.sphericalScale(2));
+
+            angx = single(xx);
+            angy = single(yy);
+        else
+            [angx,angy]=Calibration.aux.xy2angSf(xg,yg,regs,0);
+        end
+
+        %find CB points
+        warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
+        [p,bsz] = detectCheckerboardPoints(normByMax(double(darr(i).i))); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+        if isempty(p)
+            fprintff('Error: checkerboard not detected!');
+        end
+        it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
+
+        %rtd,phi,theta
+        darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+        darr(i).angx = angx;
+        darr(i).angy = angy;
+        darr(i).rtd = rtd;
+        darr(i).valid = ones(size(Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3))));
+
     end
-    % get rtd from r
-    [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
-    C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
-    rtd=r+sqrt(r.^2-C);
-    rtd=rtd+regs.DEST.txFRQpd(1);
-    
-    %calc angles per pixel
-    [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
-    if(regs.DIGG.sphericalEn)
-        yy = double(yg);
-        xx = double((xg)*4);
-        xx = xx-double(regs.DIGG.sphericalOffset(1));
-        yy = yy-double(regs.DIGG.sphericalOffset(2));
-        xx = xx*2^10;%bitshift(xx,+12-2);
-        yy = yy*2^12;%bitshift(yy,+12);
-        xx = xx/double(regs.DIGG.sphericalScale(1));
-        yy = yy/double(regs.DIGG.sphericalScale(2));
-        
-        angx = single(xx);
-        angy = single(yy);
-    else
-        [angx,angy]=Calibration.aux.xy2angSf(xg,yg,regs,0);
-    end
-    
-    %find CB points
-    warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-    [p,bsz] = detectCheckerboardPoints(normByMax(double(darr(i).i))); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-    if isempty(p)
-        fprintff('Error: checkerboard not detected!');
-    end
-    it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz-1),reshape(p(:,2)-1,bsz-1)); % Used to get depth and ir values at checkerboard locations.
-    
-    %rtd,phi,theta
-    darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-    darr(i).angx = angx;
-    darr(i).angy = angy;
-    darr(i).rtd = rtd;
-    darr(i).valid = ones(size(Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3))));
-    
 end
 
-
 %%
-xL = [40 40 4000   -3 -3];
-xH = [90 90 6000    +3  3];
+xL = [40 40 4000   -1 -1];
+xH = [90 90 6000    +1  1];
 % xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1)]; 
 % xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2)]; 
 regs = x2regs(x0,regs);
@@ -103,7 +105,9 @@ rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
     [vUnit]=ang2vec(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,FE);
+    vUnit = reshape(vUnit',size(d.rpt));
     % Update scale to take margins into acount.
+    sing = vUnit(:,:,1); 
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
     r= (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
     v = vUnit.*r;

@@ -72,24 +72,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     
     %% ::Fix ang2xy Bug using undistort table::
     [results,luts] = fixAng2XYBugWithUndist(hw, regs, runParams, calibParams, results,fw, fprintff, t);
-    
-%     %% ::validation::
-%     fprintff('[-] Validating...\n');
-%     %validate
-%     if(runParams.DFZ && runParams.validation)
-%         d=showImageRequestDialog(hw,1,diag([.7 .7 1]));
-%         
-%         [~,results.geomErrVal] = Calibration.aux.calibDFZ(d,regs,verbose,true);
-%         if(results.geomErrVal<calibParams.errRange.geomErrVal(2))
-%             fprintff('[v] geom valid passed[e=%g]\n',results.geomErrVal);
-%         else
-%             fprintff('[x] geom valid failed[e=%g]\n',results.geomErrVal);
-%             
-%         end
-%     else
-%         fprintff('[?] skipped\n');
-%     end
-    
+
     %% write version+intrinsics
     writeVersionAndIntrinsics(verValue,regs,fw,fnCalib);
     
