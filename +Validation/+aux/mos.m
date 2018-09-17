@@ -1,4 +1,4 @@
-function [res] = mos(irImg, zImg, expectedGridSize, verbose)
+function [res] = mos(irImg, zImg, verbose, expectedGridSize)
 irImg = double(irImg);
 zImg = double(zImg);
 
@@ -88,6 +88,10 @@ for j=1:size(pts,1)-1
     end
 end
 
+if (verbose)
+    figure; imagesc(barW); title('Bar widths');
+    figure; imagesc(barH); title('Bar heights');
+end
 
 xPts(1,:) = reshape(pt(:,1), gridSize);
 
@@ -141,6 +145,8 @@ end
     
 function [width,height] = analyzeHorizontalMos(zImg, p0, p1, tunnelWidth)
 subSamples = 4;
+zSubMM = 8;
+maxHeight = 20; % in mm
 
 x0 = p0(1); x1 = p1(1);
 y0 = p0(2); y1 = p1(2);
@@ -162,9 +168,10 @@ for ix=1:length(xRange)
 end
 
 % plane fit
+planeFitMargin = 0.3;
 [Y, X] = ndgrid(1:size(zInterp,1),1:size(zInterp,2));
 N = size(zInterp,1);
-RM = floor(N/3); % fit plane to 1 third from top and bottom
+RM = floor(N*planeFitMargin); % fit plane to top and bottom margins
 R = [1:RM N-RM+1:N];
 A = [vec(Y(R,:)) vec(X(R,:)) ones(numel(R)*size(zInterp,2),1)];
 p = (A'*A)\(A'*vec(zInterp(R,:)));
@@ -172,20 +179,47 @@ zf = Y(:)*p(1)+X(:)*p(2)+p(3);
 %figure; mesh(zInterp);
 %hold on; mesh(reshape(zf, size(zInterp)));
 
-zFixed = zInterp - reshape(zf, size(zInterp));
+zFixed = (zInterp - reshape(zf, size(zInterp)))/zSubMM;
 %figure; imagesc(zInterp);
+%figure; plot([zIntegral fitCurve]);
 
 zCurve = mean(zFixed,2);
+%figure; plot(zCurve);
+
 zIntegral = cumsum(zCurve);
-
-zSubMM = 8;
-
 [fitCurve,~,~, rise, sigm_params] = fitting.riseFitting(zIntegral);
-width = rise / subSamples;
-pxPeak = round(sigm_params(3));
-height = abs(median(zFixed(pxPeak-1:pxPeak+1)))/zSubMM;
-
 %figure; plot([zIntegral fitCurve]);
+
+width = rise / subSamples;
+if (width < 0 || width > tunnelWidth*0.5)
+    height = 0; width = 0;
+    return;
+end
+
+peakMargin = 0.25;
+iPeak = round(sigm_params(3));
+if (iPeak < length(zCurve)*peakMargin || iPeak > length(zCurve)*(1-peakMargin))
+    height = 0; width = 0;
+    return;
+end
+
+height = -(median(zCurve(iPeak-1:iPeak+1)));
+if (height < 0 || height > maxHeight)
+    height = 0; width = 0;
+    return;
+end
+
+tMargin = zFixed(1:RM, :); % top margin region
+bMargin = zFixed(N-RM+1:N, :); % bottom margin region
+
+hBlobNoise = max(max(mean(tMargin,1)),max(mean(bMargin,1)));
+vBlobNoise = max(max(mean(tMargin,2)),max(mean(bMargin,2)));
+blobNoise = max(hBlobNoise, vBlobNoise);
+
+if (height < blobNoise)
+    height = 0; width = 0;
+    return;
+end
 
 end
 
