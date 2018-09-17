@@ -2,7 +2,10 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
 par = calibParams.dfz;
-
+FE = [];
+if calibParams.fovExpander.valid
+    FE = calibParams.fovExpander.table;
+end
 if(~exist('eval','var'))
     eval=false;
 end
@@ -58,32 +61,20 @@ for i = 1:numel(darr)
     
     %rtd,phi,theta
     darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-    darr(i).angx = angx;
-    darr(i).angy = angy;
-    darr(i).rtd = rtd;
-    darr(i).valid = ones(size(Calibration.aux.getProjectiveOutliers(regs,darr(i).rpt(:,:,2:3))));
-    
+
 end
 
-% % Only from here we can change params that affects the 3D calculation (like
-% % baseline, guardband, ... TODO: remove this line when the init script has
-% % baseline of 30.
-% regs.DEST.baseline = single(30);
-% regs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
-
 %%
-% xL = [40 40 4000   -3 -3];
-% xH = [90 90 6000    +3  3];
 xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1)]; 
 xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2)]; 
 regs = x2regs(x0,regs);
 if eval
-    [minerr,eFit]=errFunc(darr,regs,x0);
+    [minerr,eFit]=errFunc(darr,regs,x0,FE);
     outregs = [];
     darrNew = [];
     return
 end
-[e,eFit]=errFunc(darr,regs,x0);
+[e,eFit]=errFunc(darr,regs,x0,FE);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 % Define optimization settings
@@ -92,10 +83,10 @@ opt.OutputFcn=[];
 opt.TolFun = 1e-6;
 opt.TolX = 1e-6;
 opt.Display='none';
-[xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x),x0,xL,xH,opt);
-[xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x),xbest,xL,xH,opt);
+[xbest,~]=fminsearchbnd(@(x) errFunc(darr,regs,x,FE),x0,xL,xH,opt);
+[xbest,minerr]=fminsearchbnd(@(x) errFunc(darr,regs,x,FE),xbest,xL,xH,opt);
 outregs = x2regs(xbest,regs);
-[e,eFit]=errFunc(darr,outregs,xbest);
+[e,eFit]=errFunc(darr,outregs,xbest,FE);
 printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
 outregs = x2regs(xbest);
 fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f , eGeom=%.2f.\n',...
@@ -115,51 +106,42 @@ fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f , eGeom=%.2f.
 
 end
 
-% 
-% function [z,xF,yF] = rpt2z(rpt,rtlRegs)
-% % This function isn't very relevant after fixing the ang2xy bug.
-% [xF,yF]=Pipe.DIGG.ang2xy(rpt(:,:,2),rpt(:,:,3),rtlRegs,Logger(),[]);
-% rtd_=rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-% [~,cosx,~,~,~,cosw,sing]=Pipe.DEST.getTrigo(round(xF),round(yF),rtlRegs);
-% r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-% if rtlRegs.DEST.depthAsRange
-%     z = r;
-% else
-%     z = r.*cosw.*cosx;
-% end
-% z = z * rtlRegs.GNRL.zNorm;
-% end
-function [e,eFit]=errFunc(darr,rtlRegs,X)
+function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
 %build registers array
 % X(3) = 4981;
 rtlRegs = x2regs(X,rtlRegs);
 for i = 1:numel(darr)
     d = darr(i);
-    [xF,yF]=Calibration.aux.ang2xySF(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,true);
+    vUnit = ang2vec(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,FE);
+    vUnit = reshape(vUnit',size(d.rpt));
     % Update scale to take margins into acount.
-    xF = xF*double((rtlRegs.GNRL.imgHsize-1))/double(rtlRegs.GNRL.imgHsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
-    yF = yF*double((rtlRegs.GNRL.imgVsize-1))/double(rtlRegs.GNRL.imgVsize);% Get trigo seems to map 0 to -fov/2 and res-1 to fov/2. While ang2xy returns a value between 0 and 640.
-    
+    sing = vUnit(:,:,1); 
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-    
-    
-    [sinx,cosx,~,cosy,sinw,cosw,sing]=Pipe.DEST.getTrigo(xF,yF,rtlRegs);
-    
-    r= (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-    
-    z = r.*cosw.*cosx;
-    x = r.*cosw.*sinx;
-    y = r.*sinw;
-    v=cat(3,x,y,z);
-    
+    r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+    v = vUnit.*r;
     
     [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);
-    
 end
 eFit = mean(eFit);
 e = mean(e);
 
 end
+function [oXYZ] = ang2vec(angxQin,angyQin,regs,fovExpander)
+%% ----STAIGHT FORWARD------
+angXfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
+angYfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
+angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
+
+laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
+oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
+
+angyQ=angyQin(:);angxQ =angxQin(:);
+angx = single(angxQ)*angXfactor;
+angy = single(angyQ)*angYfactor;
+oXYZ = Calibration.aux.applyExpander(oXYZfunc(angles2xyz(angx,angy)),fovExpander);
+
+end
+
 function printErrAndX(X,e,eFit,preSTR,verbose)
 if verbose
     fprintf('%-8s',preSTR);

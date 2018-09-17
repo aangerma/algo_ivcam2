@@ -35,8 +35,10 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     % Verify unit's configuration version
     verValue = getVersion(hw,runParams);  
     
+    %% Update init configuration
+    updateInitConfiguration(hw,fw,fnCalib,runParams);
     %% Init hw configuration
-    initConfiguration(hw,fw,runParams,calibParams,fprintff,t);
+    initConfiguration(hw,fw,runParams,fprintff,t);
     
     %% Get a single frame to see that the unit functions
     fprintff('opening stream...');
@@ -44,7 +46,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fprintff('Done(%ds)\n',round(toc(t)));
      
     %% Set coarse DSM values 
-    coarseDSMRegs = calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
+    calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
 
     %% ::calibrate delays::
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
@@ -53,9 +55,8 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     end
     
     %% ::dsm calib::
-    dsmRegs = calibrateDSM(hw, runParams, calibParams, fprintff,t);
-    fw.setRegs(dsmRegs,fnCalib);
-    regs=fw.get();
+    calibrateDSM(hw, fw, runParams, calibParams,fnCalib, fprintff,t);
+    
    
     %% ::gamma:: 
     results = calibrateGamma(runParams, calibParams, results, fprintff, t);
@@ -70,11 +71,13 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% ::roi::
     [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
-    %% ::Fix ang2xy Bug using undistort table::
-    [results,luts] = fixAng2XYBugWithUndist(hw, regs, runParams, calibParams, results,fw, fprintff, t);
-
     %% write version+intrinsics
-    writeVersionAndIntrinsics(verValue,regs,fw,fnCalib);
+    writeVersionAndIntrinsics(verValue,fw,fnCalib);
+    
+    %% ::Fix ang2xy Bug using undistort table::
+    [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
+
+    
     
     % Update fnCalin and undist lut in output dir
     fw.writeUpdated(fnCalib);
@@ -162,20 +165,44 @@ function verValue = getVersion(hw,runParams)
         warning('incompatible configuration versions!');
     end
 end
-function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)
+function updateInitConfiguration(hw,fw,fnCalib,runParams)
+    if ~runParams.DSM
+        currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
+        currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
+        currregs.EXTL.dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
+        currregs.EXTL.dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single'); 
+    end
+    if ~runParams.dataDelay
+        currregs.EXTL.conLocDelaySlow = hw.read('EXTLconLocDelaySlow');
+        currregs.EXTL.conLocDelayFastC = hw.read('EXTLconLocDelayFastC');
+        currregs.EXTL.conLocDelayFastF = hw.read('EXTLconLocDelayFastF');
+    end
+    if ~runParams.DFZ
+        DIGGspare = hw.read('DIGGspare');
+        currregs.FRMW.xfov = typecast(DIGGspare(2),'single');
+        currregs.FRMW.yfov = typecast(DIGGspare(3),'single');
+        currregs.FRMW.laserangleH = typecast(DIGGspare(4),'single');
+        currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
+        currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
+    end
+    if any(~[runParams.DSM, runParams.dataDelay, runParams.DFZ])
+        fw.setRegs(currregs,fnCalib);
+        fw.get();
+    end
+end
+function initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|DSM.*$).*',fnAlgoInitMWD);
+        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW.*$).*',fnAlgoInitMWD);
         hw.runPresetScript('maReset');
         pause(0.1);
         hw.runScript(fnAlgoInitMWD);
         pause(0.1);
         hw.runPresetScript('maRestart');
         pause(0.1);
-        
-        Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
-        
+        hw.runPresetScript('maReset');
+        hw.runPresetScript('maRestart');
         hw.shadowUpdate();
         fprintff('Done(%ds)\n',round(toc(t)));
     else
@@ -186,7 +213,7 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     calibPassed = 1;
     fprintff('[-] Depth and IR delay calibration...\n');
     if(runParams.dataDelay)
-        
+        Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.8 .8 1]));
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams.verbose);
         
@@ -225,26 +252,27 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     end
     
 end
-function dsmregs = calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
+function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     % Set a DSM value that makes the valid area of the image in spherical
     % mode to be above a certain threshold.
     fprintff('[-] Coarse DSM calibration...\n');
     if(runParams.DSM)
-        dsmregs = Calibration.aux.calibCoarseDSM(hw,calibParams,runParams.verbose);
+        Calibration.aux.calibCoarseDSM(hw,calibParams,runParams.verbose);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
-        dsmregs = [];
         fprintff('[?] skipped\n');
     end
 end
-function dsmregs = calibrateDSM(hw, runParams, calibParams, fprintff, t)
+function calibrateDSM(hw,fw, runParams, calibParams,fnCalib, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
         dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams.verbose);
+        fw.setRegs(dsmregs,fnCalib);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
         fprintff('[?] skipped\n');
     end
+    
 end
 function results = calibrateGamma(runParams, calibParams, results, fprintff, t)
     fprintff('[-] gamma...\n');
@@ -265,8 +293,8 @@ function results = calibrateGamma(runParams, calibParams, results, fprintff, t)
         fprintff('[?] skipped\n');
     end
 end
-function [results,calibPassed,regs,luts] = calibrateDFZ(hw, regs, runParams, calibParams, results, fw, fnCalib, fprintff, t)
-    calibPassed = -1;
+function [results,calibPassed] = calibrateDFZ(hw, regs, runParams, calibParams, results, fw, fnCalib, fprintff, t)
+    calibPassed = 1;
     fprintff('[-] FOV, System Delay, Zenith and Distortion calibration...\n');
     if(runParams.DFZ)
         calibPassed = 0;
@@ -290,7 +318,7 @@ function [results,calibPassed,regs,luts] = calibrateDFZ(hw, regs, runParams, cal
         Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
         d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
         d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
-        d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
+%         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
         
         
         % dodluts=struct;
@@ -342,11 +370,13 @@ function [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results
         fprintff('[?] skipped\n');
     end
 end
-function [results,luts] = fixAng2XYBugWithUndist(hw, regs, runParams, calibParams, results,fw, fprintff, t)
+function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
     if(runParams.undist)
-        [undistlut.FRMW.undistModel, results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(regs,runParams.verbose);
-        fw.setLut(undistlut);
+        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
+        udistRegs.DIGG.undistBypass = false;
+        fw.setRegs(udistRegs,fnCalib);
+        fw.setLut(udistlUT);
         [~,luts]=fw.get();
         if(results.maxPixelDisplacement<calibParams.errRange.maxPixelDisplacement(2))
             fprintff('[v] undist calib passed[e=%g]\n',results.maxPixelDisplacement);
@@ -364,7 +394,8 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, regs, runParams, calibParam
         results.maxPixelDisplacement=inf;
     end
 end
-function writeVersionAndIntrinsics(verValue,regs,fw,fnCalib)
+function writeVersionAndIntrinsics(verValue,fw,fnCalib)
+    regs = fw.get();
     intregs.DIGG.spare=zeros(1,8,'uint32');
     intregs.DIGG.spare(1)=verValue;
     intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov),'uint32');

@@ -3,9 +3,9 @@
    <cb_replayMode>0</cb_replayMode>
    <cb_verbose>1</cb_verbose>
    <cb_init>1</cb_init>
-   <cb_DSM>1</cb_DSM>
+   <cb_DSM>0</cb_DSM>
    <cb_gamma>1</cb_gamma>
-   <cb_dataDelay>1</cb_dataDelay>
+   <cb_dataDelay>0</cb_dataDelay>
    <cb_ROI>1</cb_ROI>
    <cb_DFZ>1</cb_DFZ>
    <cb_undist>1</cb_undist>
@@ -13,5 +13,6 @@
    <cb_burnConfigurationToDevice>1</cb_burnConfigurationToDevice>
    <cb_debug>1</cb_debug>
    <cb_validation>1</cb_validation>
+   <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
 </struct>

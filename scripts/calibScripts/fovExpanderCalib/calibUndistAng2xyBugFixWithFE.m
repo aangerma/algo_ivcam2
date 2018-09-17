@@ -14,13 +14,8 @@ if calibParams.fovExpander.valid
     FE = calibParams.fovExpander.table;
 end
 if ~isempty(FE)
-    if numel(FE) == 1
-        udistRegs.FRMW.xfov = regs.FRMW.xfov*FE;
-        udistRegs.FRMW.yfov = regs.FRMW.yfov*FE;
-    else
-        udistRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
-        udistRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;
-    end
+    udistRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
+    udistRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;
     fw.setRegs(udistRegs,'');
     regs = fw.get();
 else
@@ -38,12 +33,12 @@ dpx = double(regs.GNRL.imgHsize+2*margin)/round(double(regs.GNRL.imgHsize+2*marg
 % transform to angx-angy. Using the fixed xy2ang:
 if ~isempty(FE)
     v = xy2vec(xg,yg,regs); % for each pixel, get the unit vector in space corresponding to it.
-    [angxg,angyg] = vec2ang(v,origregs,FE);
+    [angxg,angyg] = Calibration.aux.vec2ang(v,origregs,FE);
 else
-    [angxg,angyg] = xy2angSF(xg,yg,origregs,[],true);
+    [angxg,angyg] = Calibration.aux.xy2angSF(xg,yg,origregs,[],true);
 end
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
-[xbug,ybug] = ang2xySF(angxg,angyg,regs,[],false);
+[xbug,ybug] = Calibration.aux.ang2xySF(angxg,angyg,regs,[],false);
 
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
