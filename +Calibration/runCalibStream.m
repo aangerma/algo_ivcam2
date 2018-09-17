@@ -349,8 +349,9 @@ end
 function [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Calibrating ROI...\n');
     if (runParams.ROI)
-        d = hw.getFrame(10);
-        roiRegs = Calibration.roi.runROICalib(d,calibParams);
+%         d = hw.getFrame(10);
+%         roiRegs = Calibration.roi.runROICalib(d,calibParams);
+        roiRegs = Calibration.roi.calibROI(hw,regs,calibParams);
         fw.setRegs(roiRegs, fnCalib);
         regs = fw.get(); % run bootcalcs
         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
