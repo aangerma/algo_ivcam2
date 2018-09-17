@@ -14,9 +14,9 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     %  targetFilesPath: (string), reletive file path + targets
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
-    
-%     varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'X:\Avv\sources\ivs\gen1', 'dataSource', 'ivs'))}
-%     testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
+    %  Debug
+    %  varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'X:\Avv\sources\ivs\gen1', 'dataSource', 'ivs'))}
+    %  testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
     
     % set config params
     p = inputParser;
