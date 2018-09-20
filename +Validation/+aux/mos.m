@@ -1,4 +1,4 @@
-function [res] = mos(irImg, zImg, verbose, expectedGridSize)
+function [score, res] = mos(irImg, zImg, verbose, expectedGridSize)
 irImg = double(irImg);
 zImg = double(zImg);
 
@@ -93,19 +93,10 @@ if (verbose)
     figure; imagesc(barH); title('Bar heights');
 end
 
-xPts(1,:) = reshape(pt(:,1), gridSize);
-
 res.gridSize = gridSize;
 res.points = pt;
 
-figure; imagesc(irImg); hold on; plot(pt(:,1), pt(:,2), '+r');
-
-pts=reshape(pt(:,1)+1j*pt(:,2),gridSize);
-
-if abs(real(pts(1,1)) - real(pts(1,2))) < abs(imag(pts(1,1)) - imag(pts(1,2)))
-    pts = pts.';
-end
-
+%{
 if real(pts(1,1)) > real(pts(1,end))
     pts = fliplr(pts);
 end
@@ -113,33 +104,18 @@ end
 if imag(pts(1,1)) > imag(pts(end,1))
     pts = flipud(pts);
 end
+%}
 
-hSize = [size(pts,1) size(pts,2)-1];
-hTrans = zeros(hSize);
-hCont = zeros(hSize);
-for j=1:hSize(2)
-    for i=1:hSize(1)
-        p0 = pts(i, j);
-        p1 = pts(i, j+1);
-        [hTrans(i,j),hCont(i,j)] = analyzeHorizontalEdge(irImg, p0, p1, tunnelWidth);
-    end
-end
 
-res.horizMin = min(hTrans(:));
-res.horizMax = max(hTrans(:));
-res.horizMean = mean(hTrans(:));
-res.horizStd = std(hTrans(:));
+areas = barW .* barH;
+areas(areas == 0) = nan;
+[minArea, iMinArea] = nanmin(areas(:));
 
-res.vertMin = min(vTrans(:));
-res.vertMax = max(vTrans(:));
-res.vertMean = mean(vTrans(:));
-res.vertStd = std(vTrans(:));
+res.minArea = minArea;
 
-cont = [vCont(:);hCont(:)];
-res.contMin = min(cont(:));
-res.contMax = max(cont(:));
-res.contMean = mean(cont(:));
-res.contStd = std(cont(:));
+score = res.minArea;
+res.score = 'minArea';
+res.units = 'mm*px';
 
 end
     
