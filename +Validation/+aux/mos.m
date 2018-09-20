@@ -194,7 +194,7 @@ hBlobNoise = max(max(mean(tMargin,1)),max(mean(bMargin,1)));
 vBlobNoise = max(max(mean(tMargin,2)),max(mean(bMargin,2)));
 blobNoise = max(hBlobNoise, vBlobNoise);
 
-if (height < blobNoise)
+if (height < blobNoise * 0.7)
     height = 0; width = 0;
     return;
 end
