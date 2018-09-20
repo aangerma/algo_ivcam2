@@ -30,7 +30,20 @@ pts(end,:,:) = 2*pts(end-1,:,:) - pts(end-2,:,:);
 pts(:,1,:) = 2*pts(:,2,:) - pts(:,3,:);
 pts(:,end,:) = 2*pts(:,end-1,:) - pts(:,end-2,:);
 
-% compute cell centers
+%% flip dimmensions to make them consistent
+if abs(pts(1,1,1) - pts(end,1,1)) > abs(pts(1,1,1) - pts(1,end,1))
+    pts = permute(pts,[2 1 3]);
+end
+
+if (pts(1,1,2) > pts(end,1,2))
+    pts = flip(pts,1);
+end
+
+if (pts(1,1,1) > pts(1,end,1))
+    pts = flip(pts,2);
+end
+
+%% compute cell centers
 centers = (pts(1:end-1,1:end-1,:) + pts(1:end-1,2:end,:) +...
     pts(2:end,1:end-1,:) + pts(2:end,2:end,:))/4;
 
@@ -95,17 +108,6 @@ end
 
 res.gridSize = gridSize;
 res.points = pt;
-
-%{
-if real(pts(1,1)) > real(pts(1,end))
-    pts = fliplr(pts);
-end
-
-if imag(pts(1,1)) > imag(pts(end,1))
-    pts = flipud(pts);
-end
-%}
-
 
 areas = barW .* barH;
 areas(areas == 0) = nan;
