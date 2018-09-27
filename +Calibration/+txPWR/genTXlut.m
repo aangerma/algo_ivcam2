@@ -11,7 +11,7 @@ function regs=genTXlut(hw,yfov,marginT,marginB)
         imHeight=uint16(480);
         marginT=uint16(0);
         marginB=uint16(0);
-        lutA=genPWRlut(yfov,lb,lg,uint16(imHeight),uint16(marginT),uint16(marginB));
+        lutA=Calibration.txPWR.genPWRlut(yfov,lb,lg,uint16(imHeight),uint16(marginT),uint16(marginB));
 
 %         marginT=uint16(0);
 %         marginB=uint16(0);
