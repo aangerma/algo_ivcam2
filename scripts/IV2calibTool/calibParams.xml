@@ -4,7 +4,7 @@
    <errRange>
       <delayF>[0 1]</delayF>
       <delayS>[0 1]</delayS>
-      <delaySlowPixelVar>[0.0001 1.5]</delaySlowPixelVar>
+      <delaySlowPixelVar>[0.0001 1.8]</delaySlowPixelVar>
       <geomErr>[0.5 3]</geomErr>
       <geomErrVal>[0.5 5]</geomErrVal>
       <gammaErr>[1 5000]</gammaErr>
@@ -36,14 +36,14 @@
         <zenithyRange>[-1,1]</zenithyRange> 
     </dfz>
     <roi>
-     <useExtraMargins>0</useExtraMargins>  
-     <extraMarginL>3</extraMarginL>  
-     <extraMarginR>3</extraMarginR>  
-     <extraMarginT>3</extraMarginT>  
-     <extraMarginB>3</extraMarginB>       
+     <useExtraMargins>1</useExtraMargins>  
+     <extraMarginL>1</extraMarginL>  
+     <extraMarginR>1</extraMarginR>  
+     <extraMarginT>1</extraMarginT>  
+     <extraMarginB>1</extraMarginB>       
    </roi>
     <fovExpander>
-        <valid>1</valid>  
+        <valid>0</valid>  
         <table>
             [0	0
             0.500000000000000	0.547892600000000

@@ -69,7 +69,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
 
     
     %% ::roi::
-    [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+    [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
     %% write version+intrinsics
     writeVersionAndIntrinsics(verValue,fw,fnCalib);
@@ -185,6 +185,14 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams)
         currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
         currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
     end
+    if ~runParams.ROI
+        DIGGspare06 = hw.read('DIGGspare_006');
+        DIGGspare07 = hw.read('DIGGspare_007');
+        currregs.FRMW.marginL = int16(DIGGspare06/2^16);
+        currregs.FRMW.marginR = int16(mod(DIGGspare06,2^16));
+        currregs.FRMW.marginT = int16(DIGGspare07/2^16);
+        currregs.FRMW.marginB = int16(mod(DIGGspare07,2^16));
+    end
     if any(~[runParams.DSM, runParams.dataDelay, runParams.DFZ])
         fw.setRegs(currregs,fnCalib);
         fw.get();
@@ -194,7 +202,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
     fprintff('init hw configuration...');
     if(runParams.init)
         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW.*$).*',fnAlgoInitMWD);
+        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLauxShadow.*$).*',fnAlgoInitMWD);
         hw.runPresetScript('maReset');
         pause(0.1);
         hw.runScript(fnAlgoInitMWD);
@@ -203,6 +211,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         pause(0.1);
         hw.runPresetScript('maReset');
         hw.runPresetScript('maRestart');
+%         hw.cmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame');
         hw.shadowUpdate();
         fprintff('Done(%ds)\n',round(toc(t)));
     else
@@ -346,26 +355,20 @@ function [results,calibPassed] = calibrateDFZ(hw, regs, runParams, calibParams, 
         fprintff('[?] skipped\n');
     end
 end
-function [results,regs] = calibrateROI(hw, regs, runParams, calibParams, results,fw,fnCalib, fprintff, t)
+function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Calibrating ROI...\n');
     if (runParams.ROI)
 %         d = hw.getFrame(10);
 %         roiRegs = Calibration.roi.runROICalib(d,calibParams);
+        regs = fw.get(); % run bootcalcs
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Please Make Sure Borders Are Bright');
         roiRegs = Calibration.roi.calibROI(hw,regs,calibParams);
         fw.setRegs(roiRegs, fnCalib);
-        regs = fw.get(); % run bootcalcs
+        fw.get(); % run bootcalcs
         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
         fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
         hw.runScript(fnAlgoTmpMWD);
         hw.shadowUpdate();
-        d = hw.getFrame(10);
-        roiRegsVal = Calibration.roi.runROICalib(d,calibParams);
-        mr = roiRegsVal.FRMW;
-        valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
-        %     results.roiVal = valSumMargins;
-        if (valSumMargins ~= 0)
-            fprintff('warning: Invalid pixels after ROI calibration\n');
-        end
         fprintff('[v] Done(%ds)\n',round(toc(t)));
     else
         fprintff('[?] skipped\n');
@@ -404,6 +407,8 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib)
     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
     intregs.DIGG.spare(6)=verValue; %config version
+    intregs.DIGG.spare(7)=uint32(regs.FRMW.marginL)*2^16 + uint32(regs.FRMW.marginR);
+    intregs.DIGG.spare(8)=uint32(regs.FRMW.marginT)*2^16 + uint32(regs.FRMW.marginB);
     fw.setRegs(intregs,fnCalib);
     fw.get();
 end
@@ -455,7 +460,7 @@ function burn2Device(hw,score,runParams,calibParams,fprintff,t)
         fprintff('skiped\n');
     end
     
-    fprintff('[!] burnning...');
+    fprintff('[!] burning...');
     hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
     fprintff('Done(%ds)\n',round(toc(t)));
 end

@@ -16,38 +16,30 @@ for iCMA = (1:tmplLength)-1
     hw.cmd(sprintf(strCmdIndex, uint8(floor(mod(iCMA,84))), uint8(floor(iCMA/84))));
     hw.shadowUpdate();
 
-    [cmaBin, cmaC,cmaST] = getBin(hw, 1, imSize);
+    [cmaBin, cmaST] = getBin(hw, 2, imSize);
     cma(iCMA+1,:,:) = cmaBin;
     cmaSTD(iCMA+1,:,:) = cmaST;
 
-    tStr = sprintf('Bin %u of %u. cmaC min and max = [%d,%d,].\n', iCMA, tmplLength,min(cmaC(:)),max(cmaC(:)));
+    tStr = sprintf('Bin %u of %u.\n', iCMA, tmplLength);
     figure(11711);        
-    subplot(1,3,1); imagesc(cmaBin);colorbar;
-    subplot(1,3,2); imagesc(cmaC);colorbar;
-%     subplot(1,3,3); imagesc(cmaST);colorbar;
-    
-    subplot(1,3,1); title(tStr);
+    imagesc(cmaBin);colorbar;
+    title(tStr);
 %     fprintf(tStr);
     drawnow;
 end
 hw.setReg('DCORoutIRcma$', false);
 end
 
-function [cmaBin, cmaC,cmaSTD] = getBin(hw, nExp, imSize)
-
-cmaA = zeros(imSize);
-cmaSQ = zeros(imSize);
-cmaC = zeros(imSize);
-
-for i=1:2^nExp
+function [cmaBin, cmaSTD] = getBin(hw, nExp, imSize)
+nFrames= 2^nExp;
+cmaA = zeros([imSize,nFrames]);
+for i=1:nFrames
     frame = hw.getFrame();
-    cmaA = cmaA + double(frame.i);
-    cmaSQ = cmaSQ + double(frame.i).^2;
-    cmaC = cmaC + double(frame.z ~= 0);
+    cmaA(:,:,i) = double(frame.i);
+    
 end
-
-cmaBin = uint8(cmaA * 4 ./ cmaC);
-cmaSTD = 4*sqrt(cmaSQ./cmaC - (cmaA./cmaC).^2);
-cmaC = uint8(cmaC);
+cmaA(cmaA==0) = nan;
+cmaBin = uint8(mean(cmaA * 4,3,'omitnan' ));
+cmaSTD = std(cmaA * 4,[],3,'omitnan' );
 
 end
