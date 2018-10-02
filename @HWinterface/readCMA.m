@@ -7,7 +7,7 @@ obj.setReg('DCORoutIRcma$', true);
 frame = obj.getFrame();
 imSize = size(frame.i);
 
-cma = zeros([tmplLength imSize], 'uint8');
+cma = zeros([tmplLength imSize]);
 
 for iCMA = (1:tmplLength)-1
     %hw.setReg('DCORoutIRcmaIndex', [uint8(floor(iCMA/84)) uint8(floor(mod(iCMA,84)))]);
@@ -37,6 +37,6 @@ for i=1:nFrames
     cmaA(:,:,i) = double(frame.i);
     
 end
-cmaBin = uint8(mean(cmaA * 4,3,'omitnan' ));
+cmaBin = (mean(cmaA * 4,3,'omitnan' ));
 
 end
