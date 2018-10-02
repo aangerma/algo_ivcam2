@@ -41,6 +41,19 @@ conf = hw.getFrame(1).c;
 % tabplot;
 % imagesc(confbin,[0,15]); colorbar;
 % title('ConfBin');
+
+% 
+% % r.reset();
+hw.runScript('binaryTrainedConfModifiedToRemoveMaxPeak0.txt');
+hw.shadowUpdate();
+hw.getFrame(30).c;
+confNew = hw.getFrame().c;
+
+valid = (conf > 0) .* ~isnan(sum(inputs,3));
+conf(~valid) = 0;
+confOut(~valid) = 0;
+confNew(~valid) = 0;
+
 tabplot;
 imagesc(conf,[0,15]); colorbar;
 title('initConf');
@@ -49,15 +62,13 @@ tabplot;
 imagesc(confOut,[0,15]); colorbar;
 title('expectedConf');
 
-% r.reset();
-hw.runScript('binaryTrainedConfModifiedToRemoveMaxPeak0.txt');
-hw.shadowUpdate();
-confNew = hw.getFrame(30).c;
 tabplot;
 imagesc(confNew,[0,15]); colorbar;
 title('newConf');
+% 
+% 
+% 
+% invalidConf = isnan(prod(inputs,3));
+% figure,imagesc(invalidConf)
 
 
-
-invalidConf = isnan(prod(inputs,3));
-figure,imagesc(invalidConf)
