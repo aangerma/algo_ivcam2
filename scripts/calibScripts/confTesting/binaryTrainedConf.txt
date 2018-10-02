@@ -1,0 +1,9 @@
+mwd a00e0878 a00e087c 1f9bf126 // DESTconfactIn
+mwd a00e087c a00e0880 3e81c2ad // DESTconfactOt
+mwd a00e0874 a00e0878 00000006 // DESTconfIRbitshift
+mwd a00e0880 a00e0884 00007f7f // DESTconfq
+mwd a00e0888 a00e088c d37600fc // DESTconfw1
+mwd a00e088c a00e0890 d37600fc // DESTconfw2
+mwd a00e0884 a00e0888 00808080 // DESTconfv
+mwd a00d01f4 a00d01f8 00000fff // EXTLauxShadowUpdate
+mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame

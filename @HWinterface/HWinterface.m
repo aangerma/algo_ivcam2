@@ -139,7 +139,7 @@ classdef HWinterface <handle
         
         
         burn2device(obj,basedir,burnCalib,burnConfig);
-        
+        cma = readCMA(obj,nAvg);
         
         %----------------------CONSTRUCTOR----------------------
         function obj = HWinterface(fw,recfn)

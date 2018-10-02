@@ -1,6 +1,8 @@
-function raw=showImageRequestDialog(hw,figNum,tformData)
+function raw=showImageRequestDialog(hw,figNum,tformData,figTitle)
     persistent figImgs;
-    figTitle = 'Please align image board to overlay';
+    if ~exist('figTitle','var')
+        figTitle = 'Please align image board to overlay';
+    end
     if(isempty(figImgs))
         bd = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))),'targets',filesep);
         figImgs{1} = imread([bd 'calibrationChart.png']);
@@ -14,10 +16,12 @@ function raw=showImageRequestDialog(hw,figNum,tformData)
     %%
     
     move2Ncoords = [2/size(I,2) 0 0 ; 0 2/size(I,1) 0; -1/size(I,2)-1 -1/size(I,1)-1 1];
-    
-    It= imwarp(I, projective2d(move2Ncoords*tformData'),'bicubic','fill',0,'OutputView',imref2d([480 640],[-1 1],[-1 1]));
-    It = uint8(It.*permute([0 1 0],[3 1 2]));
-    
+    if ~isempty(tformData)
+        It= imwarp(I, projective2d(move2Ncoords*tformData'),'bicubic','fill',0,'OutputView',imref2d([480 640],[-1 1],[-1 1]));
+        It = uint8(It.*permute([0 1 0],[3 1 2]));
+    else
+        It = uint8(zeros([480, 640,3]));
+    end
     %%
     while(ishandle(f) && get(f,'userdata')==0)
         

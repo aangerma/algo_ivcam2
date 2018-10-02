@@ -1,8 +1,12 @@
-function [xF,yF] = ang2xySF(angxQin,angyQin,regs,useFix)
+function [xF,yF] = ang2xySF(angxQin,angyQin,regs,fovExpander,useFix)
 %{
 A Straight forward calculation of ang2xy.
 If useFix is False, it performs the transformation as in the version that's
 in the Pipe (bugged). Otherwise, it performs the calculation correctly.
+
+fovExpander either an [M,2] array with M
+input angle bins and the relevant expansion factor, or a single value for
+all angles.
 %}
 %% ----STAIGHT FORWARD------
 
@@ -41,6 +45,9 @@ angy = single(angyQ)*angYfactor;
 xy00 = [rangeL;rangeB];
 xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];% xys = [xresN-1;yresN-1]./[rangeR-rangeL;rangeT-rangeB];
 oXYZ = oXYZfunc(angles2xyz(angx,angy));
+if ~isempty(fovExpander)
+    oXYZ = Calibration.aux.applyExpander(oXYZ,fovExpander);
+end
 xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;
 xy = bsxfun(@minus,xynrm,xy00);
@@ -51,3 +58,4 @@ xy = bsxfun(@minus,xy,double([marginL+int16(guardXinc);marginT+int16(guardYinc)]
 xF = reshape(xy(1,:),size(angxQin));
 yF = reshape(xy(2,:),size(angyQin));
 end
+

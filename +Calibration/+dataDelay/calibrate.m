@@ -31,7 +31,7 @@ r.add('DESTaltIrEn'        ,false    );
 r.set();
 
 origBias = zeroBias(hw);
-
+% hw.cmd('mwd 0xa005006c 0xa0050070 0x00000100')  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 
 %% CALIBRATE IR
 [delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
@@ -57,6 +57,7 @@ regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
 %% SET OLD VALUES
 r.reset();
 setBias(hw,origBias);
+% hw.cmd('mwd 0xa005006c 0xa0050070 0x00000000')  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 end
 
 function origBias = zeroBias(hw)

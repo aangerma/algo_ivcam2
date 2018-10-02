@@ -304,8 +304,9 @@ function statrtButton_callback(varargin)
         end
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
+        sparkFolders = strsplit(calibParams.sparkOutputFolders);
         if app.cb.replayMode.Value==0
-            s=Spark('Algo','AlgoCalibration',calibParams.sparkOutputFolder);
+            s=Spark('Algo','AlgoCalibration',sparkFolders{1});
             s.addTestProperty('CalibVersion',calibToolVersion)
             s.startDUTsession(serialStr);
             s.addDTSproperty('TargetType','IRcalibrationChart');
@@ -345,6 +346,10 @@ function statrtButton_callback(varargin)
         end
         if app.cb.replayMode.Value == 0
             s.endDUTsession([], true);
+%             for i = 2:numel(sparkFolders) % Copy spark output to all directories.
+%                 sparkfn = []; % Todo - get the spark file name
+%                 copyfile(fullfile(sparkFolders{1},sparkfn), sparkFolders{i})
+%             end
         end
     end
     
