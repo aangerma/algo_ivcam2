@@ -28,7 +28,7 @@ dp = 10; % In pixels. Pixel grid spacing. Too small a number will provide insuff
 dpy = double(regs.GNRL.imgVsize+2*margin)/round(double(regs.GNRL.imgVsize+2*margin)/dp);% Make sure the range of pixels divide by dp. Thus the pixel grid will be symmetric.
 dpx = double(regs.GNRL.imgHsize+2*margin)/round(double(regs.GNRL.imgHsize+2*margin)/dp);% Make sure the range of pixels divide by dp. Thus the pixel grid will be symmetric.
 
-[xg,yg] = meshgrid(-margin:dpy:double(regs.GNRL.imgHsize+margin),-margin:dpx:double(regs.GNRL.imgVsize+margin)); 
+[xg,yg] = meshgrid(-margin:dpx:double(regs.GNRL.imgHsize+margin),-margin:dpy:double(regs.GNRL.imgVsize+margin)); 
 
 % transform to angx-angy. Using the fixed xy2ang:
 if ~isempty(FE)
