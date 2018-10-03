@@ -1,13 +1,11 @@
 function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprintff)
-    
-    
+       
     t=tic;
     score=0;
     results = struct;
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
     end
-    
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
@@ -15,7 +13,6 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
         calibPassed = -1;
         return;
     end
-    
     %% Calibration file names
     [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams);
     
