@@ -1,4 +1,4 @@
-function [beta,r,J] = nlinfit(X,y,model,beta0)
+function [beta,r,J] = nlinfit(X,y,model,beta0,verbose)
     %NLINFIT Nonlinear least-squares data fitting by the Gauss-Newton method.
     %   NLINFIT(X,Y,FUN,BETA0) estimates the coefficients of a nonlinear
     %   function using least squares.  Y is a vector of response (dependent
@@ -117,6 +117,6 @@ function [beta,r,J] = nlinfit(X,y,model,beta0)
             iter1 = iter1 + 1;
         end
     end
-    if iter == maxiter
+    if (verbose && iter == maxiter)
         disp('NLINFIT did NOT converge. Returning results from last iteration.');
     end

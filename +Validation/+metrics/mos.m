@@ -52,7 +52,7 @@ centers = (pts(1:end-1,1:end-1,:) + pts(1:end-1,2:end,:) +...
     pts(2:end,1:end-1,:) + pts(2:end,2:end,:))/4;
 
 if (verbose)
-    figure; imagesc(irImg);
+    figure(17211); imagesc(irImg);
     hold on; plot(pts(:,:,1), pts(:,:,2), '+r');
     hold on; plot(centers(:,:,1), centers(:,:,2), '+k');
 end
@@ -99,7 +99,7 @@ for j=1:size(pts,1)-1
         
         k = (ib + 1)/2;
         [barW(j,k), barH(j,k), zC(j,k), blobNoise(j,k)] = ...
-            analyzeHorizontalMos(zImg, p0, p1, tunnelHeight);
+            analyzeHorizontalMos(zImg, p0, p1, tunnelHeight, verbose);
         barC(j,k,:) = c;
     end
 end
@@ -109,8 +109,9 @@ end
 
 
 if (verbose)
-    figure; imagesc(barW); title('Bar widths');
-    figure; imagesc(barH); title('Bar heights');
+    figure(17211); hold off;
+    figure(17213); imagesc(barW); title('Bar widths');
+    figure(17214); imagesc(barH); title('Bar heights');
 end
 
 bar0 = barC; bar0(:,:,2) = barC(:,:,2) - barW/2;
@@ -138,7 +139,7 @@ res.units = 'mm^2';
 
 end
     
-function [width, height, zc, blobNoise] = analyzeHorizontalMos(zImg, p0, p1, tunnelWidth)
+function [width, height, zc, blobNoise] = analyzeHorizontalMos(zImg, p0, p1, tunnelWidth, verbose)
 subSamples = 4;
 zSubMM = 8;
 maxHeight = 20; % in mm
@@ -184,7 +185,7 @@ zCurve = mean(zFixed,2);
 %figure; plot(zCurve);
 
 zIntegral = cumsum(zCurve);
-[fitCurve,~,~, rise, sigm_params] = fitting.riseFitting(zIntegral);
+[fitCurve,~,~, rise, sigm_params] = fitting.riseFitting(zIntegral, [], false);
 %figure; plot([zIntegral fitCurve]);
 
 % z of the center of the region
