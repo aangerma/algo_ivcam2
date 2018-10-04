@@ -1,5 +1,5 @@
 mRegs = regs.RAST;
-
+cmaOut = pflow.cma;
 assert(max(cmaOut(:))<128);
 % confDC computation
 confSum = reshape(sum(uint32(cmaOut), 1, 'native'), [480,640]);

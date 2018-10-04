@@ -1,9 +1,10 @@
 fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
 [regs,luts] = fw.get();
-[cma,cmaSTD] = readCMA(hw);
+hw = HWinterface();
+cma = hw.readCMA(4);
 % cma = uint8(255*(-1+randi(2,416,480,640)));
 %%
-pflow.cma = cma/2;
+pflow.cma = uint16(floor(cma/2));
 assert(max(pflow.cma(:))<128); %cma should be always 7b
 cma_ = min(63, bitshift(pflow.cma+1,-1));
 
