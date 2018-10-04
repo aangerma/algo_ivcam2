@@ -153,7 +153,7 @@ for ind = 1:tot_elm
     data.frames{sort_bypass_ind,JFIL_sharpS_ind, ...
         JFIL_sharpR_ind,RAST_sharpS_ind, ...
         RAST_sharpR_ind}.params = ...
-        params(sort_bypass_mode(sort_bypass_ind), ...
+        create_params_struct(sort_bypass_mode(sort_bypass_ind), ...
             JFIL_sharpS_range(JFIL_sharpS_ind), ...
             JFIL_sharpR_range(JFIL_sharpR_ind), ...
             RAST_sharpS_range(RAST_sharpS_ind), ...
@@ -172,85 +172,12 @@ save_data(data, data_JFIL_bypass, path);
 % fprintf('average loop time: %f seconds\n',total_time/tot_elm);
 % end
 
-% for ind_RAST_sharpS = 1:length(RAST_sharpS_range)
-% %     regs.RAST.biltSharpnessS = uint8(RAST_sharpS_range(ind_RAST_sharpS));
-% %     fw.setRegs(regs,'');
-% %     fw.get();
-% %     fw.genMWDcmd('RASTbiltSharpnessS|EXTLauxShadowUpdateFrame','regs.txt');
-% %     hw.runScript('regs.txt');
-%     hw.setReg('RASTbiltSharpnessS',uint8(RAST_sharpS_range(ind_RAST_sharpS)));
-%     hw.shadowUpdate();
-%     for ind_RAST_sharpR = 1:length(RAST_sharpR_range)
-% %         regs.RAST.biltSharpnessR = uint8(RAST_sharpR_range(ind_RAST_sharpR));
-% %         fw.setRegs(regs,'');
-% %         fw.get();
-% %         fw.genMWDcmd('RASTbiltSharpnessR|EXTLauxShadowUpdateFrame','regs.txt');
-% %         hw.runScript('regs.txt');
-%         hw.setReg('RASTbiltSharpnessR',uint8(RAST_sharpR_range(ind_RAST_sharpR)));
-%         hw.shadowUpdate();
-%         for ind_sort_bypass_mode = 1:length(sort_bypass_mode)
-%             tic;
-% %             regs.JFIL.sort1bypassMode = uint8(sort_bypass_mode(ind_sort_bypass_mode));
-% %             regs.JFIL.sort2bypassMode = uint8(sort_bypass_mode(ind_sort_bypass_mode));
-% %             regs.JFIL.sort3bypassMode = uint8(sort_bypass_mode(ind_sort_bypass_mode));
-% %             fw.setRegs(regs,'');
-% %             fw.get();
-% %             fw.genMWDcmd('JFILsort1bypassMode|JFILsort2bypassMode|JFILsort3bypassMode|EXTLauxShadowUpdateFrame','regs.txt');
-% %             hw.runScript('regs.txt');
-%             hw.setReg('JFILsort1bypassMode',uint8(sort_bypass_mode(ind_sort_bypass_mode)));
-%             hw.setReg('JFILsort2bypassMode',uint8(sort_bypass_mode(ind_sort_bypass_mode)));
-%             hw.setReg('JFILsort3bypassMode',uint8(sort_bypass_mode(ind_sort_bypass_mode)));
-%             hw.shadowUpdate();
-%             for ind_JFIL_sharpS = 1:length(JFIL_sharpS_range)
-% %                 regs.JFIL.biltSharpnessS = uint8(JFIL_sharpS_range(ind_JFIL_sharpS));
-% %                 fw.setRegs(regs,'');
-% %                 fw.get();
-% %                 fw.genMWDcmd('JFILbiltSharpnessS|EXTLauxShadowUpdateFrame','regs.txt');
-% %                 hw.runScript('regs.txt');
-%                 hw.setReg('JFILbiltSharpnessS',uint8(JFIL_sharpS_range(ind_JFIL_sharpS)));
-%                 hw.shadowUpdate();
-%                 for ind_JFIL_sharpR = 1:length(JFIL_sharpR_range)
-% %                     regs.JFIL.bilt1SharpnessR = uint8(JFIL_sharpR_range(ind_JFIL_sharpR));
-% %                     regs.JFIL.bilt2SharpnessR = uint8(JFIL_sharpR_range(ind_JFIL_sharpR));
-% %                     regs.JFIL.bilt3SharpnessR = uint8(JFIL_sharpR_range(ind_JFIL_sharpR));
-% %                     fw.setRegs(regs,'');
-% %                     fw.get();
-% %                     fw.genMWDcmd('JFILbilt1SharpnessR|JFILbilt2SharpnessR|JFILbilt3SharpnessR|EXTLauxShadowUpdateFrame','regs.txt');
-% %                     hw.runScript('regs.txt');
-%                     hw.setReg('JFILbilt1SharpnessR',uint8(JFIL_sharpR_range(ind_JFIL_sharpR)));
-%                     hw.setReg('JFILbilt2SharpnessR',uint8(JFIL_sharpR_range(ind_JFIL_sharpR)));
-%                     hw.setReg('JFILbilt3SharpnessR',uint8(JFIL_sharpR_range(ind_JFIL_sharpR)));
-%                     hw.shadowUpdate();
-%                     frame = hw.getFrame();
-%                     data.frames{ind_RAST_sharpS,ind_RAST_sharpR,...
-%                         ind_JFIL_sharpS,ind_JFIL_sharpR,...
-%                         ind_sort_bypass_mode} = frame;
-%                 end
-%             end
-%             toc;
-%         end
-%     end
-% end
-
 %% auxilary functions
 function params_struct = JFIL_bypass_params(RAST_sharpS,RAST_sharpR)
 % this function generate a struct that contain
 % the values of the registers (related to mos optimization)
 % for JFIL bypass recording
 
-    params_struct.RAST_sharpS = RAST_sharpS;
-    params_struct.RAST_sharpR = RAST_sharpR;   
-end
-
-function params_struct = params(sort_bypass_mode, JFIL_sharpS, ...
-                                    JFIL_sharpR, RAST_sharpS, RAST_sharpR)
-% this function generate a struct that contain
-% the values of the registers (related to mos optimization)
-% for recording with JFIL enabled
-
-    params_struct.sort_bypass_mode = sort_bypass_mode;
-    params_struct.JFIL_sharpS = JFIL_sharpS;
-    params_struct.JFIL_sharpR = JFIL_sharpR;   
     params_struct.RAST_sharpS = RAST_sharpS;
     params_struct.RAST_sharpR = RAST_sharpR;   
 end
