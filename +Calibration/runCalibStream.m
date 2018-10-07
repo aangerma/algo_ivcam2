@@ -155,7 +155,7 @@ function hw = loadHWInterface(runParams,fw,fprintff,t)
 end
 
 function verValue = getVersion(hw,runParams)
-    verValue = typecast(uint8([floor(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
+    verValue = typecast(uint8([round(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
     
     unitConfigVersion=hw.read('DIGGspare_005');
     if(unitConfigVersion~=verValue)

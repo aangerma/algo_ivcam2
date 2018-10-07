@@ -43,7 +43,7 @@
      <extraMarginB>0</extraMarginB>       
    </roi>
     <fovExpander>
-        <valid>1</valid>  
+        <valid>0</valid>  
         <table>
             [0	0
             0.500000000000000	0.547892600000000
