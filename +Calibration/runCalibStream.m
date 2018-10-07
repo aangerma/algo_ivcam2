@@ -353,13 +353,22 @@ function [results,calibPassed] = calibrateDFZ(hw, regs, runParams, calibParams, 
     end
 end
 function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
-    fprintff('[-] Calibrating ROI...\n');
+    fprintff('[-] Calibrating ROI... \n');
     if (runParams.ROI)
 %         d = hw.getFrame(10);
 %         roiRegs = Calibration.roi.runROICalib(d,calibParams);
         regs = fw.get(); % run bootcalcs
+        %% Get spherical of both directions:
+        r = Calibration.RegState(hw);
+        r.add('DIGGsphericalEn'    ,true     );
+        r.set();
+        hw.cmd('iwb e2 06 01 00'); % Remove bias
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Please Make Sure Borders Are Bright');
-        roiRegs = Calibration.roi.calibROI(hw,regs,calibParams);
+        [imU,imD]=Calibration.dataDelay.getScanDirImgs(hw);
+        r.reset();
+        hw.cmd('iwb e2 06 01 70'); % Return bias
+        
+        [roiRegs] = Calibration.roi.calibROI(imU,imD,regs,calibParams);
         fw.setRegs(roiRegs, fnCalib);
         fw.get(); % run bootcalcs
         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
@@ -367,6 +376,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         hw.runScript(fnAlgoTmpMWD);
         hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));
+        
     else
         fprintff('[?] skipped\n');
     end
