@@ -37,13 +37,13 @@
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>1</extraMarginL>  
-     <extraMarginR>1</extraMarginR>  
-     <extraMarginT>1</extraMarginT>  
-     <extraMarginB>1</extraMarginB>       
+     <extraMarginL>0</extraMarginL>  
+     <extraMarginR>0</extraMarginR>  
+     <extraMarginT>0</extraMarginT>  
+     <extraMarginB>0</extraMarginB>       
    </roi>
     <fovExpander>
-        <valid>0</valid>  
+        <valid>1</valid>  
         <table>
             [0	0
             0.500000000000000	0.547892600000000

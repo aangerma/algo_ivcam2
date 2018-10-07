@@ -377,6 +377,19 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));
         
+        FE = [];
+        if calibParams.fovExpander.valid
+            FE = calibParams.fovExpander.table;
+        end
+        fovData = Calibration.validation.calculateFOV(imU,imD,regs,FE);
+        fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
+        fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
+        fprintff('Laser opening angles up slow and fast:    [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
+        fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYup);
+        fprintff('Laser opening angles down slow and fast:  [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
+        fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
+         
+        
     else
         fprintff('[?] skipped\n');
     end
