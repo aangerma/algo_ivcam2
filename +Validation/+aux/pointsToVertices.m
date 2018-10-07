@@ -1,23 +1,27 @@
-function v = toVertices(points, zImg, matK)
-
-zMaxSubMM = 8;
-sz=size(zImg);
-
-zImg(isnan(zImg)) = 0;
-zImg = fillHolesMM(zImg);
-zImg = fillHolesMM(zImg);
-
-zImg = double(zImg)/double(zMaxSubMM);
-
-[xi,yi]=meshgrid(0:sz(2)-1,0:sz(1)-1);
+function v = pointsToVertices(points, z, matK)
 
 u = points(:,1);
 v = points(:,2);
-z = interp2(xi, yi, zImg, u, v);
+
+if (min(size(z)) == 1)
+    zp = z;
+else
+    zMaxSubMM = 8;
+    sz=size(z);
     
+    z(isnan(z)) = 0;
+    z = fillHolesMM(z);
+    z = fillHolesMM(z);
+    
+    z = double(z)/double(zMaxSubMM);
+    
+    [xi,yi]=meshgrid(0:sz(2)-1,0:sz(1)-1);
+    zp = interp2(xi, yi, z, u, v);
+end
+
 matKi=double(matK)^-1;
-tt = z'.*[u';v';ones(1,numel(v))];
+tt = zp'.*[u';v';ones(1,numel(v))];
 v = (matKi*tt)';
-    
+
 end
 

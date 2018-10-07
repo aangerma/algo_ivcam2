@@ -1,5 +1,5 @@
 
-function [OUT,xi,yi, Rise,sigm_param,pout,fiterr] = riseFitting(yiIn,initial_params)
+function [OUT,xi,yi, Rise,sigm_param,pout,fiterr] = riseFitting(yiIn,initial_params,verbose)
 
 xi = find(~isnan(yiIn));
 yi = yiIn(xi);
@@ -17,6 +17,10 @@ catch
     m=length(yi)/2;
 end
 
+if ~exist('verbose','var')
+    verbose = false;
+end
+
 if ~exist('initial_params','var')
     initial_params = [];
 end
@@ -30,7 +34,7 @@ end
 Rise = nan;OUT = nan(size(xi));
 mse = nan;sigm_param = nan(4,1);
 try
-    [sigm_param,r]= fitting.nlinfit(xi,yi,fsigm,initial_params);
+    [sigm_param,r]= fitting.nlinfit(xi,yi,fsigm,initial_params,verbose);
     fiterr = norm(r);
     OUT = fsigm(sigm_param,xi);
     ps09 = precent_sigm(sigm_param,0.9); ips09=inv_fsigm(sigm_param,ps09);
