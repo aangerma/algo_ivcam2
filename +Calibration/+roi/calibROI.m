@@ -1,4 +1,4 @@
-function [roiregs] = calibROI(hw, regs,calibParams)
+function [roiregs] = calibROI( imU,imD,regs,calibParams)
 % Calibrate the margins of the image.
 % 1. Take a spherical mode image of up direction.
 % 2. Take a spherical mode image of down direction.
@@ -11,14 +11,6 @@ function [roiregs] = calibROI(hw, regs,calibParams)
 % value of Y left to set the margin. Do it for up and down and use the
 % hardest margin. At the end add the extra margins from calibParams.  
 
-%% Get spherical of both directions:
-r = Calibration.RegState(hw);
-r.add('DIGGsphericalEn'    ,true     );
-r.set();
-hw.cmd('iwb e2 06 01 00'); % Remove bias
-[imU,imD]=Calibration.dataDelay.getScanDirImgs(hw);
-r.reset();
-hw.cmd('iwb e2 06 01 70'); % Return bias
 
 %% Get margins for each image
 edgesU = calcBounds(imU);

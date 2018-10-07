@@ -6,8 +6,8 @@
    <cb_DSM>1</cb_DSM>
    <cb_gamma>1</cb_gamma>
    <cb_dataDelay>1</cb_dataDelay>
-   <cb_ROI>1</cb_ROI>
    <cb_DFZ>1</cb_DFZ>
+   <cb_ROI>1</cb_ROI>
    <cb_undist>1</cb_undist>
    <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
    <cb_burnConfigurationToDevice>1</cb_burnConfigurationToDevice>

@@ -10,8 +10,11 @@ dsmMaxAngError = 30; % Maximal error in our estimation of the Mirror angle at re
 hw = HWinterface(); % Connect to camera
 
 % Verify version of calibration
-unitConfigVersion=hw.read('DIGGspare_005');
-assert(unitConfigVersion>=113,'Need calib version of 1.13 and above.')
+unitConfigVersion=hw.read('DIGGspare_000');
+unitConfigVersion = typecast(unitConfigVersion,'uint8');
+unitConfigVersion = unitConfigVersion(1)+100*unitConfigVersion(2);
+
+assert(unitConfigVersion>=113,'A calib version of 1.13 and above is requaired.')
 % Read calibration parameters from unit.
 currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
 currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
