@@ -1,4 +1,4 @@
-function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,verbose,eval,x0)
+function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0)
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
 par = calibParams.dfz;
@@ -6,13 +6,13 @@ FE = [];
 if calibParams.fovExpander.valid
     FE = calibParams.fovExpander.table;
 end
-if(~exist('eval','var'))
-    eval=false;
+if(~exist('iseval','var') || isempty(iseval))
+    iseval=false;
 end
-if(~exist('verbose','var'))
+if(~exist('verbose','var')|| isempty(verbose))
     verbose=false;
 end
-if(~exist('fprintff','var'))
+if(~exist('fprintff','var')|| isempty(fprintff))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
@@ -68,7 +68,7 @@ end
 xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1)]; 
 xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2)]; 
 regs = x2regs(x0,regs);
-if eval
+if iseval
     [minerr,eFit]=errFunc(darr,regs,x0,FE);
     outregs = [];
     darrNew = [];
