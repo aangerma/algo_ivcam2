@@ -2,7 +2,7 @@ function [  ] = validateDFZ( hw,frame,fprintff )
 params.camera.K = getKMat(hw);
 params.target.squareSize = 30;
 [score, results] = Validation.metrics.gridInterDist(frame, params);
-fprintff('%s: %2.2g\n','eGeom',score);
+fprintff('%s: %2.4g\n','eGeom',score);
 end
 
 
