@@ -1,6 +1,6 @@
 %% load recorded data
 
-mos_data_folder_path = 'D:\Data\Ivcam2\mos\mos_data_10_03';
+mos_data_folder_path = 'D:\Data\Ivcam2\mos\mos_data_09_27';
 if ~exist(mos_data_folder_path,'dir')
     error('folder of mos data does not exist');
 end
@@ -22,7 +22,7 @@ dim_sizes = [length(reg_values.sort_bypass_mode), ...
 mos_scores = zeros(size(data.frames));
 params = Validation.aux.defaultMetricsParams();
 params.camera.K = data.K;
-params.verbose = false;
+params.verbose = true;
 
 for ind = 1:numel(data.frames)
     if mod(ind,50) == 0
@@ -32,5 +32,5 @@ for ind = 1:numel(data.frames)
 end
 
 %% save mos scores
-mos_scores_path = 'D:\Data\Ivcam2\mos\mos_data_10_03\mos_scores.mat';
-save(mos_scores_path, 'mos_scores');
+mos_scores_path = mos_data_folder_path;
+save([mos_scores_path '\mos_scores.mat'], 'mos_scores');
