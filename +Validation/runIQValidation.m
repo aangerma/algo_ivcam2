@@ -15,8 +15,8 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
     %  Debug
-    %  varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'X:\Avv\sources\ivs\gen1', 'dataSource', 'ivs'))}
-    %  testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
+%      varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'X:\Avv\sources\ivs\gen1\turn_in', 'dataSource', 'ivs'))}
+%      testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
     
     % set config params
     p = inputParser;
@@ -171,7 +171,8 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
             case 'ivs'
                 fnTarget = fullfile(dataFullPath, [cell2str(testTargets(i).name), '.ivs']);
                 p = Pipe.autopipe(fnTarget, 'viewResults', 0 ,'outputdir',  'C:\temp\pipeOutDir\');
-                testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg)
+                testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg);
+                cameraConfig = p.camera;
         end
     end
 end
