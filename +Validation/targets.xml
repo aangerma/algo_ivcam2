@@ -20,6 +20,14 @@
 			<squareSize>30</squareSize>
 		</params>
 	</checkerboard_30>
+    <checkerboard_75>
+		<target>checkerboard_75</target>
+		<title>checkerboard 75mm</title>
+		<imgFile>calibrationChart.png</imgFile>
+		<params>
+			<squareSize>75</squareSize>
+		</params>
+	</checkerboard_75>
 	<checkerboard_30_spherical>
 		<target>checkerboard_30_spherical</target>
 		<title>checkerboard 30mm spherical</title>

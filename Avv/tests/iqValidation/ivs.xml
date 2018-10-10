@@ -7,12 +7,13 @@
         <dataSource>ivs</dataSource>
     </params>
     <tests>
-        <test name="fillRate" metrics="fillRate" target="wall_80Reflectivity" distance="4m" threshold="[99:100]" />
-        <test name="fillRate" metrics="fillRate" target="wall_80Reflectivity" distance="50cm" threshold="[95 : 100]" />
-        <test name="planeFit" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:0.5]" />
+        <test name="fillRate_50cm" metrics="fillRate" target="wall_80Reflectivity" distance="50cm" threshold="[95 : 100]" />
+        <test name="planeFit_1m" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:0.5]" />
+        <test name="planeFit_3m" metrics="planeFit" target="wall_80Reflectivity" distance="3m" threshold="[0:1]" />
         <test name="minDistance" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="[99:100]" />
-        <test name="zStd_1" metrics="zStd" target="checkerboard_30" distance="1m" threshold="[0:0.5]" />
-        <test name="zStd_4" metrics="zStd" target="checkerboard_30" distance="4m" threshold="[0:0.5]" />
-        <test name="gridInterDist_1" metrics="gridInterDist" target="checkerboard_30" distance="1m" threshold="[99:100]" />
+        <test name="zStd_1m" metrics="zStd" target="checkerboard_30" distance="1m" threshold="[0:0.5]" />
+        <test name="zStd_4m" metrics="zStd" target="checkerboard_30" distance="4m" threshold="[0:0.5]" />
+        <test name="gridInterDist_40cm" metrics="gridInterDist" target="checkerboard_30" distance="40cm" threshold="[0:0.7]" />
+        <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_75" distance="1m" threshold="[0:2.5]" />
     </tests>
 </root>
