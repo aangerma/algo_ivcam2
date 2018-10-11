@@ -74,12 +74,13 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% ::Fix ang2xy Bug using undistort table::
     [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
 
-    
-    
+    %% Measure scan line fill rate within ROI
+    results.scanLineFillRate = Calibration.validation.validateScanFillRate( hw ,30); 
+    fprintff('Scan line fill rate: %2.2g%%.\n',results.scanLineFillRate);
     % Update fnCalin and undist lut in output dir
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
-    
+    logResults(results,runParams);
     %% merge all scores outputs
     score = mergeScores(results,runParams,calibParams,fprintff);
     
@@ -103,7 +104,16 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
 %     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
 end
-
+function logResults(results,runParams)
+    fname = fullfile(runParams.outputFolder,'results.txt');
+    if exist(fname, 'file') == 2
+        fprintff('Results log file name already exists. Skipping...');
+    else
+        fid = fopen(fname,'wt');
+        fprintf(fid, struct2str(results));
+        fclose(fid);
+    end
+end 
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     %backward compatibility
@@ -382,14 +392,14 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
             FE = calibParams.fovExpander.table;
         end
         fovData = Calibration.validation.calculateFOV(imU,imD,regs,FE);
+        results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
         fprintff('Laser opening angles up slow and fast:    [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYup);
         fprintff('Laser opening angles down slow and fast:  [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
-         
-        
+        fprintff('Laser up/down fov diff:  %2.3g degrees.\n',results.upDownFovDiff);
     else
         fprintff('[?] skipped\n');
     end
@@ -415,7 +425,6 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
         fprintff('[v] Done(%ds)\n',round(toc(t)));
     else
         fprintff('[?] skipped\n');
-        results.maxPixelDisplacement=inf;
     end
 end
 function writeVersionAndIntrinsics(verValue,fw,fnCalib)

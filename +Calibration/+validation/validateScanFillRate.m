@@ -1,13 +1,15 @@
-function [ scanFillRate ] = validateScanFillRate( hw )
+function [ scanFillRate ] = validateScanFillRate( hw ,warmUpFrames)
 %VALIDATEFILLRATE calculate the fill rate of the scanlines. 
-
+if ~exist('warmUpFrames','var')
+    warmUpFrames = 600;
+end
 hw.getFrame();
 r = Calibration.RegState(hw);
 r.add('JFILbypass$'    ,true     );
 r.set();
 
 nAvg = 30;
-nFrames = nAvg+600;
+nFrames = nAvg+warmUpFrames;
 FR = zeros(nFrames,1);
 i = 1;
 while i <= nFrames || i>1000

@@ -62,9 +62,9 @@ topEdge = [min(noiseStartRowPerCol+topWidth,notNoiseStartRowPerCol)',(leftImInde
 bottomEdge = [max(noiseEndRowPerCol-bottomWidth,notNoiseEndRowPerCol)',(leftImIndex:rightImIndex)']; 
 leftEdge = (topEdge(1,1):bottomEdge(1,1))'; leftEdge = [leftEdge,leftImIndex*ones(size(leftEdge))];
 rightEdge = ((topEdge(end,1)):(bottomEdge(end,1)))'; rightEdge = [rightEdge,rightImIndex*ones(size(rightEdge))];
-imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
+% imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
 
-figure; imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
+% figure; imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
 
 edges.T = topEdge;
 edges.B = bottomEdge;

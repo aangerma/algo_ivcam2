@@ -9,6 +9,10 @@
       <geomErrVal>[0.5 5]</geomErrVal>
       <gammaErr>[1 5000]</gammaErr>
       <maxPixelDisplacement>[0.25 1]</maxPixelDisplacement>
+      <horizEdge>[0 inf</horizEdge>
+      <vertEdge>[0 inf]</vertEdge>
+      <upDownFovDiff>[0 inf]</upDownFovDiff>
+      <scanLineFillRate>[0 inf]</scanLineFillRate>
    </errRange>
    <passScore>60</passScore>
    <thermal>

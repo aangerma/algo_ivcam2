@@ -31,7 +31,7 @@ r.add('DESTaltIrEn'        ,false    );
 r.set();
 
 % origBias = zeroBias(hw);
-hw.cmd('mwd a005006c a0050070 00000100')  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
+hw.cmd('mwd a005006c a0050070 00000100');  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 
 %% CALIBRATE IR
 [delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,verbose);
@@ -46,6 +46,10 @@ frame = hw.getFrame(10);
 [~, metricsResultsU] = Validation.metrics.gridEdgeSharp(frameU, []);
 fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horizSharpnessMean',metricsResultsU.horizMean,metricsResults.horizMean);
 fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','vertSharpnessMean',metricsResultsU.vertMean,metricsResults.vertMean);
+fprintff('IR vertical pixel alignment variance [e=%g].\n',pixelVar);
+results.horizEdge =  metricsResults.horizMean;
+results.vertEdge =  metricsResults.vertMean;
+
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;
 [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,verbose);
@@ -57,7 +61,7 @@ regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
 %% SET OLD VALUES
 r.reset();
 % setBias(hw,origBias);
-hw.cmd('mwd a005006c a0050070 00000000')  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
+hw.cmd('mwd a005006c a0050070 00000000');  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 end
 
 function origBias = zeroBias(hw)
