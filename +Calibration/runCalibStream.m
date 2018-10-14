@@ -1,4 +1,4 @@
-function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprintff)
+function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spark)
        
     t=tic;
     score=0;
@@ -6,6 +6,11 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
     end
+    if(~exist('spark','var'))
+        spark=[];
+    end
+    write2spark = ~isempty(spark);
+    
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
@@ -81,6 +86,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
     logResults(results,runParams);
+    writeResults2Spark(results,spark,calibParams,write2spark);
     %% merge all scores outputs
     score = mergeScores(results,runParams,calibParams,fprintff);
     
@@ -103,6 +109,15 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     clear hw;
 %     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
+end
+function writeResults2Spark(results,s,calibParams,write2spark)
+if write2spark
+    f = fieldnames(results);
+    for i = 1:length(f)
+        s.AddMetrics(f{i}, results.(f{i}),calibParams.errRange.(f{i})(1),calibParams.errRange.(f{i})(2),false);
+    end 
+end
+
 end
 function logResults(results,runParams)
     fname = fullfile(runParams.outputFolder,'results.txt');
