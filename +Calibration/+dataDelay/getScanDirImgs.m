@@ -1,4 +1,5 @@
 function [im1,im2,d]=getScanDirImgs(hw)
+
 scanDir1gainAddr = '85080000';
 scanDir2gainAddr = '85080480';
 gainCalibValue  = '000ffff0';
@@ -17,6 +18,7 @@ hw.writeAddr(scanDir2gainAddr,saveVal(2),true);
 
 im1=getFilteredImage(d(1));
 im2=getFilteredImage(d(2));
+
 end
 
 function imo=getFilteredImage(d)

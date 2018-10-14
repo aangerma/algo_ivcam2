@@ -11,7 +11,7 @@
       <maxPixelDisplacement>[0.25 1]</maxPixelDisplacement>
       <horizEdge>[0 inf</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
-      <upDownFovDiff>[0 inf]</upDownFovDiff>
+      <upDownFovDiff>[0 10]</upDownFovDiff>
       <scanLineFillRate>[0 inf]</scanLineFillRate>
    </errRange>
    <passScore>60</passScore>
@@ -41,9 +41,9 @@
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>0</extraMarginL>  
-     <extraMarginR>0</extraMarginR>  
-     <extraMarginT>0</extraMarginT>  
+     <extraMarginL>8</extraMarginL>  
+     <extraMarginR>5</extraMarginR>  
+     <extraMarginT>3</extraMarginT>  
      <extraMarginB>0</extraMarginB>       
    </roi>
     <fovExpander>
