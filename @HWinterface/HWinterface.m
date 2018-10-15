@@ -35,6 +35,10 @@ classdef HWinterface <handle
             cImByte = imageObj.Item(0).Data;
             cIm8 = cast(cImByte,'uint8');
             frame.c=reshape(bitand(cIm8(:),uint8(15))',size(frame.i));
+%             imageObj = imageCollection.Images.Item(2);
+%             cImByte = imageObj.Item(0).Data;
+%             cIm8 = cast(cImByte,'uint8');
+%             frame.c=reshape([ bitand(cIm8(:),uint8(15)) bitshift(cIm8(:),-4)]',size(frame.i));
         end
         
         function privRecFunc(obj,caller,varin,varout)

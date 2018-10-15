@@ -26,14 +26,28 @@ margins = max([marginsU;marginsD])+extraMargins;
 roiregs = margins2regs(margins,regs);
 
 end
+function stat = maxAreaStat(st,sz)
+for i = 1:numel(st)
+%     hold on
+%     rectangle('Position',[st(i).BoundingBox(1),st(i).BoundingBox(2),st(i).BoundingBox(3),st(i).BoundingBox(4)],...
+%         'EdgeColor','r','LineWidth',2 )
+    area(i) = st(i).BoundingBox(3)*st(i).BoundingBox(4)/(prod(sz));
+end
+[m,mI] = max(area);
+if m < 0.8
+    warning('Largest connected region in image covers only %2.2g of the image.',m);
+end
+stat = st(mI);
+
+end
 function edges = calcBounds(im)
 %% Mark desired pixels on spherical image
 % Todo - in any case, do not allow the bound toslice into the real image.
 
 binaryIm = im > 0;
-stats = regionprops(binaryIm);
-leftCol = ceil(stats(1).BoundingBox(1));
-rightCol = leftCol+stats(1).BoundingBox(3);
+stats = maxAreaStat(regionprops(binaryIm),size(im));
+leftCol = ceil(stats.BoundingBox(1));
+rightCol = leftCol+stats.BoundingBox(3);
 
 % Use the 3 outermost columns for nest estimation
 noiseValues = im(:,[leftCol:leftCol+2,rightCol-2:rightCol]);
