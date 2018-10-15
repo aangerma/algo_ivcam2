@@ -46,8 +46,9 @@
         <fovxRange>[40,70]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 
-        <zenithxRange>[-1,1]</zenithxRange> 
-        <zenithyRange>[-1,1]</zenithyRange> 
+        <zenithxRange>[-6,6]</zenithxRange> 
+        <zenithyRange>[-6,6]</zenithyRange> 
+        <zenithNormW>0.05</zenithNormW>
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
