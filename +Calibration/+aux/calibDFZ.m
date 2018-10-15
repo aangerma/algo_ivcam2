@@ -84,14 +84,14 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     opt.TolX = 1e-6;
     opt.Display ='none';
     optFunc = @(x) (errFunc(darr,regs,x,FE) + par.zenithNormW * zenithNorm(regs,x));
-    xbest = fminsearchbnd(@(x) optFunc(darr,regs,x,FE),x0,xL,xH,opt);
-    xbest = fminsearchbnd(@(x) optFunc(darr,regs,x,FE),xbest,xL,xH,opt);
+    xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
+    xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
     [minerr,eFit]=errFunc(darr,outregs,xbest,FE);
-    printErrAndX(xbest,e,eFit,'Xfinal:',verbose)
+    printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
     outregs = x2regs(xbest);
     fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f , eGeom=%.2f.\n',...
-        outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,e);
+        outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,minerr);
     %% Do it for each in array
     % if nargout > 3
     %     darrNew = darr;
@@ -124,16 +124,12 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
         [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);
     end
     eFit = mean(eFit);
-    e = mean(e);
-    eZenith = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
-    w0 = 0.05;
-    e = (1-w0)*e + w0*eZenith;
-    
+    e = mean(e);    
 end
 
-function [zenithNorm]= zenithSize(regs,x)
+function [zNorm] = zenithNorm(regs,x)
      rtlRegs = x2regs(x,regs);
-     zenithNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
+     zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
 end
 
 function [oXYZ] = ang2vec(angxQin,angyQin,regs,fovExpander)

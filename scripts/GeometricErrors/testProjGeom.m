@@ -4,27 +4,40 @@
 checkerSize = 30;  %mm
 checkerLayout = [9 13];
 numCaptures = 3;
+useSameCapture = true;
+showCaptureScreen = false;
 
 [xgt, ygt] = ndgrid(1:checkerLayout(1),1:checkerLayout(2));
 cornersWorld = ([ygt(:) xgt(:)]-1).*checkerSize;
 cornersWorld = [cornersWorld, zeros(size(cornersWorld,1),1)];
 
 % hw initializations
-hw = HWinterface();
-hw.getFrame(100);
+hwExists = exist('hw','var') && isa(hw,'HWinterface');
+if ~hwExists
+    hw = HWinterface();
+    hw.getFrame(100);
+end
 
 % bug fix - K is not correctly inverted int the calibration and as a result
 % contains non zeros in shear
 K = hw.getIntrinsics();
 K(K<1) = 0;
+%system delay changes
+if ~exist('sysDelay','var')
+    sysDelay = typecast(uint32(hw.read('DESTtxFRQpd_000')),'single');% single(5095.1); %
+end
+delayOffset = 0;
+hw.write('DESTtxFRQpd_000',typecast(sysDelay + delayOffset,'uint32'));
 
+%% capture and analysis loop
 results = struct('Frame',[],'Distance',[],'GeomErr',[],'FitErr',[],'ReprojErr',[]);
 frames = {};
 fig = figure(); clf;
-
-%% capture and analysis loop
 currentCapture = 0;
 retries = 0;
+if useSameCapture && showCaptureScreen
+    frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
+end
 while currentCapture < numCaptures
     
     if retries >2
@@ -33,7 +46,11 @@ while currentCapture < numCaptures
     end
     
     % capture checkerboard images and detect the checkerboard
-    frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
+    if useSameCapture || ~showCaptureScreen
+        frame = hw.getFrame(30);
+    else
+        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
+    end
     [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(frame.i)), [9,13]);
     if isequal(bsz,checkerLayout)
         currentCapture = currentCapture+1;
@@ -67,12 +84,13 @@ while currentCapture < numCaptures
     
     frames = [frames frame]; %#ok<AGROW>
     
-    
+    zlims = (minmax([ptK ptV]).*[0.9 1.1])./50;
+    zlims = [floor(zlims(:,1)) ceil(zlims(:,2))]'*50;
     %plot points
     hold on;
     plot3(ptV(1,:),ptV(2,:),ptV(3,:),'ob',ptK(1,:),ptK(2,:),ptK(3,:),'+r')
     hold off;
-    axis([-500 500,-500 500,0 1000]);
+    axis(zlims(:));
     axis xy;
     
 end
@@ -81,4 +99,6 @@ end
 disp(struct2table(results));
 
 %% clean up
-clear hw
+if ~hwExists
+    clear hw
+end
