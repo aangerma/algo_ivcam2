@@ -2,6 +2,7 @@ function startStream(obj)
     if(obj.m_dotnetcam.Stream.IsDepthPlaying)
         return;
     end
+    
     %% configure for getFrames
     scwD = IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper(...
         IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth,...
@@ -32,4 +33,6 @@ function startStream(obj)
     camConfig = IVCam.Tools.CamerasSdk.Cameras.Configuration.CameraConfiguration(scwList);
     
     obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
+    %% set regs configurations that affect image capturing
+    obj.setConfig();
 end

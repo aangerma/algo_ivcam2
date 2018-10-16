@@ -43,19 +43,23 @@ da2 = conv2(a2, kerEdge', 'valid');
 %}
 
 %% positive and negative gradients
-CRY = 100:380; % cropped range
-CRX = 50:500; % cropped range
-
-dir_p = dir(CRY,CRX);
+% CRY = 100:380; % cropped range
+% CRX = 50:500; % cropped range
+% 
+% dir_p = dir(CRY,CRX);
+dir_p = dir;
 dir_p(dir_p < 0) = 0;
-dir_n = dir(CRY,CRX);
+% dir_n = dir(CRY,CRX);
+dir_n = dir;
 dir_n(dir_p > 0) = 0;
 
 
-da1_n = da1(CRY,CRX);
+% da1_n = da1(CRY,CRX);
+da1_n = da1;
 da1_n(da1_n > 0) = 0;
 
-da2_p = da2(CRY,CRX);
+% da2_p = da2(CRY,CRX);
+da2_p = da2;
 da2_p(da2_p < 0) = 0;
 
 

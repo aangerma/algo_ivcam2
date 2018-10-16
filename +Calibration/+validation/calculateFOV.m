@@ -52,7 +52,7 @@ binaryIm = im > 0;
 [binaryIm,stats] = maxAreaStat(binaryIm,size(im));% Keep only the largest connected component.
 im(~binaryIm) = 0;
 leftCol = ceil(stats.BoundingBox(1));
-rightCol = min(leftCol+stats.BoundingBox(3),640);
+rightCol = min(leftCol+stats.BoundingBox(3),size(im,2));
 
 % Use the 3 outermost columns for nest estimation
 noiseValues = im(:,[leftCol:leftCol+2,rightCol-2:rightCol]);

@@ -2,6 +2,7 @@ function validateCalibration(runParams,calibParams,fprintff)
     if runParams.validation
         fprintff('[-] Validation...\n');
         hw = HWinterface();
+        hw.getFrame;
         fprintff('opening stream...');
         frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
         fprintff('Done.\n');

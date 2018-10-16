@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
    <sparkOutputFolders>c:\temp</sparkOutputFolders>
+   <gnrl>
+       <imSize>[360,640]</imSize>
+   </gnrl>
    <errRange>
       <delayF>[0 1]</delayF>
       <delayS>[0 1]</delayS>

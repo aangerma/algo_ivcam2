@@ -11,6 +11,8 @@ classdef HWinterface <handle
         m_recData
         m_recfn                  char
         
+        configRegs
+        
     end
     
     
@@ -23,22 +25,27 @@ classdef HWinterface <handle
             % get depth
             imageObj = imageCollection.Images.Item(0);
             dImByte = imageObj.Item(0).Data;
-            frame.z = reshape(typecast(cast(dImByte,'uint8'),'uint16'),480,640);
-            
+            frame.z = typecast(cast(dImByte,'uint8'),'uint16');
+            frame.z = reshape(frame.z(1:end-obj.configRegs.PCKR.padding),obj.configRegs.GNRL.imgVsize,obj.configRegs.GNRL.imgHsize);
             % get IR
             imageObj = imageCollection.Images.Item(1);
             iImByte = imageObj.Item(0).Data;
-            frame.i = reshape(cast(iImByte,'uint8'),480,640);
+            frame.i = cast(iImByte,'uint8');
+            frame.i = reshape(frame.i(1:end-obj.configRegs.PCKR.padding),obj.configRegs.GNRL.imgVsize,obj.configRegs.GNRL.imgHsize);
             
             % get C
             imageObj = imageCollection.Images.Item(2);
             cImByte = imageObj.Item(0).Data;
             cIm8 = cast(cImByte,'uint8');
-            frame.c=reshape(bitand(cIm8(:),uint8(15))',size(frame.i));
-%             imageObj = imageCollection.Images.Item(2);
-%             cImByte = imageObj.Item(0).Data;
-%             cIm8 = cast(cImByte,'uint8');
-%             frame.c=reshape([ bitand(cIm8(:),uint8(15)) bitshift(cIm8(:),-4)]',size(frame.i));
+            frame.c = bitand(cIm8(:),uint8(15))';
+            frame.c = reshape(frame.c(1:end-obj.configRegs.PCKR.padding),obj.configRegs.GNRL.imgVsize,obj.configRegs.GNRL.imgHsize);
+
+%             if obj.configRegs.PCKR.padding>0
+%                nRows2Add =  obj.configRegs.PCKR.padding/obj.configRegs.GNRL.imgHsize;
+%                frame.z = [frame.z;zeros(nRows2Add,obj.configRegs.GNRL.imgHsize)];
+%                frame.c = [frame.c;zeros(nRows2Add,obj.configRegs.GNRL.imgHsize)];
+%                frame.i = [frame.i;zeros(nRows2Add,obj.configRegs.GNRL.imgHsize)];
+%             end
         end
         
         function privRecFunc(obj,caller,varin,varout)
@@ -114,7 +121,14 @@ classdef HWinterface <handle
     
     
     methods (Access=public)
-        
+        function sz = streamSize(obj)
+           sz = [obj.configRegs.GNRL.imgVsize,obj.configRegs.GNRL.imgHsize];
+        end
+        function setConfig(obj)
+           obj.configRegs.PCKR.padding = obj.read('PCKRpadding');
+           obj.configRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
+           obj.configRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+        end
         function [res,val] = cmd(obj,str)
             [res,val]=obj.privCmd(str);
             

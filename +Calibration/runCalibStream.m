@@ -28,7 +28,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% Load init fw
     fprintff('Loading initial firmware...');
     fw = Pipe.loadFirmware(runParams.internalFolder);
-    [regs,luts]=fw.get();%run autogen
+    fw.get();%run autogen
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% Load hw interface
@@ -38,14 +38,13 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     verValue = getVersion(hw,runParams);  
     
     %% Update init configuration
-    updateInitConfiguration(hw,fw,fnCalib,runParams);
-    %% Init hw configuration
-    initConfiguration(hw,fw,runParams,fprintff,t);
-    
-    %% Get a single frame to see that the unit functions
+    updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
+    %% Get a single frame to see that the unit functions and to load the configuration
     fprintff('opening stream...');
     hw.getFrame();
     fprintff('Done(%ds)\n',round(toc(t)));
+    %% Init hw configuration
+    initConfiguration(hw,fw,runParams,fprintff,t);
      
     %% Set coarse DSM values 
     calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
@@ -64,7 +63,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     results = calibrateGamma(runParams, calibParams, results, fprintff, t);
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
-    [results,calibPassed] = calibrateDFZ(hw, regs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+    [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     if ~calibPassed
        return 
     end
@@ -183,7 +182,7 @@ function verValue = getVersion(hw,runParams)
         warning('incompatible configuration versions!');
     end
 end
-function updateInitConfiguration(hw,fw,fnCalib,runParams)
+function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     if ~runParams.DSM
         currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
         currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
@@ -211,10 +210,12 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams)
         currregs.FRMW.marginT = int16(DIGGspare07/2^16);
         currregs.FRMW.marginB = int16(mod(DIGGspare07,2^16));
     end
-    if any(~[runParams.DSM, runParams.dataDelay, runParams.DFZ])
-        fw.setRegs(currregs,fnCalib);
-        fw.get();
-    end
+    currregs.GNRL.imgHsize = uint16(calibParams.gnrl.imSize(2));
+    currregs.GNRL.imgVsize = uint16(calibParams.gnrl.imSize(1));
+    
+    fw.setRegs(currregs,fnCalib);
+    fw.get();
+    
 end
 function initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
@@ -231,6 +232,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         hw.runPresetScript('maRestart');
 %         hw.cmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame');
         hw.shadowUpdate();
+        hw.setConfig();
         fprintff('Done(%ds)\n',round(toc(t)));
     else
         fprintff('skipped\n');
@@ -294,7 +296,7 @@ function calibrateDSM(hw,fw, runParams, calibParams,fnCalib, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
         
-        dsmregs = Calibration.aux.calibDSM(hw,fw,calibParams,fprintff,runParams.verbose);
+        dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams.verbose);
         fw.setRegs(dsmregs,fnCalib);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
@@ -321,7 +323,8 @@ function results = calibrateGamma(runParams, calibParams, results, fprintff, t)
         fprintff('[?] skipped\n');
     end
 end
-function [results,calibPassed] = calibrateDFZ(hw, regs, runParams, calibParams, results, fw, fnCalib, fprintff, t)
+function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
+
     calibPassed = 1;
     fprintff('[-] FOV, System Delay, Zenith and Distortion calibration...\n');
     if(runParams.DFZ)
@@ -329,6 +332,7 @@ function [results,calibPassed] = calibrateDFZ(hw, regs, runParams, calibParams, 
         if(runParams.uniformProjectionDFZ)
             Calibration.aux.setLaserProjectionUniformity(hw,true);
         end
+        [regs,luts]=fw.get();
         regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
         r=Calibration.RegState(hw);
         

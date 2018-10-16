@@ -1,7 +1,7 @@
 clear
 fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
- regsNew.GNRL.imgVsize = uint16(360);
-% regs.PCKR.padding = 480*640-uint32(regs.GNRL.imgVsize)*640;
+regsNew.GNRL.imgVsize = uint16(360);
+% regsNew.PCKR.padding = 480*640-uint32(regsNew.GNRL.imgVsize)*640;
 fw.setRegs(regsNew,'');
 regs = fw.get();
 
@@ -21,6 +21,6 @@ hw.runPresetScript('maRestart');
 hw.shadowUpdate();
 fprintf('Done\n');
 
-
-% frame = hw.getFrame(1); figure,tabplot; subplot(131), imagesc(frame.z/8); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
+hw.setConfig();
+frame = hw.getFrame(1); figure,tabplot; subplot(131), imagesc(frame.z/8); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
 
