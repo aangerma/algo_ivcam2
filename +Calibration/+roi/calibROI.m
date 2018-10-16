@@ -26,7 +26,8 @@ margins = max([marginsU;marginsD])+extraMargins;
 roiregs = margins2regs(margins,regs);
 
 end
-function stat = maxAreaStat(st,sz)
+function [binIm1stat,stat] = maxAreaStat(binaryIm,sz)
+st = regionprops(binaryIm);
 for i = 1:numel(st)
 %     hold on
 %     rectangle('Position',[st(i).BoundingBox(1),st(i).BoundingBox(2),st(i).BoundingBox(3),st(i).BoundingBox(4)],...
@@ -38,6 +39,15 @@ if m < 0.8
     warning('Largest connected region in image covers only %2.2g of the image.',m);
 end
 stat = st(mI);
+% Remove the smaller stats from the image
+binIm1stat = binaryIm;
+for i = 1:numel(st)
+    if i~=mI
+       iC = ceil(st(i).BoundingBox(1)):floor(st(i).BoundingBox(1)+st(i).BoundingBox(3));
+       iR = ceil(st(i).BoundingBox(2)):floor(st(i).BoundingBox(2)+st(i).BoundingBox(4));
+       binIm1stat(iR,iC) = 0;
+    end
+end
 
 end
 function edges = calcBounds(im)
@@ -45,9 +55,10 @@ function edges = calcBounds(im)
 % Todo - in any case, do not allow the bound toslice into the real image.
 
 binaryIm = im > 0;
-stats = maxAreaStat(regionprops(binaryIm),size(im));
+[binaryIm,stats] = maxAreaStat(binaryIm,size(im));% Keep only the largest connected component.
+im(~binaryIm) = 0;
 leftCol = ceil(stats.BoundingBox(1));
-rightCol = leftCol+stats.BoundingBox(3);
+rightCol = min(leftCol+stats.BoundingBox(3),640);
 
 % Use the 3 outermost columns for nest estimation
 noiseValues = im(:,[leftCol:leftCol+2,rightCol-2:rightCol]);

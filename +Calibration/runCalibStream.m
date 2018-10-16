@@ -293,7 +293,8 @@ end
 function calibrateDSM(hw,fw, runParams, calibParams,fnCalib, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
-        dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams.verbose);
+        
+        dsmregs = Calibration.aux.calibDSM(hw,fw,calibParams,fprintff,runParams.verbose);
         fw.setRegs(dsmregs,fnCalib);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else

@@ -1,4 +1,4 @@
-function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
+function [dsmregs] = calibDSM(hw,fw,params,fprintff,verbose)
     %CALIBDSM find DSM scale and offset such that:
     % 1. The zero order reported angles are: [angx,angy] =[0,0]
     % 2. The range of angles cover as much as possible.
@@ -7,7 +7,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     % Start by setting  my own DSM values. This make sure none of the angles
     % are saturated.
     
-
+    regs = fw.get();
     margin = params.dsm.margin;
     
     [angxRawZO,angyRawZO,restFailed] = zeroOrderAngles(hw);
@@ -24,7 +24,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     
     if restFailed
         warning('Raw rest angle is zero. This is not likely. setRestAngle script failed.')
-        [angxZO,angyZO] = centerProjectZO(hw);
+        [angxZO,angyZO] = centerProjectZO(hw,regs);
         angxRawZO = invertDSM(angxZO,dsmXscale,dsmXoffset);
         angyRawZO = invertDSM(angyZO,dsmYscale,dsmYoffset);
     end
@@ -40,8 +40,8 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
       
         title('Spherical Validity Before DSM Calib')
         
-        colZO = (1 + angxZO/2047)/2*(640-1)+1;
-        rowZO = (1 + angyZO/2047)/2*(480-1)+1;
+        colZO = (1 + angxZO/2047)/2*(double(regs.GNRL.imgHsize)-1)+1;
+        rowZO = (1 + angyZO/2047)/2*(double(regs.GNRL.imgVsize)-1)+1;
         hold on;
         plot( colZO,rowZO,'-s','MarkerSize',10,...
             'MarkerEdgeColor','red',...
@@ -54,7 +54,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     
     
     
-    [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO);
+    [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO,regs);
     % Calulcate raw angx/y of the edges:
     angx = [angmin(1);angmax(1)];
     angy = [angmin(2);angmax(2)];
@@ -89,8 +89,8 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     st = regionprops(d_post.i>0, 'BoundingBox' );
     colxMinMax = [st.BoundingBox(1)+0.5, st.BoundingBox(1)+st.BoundingBox(3)-0.5];
     rowyMinMax = [st.BoundingBox(2)+0.5, st.BoundingBox(2)+st.BoundingBox(4)-0.5];
-    angxMinMax = round((colxMinMax-1)/639*2047*2-2047);
-    angyMinMax = round((rowyMinMax-1)/479*2047*2-2047);
+    angxMinMax = round((colxMinMax-1)/(double(regs.GNRL.imgHsize)-1)*2047*2-2047);
+    angyMinMax = round((rowyMinMax-1)/(double(regs.GNRL.imgVsize)-1)*2047*2-2047);
     fprintff('DSM: minAngX=%d, maxAngX=%d, minAngY=%d, maxAngY=%d.\n',angxMinMax(1),angxMinMax(2),angyMinMax(1),angyMinMax(2));   
     
     % Return to regular coordiantes
@@ -99,7 +99,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     hw.shadowUpdate();
 end
 
-function [angxZO,angyZO] = centerProjectZO(hw)
+function [angxZO,angyZO] = centerProjectZO(hw,regs)
     % Set spherical:
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
@@ -114,8 +114,8 @@ function [angxZO,angyZO] = centerProjectZO(hw)
     rowZO = single(0.5*(find(valid(:,colC),1,'first')+find(valid(:,colC),1,'last')));
     colZO = single(0.5*(find(valid(rowC,:),1,'first')+find(valid(rowC,:),1,'last')));
     
-    angxZO = ((colZO-1)*2/(640-1)-1)*2047;
-    angyZO = ((rowZO-1)*2/(480-1)-1)*2047;
+    angxZO = ((colZO-1)*2/(double(regs.GNRL.imgHsize)-1)-1)*2047;
+    angyZO = ((rowZO-1)*2/(double(regs.GNRL.imgVHsize)-1)-1)*2047;
     
     
     % Undo spherical:
@@ -149,9 +149,9 @@ end
 function [angRaw] = invertDSM(ang,scale,offset)
     angRaw = (ang+2047)/scale - offset;
 end
-function [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO)
+function [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO,regs)
     % Get the column and row of the zero order in spherical:
-    axDim = [640,480];
+    axDim = [double(regs.GNRL.imgHsize),double(regs.GNRL.imgVsize)];
     
     
     % Get a sample image:
