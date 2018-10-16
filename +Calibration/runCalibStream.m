@@ -1,4 +1,4 @@
-function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprintff)
+function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spark)
        
     t=tic;
     score=0;
@@ -6,6 +6,11 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
     end
+    if(~exist('spark','var'))
+        spark=[];
+    end
+    write2spark = ~isempty(spark);
+    
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
@@ -74,12 +79,14 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% ::Fix ang2xy Bug using undistort table::
     [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
 
-    
-    
+    %% Measure scan line fill rate within ROI
+    results.scanLineFillRate = Calibration.validation.validateScanFillRate( hw ,30); 
+    fprintff('Scan line fill rate: %2.2g%%.\n',results.scanLineFillRate);
     % Update fnCalin and undist lut in output dir
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
-    
+    logResults(results,runParams);
+    writeResults2Spark(results,spark,calibParams,write2spark);
     %% merge all scores outputs
     score = mergeScores(results,runParams,calibParams,fprintff);
     
@@ -103,7 +110,25 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
 %     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
 end
+function writeResults2Spark(results,s,calibParams,write2spark)
+if write2spark
+    f = fieldnames(results);
+    for i = 1:length(f)
+        s.AddMetrics(f{i}, results.(f{i}),calibParams.errRange.(f{i})(1),calibParams.errRange.(f{i})(2),false);
+    end 
+end
 
+end
+function logResults(results,runParams)
+    fname = fullfile(runParams.outputFolder,'results.txt');
+    if exist(fname, 'file') == 2
+        fprintff('Results log file name already exists. Skipping...');
+    else
+        fid = fopen(fname,'wt');
+        fprintf(fid, struct2str(results));
+        fclose(fid);
+    end
+end 
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     %backward compatibility
@@ -382,14 +407,14 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
             FE = calibParams.fovExpander.table;
         end
         fovData = Calibration.validation.calculateFOV(imU,imD,regs,FE);
+        results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
         fprintff('Laser opening angles up slow and fast:    [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYup);
         fprintff('Laser opening angles down slow and fast:  [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
-         
-        
+        fprintff('Laser up/down fov diff:  %2.3g degrees.\n',results.upDownFovDiff);
     else
         fprintff('[?] skipped\n');
     end
@@ -415,7 +440,6 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
         fprintff('[v] Done(%ds)\n',round(toc(t)));
     else
         fprintff('[?] skipped\n');
-        results.maxPixelDisplacement=inf;
     end
 end
 function writeVersionAndIntrinsics(verValue,fw,fnCalib)
@@ -445,12 +469,12 @@ function score = mergeScores(results,runParams,calibParams,fprintff)
         for i = 1:length(f)
             s04=floor((scores(i)-1)/100*5);
             asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-            ll=fprintff('% 10s: %s %g\n',f{i},asciibar,results.(f{i}));
+            ll=fprintff('% -20s: %s %2.4g\n',f{i},asciibar,results.(f{i}));
         end
         fprintff('%s\n',repmat('-',1,ll));
         s04=floor((score-1)/100*5);
         asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-        fprintff('% 10s: %s %g\n','score',asciibar,score);
+        fprintff('% -20s: %s %g\n','score',asciibar,score);
         
     end
 end

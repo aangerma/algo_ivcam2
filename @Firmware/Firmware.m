@@ -5,7 +5,7 @@ classdef Firmware < FirmwareBase
 
     methods (Access=public)
         
-        writeFirmwareFiles(obj,outputFldr);
+        writeFirmwareFiles(obj,outputFldr,oldVersion);
             
         function obj = Firmware()
         

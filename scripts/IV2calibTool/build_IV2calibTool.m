@@ -27,7 +27,7 @@ fw = Pipe.loadFirmware('../../+Calibration/initScript');
 verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion()) 0 0]),'uint32');
 vreg= [verReg 0 0 0 0 verReg 0 0 ];
 fw.setRegs('DIGGspare',vreg);
-fw.writeFirmwareFiles(fullfile(outputFolder,'configFiles'));
+fw.writeFirmwareFiles(fullfile(outputFolder,'configFiles'),false);
 % %%
 % mcc -m IV2rgbCalibTool.m ...
 %     -d  \\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\IV2calibTool\1.06\ ...

@@ -8,7 +8,8 @@ end
 ir_=ir;
 
 ir_(isnan(ir_))=0;
-ir_ = histeq(normByMax(ir_));
+% ir_ = histeq(normByMax(ir_));
+ir_ = (normByMax(ir_));
 
 % pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
 

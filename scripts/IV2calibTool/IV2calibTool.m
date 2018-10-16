@@ -309,8 +309,9 @@ function statrtButton_callback(varargin)
             s=Spark('Algo','AlgoCalibration',sparkFolders{1});
             s.addTestProperty('CalibVersion',calibToolVersion)
             s.startDUTsession(serialStr);
-            s.addDTSproperty('TargetType','IRcalibrationChart');
-
+%             s.addDTSproperty('TargetType','IRcalibrationChart');
+        else
+            s = [];
         end
         set_watches(app.figH,false);
         app.AbortButton.Visible='on';
@@ -320,7 +321,7 @@ function statrtButton_callback(varargin)
         %=======================================================RUN CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
-        [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS);
+        [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
         if calibPassed == 1
             app.logarea.BackgroundColor = [0 0.8 0]; % Color green
         elseif calibPassed == 0

@@ -11,7 +11,8 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
     end
     
     fw=obj.getFirmware();
-    fw.writeFirmwareFiles(basedir);
+    oldFWVersion = checkFWVersion(obj);
+    fw.writeFirmwareFiles(basedir,oldFWVersion);
     if(basedir(end)~=filesep)
         basedir(end+1)=filesep;
     end
@@ -59,4 +60,21 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
         
     end
      
+end
+
+function oldVersion = checkFWVersion(obj)
+    % Checks if fw version is smaller (or equal) to 1.1.3.77
+    gvdstr = obj.cmd('gvd');
+    linenum = strfind(gvdstr,'FunctionalPayloadVersion:');
+    gvdTargetLine = gvdstr(linenum:end);
+    lineDownI = strsplit(gvdTargetLine);
+    fwStr = strsplit(lineDownI{2},'.');
+    
+    if any(isnan(str2double(fwStr)))
+       error('fw version %s contains non numeric values.',lineDownI{2}); 
+    else
+        fwNumbers = str2double(fwStr);
+        fwVer = [1e+5,1e+4,1e+3,1e+0]*fwNumbers';
+    end
+    oldVersion = fwVer<=113077;
 end
