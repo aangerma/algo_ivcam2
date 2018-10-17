@@ -65,7 +65,7 @@ if (irImg(round(centers(1,1,2)),round(centers(1,1,1))) < irImg(round(centers(1,2
     horiz = true;
 end
 
-fCrop = 0.45;
+fCrop = 0.3;
 
 outSize = [size(pts,1)-1 (size(pts,2)-1)/2];
 barW = zeros(outSize);
@@ -126,12 +126,42 @@ barWmm = reshape(sqrt(dot(vd,vd,2)), size(barW));
 res.gridSize = gridSize;
 res.points = pt;
 
-areas = barWmm .* barH;
-areas(areas == 0) = nan;
-[minArea, iMinArea] = nanmin(areas(:));
+res.barWidth = barWmm;
+res.barHeight = barH;
 
-res.minArea = minArea;
+res.blobNoise = blobNoise;
 res.meanBlobNoise = mean(blobNoise(:));
+
+res.meanSquareXsize = mean(vec(diff(squeeze(pts(:,:,1)),1,2)));
+res.meanSquareYsize = mean(vec(diff(squeeze(pts(:,:,2)),1,1)));
+
+fNoise = scoreFun(0.7, 1.3);
+probToSee = fNoise(barH ./ blobNoise);
+res.npVisibleBars = sum(probToSee(:));
+undetected = probToSee < 0.8;
+
+areas = barWmm .* barH;
+areas(undetected) = nan;
+res.minArea = nanmin(areas(:));
+
+bigUp = sum(vec(barH(1:2,:))) > sum(vec(barH(end-1:end,:)));
+[wGT, hGT] = Validation.aux.mosHorizGroundTruth(bigUp);
+gtArea = wGT .* hGT;
+gtArea(undetected) = nan;
+[res.minAreaGTreal, iMinGT] = nanmin(gtArea(:));
+res.minAreaGT = areas(iMinGT);
+
+dW = barWmm - wGT;
+dW(undetected) = nan;
+res.meanErrorWidthGT = nanmean(abs(dW(:)));
+res.maxErrorWidthGT = nanmax(abs(dW(:)));
+res.diffWidthGT = dW;
+
+dH = barH - hGT;
+dH(undetected) = nan;
+res.meanErrorHeightGT = nanmean(abs(dH(:)));
+res.maxErrorHeightGT = nanmax(abs(dH(:)));
+res.diffHeightGT = dH;
 
 score = res.minArea;
 res.score = 'minArea';
@@ -177,7 +207,7 @@ zf = Y(:)*p(1)+X(:)*p(2)+p(3);
 
 zFixed = (zInterp - reshape(zf, size(zInterp)));
 %figure; mesh(zInterp);
-%hold on; mesh(reshape(zf, size(zInterp))/zSubMM);
+%hold on; mesh(reshape(zf, size(zInterp)));
 %figure; imagesc(zInterp);
 %figure; plot([zIntegral fitCurve]);
 
@@ -198,7 +228,8 @@ bMargin = zFixed(N-RM+1:N, :); % bottom margin region
 kerBlob = 1;
 tBlobNoise = max(vec(abs(imgaussfilt(tMargin, [4*kerBlob kerBlob]))));
 bBlobNoise = max(vec(abs(imgaussfilt(bMargin, [4*kerBlob kerBlob]))));
-blobNoise = max(tBlobNoise, bBlobNoise);
+% min noise to ignore possible bar/its shadow in the marginal region
+blobNoise = min(tBlobNoise, bBlobNoise);
 
 %% validate results
 
@@ -221,7 +252,7 @@ if (height < 0 || height > maxHeight)
     return;
 end
 
-qFitAreaRatio = 0.5;
+qFitAreaRatio = 0.25;
 orgArea = sum(abs(zCurve));
 fitArea = abs(fitCurve(end));
 if (orgArea * qFitAreaRatio > fitArea)
@@ -230,8 +261,8 @@ if (orgArea * qFitAreaRatio > fitArea)
 end
 
 maxFitError = max(abs((zIntegral-fitCurve)));
-fitRise = abs(fitCurve(end)) - abs(fitCurve(1));
-qFitRiseRatio = 0.5;
+fitRise = abs(fitCurve(end) - fitCurve(1));
+qFitRiseRatio = 0.7;
 if (fitRise * qFitRiseRatio < maxFitError)
     height = 0; width = 0;
     return;
@@ -243,17 +274,19 @@ end
 %vBlobNoise = max(max(mean(tMargin,2)),max(mean(bMargin,2)));
 %blobNoise = max(hBlobNoise, vBlobNoise);
 
-kerNoise = min(2, width)/2;
-tNoise = max(vec(abs(imgaussfilt(tMargin, [4*kerNoise kerNoise]))));
-bNoise = max(vec(abs(imgaussfilt(bMargin, [4*kerNoise kerNoise]))));
-relNoise = max(tNoise, bNoise);
-
-probToSee = 1.0;
-if (height / relNoise < probToSee)
-    height = 0; width = 0;
-    return;
-end
+% probToSee = 1.0;
+% if (height / blobNoise < probToSee)
+%     height = 0; width = 0;
+%     return;
+% end
 
 end
 
+function [f] = scoreFun(xMin, xMax)
+
+c = mean([xMin xMax]);
+
+f = @(x) tanh(4*(x-c)/(xMax-xMin))/2+0.5;
+
+end
 
