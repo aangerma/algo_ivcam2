@@ -20,6 +20,14 @@
 			<squareSize>30</squareSize>
 		</params>
 	</checkerboard_30>
+	<checkerboard_50>
+		<target>checkerboard_50</target>
+		<title>checkerboard 50mm</title>
+		<imgFile>calibrationChart.png</imgFile>
+		<params>
+			<squareSize>50</squareSize>
+		</params>
+	</checkerboard_50>
     <checkerboard_75>
 		<target>checkerboard_75</target>
 		<title>checkerboard 75mm</title>

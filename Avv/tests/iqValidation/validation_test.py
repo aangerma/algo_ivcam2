@@ -155,3 +155,13 @@ def test_validation_es2():
 def test_validation_ivs():
     filePath = r'Avv/tests/iqValidation/ivs.xml'
     validation(filePath)
+
+@slash.tag('ds')
+def test_validation_ds5u_camera():
+    filePath = r'Avv/tests/iqValidation/ds5u_camera.xml'
+    validation(filePath)
+
+@slash.tag('ds')
+def test_validation_d4m_camera():
+    filePath = r'Avv/tests/iqValidation/d4m_camera.xml'
+    validation(filePath)
