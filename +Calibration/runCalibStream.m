@@ -121,13 +121,9 @@ end
 end
 function logResults(results,runParams)
     fname = fullfile(runParams.outputFolder,'results.txt');
-    if exist(fname, 'file') == 2
-        fprintff('Results log file name already exists. Skipping...');
-    else
-        fid = fopen(fname,'wt');
-        fprintf(fid, struct2str(results));
-        fclose(fid);
-    end
+    fid = fopen(fname,'wt');
+    fprintf(fid, struct2str(results));
+    fclose(fid);
 end 
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);

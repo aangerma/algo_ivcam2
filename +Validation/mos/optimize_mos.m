@@ -61,16 +61,20 @@ smoothed_mos_scores2 = convn(padded_mos_scores2,(1/numel(ker))*ker,'valid');
 smoothed_mos_scores = cat(5,smoothed_mos_scores1,smoothed_mos_scores2);
 smoothed_mos_scores = permute(smoothed_mos_scores, [5,1,2,3,4]);
 
+%% smooth using MM
+smm1 = smoothScoresMM(squeeze(mos_scores(1,:,:,:,:)));
+smm2 = smoothScoresMM(squeeze(mos_scores(2,:,:,:,:)));
+smoothed_mos_scores = cat(5,smm1,smm1);
+smoothed_mos_scores = permute(smoothed_mos_scores, [5,1,2,3,4]);
+
 %% find global minimas
 
-num_of_min = 5; 
 neighborhood_size = [2 1 2 1];
 sort_indices = 1:2;
-remaining_min = num_of_min;
-while remaining_min>0
+for iBest = 1:5
     [M,I] = min(smoothed_mos_scores(:));
-    remaining_min = remaining_min - 1;
-    best_configurations(num_of_min - remaining_min).mos_score = M;
+    best_configurations(iBest).mos_score = M;
+    best_configurations(iBest).index = I;
     [sort_ind, JFIL_sharpS_ind, JFIL_sharpR_ind, ...
             RAST_sharpS_ind, RAST_sharpR_ind] = ind2sub(dim_sizes,I);
     if exist('data','var')
@@ -86,7 +90,7 @@ while remaining_min>0
         RAST_sharpS_val = RAST_sharpS_range(RAST_sharpS_ind);
         RAST_sharpR_val = RAST_sharpR_range(RAST_sharpR_ind);
     end
-    best_configurations(num_of_min - remaining_min).configuration = create_params_struct(sort_bypass_val, ...
+    best_configurations(iBest).configuration = create_params_struct(sort_bypass_val, ...
         JFIL_sharpS_val, JFIL_sharpR_val, RAST_sharpS_val, RAST_sharpR_val);
     JFIL_sharpS_indices = max(1,JFIL_sharpS_ind-neighborhood_size(1)):...
         min(dim_sizes(2),JFIL_sharpS_ind+neighborhood_size(1));
