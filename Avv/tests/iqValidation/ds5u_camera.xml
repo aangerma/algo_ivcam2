@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\noa\D4m\D4m_vs_DS5u\labExperiments\ds5u</dataFolder>
+        <dataSource>file</dataSource>
+    </params>
+    <tests>
+        <test name="fillRate_30cm" metrics="fillRate" target="checkerboard_50" distance="30cm" threshold="[0:100]" />
+        <test name="fillRate_50cm" metrics="fillRate" target="checkerboard_50" distance="50cm" threshold="[0:100]" />
+        <test name="gridInterDist_30cm" metrics="gridInterDist" target="checkerboard_50" distance="30cm" threshold="[0:1000]" />
+        <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:1000]" />
+        <test name="planeFit_30cm" metrics="planeFit" target="checkerboard_50" distance="30cm" threshold="[0:1000]" />
+        <test name="zStd_30cm" metrics="zStd" target="checkerboard_50" distance="30cm" threshold="[0:1000]" />
+        <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:1000]" />
+    </tests>
+</root>
