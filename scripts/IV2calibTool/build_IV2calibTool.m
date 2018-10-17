@@ -22,6 +22,7 @@ eval(cmd);
 
 
 copyfile('calibParams.xml',outputFolder);
+copyfile('IV2calibTool.xml',outputFolder);
 fw = Pipe.loadFirmware('../../+Calibration/initScript');
 
 verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion()) 0 0]),'uint32');

@@ -34,5 +34,6 @@ function startStream(obj)
     
     obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
     %% set regs configurations that affect image capturing
+    pause(1);
     obj.setConfig();
 end

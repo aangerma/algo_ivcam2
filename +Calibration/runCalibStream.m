@@ -210,9 +210,9 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
         currregs.FRMW.marginT = int16(DIGGspare07/2^16);
         currregs.FRMW.marginB = int16(mod(DIGGspare07,2^16));
     end
-    currregs.GNRL.imgHsize = uint16(calibParams.gnrl.imSize(2));
-    currregs.GNRL.imgVsize = uint16(calibParams.gnrl.imSize(1));
-    
+    currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
+    currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
+    currregs.PCKR.padding = uint32(prod(calibParams.gnrl.externalImSize)-prod(calibParams.gnrl.internalImSize));
     fw.setRegs(currregs,fnCalib);
     fw.get();
     
@@ -378,6 +378,13 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         fprintff('[?] skipped\n');
     end
 end
+function imNoise = collectNoiseIm(hw)
+        hw.cmd('iwb e2 08 01 0'); % modulation amp is 0
+        hw.cmd('iwb e2 03 01 10');% internal modulation (from register)
+        pause(0.1);
+        imNoise = double(hw.getFrame(10).i)/255;
+        hw.cmd('iwb e2 03 01 90');% 
+end
 function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Calibrating ROI... \n');
     if (runParams.ROI)
@@ -389,12 +396,16 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         r.add('DIGGsphericalEn'    ,true     );
         r.set();
         hw.cmd('iwb e2 06 01 00'); % Remove bias
+        fprintff('[-] Collecting up/down frames... ');
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Please Make Sure Borders Are Bright');
         [imU,imD]=Calibration.dataDelay.getScanDirImgs(hw);
+        fprintff('Done.\n');
+        % Remove modulation as well to get a noise image
+        imNoise = collectNoiseIm(hw);                
         r.reset();
         hw.cmd('iwb e2 06 01 70'); % Return bias
         
-        [roiRegs] = Calibration.roi.calibROI(imU,imD,regs,calibParams);
+        [roiRegs] = Calibration.roi.calibROI(imU,imD,imNoise,regs,calibParams);
         fw.setRegs(roiRegs, fnCalib);
         fw.get(); % run bootcalcs
         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
@@ -407,7 +418,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         if calibParams.fovExpander.valid
             FE = calibParams.fovExpander.table;
         end
-        fovData = Calibration.validation.calculateFOV(imU,imD,regs,FE);
+        fovData = Calibration.validation.calculateFOV(imU,imD,imNoise,regs,FE);
         results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);

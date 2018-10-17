@@ -1,8 +1,8 @@
-function [ results ] = calculateFOV( imU,imD,regs,FE )
-
+function [ results ] = calculateFOV( imU,imD,imNoise,regs,FE )
+noiseThresh = max(imNoise(:));
 fullIm = imU > 0;
-notNoiseImU = calcLaserBounds(imU);
-notNoiseImD = calcLaserBounds(imD);
+notNoiseImU = calcLaserBounds(imU,noiseThresh);
+notNoiseImD = calcLaserBounds(imD,noiseThresh);
         
 results.mirror.minMaxAngX = minMaxAngle(fullIm,2,regs,FE);
 results.mirror.minMaxAngY = minMaxAngle(fullIm,1,regs,FE);
@@ -45,7 +45,7 @@ else % x angles
     angles = atand(vUnit(1,:)./vUnit(3,:));
 end
 end
-function notNoiseIm = calcLaserBounds(im)
+function notNoiseIm = calcLaserBounds(im,noiseThresh)
 %% Mark desired pixels on spherical image
 % Todo - in any case, do not allow the bound toslice into the real image.
 binaryIm = im > 0;
@@ -56,7 +56,7 @@ rightCol = min(leftCol+stats.BoundingBox(3),size(im,2));
 
 % Use the 3 outermost columns for nest estimation
 noiseValues = im(:,[leftCol:leftCol+2,rightCol-2:rightCol]);
-noiseThresh = max(noiseValues(noiseValues>0));
+% noiseThresh = max(noiseValues(noiseValues>0));
 
 % Find noise pixels
 % noiseIm = (im > 0) .* (im <= noiseThresh);

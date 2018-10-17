@@ -2,7 +2,8 @@
 <struct>
    <sparkOutputFolders>c:\temp</sparkOutputFolders>
    <gnrl>
-       <imSize>[360,640]</imSize>
+       <internalImSize>[480,640]</internalImSize>
+       <externalImSize>[480,640]</externalImSize>
    </gnrl>
    <errRange>
       <delayF>[0 1]</delayF>

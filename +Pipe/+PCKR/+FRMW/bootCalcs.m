@@ -11,7 +11,7 @@ elseif(~regs.JFIL.upscalexyBypass && regs.JFIL.upscalex1y0==0)
 end
 
 % autogenRegs.PCKR.padding = uint32(xr*yr-xroi*yroi);
-autogenRegs.PCKR.padding = uint32(640*480-xroi*yroi);
+% autogenRegs.PCKR.padding = uint32(640*480-xroi*yroi);
 regs = Firmware.mergeRegs(regs,autogenRegs);
 end
 
