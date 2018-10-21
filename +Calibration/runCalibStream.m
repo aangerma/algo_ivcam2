@@ -41,6 +41,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
     %% Get a single frame to see that the unit functions and to load the configuration
     fprintff('opening stream...');
+    hw.startStream();
     hw.getFrame();
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Init hw configuration
@@ -232,7 +233,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         hw.runPresetScript('maRestart');
 %         hw.cmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame');
         hw.shadowUpdate();
-        hw.setConfig();
+        hw.setSize();
         fprintff('Done(%ds)\n',round(toc(t)));
     else
         fprintff('skipped\n');
