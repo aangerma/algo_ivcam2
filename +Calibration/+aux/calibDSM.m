@@ -7,7 +7,6 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     % Start by setting  my own DSM values. This make sure none of the angles
     % are saturated.
     
-
     margin = params.dsm.margin;
     
     [angxRawZO,angyRawZO,restFailed] = zeroOrderAngles(hw);
@@ -32,6 +31,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
     hw.shadowUpdate();
+    sz = hw.streamSize();
     d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     if(verbose)
         ff=figure(sum(mfilename));
@@ -40,8 +40,8 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
       
         title('Spherical Validity Before DSM Calib')
         
-        colZO = (1 + angxZO/2047)/2*(640-1)+1;
-        rowZO = (1 + angyZO/2047)/2*(480-1)+1;
+        colZO = (1 + angxZO/2047)/2*(double(sz(2))-1)+1;
+        rowZO = (1 + angyZO/2047)/2*(double(sz(1))-1)+1;
         hold on;
         plot( colZO,rowZO,'-s','MarkerSize',10,...
             'MarkerEdgeColor','red',...
@@ -89,8 +89,8 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     st = regionprops(d_post.i>0, 'BoundingBox' );
     colxMinMax = [st.BoundingBox(1)+0.5, st.BoundingBox(1)+st.BoundingBox(3)-0.5];
     rowyMinMax = [st.BoundingBox(2)+0.5, st.BoundingBox(2)+st.BoundingBox(4)-0.5];
-    angxMinMax = round((colxMinMax-1)/639*2047*2-2047);
-    angyMinMax = round((rowyMinMax-1)/479*2047*2-2047);
+    angxMinMax = round((colxMinMax-1)/(double(sz(2))-1)*2047*2-2047);
+    angyMinMax = round((rowyMinMax-1)/(double(sz(1))-1)*2047*2-2047);
     fprintff('DSM: minAngX=%d, maxAngX=%d, minAngY=%d, maxAngY=%d.\n',angxMinMax(1),angxMinMax(2),angyMinMax(1),angyMinMax(2));   
     
     % Return to regular coordiantes
@@ -100,6 +100,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
 end
 
 function [angxZO,angyZO] = centerProjectZO(hw)
+    sz = hw.streamSize();
     % Set spherical:
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
@@ -114,8 +115,8 @@ function [angxZO,angyZO] = centerProjectZO(hw)
     rowZO = single(0.5*(find(valid(:,colC),1,'first')+find(valid(:,colC),1,'last')));
     colZO = single(0.5*(find(valid(rowC,:),1,'first')+find(valid(rowC,:),1,'last')));
     
-    angxZO = ((colZO-1)*2/(640-1)-1)*2047;
-    angyZO = ((rowZO-1)*2/(480-1)-1)*2047;
+    angxZO = ((colZO-1)*2/(double(sz(2))-1)-1)*2047;
+    angyZO = ((rowZO-1)*2/(double(sz(1))-1)-1)*2047;
     
     
     % Undo spherical:
@@ -151,7 +152,7 @@ function [angRaw] = invertDSM(ang,scale,offset)
 end
 function [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO)
     % Get the column and row of the zero order in spherical:
-    axDim = [640,480];
+    axDim = double(fliplr(hw.streamSize()));
     
     
     % Get a sample image:
@@ -223,6 +224,7 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     hw.cmd('exec_table 141//enable mems');
     hw.cmd('exec_table 142//enable FB');
     hw.runPresetScript('startStream');
+%     hw.setSize();
     restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
     %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
     

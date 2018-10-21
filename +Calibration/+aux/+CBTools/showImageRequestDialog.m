@@ -14,13 +14,13 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figTitle)
     maximizeFig(f);
     I = mean(figImgs{figNum},3);
     %%
-    
+    sz = hw.streamSize();
     move2Ncoords = [2/size(I,2) 0 0 ; 0 2/size(I,1) 0; -1/size(I,2)-1 -1/size(I,1)-1 1];
     if ~isempty(tformData)
-        It= imwarp(I, projective2d(move2Ncoords*tformData'),'bicubic','fill',0,'OutputView',imref2d([480 640],[-1 1],[-1 1]));
+        It= imwarp(I, projective2d(move2Ncoords*tformData'),'bicubic','fill',0,'OutputView',imref2d(sz,[-1 1],[-1 1]));
         It = uint8(It.*permute([0 1 0],[3 1 2]));
     else
-        It = uint8(zeros([480, 640,3]));
+        It = uint8(zeros([sz,3]));
     end
     %%
     while(ishandle(f) && get(f,'userdata')==0)

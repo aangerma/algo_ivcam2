@@ -4,6 +4,8 @@ classdef HWinterfaceFile <handle
     properties (Access=private)
         m_fw
         m_recData;
+        
+        sizeRegs
     end
     
     methods (Access=private)
@@ -91,7 +93,17 @@ classdef HWinterfaceFile <handle
             
             
         end
-        
+        function startStream(obj,varargin)
+            obj.setSize();
+        end
+        function setSize(obj)
+           obj.sizeRegs.PCKR.padding = obj.read('PCKRpadding');
+           obj.sizeRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
+           obj.sizeRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+        end
+        function sz = streamSize(obj)
+           sz = [obj.sizeRegs.GNRL.imgVsize,obj.sizeRegs.GNRL.imgHsize];
+        end
         function setReg(obj,varargin)
             
         end
@@ -118,7 +130,7 @@ classdef HWinterfaceFile <handle
             if(nargin>1 && varargin{1}==-1)
                 varargout={struct('z',zeros(480,640,'uint16'),'i',zeros(480,640,'uint8'),'c',zeros(480,640,'uint8'))};
             else
-            varargout=obj.privInOutRec('getFrame',varargin);
+                varargout=obj.privInOutRec('getFrame',varargin);
             end
             
         end

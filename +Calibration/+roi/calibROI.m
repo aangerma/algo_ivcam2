@@ -1,4 +1,4 @@
-function [roiregs] = calibROI( imU,imD,regs,calibParams)
+function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams)
 % Calibrate the margins of the image.
 % 1. Take a spherical mode image of up direction.
 % 2. Take a spherical mode image of down direction.
@@ -11,11 +11,11 @@ function [roiregs] = calibROI( imU,imD,regs,calibParams)
 % value of Y left to set the margin. Do it for up and down and use the
 % hardest margin. At the end add the extra margins from calibParams.  
 
-
+noiseThresh = max(imNoise(:));
 %% Get margins for each image
-edgesU = calcBounds(imU);
+edgesU = calcBounds(imU,noiseThresh);
 marginsU = calcMargins(edgesU,regs,calibParams);
-edgesD = calcBounds(imD);
+edgesD = calcBounds(imD,noiseThresh);
 marginsD = calcMargins(edgesD,regs,calibParams);
 
 extraMargins = [calibParams.roi.extraMarginT,...
@@ -26,7 +26,8 @@ margins = max([marginsU;marginsD])+extraMargins;
 roiregs = margins2regs(margins,regs);
 
 end
-function stat = maxAreaStat(st,sz)
+function [binIm1stat,stat] = maxAreaStat(binaryIm,sz)
+st = regionprops(binaryIm);
 for i = 1:numel(st)
 %     hold on
 %     rectangle('Position',[st(i).BoundingBox(1),st(i).BoundingBox(2),st(i).BoundingBox(3),st(i).BoundingBox(4)],...
@@ -38,20 +39,30 @@ if m < 0.8
     warning('Largest connected region in image covers only %2.2g of the image.',m);
 end
 stat = st(mI);
+% Remove the smaller stats from the image
+binIm1stat = binaryIm;
+for i = 1:numel(st)
+    if i~=mI
+       iC = ceil(st(i).BoundingBox(1)):floor(st(i).BoundingBox(1)+st(i).BoundingBox(3));
+       iR = ceil(st(i).BoundingBox(2)):floor(st(i).BoundingBox(2)+st(i).BoundingBox(4));
+       binIm1stat(iR,iC) = 0;
+    end
+end
 
 end
-function edges = calcBounds(im)
+function edges = calcBounds(im,noiseThresh)
 %% Mark desired pixels on spherical image
 % Todo - in any case, do not allow the bound toslice into the real image.
 
 binaryIm = im > 0;
-stats = maxAreaStat(regionprops(binaryIm),size(im));
+[binaryIm,stats] = maxAreaStat(binaryIm,size(im));% Keep only the largest connected component.
+im(~binaryIm) = 0;
 leftCol = ceil(stats.BoundingBox(1));
-rightCol = leftCol+stats.BoundingBox(3);
+rightCol = min(leftCol+stats.BoundingBox(3),size(im,2));
 
 % Use the 3 outermost columns for nest estimation
 noiseValues = im(:,[leftCol:leftCol+2,rightCol-2:rightCol]);
-noiseThresh = max(noiseValues(noiseValues>0));
+% noiseThresh = max(noiseValues(noiseValues>0));
 
 % Find noise pixels
 noiseIm = (im > 0) .* (im <= noiseThresh);
@@ -62,6 +73,12 @@ noiseColumns = (sum(noiseIm)>0) .*  (sum(notNoiseIm)==0);
 % image without the noise.
 leftImIndex = find(diff(noiseColumns)==-1,1,'first')+1;
 rightImIndex = find(diff(noiseColumns)==1,1,'last');
+if isempty(leftImIndex) || leftImIndex>(size(im,2)/2)
+    leftImIndex = find(sum(notNoiseIm)>0,1,'first');
+end
+if isempty(rightImIndex) || rightImIndex<(size(im,2)/2)
+    rightImIndex = find(sum(notNoiseIm)>0,1,'last');
+end
 
 % The top noise strip of the image is diagonal. Find the pixel where the noise stops for each column.
 noiseStartRowPerCol = arrayfun(@(x) find(binaryIm(:,x)>0,1,'first'), leftImIndex:rightImIndex);
@@ -76,9 +93,11 @@ topEdge = [min(noiseStartRowPerCol+topWidth,notNoiseStartRowPerCol)',(leftImInde
 bottomEdge = [max(noiseEndRowPerCol-bottomWidth,notNoiseEndRowPerCol)',(leftImIndex:rightImIndex)']; 
 leftEdge = (topEdge(1,1):bottomEdge(1,1))'; leftEdge = [leftEdge,leftImIndex*ones(size(leftEdge))];
 rightEdge = ((topEdge(end,1)):(bottomEdge(end,1)))'; rightEdge = [rightEdge,rightImIndex*ones(size(rightEdge))];
-% imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
+imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
 
-% figure; imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
+ff = figure; imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
+pause(0.5);
+close(ff);
 
 edges.T = topEdge;
 edges.B = bottomEdge;
