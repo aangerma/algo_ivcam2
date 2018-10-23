@@ -44,36 +44,56 @@ regs_indices = num2cell(1:5);
 % smoothed_mos_scores = cat(5,smoothed_mos_scores1,smoothed_mos_scores2);
 % smoothed_mos_scores = permute(smoothed_mos_scores, [5,1,2,3,4]);
 
-%% smooth data by averaging neighborhoods
+mosres = cell2mat(mos_results);
 
-max_val = max(mos_scores(:));
-mos_scores_nans_to_zeros = mos_scores;
-mos_scores_nans_to_zeros(isnan(mos_scores_nans_to_zeros)) = 2*max_val;
-% separate data with respect to the sort_bypass_mode dimension
-% and average them separately and then concatenate them again
-padded_mos_scores1 = padarray(squeeze(mos_scores_nans_to_zeros(1,:,:,:,:)), ...
-    [1 1 1 1], 'replicate', 'both');
-padded_mos_scores2 = padarray(squeeze(mos_scores_nans_to_zeros(2,:,:,:,:)), ...
-    [1 1 1 1], 'replicate', 'both');
-ker = ones(3,3,3,3);
-smoothed_mos_scores1 = convn(padded_mos_scores1,(1/numel(ker))*ker,'valid');
-smoothed_mos_scores2 = convn(padded_mos_scores2,(1/numel(ker))*ker,'valid');
-smoothed_mos_scores = cat(5,smoothed_mos_scores1,smoothed_mos_scores2);
-smoothed_mos_scores = permute(smoothed_mos_scores, [5,1,2,3,4]);
+%% blobNoise score
+blobNoise = reshape([mosres(:).meanBlobNoise], size(mosres));
+scores = blobNoise;
+fOpt = @min;
+worseValue = inf;
+
+%% npVisibleBars score
+nvisBars = reshape([mosres(:).npVisibleBars], size(mosres));
+scores = nvisBars;
+fOpt = @max;
+worseValue = 0;
+
+%% min area score
+scores = mos_scores;
+fOpt = @min;
+worseValue = inf;
 
 %% smooth using MM
-smm1 = smoothScoresMM(squeeze(mos_scores(1,:,:,:,:)));
-smm2 = smoothScoresMM(squeeze(mos_scores(2,:,:,:,:)));
-smoothed_mos_scores = cat(5,smm1,smm1);
-smoothed_mos_scores = permute(smoothed_mos_scores, [5,1,2,3,4]);
+smm1 = smoothScoresMM(squeeze(scores(1,:,:,:,:)));
+smm2 = smoothScoresMM(squeeze(scores(2,:,:,:,:)));
+smoothed_scores = cat(5,smm1,smm1);
+smoothed_scores = permute(smoothed_scores, [5,1,2,3,4]);
+
+%% smooth data by averaging neighborhoods
+%scores = smoothed_scores;
+max_val = max(scores(:));
+scores_nans_to_zeros = scores;
+scores_nans_to_zeros(isnan(scores_nans_to_zeros)) = 2*max_val;
+% separate data with respect to the sort_bypass_mode dimension
+% and average them separately and then concatenate them again
+padded_mos_scores1 = padarray(squeeze(scores_nans_to_zeros(1,:,:,:,:)), ...
+    [1 1 1 1], 'replicate', 'both');
+padded_mos_scores2 = padarray(squeeze(scores_nans_to_zeros(2,:,:,:,:)), ...
+    [1 1 1 1], 'replicate', 'both');
+ker = ones(3,3,3,3);
+smoothed_scores1 = convn(padded_mos_scores1,(1/numel(ker))*ker,'valid');
+smoothed_scores2 = convn(padded_mos_scores2,(1/numel(ker))*ker,'valid');
+smoothed_scores = cat(5,smoothed_scores1,smoothed_scores2);
+smoothed_scores = permute(smoothed_scores, [5,1,2,3,4]);
+
 
 %% find global minimas
-
 neighborhood_size = [2 1 2 1];
 sort_indices = 1:2;
 for iBest = 1:5
-    [M,I] = min(smoothed_mos_scores(:));
-    best_configurations(iBest).mos_score = M;
+    %[M,I] = min(smoothed_mos_scores(:));
+    [M,I] = fOpt(smoothed_scores(:));
+    best_configurations(iBest).score = M;
     best_configurations(iBest).index = I;
     [sort_ind, JFIL_sharpS_ind, JFIL_sharpR_ind, ...
             RAST_sharpS_ind, RAST_sharpR_ind] = ind2sub(dim_sizes,I);
@@ -100,8 +120,8 @@ for iBest = 1:5
         min(dim_sizes(4),RAST_sharpS_ind+neighborhood_size(3));
     RAST_sharpR_indices = max(1,RAST_sharpR_ind-neighborhood_size(4)):...
         min(dim_sizes(5),RAST_sharpR_ind+neighborhood_size(4));
-    smoothed_mos_scores(sort_ind, JFIL_sharpS_indices, JFIL_sharpR_indices, ...
-        RAST_sharpS_indices, RAST_sharpR_indices) = inf;
+    smoothed_scores(sort_ind, JFIL_sharpS_indices, JFIL_sharpR_indices, ...
+        RAST_sharpS_indices, RAST_sharpR_indices) = worseValue;
 end
 
 %% save best configurations
