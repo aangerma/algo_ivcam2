@@ -1,4 +1,8 @@
-function [im1,im2,d]=getScanDirImgs(hw)
+function [im1,im2,d]=getScanDirImgs(hw,unFiltered)
+% If unfiltered is true, do no perform median filter on results
+if ~exist('unfiltered','var')
+   unFiltered = 0; 
+end
 
 scanDir1gainAddr = '85080000';
 scanDir2gainAddr = '85080480';
@@ -18,15 +22,17 @@ pause(0.1);
 d(2)=hw.getFrame(30);
 hw.writeAddr(scanDir2gainAddr,saveVal(2),true);
 
-im1=getFilteredImage(d(1));
-im2=getFilteredImage(d(2));
+im1=getFilteredImage(d(1),unFiltered);
+im2=getFilteredImage(d(2),unFiltered);
 
 end
 
-function imo=getFilteredImage(d)
+function imo=getFilteredImage(d,unFiltered)
 im=double(d.i);
-im(im==0)=nan;
-imv=im(Utils.indx2col(size(im),[5 5]));
-imo=reshape(nanmedian_(imv),size(im));
+if ~unFiltered
+    im(im==0)=nan;
+    imv=im(Utils.indx2col(size(im),[5 5]));
+    imo=reshape(nanmedian_(imv),size(im));
+end
 imo=normByMax(imo);
 end

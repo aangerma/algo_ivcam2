@@ -4,8 +4,8 @@ fullIm = imU > 0;
 notNoiseImU = calcLaserBounds(imU,noiseThresh);
 notNoiseImD = calcLaserBounds(imD,noiseThresh);
         
-results.mirror.minMaxAngX = minMaxAngle(fullIm,2,regs,FE);
-results.mirror.minMaxAngY = minMaxAngle(fullIm,1,regs,FE);
+results.mirror.minMaxAngX = minMaxAngle(imNoise,2,regs,FE);
+results.mirror.minMaxAngY = minMaxAngle(imNoise,1,regs,FE);
 results.laser.minMaxAngXup = minMaxAngle(notNoiseImU,2,regs,FE);
 results.laser.minMaxAngYup = minMaxAngle(notNoiseImU,1,regs,FE);
 results.laser.minMaxAngXdown = minMaxAngle(notNoiseImD,2,regs,FE);
