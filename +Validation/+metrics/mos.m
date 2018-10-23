@@ -117,7 +117,7 @@ end
 bar0 = barC; bar0(:,:,2) = barC(:,:,2) - barW/2;
 bar1 = barC; bar1(:,:,2) = barC(:,:,2) + barW/2;
 
-K = params.camera.K;
+K = double(params.camera.K);
 v0 = Validation.aux.pointsToVertices(reshape(bar0, [], 2), zC(:), K);
 v1 = Validation.aux.pointsToVertices(reshape(bar1, [], 2), zC(:), K);
 vd = v1 - v0;
@@ -132,13 +132,10 @@ res.barHeight = barH;
 res.blobNoise = blobNoise;
 res.meanBlobNoise = mean(blobNoise(:));
 
-res.meanSquareXsize = mean(vec(diff(squeeze(pts(:,:,1)),1,2)));
-res.meanSquareYsize = mean(vec(diff(squeeze(pts(:,:,2)),1,1)));
-
-fNoise = scoreFun(0.7, 1.3);
-probToSee = fNoise(barH ./ blobNoise);
-res.npVisibleBars = sum(probToSee(:));
-undetected = probToSee < 0.8;
+fNoise = scoreFun(0.8, 1.3);
+res.probToSee = fNoise(barH ./ blobNoise);
+res.npVisibleBars = sum(res.probToSee(:));
+undetected = res.probToSee < 0.8;
 
 areas = barWmm .* barH;
 areas(undetected) = nan;
@@ -162,6 +159,9 @@ dH(undetected) = nan;
 res.meanErrorHeightGT = nanmean(abs(dH(:)));
 res.maxErrorHeightGT = nanmax(abs(dH(:)));
 res.diffHeightGT = dH;
+
+res.meanSquareXsize = mean(vec(diff(squeeze(pts(:,:,1)),1,2)));
+res.meanSquareYsize = mean(vec(diff(squeeze(pts(:,:,2)),1,1)));
 
 score = res.minArea;
 res.score = 'minArea';
@@ -262,7 +262,7 @@ end
 
 maxFitError = max(abs((zIntegral-fitCurve)));
 fitRise = abs(fitCurve(end) - fitCurve(1));
-qFitRiseRatio = 0.7;
+qFitRiseRatio = 0.9;
 if (fitRise * qFitRiseRatio < maxFitError)
     height = 0; width = 0;
     return;
