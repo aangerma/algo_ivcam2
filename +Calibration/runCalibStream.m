@@ -46,7 +46,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Init hw configuration
     initConfiguration(hw,fw,runParams,fprintff,t);
-     
+
     %% Set coarse DSM values 
     calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
 
@@ -399,7 +399,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         hw.cmd('iwb e2 06 01 00'); % Remove bias
         fprintff('[-] Collecting up/down frames... ');
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Please Make Sure Borders Are Bright');
-        [imU,imD]=Calibration.dataDelay.getScanDirImgs(hw);
+        [imU,imD]=Calibration.dataDelay.getScanDirImgs(hw,1);
         fprintff('Done.\n');
         % Remove modulation as well to get a noise image
         imNoise = collectNoiseIm(hw);                
