@@ -2,7 +2,7 @@
 <struct>
    <sparkOutputFolders>c:\temp</sparkOutputFolders>
    <gnrl>
-       <internalImSize>[360,560]</internalImSize>
+       <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
    </gnrl>
    <errRange>
@@ -15,9 +15,8 @@
       <maxPixelDisplacement>[0.25 1]</maxPixelDisplacement>
       <horizEdge>[0 inf]</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
-      <upDownFovDiff>[0 4]</upDownFovDiff>
+      <upDownFovDiff>[0 10]</upDownFovDiff>
       <scanLineFillRate>[0 inf]</scanLineFillRate>
-      <delayF>[0 1]</delayF>
    </errRange>
    <passScore>60</passScore>
    <thermal>
