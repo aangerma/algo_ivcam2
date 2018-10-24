@@ -33,7 +33,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     
     %% Load hw interface
     hw = loadHWInterface(runParams,fw,fprintff,t);
-    
+    fprintff('%-15s %8s\n','serial',hw.getSerial());
     % Verify unit's configuration version
     verValue = getVersion(hw,runParams);  
     

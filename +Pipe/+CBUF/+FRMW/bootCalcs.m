@@ -18,7 +18,8 @@ autogenRegs.CBUF.xBitShifts =uint8(ceil(log2(double(regs.GNRL.imgHsize-1)))-4);
 n =  bitshift(double(regs.GNRL.imgHsize-1),-int16(autogenRegs.CBUF.xBitShifts))+1;
 assert(n<=16);
 if(regs.FRMW.cbufConstLUT || regs.GNRL.rangeFinder)
-    lutData = ones(1,n)*(MAX_BUFFER_SIZE);
+%     lutData = ones(1,n)*(MAX_BUFFER_SIZE);
+    lutData = ones(1,16)*(MAX_BUFFER_SIZE);
 else
     %%
     xcrossPix = bitshift((0:n-1),autogenRegs.CBUF.xBitShifts);
