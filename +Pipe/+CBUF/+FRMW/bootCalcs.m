@@ -40,7 +40,7 @@ else
 end
 % lutData
 autogenRegs.CBUF.xRelease = uint16(zeros(1,16));
-autogenRegs.CBUF.xRelease(1:n) = uint16(round(lutData));
+autogenRegs.CBUF.xRelease(1:16) = uint16(round(lutData));
 %
 %% ASIC
 
