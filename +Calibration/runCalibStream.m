@@ -33,7 +33,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     
     %% Load hw interface
     hw = loadHWInterface(runParams,fw,fprintff,t);
-    
+    fprintff('%-15s %8s\n','serial',hw.getSerial());
     % Verify unit's configuration version
     verValue = getVersion(hw,runParams);  
     
@@ -482,7 +482,7 @@ function score = mergeScores(results,runParams,calibParams,fprintff)
         for i = 1:length(f)
             s04=floor((scores(i)-1)/100*5);
             asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-            ll=fprintff('% -20s: %s %2.4g\n',f{i},asciibar,results.(f{i}));
+            ll=fprintff('% -20s: %s %2.4g\n',f{i},asciibar,scores(i));
         end
         fprintff('%s\n',repmat('-',1,ll));
         s04=floor((score-1)/100*5);

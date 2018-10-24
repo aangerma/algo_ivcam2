@@ -1,6 +1,6 @@
-GNRLimgHsize         d560     
+GNRLimgHsize         d640     
 GNRLimgVsize         d360     
-PCKRpadding          h00007080     
+PCKRpadding          h00000000     
 FRMWxfov             f72      
 FRMWyfov             f56      
 FRMWlaserangleH      f0       
