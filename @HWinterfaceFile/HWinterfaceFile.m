@@ -154,16 +154,24 @@ classdef HWinterfaceFile <handle
             [~,val]=obj.cmd('irb e2 13 02');
             tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
             
-        end
+          end
         
         
         
           function v=readVersion(obj)
              [~,v]=obj.cmd('ERB 210 8');
              v=vec(dec2hex(fliplr(v))')';
-            
-         end
-        
+
+          end
+          function v=getSerial(obj)
+             [~,v]=obj.cmd('ERB 210 8');
+             v=vec(dec2hex(fliplr(v))')';
+             if strcmp(v(1:8),'00000000')
+                 v = v(9:end);
+             else
+                 v = v(1:8);
+             end
+          end
         function varargout=displayStream(obj,varargin)
             
             
