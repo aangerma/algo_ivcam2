@@ -6,26 +6,28 @@ if(regs.DIGG.undistBypass==0)
     yfovPix = yfovPix*regs.FRMW.undistYfovFactor;
 end
 
-[regsOut.DEST.p2axa,regsOut.DEST.p2axb,regsOut.DEST.p2aya,regsOut.DEST.p2ayb] = p2aCalc(regs,xfovPix,yfovPix);
-
+[regsOut.DEST.p2axa,regsOut.DEST.p2axb,regsOut.DEST.p2aya,regsOut.DEST.p2ayb] = p2aCalc(regs,xfovPix,yfovPix,0);
 if(regs.GNRL.rangeFinder)
     regsOut.DEST.p2aya = single(0);
     regsOut.DEST.p2ayb  = single(0);
 end
 
-Kinv=[regsOut.DEST.p2axa 0                   regsOut.DEST.p2axb;
-   0                  regsOut.DEST.p2aya  regsOut.DEST.p2ayb;
-   0                  0                   1];
+% Calculate K matrix. Note - users image is rotated by 180 degrees in
+% respect to our internal representation.
+[p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfov,yfov,1);
+Kinv=[p2axa            0                   p2axb;
+      0                p2aya               p2ayb;
+      0                0                   1    ];
 
 K=pinv(Kinv);
 regsOut.CBUF.spare=typecast(K([1 4 7 2 5 8 3 6]),'uint32');
-
-
 end
 
-function [p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfov,yfov)
+function [p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfov,yfov,rot180)
 %{
 Calculates tanx and tany for the four sides of the image. 
+if rot90 is true,calculate the coefficients for an outside image - which is
+the matlab image rotated by 180 degrees. fliplr(flipud()).
 %}
 %% ----STAIGHT FORWARD------
 
@@ -43,10 +45,15 @@ rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( xfov*0.25,                
 rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-xfov*0.25,                   0)));rangeL=rangeL(1);
 rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , yfov*0.25)));rangeT =rangeT (2);
 rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-yfov*0.25)));rangeB=rangeB(2);
-
-p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
-p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
-p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres-1);
-p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
-
+if ~rot180
+    p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
+    p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
+    p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres-1);
+    p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
+else
+    p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
+    p2axb = -rangeR  + single(regs.FRMW.marginR) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
+    p2aya = -(rangeT-rangeB)/ single(regs.FRMW.yres-1);
+    p2ayb = rangeT  - single(regs.FRMW.marginT) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
+end
 end

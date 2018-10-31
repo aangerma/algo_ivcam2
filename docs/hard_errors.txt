@@ -1,0 +1,34 @@
+typedef union __RegsProjHardErrIntStatus{
+  uint32_t value;
+  uint32_t value_rmw; //for non-shadowed register 
+  struct {
+    uint32_t RegsProjHardErrIntMsafe_Status   :1  ; //Bits: [0:0], Default value: 0, Not Shadowed
+    uint32_t RESERVED0  :3;  
+    uint32_t RegsProjHardErrIntLdErr_Status   :1  ; //Bits: [4:4], Default value: 0, Not Shadowed
+    uint32_t RESERVED1  :3;  
+    uint32_t RegsProjHardErrIntScanLen_Status   :1  ; //Bits: [8:8], Default value: 0, Not Shadowed
+    uint32_t RESERVED2  :3;  
+    uint32_t RegsProjHardErrIntPjclkChk_Status   :1  ; //Bits: [12:12], Default value: 0, Not Shadowed
+    uint32_t RESERVED3  :3;  
+    uint32_t RegsProjHardErrIntApdCtlCurr_Status   :1  ; //Bits: [16:16], Default value: 0, Not Shadowed
+    uint32_t RESERVED4  :3;  
+    uint32_t RegsProjHardErrIntLdOnGlitch_Status   :1  ; //Bits: [20:20], Default value: 0, Not Shadowed
+    uint32_t RESERVED5  :3;  
+    uint32_t RegsProjHardErrIntSystemUnsafe_Status   :1  ; //Bits: [24:24], Default value: 0, Not Shadowed
+  } fields;
+  struct {
+    uint32_t RegsProjHardErrIntMsafe_Status   :1  ; //Bits: [0:0], Default value: 0, Not Shadowed
+    uint32_t RESERVED0  :3;  
+    uint32_t RegsProjHardErrIntLdErr_Status   :1  ; //Bits: [4:4], Default value: 0, Not Shadowed
+    uint32_t RESERVED1  :3;  
+    uint32_t RegsProjHardErrIntScanLen_Status   :1  ; //Bits: [8:8], Default value: 0, Not Shadowed
+    uint32_t RESERVED2  :3;  
+    uint32_t RegsProjHardErrIntPjclkChk_Status   :1  ; //Bits: [12:12], Default value: 0, Not Shadowed
+    uint32_t RESERVED3  :3;  
+    uint32_t RegsProjHardErrIntApdCtlCurr_Status   :1  ; //Bits: [16:16], Default value: 0, Not Shadowed
+    uint32_t RESERVED4  :3;  
+    uint32_t RegsProjHardErrIntLdOnGlitch_Status   :1  ; //Bits: [20:20], Default value: 0, Not Shadowed
+    uint32_t RESERVED5  :3;  
+    uint32_t RegsProjHardErrIntSystemUnsafe_Status   :1  ; //Bits: [24:24], Default value: 0, Not Shadowed
+  } fields_rmw; //for non-shadowed register
+}RegsProjHardErrIntStatus;  //0x0;

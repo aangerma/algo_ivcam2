@@ -158,8 +158,14 @@ L = margins(3); R = margins(4);
 Vsz = single(regs.GNRL.imgVsize);
 Hsz = single(regs.GNRL.imgHsize);
 
-roiregs.FRMW.marginT = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
-roiregs.FRMW.marginB = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
+
+% Note - marginB refers to margin taken for y == 0. marginT is the margin
+% for y == imVsize-1. Therefore, marginB should be calculated by the margin
+% at the top of the image, and marginT should be calculated by the margin
+% at the bottom of the image - as pixel 0 is on top and pixel 479 is at the
+% bottom.
+roiregs.FRMW.marginB = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
+roiregs.FRMW.marginT = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
 roiregs.FRMW.marginL = int16((-L*Hsz + L*R*Hsz/(R-Hsz)) / (L-Hsz-L*R/(R-Hsz)));
 roiregs.FRMW.marginR = int16((-R*Hsz + L*R*Hsz/(L-Hsz)) / (R-Hsz-L*R/(L-Hsz)));
 
