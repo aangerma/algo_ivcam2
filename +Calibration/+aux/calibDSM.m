@@ -31,6 +31,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
     hw.shadowUpdate();
+    pause(2);
     sz = hw.streamSize();
     d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     if(verbose)
@@ -71,6 +72,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     hw.setReg('EXTLdsmXoffset',dsmregs.EXTL.dsmXoffset);
     hw.setReg('EXTLdsmYoffset',dsmregs.EXTL.dsmYoffset);
     hw.shadowUpdate();
+    pause(2);
     d_post=hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     
     if(verbose)
@@ -191,7 +193,9 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     % hw.cmd('mclog 01000000 43 13000 1');
     
     hw.runPresetScript('stopStream');
+    pause(0.1);
     hw.cmd('exec_table 140');% setRestAngle
+    pause(0.1);
     % assert(res.IsCompletedOk, 'For DSM calib to work, it should be the first thing that happens after connecting the USB. Before any capturing.' )
     
     
@@ -219,11 +223,17 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     hw.runPresetScript('resetRestAngle');
     % hw.runPresetScript('maRestart');
     % hw.runPresetScript('systemConfig');
-    
+    pause(0.1);
     hw.cmd('exec_table 140//enable mems drive');
+    pause(0.1);
+    hw.cmd('thermloopstart');
+    pause(1);
     hw.cmd('exec_table 141//enable mems');
+    pause(0.1);
     hw.cmd('exec_table 142//enable FB');
+    pause(0.1);
     hw.runPresetScript('startStream');
+    pause(1);
 %     hw.setSize();
     restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
     %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
