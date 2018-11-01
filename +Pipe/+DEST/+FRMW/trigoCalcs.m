@@ -14,7 +14,7 @@ end
 
 % Calculate K matrix. Note - users image is rotated by 180 degrees in
 % respect to our internal representation.
-[p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfov,yfov,1);
+[p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfovPix,yfovPix,1);
 Kinv=[p2axa            0                   p2axb;
       0                p2aya               p2ayb;
       0                0                   1    ];
