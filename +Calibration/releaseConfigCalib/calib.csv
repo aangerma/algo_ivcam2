@@ -1,0 +1,17 @@
+GNRLimgHsize         d640     
+GNRLimgVsize         d360     
+PCKRpadding          h00000000     
+FRMWxfov             f72      
+FRMWyfov             f56      
+FRMWlaserangleH      f0       
+FRMWlaserangleV      f0       
+FRMWcbufConstLUT     b1       
+DIGGundistBypass     b0       
+DIGGspare_000        h0101    
+DESTbaseline         f31.0    
+DESTtxFRQpd_000      f5000    
+DESTtxFRQpd_001      f5000    
+DESTtxFRQpd_002      f5000    
+EXTLconLocDelaySlow  h80000010
+EXTLconLocDelayFastC h0070F8  
+EXTLconLocDelayFastF d0       
