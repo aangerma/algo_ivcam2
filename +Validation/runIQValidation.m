@@ -151,7 +151,7 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 load(fnCameraConfig);
             end
         otherwise
-            ME = MException('Validation:captureFramse', sprintf('%s option not supported', dataSource));
+            ME = MException('Validation:captureFramse', sprintf('%s option not supported', strrep(dataSource, '\', '\\')));
             throw(ME)
     end
     
@@ -170,7 +170,7 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
 %                 testTargets(i).frames = frames;
             case 'file'
                 if ~exist(fnTarget,'file')
-                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', fnTarget));
+                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', strrep(fnTarget, '\', '\\')));
                     throw(ME)
                 end
                 imgFrames = load(fnTarget);
@@ -184,11 +184,11 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 fnTarget_z = fullfile(dataFullPath, [cell2str(testTargets(i).name), '_0.binz']);
                 fnTarget_i = fullfile(dataFullPath, [cell2str(testTargets(i).name), '_0.bin8']);
                 if ~exist(fnTarget_z,'file')
-                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', fnTarget_z));
+                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', strrep(fnTarget_z, '\', '\\')));
                     throw(ME)
                 end
                 if ~exist(fnTarget_i,'file')
-                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', fnTarget_i));
+                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', strrep(fnTarget_i, '\', '\\')));
                     throw(ME)
                 end
                 testTargets(i).frames.z = io.readBin(fnTarget_z);
