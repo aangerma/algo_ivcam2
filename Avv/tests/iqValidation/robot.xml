@@ -8,36 +8,10 @@
     </params>
     <tests>
         <test name="fillRate_20cm" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[95 : 100]" />
-        <!--<test name="fillRate_20cm" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_30cm" metrics="fillRate" target="checkerboard_50" distance="30cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_40cm" metrics="fillRate" target="checkerboard_50" distance="40cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_50cm" metrics="fillRate" target="checkerboard_50" distance="50cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_60cm" metrics="fillRate" target="checkerboard_50" distance="60cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_70cm" metrics="fillRate" target="checkerboard_50" distance="70cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_80cm" metrics="fillRate" target="checkerboard_50" distance="80cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_90cm" metrics="fillRate" target="checkerboard_50" distance="90cm" threshold="[95 : 100]" />-->
-        <!--<test name="fillRate_1m" metrics="fillRate" target="checkerboard_50" distance="1m" threshold="[95 : 100]" />-->
-        <!--<test name="planeFit_20cm" metrics="planeFit" target="checkerboard_50" distance="20cm" threshold="[0:0.5]" />-->
-        <test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:0.5]" />
-        <test name="zStd_20cm" metrics="zStd" target="checkerboard_50" distance="20cm" threshold="[0:0.5]" />
+        <!--<test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:0.5]" />-->
         <!--<test name="zStd_20cm" metrics="zStd" target="checkerboard_50" distance="20cm" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_30cm" metrics="zStd" target="checkerboard_50" distance="30cm" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_40cm" metrics="zStd" target="checkerboard_50" distance="40cm" threshold="[0:0.5]" />-->
-        <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:0.5]" />
-        <!--<test name="zStd_60cm" metrics="zStd" target="checkerboard_50" distance="60cm" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_70cm" metrics="zStd" target="checkerboard_50" distance="70cm" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_80cm" metrics="zStd" target="checkerboard_50" distance="80m" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_90cm" metrics="zStd" target="checkerboard_50" distance="90m" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_1m" metrics="zStd" target="checkerboard_50" distance="1m" threshold="[0:0.5]" />-->
-        <test name="gridInterDist_20cm" metrics="gridInterDist" target="checkerboard_50" distance="20cm" threshold="[0:0.7]" />
+        <!--<test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:0.5]" />-->
         <!--<test name="gridInterDist_20cm" metrics="gridInterDist" target="checkerboard_50" distance="20cm" threshold="[0:0.7]" />-->
-        <!--<test name="gridInterDist_30cm" metrics="gridInterDist" target="checkerboard_50" distance="30cm" threshold="[0:0.7]" />-->
-        <!--<test name="gridInterDist_40cm" metrics="gridInterDist" target="checkerboard_50" distance="40cm" threshold="[0:0.7]" />-->
-        <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:0.7]" />
-        <!--<test name="gridInterDist_60cm" metrics="gridInterDist" target="checkerboard_50" distance="60cm" threshold="[0:0.7]" />-->
-        <!--<test name="gridInterDist_70cm" metrics="gridInterDist" target="checkerboard_50" distance="70cm" threshold="[0:0.7]" />-->
-        <!--<test name="gridInterDist_80cm" metrics="gridInterDist" target="checkerboard_50" distance="80cm" threshold="[0:0.7]" />-->
-        <!--<test name="gridInterDist_90cm" metrics="gridInterDist" target="checkerboard_50" distance="90cm" threshold="[0:0.7]" />-->
-        <!--<test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_50" distance="1m" threshold="[0:0.7]" />-->
+        <!--<test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:0.7]" />-->
     </tests>
 </root>

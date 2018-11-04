@@ -10,6 +10,9 @@ import xml.etree.ElementTree as et
 
 sys.path.insert(0, r"Avv\tests")
 import a_common
+sys.path.insert(0, r"..\algo_automation\infra")
+import robot
+import libRealSense
 
 
 def get_params_from_xml(root):
@@ -60,6 +63,21 @@ def save_data(db, data):
         json.dump(data, file)
         file.write('\n')
 
+def create_picture_list(tests):
+    picture_list = dict()
+    for test in tests.items():
+        data = test[1]
+        target = data['target']
+        distance_name = data['distance']
+
+        if 'cm' in distance_name:
+            distance = float(distance_name.replace('cm', ''))
+        elif 'm' in distance_name:
+            distance = float(distance_name.replace('m', ''))*100
+
+        picture_list['{}_{}'.format(target, distance_name)] = {'name': '{}_{}'.format(target, distance_name), 'target': target, 'distance':distance}
+    slash.logger.info('found {} targets to picture'.format(len(picture_list)))
+    return picture_list
 
 def validation(xmlPath):
     try:
@@ -75,6 +93,14 @@ def validation(xmlPath):
     tests = get_tests_from_xml(root)
     db = to_save_data(root)
 
+    camera = libRealSense.LibRealSense()
+    if test_params['dataSource'].lower() == 'robot':
+        picture_list = create_picture_list(tests)
+        for pic in picture_list.values():
+            robot.move(target=pic['target'], distance=pic['distance'])
+            camera.take_frames(1, test_params['dataFolder'],pic['name'])
+            camera.camera_intrinsics(test_params['dataFolder'])
+
     systemName = test_params['dataSource']
     if db is not None:
         systemName = input("Camera name: ")
@@ -86,6 +112,7 @@ def validation(xmlPath):
     slash.logger.info("test time: {}".format(testTime))
 
     params = {'config': test_params}
+
 
     eng = slash.g.mat
     out = io.StringIO()
@@ -169,3 +196,8 @@ def test_validation_d4m_camera():
 def test_validation_robot():
     filePath = r'Avv/tests/iqValidation/robot.xml'
     validation(filePath)
+
+
+
+if __name__ == "__main__":
+    test_validation_robot()
