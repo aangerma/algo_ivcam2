@@ -3,7 +3,7 @@
     <db saveData="no">X:\Avv\dbValidation.txt</db>
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
-        <dataFolder>c:\temp\valTest</dataFolder>
+        <dataFolder>c:\temp\valTest\data</dataFolder>
         <dataSource>robot</dataSource>
     </params>
     <tests>

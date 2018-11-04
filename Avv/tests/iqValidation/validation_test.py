@@ -98,7 +98,7 @@ def validation(xmlPath):
         picture_list = create_picture_list(tests)
         for pic in picture_list.values():
             robot.move(target=pic['target'], distance=pic['distance'])
-            camera.take_frames(1, test_params['dataFolder'],pic['name'])
+            camera.take_frames(5, test_params['dataFolder'],pic['name'])
             camera.camera_intrinsics(test_params['dataFolder'])
         test_params['dataSource'] = 'bin'
 
