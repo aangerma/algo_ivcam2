@@ -9,14 +9,14 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     % config:
     %  outputFolder: (string), defult: c:\temp\valTest
     %  dataFolder: (string), defult: data
-    %  dataSource: (string), defult: HW, options: HW/file/ivs
+    %  dataSource: (string), defult: HW, options: HW/file/ivs/robot
     %  fullTargetListPath: (string), reletive file path + targets.xml
     %  targetFilesPath: (string), reletive file path + targets
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
     %  Debug
-%      varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'X:\Avv\sources\ivs\gen1\turn_in', 'dataSource', 'ivs'))}
-%      testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
+     varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\noa\D4m\test\matDir', 'dataSource', 'HW'))}
+     testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
     
     % set config params
     p = inputParser;
@@ -136,8 +136,9 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
     % camera config    
     fnCameraConfig = fullfile(dataFullPath, ['cameraConfig.mat']);
     switch dataSource
-        case 'HW'
+        case {'HW', 'robot'}
             hw = HWinterface;
+            pause(3); % wait for mirror to open
             cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
             save(fnCameraConfig, 'cameraConfig');
         case {'file', 'ivs'}
@@ -161,6 +162,12 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 frames = Validation.showImageRequest(hw, testTargets(i),testTargets(i).params.nFrames, testTargets(i).params.delay);
                 save(fnTarget, 'frames');
                 testTargets(i).frames = frames;
+            case 'robot'
+                move_robot(testTargets(i).distance)
+                frames = Validation.showImageRequest(hw, testTargets(i),testTargets(i).params.nFrames, testTargets(i).params.delay, false);
+                save(fnTarget, 'frames');
+                testTargets(i).frames = frames;
+
             case 'file'
                 if ~exist(fnTarget,'file')
                     ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', fnTarget));
@@ -174,5 +181,21 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg);
                 cameraConfig = p.camera;
         end
+    end
+end
+
+function move_robot(distance)
+    if contains(distance, 'cm')
+        distance = erase(distance,'cm');
+        distance = str2num(distance);
+    elseif  contains(distance, 'm')
+        distance = erase(distance,'m');
+        distance=str2num(distance)*100;
+    end
+        
+    status = system(sprintf('plink.exe robot@ev3dev go_to_absolute.py 40 %d', distance));
+    if status ~= 0
+        ME = MException('Validation:moveRobot:move', 'Failed moving robot');
+        throw(ME)
     end
 end

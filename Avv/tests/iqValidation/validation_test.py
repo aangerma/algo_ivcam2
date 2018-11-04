@@ -165,3 +165,7 @@ def test_validation_ds5u_camera():
 def test_validation_d4m_camera():
     filePath = r'Avv/tests/iqValidation/d4m_camera.xml'
     validation(filePath)
+	
+def test_validation_robot():
+    filePath = r'Avv/tests/iqValidation/robot.xml'
+    validation(filePath)
