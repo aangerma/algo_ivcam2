@@ -1,4 +1,4 @@
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 [regs,luts] = fw.get();
 hw = HWinterface();
 cma = hw.readCMA(4);

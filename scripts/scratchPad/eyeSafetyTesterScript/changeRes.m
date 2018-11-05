@@ -1,5 +1,5 @@
 clear
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 regs.GNRL.imgHsize = uint16(1280);
 regs.GNRL.imgVsize = uint16(960);
 fw.setRegs(regs,'');

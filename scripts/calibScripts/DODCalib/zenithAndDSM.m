@@ -1,5 +1,5 @@
 % Load some fw
-fw = Pipe.loadFirmware('\\tmund-MOBL1\C$\source\algo_ivcam2\scripts\calibScripts\DODCalib\DODCalibDataset\initScript');
+fw = Pipe.loadFirmware('\\tmund-MOBL1\C$\source\algo_ivcam2\scripts\calibScripts\DODCalib\DODCalibDataset\initConfigCalib');
 regs2.FRMW.guardBandV = single(0);
 fw.setRegs(regs2,'');
 [regs,luts] = fw.get();

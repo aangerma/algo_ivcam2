@@ -1,5 +1,12 @@
-% MOS configuration from Vitaly
+currdir = fileparts(mfilename('fullpath'));
+fs = dir(fullfile(currdir,'..','initConfigCalib','*.csv'));
 
+for i = 1:numel(fs)
+    sourcePath = fullfile(fs(i).folder,fs(i).name);
+    destPath = fullfile(currdir,fs(i).name);
+    copyfile(sourcePath, destPath); 
+end
+% MOS configuration from Vitaly
 sort_bypass_mode = 0;
 JFIL_sharpS = 0;
 JFIL_sharpR = 12;
@@ -26,7 +33,7 @@ regs.JFIL.bilt1SharpnessR = uint8(JFIL_sharpR);
 regs.JFIL.bilt2SharpnessR = uint8(JFIL_sharpR);
 regs.JFIL.bilt3SharpnessR = uint8(JFIL_sharpR);
 
-fw = Pipe.loadFirmware(cd);
-fw.setRegs(regs,fullfile(cd,'config.csv'));
+fw = Pipe.loadFirmware(currdir);
+fw.setRegs(regs,fullfile(currdir,'config.csv'));
 fw.get();
-fw.writeUpdated(fullfile(cd,'config.csv'));
+fw.writeUpdated(fullfile(currdir,'config.csv'));

@@ -146,7 +146,7 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),'initScript');
+    initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
     copyfile(fullfile(initFldr,'*.csv'), runParams.internalFolder)
     
 end

@@ -32,7 +32,7 @@ currregs.FRMW.marginR = int16(mod(DIGGspare06,2^16));
 currregs.FRMW.marginT = int16(DIGGspare07/2^16);
 currregs.FRMW.marginB = int16(mod(DIGGspare07,2^16));
 % Load default firmware and update the calibration regs
-p = strsplit(cd,filesep); p{end-1} = '+Calibration'; p{end} = 'initScript';
+p = strsplit(cd,filesep); p{end-1} = '+Calibration'; p{end} = 'initConfigCalib';
 fw = Pipe.loadFirmware(strjoin(p,filesep)); 
 fw.setRegs(currregs,'');
 regs = fw.get();
