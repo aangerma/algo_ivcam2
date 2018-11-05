@@ -15,10 +15,11 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
     %  Debug
-%      varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest\out', 'dataFolder', 'c:\temp\valTest\data', 'dataSource', 'bin'))}
-%      testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'checkerboard_50', 'distance', '20cm')
-    
-    % set config params
+%       varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest\out', 'dataFolder', 'X:\Avv\sources\noa\D4m', 'dataSource', 'file'))}
+%       testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'checkerboard_50', 'distance', '10cm')
+
+ 
+ % set config params
     p = inputParser;
     addRequired(p, 'testConfig', @(x) ~isempty(x))
     addParameter(p, 'config', struct())
@@ -62,8 +63,8 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     testOut = fieldnames(out);
     for i=1:length(testOut)
         testOut(i)
-        out.(cell2str(testOut(i)))
-        score.(cell2str(testOut(i)))
+        disp(out.(cell2str(testOut(i))))
+        disp(score.(cell2str(testOut(i))))
     end
  end
 
@@ -135,20 +136,29 @@ end
 
 function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dataFullPath)
     % camera config    
-    fnCameraConfig = fullfile(dataFullPath, ['cameraConfig.mat']);
+    fnCameraConfig = fullfile(dataFullPath, 'cameraConfig.mat');
     switch dataSource
         case {'HW'}
             hw = HWinterface;
             pause(3); % wait for mirror to open
             cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
             save(fnCameraConfig, 'cameraConfig');
-        case {'file', 'ivs', 'bin'}
+        case {'file', 'ivs'}
             if ~exist(fnCameraConfig, 'file')
-                ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', fnCameraConfig));
+                ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', strrep(fnCameraConfig, '\', '\\')));
                 throw(ME)
             else
                 % load camera config
                 load(fnCameraConfig);
+            end
+         case {'bin'}
+            fnCameraConfig = fullfile(dataFullPath, 'K.mat');
+            if ~exist(fnCameraConfig, 'file')
+                ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', strrep(fnCameraConfig, '\', '\\')));
+                throw(ME)
+            else
+                % load camera config
+                cameraConfig = load(fnCameraConfig)
             end
         otherwise
             ME = MException('Validation:captureFramse', sprintf('%s option not supported', strrep(dataSource, '\', '\\')));
@@ -181,18 +191,23 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg);
                 cameraConfig = p.camera;
             case 'bin'
-                fnTarget_z = fullfile(dataFullPath, [cell2str(testTargets(i).name), '_0.binz']);
-                fnTarget_i = fullfile(dataFullPath, [cell2str(testTargets(i).name), '_0.bin8']);
-                if ~exist(fnTarget_z,'file')
-                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', strrep(fnTarget_z, '\', '\\')));
+                z = io.readBins(dataFullPath, testTargets(i).name, 'binz');
+                if isempty(z)
+                    ME = MException('Validation:captureFramse:bin', sprintf('files dosent exist: %s, %s, %s', strrep(dataFullPath, '\', '\\'), testTargets(i).name, 'binz'));
                     throw(ME)
                 end
-                if ~exist(fnTarget_i,'file')
-                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', strrep(fnTarget_i, '\', '\\')));
+                ir = io.readBins(dataFullPath, testTargets(i).name, 'bin8');
+                if isempty(z)
+                    ME = MException('Validation:captureFramse:bin', sprintf('files dosent exist: %s, %s, %s', strrep(dataFullPath, '\', '\\'), testTargets(i).name, 'bini'));
                     throw(ME)
                 end
-                testTargets(i).frames.z = io.readBin(fnTarget_z);
-                testTargets(i).frames.i = io.readBin(fnTarget_i);
+                if size(z,2) ~= size(ir,2)
+                    ME = MException('Validation:captureFramse:bin', sprintf('amount of picures for z and i are difarent z = %d, i = %d', size(z,2), size(ir,2)));
+                    throw(ME)
+                end
+                
+                testTargets(i).frames = cell2struct([{z(:).o};{ir(:).o}], {'z', 'i'})';
+
         end
     end
 end

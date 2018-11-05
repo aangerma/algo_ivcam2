@@ -1,4 +1,4 @@
-#! python3
+# ! python3
 import slash
 import io
 import sys
@@ -85,7 +85,7 @@ def validation(xmlPath):
         xml = et.parse(xmlPath)
     except FileNotFoundError:
         filePath = r'debug.xml'
-        slash.logger.info("test xml definition file: {}".format(xmlPath))
+        slash.logger.warning("test xml definition file is DEBUG: {}".format(xmlPath))
         xml = et.parse(filePath)
     root = xml.getroot()
 
@@ -98,7 +98,7 @@ def validation(xmlPath):
         picture_list = create_picture_list(tests)
         for pic in picture_list.values():
             robot.move(target=pic['target'], distance=pic['distance'])
-            camera.take_frames(5, test_params['dataFolder'],pic['name'])
+            camera.take_frames(100, test_params['dataFolder'],pic['name'])
             camera.camera_intrinsics(test_params['dataFolder'])
         test_params['dataSource'] = 'bin'
 
@@ -121,6 +121,9 @@ def validation(xmlPath):
 
     validationResults = None
     try:
+        slash.logger.debug('sending to matlab')
+        slash.logger.debug('tests:\r\n {}'.format(tests))
+        slash.logger.debug('params:\r\n {}'.format(params))
         score, validationResults = eng.s.Validation.runIQValidation(tests, params, stdout=out, stderr=err, nargout=2)
     except Exception as e:
         slash.logger.debug('matlab out: {}'.format(out.getvalue()))
@@ -193,9 +196,15 @@ def test_validation_ds5u_camera():
 def test_validation_d4m_camera():
     filePath = r'Avv/tests/iqValidation/d4m_camera.xml'
     validation(filePath)
-	
+
+@slash.tag('robot')
 def test_validation_robot():
     filePath = r'Avv/tests/iqValidation/robot.xml'
+    validation(filePath)
+
+@slash.tag('robot')
+def test_validation_algonas_robot():
+    filePath = r'X:\Avv\sources\robot'
     validation(filePath)
 
 
