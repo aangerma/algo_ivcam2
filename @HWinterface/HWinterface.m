@@ -252,7 +252,6 @@ classdef HWinterface <handle
             [~,val]=obj.cmd(sprintf('mrd %08x %08x',addr,addr+4));
             
         end
-        
         function [vals,algoNames]=read(obj,regTokens)
             strOutFormat = 'mrd %08x %08x';
             if(~exist('regTokens','var'))
