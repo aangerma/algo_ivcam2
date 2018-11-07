@@ -12,7 +12,7 @@ if (isempty(gridPoints))
     return;
 end
 
-v = Validation.aux.pointsToVertices(gridPoints, z, params.camera.K);
+v = Validation.aux.pointsToVertices(gridPoints, z, params.camera);
 [e1, e2] = Validation.aux.gridError(v, gridSize, params.target.squareSize);
 
 results.meanError = e1;

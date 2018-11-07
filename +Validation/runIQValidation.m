@@ -15,8 +15,8 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
     %  Debug
-%       varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest\out', 'dataFolder', 'X:\Avv\sources\noa\D4m', 'dataSource', 'file'))}
-%       testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'checkerboard_50', 'distance', '10cm')
+%       varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest\out', 'dataFolder', 'c:\\temp\\valTest\data', 'dataSource', 'bin'))}
+%       testConfig.minRange = struct('name', 'zstd', 'metrics', 'zStd', 'target', 'checkerboard_50', 'distance', '50cm')
 
  
  % set config params
@@ -142,6 +142,7 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
             hw = HWinterface;
             pause(3); % wait for mirror to open
             cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
+            cameraConfig.zMaxSubMM = 8;
             save(fnCameraConfig, 'cameraConfig');
         case {'file', 'ivs'}
             if ~exist(fnCameraConfig, 'file')
@@ -152,13 +153,13 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 load(fnCameraConfig);
             end
          case {'bin'}
-            fnCameraConfig = fullfile(dataFullPath, 'K.mat');
+            fnCameraConfig = fullfile(dataFullPath, 'cameraConfig.mat');
             if ~exist(fnCameraConfig, 'file')
                 ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', strrep(fnCameraConfig, '\', '\\')));
                 throw(ME)
             else
                 % load camera config
-                cameraConfig = load(fnCameraConfig)
+                cameraConfig = load(fnCameraConfig);
             end
         otherwise
             ME = MException('Validation:captureFramse', sprintf('%s option not supported', strrep(dataSource, '\', '\\')));

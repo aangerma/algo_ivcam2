@@ -99,7 +99,7 @@ for j=1:size(pts,1)-1
         
         k = (ib + 1)/2;
         [barW(j,k), barH(j,k), zC(j,k), blobNoise(j,k)] = ...
-            analyzeHorizontalMos(zImg, p0, p1, tunnelHeight, verbose);
+            analyzeHorizontalMos(zImg, p0, p1, tunnelHeight, params.camera);
         barC(j,k,:) = c;
     end
 end
@@ -169,9 +169,9 @@ res.units = 'mm^2';
 
 end
     
-function [width, height, zc, blobNoise] = analyzeHorizontalMos(zImg, p0, p1, tunnelWidth, verbose)
+function [width, height, zc, blobNoise] = analyzeHorizontalMos(zImg, p0, p1, tunnelWidth, camera)
 subSamples = 4;
-zSubMM = 8;
+zSubMM = camera.zMaxSubMM;
 maxHeight = 20; % in mm
 
 x0 = p0(1); x1 = p1(1);

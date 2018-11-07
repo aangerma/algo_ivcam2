@@ -8,6 +8,6 @@ import robot
 
 
 @slash.tag('robot')
-def test_reset_robot():
+def test_robot_reset():
     robot.reset()
 

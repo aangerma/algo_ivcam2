@@ -204,7 +204,7 @@ def test_validation_robot():
 
 @slash.tag('robot')
 def test_validation_algonas_robot():
-    filePath = r'X:\Avv\sources\robot'
+    filePath = r'X:/Avv/sources/robot/robot.xml'
     validation(filePath)
 
 
