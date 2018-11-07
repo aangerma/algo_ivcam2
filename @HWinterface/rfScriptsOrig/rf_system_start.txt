@@ -1,0 +1,9 @@
+mwd a00d01f4 A00D01F8 ffffffff //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG
+mwd a0010100 A0010104 1120003f //[m_regmodel.pmg_pmg.RegsPmgDepthEn] TYPE_REG
+mwd a00c0100 A00C0104 00000011 //[m_regmodel.pmg_dpt_pmg.RegsPmgDptEn] TYPE_REG
+
+mwd b0080100 B0080104 0000900 // set the LVDS to 400mv
+
+wait 1 // Must wait 1us before enable AFE clock (for ansync slow data buffering)
+
+
