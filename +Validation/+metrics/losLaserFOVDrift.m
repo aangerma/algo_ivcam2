@@ -5,7 +5,7 @@ function [score, results] = losGridDrift(frames, params)
 %   - z, i, c images e.g. 480x640
 % params : defined as in aux.defaultMetricsParams
 
-zMaxSubMM = 8;
+zMaxSubMM = params.camera.zMaxSubMM;
 
 imgSize = size(frames(1).z);
 

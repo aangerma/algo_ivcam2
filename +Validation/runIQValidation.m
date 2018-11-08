@@ -9,16 +9,17 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     % config:
     %  outputFolder: (string), defult: c:\temp\valTest
     %  dataFolder: (string), defult: data
-    %  dataSource: (string), defult: HW, options: HW/file/ivs
+    %  dataSource: (string), defult: HW, options: HW/file/ivs/bin      robot
     %  fullTargetListPath: (string), reletive file path + targets.xml
     %  targetFilesPath: (string), reletive file path + targets
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
     %  Debug
-%      varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'X:\Avv\sources\ivs\gen1\turn_in', 'dataSource', 'ivs'))}
-%      testConfig.minRange = struct('name', 'minRange', 'metrics', 'fillRate', 'target', 'wall_80Reflectivity', 'distance', '50cm')
-    
-    % set config params
+%       varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest\out', 'dataFolder', 'X:\Avv\sources\ivs\gen1\turn_in', 'dataSource', 'ivs'))}
+%       testConfig.minRange = struct('name', 'zstd', 'metrics', 'zStd', 'target', 'checkerboard_30', 'distance', '40cm')
+
+ 
+ % set config params
     p = inputParser;
     addRequired(p, 'testConfig', @(x) ~isempty(x))
     addParameter(p, 'config', struct())
@@ -42,6 +43,7 @@ function  [score, out] = runIQValidation(testConfig, varargin)
         tests(i).targetName = n;
         requierdTargets.(n)=v;
     end
+
     testTargets = getTargets(config.fullTargetListPath, requierdTargets, config.targetFilesPath );
 
     % get pictures
@@ -61,8 +63,8 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     testOut = fieldnames(out);
     for i=1:length(testOut)
         testOut(i)
-        out.(cell2str(testOut(i)))
-        score.(cell2str(testOut(i)))
+        disp(out.(cell2str(testOut(i))))
+        disp(score.(cell2str(testOut(i))))
     end
  end
 
@@ -134,22 +136,33 @@ end
 
 function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dataFullPath)
     % camera config    
-    fnCameraConfig = fullfile(dataFullPath, ['cameraConfig.mat']);
+    fnCameraConfig = fullfile(dataFullPath, 'cameraConfig.mat');
     switch dataSource
-        case 'HW'
+        case {'HW'}
             hw = HWinterface;
+            pause(3); % wait for mirror to open
             cameraConfig.K = reshape([typecast(hw.read('CBUFspare'),'single');1],3,3)';
+            cameraConfig.zMaxSubMM = 8;
             save(fnCameraConfig, 'cameraConfig');
         case {'file', 'ivs'}
             if ~exist(fnCameraConfig, 'file')
-                ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', fnCameraConfig));
+                ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', strrep(fnCameraConfig, '\', '\\')));
                 throw(ME)
             else
                 % load camera config
                 load(fnCameraConfig);
             end
+         case {'bin'}
+            fnCameraConfig = fullfile(dataFullPath, 'cameraConfig.mat');
+            if ~exist(fnCameraConfig, 'file')
+                ME = MException('Validation:captureFramse:cameraConfig', sprintf('missing camera confg file: %s', strrep(fnCameraConfig, '\', '\\')));
+                throw(ME)
+            else
+                % load camera config
+                cameraConfig = load(fnCameraConfig);
+            end
         otherwise
-            ME = MException('Validation:captureFramse', sprintf('%s option not supported', dataSource));
+            ME = MException('Validation:captureFramse', sprintf('%s option not supported', strrep(dataSource, '\', '\\')));
             throw(ME)
     end
     
@@ -161,9 +174,14 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 frames = Validation.showImageRequest(hw, testTargets(i),testTargets(i).params.nFrames, testTargets(i).params.delay);
                 save(fnTarget, 'frames');
                 testTargets(i).frames = frames;
+%             case 'robot'
+%                 move_robot(testTargets(i).distance)
+%                 frames = Validation.showImageRequest(hw, testTargets(i),testTargets(i).params.nFrames, testTargets(i).params.delay, false);
+%                 save(fnTarget, 'frames');
+%                 testTargets(i).frames = frames;
             case 'file'
                 if ~exist(fnTarget,'file')
-                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', fnTarget));
+                    ME = MException('Validation:captureFramse:file', sprintf('file dosent exist: %s', strrep(fnTarget, '\', '\\')));
                     throw(ME)
                 end
                 imgFrames = load(fnTarget);
@@ -172,7 +190,25 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 fnTarget = fullfile(dataFullPath, [cell2str(testTargets(i).name), '.ivs']);
                 p = Pipe.autopipe(fnTarget, 'viewResults', 0 ,'outputdir',  'C:\temp\pipeOutDir\');
                 testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg);
-                cameraConfig = p.camera;
+%                 cameraConfig = p.camera;
+            case 'bin'
+                z = io.readBins(dataFullPath, testTargets(i).name, 'binz');
+                if isempty(z)
+                    ME = MException('Validation:captureFramse:bin', sprintf('files dosent exist: %s, %s, %s', strrep(dataFullPath, '\', '\\'), testTargets(i).name, 'binz'));
+                    throw(ME)
+                end
+                ir = io.readBins(dataFullPath, testTargets(i).name, 'bin8');
+                if isempty(z)
+                    ME = MException('Validation:captureFramse:bin', sprintf('files dosent exist: %s, %s, %s', strrep(dataFullPath, '\', '\\'), testTargets(i).name, 'bini'));
+                    throw(ME)
+                end
+                if size(z,2) ~= size(ir,2)
+                    ME = MException('Validation:captureFramse:bin', sprintf('amount of picures for z and i are difarent z = %d, i = %d', size(z,2), size(ir,2)));
+                    throw(ME)
+                end
+                
+                testTargets(i).frames = cell2struct([{z(:).o};{ir(:).o}], {'z', 'i'})';
+
         end
     end
 end

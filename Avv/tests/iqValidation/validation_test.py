@@ -1,4 +1,4 @@
-#! python3
+# ! python3
 import slash
 import io
 import sys
@@ -10,6 +10,9 @@ import xml.etree.ElementTree as et
 
 sys.path.insert(0, r"Avv\tests")
 import a_common
+sys.path.insert(0, r"..\algo_automation\infra")
+import robot
+import libRealSense
 
 
 def get_params_from_xml(root):
@@ -60,6 +63,21 @@ def save_data(db, data):
         json.dump(data, file)
         file.write('\n')
 
+def create_picture_list(tests):
+    picture_list = dict()
+    for test in tests.items():
+        data = test[1]
+        target = data['target']
+        distance_name = data['distance']
+
+        if 'cm' in distance_name:
+            distance = float(distance_name.replace('cm', ''))
+        elif 'm' in distance_name:
+            distance = float(distance_name.replace('m', ''))*100
+
+        picture_list['{}_{}'.format(target, distance_name)] = {'name': '{}_{}'.format(target, distance_name), 'target': target, 'distance':distance}
+    slash.logger.info('found {} targets to picture'.format(len(picture_list)))
+    return picture_list
 
 def validation(xmlPath):
     try:
@@ -67,7 +85,7 @@ def validation(xmlPath):
         xml = et.parse(xmlPath)
     except FileNotFoundError:
         filePath = r'debug.xml'
-        slash.logger.info("test xml definition file: {}".format(xmlPath))
+        slash.logger.warning("test xml definition file is DEBUG: {}".format(xmlPath))
         xml = et.parse(filePath)
     root = xml.getroot()
 
@@ -75,11 +93,23 @@ def validation(xmlPath):
     tests = get_tests_from_xml(root)
     db = to_save_data(root)
 
-    systemName = test_params['dataSource']
+    systemName = None
+    camera = libRealSense.LibRealSense()
+    if test_params['dataSource'].lower() == 'robot':
+        picture_list = create_picture_list(tests)
+        systemName = camera.get_system_name()
+        for pic in picture_list.values():
+            robot.move(target=pic['target'], distance=pic['distance'])
+            camera.take_frames(100, test_params['dataFolder'],pic['name'])
+            camera.camera_intrinsics(test_params['dataFolder'])
+        test_params['dataSource'] = 'bin'
+
+    if systemName is None:
+        systemName == test_params['dataSource']
     if db is not None:
-        systemName = input("Camera name: ")
-        if not systemName:
-            return
+        if systemName.lower() == 'hw':
+            systemName = input("Camera name: ")
+
     slash.logger.info("start test for: {}".format(systemName), extra={"highlight": True})
 
     testTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -87,12 +117,16 @@ def validation(xmlPath):
 
     params = {'config': test_params}
 
+
     eng = slash.g.mat
     out = io.StringIO()
     err = io.StringIO()
 
     validationResults = None
     try:
+        slash.logger.debug('sending to matlab')
+        slash.logger.debug('tests:\r\n {}'.format(tests))
+        slash.logger.debug('params:\r\n {}'.format(params))
         score, validationResults = eng.s.Validation.runIQValidation(tests, params, stdout=out, stderr=err, nargout=2)
     except Exception as e:
         slash.logger.debug('matlab out: {}'.format(out.getvalue()))
@@ -165,3 +199,18 @@ def test_validation_ds5u_camera():
 def test_validation_d4m_camera():
     filePath = r'Avv/tests/iqValidation/d4m_camera.xml'
     validation(filePath)
+
+@slash.tag('robot')
+def test_validation_robot():
+    filePath = r'Avv/tests/iqValidation/robot.xml'
+    validation(filePath)
+
+@slash.tag('robot')
+def test_validation_algonas_robot():
+    filePath = r'X:/Avv/sources/robot/robot.xml'
+    validation(filePath)
+
+
+
+if __name__ == "__main__":
+    test_validation_robot()

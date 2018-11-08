@@ -5,7 +5,7 @@ function [score, results] = zStd(frames, params)
 % params : struct
 %   - roi - regions of interest, percentage [0..1] or [left top width height]
 
-zMaxSubMM = 8;
+zMaxSubMM = params.camera.zMaxSubMM;
 
 imgSize = size(frames(1).z);
 

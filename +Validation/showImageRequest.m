@@ -1,4 +1,5 @@
-function frames = showImageRequest(hw, target, nFrames, delay, verbose)
+function frames = showImageRequest(hw, target, nFrames, delay, showImage, verbose)
+
 
 if (~exist('nFrames','var'))
     nFrames = 100;
@@ -12,7 +13,11 @@ if (~exist('verbose','var'))
     verbose = false;
 end
 
+if (~exist('showImage','var'))
+    showImage = true;
+end
 
+if showImage
 f=figure('NumberTitle','off', 'ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
 a=axes('parent',f);
 maximizeFig(f);
@@ -46,8 +51,10 @@ while(ishandle(f) && get(f,'userdata')==0)
     drawnow;
 end
 close(f);
-
+end
 if (~isempty(hw))
+%     TODO: remove after FW fix
+    hw.getFrame(100); % camera warmup (skip first frame)
     for i = 1:nFrames
         frames(i) = hw.getFrame();
         if (delay ~= 0)

@@ -1,4 +1,7 @@
-function v = pointsToVertices(points, z, matK)
+function v = pointsToVertices(points, z, camera)
+
+zMaxSubMM = camera.zMaxSubMM;
+matK = camera.K;
 
 u = points(:,1);
 v = points(:,2);

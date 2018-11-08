@@ -3,6 +3,7 @@ import os
 import sys
 sys.path.insert(0, r"..\algo_automation\infra")
 import slash_common
+import robot
 
 
 ivcam2 = slash.tag('ivcam2')

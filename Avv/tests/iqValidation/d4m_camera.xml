@@ -3,7 +3,7 @@
     <db saveData="no">X:\Avv\dbValidation.txt</db>
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
-        <dataFolder>\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\noa\D4m\D4m_vs_DS5u\labExperiments\d4m</dataFolder>
+        <dataFolder>X:\Avv\sources\noa\D4m</dataFolder>
         <dataSource>file</dataSource>
     </params>
     <tests>
