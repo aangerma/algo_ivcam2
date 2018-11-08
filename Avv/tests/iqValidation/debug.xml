@@ -5,13 +5,16 @@
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>c:\temp\valTest\data</dataFolder>
         <dataSource>robot</dataSource>
+        <xRes>720</xRes>
+        <yRes>720</yRes>
+        <frameRate>30</frameRate>
     </params>
     <tests>
         <test name="fillRate_20cm" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[95 : 100]" />
-        <!--<test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_20cm" metrics="zStd" target="checkerboard_50" distance="20cm" threshold="[0:0.5]" />-->
-        <!--<test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:0.5]" />-->
-        <!--<test name="gridInterDist_20cm" metrics="gridInterDist" target="checkerboard_50" distance="20cm" threshold="[0:0.7]" />-->
-        <!--<test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:0.7]" />-->
+        <test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:10]" />
+        <test name="zStd_20cm" metrics="zStd" target="checkerboard_50" distance="20cm" threshold="[0:10]" />
+        <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:50]" />
+        <test name="gridInterDist_20cm" metrics="gridInterDist" target="checkerboard_50" distance="20cm" threshold="[0:5]" />
+        <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
     </tests>
 </root>
