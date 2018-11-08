@@ -15,8 +15,8 @@ function  [score, out] = runIQValidation(testConfig, varargin)
     %  example: varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest', 'dataFolder', 'c:\\temp\\valTest\\data', 'dataSource', 'HW'))}
 
     %  Debug
-%       varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest\out', 'dataFolder', 'c:\\temp\\valTest\data', 'dataSource', 'bin'))}
-%       testConfig.minRange = struct('name', 'zstd', 'metrics', 'zStd', 'target', 'checkerboard_50', 'distance', '50cm')
+%       varargin = {struct('config',struct('outputFolder', 'c:\\temp\\valTest\out', 'dataFolder', 'X:\Avv\sources\ivs\gen1\turn_in', 'dataSource', 'ivs'))}
+%       testConfig.minRange = struct('name', 'zstd', 'metrics', 'zStd', 'target', 'checkerboard_30', 'distance', '40cm')
 
  
  % set config params
@@ -190,7 +190,7 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 fnTarget = fullfile(dataFullPath, [cell2str(testTargets(i).name), '.ivs']);
                 p = Pipe.autopipe(fnTarget, 'viewResults', 0 ,'outputdir',  'C:\temp\pipeOutDir\');
                 testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg);
-                cameraConfig = p.camera;
+%                 cameraConfig = p.camera;
             case 'bin'
                 z = io.readBins(dataFullPath, testTargets(i).name, 'binz');
                 if isempty(z)

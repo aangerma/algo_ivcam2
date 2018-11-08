@@ -104,7 +104,7 @@ def validation(xmlPath):
             camera.camera_intrinsics(test_params['dataFolder'])
         test_params['dataSource'] = 'bin'
 
-    if systemName is not None:
+    if systemName is None:
         systemName == test_params['dataSource']
     if db is not None:
         if systemName.lower() == 'hw':
