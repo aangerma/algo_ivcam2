@@ -104,15 +104,12 @@ def validation(xmlPath):
             camera.camera_intrinsics(test_params['dataFolder'])
         test_params['dataSource'] = 'bin'
 
-
+    if systemName is not None:
+        systemName == test_params['dataSource']
     if db is not None:
-        if systemName is not None:
-            pass
-        elif systemName == test_params['dataSource']:
-            if systemName.lower() == 'hw':
-                systemName = input("Camera name: ")
-        if not systemName:
-            raise Exception("can't get system name for DB")
+        if systemName.lower() == 'hw':
+            systemName = input("Camera name: ")
+
     slash.logger.info("start test for: {}".format(systemName), extra={"highlight": True})
 
     testTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
