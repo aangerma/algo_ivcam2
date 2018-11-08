@@ -93,20 +93,26 @@ def validation(xmlPath):
     tests = get_tests_from_xml(root)
     db = to_save_data(root)
 
+    systemName = None
     camera = libRealSense.LibRealSense()
     if test_params['dataSource'].lower() == 'robot':
         picture_list = create_picture_list(tests)
+        systemName = camera.get_system_name()
         for pic in picture_list.values():
             robot.move(target=pic['target'], distance=pic['distance'])
             camera.take_frames(100, test_params['dataFolder'],pic['name'])
             camera.camera_intrinsics(test_params['dataFolder'])
         test_params['dataSource'] = 'bin'
 
-    systemName = test_params['dataSource']
+
     if db is not None:
-        systemName = input("Camera name: ")
+        if systemName is not None:
+            pass
+        elif systemName == test_params['dataSource']:
+            if systemName.lower() == 'hw':
+                systemName = input("Camera name: ")
         if not systemName:
-            return
+            raise Exception("can't get system name for DB")
     slash.logger.info("start test for: {}".format(systemName), extra={"highlight": True})
 
     testTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
