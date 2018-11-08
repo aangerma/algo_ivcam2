@@ -94,7 +94,10 @@ def validation(xmlPath):
     db = to_save_data(root)
 
     systemName = None
-    camera = libRealSense.LibRealSense()
+    _xRes = test_params.get('xRes', 640)
+    _yRes = test_params.get('yRes', 480)
+    _frameRate = test_params.get('frameRate', 30)
+    camera = libRealSense.LibRealSense(xRes=int(_xRes), yRes=int(_yRes), frameRate=int(_frameRate))
     if test_params['dataSource'].lower() == 'robot':
         picture_list = create_picture_list(tests)
         systemName = camera.get_system_name()
