@@ -154,8 +154,8 @@ classdef HWinterface <handle
             end
         end
         
-        
-        
+        setupRF(obj);
+        [ rfZ,rfI,rfC ] = rfGetRaw( obj, N, chunkSz );
         burn2device(obj,basedir,burnCalib,burnConfig);
         cma = readCMA(obj,nAvg);
         

@@ -21,8 +21,8 @@ hw.runScript(fullfile(rfScripts,'proj_if_cfg_p0.txt'));
 hw.runScript(fullfile(rfScripts,'proj_if_cfg.txt'));
 hw.runScript(fullfile(rfScripts,'ansync_cfg.txt'));
 hw.runScript(fullfile(rfScripts,'algo_cfg.txt'));
-hw.cmd('mwd a0020af8 A0020AFC ff10ffff')
-hw.cmd('mwd a0020b00 A0020B04 ffffffff')
+% hw.cmd('mwd a0020af8 A0020AFC ff10ffff')
+% hw.cmd('mwd a0020b00 A0020B04 ffffffff')
 hw.runScript(fullfile(rfScripts,'dcor_mem.txt'));
 hw.runScript(fullfile(rfScripts,'afe_apd_cfg.vga30.txt'));
 hw.runScript(fullfile(rfScripts,'rf_system_start.txt'));
