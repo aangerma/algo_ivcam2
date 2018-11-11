@@ -88,7 +88,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     
     
     
-    st = regionprops(d_post.i>0, 'BoundingBox' );
+    [~,st] = maxAreaStat(d_post.i>0,size(d_post.i>0));
     colxMinMax = [st.BoundingBox(1)+0.5, st.BoundingBox(1)+st.BoundingBox(3)-0.5];
     rowyMinMax = [st.BoundingBox(2)+0.5, st.BoundingBox(2)+st.BoundingBox(4)-0.5];
     angxMinMax = round((colxMinMax-1)/(double(sz(2))-1)*2047*2-2047);
@@ -238,4 +238,28 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
     %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
     
+end
+function [binIm1stat,stat] = maxAreaStat(binaryIm,sz)
+st = regionprops(binaryIm);
+for i = 1:numel(st)
+%     hold on
+%     rectangle('Position',[st(i).BoundingBox(1),st(i).BoundingBox(2),st(i).BoundingBox(3),st(i).BoundingBox(4)],...
+%         'EdgeColor','r','LineWidth',2 )
+    area(i) = st(i).BoundingBox(3)*st(i).BoundingBox(4)/(prod(sz));
+end
+[m,mI] = max(area);
+if m < 0.8
+    warning('Largest connected region in image covers only %2.2g of the image.',m);
+end
+stat = st(mI);
+% Remove the smaller stats from the image
+binIm1stat = binaryIm;
+for i = 1:numel(st)
+    if i~=mI
+       iC = ceil(st(i).BoundingBox(1)):floor(st(i).BoundingBox(1)+st(i).BoundingBox(3));
+       iR = ceil(st(i).BoundingBox(2)):floor(st(i).BoundingBox(2)+st(i).BoundingBox(4));
+       binIm1stat(iR,iC) = 0;
+    end
+end
+
 end

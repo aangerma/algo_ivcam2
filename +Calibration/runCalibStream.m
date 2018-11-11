@@ -39,17 +39,20 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     
     %% Update init configuration
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
-    %% Get a single frame to see that the unit functions and to load the configuration
-    fprintff('opening stream...');
+    %% Start stream to load the configuration
+    fprintff('Opening stream...');
     hw.startStream();
-    hw.getFrame();
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Init hw configuration
     initConfiguration(hw,fw,runParams,fprintff,t);
 
     %% Set coarse DSM values 
     calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
-
+    
+    %% Get a frame to see that hwinterface works.
+    fprintff('Capturing frame...');
+    hw.getFrame();
+    fprintff('Done(%ds)\n',round(toc(t)));
     %% ::calibrate delays::
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
@@ -473,7 +476,8 @@ function score = mergeScores(results,runParams,calibParams,fprintff)
     f = fieldnames(results);
     scores=zeros(length(f),1);
     for i = 1:length(f)
-        scores(i)=100-round(min(1,max(0,(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}))))*99);
+        scores(i) = 100 - 40*(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}));
+        scores(i) = max(min(scores(i),100),0);
     end
     score = min(scores);
     
@@ -482,7 +486,9 @@ function score = mergeScores(results,runParams,calibParams,fprintff)
         for i = 1:length(f)
             s04=floor((scores(i)-1)/100*5);
             asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-            ll=fprintff('% -20s: %s %2.4g\n',f{i},asciibar,scores(i));
+            if scores(i)>=60 strstatus = 'passed'; else  strstatus = 'failed'; end
+            strrange = sprintf('[%2.2g..%2.2g]',calibParams.errRange.(f{i}));
+            ll=fprintff('% -20s: %s %s %3g %2.2g %s\n',f{i},strstatus,asciibar,scores(i),results.(f{i}),strrange);
         end
         fprintff('%s\n',repmat('-',1,ll));
         s04=floor((score-1)/100*5);

@@ -89,6 +89,7 @@ function ll=fprintff(app,varargin)
 end
 
 function app=createComponents()
+    runParams = xml2structWrapper('IV2calibTool.xml');
     sz=[640 700];
     % Create figH
     app.figH = figure('units','pixels',...
@@ -108,7 +109,7 @@ function app=createComponents()
     centerfig(app.figH );
     
     tg = uitabgroup('Parent',app.figH);
-    configurationTab=uitab(tg,'Title','configuration');
+    configurationTab=uitab(tg,'Title','Main');
     advancedTab=uitab(tg,'Title','Advanced');
     app.figH.Resize='off';
     
@@ -180,21 +181,21 @@ function app=createComponents()
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
+    if runParams.disableAdvancedOptions checkBoxesMode = 'inactive'; else checkBoxesMode = 'on'; end
     for i=1:length(cbnames)
         f=cbnames{i};
-        app.cb.(f) = uicontrol('style','checkbox','parent',advancedTab);
+        app.cb.(f) = uicontrol('style','checkbox','parent',advancedTab,'enable',checkBoxesMode);
         app.cb.(f).String = f;
         app.cb.(f).Position = [cbSz(1)*floor((i-1)/ny)+cbSz(2) cbSz(2)*(ny-(mod(i-1,ny)+1)) cbSz];
         app.cb.(f).Value = true;
         app.cb.(f).Callback=@outputFolderChange_callback;
-        
-        
     end
     % Create outputFldrBrowseBtn
     app.advancedSaveBtn = uicontrol('style','pushbutton','parent',advancedTab);
     app.advancedSaveBtn.Callback = @saveDefaults;
     app.advancedSaveBtn.Position = [560 10 50 22];
     app.advancedSaveBtn.String = 'save';
+%     set(handles.checkbox1,'Enable','off')  %disable checkbox1
     guidata(app.figH,app);
     
     

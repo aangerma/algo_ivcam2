@@ -5,6 +5,7 @@ function validateCalibration(runParams,calibParams,fprintff)
         hw.getFrame;
         fprintff('opening stream...');
         frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
+        saveValidationFrames(frame,runParams);
         fprintff('Done.\n');
         
         
@@ -19,4 +20,15 @@ function validateCalibration(runParams,calibParams,fprintff)
         fprintff('Validation finished.\n');
     end
 
+end
+function saveValidationFrames(frame,runParams)
+    dirname = fullfile(runParams.outputFolder,'captures');
+    mkdirSafe(dirname);
+    
+    f = fieldnames(frame);
+    for i = 1:length(f)
+        imfn = fullfile(dirname,strcat('validation_frame_',f{i},'.png'));
+        imwrite(frame.(f{i}),imfn);
+    end
+    
 end

@@ -10,9 +10,10 @@
    <cb_ROI>1</cb_ROI>
    <cb_undist>1</cb_undist>
    <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
-   <cb_burnConfigurationToDevice>1</cb_burnConfigurationToDevice>
+   <cb_burnConfigurationToDevice>0</cb_burnConfigurationToDevice>
    <cb_debug>1</cb_debug>
    <cb_validation>1</cb_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
+    <disableAdvancedOptions>1</disableAdvancedOptions>
 </struct>
