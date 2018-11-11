@@ -190,7 +190,8 @@ function [testTargets,cameraConfig] = captureFrames(dataSource, testTargets, dat
                 fnTarget = fullfile(dataFullPath, [cell2str(testTargets(i).name), '.ivs']);
                 p = Pipe.autopipe(fnTarget, 'viewResults', 0 ,'outputdir',  'C:\temp\pipeOutDir\');
                 testTargets(i).frames = struct('z',p.zImg,'i',p.iImg,'c',p.cImg);
-%                 cameraConfig = p.camera;
+                cameraConfig = p.camera;
+                cameraConfig.zMaxSubMM = double(2^p.regs.GNRL.zMaxSubMMExp);
             case 'bin'
                 z = io.readBins(dataFullPath, testTargets(i).name, 'binz');
                 if isempty(z)
