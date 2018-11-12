@@ -323,16 +323,19 @@ classdef HWinterface <handle
         
         
         
-        function frame = getFrame(obj,n)
+        function frame = getFrame(obj,n,postproc)
             obj.startStream();
             if(~exist('n','var'))
                 n=1;
+            end
+            if (~exist('postproc','var')) 
+                postproc = true;
             end
             stream(1) = obj.privGetSingleFrame();%capture atleast 1
             for i = 2:n
                 stream(i) = obj.privGetSingleFrame();%#ok
             end
-            if(length(stream)>1)
+            if(length(stream)>1) && postproc
                 meanNoZero = @(m) sum(double(m),3)./sum(m~=0,3);
                 collapseM = @(x) meanNoZero(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]));
                 frame.z=uint16(collapseM('z'));

@@ -1,5 +1,5 @@
 function [img] = readBin(fname,varargin)
-imgSizes = {[320 240],[640 480],[1280 960],[1280 720],[64 64],[540 840]};
+imgSizes = {[320 240],[640 480],[1280 960],[1280 720],[64 64],[540 840],[640 360]};
 p = inputParser;
 
 addRequired(p,'fname',@ischar);
