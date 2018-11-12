@@ -94,18 +94,21 @@ def validation(xmlPath):
     db = to_save_data(root)
 
     systemName = None
+    fw = None
     _xRes = test_params.get('xRes', 640)
     _yRes = test_params.get('yRes', 480)
     _frameRate = test_params.get('frameRate', 30)
     camera = libRealSense.LibRealSense(xRes=int(_xRes), yRes=int(_yRes), frameRate=int(_frameRate))
     if test_params['dataSource'].lower() == 'robot':
         picture_list = create_picture_list(tests)
-        systemName = camera.get_system_name()
+        system = camera.get_system_info()
+        systemName = system['sn']
+        fw = system['fw']
         for pic in picture_list.values():
             robot.move(target=pic['target'], distance=pic['distance'])
             camera.take_frames(100, test_params['dataFolder'],pic['name'])
-            camera.camera_intrinsics(test_params['dataFolder'])
         test_params['dataSource'] = 'bin'
+        camera.camera_intrinsics(test_params['dataFolder'])
 
     if systemName is None:
         systemName == test_params['dataSource']
@@ -140,7 +143,7 @@ def validation(xmlPath):
     slash.logger.debug("validation results: {}".format(validationResults))
     slash.logger.debug("validation score: {}".format(score))
 
-    data = {systemName: {'testTime': testTime, 'result': validationResults}}
+    data = {systemName: fw, 'data': {'testTime': testTime, 'result': validationResults}}
     save_data(db, data)
 
     testFailed = False
