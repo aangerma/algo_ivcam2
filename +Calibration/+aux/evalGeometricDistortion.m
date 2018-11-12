@@ -1,6 +1,8 @@
-function [e,e_dist,ptsOut]=evalGeometricDistortion(p,verbose)
+function [e,e_dist,ptsOut]=evalGeometricDistortion(p,verbose,tileSizeMM)
 %%
-tileSizeMM = 30;
+if ~exist('tileSizeMM','var')
+    tileSizeMM = 30;
+end
 h=size(p,1);
 w=size(p,2);
 p=p(:,:,1:3);
