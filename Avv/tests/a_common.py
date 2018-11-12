@@ -17,3 +17,4 @@ def session_start_handler():
     eng = slash.g.mat
     eng.add_path(os.path.join("../algo_ivcam2"))
     eng.add_path(os.path.join("../repo_dir"))
+    eng.add_path(os.path.join("../algo_common"))

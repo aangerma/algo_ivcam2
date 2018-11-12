@@ -1,15 +1,28 @@
-function  setPath_ivcam20()
-restoredefaultpath;
-addpath(cd);
-p=strsplit(genpath(fullfile(cd,filesep,'common')),';');
-ishidden=cellfun(@(x) ~isempty(regexp(x,'\\\.[^\.]', 'once')),p);
-addpath(strjoin(p(~ishidden),';'));
+function  setPath_ivcam20(commonRoot)
+    % add algo_ivcam2 path
+    restoredefaultpath;
+    addpath(cd);
+    p=strsplit(genpath(fullfile(cd,filesep,'common')),';');
+    ishidden=cellfun(@(x) ~isempty(regexp(x,'\\\.[^\.]', 'once')),p);
+    addpath(strjoin(p(~ishidden),';'));
 
-
-%close open documents that are not part of the current path
-X = matlab.desktop.editor.getAll;
-X={X(cellfun(@(x) ~startsWith(x,cd),{X.Filename})).Filename};
-for x=X(:)'
-   matlab.desktop.editor.findOpenDocument(x{1}).close();
-end
+    % add algo_common to path
+    ivcamRoot = fileparts(which(mfilename));
+    if ~exist('commonRoot','var')
+        commonRoot = fullfile(ivcamRoot,'..\algo_common');
+    end
+    
+    if ~exist(commonRoot,'dir')
+        error('Common Root was not found in %s',commonRoot);
+    end
+    cd(commonRoot);
+    setPathCommon()
+    
+    cd (ivcamRoot);
+    %close open documents that are not part of the current path
+    X = matlab.desktop.editor.getAll;
+    X={X(cellfun(@(x) ~startsWith(x,cd),{X.Filename})).Filename};
+    for x=X(:)'
+       matlab.desktop.editor.findOpenDocument(x{1}).close();
+    end
 end
