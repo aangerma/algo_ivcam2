@@ -469,6 +469,9 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib)
     intregs.DIGG.spare(6)=verValue; %config version
     intregs.DIGG.spare(7)=uint32(regs.FRMW.marginL)*2^16 + uint32(regs.FRMW.marginR);
     intregs.DIGG.spare(8)=uint32(regs.FRMW.marginT)*2^16 + uint32(regs.FRMW.marginB);
+    intregs.JFIL.spare=zeros(1,8,'uint32');
+    [zoCol,zoRow] = Calibration.aux.zoLoc(fw);
+    intregs.JFIL.spare(1)=uint32(zoRow)*2^16 + uint32(zoCol);
     fw.setRegs(intregs,fnCalib);
     fw.get();
 end
