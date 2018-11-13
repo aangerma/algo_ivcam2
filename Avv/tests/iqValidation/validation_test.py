@@ -145,7 +145,7 @@ def validation(xmlPath):
 
     data = {systemName: fw, 'data': {'testTime': testTime, 'result': validationResults}}
     save_data(db, data)
-
+ 
     testFailed = False
     for test in tests.keys():
         try:
