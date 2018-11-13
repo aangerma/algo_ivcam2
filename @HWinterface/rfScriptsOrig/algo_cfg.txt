@@ -1,432 +1,194 @@
-mwd a00e0894 a00e0898 00000000 // DESTdepthAsRange
-mwd a00e0600 A00E0604 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeEn] TYPE_REG
-mwd a0020034 A0020038 00000004 //[m_regmodel.digg_digg.RegsDiggCBits] TYPE_REG
-mwd a00e05e4 A00E05E8 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeDataMode] TYPE_REG
-mwd a0020a50 A0020A54 00000000 //[m_regmodel.digg_digg.RegsDIGGdx2] TYPE_REG
-mwd a00e05ec A00E05F0 0000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
-mwd a0020a54 A0020A58 00000000 //[m_regmodel.digg_digg.RegsDIGGdx3] TYPE_REG
-mwd a00e05ec A00E05F0 1000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
-mwd a0020a5c A0020A60 00000000 //[m_regmodel.digg_digg.RegsDIGGdy2] TYPE_REG
-mwd a0020a60 A0020A64 00000000 //[m_regmodel.digg_digg.RegsDIGGdy3] TYPE_REG
-mwd a0020a6c A0020A70 03340334 //[m_regmodel.digg_digg.RegsDIGGgammaScale] TYPE_REG
-mwd a0020a74 A0020A78 00043000 //[m_regmodel.digg_digg.RegsDIGGgamma_000] TYPE_REG
-mwd a0020a78 A0020A7C 000c6084 //[m_regmodel.digg_digg.RegsDIGGgamma_001] TYPE_REG
-mwd a0020a7c A0020A80 00148107 //[m_regmodel.digg_digg.RegsDIGGgamma_002] TYPE_REG
-mwd a0020a80 A0020A84 001c9189 //[m_regmodel.digg_digg.RegsDIGGgamma_003] TYPE_REG
-mwd a0020a84 A0020A88 0024b20a //[m_regmodel.digg_digg.RegsDIGGgamma_004] TYPE_REG
-mwd a0020a88 A0020A8C 002cc28b //[m_regmodel.digg_digg.RegsDIGGgamma_005] TYPE_REG
-mwd a0020a8c A0020A90 0034c30c //[m_regmodel.digg_digg.RegsDIGGgamma_006] TYPE_REG
-mwd a0020a90 A0020A94 003cd38d //[m_regmodel.digg_digg.RegsDIGGgamma_007] TYPE_REG
-mwd a0020a94 A0020A98 0044d40d //[m_regmodel.digg_digg.RegsDIGGgamma_008] TYPE_REG
-mwd a0020a98 A0020A9C 004ce48e //[m_regmodel.digg_digg.RegsDIGGgamma_009] TYPE_REG
-mwd a0020a9c A0020AA0 0054e50e //[m_regmodel.digg_digg.RegsDIGGgamma_010] TYPE_REG
-mwd a0020aa0 A0020AA4 005ce58e //[m_regmodel.digg_digg.RegsDIGGgamma_011] TYPE_REG
-mwd a0020aa4 A0020AA8 0064e60e //[m_regmodel.digg_digg.RegsDIGGgamma_012] TYPE_REG
-mwd a0020aa8 A0020AAC 006ce68e //[m_regmodel.digg_digg.RegsDIGGgamma_013] TYPE_REG
-mwd a0020aac A0020AB0 0074d70e //[m_regmodel.digg_digg.RegsDIGGgamma_014] TYPE_REG
-mwd a0020ab0 A0020AB4 007cd78d //[m_regmodel.digg_digg.RegsDIGGgamma_015] TYPE_REG
-mwd a0020ab4 A0020AB8 0084d80d //[m_regmodel.digg_digg.RegsDIGGgamma_016] TYPE_REG
-mwd a0020ab8 A0020ABC 008cc88c //[m_regmodel.digg_digg.RegsDIGGgamma_017] TYPE_REG
-mwd a0020abc A0020AC0 0094c90c //[m_regmodel.digg_digg.RegsDIGGgamma_018] TYPE_REG
-mwd a0020ac0 A0020AC4 009cb98b //[m_regmodel.digg_digg.RegsDIGGgamma_019] TYPE_REG
-mwd a0020ac4 A0020AC8 00a4aa0b //[m_regmodel.digg_digg.RegsDIGGgamma_020] TYPE_REG
-mwd a0020ac8 A0020ACC 00acaa8a //[m_regmodel.digg_digg.RegsDIGGgamma_021] TYPE_REG
-mwd a0020acc A0020AD0 00b49b09 //[m_regmodel.digg_digg.RegsDIGGgamma_022] TYPE_REG
-mwd a0020ad0 A0020AD4 00bc8b88 //[m_regmodel.digg_digg.RegsDIGGgamma_023] TYPE_REG
-mwd a0020ad4 A0020AD8 00c47c08 //[m_regmodel.digg_digg.RegsDIGGgamma_024] TYPE_REG
-mwd a0020ad8 A0020ADC 00cc6c87 //[m_regmodel.digg_digg.RegsDIGGgamma_025] TYPE_REG
-mwd a0020adc A0020AE0 00d45d06 //[m_regmodel.digg_digg.RegsDIGGgamma_026] TYPE_REG
-mwd a0020ae0 A0020AE4 00dc4d85 //[m_regmodel.digg_digg.RegsDIGGgamma_027] TYPE_REG
-mwd a0020ae4 A0020AE8 00e43e04 //[m_regmodel.digg_digg.RegsDIGGgamma_028] TYPE_REG
-mwd a0020ae8 A0020AEC 00ec2e83 //[m_regmodel.digg_digg.RegsDIGGgamma_029] TYPE_REG
-mwd a0020aec A0020AF0 00f41f01 //[m_regmodel.digg_digg.RegsDIGGgamma_030] TYPE_REG
-mwd a0020af0 A0020AF4 00fc0f80 //[m_regmodel.digg_digg.RegsDIGGgamma_031] TYPE_REG
-mwd a0020b1c A0020B20 00000056 //[m_regmodel.digg_digg.RegsDIGGnestLdOnDelay] TYPE_REG
-mwd a0020b24 A0020B28 1a35d7a0 //[m_regmodel.digg_digg.RegsDIGGnotchA_000] TYPE_REG
-mwd a0020b28 A0020B2C 2000ff32 //[m_regmodel.digg_digg.RegsDIGGnotchA_001] TYPE_REG
-mwd a0020b2c A0020B30 20002d8a //[m_regmodel.digg_digg.RegsDIGGnotchA_002] TYPE_REG
-mwd a0020b30 A0020B34 20003ffb //[m_regmodel.digg_digg.RegsDIGGnotchA_003] TYPE_REG
-mwd a0020b34 A0020B38 00000000 //[m_regmodel.digg_digg.RegsDIGGnotchA_004] TYPE_REG
-mwd a0020b38 A0020B3C 00000000 //[m_regmodel.digg_digg.RegsDIGGnotchA_005] TYPE_REG
-mwd a0020b64 A0020B68 1d1ad7a0 //[m_regmodel.digg_digg.RegsDIGGnotchB_000] TYPE_REG
-mwd a0020b68 A0020B6C 2000ff32 //[m_regmodel.digg_digg.RegsDIGGnotchB_001] TYPE_REG
-mwd a0020b6c A0020B70 20002d8a //[m_regmodel.digg_digg.RegsDIGGnotchB_002] TYPE_REG
-mwd a0020b70 A0020B74 20003ffb //[m_regmodel.digg_digg.RegsDIGGnotchB_003] TYPE_REG
-mwd a0020b74 A0020B78 00000000 //[m_regmodel.digg_digg.RegsDIGGnotchB_004] TYPE_REG
-mwd a0020b78 A0020B7C 00000000 //[m_regmodel.digg_digg.RegsDIGGnotchB_005] TYPE_REG
-mwd a0020ba8 A0020BAC 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_000] TYPE_REG
-mwd a0020bac A0020BB0 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_001] TYPE_REG
-mwd a0020bb0 A0020BB4 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_002] TYPE_REG
-mwd a0020bc4 A0020BC8 00000000 //[m_regmodel.digg_digg.RegsDIGGny_001] TYPE_REG
-mwd a0020bc8 A0020BCC 00000000 //[m_regmodel.digg_digg.RegsDIGGny_002] TYPE_REG
-mwd a0020bcc A0020BD0 00000000 //[m_regmodel.digg_digg.RegsDIGGny_003] TYPE_REG
-mwd a0020bd0 A0020BD4 00000000 //[m_regmodel.digg_digg.RegsDIGGny_004] TYPE_REG
-mwd a0020bfc A0020C00 00010004 //[m_regmodel.digg_digg.RegsDIGGsphericalOffset] TYPE_REG
-mwd a0020c00 A0020C04 ffff0002 //[m_regmodel.digg_digg.RegsDIGGsphericalScale] TYPE_REG
-mwd a0020c38 A0020C3C 00000fff //[m_regmodel.digg_digg.RegsDIGGycrossThr] TYPE_REG
-mwd a0020c3c A0020C40 00000040 //[m_regmodel.digg_digg.RegsGNRLcodeLength] TYPE_REG
-mwd a0020c40 A0020C44 00000002 //[m_regmodel.digg_digg.RegsGNRLimgHsize] TYPE_REG
-mwd a0020c44 A0020C48 00000001 //[m_regmodel.digg_digg.RegsGNRLimgVsize] TYPE_REG
-mwd a0020c48 A0020C4C 00000001 //[m_regmodel.digg_digg.RegsGNRLrangeFinder] TYPE_REG
-mwd a0020c4c A0020C50 00000008 //[m_regmodel.digg_digg.RegsGNRLsampleRate] TYPE_REG
-mwd a0020c50 A0020C54 00000200 //[m_regmodel.digg_digg.RegsGNRLtmplLength] TYPE_REG
-mwd a0020c54 A0020C58 00000001 //[m_regmodel.digg_digg.RegsGNRLsideLobeDir] TYPE_REG
-mwd a0020100 A0020104 00000001 //[m_regmodel.rast_rast.RegsRastCma64cntrsOnly] TYPE_REG
-mwd a002010c A0020110 0000113f //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
-mwd a0020110 A0020114 00000d82 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
-mwd a0020114 A0020118 00000007 //[m_regmodel.rast_rast.RegsRastCmaFiltMode] TYPE_REG
-mwd a002011c A0020120 00000001 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
-mwd a0020124 A0020128 00000ea9 //[m_regmodel.rast_rast.RegsRastDbgLobPerPcqPix] TYPE_REG
-mwd a0020128 A002012C 00000002 //[m_regmodel.rast_rast.RegsRastRngfndrEofPixCntr] TYPE_REG
-mwd a0020c58 A0020C5C 00000002 //[m_regmodel.rast_rast.RegsRASTbiltAdapt] TYPE_REG
-mwd a0020c5c A0020C60 558534ff //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_000] TYPE_REG
-mwd a0020c60 A0020C64 031b30e2 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_001] TYPE_REG
-mwd a0020c64 A0020C68 ff00c0ff //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_002] TYPE_REG
-mwd a0020c68 A0020C6C 87e5fbff //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_003] TYPE_REG
-mwd a0020c6c A0020C70 8fb99d03 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_004] TYPE_REG
-mwd a0020c70 A0020C74 983e3d6f //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_005] TYPE_REG
-mwd a0020c74 A0020C78 ffb042b9 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_006] TYPE_REG
-mwd a0020c78 A0020C7C ec81f1ae //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_007] TYPE_REG
-mwd a0020c7c A0020C80 ad07ffb6 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_008] TYPE_REG
-mwd a0020c80 A0020C84 21cc184b //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_009] TYPE_REG
-mwd a0020c84 A0020C88 22b5e225 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_010] TYPE_REG
-mwd a0020c88 A0020C8C 02117100 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_011] TYPE_REG
-mwd a0020c8c A0020C90 02ff4b00 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_012] TYPE_REG
-mwd a0020c90 A0020C94 f892ff49 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_013] TYPE_REG
-mwd a0020c94 A0020C98 a60fb5d6 //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_014] TYPE_REG
-mwd a0020c98 A0020C9C ec0fff0a //[m_regmodel.rast_rast.RegsRASTbiltAdaptR_015] TYPE_REG
-mwd a0020c9c A0020CA0 00000001 //[m_regmodel.rast_rast.RegsRASTbiltBypass] TYPE_REG
-mwd a0020ca0 A0020CA4 00000001 //[m_regmodel.rast_rast.RegsRASTbiltDiag] TYPE_REG
-mwd a0020ca4 A0020CA8 00000035 //[m_regmodel.rast_rast.RegsRASTbiltSharpnessR] TYPE_REG
-mwd a0020ca8 A0020CAC 0000002d //[m_regmodel.rast_rast.RegsRASTbiltSharpnessS] TYPE_REG
-mwd a0020cac A0020CB0 102d8257 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_000] TYPE_REG
-mwd a0020cb0 A0020CB4 487c21a1 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_001] TYPE_REG
-mwd a0020cb4 A0020CB8 7b000095 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_002] TYPE_REG
-mwd a0020cb8 A0020CBC f6007370 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_003] TYPE_REG
-mwd a0020cbc A0020CC0 c744a0d6 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_004] TYPE_REG
-mwd a0020cc0 A0020CC4 f5fbca4d //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_005] TYPE_REG
-mwd a0020cc4 A0020CC8 ee1bfa39 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_006] TYPE_REG
-mwd a0020cc8 A0020CCC 71bf0e77 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_007] TYPE_REG
-mwd a0020ccc A0020CD0 d79537ca //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_008] TYPE_REG
-mwd a0020cd0 A0020CD4 2d00fff1 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_009] TYPE_REG
-mwd a0020cd4 A0020CD8 d500f823 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_010] TYPE_REG
-mwd a0020cd8 A0020CDC 07971a68 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_011] TYPE_REG
-mwd a0020cdc A0020CE0 01d84a6b //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_012] TYPE_REG
-mwd a0020ce0 A0020CE4 ea002935 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_013] TYPE_REG
-mwd a0020ce4 A0020CE8 50320526 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_014] TYPE_REG
-mwd a0020ce8 A0020CEC af512af0 //[m_regmodel.rast_rast.RegsRASTbiltSigmoid_015] TYPE_REG
-mwd a0020cec A0020CF0 1b031f16 //[m_regmodel.rast_rast.RegsRASTbiltSpat_000] TYPE_REG
-mwd a0020cf0 A0020CF4 0e1d0516 //[m_regmodel.rast_rast.RegsRASTbiltSpat_001] TYPE_REG
-mwd a0020cf4 A0020CF8 170b1807 //[m_regmodel.rast_rast.RegsRASTbiltSpat_002] TYPE_REG
-mwd a0020cf8 A0020CFC 14021f17 //[m_regmodel.rast_rast.RegsRASTbiltSpat_003] TYPE_REG
-mwd a0020cfc A0020D00 101f1f1a //[m_regmodel.rast_rast.RegsRASTbiltSpat_004] TYPE_REG
-mwd a0020d00 A0020D04 0d000306 //[m_regmodel.rast_rast.RegsRASTbiltSpat_005] TYPE_REG
-mwd a0020d04 A0020D08 0116190e //[m_regmodel.rast_rast.RegsRASTbiltSpat_006] TYPE_REG
-mwd a0020d08 A0020D0C 0b0a1216 //[m_regmodel.rast_rast.RegsRASTbiltSpat_007] TYPE_REG
-mwd a0020d0c A0020D10 171f1715 //[m_regmodel.rast_rast.RegsRASTbiltSpat_008] TYPE_REG
-mwd a0020d10 A0020D14 1e0b0117 //[m_regmodel.rast_rast.RegsRASTbiltSpat_009] TYPE_REG
-mwd a0020d14 A0020D18 1f00101d //[m_regmodel.rast_rast.RegsRASTbiltSpat_010] TYPE_REG
-mwd a0020d18 A0020D1C 1f16100d //[m_regmodel.rast_rast.RegsRASTbiltSpat_011] TYPE_REG
-mwd a0020d1c A0020D20 1a0d1d13 //[m_regmodel.rast_rast.RegsRASTbiltSpat_012] TYPE_REG
-mwd a0020d20 A0020D24 1d00120c //[m_regmodel.rast_rast.RegsRASTbiltSpat_013] TYPE_REG
-mwd a0020d24 A0020D28 00000e0b //[m_regmodel.rast_rast.RegsRASTbiltSpat_014] TYPE_REG
-mwd a0020d28 A0020D2C 181d1612 //[m_regmodel.rast_rast.RegsRASTbiltSpat_015] TYPE_REG
-mwd a0020d30 A0020D34 000000f8 //[m_regmodel.rast_rast.RegsRASTcmaMask] TYPE_REG
-mwd a0020d38 A0020D3C 7510d2fb //[m_regmodel.rast_rast.RegsRASTconfDC_000] TYPE_REG
-mwd a0020d3c A0020D40 065aff61 //[m_regmodel.rast_rast.RegsRASTconfDC_001] TYPE_REG
-mwd a0020d40 A0020D44 d3d79509 //[m_regmodel.rast_rast.RegsRASTconfDC_002] TYPE_REG
-mwd a0020d44 A0020D48 80ad7f35 //[m_regmodel.rast_rast.RegsRASTconfDC_003] TYPE_REG
-mwd a0020d48 A0020D4C 03a1a5ff //[m_regmodel.rast_rast.RegsRASTconfDC_004] TYPE_REG
-mwd a0020d4c A0020D50 93494a0d //[m_regmodel.rast_rast.RegsRASTconfDC_005] TYPE_REG
-mwd a0020d50 A0020D54 85fc31f4 //[m_regmodel.rast_rast.RegsRASTconfDC_006] TYPE_REG
-mwd a0020d54 A0020D58 3fea6505 //[m_regmodel.rast_rast.RegsRASTconfDC_007] TYPE_REG
-mwd a0020d58 A0020D5C 00002000 //[m_regmodel.rast_rast.RegsRASTdcCodeNorm] TYPE_REG
-mwd a0020d5c A0020D60 003d3d3d //[m_regmodel.rast_rast.RegsRASTdcLevel] TYPE_REG
-mwd a0020d60 A0020D64 00000000 //[m_regmodel.rast_rast.RegsRASTdiscardLateChuncks] TYPE_REG
-mwd a0020d64 A0020D68 00000001 //[m_regmodel.rast_rast.RegsRASTinvalidateDiffTxRx] TYPE_REG
-mwd a0020d68 A0020D6C 00000000 //[m_regmodel.rast_rast.RegsRASTirDiscardsidelobes] TYPE_REG
-mwd a0020d6c A0020D70 00000001 //[m_regmodel.rast_rast.RegsRASTmmSide] TYPE_REG
-mwd a0020d70 A0020D74 00000000 //[m_regmodel.rast_rast.RegsRASToutIRmm] TYPE_REG
-mwd a0020d78 A0020D7C 00000040 //[m_regmodel.rast_rast.RegsRASTsharedDenom] TYPE_REG
-mwd a0020d7c A0020D80 00000006 //[m_regmodel.rast_rast.RegsRASTsharedDenomExp] TYPE_REG
-mwd a0020d80 A0020D84 0000002d //[m_regmodel.rast_rast.RegsRASTskipOnTxModeChange] TYPE_REG
-mwd a0020260 A0020264 000c0501 //[m_regmodel.dcor_dcor.RegsDcorLoopCtrl] TYPE_REG
-mwd a0020800 A0020804 00000000 //[m_regmodel.dcor_dcor.RegsDCORambLUTExp] TYPE_REG
-mwd a0020804 A0020808 f859c15b //[m_regmodel.dcor_dcor.RegsDCORambMap_000] TYPE_REG
-mwd a0020808 A002080C 9b635cb3 //[m_regmodel.dcor_dcor.RegsDCORambMap_001] TYPE_REG
-mwd a002080c A0020810 d4469fc1 //[m_regmodel.dcor_dcor.RegsDCORambMap_002] TYPE_REG
-mwd a0020810 A0020814 f9e69171 //[m_regmodel.dcor_dcor.RegsDCORambMap_003] TYPE_REG
-mwd a0020814 A0020818 856f35b5 //[m_regmodel.dcor_dcor.RegsDCORambMap_004] TYPE_REG
-mwd a0020818 A002081C 011032a7 //[m_regmodel.dcor_dcor.RegsDCORambMap_005] TYPE_REG
-mwd a002081c A0020820 0918b019 //[m_regmodel.dcor_dcor.RegsDCORambMap_006] TYPE_REG
-mwd a0020820 A0020824 9e7f27be //[m_regmodel.dcor_dcor.RegsDCORambMap_007] TYPE_REG
-mwd a0020824 A0020828 000007b1 //[m_regmodel.dcor_dcor.RegsDCORambStartLUT] TYPE_REG
-mwd a002088c A0020890 00000040 //[m_regmodel.dcor_dcor.RegsDCORcoarseTmplLength] TYPE_REG
-mwd a0020894 A0020898 00000008 //[m_regmodel.dcor_dcor.RegsDCORfineCorrRange] TYPE_REG
-mwd a0020898 A002089C 00000002 //[m_regmodel.dcor_dcor.RegsDCORirLUTExp] TYPE_REG
-mwd a002089c A00208A0 0fb9ce7b //[m_regmodel.dcor_dcor.RegsDCORirMap_000] TYPE_REG
-mwd a00208a0 A00208A4 8eca7402 //[m_regmodel.dcor_dcor.RegsDCORirMap_001] TYPE_REG
-mwd a00208a4 A00208A8 2da49079 //[m_regmodel.dcor_dcor.RegsDCORirMap_002] TYPE_REG
-mwd a00208a8 A00208AC cc989a3d //[m_regmodel.dcor_dcor.RegsDCORirMap_003] TYPE_REG
-mwd a00208ac A00208B0 dfdbb65a //[m_regmodel.dcor_dcor.RegsDCORirMap_004] TYPE_REG
-mwd a00208b0 A00208B4 d2d7b688 //[m_regmodel.dcor_dcor.RegsDCORirMap_005] TYPE_REG
-mwd a00208b4 A00208B8 adfa934d //[m_regmodel.dcor_dcor.RegsDCORirMap_006] TYPE_REG
-mwd a00208b8 A00208BC 79b0d64b //[m_regmodel.dcor_dcor.RegsDCORirMap_007] TYPE_REG
-mwd a00208bc A00208C0 00000585 //[m_regmodel.dcor_dcor.RegsDCORirStartLUT] TYPE_REG
-mwd a00208d0 A00208D4 0d0e1c38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_000] TYPE_REG
-mwd a00208d4 A00208D8 162f0c10 //[m_regmodel.dcor_dcor.RegsDCORpsnr_001] TYPE_REG
-mwd a00208d8 A00208DC 0008081b //[m_regmodel.dcor_dcor.RegsDCORpsnr_002] TYPE_REG
-mwd a00208dc A00208E0 2e19250e //[m_regmodel.dcor_dcor.RegsDCORpsnr_003] TYPE_REG
-mwd a00208e0 A00208E4 34183c0c //[m_regmodel.dcor_dcor.RegsDCORpsnr_004] TYPE_REG
-mwd a00208e4 A00208E8 08252e30 //[m_regmodel.dcor_dcor.RegsDCORpsnr_005] TYPE_REG
-mwd a00208e8 A00208EC 0b3d2f26 //[m_regmodel.dcor_dcor.RegsDCORpsnr_006] TYPE_REG
-mwd a00208ec A00208F0 133c2c34 //[m_regmodel.dcor_dcor.RegsDCORpsnr_007] TYPE_REG
-mwd a00208f0 A00208F4 153b231a //[m_regmodel.dcor_dcor.RegsDCORpsnr_008] TYPE_REG
-mwd a00208f4 A00208F8 1a113f1f //[m_regmodel.dcor_dcor.RegsDCORpsnr_009] TYPE_REG
-mwd a00208f8 A00208FC 0f172027 //[m_regmodel.dcor_dcor.RegsDCORpsnr_010] TYPE_REG
-mwd a00208fc A0020900 07091823 //[m_regmodel.dcor_dcor.RegsDCORpsnr_011] TYPE_REG
-mwd a0020900 A0020904 23270c2a //[m_regmodel.dcor_dcor.RegsDCORpsnr_012] TYPE_REG
-mwd a0020904 A0020908 0f2a1c2b //[m_regmodel.dcor_dcor.RegsDCORpsnr_013] TYPE_REG
-mwd a0020908 A002090C 192f230b //[m_regmodel.dcor_dcor.RegsDCORpsnr_014] TYPE_REG
-mwd a002090c A0020910 12351912 //[m_regmodel.dcor_dcor.RegsDCORpsnr_015] TYPE_REG
-mwd a0020910 A0020914 20270f14 //[m_regmodel.dcor_dcor.RegsDCORpsnr_016] TYPE_REG
-mwd a0020914 A0020918 33222922 //[m_regmodel.dcor_dcor.RegsDCORpsnr_017] TYPE_REG
-mwd a0020918 A002091C 3d222f13 //[m_regmodel.dcor_dcor.RegsDCORpsnr_018] TYPE_REG
-mwd a002091c A0020920 1f043635 //[m_regmodel.dcor_dcor.RegsDCORpsnr_019] TYPE_REG
-mwd a0020920 A0020924 0417012d //[m_regmodel.dcor_dcor.RegsDCORpsnr_020] TYPE_REG
-mwd a0020924 A0020928 210e3c38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_021] TYPE_REG
-mwd a0020928 A002092C 07293b12 //[m_regmodel.dcor_dcor.RegsDCORpsnr_022] TYPE_REG
-mwd a002092c A0020930 27170201 //[m_regmodel.dcor_dcor.RegsDCORpsnr_023] TYPE_REG
-mwd a0020930 A0020934 07212505 //[m_regmodel.dcor_dcor.RegsDCORpsnr_024] TYPE_REG
-mwd a0020934 A0020938 1911272c //[m_regmodel.dcor_dcor.RegsDCORpsnr_025] TYPE_REG
-mwd a0020938 A002093C 0c041b2c //[m_regmodel.dcor_dcor.RegsDCORpsnr_026] TYPE_REG
-mwd a002093c A0020940 1c2f3b2c //[m_regmodel.dcor_dcor.RegsDCORpsnr_027] TYPE_REG
-mwd a0020940 A0020944 3a291003 //[m_regmodel.dcor_dcor.RegsDCORpsnr_028] TYPE_REG
-mwd a0020944 A0020948 0d202109 //[m_regmodel.dcor_dcor.RegsDCORpsnr_029] TYPE_REG
-mwd a0020948 A002094C 090f322a //[m_regmodel.dcor_dcor.RegsDCORpsnr_030] TYPE_REG
-mwd a002094c A0020950 2306190d //[m_regmodel.dcor_dcor.RegsDCORpsnr_031] TYPE_REG
-mwd a0020950 A0020954 11150615 //[m_regmodel.dcor_dcor.RegsDCORpsnr_032] TYPE_REG
-mwd a0020954 A0020958 2314181c //[m_regmodel.dcor_dcor.RegsDCORpsnr_033] TYPE_REG
-mwd a0020958 A002095C 00380d38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_034] TYPE_REG
-mwd a002095c A0020960 342f1a3e //[m_regmodel.dcor_dcor.RegsDCORpsnr_035] TYPE_REG
-mwd a0020960 A0020964 24183437 //[m_regmodel.dcor_dcor.RegsDCORpsnr_036] TYPE_REG
-mwd a0020964 A0020968 14000e1b //[m_regmodel.dcor_dcor.RegsDCORpsnr_037] TYPE_REG
-mwd a0020968 A002096C 27211c1a //[m_regmodel.dcor_dcor.RegsDCORpsnr_038] TYPE_REG
-mwd a002096c A0020970 153d303c //[m_regmodel.dcor_dcor.RegsDCORpsnr_039] TYPE_REG
-mwd a0020970 A0020974 3b032f1e //[m_regmodel.dcor_dcor.RegsDCORpsnr_040] TYPE_REG
-mwd a0020974 A0020978 293e1e0d //[m_regmodel.dcor_dcor.RegsDCORpsnr_041] TYPE_REG
-mwd a0020978 A002097C 2f082630 //[m_regmodel.dcor_dcor.RegsDCORpsnr_042] TYPE_REG
-mwd a002097c A0020980 260d1603 //[m_regmodel.dcor_dcor.RegsDCORpsnr_043] TYPE_REG
-mwd a0020980 A0020984 22200b38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_044] TYPE_REG
-mwd a0020984 A0020988 27132220 //[m_regmodel.dcor_dcor.RegsDCORpsnr_045] TYPE_REG
-mwd a0020988 A002098C 3c26350d //[m_regmodel.dcor_dcor.RegsDCORpsnr_046] TYPE_REG
-mwd a002098c A0020990 39270f14 //[m_regmodel.dcor_dcor.RegsDCORpsnr_047] TYPE_REG
-mwd a0020990 A0020994 0a001d33 //[m_regmodel.dcor_dcor.RegsDCORpsnr_048] TYPE_REG
-mwd a0020994 A0020998 0b1b2c11 //[m_regmodel.dcor_dcor.RegsDCORpsnr_049] TYPE_REG
-mwd a0020998 A002099C 030d100f //[m_regmodel.dcor_dcor.RegsDCORpsnr_050] TYPE_REG
-mwd a002099c A00209A0 3a082013 //[m_regmodel.dcor_dcor.RegsDCORpsnr_051] TYPE_REG
-mwd a00209a0 A00209A4 1d270e09 //[m_regmodel.dcor_dcor.RegsDCORpsnr_052] TYPE_REG
-mwd a00209a4 A00209A8 2c202a05 //[m_regmodel.dcor_dcor.RegsDCORpsnr_053] TYPE_REG
-mwd a00209a8 A00209AC 01120330 //[m_regmodel.dcor_dcor.RegsDCORpsnr_054] TYPE_REG
-mwd a00209ac A00209B0 38120b35 //[m_regmodel.dcor_dcor.RegsDCORpsnr_055] TYPE_REG
-mwd a00209b0 A00209B4 07251132 //[m_regmodel.dcor_dcor.RegsDCORpsnr_056] TYPE_REG
-mwd a00209b4 A00209B8 29323d02 //[m_regmodel.dcor_dcor.RegsDCORpsnr_057] TYPE_REG
-mwd a00209b8 A00209BC 383c1321 //[m_regmodel.dcor_dcor.RegsDCORpsnr_058] TYPE_REG
-mwd a00209bc A00209C0 0b3b042b //[m_regmodel.dcor_dcor.RegsDCORpsnr_059] TYPE_REG
-mwd a00209c0 A00209C4 1a282005 //[m_regmodel.dcor_dcor.RegsDCORpsnr_060] TYPE_REG
-mwd a00209c4 A00209C8 05380c2f //[m_regmodel.dcor_dcor.RegsDCORpsnr_061] TYPE_REG
-mwd a00209c8 A00209CC 393d0e0c //[m_regmodel.dcor_dcor.RegsDCORpsnr_062] TYPE_REG
-mwd a00209cc A00209D0 2817052f //[m_regmodel.dcor_dcor.RegsDCORpsnr_063] TYPE_REG
-mwd a00209f0 A00209F4 00000001 //[m_regmodel.dcor_dcor.RegsDCORtmplMode] TYPE_REG
-mwd a00209f8 A00209FC 00000000 //[m_regmodel.dcor_dcor.RegsDCORyScalerDivExp] TYPE_REG
-mwd a00e0848 A00E084C 00001292 //[m_regmodel.dest_dest.RegsDESTaltIrDiv] TYPE_REG
-mwd a00e0850 A00E0854 0000dc80 //[m_regmodel.dest_dest.RegsDESTaltIrSub] TYPE_REG
-mwd a00e0858 A00E085C 42ff29eb //[m_regmodel.dest_dest.RegsDESTambiguityMinRTD] TYPE_REG
-mwd a00e085c A00E0860 4695d9ba //[m_regmodel.dest_dest.RegsDESTambiguityRTD_000] TYPE_REG
-mwd a00e0860 A00E0864 4715d9d3 //[m_regmodel.dest_dest.RegsDESTambiguityRTD_001] TYPE_REG
-mwd a00e0864 A00E0868 4795d9e0 //[m_regmodel.dest_dest.RegsDESTambiguityRTD_002] TYPE_REG
-mwd a00e0868 A00E086C 4147cdec //[m_regmodel.dest_dest.RegsDESTbaseline] TYPE_REG
-mwd a00e086c A00E0870 431bf1cb //[m_regmodel.dest_dest.RegsDESTbaseline2] TYPE_REG
-mwd a00e0874 A00E0878 00000006 //[m_regmodel.dest_dest.RegsDESTconfIRbitshift] TYPE_REG
-mwd a00e0878 A00E087C 3fc00000 //[m_regmodel.dest_dest.RegsDESTconfactIn] TYPE_REG
-mwd a00e087c A00E0880 000f0000 //[m_regmodel.dest_dest.RegsDESTconfactOt] TYPE_REG
-mwd a00e0884 A00E0888 007f0000 //[m_regmodel.dest_dest.RegsDESTconfv] TYPE_REG
-mwd a00e0888 A00E088C 1e230001 //[m_regmodel.dest_dest.RegsDESTconfw1] TYPE_REG
-mwd a00e08a0 A00E08A4 00000048 //[m_regmodel.dest_dest.RegsDESTmaxvalDiv] TYPE_REG
-mwd a00e08a4 A00E08A8 000000f8 //[m_regmodel.dest_dest.RegsDESTmaxvalSub] TYPE_REG
-mwd a00e08a8 A00E08AC 3fb9feb1 //[m_regmodel.dest_dest.RegsDESTp2axa] TYPE_REG
-mwd a00e08b0 A00E08B4 00000000 //[m_regmodel.dest_dest.RegsDESTp2aya] TYPE_REG
-mwd a00e08b4 A00E08B8 00000000 //[m_regmodel.dest_dest.RegsDESTp2ayb] TYPE_REG
-mwd a00e08b8 A00E08BC 002001e0 //[m_regmodel.dest_dest.RegsDESTrxPWRpdLUTfactor] TYPE_REG
-mwd a00e08bc A00E08C0 3feddf91 //[m_regmodel.dest_dest.RegsDESTrxPWRpdScale_000] TYPE_REG
-mwd a00e08c0 A00E08C4 41200000 //[m_regmodel.dest_dest.RegsDESTrxPWRpdScale_001] TYPE_REG
-mwd a00e08c4 A00E08C8 3fa2ad67 //[m_regmodel.dest_dest.RegsDESTrxPWRpdScale_002] TYPE_REG
-mwd a00e08c8 A00E08CC 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_000] TYPE_REG
-mwd a00e08cc A00E08D0 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_001] TYPE_REG
-mwd a00e08d0 A00E08D4 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_002] TYPE_REG
-mwd a00e08d4 A00E08D8 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_003] TYPE_REG
-mwd a00e08d8 A00E08DC 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_004] TYPE_REG
-mwd a00e08dc A00E08E0 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_005] TYPE_REG
-mwd a00e08e0 A00E08E4 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_006] TYPE_REG
-mwd a00e08e4 A00E08E8 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_007] TYPE_REG
-mwd a00e08e8 A00E08EC 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_008] TYPE_REG
-mwd a00e08ec A00E08F0 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_009] TYPE_REG
-mwd a00e08f0 A00E08F4 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_010] TYPE_REG
-mwd a00e08f4 A00E08F8 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_011] TYPE_REG
-mwd a00e08f8 A00E08FC 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_012] TYPE_REG
-mwd a00e08fc A00E0900 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_013] TYPE_REG
-mwd a00e0900 A00E0904 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_014] TYPE_REG
-mwd a00e0904 A00E0908 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_015] TYPE_REG
-mwd a00e0908 A00E090C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_016] TYPE_REG
-mwd a00e090c A00E0910 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_017] TYPE_REG
-mwd a00e0910 A00E0914 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_018] TYPE_REG
-mwd a00e0914 A00E0918 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_019] TYPE_REG
-mwd a00e0918 A00E091C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_020] TYPE_REG
-mwd a00e091c A00E0920 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_021] TYPE_REG
-mwd a00e0920 A00E0924 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_022] TYPE_REG
-mwd a00e0924 A00E0928 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_023] TYPE_REG
-mwd a00e0928 A00E092C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_024] TYPE_REG
-mwd a00e092c A00E0930 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_025] TYPE_REG
-mwd a00e0930 A00E0934 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_026] TYPE_REG
-mwd a00e0934 A00E0938 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_027] TYPE_REG
-mwd a00e0938 A00E093C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_028] TYPE_REG
-mwd a00e093c A00E0940 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_029] TYPE_REG
-mwd a00e0940 A00E0944 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_030] TYPE_REG
-mwd a00e0944 A00E0948 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_031] TYPE_REG
-mwd a00e0948 A00E094C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_032] TYPE_REG
-mwd a00e094c A00E0950 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_033] TYPE_REG
-mwd a00e0950 A00E0954 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_034] TYPE_REG
-mwd a00e0954 A00E0958 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_035] TYPE_REG
-mwd a00e0958 A00E095C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_036] TYPE_REG
-mwd a00e095c A00E0960 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_037] TYPE_REG
-mwd a00e0960 A00E0964 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_038] TYPE_REG
-mwd a00e0964 A00E0968 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_039] TYPE_REG
-mwd a00e0968 A00E096C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_040] TYPE_REG
-mwd a00e096c A00E0970 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_041] TYPE_REG
-mwd a00e0970 A00E0974 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_042] TYPE_REG
-mwd a00e0974 A00E0978 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_043] TYPE_REG
-mwd a00e0978 A00E097C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_044] TYPE_REG
-mwd a00e097c A00E0980 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_045] TYPE_REG
-mwd a00e0980 A00E0984 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_046] TYPE_REG
-mwd a00e0984 A00E0988 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_047] TYPE_REG
-mwd a00e0988 A00E098C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_048] TYPE_REG
-mwd a00e098c A00E0990 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_049] TYPE_REG
-mwd a00e0990 A00E0994 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_050] TYPE_REG
-mwd a00e0994 A00E0998 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_051] TYPE_REG
-mwd a00e0998 A00E099C 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_052] TYPE_REG
-mwd a00e099c A00E09A0 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_053] TYPE_REG
-mwd a00e09a0 A00E09A4 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_054] TYPE_REG
-mwd a00e09a4 A00E09A8 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_055] TYPE_REG
-mwd a00e09a8 A00E09AC 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_056] TYPE_REG
-mwd a00e09ac A00E09B0 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_057] TYPE_REG
-mwd a00e09b0 A00E09B4 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_058] TYPE_REG
-mwd a00e09b4 A00E09B8 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_059] TYPE_REG
-mwd a00e09b8 A00E09BC 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_060] TYPE_REG
-mwd a00e09bc A00E09C0 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_061] TYPE_REG
-mwd a00e09c0 A00E09C4 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_062] TYPE_REG
-mwd a00e09c4 A00E09C8 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_063] TYPE_REG
-mwd a00e09c8 A00E09CC 3bc456c2 //[m_regmodel.dest_dest.RegsDESTrxPWRpd_064] TYPE_REG
-mwd a00e09cc A00E09D0 4215d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_000] TYPE_REG
-mwd a00e09d0 A00E09D4 4295d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_001] TYPE_REG
-mwd a00e09d4 A00E09D8 4315d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_002] TYPE_REG
-mwd a00e09d8 A00E09DC 0908160a //[m_regmodel.dest_dest.RegsDESTsmoothKerLen] TYPE_REG
-mwd a00e09f0 A00E09F4 00004000 //[m_regmodel.dest_dest.RegsDESTtxPWRpdLUTfactor] TYPE_REG
-mwd a00e09f4 A00E09F8 41140bb1 //[m_regmodel.dest_dest.RegsDESTtxPWRpdScale_000] TYPE_REG
-mwd a00e09f8 A00E09FC 41200000 //[m_regmodel.dest_dest.RegsDESTtxPWRpdScale_001] TYPE_REG
-mwd a00e09fc A00E0A00 408992c9 //[m_regmodel.dest_dest.RegsDESTtxPWRpdScale_002] TYPE_REG
-mwd a00e0a00 A00E0A04 bb6894b8 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_000] TYPE_REG
-mwd a00e0a04 A00E0A08 ba1256d6 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_001] TYPE_REG
-mwd a00e0a08 A00E0A0C b78b41d8 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_002] TYPE_REG
-mwd a00e0a0c A00E0A10 b3a887c3 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_003] TYPE_REG
-mwd a00e0a10 A00E0A14 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_004] TYPE_REG
-mwd a00e0a14 A00E0A18 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_005] TYPE_REG
-mwd a00e0a18 A00E0A1C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_006] TYPE_REG
-mwd a00e0a1c A00E0A20 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_007] TYPE_REG
-mwd a00e0a20 A00E0A24 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_008] TYPE_REG
-mwd a00e0a24 A00E0A28 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_009] TYPE_REG
-mwd a00e0a28 A00E0A2C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_010] TYPE_REG
-mwd a00e0a2c A00E0A30 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_011] TYPE_REG
-mwd a00e0a30 A00E0A34 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_012] TYPE_REG
-mwd a00e0a34 A00E0A38 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_013] TYPE_REG
-mwd a00e0a38 A00E0A3C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_014] TYPE_REG
-mwd a00e0a3c A00E0A40 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_015] TYPE_REG
-mwd a00e0a40 A00E0A44 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_016] TYPE_REG
-mwd a00e0a44 A00E0A48 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_017] TYPE_REG
-mwd a00e0a48 A00E0A4C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_018] TYPE_REG
-mwd a00e0a4c A00E0A50 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_019] TYPE_REG
-mwd a00e0a50 A00E0A54 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_020] TYPE_REG
-mwd a00e0a54 A00E0A58 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_021] TYPE_REG
-mwd a00e0a58 A00E0A5C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_022] TYPE_REG
-mwd a00e0a5c A00E0A60 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_023] TYPE_REG
-mwd a00e0a60 A00E0A64 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_024] TYPE_REG
-mwd a00e0a64 A00E0A68 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_025] TYPE_REG
-mwd a00e0a68 A00E0A6C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_026] TYPE_REG
-mwd a00e0a6c A00E0A70 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_027] TYPE_REG
-mwd a00e0a70 A00E0A74 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_028] TYPE_REG
-mwd a00e0a74 A00E0A78 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_029] TYPE_REG
-mwd a00e0a78 A00E0A7C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_030] TYPE_REG
-mwd a00e0a7c A00E0A80 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_031] TYPE_REG
-mwd a00e0a80 A00E0A84 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_032] TYPE_REG
-mwd a00e0a84 A00E0A88 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_033] TYPE_REG
-mwd a00e0a88 A00E0A8C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_034] TYPE_REG
-mwd a00e0a8c A00E0A90 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_035] TYPE_REG
-mwd a00e0a90 A00E0A94 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_036] TYPE_REG
-mwd a00e0a94 A00E0A98 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_037] TYPE_REG
-mwd a00e0a98 A00E0A9C 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_038] TYPE_REG
-mwd a00e0a9c A00E0AA0 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_039] TYPE_REG
-mwd a00e0aa0 A00E0AA4 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_040] TYPE_REG
-mwd a00e0aa4 A00E0AA8 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_041] TYPE_REG
-mwd a00e0aa8 A00E0AAC 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_042] TYPE_REG
-mwd a00e0aac A00E0AB0 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_043] TYPE_REG
-mwd a00e0ab0 A00E0AB4 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_044] TYPE_REG
-mwd a00e0ab4 A00E0AB8 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_045] TYPE_REG
-mwd a00e0ab8 A00E0ABC 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_046] TYPE_REG
-mwd a00e0abc A00E0AC0 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_047] TYPE_REG
-mwd a00e0ac0 A00E0AC4 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_048] TYPE_REG
-mwd a00e0ac4 A00E0AC8 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_049] TYPE_REG
-mwd a00e0ac8 A00E0ACC 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_050] TYPE_REG
-mwd a00e0acc A00E0AD0 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_051] TYPE_REG
-mwd a00e0ad0 A00E0AD4 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_052] TYPE_REG
-mwd a00e0ad4 A00E0AD8 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_053] TYPE_REG
-mwd a00e0ad8 A00E0ADC 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_054] TYPE_REG
-mwd a00e0adc A00E0AE0 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_055] TYPE_REG
-mwd a00e0ae0 A00E0AE4 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_056] TYPE_REG
-mwd a00e0ae4 A00E0AE8 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_057] TYPE_REG
-mwd a00e0ae8 A00E0AEC 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_058] TYPE_REG
-mwd a00e0aec A00E0AF0 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_059] TYPE_REG
-mwd a00e0af0 A00E0AF4 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_060] TYPE_REG
-mwd a00e0af4 A00E0AF8 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_061] TYPE_REG
-mwd a00e0af8 A00E0AFC 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_062] TYPE_REG
-mwd a00e0afc A00E0B00 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_063] TYPE_REG
-mwd a00e0b00 A00E0B04 80000000 //[m_regmodel.dest_dest.RegsDESTtxPWRpd_064] TYPE_REG
-mwd a00e0b04 A00E0B08 00000001 //[m_regmodel.dest_dest.RegsGNRLzMaxSubMMExp] TYPE_REG
-mwd a00e0b08 A00E0B0C 40000000 //[m_regmodel.dest_dest.RegsGNRLzNorm] TYPE_REG
-mwd a00e0080 A00E0084 00000003 //[m_regmodel.cbuf_cbuf.RegsCbufMemSize] TYPE_REG
-mwd a00e0800 A00E0804 00000001 //[m_regmodel.cbuf_cbuf.RegsCBUFbypass] TYPE_REG
-mwd a00e0824 A00E0828 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxBitShifts] TYPE_REG
-mwd a00e0828 A00E082C 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_000] TYPE_REG
-mwd a00e082c A00E0830 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_001] TYPE_REG
-mwd a00e0830 A00E0834 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_002] TYPE_REG
-mwd a00e0834 A00E0838 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_003] TYPE_REG
-mwd a00e0838 A00E083C 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_004] TYPE_REG
-mwd a00e083c A00E0840 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_005] TYPE_REG
-mwd a00e0840 A00E0844 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_006] TYPE_REG
-mwd a00e0844 A00E0848 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_007] TYPE_REG
-mwd a00e0f00 a00e0f04 00000000 // JFILbypass
-mwd a00e1bc8 A00E1BCC 0000000a //[m_regmodel.jfil_jfil.RegsPCKRprivacyC] TYPE_REG
-mwd a00e1bd0 A00E1BD4 00000097 //[m_regmodel.jfil_jfil.RegsPCKRprivacyI] TYPE_REG
-mwd a00e1bd4 A00E1BD8 0000636c //[m_regmodel.jfil_jfil.RegsPCKRprivacyZ] TYPE_REG
-mwd a0020260 A0020264 00070301 //[m_regmodel.dcor_dcor.RegsDcorLoopCtrl] TYPE_REG
-mwd a0020104 A0020108 00000002 //[m_regmodel.rast_rast.RegsRastCmaMemMode] TYPE_REG
-mwd a002010c A0020110 00001f00 //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
-mwd a0020110 A0020114 00001f00 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
-mwd a002011c A0020120 00000000 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
-mwd a0020af8 A0020AFC fff0ffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_000] TYPE_REG
-mwd a0020afc A0020B00 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_001] TYPE_REG
-mwd a0020b00 A0020B04 ffff12ff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_002] TYPE_REG
-mwd a0020b04 A0020B08 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_003] TYPE_REG
-mwd a0020b08 A0020B0C ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_004] TYPE_REG
-mwd a0020b0c A0020B10 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_005] TYPE_REG
-mwd a0020b10 A0020B14 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_006] TYPE_REG
-mwd a0020b14 A0020B18 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_007] TYPE_REG
-mwd a00d01f4 A00D01F8 000001f8 //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG
+apbw a00e0600 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeEn] TYPE_REG
+apbw a0020034 00000004 //[m_regmodel.digg_digg.RegsDiggCBits] TYPE_REG
+apbw a00e05e4 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeDataMode] TYPE_REG
+apbw a0020a50 00000000 //[m_regmodel.digg_digg.RegsDIGGdx2] TYPE_REG
+apbw a00e05ec 0000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
+apbw a0020a54 00000000 //[m_regmodel.digg_digg.RegsDIGGdx3] TYPE_REG
+apbw a00e05ec 1000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
+apbw a0020a5c 00000000 //[m_regmodel.digg_digg.RegsDIGGdy2] TYPE_REG
+apbw a0020a60 00000000 //[m_regmodel.digg_digg.RegsDIGGdy3] TYPE_REG
+apbw a0020a6c 03340334 //[m_regmodel.digg_digg.RegsDIGGgammaScale] TYPE_REG
+
+
+apbw a0020ba8 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_000] TYPE_REG
+apbw a0020bac 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_001] TYPE_REG
+apbw a0020bb0 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_002] TYPE_REG
+apbw a0020bc4 00000000 //[m_regmodel.digg_digg.RegsDIGGny_001] TYPE_REG
+apbw a0020bc8 00000000 //[m_regmodel.digg_digg.RegsDIGGny_002] TYPE_REG
+apbw a0020bcc 00000000 //[m_regmodel.digg_digg.RegsDIGGny_003] TYPE_REG
+apbw a0020bd0 00000000 //[m_regmodel.digg_digg.RegsDIGGny_004] TYPE_REG
+apbw a0020bfc 00010004 //[m_regmodel.digg_digg.RegsDIGGsphericalOffset] TYPE_REG
+apbw a0020c00 ffff0002 //[m_regmodel.digg_digg.RegsDIGGsphericalScale] TYPE_REG
+apbw a0020c38 00000fff //[m_regmodel.digg_digg.RegsDIGGycrossThr] TYPE_REG
+apbw a0020c3c 00000040 //[m_regmodel.digg_digg.RegsGNRLcodeLength] TYPE_REG
+apbw a0020c40 00000002 //[m_regmodel.digg_digg.RegsGNRLimgHsize] TYPE_REG
+apbw a0020c44 00000001 //[m_regmodel.digg_digg.RegsGNRLimgVsize] TYPE_REG
+apbw a0020c48 00000001 //[m_regmodel.digg_digg.RegsGNRLrangeFinder] TYPE_REG
+apbw a0020c4c 00000008 //[m_regmodel.digg_digg.RegsGNRLsampleRate] TYPE_REG
+apbw a0020c50 00000200 //[m_regmodel.digg_digg.RegsGNRLtmplLength] TYPE_REG
+apbw a0020c54 00000001 //[m_regmodel.digg_digg.RegsGNRLsideLobeDir] TYPE_REG
+////apbw a0020100 00000001 //[m_regmodel.rast_rast.RegsRastCma64cntrsOnly] TYPE_REG
+apbw a002010c 0000113f //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
+apbw a0020110 00000d82 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
+apbw a0020114 00000007 //[m_regmodel.rast_rast.RegsRastCmaFiltMode] TYPE_REG
+apbw a002011c 00000001 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
+apbw a0020124 00000ea9 //[m_regmodel.rast_rast.RegsRastDbgLobPerPcqPix] TYPE_REG
+apbw a0020128 00000002 //[m_regmodel.rast_rast.RegsRastRngfndrEofPixCntr] TYPE_REG
+apbw a0020c9c 00000001 //[m_regmodel.rast_rast.RegsRASTbiltBypass] TYPE_REG
+
+apbw a0020d58 00002000 //[m_regmodel.rast_rast.RegsRASTdcCodeNorm] TYPE_REG
+apbw a0020d5c 003d3d3d //[m_regmodel.rast_rast.RegsRASTdcLevel] TYPE_REG
+apbw a0020d60 00000000 //[m_regmodel.rast_rast.RegsRASTdiscardLateChuncks] TYPE_REG
+////apbw a0020d64 00000001 //[m_regmodel.rast_rast.RegsRASTinvalidateDiffTxRx] TYPE_REG
+apbw a0020d68 00000000 //[m_regmodel.rast_rast.RegsRASTirDiscardsidelobes] TYPE_REG
+apbw a0020d6c 00000001 //[m_regmodel.rast_rast.RegsRASTmmSide] TYPE_REG
+apbw a0020d70 00000000 //[m_regmodel.rast_rast.RegsRASToutIRmm] TYPE_REG
+apbw a0020d78 00000040 //[m_regmodel.rast_rast.RegsRASTsharedDenom] TYPE_REG
+apbw a0020d7c 00000006 //[m_regmodel.rast_rast.RegsRASTsharedDenomExp] TYPE_REG
+apbw a0020d80 0000002d //[m_regmodel.rast_rast.RegsRASTskipOnTxModeChange] TYPE_REG
+apbw a0020260 000c0501 //[m_regmodel.dcor_dcor.RegsDcorLoopCtrl] TYPE_REG
+apbw a0020800 00000000 //[m_regmodel.dcor_dcor.RegsDCORambLUTExp] TYPE_REG
+apbw a0020804 f859c15b //[m_regmodel.dcor_dcor.RegsDCORambMap_000] TYPE_REG
+apbw a0020808 9b635cb3 //[m_regmodel.dcor_dcor.RegsDCORambMap_001] TYPE_REG
+apbw a002080c d4469fc1 //[m_regmodel.dcor_dcor.RegsDCORambMap_002] TYPE_REG
+apbw a0020810 f9e69171 //[m_regmodel.dcor_dcor.RegsDCORambMap_003] TYPE_REG
+apbw a0020814 856f35b5 //[m_regmodel.dcor_dcor.RegsDCORambMap_004] TYPE_REG
+apbw a0020818 011032a7 //[m_regmodel.dcor_dcor.RegsDCORambMap_005] TYPE_REG
+apbw a002081c 0918b019 //[m_regmodel.dcor_dcor.RegsDCORambMap_006] TYPE_REG
+apbw a0020820 9e7f27be //[m_regmodel.dcor_dcor.RegsDCORambMap_007] TYPE_REG
+apbw a0020824 000007b1 //[m_regmodel.dcor_dcor.RegsDCORambStartLUT] TYPE_REG
+apbw a002088c 00000040 //[m_regmodel.dcor_dcor.RegsDCORcoarseTmplLength] TYPE_REG
+////apbw a0020894 00000008 //[m_regmodel.dcor_dcor.RegsDCORfineCorrRange] TYPE_REG
+apbw a0020898 00000002 //[m_regmodel.dcor_dcor.RegsDCORirLUTExp] TYPE_REG
+apbw a002089c 0fb9ce7b //[m_regmodel.dcor_dcor.RegsDCORirMap_000] TYPE_REG
+apbw a00208a0 8eca7402 //[m_regmodel.dcor_dcor.RegsDCORirMap_001] TYPE_REG
+apbw a00208a4 2da49079 //[m_regmodel.dcor_dcor.RegsDCORirMap_002] TYPE_REG
+apbw a00208a8 cc989a3d //[m_regmodel.dcor_dcor.RegsDCORirMap_003] TYPE_REG
+apbw a00208ac dfdbb65a //[m_regmodel.dcor_dcor.RegsDCORirMap_004] TYPE_REG
+apbw a00208b0 d2d7b688 //[m_regmodel.dcor_dcor.RegsDCORirMap_005] TYPE_REG
+apbw a00208b4 adfa934d //[m_regmodel.dcor_dcor.RegsDCORirMap_006] TYPE_REG
+apbw a00208b8 79b0d64b //[m_regmodel.dcor_dcor.RegsDCORirMap_007] TYPE_REG
+apbw a00208bc 00000585 //[m_regmodel.dcor_dcor.RegsDCORirStartLUT] TYPE_REG
+apbw a00208d0 0d0e1c38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_000] TYPE_REG
+apbw a00208d4 162f0c10 //[m_regmodel.dcor_dcor.RegsDCORpsnr_001] TYPE_REG
+apbw a00208d8 0008081b //[m_regmodel.dcor_dcor.RegsDCORpsnr_002] TYPE_REG
+apbw a00208dc 2e19250e //[m_regmodel.dcor_dcor.RegsDCORpsnr_003] TYPE_REG
+apbw a00208e0 34183c0c //[m_regmodel.dcor_dcor.RegsDCORpsnr_004] TYPE_REG
+apbw a00208e4 08252e30 //[m_regmodel.dcor_dcor.RegsDCORpsnr_005] TYPE_REG
+apbw a00208e8 0b3d2f26 //[m_regmodel.dcor_dcor.RegsDCORpsnr_006] TYPE_REG
+apbw a00208ec 133c2c34 //[m_regmodel.dcor_dcor.RegsDCORpsnr_007] TYPE_REG
+apbw a00208f0 153b231a //[m_regmodel.dcor_dcor.RegsDCORpsnr_008] TYPE_REG
+apbw a00208f4 1a113f1f //[m_regmodel.dcor_dcor.RegsDCORpsnr_009] TYPE_REG
+apbw a00208f8 0f172027 //[m_regmodel.dcor_dcor.RegsDCORpsnr_010] TYPE_REG
+apbw a00208fc 07091823 //[m_regmodel.dcor_dcor.RegsDCORpsnr_011] TYPE_REG
+apbw a0020900 23270c2a //[m_regmodel.dcor_dcor.RegsDCORpsnr_012] TYPE_REG
+apbw a0020904 0f2a1c2b //[m_regmodel.dcor_dcor.RegsDCORpsnr_013] TYPE_REG
+apbw a0020908 192f230b //[m_regmodel.dcor_dcor.RegsDCORpsnr_014] TYPE_REG
+apbw a002090c 12351912 //[m_regmodel.dcor_dcor.RegsDCORpsnr_015] TYPE_REG
+apbw a0020910 20270f14 //[m_regmodel.dcor_dcor.RegsDCORpsnr_016] TYPE_REG
+apbw a0020914 33222922 //[m_regmodel.dcor_dcor.RegsDCORpsnr_017] TYPE_REG
+apbw a0020918 3d222f13 //[m_regmodel.dcor_dcor.RegsDCORpsnr_018] TYPE_REG
+apbw a002091c 1f043635 //[m_regmodel.dcor_dcor.RegsDCORpsnr_019] TYPE_REG
+apbw a0020920 0417012d //[m_regmodel.dcor_dcor.RegsDCORpsnr_020] TYPE_REG
+apbw a0020924 210e3c38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_021] TYPE_REG
+apbw a0020928 07293b12 //[m_regmodel.dcor_dcor.RegsDCORpsnr_022] TYPE_REG
+apbw a002092c 27170201 //[m_regmodel.dcor_dcor.RegsDCORpsnr_023] TYPE_REG
+apbw a0020930 07212505 //[m_regmodel.dcor_dcor.RegsDCORpsnr_024] TYPE_REG
+apbw a0020934 1911272c //[m_regmodel.dcor_dcor.RegsDCORpsnr_025] TYPE_REG
+apbw a0020938 0c041b2c //[m_regmodel.dcor_dcor.RegsDCORpsnr_026] TYPE_REG
+apbw a002093c 1c2f3b2c //[m_regmodel.dcor_dcor.RegsDCORpsnr_027] TYPE_REG
+apbw a0020940 3a291003 //[m_regmodel.dcor_dcor.RegsDCORpsnr_028] TYPE_REG
+apbw a0020944 0d202109 //[m_regmodel.dcor_dcor.RegsDCORpsnr_029] TYPE_REG
+apbw a0020948 090f322a //[m_regmodel.dcor_dcor.RegsDCORpsnr_030] TYPE_REG
+apbw a002094c 2306190d //[m_regmodel.dcor_dcor.RegsDCORpsnr_031] TYPE_REG
+apbw a0020950 11150615 //[m_regmodel.dcor_dcor.RegsDCORpsnr_032] TYPE_REG
+apbw a0020954 2314181c //[m_regmodel.dcor_dcor.RegsDCORpsnr_033] TYPE_REG
+apbw a0020958 00380d38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_034] TYPE_REG
+apbw a002095c 342f1a3e //[m_regmodel.dcor_dcor.RegsDCORpsnr_035] TYPE_REG
+apbw a0020960 24183437 //[m_regmodel.dcor_dcor.RegsDCORpsnr_036] TYPE_REG
+apbw a0020964 14000e1b //[m_regmodel.dcor_dcor.RegsDCORpsnr_037] TYPE_REG
+apbw a0020968 27211c1a //[m_regmodel.dcor_dcor.RegsDCORpsnr_038] TYPE_REG
+apbw a002096c 153d303c //[m_regmodel.dcor_dcor.RegsDCORpsnr_039] TYPE_REG
+apbw a0020970 3b032f1e //[m_regmodel.dcor_dcor.RegsDCORpsnr_040] TYPE_REG
+apbw a0020974 293e1e0d //[m_regmodel.dcor_dcor.RegsDCORpsnr_041] TYPE_REG
+apbw a0020978 2f082630 //[m_regmodel.dcor_dcor.RegsDCORpsnr_042] TYPE_REG
+apbw a002097c 260d1603 //[m_regmodel.dcor_dcor.RegsDCORpsnr_043] TYPE_REG
+apbw a0020980 22200b38 //[m_regmodel.dcor_dcor.RegsDCORpsnr_044] TYPE_REG
+apbw a0020984 27132220 //[m_regmodel.dcor_dcor.RegsDCORpsnr_045] TYPE_REG
+apbw a0020988 3c26350d //[m_regmodel.dcor_dcor.RegsDCORpsnr_046] TYPE_REG
+apbw a002098c 39270f14 //[m_regmodel.dcor_dcor.RegsDCORpsnr_047] TYPE_REG
+apbw a0020990 0a001d33 //[m_regmodel.dcor_dcor.RegsDCORpsnr_048] TYPE_REG
+apbw a0020994 0b1b2c11 //[m_regmodel.dcor_dcor.RegsDCORpsnr_049] TYPE_REG
+apbw a0020998 030d100f //[m_regmodel.dcor_dcor.RegsDCORpsnr_050] TYPE_REG
+apbw a002099c 3a082013 //[m_regmodel.dcor_dcor.RegsDCORpsnr_051] TYPE_REG
+apbw a00209a0 1d270e09 //[m_regmodel.dcor_dcor.RegsDCORpsnr_052] TYPE_REG
+apbw a00209a4 2c202a05 //[m_regmodel.dcor_dcor.RegsDCORpsnr_053] TYPE_REG
+apbw a00209a8 01120330 //[m_regmodel.dcor_dcor.RegsDCORpsnr_054] TYPE_REG
+apbw a00209ac 38120b35 //[m_regmodel.dcor_dcor.RegsDCORpsnr_055] TYPE_REG
+apbw a00209b0 07251132 //[m_regmodel.dcor_dcor.RegsDCORpsnr_056] TYPE_REG
+apbw a00209b4 29323d02 //[m_regmodel.dcor_dcor.RegsDCORpsnr_057] TYPE_REG
+apbw a00209b8 383c1321 //[m_regmodel.dcor_dcor.RegsDCORpsnr_058] TYPE_REG
+apbw a00209bc 0b3b042b //[m_regmodel.dcor_dcor.RegsDCORpsnr_059] TYPE_REG
+apbw a00209c0 1a282005 //[m_regmodel.dcor_dcor.RegsDCORpsnr_060] TYPE_REG
+apbw a00209c4 05380c2f //[m_regmodel.dcor_dcor.RegsDCORpsnr_061] TYPE_REG
+apbw a00209c8 393d0e0c //[m_regmodel.dcor_dcor.RegsDCORpsnr_062] TYPE_REG
+apbw a00209cc 2817052f //[m_regmodel.dcor_dcor.RegsDCORpsnr_063] TYPE_REG
+apbw a00209f0 00000001 //[m_regmodel.dcor_dcor.RegsDCORtmplMode] TYPE_REG
+apbw a00209f8 00000000 //[m_regmodel.dcor_dcor.RegsDCORyScalerDivExp] TYPE_REG
+apbw a00e0848 00001292 //[m_regmodel.dest_dest.RegsDESTaltIrDiv] TYPE_REG
+apbw a00e0850 0000dc80 //[m_regmodel.dest_dest.RegsDESTaltIrSub] TYPE_REG
+////apbw a00e0858 42ff29eb //[m_regmodel.dest_dest.RegsDESTambiguityMinRTD] TYPE_REG
+apbw a00e085c 4695d9ba //[m_regmodel.dest_dest.RegsDESTambiguityRTD_000] TYPE_REG
+apbw a00e0860 4715d9d3 //[m_regmodel.dest_dest.RegsDESTambiguityRTD_001] TYPE_REG
+apbw a00e0864 4795d9e0 //[m_regmodel.dest_dest.RegsDESTambiguityRTD_002] TYPE_REG
+apbw a00e0868 4147cdec //[m_regmodel.dest_dest.RegsDESTbaseline] TYPE_REG
+apbw a00e086c 431bf1cb //[m_regmodel.dest_dest.RegsDESTbaseline2] TYPE_REG
+apbw a00e0874 00000006 //[m_regmodel.dest_dest.RegsDESTconfIRbitshift] TYPE_REG
+apbw a00e0878 3fc00000 //[m_regmodel.dest_dest.RegsDESTconfactIn] TYPE_REG
+apbw a00e087c 000f0000 //[m_regmodel.dest_dest.RegsDESTconfactOt] TYPE_REG
+apbw a00e0884 007f0000 //[m_regmodel.dest_dest.RegsDESTconfv] TYPE_REG
+apbw a00e0888 1e230001 //[m_regmodel.dest_dest.RegsDESTconfw1] TYPE_REG
+apbw a00e08a0 00000048 //[m_regmodel.dest_dest.RegsDESTmaxvalDiv] TYPE_REG
+apbw a00e08a4 000000f8 //[m_regmodel.dest_dest.RegsDESTmaxvalSub] TYPE_REG
+apbw a00e08a8 3fb9feb1 //[m_regmodel.dest_dest.RegsDESTp2axa] TYPE_REG
+apbw a00e08b0 00000000 //[m_regmodel.dest_dest.RegsDESTp2aya] TYPE_REG
+apbw a00e08b4 00000000 //[m_regmodel.dest_dest.RegsDESTp2ayb] TYPE_REG
+apbw a00e08b8 002001e0 //[m_regmodel.dest_dest.RegsDESTrxPWRpdLUTfactor] TYPE_REG
+
+apbw a00e09cc 4215d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_000] TYPE_REG
+apbw a00e09d0 4295d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_001] TYPE_REG
+apbw a00e09d4 4315d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_002] TYPE_REG
+////apbw a00e09d8 0908160a //[m_regmodel.dest_dest.RegsDESTsmoothKerLen] TYPE_REG
+apbw a00e09f0 00004000 //[m_regmodel.dest_dest.RegsDESTtxPWRpdLUTfactor] TYPE_REG
+
+////apbw a00e0b04 00000001 //[m_regmodel.dest_dest.RegsGNRLzMaxSubMMExp] TYPE_REG
+////apbw a00e0b08 40000000 //[m_regmodel.dest_dest.RegsGNRLzNorm] TYPE_REG
+apbw a00e0080 00000003 //[m_regmodel.cbuf_cbuf.RegsCbufMemSize] TYPE_REG
+apbw a00e0800 00000001 //[m_regmodel.cbuf_cbuf.RegsCBUFbypass] TYPE_REG
+apbw a00e0824 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxBitShifts] TYPE_REG
+apbw a00e0828 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_000] TYPE_REG
+apbw a00e082c 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_001] TYPE_REG
+apbw a00e0830 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_002] TYPE_REG
+apbw a00e0834 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_003] TYPE_REG
+apbw a00e0838 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_004] TYPE_REG
+apbw a00e083c 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_005] TYPE_REG
+apbw a00e0840 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_006] TYPE_REG
+apbw a00e0844 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_007] TYPE_REG
+apbw a00e1b10 0000000b //[m_regmodel.jfil_jfil.RegsJFILmaxPoolConfThr] TYPE_REG
+////apbw a00e1bc8 0000000a //[m_regmodel.jfil_jfil.RegsPCKRprivacyC] TYPE_REG
+////apbw a00e1bd0 00000097 //[m_regmodel.jfil_jfil.RegsPCKRprivacyI] TYPE_REG
+////apbw a00e1bd4 0000636c //[m_regmodel.jfil_jfil.RegsPCKRprivacyZ] TYPE_REG
+apbw a0020260 00070301 //[m_regmodel.dcor_dcor.RegsDcorLoopCtrl] TYPE_REG
+apbw a0020104 00000002 //[m_regmodel.rast_rast.RegsRastCmaMemMode] TYPE_REG
+apbw a002010c 00001f00 //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
+apbw a0020110 00001f00 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
+apbw a002011c 00000000 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
+apbw a0020af8 fff0ffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_000] TYPE_REG
+apbw a0020afc ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_001] TYPE_REG
+apbw a0020b00 ffff12ff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_002] TYPE_REG
+apbw a0020b04 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_003] TYPE_REG
+apbw a0020b08 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_004] TYPE_REG
+apbw a0020b0c ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_005] TYPE_REG
+apbw a0020b10 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_006] TYPE_REG
+apbw a0020b14 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_007] TYPE_REG
+apbw a00d01f4 000001f8 //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG

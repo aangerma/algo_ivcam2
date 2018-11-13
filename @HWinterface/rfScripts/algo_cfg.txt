@@ -1,88 +1,106 @@
-mwd a00e0894 a00e0898 00000000 // DESTdepthAsRange
-mwd a00e0600 A00E0604 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeEn] TYPE_REG
-mwd a0020034 A0020038 00000004 //[m_regmodel.digg_digg.RegsDiggCBits] TYPE_REG
-mwd a00e05e4 A00E05E8 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeDataMode] TYPE_REG
-mwd a0020a50 A0020A54 00000000 //[m_regmodel.digg_digg.RegsDIGGdx2] TYPE_REG
-mwd a00e05ec A00E05F0 0000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
-mwd a0020a54 A0020A58 00000000 //[m_regmodel.digg_digg.RegsDIGGdx3] TYPE_REG
-mwd a00e05ec A00E05F0 1000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
-mwd a0020a5c A0020A60 00000000 //[m_regmodel.digg_digg.RegsDIGGdy2] TYPE_REG
-mwd a0020a60 A0020A64 00000000 //[m_regmodel.digg_digg.RegsDIGGdy3] TYPE_REG
-// mwd a0020a6c A0020A70 03340334 //[m_regmodel.digg_digg.RegsDIGGgammaScale] TYPE_REG
-mwd a0020ba8 A0020BAC 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_000] TYPE_REG
-mwd a0020bac A0020BB0 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_001] TYPE_REG
-mwd a0020bb0 A0020BB4 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_002] TYPE_REG
-mwd a0020bc4 A0020BC8 00000000 //[m_regmodel.digg_digg.RegsDIGGny_001] TYPE_REG
-mwd a0020bc8 A0020BCC 00000000 //[m_regmodel.digg_digg.RegsDIGGny_002] TYPE_REG
-mwd a0020bcc A0020BD0 00000000 //[m_regmodel.digg_digg.RegsDIGGny_003] TYPE_REG
-mwd a0020bd0 A0020BD4 00000000 //[m_regmodel.digg_digg.RegsDIGGny_004] TYPE_REG
-mwd a0020c3c A0020C40 00000040 //[m_regmodel.digg_digg.RegsGNRLcodeLength] TYPE_REG
-mwd a0020c40 A0020C44 00000002 //[m_regmodel.digg_digg.RegsGNRLimgHsize] TYPE_REG
-mwd a0020c44 A0020C48 00000001 //[m_regmodel.digg_digg.RegsGNRLimgVsize] TYPE_REG
-mwd a0020c48 A0020C4C 00000001 //[m_regmodel.digg_digg.RegsGNRLrangeFinder] TYPE_REG
-mwd a0020c4c A0020C50 00000008 //[m_regmodel.digg_digg.RegsGNRLsampleRate] TYPE_REG
-mwd a0020c50 A0020C54 00000200 //[m_regmodel.digg_digg.RegsGNRLtmplLength] TYPE_REG
-mwd a0020c54 A0020C58 00000001 //[m_regmodel.digg_digg.RegsGNRLsideLobeDir] TYPE_REG
-mwd a0020100 A0020104 00000001 //[m_regmodel.rast_rast.RegsRastCma64cntrsOnly] TYPE_REG
-mwd a002010c A0020110 0000113f //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
-mwd a0020110 A0020114 00000d82 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
-mwd a0020114 A0020118 00000007 //[m_regmodel.rast_rast.RegsRastCmaFiltMode] TYPE_REG
-mwd a002011c A0020120 00000001 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
-mwd a0020124 A0020128 00000ea9 //[m_regmodel.rast_rast.RegsRastDbgLobPerPcqPix] TYPE_REG
-mwd a0020128 A002012C 00000001 //[m_regmodel.rast_rast.RegsRastRngfndrEofPixCntr] TYPE_REG
-mwd a0020c9c A0020CA0 00000001 //[m_regmodel.rast_rast.RegsRASTbiltBypass] TYPE_REG
-mwd a0020d30 A0020D34 000000f8 //[m_regmodel.rast_rast.RegsRASTcmaMask] TYPE_REG
-mwd a0020d38 A0020D3C 7510d2fb //[m_regmodel.rast_rast.RegsRASTconfDC_000] TYPE_REG
-mwd a0020d3c A0020D40 065aff61 //[m_regmodel.rast_rast.RegsRASTconfDC_001] TYPE_REG
-mwd a0020d40 A0020D44 d3d79509 //[m_regmodel.rast_rast.RegsRASTconfDC_002] TYPE_REG
-mwd a0020d44 A0020D48 80ad7f35 //[m_regmodel.rast_rast.RegsRASTconfDC_003] TYPE_REG
-mwd a0020d48 A0020D4C 03a1a5ff //[m_regmodel.rast_rast.RegsRASTconfDC_004] TYPE_REG
-mwd a0020d4c A0020D50 93494a0d //[m_regmodel.rast_rast.RegsRASTconfDC_005] TYPE_REG
-mwd a0020d50 A0020D54 85fc31f4 //[m_regmodel.rast_rast.RegsRASTconfDC_006] TYPE_REG
-mwd a0020d54 A0020D58 3fea6505 //[m_regmodel.rast_rast.RegsRASTconfDC_007] TYPE_REG
-mwd a0020d58 A0020D5C 00002000 //[m_regmodel.rast_rast.RegsRASTdcCodeNorm] TYPE_REG
-mwd a0020d5c A0020D60 003d3d3d //[m_regmodel.rast_rast.RegsRASTdcLevel] TYPE_REG
-mwd a0020d6c A0020D70 00000001 //[m_regmodel.rast_rast.RegsRASTmmSide] TYPE_REG
-mwd a0020d70 A0020D74 00000000 //[m_regmodel.rast_rast.RegsRASToutIRmm] TYPE_REG
-mwd a0020d78 A0020D7C 00000040 //[m_regmodel.rast_rast.RegsRASTsharedDenom] TYPE_REG
-mwd a0020d7c A0020D80 00000006 //[m_regmodel.rast_rast.RegsRASTsharedDenomExp] TYPE_REG
-mwd a0020d80 A0020D84 0000002d //[m_regmodel.rast_rast.RegsRASTskipOnTxModeChange] TYPE_REG
-mwd a0020260 A0020264 000c0501 //[m_regmodel.dcor_dcor.RegsDcorLoopCtrl] TYPE_REG
-mwd a002088c A0020890 00000040 //[m_regmodel.dcor_dcor.RegsDCORcoarseTmplLength] TYPE_REG
-mwd a0020894 A0020898 00000008 //[m_regmodel.dcor_dcor.RegsDCORfineCorrRange] TYPE_REG
-mwd a00209f0 A00209F4 00000001 //[m_regmodel.dcor_dcor.RegsDCORtmplMode] TYPE_REG
-mwd a00209f8 A00209FC 00000000 //[m_regmodel.dcor_dcor.RegsDCORyScalerDivExp] TYPE_REG
-mwd a00e0848 A00E084C 00001292 //[m_regmodel.dest_dest.RegsDESTaltIrDiv] TYPE_REG
-mwd a00e0850 A00E0854 0000dc80 //[m_regmodel.dest_dest.RegsDESTaltIrSub] TYPE_REG
-mwd a00e0858 A00E085C 42ff29eb //[m_regmodel.dest_dest.RegsDESTambiguityMinRTD] TYPE_REG
-mwd a00e085c A00E0860 4695d9ba //[m_regmodel.dest_dest.RegsDESTambiguityRTD_000] TYPE_REG
-mwd a00e0860 A00E0864 4715d9d3 //[m_regmodel.dest_dest.RegsDESTambiguityRTD_001] TYPE_REG
-mwd a00e0864 A00E0868 4795d9e0 //[m_regmodel.dest_dest.RegsDESTambiguityRTD_002] TYPE_REG
-mwd a00e08a0 A00E08A4 00000048 //[m_regmodel.dest_dest.RegsDESTmaxvalDiv] TYPE_REG
-mwd a00e08a4 A00E08A8 000000f8 //[m_regmodel.dest_dest.RegsDESTmaxvalSub] TYPE_REG
-mwd a00e0080 A00E0084 00000003 //[m_regmodel.cbuf_cbuf.RegsCbufMemSize] TYPE_REG
-mwd a00e0800 A00E0804 00000001 //[m_regmodel.cbuf_cbuf.RegsCBUFbypass] TYPE_REG
-mwd a00e0824 A00E0828 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxBitShifts] TYPE_REG
-mwd a00e0828 A00E082C 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_000] TYPE_REG
-mwd a00e082c A00E0830 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_001] TYPE_REG
-mwd a00e0830 A00E0834 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_002] TYPE_REG
-mwd a00e0834 A00E0838 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_003] TYPE_REG
-mwd a00e0838 A00E083C 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_004] TYPE_REG
-mwd a00e083c A00E0840 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_005] TYPE_REG
-mwd a00e0840 A00E0844 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_006] TYPE_REG
-mwd a00e0844 A00E0848 00000000 //[m_regmodel.cbuf_cbuf.RegsCBUFxRelease_007] TYPE_REG
-mwd a00e0f00 a00e0f04 00000000 // JFILbypass
-mwd a0020260 A0020264 00070301 //[m_regmodel.dcor_dcor.RegsDcorLoopCtrl] TYPE_REG
-mwd a0020104 A0020108 00000002 //[m_regmodel.rast_rast.RegsRastCmaMemMode] TYPE_REG
-mwd a002010c A0020110 00001f00 //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
-mwd a0020110 A0020114 00001f00 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
-mwd a002011c A0020120 00000000 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
-mwd a0020af8 A0020AFC ff10ffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_000] TYPE_REG
-mwd a0020afc A0020B00 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_001] TYPE_REG
-mwd a0020b00 A0020B04 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_002] TYPE_REG
-mwd a0020b04 A0020B08 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_003] TYPE_REG
-mwd a0020b08 A0020B0C ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_004] TYPE_REG
-mwd a0020b0c A0020B10 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_005] TYPE_REG
-mwd a0020b10 A0020B14 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_006] TYPE_REG
-mwd a0020b14 A0020B18 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_007] TYPE_REG
-mwd a00d01f4 A00D01F8 000001f8 //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG
+apbw a00e0600 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeEn] TYPE_REG
+apbw a0020034 00000004 //[m_regmodel.digg_digg.RegsDiggCBits] TYPE_REG
+apbw a00e05e4 00000001 //[m_regmodel.algo_post_algo_post.RegsRangeDataMode] TYPE_REG
+apbw a0020a50 00000000 //[m_regmodel.digg_digg.RegsDIGGdx2] TYPE_REG
+apbw a00e05ec 0000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
+apbw a0020a54 00000000 //[m_regmodel.digg_digg.RegsDIGGdx3] TYPE_REG
+apbw a00e05ec 1000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
+apbw a0020a5c 00000000 //[m_regmodel.digg_digg.RegsDIGGdy2] TYPE_REG
+apbw a0020a60 00000000 //[m_regmodel.digg_digg.RegsDIGGdy3] TYPE_REG
+apbw a0020a6c 03340334 //[m_regmodel.digg_digg.RegsDIGGgammaScale] TYPE_REG
+
+
+apbw a0020ba8 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_000] TYPE_REG
+apbw a0020bac 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_001] TYPE_REG
+apbw a0020bb0 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_002] TYPE_REG
+apbw a0020bc4 00000000 //[m_regmodel.digg_digg.RegsDIGGny_001] TYPE_REG
+apbw a0020bc8 00000000 //[m_regmodel.digg_digg.RegsDIGGny_002] TYPE_REG
+apbw a0020bcc 00000000 //[m_regmodel.digg_digg.RegsDIGGny_003] TYPE_REG
+apbw a0020bd0 00000000 //[m_regmodel.digg_digg.RegsDIGGny_004] TYPE_REG
+apbw a0020c38 00000fff //[m_regmodel.digg_digg.RegsDIGGycrossThr] TYPE_REG
+apbw a0020c3c 00000040 //[m_regmodel.digg_digg.RegsGNRLcodeLength] TYPE_REG
+apbw a0020c40 00000002 //[m_regmodel.digg_digg.RegsGNRLimgHsize] TYPE_REG
+apbw a0020c44 00000001 //[m_regmodel.digg_digg.RegsGNRLimgVsize] TYPE_REG
+apbw a0020c48 00000001 //[m_regmodel.digg_digg.RegsGNRLrangeFinder] TYPE_REG
+apbw a0020c4c 00000008 //[m_regmodel.digg_digg.RegsGNRLsampleRate] TYPE_REG
+apbw a0020c50 00000200 //[m_regmodel.digg_digg.RegsGNRLtmplLength] TYPE_REG
+apbw a0020c54 00000001 //[m_regmodel.digg_digg.RegsGNRLsideLobeDir] TYPE_REG
+////apbw a0020100 00000001 //[m_regmodel.rast_rast.RegsRastCma64cntrsOnly] TYPE_REG
+apbw a002010c 0000113f //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
+apbw a0020110 00000d82 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
+apbw a0020114 00000007 //[m_regmodel.rast_rast.RegsRastCmaFiltMode] TYPE_REG
+apbw a002011c 00000001 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
+apbw a0020124 00000ea9 //[m_regmodel.rast_rast.RegsRastDbgLobPerPcqPix] TYPE_REG
+apbw a0020128 00000002 //[m_regmodel.rast_rast.RegsRastRngfndrEofPixCntr] TYPE_REG
+apbw a0020c9c 00000001 //[m_regmodel.rast_rast.RegsRASTbiltBypass] TYPE_REG
+
+apbw a0020d58 00002000 //[m_regmodel.rast_rast.RegsRASTdcCodeNorm] TYPE_REG
+apbw a0020d5c 003d3d3d //[m_regmodel.rast_rast.RegsRASTdcLevel] TYPE_REG
+apbw a0020d60 00000000 //[m_regmodel.rast_rast.RegsRASTdiscardLateChuncks] TYPE_REG
+////apbw a0020d64 00000001 //[m_regmodel.rast_rast.RegsRASTinvalidateDiffTxRx] TYPE_REG
+apbw a0020d68 00000000 //[m_regmodel.rast_rast.RegsRASTirDiscardsidelobes] TYPE_REG
+apbw a0020d6c 00000001 //[m_regmodel.rast_rast.RegsRASTmmSide] TYPE_REG
+apbw a0020d70 00000000 //[m_regmodel.rast_rast.RegsRASToutIRmm] TYPE_REG
+apbw a0020d78 00000040 //[m_regmodel.rast_rast.RegsRASTsharedDenom] TYPE_REG
+apbw a0020d7c 00000006 //[m_regmodel.rast_rast.RegsRASTsharedDenomExp] TYPE_REG
+apbw a0020d80 0000002d //[m_regmodel.rast_rast.RegsRASTskipOnTxModeChange] TYPE_REG
+
+
+//apbw a002088c 00000040 //[m_regmodel.dcor_dcor.RegsDCORcoarseTmplLength] TYPE_REG
+mwd a0020890 a0020894 00000002 // DCORdecRatio
+mwd a002088c a0020890 00000080 // DCORcoarseTmplLength
+
+
+////apbw a0020894 00000008 //[m_regmodel.dcor_dcor.RegsDCORfineCorrRange] TYPE_REG
+apbw a00209f0 00000001 //[m_regmodel.dcor_dcor.RegsDCORtmplMode] TYPE_REG
+apbw a00209f8 00000000 //[m_regmodel.dcor_dcor.RegsDCORyScalerDivExp] TYPE_REG
+
+mwd a00e0848 a00e084c 000018c3 // DESTaltIrDiv
+
+
+apbw a00e0850 0000dc80 //[m_regmodel.dest_dest.RegsDESTaltIrSub] TYPE_REG
+mwd a00e085c a00e0860 4695d9ed // DESTambiguityRTD_000
+mwd a00e0860 a00e0864 4715d9ed // DESTambiguityRTD_001
+mwd a00e0864 a00e0868 4795d9ed // DESTambiguityRTD_002
+
+//apbw a00e0874 00000006 //[m_regmodel.dest_dest.RegsDESTconfIRbitshift] TYPE_REG
+//apbw a00e0878 3fc00000 //[m_regmodel.dest_dest.RegsDESTconfactIn] TYPE_REG
+//apbw a00e087c 000f0000 //[m_regmodel.dest_dest.RegsDESTconfactOt] TYPE_REG
+//apbw a00e0884 007f0000 //[m_regmodel.dest_dest.RegsDESTconfv] TYPE_REG
+//apbw a00e0888 1e230001 //[m_regmodel.dest_dest.RegsDESTconfw1] TYPE_REG
+//apbw a00e08a0 00000048 //[m_regmodel.dest_dest.RegsDESTmaxvalDiv] TYPE_REG
+mwd a00e08a0 a00e08a4 00000018 // DESTmaxvalDiv
+mwd a00e0890 a00e0894 00000002 // DESTdecRatio
+
+
+apbw a00e08a4 000000f8 //[m_regmodel.dest_dest.RegsDESTmaxvalSub] TYPE_REG
+apbw a00e08a8 3fb9feb1 //[m_regmodel.dest_dest.RegsDESTp2axa] TYPE_REG
+apbw a00e08b0 00000000 //[m_regmodel.dest_dest.RegsDESTp2aya] TYPE_REG
+apbw a00e08b4 00000000 //[m_regmodel.dest_dest.RegsDESTp2ayb] TYPE_REG
+apbw a00e08b8 002001e0 //[m_regmodel.dest_dest.RegsDESTrxPWRpdLUTfactor] TYPE_REG
+
+apbw a00e09cc 4215d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_000] TYPE_REG
+apbw a00e09d0 4295d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_001] TYPE_REG
+apbw a00e09d4 4315d9ed //[m_regmodel.dest_dest.RegsDESTsampleDist_002] TYPE_REG
+////apbw a00e09d8 0908160a //[m_regmodel.dest_dest.RegsDESTsmoothKerLen] TYPE_REG
+apbw a00e09f0 00004000 //[m_regmodel.dest_dest.RegsDESTtxPWRpdLUTfactor] TYPE_REG
+
+apbw a00e0800 00000001 //[m_regmodel.cbuf_cbuf.RegsCBUFbypass] TYPE_REG
+apbw a00e1b10 0000000b //[m_regmodel.jfil_jfil.RegsJFILmaxPoolConfThr] TYPE_REG
+//apbw a0020260 00070301 //[m_regmodel.dcor_dcor.RegsDcorLoopCtrl] TYPE_REG
+mwd a0020260 a0020264 00070602 // DCORloopCtrl
+
+
+apbw a0020104 00000002 //[m_regmodel.rast_rast.RegsRastCmaMemMode] TYPE_REG
+apbw a002010c 00001f00 //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
+apbw a0020110 00001f00 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
+apbw a002011c 00000000 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
+apbw a0020af8 fff0ffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_000] TYPE_REG
+apbw a0020afc ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_001] TYPE_REG
+apbw a0020b00 ffff12ff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_002] TYPE_REG
+apbw a0020b04 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_003] TYPE_REG
+apbw a0020b08 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_004] TYPE_REG
+apbw a0020b0c ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_005] TYPE_REG
+apbw a0020b10 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_006] TYPE_REG
+apbw a0020b14 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_007] TYPE_REG
+apbw a00d01f4 000001f8 //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG

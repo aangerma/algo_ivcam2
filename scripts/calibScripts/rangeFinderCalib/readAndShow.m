@@ -19,7 +19,7 @@ formatSpec = 'address: A00E05F4 value: %x\n';
 buffer = dec2hex(fscanf(fileID,formatSpec));
 padd = repmat('0',size(buffer,1),8-size(buffer,2));
 buffer = [padd,buffer];
-Z = hex2dec(buffer(:,5:6));
+Z = hex2dec(buffer(:,5:8));
 I = hex2dec(buffer(:,2:3));
 C = hex2dec(buffer(:,4));
 fclose(fileID);

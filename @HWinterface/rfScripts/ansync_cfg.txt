@@ -1,24 +1,24 @@
-mwd a0060018 A006001C 00000002 //[m_regmodel.ansync_ansync.RegsAnsyncAfToHfClkRatio] TYPE_REG
-mwd a006001c A0060020 00000001 //[m_regmodel.ansync_ansync.RegsAnsyncLocValidBhvr] TYPE_REG
-mwd a0060020 A0060024 00000000 //[m_regmodel.ansync_ansync.RegsAnsyncLDONBhvr] TYPE_REG
-mwd a0060374 A0060378 00000202 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to00_0] TYPE_REG
-mwd a0060378 A006037C 0000280b //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to01_0] TYPE_REG
-mwd a006037c A0060380 00000e0b //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to10_0] TYPE_REG
-mwd a0060380 A0060384 00001608 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to01_0] TYPE_REG
-mwd a0060384 A0060388 0000140b //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to10_0] TYPE_REG
-mwd a0060388 A006038C 00002b0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to10_0] TYPE_REG
-mwd a006038c A0060390 00002901 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to01_0] TYPE_REG
-mwd a0060390 A0060394 00001f0c //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to00_0] TYPE_REG
-mwd a0060394 A0060398 00001400 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to00_0] TYPE_REG
-mwd a00604e8 A00604EC 00003e00 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to00_1] TYPE_REG
-mwd a00604ec A00604F0 00002d04 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to01_1] TYPE_REG
-mwd a00604f0 A00604F4 00001c09 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to10_1] TYPE_REG
-mwd a00604f4 A00604F8 0000170d //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to01_1] TYPE_REG
-mwd a00604f8 A00604FC 00003505 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to10_1] TYPE_REG
-mwd a00604fc A0060500 00001b08 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to10_1] TYPE_REG
-mwd a0060500 A0060504 00000503 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to01_1] TYPE_REG
-mwd a0060504 A0060508 00001c0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to00_1] TYPE_REG
-mwd a0060508 A006050C 00002d0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to00_1] TYPE_REG
-mwd a0060008 A006000C 0000014f //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFix] TYPE_REG
-mwd a006000c A0060010 00000110 //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsEarlyLatencyFix] TYPE_REG
-mwd a0060014 A0060018 00000001 //[m_regmodel.ansync_ansync_rt.RegsAnsyncAfDataDscrd] TYPE_REG
+apbw a0060018 00000002 //[m_regmodel.ansync_ansync.RegsAnsyncAfToHfClkRatio] TYPE_REG
+apbw a006001c 00000001 //[m_regmodel.ansync_ansync.RegsAnsyncLocValidBhvr] TYPE_REG
+apbw a0060020 00000000 //[m_regmodel.ansync_ansync.RegsAnsyncLDONBhvr] TYPE_REG
+apbw a0060374 00000202 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to00_0] TYPE_REG
+apbw a0060378 0000280b //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to01_0] TYPE_REG
+apbw a006037c 00000e0b //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to10_0] TYPE_REG
+apbw a0060380 00001608 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to01_0] TYPE_REG
+apbw a0060384 0000140b //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to10_0] TYPE_REG
+apbw a0060388 00002b0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to10_0] TYPE_REG
+apbw a006038c 00002901 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to01_0] TYPE_REG
+apbw a0060390 00001f0c //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to00_0] TYPE_REG
+apbw a0060394 00001400 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to00_0] TYPE_REG
+apbw a00604e8 00003e00 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to00_1] TYPE_REG
+apbw a00604ec 00002d04 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to01_1] TYPE_REG
+apbw a00604f0 00001c09 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix00to10_1] TYPE_REG
+apbw a00604f4 0000170d //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to01_1] TYPE_REG
+apbw a00604f8 00003505 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to10_1] TYPE_REG
+apbw a00604fc 00001b08 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to10_1] TYPE_REG
+apbw a0060500 00000503 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to01_1] TYPE_REG
+apbw a0060504 00001c0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to00_1] TYPE_REG
+apbw a0060508 00002d0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to00_1] TYPE_REG
+apbw a0060008 0000014f //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFix] TYPE_REG
+apbw a006000c 00000110 //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsEarlyLatencyFix] TYPE_REG
+apbw a0060014 00000001 //[m_regmodel.ansync_ansync_rt.RegsAnsyncAfDataDscrd] TYPE_REG

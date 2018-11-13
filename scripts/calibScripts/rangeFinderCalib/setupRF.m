@@ -1,9 +1,10 @@
 clear
-
+pause(1);
 
 % rfScripts = 'C:\source\algo_ivcam2\@HWinterface\rfScripts';
 rfScripts = '\\tmund-mobl1\c$\source\algo_ivcam2\@HWinterface\rfScripts';
 hw = HWinterface();
+hw.cmd('dirtybitbypass');
 % // tia/ldd
 hw.runScript(fullfile(rfScripts,'TIA_LDD_HWM_snabber.txt'));
 
@@ -34,8 +35,8 @@ pause(1);
 hw.cmd('mwd a00e05e8 a00e05ec 1'); % RegsRangeFlush
 pause(5);
 
-hw.cmd('mrd a00e05f4 a00e05f8');
-hw.cmd('mrd a00e05f4 a00e05f8');
+hw.cmd('mrd a00e05f4 a00e05f8')
+hw.cmd('mrd a00e05f4 a00e05f8')
 a = hw.cmd('mrd a00e05f4 a00e05f8');
 
 if ~strcmp(a(end-7:end),'00000000')

@@ -62,7 +62,7 @@ function app=createComponents()
     
     app.fw=Firmware;
     app.hw=HWinterface(app.fw);
-    initHwForRF(app.hw);
+    app.hw.setupRF;
 
     guidata(app.figH,app);
     
@@ -96,7 +96,7 @@ end
 function timerFun(obj, event, figH)
     app = guidata(figH);
     
-    [z,ir,conf] = getRangeFinderData(app.hw);
+    [z,ir,conf] = app.hw.rfGet(1000);
     app.depthVals = [app.depthVals ; z(:)];
     app.irVals = [app.irVals ; ir(:)];
     app.confVals = [app.confVals ; conf(:)];

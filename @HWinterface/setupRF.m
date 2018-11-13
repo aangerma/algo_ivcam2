@@ -1,10 +1,9 @@
 function [ ] = setupRF(obj)
 %SETUPRF write relevant regs to enable range finder.
-mfilename
 % rfScripts = 'C:\source\algo_ivcam2\@objinterface\rfScripts';
 rfScripts = fullfile(fileparts(mfilename('fullpath')),'rfScripts');
 % // tia/ldd
-obj.runScript(fullfile(rfScripts,'TIA_LDD_objM_snabber.txt'));
+obj.runScript(fullfile(rfScripts,'TIA_LDD_HWM_snabber.txt'));
 
 obj.cmd('exec_table 142');
 % // setup VAPD
