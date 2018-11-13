@@ -401,10 +401,14 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         r.set();
         hw.cmd('iwb e2 06 01 00'); % Remove bias
         fprintff('[-] Collecting up/down frames... ');
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Please Make Sure Borders Are Bright');
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Make sure image is bright');
         [imU,imD]=Calibration.dataDelay.getScanDirImgs(hw,1);
+        hw.cmd('iwb e2 06 01 70'); % Return bias
+        pause(0.1);
+        [imUbias,imDbias]=Calibration.dataDelay.getScanDirImgs(hw,1);
         fprintff('Done.\n');
         % Remove modulation as well to get a noise image
+        hw.cmd('iwb e2 06 01 00'); % Remove bias
         imNoise = collectNoiseIm(hw);                
         r.reset();
         hw.cmd('iwb e2 06 01 70'); % Return bias
@@ -423,7 +427,9 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
             FE = calibParams.fovExpander.table;
         end
         fovData = Calibration.validation.calculateFOV(imU,imD,imNoise,regs,FE);
+        fovDataBias = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,regs,FE);
         results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
+        upDownFovDiffBias = sum(abs(fovDataBias.laser.minMaxAngYup-fovDataBias.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
         fprintff('Laser opening angles up slow and fast:    [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
@@ -431,6 +437,9 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         fprintff('Laser opening angles down slow and fast:  [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
         fprintff('Laser up/down fov diff:  %2.3g degrees.\n',results.upDownFovDiff);
+        fprintff('Laser opening angles up fast(with bias):  [%2.3g,%2.3g] degrees.\n',fovDataBias.laser.minMaxAngYup);
+        fprintff('Laser opening angles down fast(with bias):[%2.3g,%2.3g] degrees.\n',fovDataBias.laser.minMaxAngYdown);
+        fprintff('Laser up/down fov diff(with bias):  %2.3g degrees.\n',upDownFovDiffBias);
     else
         fprintff('[?] skipped\n');
     end
