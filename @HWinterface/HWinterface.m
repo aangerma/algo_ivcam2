@@ -154,8 +154,8 @@ classdef HWinterface <handle
             end
         end
         
-        
-        
+        setupRF(obj);
+        [ rfZ,rfI,rfC ] = rfGet( obj, N);
         burn2device(obj,basedir,burnCalib,burnConfig);
         cma = readCMA(obj,nAvg);
         
@@ -252,7 +252,6 @@ classdef HWinterface <handle
             [~,val]=obj.cmd(sprintf('mrd %08x %08x',addr,addr+4));
             
         end
-        
         function [vals,algoNames]=read(obj,regTokens)
             strOutFormat = 'mrd %08x %08x';
             if(~exist('regTokens','var'))

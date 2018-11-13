@@ -40,7 +40,7 @@ relevantRegs = 'GNRLcodeLength|GNRLtmplLength|RASTcmaBinSize|RASTcmaMaxSamples|R
 % relevantRegs = 'DCORtmpltFine|DCORtmpltCrse';
 % relevantRegs = [];
 
-fw = Pipe.loadFirmware('X:\Data\IvCam2\Units\unit33_noROI\AlgoInternal');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
 [regs,luts] = fw.get();
 
 % Code 64 dec 4
