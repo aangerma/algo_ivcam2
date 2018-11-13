@@ -10,7 +10,6 @@ mwd a0030064 a0030068 00000003 //sipo pdo en
 mwd a0030020 a0030024 00000001 // cmp en 
 mwd a00d01f4 a00d01f8 00000800
 
-
 //Task started ma_run_test 
 mwd a0010050 a0010054 00000011 //[m_regmodel.pmg_pmg.RegsPmgAnalogRstN] TYPE_REG
 //mwd a001000c a0010010 fbf13373 //[m_regmodel.pmg_pmg.RegsPmgClkEn] TYPE_REG // yaki
