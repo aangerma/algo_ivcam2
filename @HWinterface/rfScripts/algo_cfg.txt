@@ -7,7 +7,7 @@ apbw a0020a54 00000000 //[m_regmodel.digg_digg.RegsDIGGdx3] TYPE_REG
 apbw a00e05ec 1000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
 apbw a0020a5c 00000000 //[m_regmodel.digg_digg.RegsDIGGdy2] TYPE_REG
 apbw a0020a60 00000000 //[m_regmodel.digg_digg.RegsDIGGdy3] TYPE_REG
-apbw a0020a6c 03340334 //[m_regmodel.digg_digg.RegsDIGGgammaScale] TYPE_REG
+apbw a0020a6c 04000400 //[m_regmodel.digg_digg.RegsDIGGgammaScale] TYPE_REG
 
 
 apbw a0020ba8 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_000] TYPE_REG
@@ -52,7 +52,7 @@ mwd a002088c a0020890 00000080 // DCORcoarseTmplLength
 
 
 ////apbw a0020894 00000008 //[m_regmodel.dcor_dcor.RegsDCORfineCorrRange] TYPE_REG
-apbw a00209f0 00000001 //[m_regmodel.dcor_dcor.RegsDCORtmplMode] TYPE_REG
+//apbw a00209f0 00000001 //[m_regmodel.dcor_dcor.RegsDCORtmplMode] TYPE_REG
 apbw a00209f8 00000000 //[m_regmodel.dcor_dcor.RegsDCORyScalerDivExp] TYPE_REG
 
 mwd a00e0848 a00e084c 000018c3 // DESTaltIrDiv
@@ -104,4 +104,9 @@ apbw a0020b0c ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_005] T
 apbw a0020b10 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_006] TYPE_REG
 apbw a0020b14 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_007] TYPE_REG
 mwd a00e1890 a00e1894 00000001 // JFILinvBypass
+mwd a00e0894 a00e0898 00000001 // DESTdepthAsRange
+mwd a00e0868 a00e086c 00000000 // DESTbaseline
+mwd a00e086c a00e0870 00000000 // DESTbaseline2
+mwd a00e1b10 a00e1b14 00000000 // JFILmaxPoolConfThr
+mwd a00e0f00 a00e0f04 00000001 // JFILbypass
 apbw a00d01f4 000001f8 //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG

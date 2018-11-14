@@ -52,4 +52,5 @@ axis([0,640,0,480])
 
 % area = polyarea(patch(:,1),patch(:,2)) % Calculate the number of pixels
 % in the patch.
-
+xZO = 640 - xZO;
+yZO = 480 - yZO;

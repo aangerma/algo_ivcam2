@@ -40,8 +40,8 @@ apbw a0050538 000e3599 //[m_regmodel.proj_proj.RegsProjConLocOutVDelay] TYPE_REG
 apbw a0050454 00000005 //[m_regmodel.proj_proj.RegsProjConLocHfclkDelay] TYPE_REG
 apbw a005053c 00000157 //[m_regmodel.proj_proj.RegsProjConLocInHDelay] TYPE_REG
 apbw a0050540 000001af //[m_regmodel.proj_proj.RegsProjConLocInVDelay] TYPE_REG
-apbw a0050548 000a6cec //[m_regmodel.proj_proj.RegsProjConLocDelay] TYPE_REG
-apbw a0050458 00000007 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG
+// apbw a0050548 000a6cec //[m_regmodel.proj_proj.RegsProjConLocDelay] TYPE_REG
+// apbw a0050458 00000007 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG
 apbw a00505f4 00000010 //[m_regmodel.proj_proj.RegsProjConLocMetadataMaxFifoOccupSel] TYPE_REG
 apbw a00505f8 00000010 //[m_regmodel.proj_proj.RegsProjConLocDbgCfg] TYPE_REG
 apbw a00505b0 00000001 //[m_regmodel.proj_proj.RegsProjConLocRst] TYPE_REG
