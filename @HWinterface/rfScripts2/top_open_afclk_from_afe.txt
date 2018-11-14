@@ -1,18 +1,0 @@
-//working on log.........ansync_bu_tdg_afe_proj_test.log
-
-//define flow_path \ger.corp.intel.com/// ahbwf <flow_path>low_to_run.txt
-
-//afe_afe
-mwd a003011c a0030120 00000001  //bgen
-mwd a0030120 a0030124 00000009 //bg_trim
-mwd a0030154 a0030158 00000001 //ldo en 
-mwd a0030064 a0030068 00000003 //sipo pdo en
-mwd a0030020 a0030024 00000001 // cmp en 
-mwd a00d01f4 a00d01f8 00000800
-
-//Task started ma_run_test 
-mwd a0010050 a0010054 00000011 //[m_regmodel.pmg_pmg.RegsPmgAnalogRstN] TYPE_REG
-//mwd a001000c a0010010 fbf13373 //[m_regmodel.pmg_pmg.RegsPmgClkEn] TYPE_REG // yaki
-//mwd a001000c a0010010 fff13373 //[m_regmodel.pmg_pmg.RegsPmgClkEn] TYPE_REG   // yaki - SHani
-mwd a001000c a0010010 fff13373 //[m_regmodel.pmg_pmg.RegsPmgClkEn] TYPE_REG   // yaki - Shani
-//Task ended ma_run_test 
