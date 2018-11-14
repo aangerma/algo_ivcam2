@@ -107,4 +107,6 @@ mwd a00e1890 a00e1894 00000001 // JFILinvBypass
 mwd a00e0894 a00e0898 00000001 // DESTdepthAsRange
 mwd a00e0868 a00e086c 00000000 // DESTbaseline
 mwd a00e086c a00e0870 00000000 // DESTbaseline2
+mwd a00e1b10 a00e1b14 00000000 // JFILmaxPoolConfThr
+mwd a00e0f00 a00e0f04 00000001 // JFILbypass
 apbw a00d01f4 000001f8 //[m_regmodel.non_algo_shadow_ctrl.RegsDepthShadowUpdImm] TYPE_REG
