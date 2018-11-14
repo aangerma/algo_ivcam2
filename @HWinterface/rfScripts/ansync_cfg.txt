@@ -19,6 +19,6 @@ apbw a00604fc 00001b08 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix
 apbw a0060500 00000503 //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to01_1] TYPE_REG
 apbw a0060504 00001c0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix10to00_1] TYPE_REG
 apbw a0060508 00002d0f //[m_regmodel.ansync_ansync.RegsAnsyncExtLutDynLatencyFix01to00_1] TYPE_REG
-apbw a0060008 0000014f //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFix] TYPE_REG
+// apbw a0060008 0000014f //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFix] TYPE_REG
 apbw a006000c 00000110 //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsEarlyLatencyFix] TYPE_REG
 apbw a0060014 00000001 //[m_regmodel.ansync_ansync_rt.RegsAnsyncAfDataDscrd] TYPE_REG

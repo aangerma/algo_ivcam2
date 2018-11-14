@@ -117,3 +117,4 @@ apbw a0050268 00000be2 //[m_regmodel.proj_proj_shdw_pj.RegsProjHfmDbgSingleVscan
 apbw a005026c 00000001 //[m_regmodel.proj_proj_shdw_pj.RegsProjHfmDbgSingleVscanDirL] TYPE_REG
 apbw a0050260 00000000 //[m_regmodel.proj_proj.RegsProjTambcalEnL]
 apbw b0080100 900 // hfm io mode pin
+

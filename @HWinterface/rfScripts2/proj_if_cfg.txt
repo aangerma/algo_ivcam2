@@ -40,8 +40,8 @@ apbw a0050538 000e3599 //[m_regmodel.proj_proj.RegsProjConLocOutVDelay] TYPE_REG
 apbw a0050454 00000005 //[m_regmodel.proj_proj.RegsProjConLocHfclkDelay] TYPE_REG
 apbw a005053c 00000157 //[m_regmodel.proj_proj.RegsProjConLocInHDelay] TYPE_REG
 apbw a0050540 000001af //[m_regmodel.proj_proj.RegsProjConLocInVDelay] TYPE_REG
-apbw a0050548 000a6cec //[m_regmodel.proj_proj.RegsProjConLocDelay] TYPE_REG
-apbw a0050458 00000007 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG
+// apbw a0050548 000a6cec //[m_regmodel.proj_proj.RegsProjConLocDelay] TYPE_REG
+// apbw a0050458 00000007 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkRes] TYPE_REG
 apbw a00505f4 00000010 //[m_regmodel.proj_proj.RegsProjConLocMetadataMaxFifoOccupSel] TYPE_REG
 apbw a00505f8 00000010 //[m_regmodel.proj_proj.RegsProjConLocDbgCfg] TYPE_REG
 apbw a00505b0 00000001 //[m_regmodel.proj_proj.RegsProjConLocRst] TYPE_REG
@@ -85,9 +85,7 @@ apbw a0050784 00000000 //[m_regmodel.proj_proj.RegsProj_proj_tambcal_ld_on_lock]
 apbw a0050794 00000000 //[m_regmodel.proj_proj.RegsProj_proj_tproject_lock] TYPE_REG
 apbw a0050800 3c680000 //[m_regmodel.interrupt_proj.RegsProjIntEnable] TYPE_REG
 apbw a0050820 00011101 //[m_regmodel.interrupt_proj.RegsProjHardErrIntEnable] TYPE_REG
-apbr a0050810 00500000 //[m_regmodel.interrupt_proj.RegsProjIntStatus] TYPE_REG
 apbw a0050810 00400000 //[m_regmodel.interrupt_proj.RegsProjIntStatus] TYPE_REG
-apbr a0050810 00100000 //[m_regmodel.interrupt_proj.RegsProjIntStatus] TYPE_REG
 apbw a0050830 0000c754 //[m_regmodel.interrupt_proj.RegsProjSoftErrIntEnable] TYPE_REG
 apbw a0050224 7e8cf932 //[m_regmodel.proj_proj_shdw_pa.RegsProjHfmSkipActiveNum] TYPE_REG
 apbw a0050228 fb57affc //[m_regmodel.proj_proj_shdw_pa.RegsProjHfmSkipIdleNum] TYPE_REG

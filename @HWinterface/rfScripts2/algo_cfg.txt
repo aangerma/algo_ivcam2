@@ -95,9 +95,9 @@ apbw a0020104 00000002 //[m_regmodel.rast_rast.RegsRastCmaMemMode] TYPE_REG
 apbw a002010c 00001f00 //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
 apbw a0020110 00001f00 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
 apbw a002011c 00000000 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
-apbw a0020af8 fff0ffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_000] TYPE_REG
+apbw a0020af8 ff10ffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_000] TYPE_REG
 apbw a0020afc ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_001] TYPE_REG
-apbw a0020b00 ffff12ff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_002] TYPE_REG
+apbw a0020b00 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_002] TYPE_REG
 apbw a0020b04 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_003] TYPE_REG
 apbw a0020b08 ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_004] TYPE_REG
 apbw a0020b0c ffffffff //[m_regmodel.digg_digg.RegsDIGGgengRangeFinderLUT_005] TYPE_REG
