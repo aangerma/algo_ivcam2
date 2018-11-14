@@ -7,11 +7,11 @@
         <dataSource>robot</dataSource>
     </params>
     <tests>
-        <test name="fillRate_20cm" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[95 : 100]" />
-        <test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:10]" />
-        <test name="zStd_20cm" metrics="zStd" target="checkerboard_50" distance="20cm" threshold="[0:10]" />
-        <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:50]" />
-        <test name="gridInterDist_20cm" metrics="gridInterDist" target="checkerboard_50" distance="20cm" threshold="[0:5]" />
+        <test name="minRange_20cm" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[98 : 100]" />
+        <test name="fillRate_50cm" metrics="fillRate" target="checkerboard_50" distance="50cm" threshold="[95:100]" />
+        <test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:6]" />
+        <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
         <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
+        <!--<test name="losGridDrift_50cm" metrics="losGridDrift" target="checkerboard_50" distance="50cm" threshold="[0:120]" />-->
     </tests>
 </root>
