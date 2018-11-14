@@ -10,10 +10,6 @@
         <frameRate>30</frameRate>
     </params>
     <tests>
-        <test name="fillRate_140cm" metrics="fillRate" target="wall_10Reflectivity" distance="140cm" threshold="[95 : 100]" />
-        <test name="zStd_140cm" metrics="zStd" target="wall_10Reflectivity" distance="140cm" threshold="[0:10]" />
-        <test name="fillRate_150cm" metrics="fillRate" target="wall_10Reflectivity" distance="150cm" threshold="[95 : 100]" />
-        <test name="zStd_150cm" metrics="zStd" target="wall_10Reflectivity" distance="150cm" threshold="[0:10]" />
         <test name="fillRate_160cm" metrics="fillRate" target="wall_10Reflectivity" distance="160cm" threshold="[95 : 100]" />
         <test name="zStd_160cm" metrics="zStd" target="wall_10Reflectivity" distance="160cm" threshold="[0:10]" />
         <test name="fillRate_170cm" metrics="fillRate" target="wall_10Reflectivity" distance="170cm" threshold="[95 : 100]" />
