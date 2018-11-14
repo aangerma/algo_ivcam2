@@ -12,7 +12,6 @@
         <test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:6]" />
         <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
         <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
-        <test name="losGridDrift_50cm" metrics="losGridDrift" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
-        <test name="losLaserFOVDrift_50cm" metrics="losLaserFOVDrift" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
+        <!--<test name="losGridDrift_50cm" metrics="losGridDrift" target="checkerboard_50" distance="50cm" threshold="[0:120]" />-->
     </tests>
 </root>
