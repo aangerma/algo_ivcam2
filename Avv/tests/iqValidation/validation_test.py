@@ -95,10 +95,10 @@ def validation(xmlPath):
 
     systemName = None
     fw = None
-    _xRes = test_params.get('xRes', 640)
-    _yRes = test_params.get('yRes', 480)
-    _frameRate = test_params.get('frameRate', 30)
-    camera = libRealSense.LibRealSense(xRes=int(_xRes), yRes=int(_yRes), frameRate=int(_frameRate))
+    _xRes = test_params.get('xRes', None)
+    _yRes = test_params.get('yRes', None)
+    _frameRate = test_params.get('frameRate', None)
+    camera = libRealSense.LibRealSense(xRes=_xRes, yRes=_yRes, frameRate=_frameRate)
     if test_params['dataSource'].lower() == 'robot':
         picture_list = create_picture_list(tests)
         system = camera.get_system_info()
@@ -207,16 +207,20 @@ def test_validation_d4m_camera():
     validation(filePath)
 
 @slash.tag('robot')
-def test_validation_robot():
-    filePath = r'Avv/tests/iqValidation/robot.xml'
+def test_validation_robot_regression():
+    filePath = r'Avv/tests/iqValidation/robot_regression.xml'
     validation(filePath)
 
 @slash.tag('robot')
-def test_validation_algonas_robot():
+def test_validation_robot_algonas():
     filePath = r'X:/Avv/sources/robot/robot.xml'
     validation(filePath)
 
+@slash.tag('robot')
+def test_validation_robot_max_range():
+    filePath = r'Avv/tests/iqValidation/robot_max_range.xml'
+    validation(filePath)
 
 
 if __name__ == "__main__":
-    test_validation_robot()
+    test_validation_robot_max_range()

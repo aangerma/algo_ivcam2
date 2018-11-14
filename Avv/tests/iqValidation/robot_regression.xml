@@ -1,13 +1,10 @@
 <?xml version="1.0"?>
 <root>
-    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <db saveData="yes">X:\Avv\dbValidation.txt</db>
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>c:\temp\valTest\data</dataFolder>
         <dataSource>robot</dataSource>
-        <xRes>720</xRes>
-        <yRes>720</yRes>
-        <frameRate>30</frameRate>
     </params>
     <tests>
         <test name="fillRate_20cm" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[95 : 100]" />
