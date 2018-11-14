@@ -3,8 +3,8 @@ function [ xZO,yZO ] = zoLoc( fw )
 %image).
 regs = fw.get();
 [xZO,yZO] = Calibration.aux.ang2xySF(0,0,regs,[],1); % ZO location
-xZO = regs.GNRL.imgHsize - xZO;
-yZO = regs.GNRL.imgHsize - yZO;
+xZO = regs.GNRL.imgHsize - uint16(xZO);
+yZO = regs.GNRL.imgVsize - uint16(yZO);
 
 
 end
