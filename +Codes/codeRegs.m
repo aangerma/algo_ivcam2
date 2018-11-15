@@ -21,7 +21,7 @@ end
 
 txregs.GNRL.sampleRate = uint8(8);
 txregs.FRMW.coarseSampleRate = uint8(txregs.GNRL.sampleRate./decRatio);
-
+txregs.GNRL.codeLength = uint8(len);
 
 
 end
