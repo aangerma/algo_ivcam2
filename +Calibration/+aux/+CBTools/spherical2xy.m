@@ -8,10 +8,8 @@ function [ spArr ] = spherical2xy( spArr,regs, calibParams )
 %      cbCorners - an NxMx2 array that corresponds to the checkerboard corners and contains the xy coordinates of each point in the rectified image. NxM is the CB dimensions. 
         
 warning('off','vision:calibrate:boardShouldBeAsymmetric'); % Supress checkerboard warning
-for i = 1:numel(spArr)
-    tabplot;
+for i = 1:numel(spArr)    
     spArr(i).cbCorners = spherical2xySingle( spArr(i),regs,calibParams );
-    plot(spArr(i).cbCorners(:,:,1),spArr(i).cbCorners(:,:,2),'*'); axis([0 640 0 480]);
 end
 
 end
