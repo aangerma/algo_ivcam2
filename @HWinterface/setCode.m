@@ -10,7 +10,7 @@ function [  ] = setCode( obj,txregs,forRF)
 
 fw = Firmware;
 if forRF
-    relevantRegs = 'GNRLcodeLength|GNRLtmplLength|RASTcmaBinSize|RASTcmaMaxSamples|RASTsharedDenom|RASTsharedDenomExp|RASTdcCodeNorm|DCORdecRatio|DCORcoarseTmplLength|DCORloopCtrl|DESTambiguityRTD|DESTmaxvalDiv|DESTdecRatio|DESTaltIrSub|DESTaltIrDiv|EXTLauxPItxCode|EXTLauxPItxCodeLength|DCORtmpltFine|DCORtmpltCrse';
+    relevantRegs = 'GNRLcodeLength|GNRLtmplLength|RASTsharedDenom|RASTsharedDenomExp|RASTdcCodeNorm|DCORdecRatio|DCORcoarseTmplLength|DCORloopCtrl|DESTambiguityRTD|DESTmaxvalDiv|DESTdecRatio|DESTaltIrSub|DESTaltIrDiv|EXTLauxPItxCode|EXTLauxPItxCodeLength|DCORtmpltFine|DCORtmpltCrse';
 else
     relevantRegs = 'GNRLcodeLength|GNRLtmplLength|RASTcmaBinSize|RASTcmaMaxSamples|RASTsharedDenom|RASTsharedDenomExp|RASTdcCodeNorm|RASTcmaFiltMode|RASTcmacCycPerValid|RASTlnBufCycPerValid|DCORdecRatio|DCORcoarseTmplLength|DCORloopCtrl|DESTambiguityRTD|DESTmaxvalDiv|DESTdecRatio|DESTaltIrSub|DESTaltIrDiv|EXTLauxPItxCode|EXTLauxPItxCodeLength|DCORtmpltFine|DCORtmpltCrse';
 end
