@@ -12,11 +12,15 @@
       <geomErr>[0.5 1.1]</geomErr>
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.25 0.5]</maxPixelDisplacement>
-      <horizEdge>[0 inf]</horizEdge>
-      <vertEdge>[0 inf]</vertEdge>
       <upDownFovDiff>[0 2]</upDownFovDiff>
-      <scanLineFillRate>[0 inf]</scanLineFillRate>
    </errRange>
+   <valRange>
+       <horizEdge>[0 inf]</horizEdge>
+       <vertEdge>[0 inf]</vertEdge>
+       <projFovx>[55 65]</projFovx>
+       <projFovy>[35 45]</projFovy>
+       <scanLineFillRate>[75 100]</scanLineFillRate>
+   </valRange>
    <passScore>60</passScore>
    <thermal>
        <t0>32.8</t0>
@@ -36,8 +40,8 @@
      <margin>100</margin>  
    </dsm>
     <dfz>
-        <fovxRange>[40,90]</fovxRange> 
-        <fovyRange>[40,90]</fovyRange> 
+        <fovxRange>[40,70]</fovxRange> 
+        <fovyRange>[35,55]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-1,1]</zenithxRange> 
         <zenithyRange>[-1,1]</zenithyRange> 

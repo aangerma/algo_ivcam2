@@ -85,6 +85,9 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% Measure scan line fill rate within ROI
     results.scanLineFillRate = Calibration.validation.validateScanFillRate( hw ,30); 
     fprintff('Scan line fill rate: %2.2g%%.\n',results.scanLineFillRate);
+    %% Print image final fov
+    [results.imFovX,results.imFovY] = Calibration.aux.calcImFov(fw);
+    fprintff('Image fovX/Y: [%2.2g,%2.2g].\n',results.imFovX,results.imFovY);
     % Update fnCalin and undist lut in output dir
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
