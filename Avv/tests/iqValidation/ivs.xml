@@ -7,7 +7,7 @@
         <dataSource>ivs</dataSource>
     </params>
     <tests>
-        <test name="fillRate_50cm" metrics="fillRate" target="wall_80Reflectivity" distance="50cm" threshold="[95 : 100]" />
+        <test name="fillRate_50cm" metrics="fillRate" target="wall_80Reflectivity" distance="50cm" threshold="[99.8 : 100]" />
         <test name="planeFit_1m" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:0.5]" />
         <test name="planeFit_3m" metrics="planeFit" target="wall_80Reflectivity" distance="3m" threshold="[0:1]" />
         <test name="minDistance" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="[99:100]" />
