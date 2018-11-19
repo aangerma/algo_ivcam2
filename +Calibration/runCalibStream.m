@@ -416,7 +416,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         r.reset();
         hw.cmd('iwb e2 06 01 70'); % Return bias
         
-        [roiRegs] = Calibration.roi.calibROI(imU,imD,imNoise,regs,calibParams);
+        [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,regs,calibParams);
         fw.setRegs(roiRegs, fnCalib);
         fw.get(); % run bootcalcs
         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
