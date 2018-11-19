@@ -195,7 +195,7 @@ sum([[JFILsort3dWeights]])<128
 ~[DCORoutIRnest] |  ~[DCORbypass]
 
 %pixel squreness
-[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
 
 
 %max fov (non spherical)
