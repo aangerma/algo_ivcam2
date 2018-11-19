@@ -54,9 +54,9 @@ else
     autogenRegs.EXTL.cbufMemBufSz=uint32(3);
 end
 
-autogenRegs.EXTL.valPer=uint32(256);
+autogenRegs.EXTL.cbufValPer=uint32(256);
 if(~regs.JFIL.upscalexyBypass)
-    autogenRegs.EXTL.valPer=uint32(512);
+    autogenRegs.EXTL.cbufValPer=uint32(512);
 end
 %%
 regs = Firmware.mergeRegs(regs,autogenRegs);

@@ -3,10 +3,10 @@ function startStream(obj)
         return;
     end
     imgVsize = obj.read('GNRLimgVsize');
-    if imgVsize == 360
+    if imgVsize == 360 || imgVsize == 180
         eImageResolution = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir360x640;
         eImageResolutionConf = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir180x640;
-    elseif imgVsize == 480
+    elseif imgVsize == 480 || imgVsize == 240
         eImageResolution = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir480x640;
         eImageResolutionConf = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir240x640;
     end
