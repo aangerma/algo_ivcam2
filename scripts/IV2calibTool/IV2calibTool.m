@@ -181,6 +181,7 @@ function app=createComponents()
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
+    app.disableAdvancedOptions = runParams.disableAdvancedOptions;
     if runParams.disableAdvancedOptions checkBoxesMode = 'inactive'; else checkBoxesMode = 'on'; end
     for i=1:length(cbnames)
         f=cbnames{i};
@@ -226,6 +227,7 @@ function saveDefaults(varargin)
     s=structfun(@(x) x.Value,app.cb,'uni',0);
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
+    s.disableAdvancedOptions = app.disableAdvancedOptions;
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
     end
