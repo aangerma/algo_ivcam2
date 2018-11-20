@@ -13,13 +13,16 @@
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.25 0.5]</maxPixelDisplacement>
       <upDownFovDiff>[0 2]</upDownFovDiff>
+      <scanLineFillRate>[100 75]</scanLineFillRate>
+      <imFovX>[50 inf]</imFovX>
+      <imFovY>[35 inf] </imFovY>
    </errRange>
    <valRange>
        <horizEdge>[0 inf]</horizEdge>
        <vertEdge>[0 inf]</vertEdge>
        <projFovx>[55 65]</projFovx>
        <projFovy>[35 45]</projFovy>
-       <scanLineFillRate>[75 100]</scanLineFillRate>
+       
    </valRange>
    <passScore>60</passScore>
    <thermal>

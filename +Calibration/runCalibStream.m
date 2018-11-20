@@ -83,11 +83,12 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
 
     %% Measure scan line fill rate within ROI
+    fprintff('Scan line fill rate: ');
     results.scanLineFillRate = Calibration.validation.validateScanFillRate( hw ,30); 
-    fprintff('Scan line fill rate: %2.2g%%.\n',results.scanLineFillRate);
+    fprintff('%3.2g%%.\n',results.scanLineFillRate);
     %% Print image final fov
     [results.imFovX,results.imFovY] = Calibration.aux.calcImFov(fw);
-    fprintff('Image fovX/Y: [%2.2g,%2.2g].\n',results.imFovX,results.imFovY);
+    fprintff('Image fovX/Y: [%3.3g,%3.3g].\n',results.imFovX,results.imFovY);
     % Update fnCalin and undist lut in output dir
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
@@ -386,11 +387,13 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
     end
 end
 function imNoise = collectNoiseIm(hw)
+        hw.cmd('iwb e2 06 01 00'); % Remove bias
         hw.cmd('iwb e2 08 01 0'); % modulation amp is 0
         hw.cmd('iwb e2 03 01 10');% internal modulation (from register)
         pause(0.1);
         imNoise = double(hw.getFrame(10).i)/255;
         hw.cmd('iwb e2 03 01 90');% 
+        hw.cmd('iwb e2 06 01 70'); % Return bias
 end
 function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Calibrating ROI... \n');
@@ -411,10 +414,10 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         [imUbias,imDbias]=Calibration.dataDelay.getScanDirImgs(hw,1);
         fprintff('Done.\n');
         % Remove modulation as well to get a noise image
-        hw.cmd('iwb e2 06 01 00'); % Remove bias
+        
         imNoise = collectNoiseIm(hw);                
         r.reset();
-        hw.cmd('iwb e2 06 01 70'); % Return bias
+        
         
         [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,regs,calibParams);
         fw.setRegs(roiRegs, fnCalib);

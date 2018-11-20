@@ -7,15 +7,17 @@ hw.getFrame();
 r = Calibration.RegState(hw);
 r.add('JFILbypass$'    ,true     );
 r.set();
+hw.getFrame(warmUpFrames);
 
 nAvg = 30;
-nFrames = nAvg+warmUpFrames;
+nFrames = nAvg;
 FR = zeros(nFrames,1);
 i = 1;
 while i <= nFrames || i>1000
-    framesZ = hw.getFrame().z;
-    if any(framesZ>0)
-        FR(i) = sum(framesZ(:)>0)/numel(framesZ);
+    framesI = hw.getFrame().i;
+    
+    if any(framesI(:)>0)
+        FR(i) = sum(framesI(:)>0)/numel(framesI);
         i = i+1;
     end
 %     if mod(i-1,10) ~= 0 && i < 200
