@@ -1,0 +1,67 @@
+//fg_cfg 
+mwd a00a0000 a00a0004 00000022 //[m_regmodel.fg_fg.RegsFgLocShft] TYPE_REG  - Horizontal/Vertical shift by 2
+//mwd a00a0000 a00a0004 00000042 //[m_regmodel.fg_fg.RegsFgLocShft] TYPE_REG - Horizontal shift 4
+mwd a00a0004 a00a0008 00000003 //[m_regmodel.fg_fg.RegsFgRawFrmt] TYPE_REG
+//mwd a00a000c a00a0010 00000002 //[m_regmodel.fg_fg.RegsFgLocFrmt] TYPE_REG
+mwd a00a000c a00a0010 00000000 //[m_regmodel.fg_fg.RegsFgLocFrmt] TYPE_REG
+//mwd a00a0010 a00a0014 00007e97 //[m_regmodel.fg_fg.RegsFgBrkrLen] TYPE_REG - Shani
+//mwd a00a0010 a00a0014 0000007d //[m_regmodel.fg_fg.RegsFgBrkrLen] TYPE_REG - Shani
+mwd a00a0010 a00a0014 00000200 //[m_regmodel.fg_fg.RegsFgBrkrLen] TYPE_REG - Shani for 64Bit Code
+mwd a00a0014 a00a0018 00000001 //[m_regmodel.fg_fg.RegsFgCmprsFrmt] TYPE_REG
+mwd a00a0018 a00a001c 00000c61 //[m_regmodel.fg_fg.RegsFgCmprsColSkpRng] TYPE_REG
+mwd a00a001c a00a0020 00000141 //[m_regmodel.fg_fg.RegsFgCmprsColSkpjmp] TYPE_REG
+mwd a00a0020 a00a0024 00000a98 //[m_regmodel.fg_fg.RegsFgCmprsColSkpCycNum] TYPE_REG
+mwd a00a0024 a00a0028 00000001 //[m_regmodel.fg_fg.RegsFgCmprsHorRoiVsOfst] TYPE_REG
+
+
+
+// X0 Reference ////
+//mwd 00007024 7028 00000000 //[m_regmodel.fg_fg.RegsFgCmprsHorRoiVsOfst          ]
+//mwd 00007028 702c 0000044c //[m_regmodel.fg_fg.RegsFgCmprsHorRoiVsNum           ] 1100 Vscans
+//mwd 00007030 7034 00003980 //[m_regmodel.fg_fg.RegsFgCmprsVerUpLmt              ]
+//mwd 00007034 7038 00000680 //[m_regmodel.fg_fg.RegsFgCmprsVerLowLmt             ]
+///////////////
+
+// x limits:
+
+mwd a00a0028 a00a002c 000000EF //[m_regmodel.fg_fg.RegsFgCmprsHorRoiVsNum] TYPE_REG - capture 213
+mwd a00a002c a00a0030 00000500 //[m_regmodel.fg_fg.RegsFgCmprsHorRoiVsStchOfst] TYPE_REG - skip 32
+//mwd a00a0028 a00a002c 00000258 //[m_regmodel.fg_fg.RegsFgCmprsHorRoiVsNum] TYPE_REG - 600 VScans
+//mwd a00a002c a00a0030 0000012C //[m_regmodel.fg_fg.RegsFgCmprsHorRoiVsStchOfst] TYPE_REG - 300 VScans
+
+// y limits:
+
+//mwd a00a0030 a00a0034 00002f97 //[m_regmodel.fg_fg.RegsFgCmprsVerUpLmt] TYPE_REG
+mwd a00a0030 a00a0034 00003640 //[m_regmodel.fg_fg.RegsFgCmprsVerUpLmt] TYPE_REG
+//mwd a00a0034 a00a0038 0000100d //[m_regmodel.fg_fg.RegsFgCmprsVerLowLmt] TYPE_REG
+mwd a00a0034 a00a0038 00000100 //[m_regmodel.fg_fg.RegsFgCmprsVerLowLmt] TYPE_REG
+
+// output rate:
+mwd a00a0048 a00a004c 200  //[m_regmodel.fg_fg.RegsFgValPer] TYPE_REG
+
+mwd a00a0038 a00a003c 0000036d //[m_regmodel.fg_fg.RegsFgCmprsVerRoiStch] TYPE_REG
+mwd a00a003c a00a0040 00000045 //[m_regmodel.fg_fg.RegsFgCmprsContFrmLen] TYPE_REG
+mwd a00a0040 a00a0044 000005cc //[m_regmodel.fg_fg.RegsFgEofToSofMipiCycNum] TYPE_REG
+mwd a00a0044 a00a0048 000003DC //[m_regmodel.fg_fg.RegsFgMemsNumCol] TYPE_REG
+mwd a00a004c a00a0050 00000001 //[m_regmodel.fg_fg.RegsFgDsptchMipEn] TYPE_REG
+mwd a00a0108 a00a010c 13e9184c //[m_regmodel.fg_fg.RegsFgMemPwrEstimationAddr] TYPE_REG
+mwd a00a010c a00a0110 00001038 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationValRate] TYPE_REG
+mwd a00a0110 a00a0114 46da6c45 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_0] TYPE_REG
+mwd a00a0114 a00a0118 545fb875 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_1] TYPE_REG
+mwd a00a0118 a00a011c 5913b034 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_2] TYPE_REG
+mwd a00a011c a00a0120 1b33c81d //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_3] TYPE_REG
+mwd a00a0120 a00a0124 8f1babc1 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_4] TYPE_REG
+mwd a00a0124 a00a0128 7f50ac9d //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_5] TYPE_REG
+mwd a00a0128 a00a012c c5dc1875 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_6] TYPE_REG
+mwd a00a012c a00a0130 76507d36 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationStrtData_7] TYPE_REG
+mwd a00a0130 a00a0134 00000001 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationDataMode] TYPE_REG
+mwd a00a0134 a00a0138 00002a77 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationBlkRep] TYPE_REG
+mwd a00a0138 a00a013c 00000007 //[m_regmodel.fg_fg.RegsFgMemI0Rm] TYPE_REG
+mwd a00a013c a00a0140 00000015 //[m_regmodel.fg_fg.RegsFgMemI1Rm] TYPE_REG
+mwd a00a0140 a00a0144 00000013 //[m_regmodel.fg_fg.RegsFgMemI2Rm] TYPE_REG
+mwd a00a0144 a00a0148 0000000a //[m_regmodel.fg_fg.RegsFgMemI3Rm] TYPE_REG
+mwd a00a0148 a00a014c 00000b83 //[m_regmodel.fg_fg.RegsFgMemPwrEstimationTglRows] TYPE_REG
+//mwd a00a0800 a00a0804 01111111 //[m_regmodel.interrupt_fg.RegsFgIntEnable] TYPE_REG
+//mwd a00a0804 a00a0808 00033000 //[m_regmodel.interrupt_fg.RegsFgIntType] TYPE_REG
+
+//mwd a0070000 a0070004 0000000e //enable FG on debug port
