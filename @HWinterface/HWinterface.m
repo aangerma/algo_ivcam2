@@ -18,7 +18,15 @@ classdef HWinterface <handle
     
     
     methods ( Access=private)
-        
+       function frame=privGetSingleFrame_FG(obj)
+            %get single frame
+            imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 15000);
+            % get depth
+            imageObj = imageCollection.Images.Item(0);
+            dImByte = imageObj.Item(0).Data;
+            frame.fg = cast(dImByte,'uint8');
+        end
+       
         function frame=privGetSingleFrame(obj)
             %get single frame
             imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
@@ -135,7 +143,8 @@ classdef HWinterface <handle
             obj.privRecFunc('cmd',{str},{res,val});
         end
         
-        startStream(obj);
+        %startStream(obj);
+        startStream(obj,FrameGraberMode,resolution);
         function stopStream(obj)
             if(obj.m_dotnetcam.Stream.IsDepthPlaying)
                 obj.runScript(obj.getPresetScript('stopStream'));
@@ -351,7 +360,58 @@ classdef HWinterface <handle
             
         end
         
+     function frame = FG_getFrame(obj,n,res,pos)
+            if(~exist('n','var'))
+                n=1;
+            end
+            if(~exist('res','var'))
+                res= [720 1280];
+            end
+            if(~exist('pos','var'))
+                pos.left = 0;
+                pos.top = 0;
+            end
+%% config FG grabber
+            if(~obj.m_dotnetcam.Stream.IsDepthPlaying) % check that not in streaming
+                obj.cmd('fgcfgbypass 1'); % bypass internal configuration by FW
+                obj.cmd('mwd a0050004 a0050008 11'); % inverse direction bit for frame graber block
         
+                if(res == [720 1280])         %res 720x1280
+                    obj.runPresetScript('fg_time_1280x720');
+                    limit_diff = hex2dec('3540');
+                    top_range =  [256 17184];
+                    left_range = [255 1023];
+                else if (res == [600 800])    %res 800x600
+                    obj.runPresetScript('fg_time_800x600');
+                    limit_diff = hex2dec('1CC0');    
+                    top_range =  [256 16348];
+                    left_range = [255 1280];
+                    else
+                        % invalid resolution
+                        error('invalid resolution');
+                    end
+                end
+                pos.top = uint32(top_range(1)+ (pos.top/100)*(top_range(2)-top_range(1)));
+                pos.left = uint32(left_range(1)+ (pos.left/100)*(left_range(2)-left_range(1)));
+                LowLimit = dec2hex(pos.top);
+                UpperLimit = dec2hex(pos.top + limit_diff);
+                LeftOffset = dec2hex(pos.left);
+                CmdLowLimit     = ['mwd a00a0034 a00a0038 ',LowLimit];
+                CmdUpperLimit   = ['mwd a00a0030 a00a0034 ',UpperLimit];
+                CmdLeftOffset   = ['mwd a00a0044 a00a0048 ',LeftOffset];
+                obj.cmd(CmdLowLimit); 
+                obj.cmd(CmdUpperLimit); 
+                obj.cmd(CmdLeftOffset); 
+                FG_mode = true;    
+                obj.startStream(FG_mode,res);
+            end
+%%            
+            stream(1) = obj.privGetSingleFrame_FG();%capture atleast 1
+            for i = 2:n
+                stream(i) = obj.privGetSingleFrame_FG();%#ok
+            end
+            frame=stream;
+        end
         
         
         
