@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="yes">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\system\valTest</outputFolder>
+        <dataFolder>c:\temp\system\valTest\data</dataFolder>
+        <dataSource>robot</dataSource>
+    </params>
+    <tests>
+        <test name="minRange_20cm" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[95 : 100]" />
+        <test name="fillRate_50cm" metrics="fillRate" target="checkerboard_50" distance="50cm" threshold="[95:100]" />
+        <test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:6]" />
+        <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
+        <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
+        <test name="fillRate_1m" metrics="fillRate" target="checkerboard_50" distance="1m" threshold="[95:100]" />
+        <test name="planeFit_1m" metrics="planeFit" target="checkerboard_50" distance="1m" threshold="[0:70]" />
+        <test name="zStd_1m" metrics="zStd" target="checkerboard_50" distance="1m" threshold="[0:20]" />
+        <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_50" distance="1m" threshold="[0:5]" />
+    </tests>
+</root>
