@@ -66,5 +66,10 @@ def test_validation_robot_max_range():
     runIqValidation.validation_test(filePath)
 
 
+@slash.tag('robot')
+def test_validation_robot_system():
+    filePath = r'Avv/tests/iqValidation/robot_system.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.validation_test(filePath)
 if __name__ == "__main__":
     test_validation_ivs()
