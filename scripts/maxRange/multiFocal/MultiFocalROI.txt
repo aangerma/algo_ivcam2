@@ -1,0 +1,10 @@
+//Wide Rectangle 1GHz
+//mwd a0050078 a005007c 3FBF0840 //Horizontal
+//mwd a005007c a0050080 3FBF0040 //Vertical
+
+//Medium Rectangle 250MHz
+
+mwd a0050088 a005008c 30001700 //Horizontal 
+mwd a005008c a0050090 2F000A00 //Vertical 
+mwd a00d01f0 a00d01f4 ffffffff // Shadow update
+mwd a00d01ec a00d01f0 ffffffff // Shadow update
