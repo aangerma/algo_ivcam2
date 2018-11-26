@@ -3,6 +3,7 @@ hw = HWinterface();
 hw.startStream();
 
 r=Calibration.RegState(hw);
+r.add('rast.*bilt.*bypass'    ,true     );
 r.add('invbypass'    ,true     );
 r.add('sphericalEn'    ,true     );
 r.set();

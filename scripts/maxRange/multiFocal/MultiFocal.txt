@@ -1,0 +1,30 @@
+//Duplicating AFE parameters, can be optimized
+
+//mwd a003007c a0030080 00002 // Potential bug, gain adjustation isnt enough - omulla 2
+//mwd a0030080 a0030084 20202 // Slow Path Curve
+mwd a0030228 a003022c 1 // Enable MultiFocal on AFE
+
+mwd a0050620 a0050624 01001001 // Enable Multi Focal with 250MHz in the smallest ROI, 500MHz at the middle ROI.
+
+
+// mwd a00e09e8 a00e09ec 45A15000
+// mwd a00e09ec a00e09f0 45A15000// Calibrating 250Mbps propogation delay (RegsDESTtxFRQpd_002), this needs to be modified per unit
+
+//45A15000 - of
+//45A20000 - -Al
+//mwd a00e0b08 a00e0b0c 408000000 // move to 1/4 conversion for extended range
+
+//Wide Rectangle 250MHz
+mwd a0050078 a005007c 3FBF0840 //Horizontal
+mwd a005007c a0050080 3FBF0040 //Vertical
+
+//Medium Rectangle 500MHz
+mwd a0050088 a005008c 37001000 //Horizontal 
+mwd a005008c a0050090 3a000500 //Vertical 
+
+//Small Rectangle 1G
+mwd a0050094 a0050098 30001700 //Horizontal 
+mwd a0050098 a005009c 2F000A00 //Vertical 
+
+mwd a00d01f0 a00d01f4 ffffffff // Shadow update
+mwd a00d01ec a00d01f0 ffffffff // Shadow update

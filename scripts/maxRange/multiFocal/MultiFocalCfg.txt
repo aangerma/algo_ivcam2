@@ -13,8 +13,3 @@ mwd a0050620 a0050624 01003001 // Enable Multi Focal with 250MHz in the middle
 //45A20000 - -Al
 //mwd a00e0b08 a00e0b0c 408000000 // move to 1/4 conversion for extended range
 
-mwd a0050620 a0050624 01031001 // Enable Multi Focal with 250MHz in the middle
-mwd a0050094 a0050098 20001000 //Horizontal 
-mwd a0050098 a005009c 20000700 //Vertical 
-mwd a00d01f0 a00d01f4 ffffffff // Shadow update
-mwd a00d01ec a00d01f0 ffffffff // Shadow update
