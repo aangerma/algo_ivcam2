@@ -26,7 +26,7 @@ else
     [xcrossAngQ,~] =  Pipe.CBUF.FRMW.xy2ang(xcrossPix,ones(size(xcrossPix))*double(regs.GNRL.imgVsize)/2,regs);
     angStep = 8;
     [angyQ,angxQ] = ndgrid(int16(-2^11-1:angStep:2^11-1),xcrossAngQ);
-    [~,~,x,y] = Pipe.DIGG.ang2xy(angxQ,angyQ,regs,Logger(),[]);
+    [~,~,x,y] = Pipe.DIGG.ang2xy(angxQ,angyQ,regs,[],[]);
     x = reshape(x,size(angxQ));
     y = reshape(y,size(angyQ));
     
