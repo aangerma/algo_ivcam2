@@ -19,7 +19,7 @@ txcode = binaryVectorToHex(fliplr(reshape(txcode',32,2)'));
 
 txregs.FRMW.txCode = uint32([hex2dec(txcode{1}),hex2dec(txcode{2}),0,0]);
 txregs.GNRL.codeLength = uint8(origLength);
-txregs.FRMW.coarseSampleRate = uint8(4);
+txregs.FRMW.coarseSampleRate = uint8(2);
 
 hw.setCode(txregs,0);
 end
