@@ -142,9 +142,9 @@
       <Section Name="StrapState" Title="Strap state" Offset="36" Size="4" FormatType="HexNumber" />
       <Section Name="OemId" Title="OEM ID" Offset="40" Size="4" FormatType="HexNumber" />
       <Section Name="ControlVendor" Title="Control vendor" Offset="44" Size="4" FormatType="HexNumber" />
-      <Section Name="OpticalHeadModuleSN" Title="OpticModuleSerial" Offset="56" Size="8" FormatType="BarCodeSerial12Char" />
+      <Section Name="OpticalHeadModuleSN" Title="OpticModuleSerial" Offset="60" Size="4" FormatType="BarCodeSerial12Char" />
       <Section Name="OpticalModuleVersion" Title="Stereo module version" Offset="64" Size="1" FormatType="HexNumber" />
-      <Section Name="AsicModuleSerial" Title="AsicModuleSerial" Offset="72" Size="8" FormatType="BarCodeSerial12Char" />
+      <Section Name="AsicModuleSerial" Title="AsicModuleSerial" Offset="74" Size="6" FormatType="BarCodeSerial12Char" />
       <Section Name="AsicModuleChipID" Title="Asic module chip ID" Offset="80" Size="8" FormatType="BarCodeSerial12Char" />
       <Section Name="AsicModuleVersion" Title="Asic module version" Offset="88" Size="1" FormatType="HexNumber" />
       <Section Name="AsicModuleMm" Title="Asic module mm#" Offset="92" Size="4" FormatType="HexNumber" />
@@ -423,8 +423,12 @@
   <Command Name="RAST_STATS_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x62" CmdPermission="Public" Description="Enable Cbuf statistics collection">
     <Parameter1 Name="1 - enable, 0 - disable" />
   </Command>
-  <Command Name="FGCFGBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x63" CmdPermission="Public" Description="Enable Cbuf statistics collection">
+  <Command Name="FGCFGBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x63" CmdPermission="Public" Description="Frame grabber configuration bypass">
     <Parameter1 Name="1 - bypass, 0 - use FW cfg" />
+  </Command>
+  <Command Name="APD_FBVSENSE_CFG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x64" CmdPermission="Public" Description="Enable Cbuf statistics collection">
+    <Parameter1 Name="threhold (0-0x3FF)" />
+	<Parameter2 Name="window (0-0xFFFFFFFF)" />
   </Command>
     
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
