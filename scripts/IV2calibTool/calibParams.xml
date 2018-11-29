@@ -17,6 +17,7 @@
       <imFovX>[50 inf]</imFovX>
       <imFovY>[35 inf] </imFovY>
       <irCoverage>[80 100]</irCoverage>
+      <stdIrCoverage>[0 1]</stdIrCoverage>
    </errRange>
    <valRange>
        <horizEdge>[0 inf]</horizEdge>

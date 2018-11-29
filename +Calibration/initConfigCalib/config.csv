@@ -97,6 +97,4 @@ JFILsort1Edge03      b1
 JFILirShadingBypass  b1 
 JFILgeomBadConf      h1
 JFILgrad1ConfUpdVal  h1
-JFILgrad2ConfUpdVal  h1     
-EXTLhwaMaskCBUF      h3000
-EXTLhwaMaskJFIL      h60
+JFILgrad2ConfUpdVal  h1

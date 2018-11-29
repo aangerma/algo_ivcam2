@@ -106,6 +106,4 @@ JFILsort2bypassMode  h00000000
 JFILsort3bypassMode  h00000000
 JFILsort1Edge01      b1       
 JFILsort1Edge03      b1       
-JFILirShadingBypass  b1       
-EXTLhwaMaskCBUF      h3000    
-EXTLhwaMaskJFIL      h60      
+JFILirShadingBypass  b1

@@ -227,13 +227,13 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     hw.cmd('exec_table 140//enable mems drive');
     pause(0.1);
     hw.cmd('thermloopstart');
-    pause(1);
+    pause(0.1);
     hw.cmd('exec_table 141//enable mems');
     pause(0.1);
     hw.cmd('exec_table 142//enable FB');
     pause(0.1);
     hw.runPresetScript('startStream');
-    pause(1);
+    pause(0.1);
 %     hw.setSize();
     restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
     %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');

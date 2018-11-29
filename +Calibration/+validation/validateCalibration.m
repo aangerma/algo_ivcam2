@@ -8,7 +8,7 @@ function validateCalibration(runParams,calibParams,fprintff)
         stream = hw.getNFrames(100);
         saveValidationFrames(frame,runParams,'');
         r=Calibration.RegState(hw);
-        r.add('JFILbypass$'        ,false    );
+        r.add('JFILbypass$'        ,true    );
         r.add('DIGGgammaScale', uint16([256,256]));
         r.set();
         pause(0.1);

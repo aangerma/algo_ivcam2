@@ -9,6 +9,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     if(~exist('spark','var'))
         spark=[];
     end
+
     write2spark = ~isempty(spark);
     
     % runParams - Which calibration to perform.
@@ -56,7 +57,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% ::calibrate delays::
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
-        return;
+        return;9
     end
     
     %% ::dsm calib::
@@ -66,7 +67,9 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     end
    
     %% ::gamma:: 
-    results = calibrateGamma(runParams, calibParams, results, fprintff, t);
+	results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t);
+	calibrateJfilGamma(fw);
+
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
     [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
@@ -330,7 +333,21 @@ function [results,calibPassed] = calibrateDSM(hw,fw, runParams, calibParams,resu
     results.irCoverage = covResults.irCoverage;
     results.stdIrCoverage = covResults.stdIrCoverage; 
 end
-function results = calibrateGamma(runParams, calibParams, results, fprintff, t)
+
+function calibrateJfilGamma(fw, calibParams,fnCalib)
+	irInnerRange = calibParams.gnrl.irInnerRange;
+	irOuterRange = calibParams.gnrl.irOuterRange;
+	regs = fw.get();
+	newGammaScale = int16([regs.JFIL.gammaScale(1),diff(irOuterRange)/diff(irInnerRange)*1024]);
+	newGammaShift = int16([regs.JFIL.gammaShift(1),irOuterRange(1) - newGammaScale(2)*irInnerRange(1)/1024]);
+	gammaRegs.JFIL.gammaScale = newGammaScale;
+	gammaRegs.JFIL.gammaShift = newGammaShift;
+	fw.setRegs(gammaRegs,fnCalib);
+	
+
+end
+
+function results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t)
     fprintff('[-] gamma...\n');
     if (runParams.gamma)
         %     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,.verbose);
@@ -393,6 +410,10 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             hw.runScript(fnAlgoTmpMWD);
             hw.shadowUpdate();
             calibPassed = 1;
+
+            [~,results.geomErrExtraImages] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1);
+
+
         else
             fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
         end
@@ -433,7 +454,10 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         fprintff('Done.\n');
         % Remove modulation as well to get a noise image
         
-        imNoise = collectNoiseIm(hw);                
+        imNoise = collectNoiseIm(hw);
+
+        % Ambient value - Mean of the center 21x21 (arbitrary) patch in the noise image.
+        results.ambVal = mean(vec(imNoise(size(imNoise,1)/2-10:size(imNoise,1)/2+10, size(imNoise,2)/2-10:size(imNoise,2)/2+10)));
         r.reset();
         
         
@@ -508,30 +532,24 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib)
     fw.setRegs(intregs,fnCalib);
     fw.get();
 end
-function score = mergeScores(results,runParams,calibParams,fprintff)
+function pass = mergeScores(results,runParams,calibParams,fprintff)
     f = fieldnames(results);
-    scores=zeros(length(f),1);
+    inRange=zeros(length(f),1);
     for i = 1:length(f)
-        scores(i) = 100 - 40*(results.(f{i})-calibParams.errRange.(f{i})(1))/diff(calibParams.errRange.(f{i}));
-        scores(i) = max(min(scores(i),100),0);
+        inRange(i) = results.(f{i}) >= calibParams.errRange.(f{i})(1) & results.(f{i}) <= calibParams.errRange.(f{i})(2);
     end
-    score = min(scores);
+    pass = min(inRange);
     
     
-    if(runParams.verbose)
-        for i = 1:length(f)
-            s04=floor((scores(i)-1)/100*5);
-            asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-            if scores(i)>=60 strstatus = 'passed'; else  strstatus = 'failed'; end
-            strrange = sprintf('[%2.2g..%2.2g]',calibParams.errRange.(f{i}));
-            ll=fprintff('% -20s: %s %s %3g %2.2g %s\n',f{i},strstatus,asciibar,scores(i),results.(f{i}),strrange);
-        end
-        fprintff('%s\n',repmat('-',1,ll));
-        s04=floor((score-1)/100*5);
-        asciibar = sprintf('|%s#%s|',repmat('-',1,s04),repmat('-',1,4-s04));
-        fprintff('% -20s: %s %g\n','score',asciibar,score);
-        
+    for i = 1:length(f)
+        if inRange(i) strstatus = 'passed'; else  strstatus = 'failed'; end
+        strrange = sprintf('[%2.2g..%2.2g]',calibParams.errRange.(f{i}));
+        ll=fprintff('% -20s: %s %2.2g %s\n',f{i},strstatus,results.(f{i}),strrange);
     end
+    if pass strstatus = 'passed'; else  strstatus = 'failed'; end
+    fprintff('%s\n',repmat('-',1,ll));
+    fprintff('% -20s: %s\n','Calibration status',strstatus);
+
 end
 
 function burn2Device(hw,score,runParams,calibParams,fprintff,t)
