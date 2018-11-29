@@ -60,8 +60,10 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     end
     
     %% ::dsm calib::
-    calibrateDSM(hw, fw, runParams, calibParams,fnCalib, fprintff,t);
-    
+    [results,calibPassed] = calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
+    if ~calibPassed
+       return 
+    end
    
     %% ::gamma:: 
     results = calibrateGamma(runParams, calibParams, results, fprintff, t);
@@ -300,7 +302,7 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
         fprintff('[?] skipped\n');
     end
 end
-function calibrateDSM(hw,fw, runParams, calibParams,fnCalib, fprintff, t)
+function [results,calibPassed] = calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
         
@@ -311,6 +313,22 @@ function calibrateDSM(hw,fw, runParams, calibParams,fnCalib, fprintff, t)
         fprintff('[?] skipped\n');
     end
     
+    %test coverage
+    if runParams.verbose
+        fig = figure();
+    else
+        fig = figure('visible','off');
+    end
+    [~, covResults] = Calibration.validation.validateCoverage(hw,true,fig);
+    calibPassed = covResults.irCoverage <= calibParams.errRange.irCoverage(2) && ...
+        covResults.irCoverage >= calibParams.errRange.irCoverage(1);
+    if calibPassed
+        fprintff('[v] ir coverage passed[e=%g]\n',covResults.irCoverage);
+    else
+        fprintff('[x] ir coverage passed[e=%g]\n',covResults.irCoverage);
+    end
+    results.irCoverage = covResults.irCoverage;
+    results.stdIrCoverage = covResults.stdIrCoverage; 
 end
 function results = calibrateGamma(runParams, calibParams, results, fprintff, t)
     fprintff('[-] gamma...\n');
