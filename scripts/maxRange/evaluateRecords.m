@@ -15,14 +15,19 @@ params.detectDarkRect = 1;
 
 for fi = 1:numel(files)
     file = files(fi);
+    if contains(file.name,'LPF_disabled')
+       continue; 
+    end
+    file.name
     load(fullfile(d,file.name));
+    
     for metI = 1:2 
         met = @(m,t,p) Validation.metrics.(m)(frames, p);
         [score, res] = met(metrics{metI},target,params);
         if metI == 1
-            results.(file.name).(metrics{metI}) = res.meanFillRate;
+            results.(file.name(1:end-4)).(metrics{metI}) = res.meanFillRate;
         elseif metI == 2
-            results.(file.name).(metrics{metI}) = res.meanTempNoise;
+            results.(file.name(1:end-4)).(metrics{metI}) = res.meanTempNoise;
         end
     end
 end
