@@ -1,13 +1,11 @@
-function [score, coverageRes ] = validateCoverage( hw,isSphericalMode,figH )
+function [score, coverageRes ] = validateCoverage( hw,isSphericalMode )
     % validate the IR coverage of the HW
     
     % handle missing inputs
     if ~exist('isSphericalMode','var')
         isSphericalMode = true;
     end
-    if ~exist('figH','var')
-        figH = [];
-    end
+    
     
     % set hw and capture images
     nCaptures = 100;
@@ -20,6 +18,7 @@ function [score, coverageRes ] = validateCoverage( hw,isSphericalMode,figH )
         r.add('DIGGsphericalEn',false);
     end
     r.set();
+    pause(0.1);
     frames = hw.getFrame(nCaptures,false);
     
     %calculate ir coverage metric
