@@ -57,7 +57,7 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     %% ::calibrate delays::
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
-        return;9
+        return;
     end
     
     %% ::dsm calib::
@@ -257,7 +257,7 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     if(runParams.dataDelay)
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.8 .8 1]));
-        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams.verbose);
+        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams);
         
         fw.setRegs(delayRegs,fnCalib);
         regs = fw.get();
@@ -299,7 +299,7 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     % mode to be above a certain threshold.
     fprintff('[-] Coarse DSM calibration...\n');
     if(runParams.DSM)
-        Calibration.aux.calibCoarseDSM(hw,calibParams,runParams.verbose);
+        Calibration.aux.calibCoarseDSM(hw,calibParams,runParams);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
         fprintff('[?] skipped\n');
@@ -309,7 +309,7 @@ function [results,calibPassed] = calibrateDSM(hw,fw, runParams, calibParams,resu
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
         
-        dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams.verbose);
+        dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams);
         fw.setRegs(dsmregs,fnCalib);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else

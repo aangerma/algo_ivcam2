@@ -1,4 +1,4 @@
-function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
+function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
     %CALIBDSM find DSM scale and offset such that:
     % 1. The zero order reported angles are: [angx,angy] =[0,0]
     % 2. The range of angles cover as much as possible.
@@ -6,7 +6,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     
     % Start by setting  my own DSM values. This make sure none of the angles
     % are saturated.
-    
+    verbose = runParams.verbose;
     margin = params.dsm.margin;
     
     [angxRawZO,angyRawZO,restFailed] = zeroOrderAngles(hw);
@@ -15,7 +15,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
     dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
     dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single');
-    hw.shadowUpdate();
+    
     % Turn to spherical, and see the minimal and maximal angles we get per
     % axis.
     angxZO = (angxRawZO+dsmXoffset)*dsmXscale - 2047;
@@ -31,29 +31,9 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     hw.setReg('DIGGsphericalEn',true);
     % Shadow update:
     hw.shadowUpdate();
-    pause(2);
+    pause(0.1);
     sz = hw.streamSize();
     d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
-    if(verbose)
-        ff=figure(sum(mfilename));
-        pre_contour=(d_pre.i>0)-imerode(d_pre.i>0,ones(5));
-        imagesc(cat(3,pre_contour,pre_contour*0,pre_contour*0));
-      
-        title('Spherical Validity Before DSM Calib')
-        
-        colZO = (1 + angxZO/2047)/2*(double(sz(2))-1)+1;
-        rowZO = (1 + angyZO/2047)/2*(double(sz(1))-1)+1;
-        hold on;
-        plot( colZO,rowZO,'-s','MarkerSize',10,...
-            'MarkerEdgeColor','red',...
-            'MarkerFaceColor',[1 .6 .6]);
-        
-        txt1 = ['\leftarrow' sprintf(' Zero Order Angles=[%.0f,%.0f]',angxZO,angyZO)];
-        text(double(colZO),double(rowZO),txt1)
-    end
-    
-    
-    
     
     [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO);
     % Calulcate raw angx/y of the edges:
@@ -72,17 +52,33 @@ function [dsmregs] = calibDSM(hw,params,fprintff,verbose)
     hw.setReg('EXTLdsmXoffset',dsmregs.EXTL.dsmXoffset);
     hw.setReg('EXTLdsmYoffset',dsmregs.EXTL.dsmYoffset);
     hw.shadowUpdate();
-    pause(2);
+    pause(0.1);
     d_post=hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     
     if(verbose)
+        ff=Calibration.aux.invisibleFigure();
+        pre_contour=(d_pre.i>0)-imerode(d_pre.i>0,ones(5));
+        imagesc(cat(3,pre_contour,pre_contour*0,pre_contour*0));
+      
+        title('Spherical Validity before (r) and after (g) DSM Calib')
+        
+        colZO = (1 + angxZO/2047)/2*(double(sz(2))-1)+1;
+        rowZO = (1 + angyZO/2047)/2*(double(sz(1))-1)+1;
+        hold on;
+        plot( colZO,rowZO,'-s','MarkerSize',10,...
+            'MarkerEdgeColor','red',...
+            'MarkerFaceColor',[1 .6 .6]);
+        
+        txt1 = ['\leftarrow' sprintf(' Zero Order Angles=[%.0f,%.0f]',angxZO,angyZO)];
+        text(double(colZO),double(rowZO),txt1)
+    
+    
         post_contour=(d_post.i>0)-imerode(d_post.i>0,ones(5));
         imagesc(cat(3,pre_contour,post_contour,post_contour*0));
-        title('Spherical Validity After DSM Calib')
-        axis image;
-        drawnow;
-        pause(1);
-        close(ff);
+
+        
+        
+        Calibration.aux.saveFigureAsImage(ff,runParams,'DSM','Spherical_Validity');
     end
     
     
