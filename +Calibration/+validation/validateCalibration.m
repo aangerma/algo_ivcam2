@@ -24,7 +24,8 @@ function validateCalibration(runParams,calibParams,fprintff)
         Calibration.validation.validateDelays(hw,calibParams,fprintff);
         Calibration.validation.validateDFZ(hw,frame,fprintff);
         Calibration.validation.validateROI(hw,calibParams,fprintff);
-        [zSTD, ~] = Validation.metrics.zStd(stream, params)
+        Calibration.validation.validateLOS(hw,fprintff);
+        [zSTD, ~] = Validation.metrics.zStd(stream, params);
         [~, results] = Validation.metrics.gridEdgeSharp(frame, []);
         fprintff('%s: %2.2g\n','zSTD',zSTD);
         fprintff('%s: %2.2g\n','horizSharpnessMean',results.horizMean);
