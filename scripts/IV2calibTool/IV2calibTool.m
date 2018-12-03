@@ -89,6 +89,7 @@ function ll=fprintff(app,varargin)
 end
 
 function app=createComponents()
+    runParams = xml2structWrapper('IV2calibTool.xml');
     sz=[640 700];
     % Create figH
     app.figH = figure('units','pixels',...
@@ -108,7 +109,7 @@ function app=createComponents()
     centerfig(app.figH );
     
     tg = uitabgroup('Parent',app.figH);
-    configurationTab=uitab(tg,'Title','configuration');
+    configurationTab=uitab(tg,'Title','Main');
     advancedTab=uitab(tg,'Title','Advanced');
     app.figH.Resize='off';
     
@@ -180,21 +181,22 @@ function app=createComponents()
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
+    app.disableAdvancedOptions = runParams.disableAdvancedOptions;
+    if runParams.disableAdvancedOptions checkBoxesMode = 'inactive'; else checkBoxesMode = 'on'; end
     for i=1:length(cbnames)
         f=cbnames{i};
-        app.cb.(f) = uicontrol('style','checkbox','parent',advancedTab);
+        app.cb.(f) = uicontrol('style','checkbox','parent',advancedTab,'enable',checkBoxesMode);
         app.cb.(f).String = f;
         app.cb.(f).Position = [cbSz(1)*floor((i-1)/ny)+cbSz(2) cbSz(2)*(ny-(mod(i-1,ny)+1)) cbSz];
         app.cb.(f).Value = true;
         app.cb.(f).Callback=@outputFolderChange_callback;
-        
-        
     end
     % Create outputFldrBrowseBtn
     app.advancedSaveBtn = uicontrol('style','pushbutton','parent',advancedTab);
     app.advancedSaveBtn.Callback = @saveDefaults;
     app.advancedSaveBtn.Position = [560 10 50 22];
     app.advancedSaveBtn.String = 'save';
+%     set(handles.checkbox1,'Enable','off')  %disable checkbox1
     guidata(app.figH,app);
     
     
@@ -225,6 +227,7 @@ function saveDefaults(varargin)
     s=structfun(@(x) x.Value,app.cb,'uni',0);
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
+    s.disableAdvancedOptions = app.disableAdvancedOptions;
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
     end
@@ -321,18 +324,21 @@ function statrtButton_callback(varargin)
         %=======================================================RUN CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
-        [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
-        if calibPassed == 1
-            app.logarea.BackgroundColor = [0 0.8 0]; % Color green
-        elseif calibPassed == 0
-            app.logarea.BackgroundColor = [0.8 0 0]; % Color red
-        end
-        if app.cb.replayMode.Value == 0
-            s.AddMetrics('score', score,calibParams.passScore,100,true);
-        end
+        [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
+        validPassed = 1;
         if calibPassed~=0 && runparams.validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
-            Calibration.validation.validateCalibration(runparams,calibParams,fprintffS);
+            [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s);
+        end
+        
+        if calibPassed == 1 || calibPassed == -1
+            if validPassed
+                app.logarea.BackgroundColor = [0 0.8 0]; % Color green
+            else
+                app.logarea.BackgroundColor = [1 0.5 0]; % orange green
+            end
+        elseif calibPassed == 0
+            app.logarea.BackgroundColor = [0.8 0 0]; % Color red
         end
         
         

@@ -1,5 +1,5 @@
-function [  ] = validateDelays( hw, calibParams, fprintff)
-
+function [ delayRes ] = validateDelays( hw, calibParams, fprintff)
+delayRes = [];
 r=Calibration.RegState(hw);
 %% SET
 r.add('RASTbiltBypass'     ,true     );
@@ -29,15 +29,15 @@ r.set();
 
 
 %% IR Delay 
-[d,~]=Calibration.dataDelay.calcIRDelayFix(hw);
+[d,~,pixVar]=Calibration.dataDelay.calcIRDelayFix(hw);
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end
-if (abs(d)<=calibParams.dataDelay.iterFixThr)
-    fprintff('IR is synced (%d < %d).\n',abs(d),calibParams.dataDelay.iterFixThr);
-else
-    fprintff('IR is not synced enough (%d >= %d).\n',abs(d),calibParams.dataDelay.iterFixThr);
-end
+delayRes.DelaySlowOffest = abs(d);
+delayRes.DelaySlowPixVar = pixVar;
+
+fprintff('IR nano seconds diff: %d.\n',abs(d));
+
 
 %% Depth Delay
 [~,saveVal] = hw.cmd('irb e2 06 01'); % Original Laser Bias
@@ -49,11 +49,10 @@ imB=double(hw.getFrame(30).i)/255;
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end
-if (abs(d)<=calibParams.dataDelay.iterFixThr)
-    fprintff('Z is synced (%d < %d).\n',abs(d),calibParams.dataDelay.iterFixThr);
-else
-    fprintff('Z is not synced enough (%d >= %d).\n',abs(d),calibParams.dataDelay.iterFixThr);
-end
+delayRes.DelayFastOffest = abs(d);
+
+fprintff('Depth nano seconds diff: %d.\n',abs(d));
+
 hw.setReg('DESTaltIrEn', false);
 hw.cmd(sprintf('iwb e2 06 01 %02x',saveVal)); %reset value
 

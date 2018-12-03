@@ -8,8 +8,7 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figTitle)
         figImgs{1} = imread([bd 'calibrationChart.png']);
         figImgs{2} = imread([bd 'fineCheckerboardA3.png']);
     end
-    
-    f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@(varargin) set(varargin{1},'userdata',1));
+    f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@exitOnEnter,'WindowButtonDownFcn',@(varargin) set(varargin{1},'userdata',1));
     a=axes('parent',f);
     maximizeFig(f);
     I = mean(figImgs{figNum},3);
@@ -41,4 +40,10 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figTitle)
     
     raw=hw.getFrame(30);
     
+end
+function exitOnEnter(figHandle,varargin)
+    key = get(figHandle,'CurrentKey');
+    if (strcmp (key , 'return'))
+        set(figHandle,'userdata',1);
+    end
 end

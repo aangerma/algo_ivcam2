@@ -1,6 +1,6 @@
 % Load the data
 
-initDir = '\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\RXCalib\initScript';
+initDir = '\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\RXCalib\initConfigCalib';
 fw = Pipe.loadFirmware(initDir);
 [regs,luts] = fw.get();
 

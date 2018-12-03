@@ -1,8 +1,18 @@
-function dsmregs = calibCoarseDSM(hw,calibParams,verbose)
+function dsmregs = calibCoarseDSM(hw,calibParams,runParams)
 % Set regs such that -angmax,+angmax will cover the entire image
 % Look at the image, calculate the true angle range and set the scale and
 % offset accordingly.
-[rawXmin,rawXmax,rawYmin,rawYmax] = memsRawData(hw,calibParams.coarseDSM.nSamples);
+verbose = runParams.verbose;
+[angxRaw,angyRaw] = memsRawData(hw,calibParams.coarseDSM.nSamples);
+[rawXmin,rawXmax] = minmax_(angxRaw);
+[rawYmin,rawYmax] = minmax_(angyRaw);
+
+ff = Calibration.aux.invisibleFigure();
+plot(angxRaw,angyRaw,'r*'); xlabel('angxRaw'); ylabel('angyRaw'); title('Coarse DSM inputs');
+Calibration.aux.saveFigureAsImage(ff,runParams,'Coarse_DSM','Inputs_Distribution');
+
+
+
 [dsmregs.EXTL.dsmXscale,dsmregs.EXTL.dsmXoffset] = stretch2margin(rawXmin,rawXmax,calibParams.coarseDSM.margin);
 [dsmregs.EXTL.dsmYscale,dsmregs.EXTL.dsmYoffset] = stretch2margin(rawYmin,rawYmax,calibParams.coarseDSM.margin);
 
@@ -13,14 +23,14 @@ hw.setReg('EXTLdsmXoffset',dsmregs.EXTL.dsmXoffset);
 hw.setReg('EXTLdsmYoffset',dsmregs.EXTL.dsmYoffset);
 hw.shadowUpdate;
 
-if verbose
-    r = Calibration.RegState(hw);
-    r.add('DIGGsphericalEn', true);
-    r.set();
-    frame = hw.getFrame(10);
-    imagesc(frame.i);
-    r.reset();
-end
+% if verbose
+%     r = Calibration.RegState(hw);
+%     r.add('DIGGsphericalEn', true);
+%     r.set();
+%     frame = hw.getFrame(10);
+%     imagesc(frame.i);
+%     r.reset();
+% end
 
 
 end
@@ -34,7 +44,7 @@ offset = single((target+2047)/scale - rawMax);
 
 
 end
-function [rawXmin,rawXmax,rawYmin,rawYmax] = memsRawData(hw,nSamples)
+function [angxRaw,angyRaw] = memsRawData(hw,nSamples)
     angyRaw = zeros(nSamples,1);
     angxRaw = zeros(nSamples,1);
     hw.cmd('mwd fffe2cf4 fffe2cf8 40');
@@ -49,7 +59,5 @@ function [rawXmin,rawXmax,rawYmin,rawYmax] = memsRawData(hw,nSamples)
         angxRaw(i) = typecast(SA,'single');
         hw.cmd('mwd fffe2cf4 fffe2cf8 00');
     end
-    [rawXmin,rawXmax] = minmax_(angxRaw);
-    [rawYmin,rawYmax] = minmax_(angyRaw);
     
 end

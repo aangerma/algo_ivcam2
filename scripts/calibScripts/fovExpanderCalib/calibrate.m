@@ -10,7 +10,7 @@ calibParams = xml2structWrapper('calibParams.xml');
 
 
 %% Take images and then run full calib with and without fov expander
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\scripts\calibScripts\fovExpanderCalib\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\scripts\calibScripts\fovExpanderCalib\initConfigCalib');
 hw = HWinterface();
 regs = fw.get();
 fnAlgoInitMWD = 'algoInit.txt';

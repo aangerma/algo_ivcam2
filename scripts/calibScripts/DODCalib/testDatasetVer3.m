@@ -1,5 +1,5 @@
 %% Load the dataset
-fw = Pipe.loadFirmware('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\recordedDataVer3\initScript');
+fw = Pipe.loadFirmware('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\recordedDataVer3\initConfigCalib');
 recordspath = '\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\recordedDataVer3';
 [regs,luts] = fw.get();
 verbose = 1;

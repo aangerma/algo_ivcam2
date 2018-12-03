@@ -1,5 +1,5 @@
 clear
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 baseline = single(0);
 regs.DEST.baseline = baseline;
 fw.setRegs(regs,'');
@@ -31,7 +31,7 @@ end
 
 %%
 clear
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 baseline = single(30);
 regs.DEST.baseline = baseline;
 fw.setRegs(regs,'');
@@ -65,7 +65,7 @@ plot(zenith,minerr);
 
 %% Next question - what happens in our case where the baseline has an angle of 2 degrees? What happens to the DFZ calibration?
 clear
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 % baseline = single(31);
 % fovx = single(65);
 % fovy = single(55);
@@ -84,7 +84,7 @@ dist = 500;
 [o,minerr]=calibDFZFromRPT(rpt,regs,1,0);
 
 
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 % baseline = single(31);
 % regs2.DEST.baseline = baseline;
 % fw.setRegs(regs2,'');

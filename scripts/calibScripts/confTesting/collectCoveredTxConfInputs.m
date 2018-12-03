@@ -31,7 +31,7 @@ end
 % inputs(inputs == 4) = 0;
 % inputs(:,:,[1,3,4]) = inputs(:,:,[1,3,4])+ (randi(4,[480,640,3])-1);
 
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 regs = fw.get();
 confOut = Pipe.DEST.confBlock( inputs(:,:,1)/4, inputs(:,:,2), inputs(:,:,3),double(int32(inputs(:,:,4)*2^6)),  regs );
 

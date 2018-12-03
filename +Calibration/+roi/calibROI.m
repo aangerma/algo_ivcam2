@@ -1,4 +1,4 @@
-function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams)
+function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams,runParams)
 % Calibrate the margins of the image.
 % 1. Take a spherical mode image of up direction.
 % 2. Take a spherical mode image of down direction.
@@ -13,9 +13,9 @@ function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams)
 
 noiseThresh = max(imNoise(:));
 %% Get margins for each image
-edgesU = calcBounds(imU,noiseThresh);
+edgesU = calcBounds(imU,noiseThresh,runParams,'imU');
 marginsU = calcMargins(edgesU,regs,calibParams);
-edgesD = calcBounds(imD,noiseThresh);
+edgesD = calcBounds(imD,noiseThresh,runParams,'imD');
 marginsD = calcMargins(edgesD,regs,calibParams);
 
 extraMargins = [calibParams.roi.extraMarginT,...
@@ -50,7 +50,7 @@ for i = 1:numel(st)
 end
 
 end
-function edges = calcBounds(im,noiseThresh)
+function edges = calcBounds(im,noiseThresh,runParams,description)
 %% Mark desired pixels on spherical image
 % Todo - in any case, do not allow the bound toslice into the real image.
 
@@ -95,9 +95,10 @@ leftEdge = (topEdge(1,1):bottomEdge(1,1))'; leftEdge = [leftEdge,leftImIndex*one
 rightEdge = ((topEdge(end,1)):(bottomEdge(end,1)))'; rightEdge = [rightEdge,rightImIndex*ones(size(rightEdge))];
 imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
 
-ff = figure; imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
-pause(0.5);
-close(ff);
+ff = Calibration.aux.invisibleFigure; 
+imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
+title(description);
+Calibration.aux.saveFigureAsImage(ff,runParams,'ROI',description)
 
 edges.T = topEdge;
 edges.B = bottomEdge;
@@ -158,8 +159,14 @@ L = margins(3); R = margins(4);
 Vsz = single(regs.GNRL.imgVsize);
 Hsz = single(regs.GNRL.imgHsize);
 
-roiregs.FRMW.marginT = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
-roiregs.FRMW.marginB = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
+
+% Note - marginB refers to margin taken for y == 0. marginT is the margin
+% for y == imVsize-1. Therefore, marginB should be calculated by the margin
+% at the top of the image, and marginT should be calculated by the margin
+% at the bottom of the image - as pixel 0 is on top and pixel 479 is at the
+% bottom.
+roiregs.FRMW.marginB = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
+roiregs.FRMW.marginT = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
 roiregs.FRMW.marginL = int16((-L*Hsz + L*R*Hsz/(R-Hsz)) / (L-Hsz-L*R/(R-Hsz)));
 roiregs.FRMW.marginR = int16((-R*Hsz + L*R*Hsz/(L-Hsz)) / (R-Hsz-L*R/(L-Hsz)));
 

@@ -23,7 +23,7 @@ CBParams.size = 30;
 CBParams.bsz = [9,13];
 fovExpander = xlsread("Expander magnifications.xlsx");
 
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 regs.DEST.txFRQpd = single([5050,5050,5050]);
 regs.FRMW.xfov = single(65);
 regs.FRMW.yfov = single(55);
@@ -37,13 +37,13 @@ for i = 1:numel(dists)
     [darr(i).rpt,~] = simulateCB(dists(i),regs,CBParams,fovExpander);
 end
 
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 regs= fw.get();
 % fovExpander = [0:90;0:90]';
 [dfzRegs,eGeom,eProj] = calibDFZWithFE(darr,regs,0,fovExpander,1);
 
 %% Take 4 images and then run full calib with and without fov expander
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\scripts\calibScripts\fovExpanderCalib\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\scripts\calibScripts\fovExpanderCalib\initConfigCalib');
 regs = fw.get();
 fnAlgoInitMWD  =  'algoInit.txt';
 fw.genMWDcmd('DIGG|DEST',fnAlgoInitMWD);

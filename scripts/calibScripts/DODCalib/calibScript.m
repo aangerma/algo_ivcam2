@@ -9,7 +9,7 @@ uniformProjection = 0; % If 1 - "eye safe". If 0 - constant laser power.
 internalFolder = fullfile(outputFolder,filesep,'AlgoInternal');
 fnCalib     = fullfile(internalFolder,filesep,'calib.csv');
 fnUndsitLut = fullfile(internalFolder,filesep,'FRMWundistModel.bin32');
-initFldr = fullfile('\\tmund-MOBL1\C$\source\algo_ivcam2\+Calibration','initScript');
+initFldr = fullfile('\\tmund-MOBL1\C$\source\algo_ivcam2\+Calibration','initConfigCalib');
 copyfile(fullfile(initFldr,filesep,'*.csv'),internalFolder)
 
 mkdirSafe(outputFolder);

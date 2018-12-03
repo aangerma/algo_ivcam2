@@ -29,7 +29,7 @@ def calibration(xmlPath):
     err = io.StringIO()
 
     try:
-        calibPassed, score = eng.s.Calibration.runCalibStream(xmlPath, calibFilePath, stdout=out, stderr=err, nargout=2)
+        calibPassed = eng.s.Calibration.runCalibStream(xmlPath, calibFilePath, stdout=out, stderr=err, nargout=1)
     except Exception as e:
         slash.logger.debug('matlab out: {}'.format(out.getvalue()))
         slash.logger.error('matlab error: {}'.format(err.getvalue()))
@@ -39,21 +39,9 @@ def calibration(xmlPath):
 
     status = lambda x: 'pass' if x else 'failed'
     slash.logger.info("calibration : {}".format(status(calibPassed)), extra={"highlight": True})
-    slash.logger.debug("calibration score: {}".format(score), extra={"highlight": True})
 
-    try:
-        score = float(score)
-    except TypeError:
-        slash.logger.error("calibration: failed converting result: {}".format(score), extra={"highlight": True})
-        raise a_common.TestFail("Test failed please review log")
 
-    # threshold = 80
-    # s = "calibration: score: {}, threshold: {}, calibration out: {}".format(score, threshold, status(calibPassed))
-    # if score < threshold:
-    #     slash.logger.error(s, extra={"highlight": True})
-    #     raise a_common.TestFail("Test failed please review log")
-
-    s = "calibration: score: {}, calibration out: {}".format(score, status(calibPassed))
+    s = "calibration: out: {}".format(status(calibPassed))
     slash.logger.info(s, extra={"highlight": True})
 
 

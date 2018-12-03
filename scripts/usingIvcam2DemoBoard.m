@@ -5,7 +5,7 @@ Manages the current state of the registers.
 
 fw = Firmware; % Registers state is asic default (as described in Pipe\tables\.*frmw)
 
-initFW = fullfile(fileparts(pwd),'+Calibration','initScript'); % Folder with csv files with reg names and values
+initFW = fullfile(fileparts(pwd),'+Calibration','initConfigCalib'); % Folder with csv files with reg names and values
 fw = Pipe.loadFirmware(initFW);% Load from a specific folder
 
 fw.disp('baseline'); % Displays regs whos names fit the expression and their values.

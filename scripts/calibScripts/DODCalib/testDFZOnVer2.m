@@ -1,7 +1,7 @@
 % load('\\invcam450\d\source\ivcam20\camdata.mat')
 % load('\\invcam450\d\source\ivcam20\samsimdataWbaseLine.mat')
 
-fw = Pipe.loadFirmware('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\initScriptVer2');
+fw = Pipe.loadFirmware('\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\initConfigCalibVer2');
 recordspath = '\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\recordedDataVer2';
 [regs,luts] = fw.get();
 verbose = 1;

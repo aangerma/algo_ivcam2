@@ -1,4 +1,4 @@
-fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initScript');
+fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\initConfigCalib');
 regs= fw.get();
 fw.genMWDcmd('DESTconf|shadow','binaryTrainedConf.txt')
 [ir,maxpeaks] = meshgrid(linspace(0,4000,64),0:63);

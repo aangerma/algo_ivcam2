@@ -1,5 +1,5 @@
 %% Create the FW used for recording
-initDir = '\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\initScriptVer2';
+initDir = '\\tmund-MOBL1.ger.corp.intel.com\C$\git\ivcam2.0\scripts\calibScripts\DODCalib\DODCalibDataset\initConfigCalibVer2';
 fw = Pipe.loadFirmware(initDir);
 testregs.DEST.depthAsRange = true;
 testregs.DIGG.sphericalEn = true;
@@ -9,7 +9,7 @@ configfn = fullfile(initDir,'config.csv');
 fw.setRegs(testregs,configfn);
 fw.get();
 fw.writeUpdated(configfn);
-fw.genMWDcmd([],fullfile(initDir,'initScriptDepthAsRange.txt'));
+fw.genMWDcmd([],fullfile(initDir,'initConfigCalibDepthAsRange.txt'));
 
 %% Prepare for recording:
 hw=HWinterface(fw);
