@@ -10,7 +10,7 @@ results.imFovY = -atand(0*regs.DEST.p2aya + regs.DEST.p2ayb)+atand((sz(2)-1)*reg
 calibPassed = inRange(results.imFovX,calibParams.errRange.imFovX) && inRange(results.imFovY,calibParams.errRange.imFovY);
       
 if calibPassed
-    fprintff('[v] Image fovX/Y: [%3.3g,%3.3g].\n',results.imFovX,results.imFovY,calibParams.errRange.imFovX,calibParams.errRange.imFovY);
+    fprintff('[v] Image fovX/Y: [%3.3g,%3.3g].\n',results.imFovX,results.imFovY);
 else
     fprintff('[v] FovX/Y failed. Image fovX/Y: [%3.3g,%3.3g]. RangeX: [%3.3g,%3.3g]. RangeY: [%3.3g,%3.3g].\n',results.imFovX,results.imFovY,calibParams.errRange.imFovX,calibParams.errRange.imFovY);
 end
