@@ -37,14 +37,14 @@
       <DelaySlowOffest>[0 10]</DelaySlowOffest>
       <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
       <DelayFastOffest>[0 10]</DelayFastOffest>
-      <GeometricError>[0 2]</GeometricError>
+      <GeometricError>[0 3]</GeometricError>
       <roiHorizontalLoss>[0 4]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
       <losMaxDrift>[0 0.5]</losMaxDrift>
       <losMeanStdX>[0 0.5] </losMeanStdX>
       <losMeanStdY>[0 0.5]</losMeanStdY>
-      <MirrorRestAngX>[-1.5 1.5]</MirrorRestAngX>
-      <MirrorRestAngY>[-1.5 1.5]</MirrorRestAngY>
+      <MirrorRestAngX>[-20 20]</MirrorRestAngX>
+      <MirrorRestAngY>[-20 20]</MirrorRestAngY>
    </validationErrRange>   
    <thermal>
        <t0>32.8</t0>
