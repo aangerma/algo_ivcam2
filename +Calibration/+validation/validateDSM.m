@@ -55,9 +55,9 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     % hw.runPresetScript('systemConfig');
     pause(0.1);
     hw.cmd('exec_table 140//enable mems drive');
-    pause(0.1);
+    pause(2);
     hw.cmd('thermloopstart');
-    pause(0.1);
+    pause(2);
     hw.cmd('exec_table 141//enable mems');
     pause(0.1);
     hw.cmd('exec_table 142//enable FB');

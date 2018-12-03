@@ -11,7 +11,6 @@ function [score, coverageRes ] = validateCoverage( hw,isSphericalMode )
     nCaptures = 100;
     r = Calibration.RegState(hw);
     r.add('JFILBypass$',true);
-    r.add('RASTbiltBypass',true);
     if isSphericalMode
         r.add('DIGGsphericalEn',true);
     else
@@ -23,15 +22,15 @@ function [score, coverageRes ] = validateCoverage( hw,isSphericalMode )
     
     %calculate ir coverage metric
     [score, coverageRes,dbg] = Validation.metrics.irCoverage(frames);
+    coverageRes.probIm = dbg.probIm;
+    % Save image 
+%     
+%     set(0, 'CurrentFigure', figH)
+%     imagesc(dbg.probIm);
+%     title('Coverage Map');
+%     colormap jet;
+%     colorbar;
     
-    %display image if necessary
-    if ~isempty(figH)
-        set(0, 'CurrentFigure', figH)
-        imagesc(dbg.probIm);
-        title('Coverage Map');
-        colormap jet;
-        colorbar;
-    end
     
     %clean up hw
     r.reset();

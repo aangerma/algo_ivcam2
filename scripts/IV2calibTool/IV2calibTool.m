@@ -324,14 +324,11 @@ function statrtButton_callback(varargin)
         %=======================================================RUN CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
-        [calibPassed,score] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
+        [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
         if calibPassed == 1
             app.logarea.BackgroundColor = [0 0.8 0]; % Color green
         elseif calibPassed == 0
             app.logarea.BackgroundColor = [0.8 0 0]; % Color red
-        end
-        if app.cb.replayMode.Value == 0
-            s.AddMetrics('score', score,calibParams.passScore,100,true);
         end
         if calibPassed~=0 && runparams.validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));

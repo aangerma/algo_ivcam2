@@ -1,4 +1,4 @@
-function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spark)
+function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spark)
        
     t=tic;
     score=0;
@@ -61,14 +61,16 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     end
     
     %% ::dsm calib::
-    [results,calibPassed] = calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
-    if ~calibPassed
+    calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
+
+   %% Validate spherical fill rate
+   [results,calibPassed] = validateCoverage(hw,1, runParams, calibParams,results, fprintff);
+   if ~calibPassed
        return 
     end
-   
     %% ::gamma:: 
 	results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t);
-	calibrateJfilGamma(fw);
+	calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff);
 
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
@@ -86,35 +88,34 @@ function  [calibPassed,score] = runCalibStream(runParamsFn,calibParamsFn, fprint
     
     %% ::Fix ang2xy Bug using undistort table::
     [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
-
-    %% Measure scan line fill rate within ROI
-    fprintff('Scan line fill rate: ');
-    results.scanLineFillRate = Calibration.validation.validateScanFillRate( hw ,30); 
-    fprintff('%3.2g%%.\n',results.scanLineFillRate);
+    % Coverage within ROI 
+    [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
+    if ~calibPassed
+       return 
+    end
     %% Print image final fov
-    [results.imFovX,results.imFovY] = Calibration.aux.calcImFov(fw);
-    fprintff('Image fovX/Y: [%3.3g,%3.3g].\n',results.imFovX,results.imFovY);
+    [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
+    if ~calibPassed
+       return 
+    end
     % Update fnCalin and undist lut in output dir
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
     logResults(results,runParams);
     writeResults2Spark(results,spark,calibParams,write2spark);
     %% merge all scores outputs
-    score = mergeScores(results,runParams,calibParams,fprintff);
+    calibPassed = mergeScores(results,runParams,calibParams,fprintff);
     
     fprintff('[!] calibration ended - ');
-    if(score==0)
+    if(calibPassed==0)
         fprintff('FAILED.\n');
-    elseif(score<calibParams.passScore)
-        fprintff('QUALITY FAILED.\n');
     else
         fprintff('PASSED.\n');
     end
     
     %% Burn 2 device
-    burn2Device(hw,score,runParams,calibParams,fprintff,t);
+    burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
     
-    calibPassed = (score>=calibParams.passScore);
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
     %% Validation
@@ -126,7 +127,7 @@ function writeResults2Spark(results,s,calibParams,write2spark)
 if write2spark
     f = fieldnames(results);
     for i = 1:length(f)
-        s.AddMetrics(f{i}, results.(f{i}),calibParams.errRange.(f{i})(1),calibParams.errRange.(f{i})(2),false);
+        s.AddMetrics(f{i}, results.(f{i}),calibParams.errRange.(f{i})(1),calibParams.errRange.(f{i})(2),true);
     end 
 end
 
@@ -305,7 +306,47 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
         fprintff('[?] skipped\n');
     end
 end
-function [results,calibPassed] = calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
+function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, calibParams, results, fprintff)
+    calibPassed = 1;
+    if runParams.validation
+        if sphericalEn 
+            sphericalmode = 'Spherical Enable';
+            fname = strcat('irCoverage','SpEn');
+            fnameStd = strcat('stdIrCoverage','SpEn');
+        else
+            sphericalmode = 'spherical disable';
+            fname = strcat('irCoverage','SpDis');
+            fnameStd = strcat('stdIrCoverage','SpDis');
+        end
+        
+        %test coverage
+        [~, covResults] = Calibration.validation.validateCoverage(hw,sphericalEn);
+        % save prob figure
+        ff = Calibration.aux.invisibleFigure;
+        imagesc(covResults.probIm);
+        
+        title(sprintf('Coverage Map %s',sphericalmode)); colormap jet;colorbar;
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage Map %s',sphericalmode));
+
+        calibPassed = covResults.irCoverage <= calibParams.errRange.(fname)(2) && ...
+            covResults.irCoverage >= calibParams.errRange.(fname)(1);
+        
+        
+        if calibPassed
+            fprintff('[v] ir coverage %s passed[e=%g]\n',sphericalmode,covResults.irCoverage);
+        else
+            fprintff('[x] ir coverage %s passed[e=%g]\n',sphericalmode,covResults.irCoverage);
+        end
+        if sphericalEn
+            results.(fname) = covResults.irCoverage;
+            results.(fnameStd) = covResults.stdIrCoverage; 
+        else
+            results.(fname) = covResults.irCoverage;
+            results.(fnameStd) = covResults.stdIrCoverage; 
+        end
+    end
+end
+function calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
         
@@ -316,39 +357,28 @@ function [results,calibPassed] = calibrateDSM(hw,fw, runParams, calibParams,resu
         fprintff('[?] skipped\n');
     end
     
-    %test coverage
-    if runParams.verbose
-        fig = figure();
-    else
-        fig = figure('visible','off');
-    end
-    [~, covResults] = Calibration.validation.validateCoverage(hw,true,fig);
-    calibPassed = covResults.irCoverage <= calibParams.errRange.irCoverage(2) && ...
-        covResults.irCoverage >= calibParams.errRange.irCoverage(1);
-    if calibPassed
-        fprintff('[v] ir coverage passed[e=%g]\n',covResults.irCoverage);
-    else
-        fprintff('[x] ir coverage passed[e=%g]\n',covResults.irCoverage);
-    end
-    results.irCoverage = covResults.irCoverage;
-    results.stdIrCoverage = covResults.stdIrCoverage; 
 end
 
-function calibrateJfilGamma(fw, calibParams,fnCalib)
-	irInnerRange = calibParams.gnrl.irInnerRange;
-	irOuterRange = calibParams.gnrl.irOuterRange;
-	regs = fw.get();
-	newGammaScale = int16([regs.JFIL.gammaScale(1),diff(irOuterRange)/diff(irInnerRange)*1024]);
-	newGammaShift = int16([regs.JFIL.gammaShift(1),irOuterRange(1) - newGammaScale(2)*irInnerRange(1)/1024]);
-	gammaRegs.JFIL.gammaScale = newGammaScale;
-	gammaRegs.JFIL.gammaShift = newGammaShift;
-	fw.setRegs(gammaRegs,fnCalib);
-	
+function calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff)
+    fprintff('[-] Jfil gamma...\n');
+    if (runParams.gamma)
+        irInnerRange = calibParams.gnrl.irInnerRange;
+        irOuterRange = calibParams.gnrl.irOuterRange;
+        regs = fw.get();
+        newGammaScale = int16([regs.JFIL.gammaScale(1),diff(irOuterRange)/diff(irInnerRange)*1024]);
+        newGammaShift = int16([regs.JFIL.gammaShift(1),irOuterRange(1) - newGammaScale(2)*irInnerRange(1)/1024]);
+        gammaRegs.JFIL.gammaScale = newGammaScale;
+        gammaRegs.JFIL.gammaShift = newGammaShift;
+        fw.setRegs(gammaRegs,fnCalib);
+        fprintff('[v] Done\n');
+    else
+        fprintff('[?] skipped\n');
+    end
 
 end
 
 function results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t)
-    fprintff('[-] gamma...\n');
+    fprintff('[-] Digg gamma...\n');
     if (runParams.gamma)
         %     [gammaregs,results.gammaErr] = Calibration.aux.runGammaCalib(hw,.verbose);
         %
@@ -398,6 +428,8 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         
         % dodluts=struct;
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,0);
+        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV]);
+        [~,results.geomErrExtraImages] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
         
@@ -411,7 +443,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             hw.shadowUpdate();
             calibPassed = 1;
 
-            [~,results.geomErrExtraImages] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1);
+            
 
 
         else
@@ -444,13 +476,10 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         r = Calibration.RegState(hw);
         r.add('DIGGsphericalEn'    ,true     );
         r.set();
-        hw.cmd('iwb e2 06 01 00'); % Remove bias
         fprintff('[-] Collecting up/down frames... ');
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Make sure image is bright');
-        [imU,imD]=Calibration.dataDelay.getScanDirImgs(hw,1);
-        hw.cmd('iwb e2 06 01 70'); % Return bias
-        pause(0.1);
         [imUbias,imDbias]=Calibration.dataDelay.getScanDirImgs(hw,1);
+        pause(0.1);
         fprintff('Done.\n');
         % Remove modulation as well to get a noise image
         
@@ -461,7 +490,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         r.reset();
         
         
-        [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,regs,calibParams);
+        [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,regs,calibParams,runParams);
         fw.setRegs(roiRegs, fnCalib);
         fw.get(); % run bootcalcs
         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
@@ -474,20 +503,15 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         if calibParams.fovExpander.valid
             FE = calibParams.fovExpander.table;
         end
-        fovData = Calibration.validation.calculateFOV(imU,imD,imNoise,regs,FE);
-        fovDataBias = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,regs,FE);
+        fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,regs,FE);
         results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
-        upDownFovDiffBias = sum(abs(fovDataBias.laser.minMaxAngYup-fovDataBias.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
-        fprintff('Laser opening angles up slow and fast:    [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
-        fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYup);
-        fprintff('Laser opening angles down slow and fast:  [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
-        fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
+        fprintff('Laser opening angles slow (up):           [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
+        fprintff('Laser opening angles slow (down):         [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
+        fprintff('Laser opening angles fast (up):           [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYup);
+        fprintff('Laser opening angles fast (down):         [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
         fprintff('Laser up/down fov diff:  %2.3g degrees.\n',results.upDownFovDiff);
-        fprintff('Laser opening angles up fast(with bias):  [%2.3g,%2.3g] degrees.\n',fovDataBias.laser.minMaxAngYup);
-        fprintff('Laser opening angles down fast(with bias):[%2.3g,%2.3g] degrees.\n',fovDataBias.laser.minMaxAngYdown);
-        fprintff('Laser up/down fov diff(with bias):  %2.3g degrees.\n',upDownFovDiffBias);
     else
         fprintff('[?] skipped\n');
     end
@@ -536,15 +560,15 @@ function pass = mergeScores(results,runParams,calibParams,fprintff)
     f = fieldnames(results);
     inRange=zeros(length(f),1);
     for i = 1:length(f)
-        inRange(i) = results.(f{i}) >= calibParams.errRange.(f{i})(1) & results.(f{i}) <= calibParams.errRange.(f{i})(2);
+        inRange(i) = results.(f{i}) >= calibParams.errRange.(f{i})(1) && results.(f{i}) <= calibParams.errRange.(f{i})(2);
     end
     pass = min(inRange);
     
     
     for i = 1:length(f)
         if inRange(i) strstatus = 'passed'; else  strstatus = 'failed'; end
-        strrange = sprintf('[%2.2g..%2.2g]',calibParams.errRange.(f{i}));
-        ll=fprintff('% -20s: %s %2.2g %s\n',f{i},strstatus,results.(f{i}),strrange);
+        strrange = sprintf('[%2.1f..%2.1f]',calibParams.errRange.(f{i}));
+        ll=fprintff('% -20s: %6s %5.2g %15s\n',f{i},strstatus,results.(f{i}),strrange);
     end
     if pass strstatus = 'passed'; else  strstatus = 'failed'; end
     fprintff('%s\n',repmat('-',1,ll));
@@ -552,17 +576,17 @@ function pass = mergeScores(results,runParams,calibParams,fprintff)
 
 end
 
-function burn2Device(hw,score,runParams,calibParams,fprintff,t)
+function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     
     
     doCalibBurn = false;
     fprintff('[!] setting burn calibration...');
     if(runParams.burnCalibrationToDevice)
-        if(score>=calibParams.passScore)
+        if(calibPassed)
             doCalibBurn=true;
             fprintff('Done(%ds)\n',round(toc(t)));
         else
-            fprintff('skiped, score too low(%d)\n',score);
+            fprintff('skiped, failed calibration.\n');
         end
     else
         fprintff('skiped\n');

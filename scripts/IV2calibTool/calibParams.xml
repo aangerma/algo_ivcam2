@@ -4,29 +4,33 @@
    <gnrl>
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
+       <irInnerRange>[30,255]</irInnerRange>
+       <irOuterRange>[10,255]</irOuterRange>
+       
    </gnrl>
    <errRange>
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.5 1.1]</geomErr>
+      <geomErr>[0.01 1.1]</geomErr>
+      <geomErrExtraImages>[0.01 2]</geomErrExtraImages>
       <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.25 0.5]</maxPixelDisplacement>
+      <maxPixelDisplacement>[0.0 0.5]</maxPixelDisplacement>
       <upDownFovDiff>[0 2]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[50 inf]</imFovX>
       <imFovY>[35 inf] </imFovY>
-      <irCoverage>[80 100]</irCoverage>
-      <stdIrCoverage>[0 1]</stdIrCoverage>
+      <irCoverageSpEn>[80 100]</irCoverageSpEn>
+      <stdIrCoverageSpEn>[0 1]</stdIrCoverageSpEn>
+      <irCoverageSpDis>[80 100]</irCoverageSpDis>
+      <stdIrCoverageSpDis>[0 1]</stdIrCoverageSpDis>
+      <horizEdge>[0 inf]</horizEdge>
+      <vertEdge>[0 inf]</vertEdge>
+      <projFovx>[55 65]</projFovx>
+      <projFovy>[35 45]</projFovy>
+      <ambVal>[0,255]</ambVal>
+      
    </errRange>
-   <valRange>
-       <horizEdge>[0 inf]</horizEdge>
-       <vertEdge>[0 inf]</vertEdge>
-       <projFovx>[55 65]</projFovx>
-       <projFovy>[35 45]</projFovy>
-       
-   </valRange>
-   <passScore>60</passScore>
    <thermal>
        <t0>32.8</t0>
        <tslope>0.45</tslope>

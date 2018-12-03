@@ -1,4 +1,4 @@
-function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams)
+function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams,runParams)
 % Calibrate the margins of the image.
 % 1. Take a spherical mode image of up direction.
 % 2. Take a spherical mode image of down direction.
@@ -13,9 +13,9 @@ function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams)
 
 noiseThresh = max(imNoise(:));
 %% Get margins for each image
-edgesU = calcBounds(imU,noiseThresh);
+edgesU = calcBounds(imU,noiseThresh,runParams,'imU');
 marginsU = calcMargins(edgesU,regs,calibParams);
-edgesD = calcBounds(imD,noiseThresh);
+edgesD = calcBounds(imD,noiseThresh,runParams,'imD');
 marginsD = calcMargins(edgesD,regs,calibParams);
 
 extraMargins = [calibParams.roi.extraMarginT,...
@@ -50,7 +50,7 @@ for i = 1:numel(st)
 end
 
 end
-function edges = calcBounds(im,noiseThresh)
+function edges = calcBounds(im,noiseThresh,runParams,description)
 %% Mark desired pixels on spherical image
 % Todo - in any case, do not allow the bound toslice into the real image.
 
@@ -95,9 +95,10 @@ leftEdge = (topEdge(1,1):bottomEdge(1,1))'; leftEdge = [leftEdge,leftImIndex*one
 rightEdge = ((topEdge(end,1)):(bottomEdge(end,1)))'; rightEdge = [rightEdge,rightImIndex*ones(size(rightEdge))];
 imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
 
-ff = figure; imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
-pause(0.5);
-close(ff);
+ff = Calibration.aux.invisibleFigure; 
+imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
+title(description);
+Calibration.aux.saveFigureAsImage(ff,runParams,'ROI',description)
 
 edges.T = topEdge;
 edges.B = bottomEdge;
