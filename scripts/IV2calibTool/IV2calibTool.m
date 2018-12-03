@@ -332,7 +332,7 @@ function statrtButton_callback(varargin)
         end
         if calibPassed~=0 && runparams.validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
-            Calibration.validation.validateCalibration(runparams,calibParams,fprintffS);
+            [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s);
         end
         
         

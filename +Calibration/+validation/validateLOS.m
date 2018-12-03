@@ -1,7 +1,7 @@
-function [results,frames] = validateLOS(hw,runParams,fprintff)
+function [losResults,allResults,frames] = validateLOS(hw,runParams,fprintff)
     %VALIDATELOS Summary of this function goes here
     %   Detailed explanation goes here
-    
+    losResults = [];
     r=Calibration.RegState(hw);
     r.add('DIGGsphericalEn',true    );
     r.set();
@@ -11,8 +11,10 @@ function [results,frames] = validateLOS(hw,runParams,fprintff)
     params.verbose = 0;
     
     frames = hw.getFrame(100,false);
-    [score, results,dbgData] = Validation.metrics.losGridDrift(frames, params);
-    
+    [score, allResults,dbgData] = Validation.metrics.losGridDrift(frames, params);
+    losResults.losMaxDrift = allResults.maxDrift;
+    losResults.losMeanStdX = allResults.meanStdX;
+    losResults.losMeanStdY = allResults.meanStdY;
     
     ff = Calibration.aux.invisibleFigure();
     imagesc(frames(1).i),colormap gray;

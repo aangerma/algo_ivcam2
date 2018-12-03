@@ -1,20 +1,24 @@
-function [  ] = validateDSM( hw,fprintff )
-[angxRawZO,angyRawZO,restFailed] = zeroOrderAngles(hw);
-dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
-dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
-dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
-dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single');
-
-
-angx0 = (angxRawZO+dsmXoffset)*dsmXscale-2047;
-angy0 = (angyRawZO+dsmYoffset)*dsmYscale-2047;
-if restFailed
-    fprintff('Failed to aquire DSM rest angles.\n');
-else
-    fprintff('Mirror rest angles in DSM units: [%2.0g,%2.0g].\n',angx0,angy0);
-end
-
-
+function [ results  ] = validateDSM( hw,fprintff )
+    results = [];
+    [angxRawZO,angyRawZO,restFailed] = zeroOrderAngles(hw);
+    dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
+    dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
+    dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
+    dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single');
+    
+    angx0 = inf;
+    angy0 = inf;
+    if restFailed
+        fprintff('Failed to aquire DSM rest angles.\n');
+    else
+        angx0 = (angxRawZO+dsmXoffset)*dsmXscale-2047;
+        angy0 = (angyRawZO+dsmYoffset)*dsmYscale-2047;
+        fprintff('Mirror rest angles in DSM units: [%2.0g,%2.0g].\n',angx0,angy0);
+    end
+    results.MirrorRestAngX = angx0;
+    results.MirrorRestAngY = angy0;
+    
+    
 end
 function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     % % Enable the MC - Enable_MEMS_Driver
@@ -29,7 +33,7 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     % assert(res.IsCompletedOk, 'For DSM calib to work, it should be the first thing that happens after connecting the USB. Before any capturing.' )
     
     
-
+    
     %  Notes:
     %   - Signal is noisy due to ADC noise, multiple reads should be performed together with averaging
     %   - Signal is the PZR voltage before the DSM scale and offset
@@ -64,7 +68,7 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw)
     pause(0.1);
     hw.runPresetScript('startStream');
     pause(0.1);
-%     hw.setSize();
+    %     hw.setSize();
     restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
     %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');
     

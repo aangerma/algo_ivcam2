@@ -28,9 +28,24 @@
       <vertEdge>[0 inf]</vertEdge>
       <projFovx>[55 65]</projFovx>
       <projFovy>[35 45]</projFovy>
-      <ambVal>[0,255]</ambVal>
-      
+      <ambVal>[0,255]</ambVal>    
    </errRange>
+   <validationErrRange>
+      <horizontalSharpness>[1 3]</horizontalSharpness>
+      <verticalSharpness>[1 3]</verticalSharpness>
+      <temporalNoise>[2 10]</temporalNoise>
+      <DelaySlowOffest>[0 10]</DelaySlowOffest>
+      <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
+      <DelayFastOffest>[0 10]</DelayFastOffest>
+      <GeometricError>[0 2]</GeometricError>
+      <roiHorizontalLoss>[0 4]</roiHorizontalLoss>
+      <roiVerticalLoss>[0 4]</roiVerticalLoss>
+      <losMaxDrift>[0 0.5]</losMaxDrift>
+      <losMeanStdX>[0 0.5] </losMeanStdX>
+      <losMeanStdY>[0 0.5]</losMeanStdY>
+      <MirrorRestAngX>[-1.5 1.5]</MirrorRestAngX>
+      <MirrorRestAngY>[-1.5 1.5]</MirrorRestAngY>
+   </validationErrRange>   
    <thermal>
        <t0>32.8</t0>
        <tslope>0.45</tslope>

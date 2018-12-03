@@ -1,11 +1,19 @@
-function validateCalibration(runParams,calibParams,fprintff)
+function [valPassed, valResults] = validateCalibration(runParams,calibParams,fprintff,spark)
+    
+    if(~exist('spark','var'))
+        spark=[];
+    end
+    write2spark = ~isempty(spark);
+    
+    valPassed = false;
+    valResults = [];
     if runParams.validation
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.getFrame;
         fprintff('opening stream...');
         frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
-
+        
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
         subplot(1,3,2); imagesc(frame.z/8); title('Validation Z');
@@ -28,25 +36,37 @@ function validateCalibration(runParams,calibParams,fprintff)
         hw.cmd('mwd a0020a6c a0020a70 04000400 // DIGGgammaScale'); % Todo - fix regstate to read gammascale correctly
         hw.shadowUpdate;
         
-
+        
         fprintff('Done.\n');
         params = Validation.aux.defaultMetricsParams();
         params.roi = 0.5;
+         [~, sharpRes] = Validation.metrics.gridEdgeSharp(frame, []);
+        valResults.horizontalSharpness = sharpRes.horizMean;
+        valResults.verticalSharpness = sharpRes.vertMean;
+        [tns] = Validation.metrics.zStd(stream, params);
+        valResults.temporalNoise = tns;
         
+        delayRes = Calibration.validation.validateDelays(hw,calibParams,fprintff);
+        dfzRes = Calibration.validation.validateDFZ(hw,frame,fprintff);
+        roiRes = Calibration.validation.validateROI(hw,calibParams,fprintff);
+        losRes = Calibration.validation.validateLOS(hw,runParams,fprintff);
+        dsmRes = Calibration.validation.validateDSM(hw,fprintff);
+        valResults = Validation.aux.mergeResultStruct(valResults,delayRes,...
+            dfzRes,roiRes,losRes,dsmRes);
         
-        Calibration.validation.validateDelays(hw,calibParams,fprintff);
-        Calibration.validation.validateDFZ(hw,frame,fprintff);
-        Calibration.validation.validateROI(hw,calibParams,fprintff);
-        Calibration.validation.validateLOS(hw,runParams,fprintff);
-        [zSTD, ~] = Validation.metrics.zStd(stream, params);
-        [~, results] = Validation.metrics.gridEdgeSharp(frame, []);
+        Calibration.aux.logResults(valResults,runParams,'validationResults.txt');
+        Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark);
+        valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff);
+        
+        %{
         fprintff('%s: %2.2gmm\n','zSTD',zSTD);
         fprintff('%s: %2.2g\n','horizSharpnessMean',results.horizMean);
         fprintff('%s: %2.2g\n','vertSharpnessMean',results.vertMean);
-        Calibration.validation.validateDSM(hw,fprintff);
+       
         fprintff('Validation finished.\n');
+        %}
     end
-
+    
 end
 function saveValidationFrames(frame,runParams,postFix)
     dirname = fullfile(runParams.outputFolder,'captures');

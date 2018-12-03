@@ -1,5 +1,5 @@
-function [  ] = validateDelays( hw, calibParams, fprintff)
-
+function [ delayRes ] = validateDelays( hw, calibParams, fprintff)
+delayRes = [];
 r=Calibration.RegState(hw);
 %% SET
 r.add('RASTbiltBypass'     ,true     );
@@ -29,10 +29,13 @@ r.set();
 
 
 %% IR Delay 
-[d,~]=Calibration.dataDelay.calcIRDelayFix(hw);
+[d,~,pixVar]=Calibration.dataDelay.calcIRDelayFix(hw);
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end
+delayRes.DelaySlowOffest = abs(d);
+delayRes.DelaySlowPixVar = pixVar;
+
 fprintff('IR nano seconds diff: %d.\n',abs(d));
 
 
@@ -46,6 +49,7 @@ imB=double(hw.getFrame(30).i)/255;
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end
+delayRes.DelayFastOffest = abs(d);
 
 fprintff('Depth nano seconds diff: %d.\n',abs(d));
 

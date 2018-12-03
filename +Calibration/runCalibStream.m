@@ -101,10 +101,10 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     % Update fnCalin and undist lut in output dir
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
-    logResults(results,runParams);
-    writeResults2Spark(results,spark,calibParams,write2spark);
+    Calibration.aux.logResults(results,runParams);
+    Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark);
     %% merge all scores outputs
-    calibPassed = mergeScores(results,runParams,calibParams,fprintff);
+    calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff);
     
     fprintff('[!] calibration ended - ');
     if(calibPassed==0)
@@ -123,21 +123,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 %     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
 end
-function writeResults2Spark(results,s,calibParams,write2spark)
-if write2spark
-    f = fieldnames(results);
-    for i = 1:length(f)
-        s.AddMetrics(f{i}, results.(f{i}),calibParams.errRange.(f{i})(1),calibParams.errRange.(f{i})(2),true);
-    end 
-end
 
-end
-function logResults(results,runParams)
-    fname = fullfile(runParams.outputFolder,'results.txt');
-    fid = fopen(fname,'wt');
-    fprintf(fid, struct2str(results));
-    fclose(fid);
-end 
+
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     %backward compatibility
@@ -556,25 +543,8 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib)
     fw.setRegs(intregs,fnCalib);
     fw.get();
 end
-function pass = mergeScores(results,runParams,calibParams,fprintff)
-    f = fieldnames(results);
-    inRange=zeros(length(f),1);
-    for i = 1:length(f)
-        inRange(i) = results.(f{i}) >= calibParams.errRange.(f{i})(1) && results.(f{i}) <= calibParams.errRange.(f{i})(2);
-    end
-    pass = min(inRange);
-    
-    
-    for i = 1:length(f)
-        if inRange(i) strstatus = 'passed'; else  strstatus = 'failed'; end
-        strrange = sprintf('[%2.1f..%2.1f]',calibParams.errRange.(f{i}));
-        ll=fprintff('% -20s: %6s %5.2g %15s\n',f{i},strstatus,results.(f{i}),strrange);
-    end
-    if pass strstatus = 'passed'; else  strstatus = 'failed'; end
-    fprintff('%s\n',repmat('-',1,ll));
-    fprintff('% -20s: %s\n','Calibration status',strstatus);
 
-end
+
 
 function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     
