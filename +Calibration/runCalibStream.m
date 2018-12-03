@@ -35,8 +35,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% Load hw interface
     hw = loadHWInterface(runParams,fw,fprintff,t);
     fprintff('%-15s %8s\n','serial',hw.getSerial());
-    % Verify unit's configuration version
-    verValue = getVersion(hw,runParams);  
+    
     
     %% Update init configuration
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
@@ -44,6 +43,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     fprintff('Opening stream...');
     hw.startStream();
     fprintff('Done(%ds)\n',round(toc(t)));
+    %% Verify unit's configuration version
+    verValue = getVersion(hw,runParams);  
     %% Init hw configuration
     initConfiguration(hw,fw,runParams,fprintff,t);
 
