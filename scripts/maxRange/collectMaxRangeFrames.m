@@ -1,4 +1,4 @@
-function collectMaxRangeFrames()
+function collectMaxRangeFrames(initScript)
 % Once the camera is positioned targeting the 10% target this script will
 % collect 100 frames for each configuration.
 % It will save the frames sturct array in a mat file in a destination at X
@@ -13,7 +13,7 @@ function collectMaxRangeFrames()
 % 6. Tx rate of 0.5/0.25 using repetitions in the actual code.
 % 7. Tx rate of 0.5/0.25 using repetitions in the actual code with LPF disabled.
 
-savedir = 'X:\Data\IvCam2\maxRange\testRecordsLatest';
+savedir = 'X:\Data\IvCam2\maxRange\testRecordsLatestFixed';
 N = 100;
 hw = HWinterface;
 hw.getFrame(10); % Activate and let it warm up 
