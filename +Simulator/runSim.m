@@ -3,7 +3,7 @@ function [chA_v,chB_vQ,prprts,measurments] = runSim(model, prms, filename )
     % freq: Ghz
     % time: nSec
     % distance: mm
-    
+    rng(1); 
     txQuietHeadTime=0;
     
     Tx = 1/prms.laser.frequency;
@@ -312,6 +312,7 @@ function [chA_v,chB_vQ,prprts,measurments] = runSim(model, prms, filename )
     
     if(prms.verbose)
         cla
+        figure;
         chA_t = prms.t0+Ts*(0:nSamples-1)'; %%+Ts/2 ;
         
         yl =[min(y_c) max(y_c)];

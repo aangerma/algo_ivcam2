@@ -1,4 +1,4 @@
-function [cor_dec] = runCoarseCorr(cma, regs, luts)
+function [cor_dec] = runCoarseCorr(cma, regs, luts, dynamic_range)
 
 downSamplingR = 2 ^ double(regs.DCOR.decRatio);
 cma_dec = reshape(cma, downSamplingR, double(regs.GNRL.tmplLength)/downSamplingR, regs.GNRL.imgVsize, regs.GNRL.imgHsize);
@@ -12,6 +12,10 @@ nC = double(regs.DCOR.coarseTmplLength);
 kerC = tmplC(256-nC+1:256,:);
 kerC =flipud(kerC);%ASIC ALIGNMENT
 
+if nargin() == 4
+    kerC(kerC == 0) = uint8(dynamic_range(1));
+    kerC(kerC == 7) = uint8(dynamic_range(2));
+end
 cor_dec = Utils.correlator(uint16(cma_dec), kerC(:,1));
 end
 

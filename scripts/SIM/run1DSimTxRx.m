@@ -16,12 +16,26 @@ end
 
 p = xml2structWrapper('D:\data\simulatorParams\params_860SKU1_indoor_Maya.xml'); % Simulation parameters
 p.laser.txSequence = Codes.propCode(code_length,1);
+%{
+orig_code_length = 13;
+target_code_length = orig_code_length*4;
+orig_code = Codes.propCode(orig_code_length*2,1);
+a = reshape(orig_code,2,[]);
+orig_code = (a(1,:))';
+unbalanced_code = false(target_code_length, 1);
+for k = 0:orig_code_length - 1
+    if ~orig_code(k+1)
+        unbalanced_code(4*k+4) = true; % 0 --> 0001
+    end
+    
+    if orig_code(k+1)
+        unbalanced_code(4*k+3) = true; % 1 --> 0010
+    end 
+end
+p.laser.txSequence = unbalanced_code;
+%}
 
-% ERASE!!! only for debug
-% p.laser.txSequence = zeros(code_length, 1); 
-% p.laser.txSequence(round(code_length/2): end) = 1;
 p.verbose = false;
-%
 
 p.Comparator.frequency = comparator_freq;
 
