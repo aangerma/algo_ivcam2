@@ -29,7 +29,7 @@ pSim2d = struct('verbose',true,...
 rng(1);
 
 
-mdl = stlread(modelFn);
+mdl = i_stlread(modelFn);
 mdl.albedo = ones(size(mdl.faces,1),1)*.8;
 mdl.vertices(:,3)=-mdl.vertices(:,3);
 mdl.vertices(:,2)=mdl.vertices(:,2)-mean(minmax((mdl.vertices(:,2))));
