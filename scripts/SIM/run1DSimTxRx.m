@@ -1,21 +1,4 @@
-function [depth, p] = run1DSimTxRx(target_dist,code_length, comparator_freq, time_smpl)
-% Define default parameters
-num_inputs = nargin();
-if  num_inputs < 4
-    time_smpl = struct('isTimeLength', true, 'value', 2000);%[nSec] or number of code repetitions
-    if num_inputs < 3
-        comparator_freq = 8; %[GHz]
-        if num_inputs < 2
-            code_length = 52;
-            if num_inputs < 1
-                target_dist = 1000; %[mm]
-            end
-        end
-    end
-end
-
-p = xml2structWrapper('D:\data\simulatorParams\params_860SKU1_indoor_Maya.xml'); % Simulation parameters
-p.laser.txSequence = Codes.propCode(code_length,1);
+function [depth, sim_data] = run1DSimTxRx(sim_data)
 %{
 orig_code_length = 13;
 target_code_length = orig_code_length*4;
@@ -32,21 +15,10 @@ for k = 0:orig_code_length - 1
         unbalanced_code(4*k+3) = true; % 1 --> 0010
     end 
 end
-p.laser.txSequence = unbalanced_code;
+sim_data.laser.txSequence = unbalanced_code;
 %}
+model = struct('t',[0 sim_data.runTime],'r',[ sim_data.targetDist  sim_data.targetDist],'a',[ 1  1 ]);
 
-p.verbose = false;
-
-p.Comparator.frequency = comparator_freq;
-
-if time_smpl.isTimeLength
-    p.runTime = time_smpl.value; 
-else
-    p.runTime = (length(p.laser.txSequence)/p.laser.frequency)*time_smpl.value;
-end
-
-model = struct('t',[0 p.runTime],'r',[ target_dist  target_dist],'a',[ 1  1 ]);
-
-[depth,~,~,~] = Simulator.runSim(model,p);
+[depth,~,~,~] = Simulator.runSim(model,sim_data);
 end
 

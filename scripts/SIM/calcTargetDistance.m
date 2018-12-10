@@ -1,15 +1,12 @@
-function [targtDist] = calcTargetDistance(target_dist,code_length, comparator_freq, time_smpl, verbose)
+function [targtDist] = calcTargetDistance(sim_data)
 
-[depth, p] = run1DSimTxRx(target_dist,code_length, comparator_freq, time_smpl);
+[depth, sim_data] = run1DSimTxRx(sim_data);
 
-code_reps = ceil(length(depth)/(code_length*p.Comparator.frequency));
-if ~time_smpl.isTimeLength && code_reps ~= time_smpl.value
-    error('Number of code repititions is wrong!');
-end
+code_reps = ceil(length(depth)/(sim_data.laser.codeLength*sim_data.Comparator.frequency));
 
-[cma] = prepareCma4Sim(depth, code_reps, code_length, p.Comparator.frequency);
+[cma] = prepareCma4Sim(depth, code_reps, sim_data.laser.codeLength, sim_data.Comparator.frequency);
 
-[regs,luts] = prepareRegsLuts4sim(fullfile('D:\worksapce\ivcam2\algo_ivcam2','+Calibration','initScript'), code_length, 1, p);
+[regs,luts] = prepareRegsLuts4sim(fullfile('D:\worksapce\ivcam2\algo_ivcam2','+Calibration','initScript'), sim_data.laser.codeLength, 1, sim_data);
 
 [cor] = runCoarseCorr(cma, regs, luts);
 
@@ -26,11 +23,11 @@ end
 %----------------------------------------------------------------------------------------------------------------------------------------
 % Display results
 figure;
-plot(1:length(cor) ,cor); title(['Coarse Corr: Code length = ' num2str(code_length) ', target distance = ' num2str(target_dist) ', # of code reps = ' num2str(code_reps-1)]);
+plot(1:length(cor) ,cor); title(['Coarse Corr: Code length = ' num2str(sim_data.laser.codeLength) ', target distance = ' num2str(target_dist) ', # of code reps = ' num2str(code_reps-1)]);
 axis tight;
 
 figure;
-plot(1:length(corrSegment) ,corrSegment); title(['Fine Corr: Code length = ' num2str(code_length) ', target distance = ' num2str(target_dist) ', # of code reps = ' num2str(code_reps-1)]);
+plot(1:length(corrSegment) ,corrSegment); title(['Fine Corr: Code length = ' num2str(sim_data.laser.codeLength) ', target distance = ' num2str(target_dist) ', # of code reps = ' num2str(code_reps-1)]);
 axis tight;
 
 end

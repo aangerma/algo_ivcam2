@@ -7,11 +7,16 @@ dynamic_range2 = [1 6];
 measur1_struct = struct('z_std', zeros(length(target_dist), 1), 'z_mean', zeros(length(target_dist), 1), 'dist', zeros(length(target_dist), 1), 'dynamic_range', dynamic_range1);
 measur2_struct = measur1_struct;
 measur2_struct.dynamic_range = dynamic_range2;
+sim_data = xml2structWrapper('D:\data\simulatorParams\half_code_double_reps\params_860SKU1_indoor_half_code.xml'); % Simulation parameters
+sim_data.laser.txSequence = Codes.propCode(sim_data.laser.codeLength,1);
+
+
 
 for k = 1: length(target_dist)
-    [targt_dist_vec_1] = dynamic_range_test(dynamic_range1, target_dist(k), code_length, code_reps);
+    sim_data.targetDist = target_dist(k);    
+    [targt_dist_vec_1] = dynamic_range_test(dynamic_range1, sim_data);
     
-    [targt_dist_vec_2] = dynamic_range_test(dynamic_range2, target_dist(k), code_length, code_reps);
+    [targt_dist_vec_2] = dynamic_range_test(dynamic_range2, sim_data);
     
     %------------------------------------------------------------------------------------------------------------------
     figure;
