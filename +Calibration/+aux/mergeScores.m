@@ -1,4 +1,7 @@
-function pass = mergeScores(results,errRange,fprintff)
+function pass = mergeScores(results,errRange,fprintff,Calib0Valid1)
+    if ~exist('Calib0Valid1','var')
+        Calib0Valid1 = 0;
+    end
     f = fieldnames(results);
     inRange=zeros(length(f),1);
     for i = 1:length(f)
@@ -14,6 +17,10 @@ function pass = mergeScores(results,errRange,fprintff)
     end
     if pass strstatus = 'passed'; else  strstatus = 'failed'; end
     fprintff('%s\n',repmat('-',1,ll));
-    fprintff('% -20s: %s\n','Calibration status',strstatus);
+    if Calib0Valid1
+        fprintff('% -20s: %s\n','Validation status',strstatus);
+    else
+        fprintff('% -20s: %s\n','Calibration status',strstatus);
+    end
 
 end

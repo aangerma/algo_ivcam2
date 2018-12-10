@@ -335,7 +335,7 @@ function statrtButton_callback(varargin)
             if validPassed
                 app.logarea.BackgroundColor = [0 0.8 0]; % Color green
             else
-                app.logarea.BackgroundColor = [1 0.5 0]; % orange green
+                app.logarea.BackgroundColor = [1 1 0]; % Color yellow 
             end
         elseif calibPassed == 0
             app.logarea.BackgroundColor = [0.8 0 0]; % Color red
