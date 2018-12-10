@@ -4,7 +4,7 @@
    <gnrl>
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
-       <irInnerRange>[30,255]</irInnerRange>
+       <irInnerRange>[30,250]</irInnerRange>
        <irOuterRange>[10,255]</irOuterRange>
        
    </gnrl>
@@ -34,17 +34,17 @@
       <horizontalSharpness>[1 3]</horizontalSharpness>
       <verticalSharpness>[1 3]</verticalSharpness>
       <temporalNoise>[2 10]</temporalNoise>
-      <DelaySlowOffest>[0 10]</DelaySlowOffest>
+      <DelaySlowOffest>[0 15]</DelaySlowOffest>
       <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
-      <DelayFastOffest>[0 10]</DelayFastOffest>
+      <DelayFastOffest>[0 15]</DelayFastOffest>
       <GeometricError>[0 3]</GeometricError>
       <roiHorizontalLoss>[0 4]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
       <losMaxDrift>[0 0.5]</losMaxDrift>
       <losMeanStdX>[0 0.5] </losMeanStdX>
       <losMeanStdY>[0 0.5]</losMeanStdY>
-      <MirrorRestAngX>[-20 20]</MirrorRestAngX>
-      <MirrorRestAngY>[-20 20]</MirrorRestAngY>
+      <MirrorRestAngX>[-30 30]</MirrorRestAngX>
+      <MirrorRestAngY>[-30 30]</MirrorRestAngY>
    </validationErrRange>   
    <thermal>
        <t0>32.8</t0>

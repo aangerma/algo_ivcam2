@@ -56,7 +56,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         
         Calibration.aux.logResults(valResults,runParams,'validationResults.txt');
         Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark);
-        valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff);
+        valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff,1);
         
         %{
         fprintff('%s: %2.2gmm\n','zSTD',zSTD);
