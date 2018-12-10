@@ -6,7 +6,7 @@ function [ mesQ,grndtrth ] = run( params )
 
 %%
 if(ischar(params.model))
-    [mdl.v,mdl.f,~,colData]=stlread(params.model);
+    [mdl.v,mdl.f,~,colData]=i_stlread(params.model);
     mdl.v=(mdl.v-(max(mdl.v)+min(mdl.v))/2)./max((max(mdl.v)-min(mdl.v)))*1200;
     mdl.v(:,3)=1000-mdl.v(:,3);
     mdl.a = mean(colData,2)/31;

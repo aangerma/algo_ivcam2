@@ -2,7 +2,7 @@
 modelFn = '\\invcam322\Ohad\data\lidar\SIM\sticks\random_sticks.stl';
 outDir = '\\invcam322\Ohad\data\lidar\SIM\sticks\run2\';
 mkdir(outDir);
-mdl = stlread(modelFn);
+mdl = i_stlread(modelFn);
 mdl.albedo = ones(size(mdl.faces,1),1)*.8;
 % mdl.vertices(:,3)=500-mdl.vertices(:,3);
 %  mdl.vertices(:,2)=mdl.vertices(:,2)-mean(minmax((mdl.vertices(:,2))));
