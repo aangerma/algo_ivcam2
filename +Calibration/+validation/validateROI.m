@@ -1,7 +1,7 @@
-function [ roiResults  ] = validateROI( hw,calibParams,fprintff )
+function [ roiResults,frames,mr ] = validateROI( hw,calibParams,fprintff )
     roiResults = [];
-    d = hw.getFrame(10);
-    roiRegsVal = Calibration.roi.runROICalib(d,calibParams);
+    frames = hw.getFrame(10);
+    roiRegsVal = Calibration.roi.runROICalib(frames,calibParams);
     mr = roiRegsVal.FRMW;
     valSumMargins = double(mr.marginL + mr.marginR + mr.marginT + mr.marginB);
     roiResults.roiHorizontalLoss = mr.marginL + mr.marginR;

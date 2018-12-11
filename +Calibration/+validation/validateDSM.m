@@ -1,11 +1,21 @@
-function [ results  ] = validateDSM( hw,fprintff )
+function [ results,dbg  ] = validateDSM( hw,fprintff )
     results = [];
+    dbg = [];
     [angxRawZO,angyRawZO,restFailed] = zeroOrderAngles(hw);
     dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
     dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
     dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
     dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single');
     
+    
+    dbg.angxRawZO = angxRawZO;
+    dbg.angyRawZO = angyRawZO;
+    dbg.restFailed = restFailed;
+    dbg.dsmXscale = dsmXscale;
+    dbg.dsmYscale = dsmYscale;
+    dbg.dsmXoffset = dsmXoffset;
+    dbg.dsmYoffset = dsmYoffset;
+
     angx0 = inf;
     angy0 = inf;
     if restFailed

@@ -1,16 +1,23 @@
-function [losResults,allResults,frames] = validateLOS(hw,runParams,fprintff)
+function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,validationParams,fprintff)
     %VALIDATELOS Summary of this function goes here
     %   Detailed explanation goes here
     losResults = struct;
+    
+    
+    if isempty(validationParams)
+        validationParams.numOfFrames = 100;
+        validationParams.sphericalMode = 1;
+    end
+    
     r=Calibration.RegState(hw);
-    r.add('DIGGsphericalEn',true    );
+    r.add('DIGGsphericalEn',logical(validationParams.sphericalMode));
     r.set();
     pause(0.1);
     
     params = Validation.aux.defaultMetricsParams();
     params.verbose = 0;
     
-    frames = hw.getFrame(100,false);
+    frames = hw.getFrame(validationParams.numOfFrames,false);
     [score, allResults,dbgData] = Validation.metrics.losGridDrift(frames, params);
     if isnan(score) % Failed to perform the metric
         fprintff('Max drift - Didn''t detect checkerboard.\n');

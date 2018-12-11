@@ -30,6 +30,26 @@
       <projFovy>[35 45]</projFovy>
       <ambVal>[0,255]</ambVal>    
    </errRange>
+   <validationConfig>
+      <debugMode>1</debugMode>
+      <sharpness>
+          <numOfFrames>30</numOfFrames>
+	  </sharpness>
+      <temporalNoise>
+          <numOfFrames>30</numOfFrames>
+          <roi>0.5</roi>
+      </temporalNoise>
+      <delays></delays>
+      <dfz>
+          <numOfFrames>30</numOfFrames>
+      </dfz>
+      <roi></roi>
+      <los>
+          <numOfFrames>100</numOfFrames>
+          <sphericalMode>1</sphericalMode>
+      </los>
+      <dsm></dsm>
+   </validationConfig>
    <validationErrRange>
       <horizontalSharpness>[1 3]</horizontalSharpness>
       <verticalSharpness>[1 3]</verticalSharpness>

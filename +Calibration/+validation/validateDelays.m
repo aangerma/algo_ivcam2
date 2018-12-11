@@ -1,5 +1,6 @@
-function [ delayRes ] = validateDelays( hw, calibParams, fprintff)
+function [ delayRes, frames] = validateDelays( hw, calibParams, fprintff)
 delayRes = [];
+frames = struct('z',[],'i',[]);
 r=Calibration.RegState(hw);
 %% SET
 r.add('RASTbiltBypass'     ,true     );
@@ -29,12 +30,14 @@ r.set();
 
 
 %% IR Delay 
-[d,~,pixVar]=Calibration.dataDelay.calcIRDelayFix(hw);
+[d,imIR,pixVar]=Calibration.dataDelay.calcIRDelayFix(hw);
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end
 delayRes.DelaySlowOffest = abs(d);
 delayRes.DelaySlowPixVar = pixVar;
+frames(1).i = uint16(imIR(:,:,1));
+frames(2).i = uint16(imIR(:,:,1));
 
 fprintff('IR nano seconds diff: %d.\n',abs(d));
 
@@ -45,12 +48,13 @@ hw.cmd('iwb e2 06 01 00'); % set Laser Bias to 0
 hw.setReg('DESTaltIrEn', true);
 
 imB=double(hw.getFrame(30).i)/255;
-[d,~]=Calibration.dataDelay.calcZDelayFix(hw,imB);
+[d,imZ]=Calibration.dataDelay.calcZDelayFix(hw,imB);
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end
 delayRes.DelayFastOffest = abs(d);
-
+frames(1).z = uint16(imZ(:,:,1));
+frames(2).z = uint16(imZ(:,:,1));
 fprintff('Depth nano seconds diff: %d.\n',abs(d));
 
 hw.setReg('DESTaltIrEn', false);
