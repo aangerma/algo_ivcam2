@@ -23,7 +23,7 @@ function [ results,dbg  ] = validateDSM( hw,fprintff )
     else
         angx0 = (angxRawZO+dsmXoffset)*dsmXscale-2047;
         angy0 = (angyRawZO+dsmYoffset)*dsmYscale-2047;
-        fprintff('Mirror rest angles in DSM units: [%2.0g,%2.0g].\n',angx0,angy0);
+        fprintff('Mirror rest angles in DSM units: [%2.2g,%2.2g].\n',angx0,angy0);
     end
     results.MirrorRestAngX = angx0;
     results.MirrorRestAngY = angy0;

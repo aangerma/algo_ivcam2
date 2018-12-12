@@ -31,7 +31,15 @@
       <ambVal>[0,255]</ambVal>    
    </errRange>
    <validationConfig>
+      <!-- in this section the test plan is listed.available metrics:
+      sharpness, temporalNoise, delays, dfz, roi, los, dsm, wait.
+      For running the same metric more then once add <metric_name>_n, for example:
+      <roi_2></roi_2>
+      -->
       <debugMode>1</debugMode>
+      <wait>
+          <timeoutSec>1</timeoutSec>
+      </wait>
       <sharpness>
           <numOfFrames>30</numOfFrames>
 	  </sharpness>
