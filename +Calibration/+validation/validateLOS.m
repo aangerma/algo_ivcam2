@@ -4,9 +4,13 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     losResults = struct;
     
     
-    if isempty(validationParams)
+    if ~exist('validationParams','var') || isempty(validationParams)
         validationParams.numOfFrames = 100;
         validationParams.sphericalMode = 1;
+    end
+    
+    if ~exist('fprintff','var')
+        fprintff = [];
     end
     
     r=Calibration.RegState(hw);
@@ -20,7 +24,9 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     frames = hw.getFrame(validationParams.numOfFrames,false);
     [score, allResults,dbgData] = Validation.metrics.losGridDrift(frames, params);
     if isnan(score) % Failed to perform the metric
-        fprintff('Max drift - Didn''t detect checkerboard.\n');
+        if ~isempty(fprintff)
+            fprintff('Max drift - Didn''t detect checkerboard.\n');
+        end
         ff = Calibration.aux.invisibleFigure();
         imagesc(frames(1).i),colormap gray;
         title('Max Drift Input Image IR');
@@ -54,8 +60,9 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     imshowpair(frames(end).i,frames(1).i);
     title('LOS test: Last image over first image');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','LOS test');
-    
-    fprintff('Max drift %2.2g\n',score);
+    if ~isempty(fprintff)
+        fprintff('Max drift %2.2g\n',score);
+    end
     r.reset();
 end
 

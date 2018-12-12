@@ -68,7 +68,12 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
    [results,calibPassed] = validateCoverage(hw,1, runParams, calibParams,results, fprintff);
    if ~calibPassed
        return 
-    end
+   end
+   
+   [results,calibPassed] = validateLos(hw, runParams, calibParams,results, fprintff);
+   if ~calibPassed
+       return
+   end
     %% ::gamma:: 
 	results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t);
 	calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff);
@@ -294,6 +299,33 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
         fprintff('[?] skipped\n');
     end
 end
+
+function [results,calibPassed] = validateLos(hw, runParams, calibParams, results, fprintff)
+    calibPassed = 1;
+    if runParams.validation
+        %test coverage
+        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],[]);
+        if ~isempty(losResults)
+            metrics = {'losMaxDrift','losMeanStdX','losMeanStdY'};
+            for m=1:length(metrics)
+                results.(metrics{m}) = losResults.(metrics{m});
+                metricPassed = losResults.(metrics{m}) <= calibParams.errRange.(metrics{m})(2) && ...
+                    losResults.(metrics{m}) >= calibParams.errRange.(metrics{m})(1);
+                calibPassed = calibPassed & metricPassed;
+            end
+            if calibPassed
+                fprintff('[v] los max drift passed[e=%g]\n',losResults.losMaxDrift);
+            else
+                fprintff('[x] los max drift failed[e=%g]\n',losResults.losMaxDrift);
+            end
+        else
+            calibPassed = false;
+            fprintff('[x] los metric finished with error\n',[]);
+        end
+    end
+    
+end
+
 function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, calibParams, results, fprintff)
     calibPassed = 1;
     if runParams.validation
@@ -323,7 +355,7 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         if calibPassed
             fprintff('[v] ir coverage %s passed[e=%g]\n',sphericalmode,covResults.irCoverage);
         else
-            fprintff('[x] ir coverage %s passed[e=%g]\n',sphericalmode,covResults.irCoverage);
+            fprintff('[x] ir coverage %s failed[e=%g]\n',sphericalmode,covResults.irCoverage);
         end
         if sphericalEn
             results.(fname) = covResults.irCoverage;
