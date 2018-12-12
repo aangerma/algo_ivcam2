@@ -28,7 +28,10 @@
       <vertEdge>[0 inf]</vertEdge>
       <projFovx>[55 65]</projFovx>
       <projFovy>[35 45]</projFovy>
-      <ambVal>[0,255]</ambVal>    
+      <ambVal>[0,255]</ambVal>
+      <losMaxDrift>[0 1]</losMaxDrift>
+      <losMeanStdX>[0 0.5] </losMeanStdX>
+      <losMeanStdY>[0 0.5]</losMeanStdY>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -72,7 +75,7 @@
       <GeometricError>[0 3]</GeometricError>
       <roiHorizontalLoss>[0 4]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
-      <losMaxDrift>[0 0.5]</losMaxDrift>
+      <losMaxDrift>[0 1]</losMaxDrift>
       <losMeanStdX>[0 0.5] </losMeanStdX>
       <losMeanStdY>[0 0.5]</losMeanStdY>
       <MirrorRestAngX>[-30 30]</MirrorRestAngX>
