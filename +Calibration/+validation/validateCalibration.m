@@ -6,6 +6,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
     write2spark = ~isempty(spark);
     valPassed = false;
     valResults = [];
+    allResults = [];
     if runParams.validation
         % open stream and capture image of the validation target
         fprintff('[-] Validation...\n');
@@ -50,48 +51,56 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 case 'sharpness'
                     sharpConfig = calibParams.validationConfig.sharpness;
                     frames = hw.getFrame(sharpConfig.numOfFrames,0);
-                    [~, sharpRes] = Validation.metrics.gridEdgeSharp(frames, []);
+                    [~, sharpRes,dbg] = Validation.metrics.gridEdgeSharp(frames, []);
                     valResults.horizontalSharpness = sharpRes.horizMean;
                     valResults.verticalSharpness = sharpRes.vertMean;
-                    saveValidationData(sharpRes,frames,enabledMetrics{i},outFolder,debugMode);
+                    saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
+                    allResults.Validation.(enabledMetrics{i}) = sharpRes;
                 case 'temporalNoise'
                     tempNConfig = calibParams.validationConfig.temporalNoise;
                     frames = hw.getFrame(tempNConfig.numOfFrames,0);
                     params = Validation.aux.defaultMetricsParams();
-                    params.roi = tempNConfig.roi;
+                    params.enabledMetrics{i} = tempNConfig.roi;
                     [tns,tnsResults] = Validation.metrics.zStd(frames, params);
                     valResults.temporalNoise = tns;
                     saveValidationData(tnsResults,frames,enabledMetrics{i},outFolder,debugMode);
+                    allResults.Validation.(enabledMetrics{i}) = tnsResults;
                 case 'delays'
                     [delayRes,frames] = Calibration.validation.validateDelays(hw,calibParams,fprintff);
                     valResults = Validation.aux.mergeResultStruct(valResults, delayRes);
                     saveValidationData([],frames,enabledMetrics{i},outFolder,debugMode);
+                    allResults.Validation.(enabledMetrics{i}) = delayRes;
                 case 'dfz'
                     dfzConfig = calibParams.validationConfig.temporalNoise;
                     frames = hw.getFrame(dfzConfig.numOfFrames);
-                    dfzRes = Calibration.validation.validateDFZ(hw,frames,fprintff);
+                    [dfzRes,allDfzRes] = Calibration.validation.validateDFZ(hw,frames,fprintff);
                     valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
                     saveValidationData([],frames,enabledMetrics{i},outFolder,debugMode);
+                    allResults.Validation.(enabledMetrics{i}) = allDfzRes;
                 case 'roi'
                     [roiRes, frames,dbg] = Calibration.validation.validateROI(hw,calibParams,fprintff);
                     valResults = Validation.aux.mergeResultStruct(valResults, roiRes);
                     saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
+                    allResults.Validation.(enabledMetrics{i}) = roiRes;
                 case 'los'
                     losConfig = calibParams.validationConfig.los;
-                    [losRes,~,frames,dbg] = Calibration.validation.validateLOS(hw,runParams,losConfig,fprintff);
+                    [losRes,allLosResults,frames,dbg] = Calibration.validation.validateLOS(hw,runParams,losConfig,fprintff);
                     valResults = Validation.aux.mergeResultStruct(valResults, losRes);
                     saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
+                    allResults.Validation.(enabledMetrics{i}) = allLosResults;
                 case 'dsm'
                     [dsmRes, dbg] = Calibration.validation.validateDSM(hw,fprintff);
                     valResults = Validation.aux.mergeResultStruct(valResults, dsmRes);
                     saveValidationData(dbg,[],enabledMetrics{i},outFolder,debugMode);
+                    allResults.Validation.(enabledMetrics{i}) = dsmRes;
             end
         end
                
         Calibration.aux.logResults(valResults,runParams,'validationResults.txt');
         Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark);
         valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff,1);
-        
+        struct2xml_(allResults,fullfile(outFolder,'fullReport.xml'));
+        Calibration.aux.logResults(allResults,runParams,'fullValidationReport.txt');
         %{
         fprintff('%s: %2.2gmm\n','zSTD',zSTD);
         fprintff('%s: %2.2g\n','horizSharpnessMean',results.horizMean);
