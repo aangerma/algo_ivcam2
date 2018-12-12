@@ -308,10 +308,10 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         end
         
         %test coverage
-        [~, covResults] = Calibration.validation.validateCoverage(hw,sphericalEn);
+        [~, covResults,dbg] = Calibration.validation.validateCoverage(hw,sphericalEn);
         % save prob figure
         ff = Calibration.aux.invisibleFigure;
-        imagesc(covResults.probIm);
+        imagesc(dbg.probIm);
         
         title(sprintf('Coverage Map %s',sphericalmode)); colormap jet;colorbar;
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage Map %s',sphericalmode));

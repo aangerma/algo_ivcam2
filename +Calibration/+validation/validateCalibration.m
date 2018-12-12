@@ -5,6 +5,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
     end
     write2spark = ~isempty(spark);
     valPassed = false;
+    defaultDebug = 0;
     valResults = [];
     allResults = [];
     if runParams.validation
@@ -39,15 +40,17 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         
         
         outFolder = fullfile(runParams.outputFolder,'Validation',[]);
-        debugMode = flip(dec2bin(uint16(calibParams.validationConfig.debugMode),2)=='1');
-        if any(debugMode)
-            mkdirSafe(outFolder);
-        end
+        mkdirSafe(outFolder);
+        debugMode = flip(dec2bin(uint16(defaultDebug),2)=='1');
+        
         
         %run all metrics
         enabledMetrics = fieldnames(calibParams.validationConfig);
         for i=1:length(enabledMetrics)
-            if  strfind(enabledMetrics{i},'sharpness')
+            if strfind(enabledMetrics{i},'debugMode')
+                 debugMode = flip(dec2bin(uint16(calibParams.validationConfig.(enabledMetrics{i})),2)=='1');
+                 fprintff('Changeing debug mode to %d.\n',calibParams.validationConfig.(enabledMetrics{i}));
+            elseif  strfind(enabledMetrics{i},'sharpness')
                 sharpConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(sharpConfig.numOfFrames,0);
                 [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharp(frames, []);
@@ -94,6 +97,14 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 valResults = Validation.aux.mergeResultStruct(valResults, dsmRes);
                 saveValidationData(dbg,[],enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = dsmRes;
+            elseif strfind(enabledMetrics{i},'coverage')
+                covConfig = calibParams.validationConfig.(enabledMetrics{i});
+                [covScore,allCovRes, dbg,frames] = Calibration.validation.validateCoverage(hw,covConfig.sphericalMode,covConfig.numOfFrames);
+                covRes.irCoverage = covScore;
+                fprintff('ir Coverage:  %2.2g\n',covScore);
+                valResults = Validation.aux.mergeResultStruct(valResults, covRes);
+                saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
+                allResults.Validation.(enabledMetrics{i}) = allCovRes;
             elseif strfind(enabledMetrics{i},'wait')
                  waitConfig = calibParams.validationConfig.(enabledMetrics{i});
                  fprintff('waiting for %d seconds...',waitConfig.timeoutSec);
