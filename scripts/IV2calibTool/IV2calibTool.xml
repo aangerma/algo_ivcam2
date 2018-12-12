@@ -16,4 +16,5 @@
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <disableAdvancedOptions>0</disableAdvancedOptions>
+   <toolName>IV2 Calibration Tool</toolName>
 </struct>
