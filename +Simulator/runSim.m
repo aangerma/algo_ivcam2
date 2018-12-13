@@ -3,7 +3,6 @@ function [chA_v,chB_vQ,prprts,measurments] = runSim(model, prms, filename )
     % freq: Ghz
     % time: nSec
     % distance: mm
-    rng(1); 
     txQuietHeadTime=0;
     
     Tx = 1/prms.laser.frequency;
