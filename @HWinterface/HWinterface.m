@@ -167,7 +167,7 @@ classdef HWinterface <handle
         [ rfZ,rfI,rfC ] = rfGet( obj, N);
         burn2device(obj,basedir,burnCalib,burnConfig);
         cma = readCMA(obj,nAvg);
-        
+        setConfidenceAs(obj, input );
         %----------------------CONSTRUCTOR----------------------
         function obj = HWinterface(fw,recfn)
             if(nargin==0)

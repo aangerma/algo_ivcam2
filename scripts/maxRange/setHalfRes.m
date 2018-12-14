@@ -1,4 +1,4 @@
-function [  ] = setHalfRes( hw )
+function [  ] = setHalfRes( hw ,x1y0)
 %SETHALFRES halve the inner vertical resolution os the image wihtin the
 %pipe. Output image is resized to the original size.
 fileDir = fileparts(mfilename('fullpath'));
@@ -34,9 +34,12 @@ if ~regs.JFIL.upscalexyBypass
 end
 
 % fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLauxShadow.*$).*','fo.txt');
-
-newregs.GNRL.imgVsize = regs.GNRL.imgVsize/2;
-newregs.JFIL.upscalex1y0 = 0;
+if x1y0==0
+    newregs.GNRL.imgVsize = regs.GNRL.imgVsize/2;
+else
+    newregs.GNRL.imgHsize = regs.GNRL.imgHsize/2;
+end
+newregs.JFIL.upscalex1y0 = x1y0;
 newregs.JFIL.upscalexyBypass = 0;
 newregs.FRMW.marginT = regs.FRMW.marginT/2;
 newregs.FRMW.marginB = regs.FRMW.marginB/2;
@@ -46,8 +49,8 @@ newregs.DIGG.undistBypass = 1;
 newregs.DIGG.sphericalEn = 1;
 fw.setRegs(newregs,'');
 calibParams.fovExpander.valid = 0;
-[udistlUT.FRMW.undistModel,~,~] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
-fw.setLut(udistlUT);
+% [udistlUT.FRMW.undistModel,~,~] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
+% fw.setLut(udistlUT);
 fw.get();
 scname = strcat(tempname,'.txt');
 fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLauxShadow.*$).*',scname);
