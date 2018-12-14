@@ -33,7 +33,7 @@ cmaA = zeros([imSize,nFrames]);
 for i=1:nFrames
     frame = obj.getFrame();
     frame.i = double(frame.i);
-    frame.i(frame.z==0) = nan;
+%     frame.i(frame.z==0) = nan;
     cmaA(:,:,i) = double(frame.i);
     
 end
