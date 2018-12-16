@@ -1,10 +1,10 @@
 function cma = readCMA(obj,nAvg)
+frame = obj.getFrame();
 
 tmplLength = double(obj.read('GNRLtmplLength'));
 obj.setReg('JFILbypass$', true);    
 obj.setReg('DCORoutIRcma$', true);
 
-frame = obj.getFrame();
 imSize = size(frame.i);
 
 cma = zeros([tmplLength imSize]);
@@ -30,13 +30,17 @@ end
 
 function cmaBin = getBin(obj, nFrames, imSize)
 cmaA = zeros([imSize,nFrames]);
+count = zeros(imSize);
 for i=1:nFrames
     frame = obj.getFrame();
+    count = count + double(frame.z>0);
     frame.i = double(frame.i);
 %     frame.i(frame.z==0) = nan;
     cmaA(:,:,i) = double(frame.i);
     
 end
-cmaBin = (mean(cmaA * 4,3,'omitnan' ));
+
+cmaBin = nan(imSize);
+cmaBin(count>0) = sum(cmaA(count>0) * 4,3)./count(count>0);
 
 end
