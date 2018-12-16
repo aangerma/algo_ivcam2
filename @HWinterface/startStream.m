@@ -1,4 +1,5 @@
 function startStream(obj,FrameGraberMode,resolution)
+    timeout = 10; %timeout until first frame is valid
     if(obj.m_dotnetcam.Stream.IsDepthPlaying)
         return;
     end
@@ -58,14 +59,14 @@ function startStream(obj,FrameGraberMode,resolution)
     
 	    obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
 	    %% set regs configurations that affect image capturing
-	    pause(4);
+	    pause(timeout);
 	    obj.setSize();
     end
 end
 
 
 function FG_startStream(obj,resolution)
-    
+    timeout = 1; %timeout until first frame is valid 
     %% configure for getFrames
     if(resolution == [720 1280])
         scwFG = IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper(...
@@ -95,7 +96,7 @@ function FG_startStream(obj,resolution)
     
     obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
     %% set regs configurations that affect image capturing
-    pause(1);
+    pause(timeout);
     obj.setSize();
 end
 
