@@ -77,9 +77,9 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif strfind(enabledMetrics{i},'dfz')
                 dfzConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(dfzConfig.numOfFrames);
-                [dfzRes,allDfzRes] = Calibration.validation.validateDFZ(hw,frames,fprintff);
+                [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff);
                 valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
-                saveValidationData([],frames,enabledMetrics{i},outFolder,debugMode);
+                saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allDfzRes;
             elseif strfind(enabledMetrics{i},'roi')
                 [roiRes, frames,dbg] = Calibration.validation.validateROI(hw,calibParams,fprintff);

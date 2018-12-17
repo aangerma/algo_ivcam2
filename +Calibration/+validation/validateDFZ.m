@@ -1,10 +1,16 @@
-function [ dfzRes,allRes ] = validateDFZ( hw,frame,fprintff )
+function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff )
     dfzRes = [];
     params.camera.K = getKMat(hw);
-    params.camera.zMaxSubMM = 8;
+    params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
     params.target.squareSize = 30;
-    [score, allRes] = Validation.metrics.gridInterDist(rotFrame180(frame), params);
+    [score, allRes] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
     dfzRes.GeometricError = score;
+    [~, geomRes,dbg] = Validation.metrics.geomUnproject(rotFrame180(frames), params);
+    dfzRes.reprojRmsPix = geomRes.reprojRmsPix;
+    dfzRes.reprojZRms = geomRes.reprojZRms;
+    dfzRes.irDistanceDrift = geomRes.irDistanceDrift;
+    allRes = Validation.aux.mergeResultStruct(allRes,geomRes);
+    
     fprintff('%s: %2.4g\n','eGeom',score);
 end
 

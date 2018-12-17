@@ -73,6 +73,9 @@
       <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
       <DelayFastOffest>[0 15]</DelayFastOffest>
       <GeometricError>[0 3]</GeometricError>
+      <reprojRmsPix>[0 10]</reprojRmsPix>
+      <reprojZRms>[0 10]</reprojZRms>
+      <irDistanceDrift>[-5 5]</irDistanceDrift>
       <roiHorizontalLoss>[0 4]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
       <losMaxDrift>[0 1]</losMaxDrift>
