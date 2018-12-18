@@ -4,8 +4,8 @@
    <gnrl>
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
-       <irInnerRange>[30,250]</irInnerRange>
-       <irOuterRange>[10,255]</irOuterRange>
+       <irInnerRange>[0,255]</irInnerRange>
+       <irOuterRange>[0,255]</irOuterRange>
        
    </gnrl>
    <errRange>
