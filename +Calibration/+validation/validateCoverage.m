@@ -1,14 +1,16 @@
-function [score, coverageRes ] = validateCoverage( hw,isSphericalMode )
+function [score, coverageRes, dbg, frames ] = validateCoverage( hw,isSphericalMode, nCaptures )
     % validate the IR coverage of the HW
     
     % handle missing inputs
-    if ~exist('isSphericalMode','var')
+    if ~exist('isSphericalMode','var') || isempty(isSphericalMode)
         isSphericalMode = true;
     end
     
+    if ~exist('nCaptures','var')
+        nCaptures = 100;
+    end
     
     % set hw and capture images
-    nCaptures = 100;
     r = Calibration.RegState(hw);
     r.add('JFILBypass$',true);
     if isSphericalMode
@@ -22,7 +24,7 @@ function [score, coverageRes ] = validateCoverage( hw,isSphericalMode )
     
     %calculate ir coverage metric
     [score, coverageRes,dbg] = Validation.metrics.irCoverage(frames);
-    coverageRes.probIm = dbg.probIm;
+    dbg.probIm;
     % Save image 
 %     
 %     set(0, 'CurrentFigure', figH)

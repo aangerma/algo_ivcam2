@@ -68,7 +68,12 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
    [results,calibPassed] = validateCoverage(hw,1, runParams, calibParams,results, fprintff);
    if ~calibPassed
        return 
-    end
+   end
+   
+   [results,calibPassed] = validateLos(hw, runParams, calibParams,results, fprintff);
+   if ~calibPassed
+       return
+   end
     %% ::gamma:: 
 	results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t);
 	calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff);
@@ -294,6 +299,33 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
         fprintff('[?] skipped\n');
     end
 end
+
+function [results,calibPassed] = validateLos(hw, runParams, calibParams, results, fprintff)
+    calibPassed = 1;
+    if runParams.validation
+        %test coverage
+        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],[]);
+        if ~isempty(losResults)
+            metrics = {'losMaxDrift','losMeanStdX','losMeanStdY'};
+            for m=1:length(metrics)
+                results.(metrics{m}) = losResults.(metrics{m});
+                metricPassed = losResults.(metrics{m}) <= calibParams.errRange.(metrics{m})(2) && ...
+                    losResults.(metrics{m}) >= calibParams.errRange.(metrics{m})(1);
+                calibPassed = calibPassed & metricPassed;
+            end
+            if calibPassed
+                fprintff('[v] los max drift passed[e=%g]\n',losResults.losMaxDrift);
+            else
+                fprintff('[x] los max drift failed[e=%g]\n',losResults.losMaxDrift);
+            end
+        else
+            calibPassed = false;
+            fprintff('[x] los metric finished with error\n',[]);
+        end
+    end
+    
+end
+
 function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, calibParams, results, fprintff)
     calibPassed = 1;
     if runParams.validation
@@ -308,10 +340,10 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         end
         
         %test coverage
-        [~, covResults] = Calibration.validation.validateCoverage(hw,sphericalEn);
+        [~, covResults,dbg] = Calibration.validation.validateCoverage(hw,sphericalEn);
         % save prob figure
         ff = Calibration.aux.invisibleFigure;
-        imagesc(covResults.probIm);
+        imagesc(dbg.probIm);
         
         title(sprintf('Coverage Map %s',sphericalmode)); colormap jet;colorbar;
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage Map %s',sphericalmode));
@@ -323,7 +355,7 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         if calibPassed
             fprintff('[v] ir coverage %s passed[e=%g]\n',sphericalmode,covResults.irCoverage);
         else
-            fprintff('[x] ir coverage %s passed[e=%g]\n',sphericalmode,covResults.irCoverage);
+            fprintff('[x] ir coverage %s failed[e=%g]\n',sphericalmode,covResults.irCoverage);
         end
         if sphericalEn
             results.(fname) = covResults.irCoverage;
@@ -417,7 +449,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         % dodluts=struct;
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,0);
         x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV]);
-        [~,results.geomErrExtraImages] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
+        [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
         

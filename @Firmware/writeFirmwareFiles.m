@@ -8,8 +8,8 @@ function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
     mkdirSafe(outputFldr);
     regs=obj.get();%force autogen
     
-    v1=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(15));
-    v2=bitand(bitshift(regs.DIGG.spare(1),0),uint32(15));
+    v1=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(255));
+    v2=bitand(bitshift(regs.DIGG.spare(1),0),uint32(255));
     configpostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
     if oldFWVersion
         calibpostfix = sprintf('_Ver_%02d_%02d.',v2,v1);
