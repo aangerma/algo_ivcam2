@@ -51,6 +51,7 @@ regs = fw.get(); % Runs the auto gen and gives an updated reg struct.
 fw.genMWDcmd('sphericalEn',mwdFileName) % Show the commands relevant for spherical mode
 % hw.cmd('mwd a0020bf8 a0020bfc 00000001 // DIGGsphericalEn')% Send a command. Set spherical enable to 'on' 
 hw.runScript(mwdFileName); % Run multiple lines of commands via text
+% hw.setReg('sphericalEn'        ,0);
 % file.
 hw.shadowUpdate(); % Apply the change. Some registers needs shadow update.
 
