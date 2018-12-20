@@ -444,7 +444,8 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         
         % dodluts=struct;
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,0);
-        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV]);
+        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
+            regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
@@ -454,7 +455,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
             fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
             [regs,luts]=fw.get();%run autogen
-            fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
+            fw.genMWDcmd('DEST|DIGG|EXTLdsm',fnAlgoTmpMWD);
             hw.runScript(fnAlgoTmpMWD);
             hw.shadowUpdate();
             calibPassed = 1;
