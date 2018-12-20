@@ -314,7 +314,7 @@ function statrtButton_callback(varargin)
         sparkFolders = strsplit(calibParams.sparkOutputFolders);
         if app.cb.replayMode.Value==0
             s=Spark('Algo','AlgoCalibration',sparkFolders{1});
-            s.addTestProperty('CalibVersion',calibToolVersion)
+            s.addTestProperty('TesterSwVersion',calibToolVersion)
             s.startDUTsession(serialStr);
 %             s.addDTSproperty('TargetType','IRcalibrationChart');
         else
