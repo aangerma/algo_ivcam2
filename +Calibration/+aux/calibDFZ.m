@@ -16,7 +16,7 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
         fprintff=@(varargin) fprintf(varargin{:});
     end
     if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
-        x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV]);
+        x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV regs.FRMW.projectionYshear 0 0]);
     end
     
     
@@ -48,7 +48,7 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
             angx = single(xx);
             angy = single(yy);
         else
-            [angx,angy]=Pipe.CBUF.FRMW.xy2ang(xg,yg,regs);
+            [angx,angy]=Calibration.aux.xy2angSF(xg,yg,regs,0);
         end
         
         %find CB points
@@ -65,8 +65,8 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     end
     
     %%
-    xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1)];
-    xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2)];
+    xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) par.projectionYshear(1) par.dsmXOffset(1) par.dsmYOffset(1)];
+    xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) par.projectionYshear(2) par.dsmXOffset(2) par.dsmYOffset(2)];
     regs = x2regs(x0,regs);
     if iseval
         [minerr,eFit]=errFunc(darr,regs,x0,FE);
@@ -90,8 +90,8 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     [minerr,eFit]=errFunc(darr,outregs,xbest,FE);
     printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
     outregs = x2regs(xbest);
-    fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f , eGeom=%.2f.\n',...
-        outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,minerr);
+    fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f, xOff = %.2f, yOff = %.2f, eGeom=%.2f.\n',...
+        outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear,xbest(6),xbest(7),minerr);
     %% Do it for each in array
     % if nargout > 3
     %     darrNew = darr;
@@ -113,7 +113,7 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
     rtlRegs = x2regs(X,rtlRegs);
     for i = 1:numel(darr)
         d = darr(i);
-        vUnit = ang2vec(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,FE);
+        vUnit = Calibration.aux.ang2vec(d.rpt(:,:,2)+X(6),d.rpt(:,:,3)+X(7),rtlRegs,FE);
         vUnit = reshape(vUnit',size(d.rpt));
         % Update scale to take margins into acount.
         sing = vUnit(:,:,1);
@@ -130,22 +130,6 @@ end
 function [zNorm] = zenithNorm(regs,x)
      rtlRegs = x2regs(x,regs);
      zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
-end
-
-function [oXYZ] = ang2vec(angxQin,angyQin,regs,fovExpander)
-    %% ----STAIGHT FORWARD------
-    angXfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
-    angYfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
-    angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
-    
-    laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
-    oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
-    
-    angyQ=angyQin(:);angxQ =angxQin(:);
-    angx = single(angxQ)*angXfactor;
-    angy = single(angyQ)*angYfactor;
-    oXYZ = Calibration.aux.applyExpander(oXYZfunc(angles2xyz(angx,angy)),fovExpander);
-    
 end
 
 function printErrAndX(X,e,eFit,preSTR,verbose)
@@ -165,6 +149,7 @@ function rtlRegs = x2regs(x,rtlRegs)
     iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
     iterRegs.FRMW.laserangleH=single(x(4));
     iterRegs.FRMW.laserangleV=single(x(5));
+    iterRegs.FRMW.projectionYshear=single(x(6));
     if(~exist('rtlRegs','var'))
         rtlRegs=iterRegs;
         return;
