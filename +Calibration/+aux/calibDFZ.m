@@ -91,7 +91,7 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
     outregs = x2regs(xbest);
     fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f, xOff = %.2f, yOff = %.2f, eGeom=%.2f.\n',...
-        outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear,xbest(6),xbest(7),minerr);
+        outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear,xbest(7),xbest(8),minerr);
     %% Do it for each in array
     % if nargout > 3
     %     darrNew = darr;
@@ -113,7 +113,7 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
     rtlRegs = x2regs(X,rtlRegs);
     for i = 1:numel(darr)
         d = darr(i);
-        vUnit = Calibration.aux.ang2vec(d.rpt(:,:,2)+X(6),d.rpt(:,:,3)+X(7),rtlRegs,FE);
+        vUnit = Calibration.aux.ang2vec(d.rpt(:,:,2)+X(7),d.rpt(:,:,3)+X(8),rtlRegs,FE);
         vUnit = reshape(vUnit',size(d.rpt));
         % Update scale to take margins into acount.
         sing = vUnit(:,:,1);
