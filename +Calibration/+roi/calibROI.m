@@ -115,13 +115,13 @@ end
 function marginsTBLR = calcMargins(edges,regs,calibParams)
 ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs,calibParams); 
 edgesXY = structfun(ang2xy,edges,'UniformOutput',false); 
-factor = 0.75;
+factor = 0.80;
 marginsTBLR(1) = ceil(max(edgesXY.T(innerIndices(edgesXY.T,factor),2)));
 marginsTBLR(2) = single(regs.GNRL.imgVsize) - floor(min(edgesXY.B(innerIndices(edgesXY.B,factor),2)));
 marginsTBLR(3) = ceil(max(edgesXY.L(innerIndices(edgesXY.L,factor),1)));
 marginsTBLR(4) = single(regs.GNRL.imgHsize) - floor(min(edgesXY.R(innerIndices(edgesXY.R,factor),1)));
 
-marginsTBLR(1:2) = marginsTBLR(2:1); % marginT actually refers to the bottom of the image and vice versa (names should be swapped)
+marginsTBLR(1:2) = marginsTBLR([2,1]); % marginT actually refers to the bottom of the image and vice versa (names should be swapped)
 end
 function ind = innerIndices(v,factor)
 % Return the indices of the inner factor percent of vector rows
