@@ -72,7 +72,7 @@ function newRegs = getAng2xyCoeffs(regs)
     %total mrgins: ROI_margins+guard_bands (in pixels)
     % marginRN = regs.FRMW.marginR + guardXinc;
     marginLN = single(regs.FRMW.marginL) + guardXinc;
-    marginTN = single(regs.FRMW.marginT) + guardYinc;
+    marginTN = single(regs.FRMW.marginB) + guardYinc;
     % marginBN = regs.FRMW.marginB + guardYinc;
     
         

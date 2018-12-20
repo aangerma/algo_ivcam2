@@ -68,7 +68,7 @@
    <validationErrRange>
       <horizontalSharpness>[1 3]</horizontalSharpness>
       <verticalSharpness>[1 3]</verticalSharpness>
-      <temporalNoise>[2 10]</temporalNoise>
+      <temporalNoise>[0.2 10]</temporalNoise>
       <DelaySlowOffest>[0 15]</DelaySlowOffest>
       <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
       <DelayFastOffest>[0 15]</DelayFastOffest>
@@ -112,9 +112,9 @@
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>8</extraMarginL>  
-     <extraMarginR>5</extraMarginR>  
-     <extraMarginT>3</extraMarginT>  
+     <extraMarginL>0</extraMarginL>  
+     <extraMarginR>0</extraMarginR>  
+     <extraMarginT>0</extraMarginT>  
      <extraMarginB>0</extraMarginB>       
    </roi>
     <fovExpander>

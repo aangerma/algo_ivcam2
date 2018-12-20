@@ -52,7 +52,7 @@ xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;
 xy = bsxfun(@minus,xynrm,xy00);
 xy    = bsxfun(@times,xy,xys);
-xy = bsxfun(@minus,xy,double([marginL+int16(guardXinc);marginT+int16(guardYinc)]));
+xy = bsxfun(@minus,xy,double([marginL+int16(guardXinc);marginB+int16(guardYinc)]));
 % plot(xy(1,:),xy(2,:));
 % rectangle('position',[0 0 double(regs.GNRL.imgHsize) double(regs.GNRL.imgVsize)])
 xF = reshape(xy(1,:),size(angxQin));

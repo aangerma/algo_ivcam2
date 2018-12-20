@@ -11,7 +11,7 @@ classdef HWinterface <handle
         m_recData
         m_recfn                  char
         
-        sizeRegs
+        usefullRegs
         
     end
     
@@ -34,25 +34,25 @@ classdef HWinterface <handle
             imageObj = imageCollection.Images.Item(0);
             dImByte = imageObj.Item(0).Data;
             frame.z = typecast(cast(dImByte,'uint8'),'uint16');
-            frame.z = reshape(frame.z(1:end-obj.sizeRegs.PCKR.padding),obj.sizeRegs.GNRL.imgVsize,obj.sizeRegs.GNRL.imgHsize);
+            frame.z = reshape(frame.z(1:end-obj.usefullRegs.PCKR.padding),obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize);
             % get IR
             imageObj = imageCollection.Images.Item(1);
             iImByte = imageObj.Item(0).Data;
             frame.i = cast(iImByte,'uint8');
-            frame.i = reshape(frame.i(1:end-obj.sizeRegs.PCKR.padding),obj.sizeRegs.GNRL.imgVsize,obj.sizeRegs.GNRL.imgHsize);
+            frame.i = reshape(frame.i(1:end-obj.usefullRegs.PCKR.padding),obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize);
             
             % get C
             imageObj = imageCollection.Images.Item(2);
             cImByte = imageObj.Item(0).Data;
             cIm8 = cast(cImByte,'uint8');
             frame.c = bitand(cIm8(:),uint8(15))';
-            frame.c = reshape(frame.c(1:end-obj.sizeRegs.PCKR.padding),obj.sizeRegs.GNRL.imgVsize,obj.sizeRegs.GNRL.imgHsize);
+            frame.c = reshape(frame.c(1:end-obj.usefullRegs.PCKR.padding),obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize);
 
-%             if obj.sizeRegs.PCKR.padding>0
-%                nRows2Add =  obj.sizeRegs.PCKR.padding/obj.sizeRegs.GNRL.imgHsize;
-%                frame.z = [frame.z;zeros(nRows2Add,obj.sizeRegs.GNRL.imgHsize)];
-%                frame.c = [frame.c;zeros(nRows2Add,obj.sizeRegs.GNRL.imgHsize)];
-%                frame.i = [frame.i;zeros(nRows2Add,obj.sizeRegs.GNRL.imgHsize)];
+%             if obj.usefullRegs.PCKR.padding>0
+%                nRows2Add =  obj.usefullRegs.PCKR.padding/obj.usefullRegs.GNRL.imgHsize;
+%                frame.z = [frame.z;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+%                frame.c = [frame.c;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+%                frame.i = [frame.i;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
 %             end
         end
         
@@ -81,7 +81,7 @@ classdef HWinterface <handle
         function privDispFigRefresh(obj,f)
             d=obj.getFrame();
             aa(1)=subplot(121,'parent',f);
-            z=double(d.z)/8;
+            z=double(d.z)/obj.usefullRegs.GNRL.zNorm;
             lims = prctile_(z(~isnan(z)),[5 95])+[0 1e-3];
             imagesc(z,'parent',aa(1),lims);
             axis(aa(1),'image');
@@ -130,12 +130,13 @@ classdef HWinterface <handle
     
     methods (Access=public)
         function sz = streamSize(obj)
-           sz = [obj.sizeRegs.GNRL.imgVsize,obj.sizeRegs.GNRL.imgHsize];
+           sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
         end
-        function setSize(obj)
-           obj.sizeRegs.PCKR.padding = obj.read('PCKRpadding');
-           obj.sizeRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
-           obj.sizeRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+        function setUsefullRegs(obj)
+           obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
+           obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
+           obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+           obj.usefullRegs.GNRL.zNorm = obj.z2mm;
         end
         function [res,val] = cmd(obj,str)
             [res,val]=obj.privCmd(str);
@@ -467,8 +468,17 @@ classdef HWinterface <handle
             tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
             obj.privRecFunc('getTemperature',{},{tmptr});
         end
-        
-        
+        function factor = z2mm(obj)
+            % Divide z image by this value to get depth in mm
+           factor = uint16(typecast(obj.read('GNRLzNorm'),'single'));
+        end
+        function [info,serial] = getInfo(obj)
+            info = obj.cmd('gvd');
+            expression = 'OpticalHeadModuleSN:.*';
+            ma = regexp(info,expression,'match');
+            split = strsplit(ma{1});
+            serial = split{2};
+        end
         function v=getSerial(obj)
             [~,v]=obj.cmd('ERB 210 8');
             v=vec(dec2hex(fliplr(v))')';
@@ -482,7 +492,7 @@ classdef HWinterface <handle
             f=figure('numbertitle','off','menubar','none');
             t = timer;
             t.TimerFcn = @(varargin) obj.privDispFigRefresh(f);
-            t.Period = 1;
+            t.Period = 1/30;
             t.ExecutionMode = 'fixedRate';
             f.CloseRequestFcn =@(varargin) HWinterface.sprivDispFigClose(t);
             start(t);

@@ -90,7 +90,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
     %% write version+intrinsics
-    writeVersionAndIntrinsics(verValue,fw,fnCalib);
+    writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff);
     
     %% ::Fix ang2xy Bug using undistort table::
     [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
@@ -235,11 +235,8 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         pause(0.1);
         hw.runPresetScript('maRestart');
         pause(0.1);
-        hw.runPresetScript('maReset');
-        hw.runPresetScript('maRestart');
-%         hw.cmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame');
         hw.shadowUpdate();
-        hw.setSize();
+        hw.setUsefullRegs();
         fprintff('Done(%ds)\n',round(toc(t)));
     else
         fprintff('skipped\n');
@@ -254,7 +251,6 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams);
         
         fw.setRegs(delayRegs,fnCalib);
-        regs = fw.get();
         
         results.delayS = (1- delayCalibResults.slowDelayCalibSuccess);
         results.delaySlowPixelVar = delayCalibResults.delaySlowPixelVar;
@@ -559,7 +555,7 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
         fprintff('[?] skipped\n');
     end
 end
-function writeVersionAndIntrinsics(verValue,fw,fnCalib)
+function writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff)
     regs = fw.get();
     intregs.DIGG.spare=zeros(1,8,'uint32');
     intregs.DIGG.spare(1)=verValue;
@@ -575,6 +571,8 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib)
     intregs.JFIL.spare(1)=uint32(zoRow)*2^16 + uint32(zoCol);
     fw.setRegs(intregs,fnCalib);
     fw.get();
+    
+    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(zoRow),uint32(zoCol));
 end
 
 

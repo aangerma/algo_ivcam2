@@ -18,6 +18,12 @@ marginsU = calcMargins(edgesU,regs,calibParams);
 edgesD = calcBounds(imD,noiseThresh,runParams,'imD');
 marginsD = calcMargins(edgesD,regs,calibParams);
 
+% As weird as it is, extra margins are consistent with FRMWmargin*.
+% Therefore Top is actually the bottom of the image (in hw.getFrame),
+% Bottom is the top, left is left and right is right. Frame from
+% hw.getFrame are rotated by 180 from the real world. Bottom <-> Top
+% confusion should be fixed. 
+
 extraMargins = [calibParams.roi.extraMarginT,...
                 calibParams.roi.extraMarginB,...
                 calibParams.roi.extraMarginL,...
@@ -109,10 +115,19 @@ end
 function marginsTBLR = calcMargins(edges,regs,calibParams)
 ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs,calibParams); 
 edgesXY = structfun(ang2xy,edges,'UniformOutput',false); 
-marginsTBLR(1) = ceil(max(edgesXY.T(:,2)));
-marginsTBLR(2) = single(regs.GNRL.imgVsize) - floor(min(edgesXY.B(:,2)));
-marginsTBLR(3) = ceil(max(edgesXY.L(:,1)));
-marginsTBLR(4) = single(regs.GNRL.imgHsize) - floor(min(edgesXY.R(:,1)));
+factor = 0.75;
+marginsTBLR(1) = ceil(max(edgesXY.T(innerIndices(edgesXY.T,factor),2)));
+marginsTBLR(2) = single(regs.GNRL.imgVsize) - floor(min(edgesXY.B(innerIndices(edgesXY.B,factor),2)));
+marginsTBLR(3) = ceil(max(edgesXY.L(innerIndices(edgesXY.L,factor),1)));
+marginsTBLR(4) = single(regs.GNRL.imgHsize) - floor(min(edgesXY.R(innerIndices(edgesXY.R,factor),1)));
+
+marginsTBLR(1:2) = marginsTBLR(2:1); % marginT actually refers to the bottom of the image and vice versa (names should be swapped)
+end
+function ind = innerIndices(v,factor)
+% Return the indices of the inner factor percent of vector rows
+vlen = size(v,1);
+allInd = 1:vlen;
+ind = allInd(vlen*(1-factor)/2 : vlen*(1+factor)/2);
 end
 function xy = spherical2xy(sphericalPixels,regs,calibParams)
 % angX/angY is translated to xyz using the regs and fov expander model if
@@ -164,9 +179,9 @@ Hsz = single(regs.GNRL.imgHsize);
 % for y == imVsize-1. Therefore, marginB should be calculated by the margin
 % at the top of the image, and marginT should be calculated by the margin
 % at the bottom of the image - as pixel 0 is on top and pixel 479 is at the
-% bottom.
-roiregs.FRMW.marginB = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
-roiregs.FRMW.marginT = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
+% bottom. 
+roiregs.FRMW.marginB = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
+roiregs.FRMW.marginT = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
 roiregs.FRMW.marginL = int16((-L*Hsz + L*R*Hsz/(R-Hsz)) / (L-Hsz-L*R/(R-Hsz)));
 roiregs.FRMW.marginR = int16((-R*Hsz + L*R*Hsz/(L-Hsz)) / (R-Hsz-L*R/(L-Hsz)));
 
@@ -197,9 +212,9 @@ xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];% xys = [xresN-1;yresN-1]./[r
 xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xy = bsxfun(@minus,xynrm,xy00);
 xy    = bsxfun(@times,xy,xys);
-marginT = regs.FRMW.marginT;
+marginB = regs.FRMW.marginB;
 marginL = regs.FRMW.marginL;
-xy = bsxfun(@minus,xy,double([marginL+int16(guardXinc);marginT+int16(guardYinc)]));
+xy = bsxfun(@minus,xy,double([marginL+int16(guardXinc);marginB+int16(guardYinc)]));
 
 xF = xy(1,:);
 yF = xy(2,:);

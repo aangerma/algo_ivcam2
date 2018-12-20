@@ -18,7 +18,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
-        subplot(1,3,2); imagesc(frame.z/8); title('Validation Z');
+        subplot(1,3,2); imagesc(frame.z/hw.z2mm); title('Validation Z');
         subplot(1,3,3); imagesc(frame.c); title('Validation C');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Frame');
         

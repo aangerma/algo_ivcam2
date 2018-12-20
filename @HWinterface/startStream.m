@@ -60,7 +60,7 @@ function startStream(obj,FrameGraberMode,resolution)
 	    obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
 	    %% set regs configurations that affect image capturing
 	    pause(timeout);
-	    obj.setSize();
+	    obj.setUsefullRegs();
     end
 end
 

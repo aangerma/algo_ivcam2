@@ -271,9 +271,10 @@ function statrtButton_callback(varargin)
             runparams.replayFile = app.outputdirectorty.String;
         else
             serialStr = '00000000';
+            info = '';
             try
                 hw = HWinterface;
-                serialStr = hw.getSerial();
+                [info,serialStr] = hw.getInfo();
                 clear hw;
             catch e
                 fprintffS('[!] ERROR:%s\n',strtrim(e.message));
@@ -288,6 +289,10 @@ function statrtButton_callback(varargin)
 
         end
         mkdirSafe(runparams.outputFolder);
+        infoFn = fullfile(runparams.outputFolder,'unit_info.txt');
+        fid = fopen(infoFn,'wt');
+        fprintf(fid, info);
+        fclose(fid);
         runparamsFn = fullfile(runparams.outputFolder,'sessionParams.xml');
         logFn = fullfile(runparams.outputFolder,'log.log');
         outputFolderChange_callback(app.figH);
