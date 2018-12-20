@@ -108,7 +108,12 @@
         <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 
         <zenithyRange>[-6,6]</zenithyRange> 
+        <projectionYshear>[0,0]</projectionYshear>
+        <dsmXOffset>[0,0]</dsmXOffset>
+        <dsmYOffset>[0,0]</dsmYOffset>
         <zenithNormW>0.05</zenithNormW>
+        
+        
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
