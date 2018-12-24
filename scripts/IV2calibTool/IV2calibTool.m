@@ -84,7 +84,7 @@ function ll=fprintff(app,varargin)
     %     if(~isempty(txtline) && txtline(end)==newline)
     %         logAreaH.String{end+1}='';
     %     end
-    
+    logAreaH.Enable = 'on';
     drawnow;
 end
 
@@ -102,6 +102,7 @@ function app=createComponents()
     else
         toolDir = fileparts(mfilename('fullpath'));
     end
+    app.toolName = runParams.toolName;
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
     app.defaultsFilename= fullfile(toolDir,'IV2calibTool.xml');
@@ -155,6 +156,7 @@ function app=createComponents()
     app.outputFldrBrowseBtn.Callback = {@setFolder,app.outputdirectorty};
     app.outputFldrBrowseBtn.Position = [606 sz(2)-60 21 22];
     app.outputFldrBrowseBtn.String = '...';
+
     
     %{
     % Create outputFldrBrowseBtn
@@ -227,6 +229,7 @@ function saveDefaults(varargin)
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
+    s.toolName = app.toolName;
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
     end
