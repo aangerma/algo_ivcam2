@@ -553,6 +553,7 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
         hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));
     else
+        [~,luts]=fw.get();
         fprintff('[?] skipped\n');
     end
 end
