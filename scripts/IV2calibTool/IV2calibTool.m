@@ -176,7 +176,7 @@ function app=createComponents()
     % Create verboseCheckBox
     
     %checkboxes
-    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','validation','uniformProjectionDFZ'};
+    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -256,7 +256,9 @@ function statrtButton_callback(varargin)
         %temporary until we have valid log file
         app.m_logfid = 1;
         fprintffS=@(varargin) fprintff(app,varargin{:});
-
+        info = ''; % Until reading from unit
+        serialStr = '00000000'; % Until reading from unit
+            
         origOutputFolder = app.outputdirectorty.String;
         if app.cb.replayMode.Value
             seesionFile = app.outputdirectorty.String;
@@ -270,8 +272,7 @@ function statrtButton_callback(varargin)
             runparams.outputFolder = tempname;
             runparams.replayFile = app.outputdirectorty.String;
         else
-            serialStr = '00000000';
-            info = '';
+            
             try
                 hw = HWinterface;
                 [info,serialStr] = hw.getInfo();
@@ -316,6 +317,7 @@ function statrtButton_callback(varargin)
             s=Spark('Algo','AlgoCalibration',sparkFolders{1});
             s.addTestProperty('TesterSwVersion',calibToolVersion)
             s.startDUTsession(serialStr);
+            s.addTestProperty('gvd',info);
 %             s.addDTSproperty('TargetType','IRcalibrationChart');
         else
             s = [];
@@ -330,7 +332,7 @@ function statrtButton_callback(varargin)
         calibfn =  fullfile(toolDir,'calibParams.xml');
         [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
         validPassed = 1;
-        if calibPassed~=0 && runparams.validation && app.cb.replayMode.Value == 0
+        if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
             [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s);
         end

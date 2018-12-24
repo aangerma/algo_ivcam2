@@ -298,7 +298,7 @@ end
 
 function [results,calibPassed] = validateLos(hw, runParams, calibParams, results, fprintff)
     calibPassed = 1;
-    if runParams.validation
+    if runParams.pre_calib_validation
         %test coverage
         [losResults] = Calibration.validation.validateLOS(hw,runParams,[],[]);
         if ~isempty(losResults)
@@ -324,7 +324,7 @@ end
 
 function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, calibParams, results, fprintff)
     calibPassed = 1;
-    if runParams.validation
+    if runParams.pre_calib_validation
         if sphericalEn 
             sphericalmode = 'Spherical Enable';
             fname = strcat('irCoverage','SpEn');
@@ -415,7 +415,7 @@ end
 function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
 
     calibPassed = 1;
-    fprintff('[-] FOV, System Delay, Zenith and Distortion calibration...\n');
+    fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     if(runParams.DFZ)
         calibPassed = 0;
         if(runParams.uniformProjectionDFZ)

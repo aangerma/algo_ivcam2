@@ -117,10 +117,10 @@
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>0</extraMarginL>  
-     <extraMarginR>0</extraMarginR>  
-     <extraMarginT>0</extraMarginT>  
-     <extraMarginB>0</extraMarginB>       
+     <extraMarginL>4</extraMarginL>  
+     <extraMarginR>4</extraMarginR>  
+     <extraMarginT>3</extraMarginT>  
+     <extraMarginB>3</extraMarginB>       
    </roi>
     <fovExpander>
         <valid>0</valid>  

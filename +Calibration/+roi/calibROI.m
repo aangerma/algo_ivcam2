@@ -127,7 +127,7 @@ function ind = innerIndices(v,factor)
 % Return the indices of the inner factor percent of vector rows
 vlen = size(v,1);
 allInd = 1:vlen;
-ind = allInd(vlen*(1-factor)/2 : vlen*(1+factor)/2);
+ind = allInd(uint16(vlen*(1-factor)/2) :uint16(vlen*(1+factor)/2));
 end
 function xy = spherical2xy(sphericalPixels,regs,calibParams)
 % angX/angY is translated to xyz using the regs and fov expander model if
