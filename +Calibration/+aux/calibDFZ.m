@@ -132,30 +132,30 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
     e = mean(e);    
 end
 
-function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
+function [] = printMirrorAng(darr,rtlRegs,X,FE)
 rtlRegs = x2regs(X,rtlRegs);
 horizAng = zeros(1,numel(darr));
 verticalAngl = zeros(1,numel(darr));
-fprintff('                       Plane horizontal angle:       Plane Vertical angle:\n');
+fprintff('                       Mirror horizontal angle:      Mirror Vertical angle:\n');
 
 for i = 1:numel(darr)
     d = darr(i);
-    vUnit = Calibration.aux.ang2vec(d.rpt(:,:,2)+X(7),d.rpt(:,:,3)+X(8),rtlRegs,FE);
+    vUnit = ang2vec(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,FE);
     vUnit = reshape(vUnit',size(d.rpt));
-    vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.
     sing = vUnit(:,:,1);
     rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
     r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
     v = vUnit.*r;
-    x = reshape(v(:,:,1), size(v,1)*size(v,2), []);
-    y = reshape(v(:,:,2), size(v,1)*size(v,2), []);
-    z = reshape(v(:,:,3), size(v,1)*size(v,2), []);
+    x = v(1,:)';
+    y = v(2,:)';
+    z = v(3,:)';
     A = [x y ones(length(x),1)*mean(z)];
     p = (A'*A)\(A'*z);
-    horizAng(1,i) = 90-atan2d(p(3,:),p(1,:));
-    verticalAngl(1,i) = 90-atan2d(p(3,:),p(2,:));
-    fprintff('frame number %3d:              %7.3g                          %7.3g         \n', i, horizAng(i), verticalAngl(i));
+    horizAng(i) = 90-atan2d(p(3,:),p(1,:));
+    verticalAngl(i) = 90-atan2d(p(3,:),p(2,:));
+    fprintff('                       Mirror horizontal angle:      Mirror Vertical angle:\n');
+    fprintff('frame number %3d:              %2.3g                          %2.3g         \n', i, horizAng(i), verticalAngl(i));
 end
 end
 
