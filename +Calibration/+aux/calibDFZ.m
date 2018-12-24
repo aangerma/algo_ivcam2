@@ -92,7 +92,6 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     outregs = x2regs(xbest);
     fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f, xOff = %.2f, yOff = %.2f, eGeom=%.2f.\n',...
         outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear,xbest(7),xbest(8),minerr);
-    outregs.EXTL.dsmXoffset = regs.EXTL.dsmXoffset+xbest(7)/regs.EXTL.dsmXscale;
     outregs.EXTL.dsmYoffset = regs.EXTL.dsmYoffset+xbest(8)/regs.EXTL.dsmYscale;
     %% Do it for each in array
     % if nargout > 3
@@ -128,6 +127,34 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
     eFit = mean(eFit);
     e = mean(e);    
 end
+
+function [] = printMirrorAng(darr,rtlRegs,X,FE)
+rtlRegs = x2regs(X,rtlRegs);
+horizAng = zeros(1,numel(darr));
+verticalAngl = zeros(1,numel(darr));
+fprintff('                       Mirror horizontal angle:      Mirror Vertical angle:\n');
+
+for i = 1:numel(darr)
+    d = darr(i);
+    vUnit = ang2vec(d.rpt(:,:,2),d.rpt(:,:,3),rtlRegs,FE);
+    vUnit = reshape(vUnit',size(d.rpt));
+    % Update scale to take margins into acount.
+    sing = vUnit(:,:,1);
+    rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
+    r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+    v = vUnit.*r;
+    x = v(1,:)';
+    y = v(2,:)';
+    z = v(3,:)';
+    A = [x y ones(length(x),1)*mean(z)];
+    p = (A'*A)\(A'*z);
+    horizAng(i) = 90-atan2d(p(3,:),p(1,:));
+    verticalAngl(i) = 90-atan2d(p(3,:),p(2,:));
+    fprintff('                       Mirror horizontal angle:      Mirror Vertical angle:\n');
+    fprintff('frame number %3d:              %2.3g                          %2.3g         \n', i, horizAng(i), verticalAngl(i));
+end
+end
+
 
 function [zNorm] = zenithNorm(regs,x)
      rtlRegs = x2regs(x,regs);
