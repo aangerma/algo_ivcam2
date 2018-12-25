@@ -135,7 +135,7 @@ function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
 rtlRegs = x2regs(X,rtlRegs);
 horizAng = zeros(1,numel(darr));
 verticalAngl = zeros(1,numel(darr));
-fprintff('                       Mirror horizontal angle:      Mirror Vertical angle:\n');
+fprintff('                       Plane horizontal angle:       Plane Vertical angle:\n');
 
 for i = 1:numel(darr)
     d = darr(i);
