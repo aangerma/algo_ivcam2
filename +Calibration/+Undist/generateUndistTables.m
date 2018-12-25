@@ -1,5 +1,4 @@
-function [udistLUT,xg,yg,undistx,undisty]=generateUndistTables(s,d,wh)
-pmargin = 0.1;
+function [udistLUT,xg,yg,undistx,undisty]=generateUndistTables(s,d,wh,pmargin)
 N=32;
 wh=fliplr(wh);
 

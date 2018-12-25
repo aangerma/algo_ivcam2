@@ -9,6 +9,8 @@ function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,
 %    their true location.
 regs = fw.get();
 origregs = regs;
+pmargin=regs.FRMW.undistPmargin;
+
 FE = [];
 if calibParams.fovExpander.valid
     FE = calibParams.fovExpander.table;
@@ -43,8 +45,7 @@ end
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
 % y.
-
-[udistLUT,~,~,~,~]= Calibration.Undist.generateUndistTables([xbug(:),ybug(:)]',[xg(:),yg(:)]',double([regs.GNRL.imgVsize,regs.GNRL.imgHsize]));
+[udistLUT,~,~,~,~]= Calibration.Undist.generateUndistTables([xbug(:),ybug(:)]',[xg(:),yg(:)]',double([regs.GNRL.imgVsize,regs.GNRL.imgHsize]),pmargin);
 
 % Apply the lut to the bugged x-y and calculate the displacement error:
 luts.FRMW.undistModel = udistLUT;

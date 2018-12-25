@@ -47,7 +47,7 @@ else
     % % %
     % MARGINS ARE FIXED TO +-p%
     wh=double([regs.GNRL.imgHsize regs.GNRL.imgVsize]);
-    pmargin = 0.1;
+    pmargin = regs.FRMW.undistPmargin;
     x0 = -ceil(wh(1)*pmargin);
     x1 =  ceil(wh(1)*(1+pmargin));
     y0 = -ceil(wh(2)*pmargin);
