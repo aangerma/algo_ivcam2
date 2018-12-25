@@ -47,11 +47,15 @@ else
     % % %
     % MARGINS ARE FIXED TO +-p%
     wh=double([regs.GNRL.imgHsize regs.GNRL.imgVsize]);
-    pmargin = regs.FRMW.undistPmargin;
-    x0 = -ceil(wh(1)*pmargin);
-    x1 =  ceil(wh(1)*(1+pmargin));
-    y0 = -ceil(wh(2)*pmargin);
-    y1 =  ceil(wh(2)*(1+pmargin));
+    
+    a=2047; pixelMargin=2; 
+    [angx,angy] = meshgrid(linspace(-a,a,100));
+    [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],0);
+    % block rectangle
+    x0 = min(x(:))-pixelMargin;
+    x1 = max(x(:))+pixelMargin;
+    y0 = min(y(:))-pixelMargin;
+    y1 = max(y(:))+pixelMargin;
     
     
     distortionH=y1-y0;
@@ -124,20 +128,20 @@ mat2str(dec2hex(typecast(memordInv,'uint32'),8))
 
 %%
 %check that LUT covers the entire range
-lx = x0:x1;
-ly = y0:y1;
-[yold,xold]=ndgrid(ly,lx);
-yold=bitshift(int64(yold),15);
-xold=bitshift(int64(xold),15);
-% xold=2047;yold=2047;
-X = int32(bitshift(int64(xold).*int64(autogenRegs.DIGG.xScaleIn),-15)) + autogenRegs.DIGG.xShiftIn;
-Y = int32(bitshift(int64(yold).*int64(autogenRegs.DIGG.yScaleIn),-15)) + autogenRegs.DIGG.yShiftIn;
-
-XX = int64(X) - int64(autogenRegs.DIGG.undistX0);
-YY = int64(Y) - int64(autogenRegs.DIGG.undistY0);
-xaddr = bitshift(XX*int64(autogenRegs.DIGG.undistFx),-15);
-yaddr = bitshift(YY*int64(autogenRegs.DIGG.undistFy),-15);
-assert(all(xaddr(:)>=0 & xaddr(:)<=bitshift(32,shift)-1));
-assert(all(yaddr(:)>=0 & yaddr(:)<=bitshift(32,shift)-1));
+% lx = ceil(x0):floor(x1);
+% ly =  ceil(y0):floor(y1);
+% [yold,xold]=ndgrid(ly,lx);
+% yold=bitshift(int64(yold),15);
+% xold=bitshift(int64(xold),15);
+% % xold=2047;yold=2047;
+% X = int32(bitshift(int64(xold).*int64(autogenRegs.DIGG.xScaleIn),-15)) + autogenRegs.DIGG.xShiftIn;
+% Y = int32(bitshift(int64(yold).*int64(autogenRegs.DIGG.yScaleIn),-15)) + autogenRegs.DIGG.yShiftIn;
+% 
+% XX = int64(X) - int64(autogenRegs.DIGG.undistX0);
+% YY = int64(Y) - int64(autogenRegs.DIGG.undistY0);
+% xaddr = bitshift(XX*int64(autogenRegs.DIGG.undistFx),-15);
+% yaddr = bitshift(YY*int64(autogenRegs.DIGG.undistFy),-15);
+% assert(all(xaddr(:)>=0 & xaddr(:)<=bitshift(32,shift)-1));
+% assert(all(yaddr(:)>=0 & yaddr(:)<=bitshift(32,shift)-1));
 
 end
