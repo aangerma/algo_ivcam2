@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+    <distances>2300</distances> <!--distance to go over in mm-->
+    <manualTargeting>1</manualTargeting> <!--0 automatically detects the target-->
+    <storeResPath>Results</storeResPath> <!--where to save results-->
+    <framesPerValue>100</framesPerValue> <!--the number of frames for the metric-->
+    <plotsToShow><!--which graphs to display-->
+        {fill Rate With Std Below 30,
+        fill Rate With Diff From Med Below 30,
+        Ir Masked Mean,
+        Ir Masked Mean,
+        Max Peak Masked Mean,
+        Conf Masked Mean,
+        Duty Cycle Masked Mean}
+    </plotsToShow>
+    <regToSweep>EXTLvAPD</regToSweep> <!--which register to work on-->
+    <sweepDefaultVal>5120</sweepDefaultVal> <!--default value as a baseline-->
+    <sweepVals>[5761:64:7041]</sweepVals> <!--the values to sweep-->
+</struct>
