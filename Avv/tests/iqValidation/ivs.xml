@@ -15,6 +15,6 @@
         <test name="zStd_4m" metrics="zStd" target="checkerboard_30" distance="4m" threshold="[0:0.5]" />
         <test name="gridInterDist_40cm" metrics="gridInterDist" target="checkerboard_30" distance="40cm" threshold="[0:0.7]" />
         <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_75" distance="1m" threshold="[0:2.5]" />
-        <test name="mos" metrics="mos" target="mos" distance="30cm" threshold="[0 : 7.6]" />
+        <test name="mos" metrics="mos" target="mos" distance="30cm" threshold="[0 : 11.4]" />
     </tests>
 </root>
