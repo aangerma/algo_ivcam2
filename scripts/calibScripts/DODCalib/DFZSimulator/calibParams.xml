@@ -12,8 +12,8 @@
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 1.6]</geomErr>
-      <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
+      <geomErr>[0.01 1.1]</geomErr>
+      <extraImagesGeomErr>[0.01 4]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 0.5]</maxPixelDisplacement>
       <upDownFovDiff>[0 2]</upDownFovDiff>
