@@ -1,11 +1,11 @@
 % Create a spherical image with 3 levels - 0, 0.5 and
 % 1
 fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\releaseConfigCalib');
-regs2.GNRL.imgVsize = uint16(480);
-fw.setRegs(regs2,'');
+% regs2.GNRL.imgVsize = uint16(480);
+% fw.setRegs(regs2,'');
 regs = fw.get();
 
-white = ones(480,640);
+white = ones(360,640);
 figure;
 proj =  roipoly(white); close;
 plusNoise = imdilate(proj,strel('square',10));
