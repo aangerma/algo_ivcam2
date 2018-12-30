@@ -117,8 +117,8 @@
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>4</extraMarginL>  
-     <extraMarginR>4</extraMarginR>  
+     <extraMarginL>7</extraMarginL>  
+     <extraMarginR>5</extraMarginR>  
      <extraMarginT>3</extraMarginT>  
      <extraMarginB>3</extraMarginB>       
    </roi>
