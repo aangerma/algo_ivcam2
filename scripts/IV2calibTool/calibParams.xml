@@ -21,9 +21,9 @@
       <imFovX>[50 inf]</imFovX>
       <imFovY>[35 inf] </imFovY>
       <irCoverageSpEn>[88 100]</irCoverageSpEn>
-      <stdIrCoverageSpEn>[0 2.5]</stdIrCoverageSpEn>
+      <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
       <irCoverageSpDis>[85 100]</irCoverageSpDis>
-      <stdIrCoverageSpDis>[0 2.5]</stdIrCoverageSpDis>
+      <stdIrCoverageSpDis>[0 4]</stdIrCoverageSpDis>
       <horizEdge>[0 inf]</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
       <projFovx>[55 65]</projFovx>
