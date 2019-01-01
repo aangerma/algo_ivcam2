@@ -12,8 +12,8 @@
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 1.5]</geomErr>
-      <extraImagesGeomErr>[0.01 1.75]</extraImagesGeomErr>
+      <geomErr>[0.01 1.1]</geomErr>
+      <extraImagesGeomErr>[0.01 4]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 0.5]</maxPixelDisplacement>
       <upDownFovDiff>[0 2]</upDownFovDiff>
@@ -21,9 +21,9 @@
       <imFovX>[50 inf]</imFovX>
       <imFovY>[35 inf] </imFovY>
       <irCoverageSpEn>[88 100]</irCoverageSpEn>
-      <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
+      <stdIrCoverageSpEn>[0 2.5]</stdIrCoverageSpEn>
       <irCoverageSpDis>[85 100]</irCoverageSpDis>
-      <stdIrCoverageSpDis>[0 4]</stdIrCoverageSpDis>
+      <stdIrCoverageSpDis>[0 2.5]</stdIrCoverageSpDis>
       <horizEdge>[0 inf]</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
       <projFovx>[55 65]</projFovx>
@@ -117,8 +117,8 @@
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>7</extraMarginL>  
-     <extraMarginR>5</extraMarginR>  
+     <extraMarginL>4</extraMarginL>  
+     <extraMarginR>4</extraMarginR>  
      <extraMarginT>3</extraMarginT>  
      <extraMarginB>3</extraMarginB>       
    </roi>

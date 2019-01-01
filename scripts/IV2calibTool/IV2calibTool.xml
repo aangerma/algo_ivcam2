@@ -11,8 +11,9 @@
    <cb_undist>1</cb_undist>
    <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
    <cb_burnConfigurationToDevice>0</cb_burnConfigurationToDevice>
-   <cb_debug>1</cb_debug>
-   <cb_validation>1</cb_validation>
+   <cb_debug>0</cb_debug>
+   <cb_pre_calib_validation>1</cb_pre_calib_validation>
+   <cb_post_calib_validation>1</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <disableAdvancedOptions>0</disableAdvancedOptions>

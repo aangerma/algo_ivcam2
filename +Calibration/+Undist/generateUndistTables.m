@@ -1,16 +1,12 @@
-function [udistLUT,xg,yg,undistx,undisty]=generateUndistTables(s,d,wh)
-pmargin = 0.1;
-N=32;
-wh=fliplr(wh);
+function [udistLUT,xg,yg,undistx,undisty]=generateUndistTables(s,d,wh,regs)
 
-x0 = -ceil(wh(1)*pmargin);
-x1 =  ceil(wh(1)*(1+pmargin));
-y0 = -ceil(wh(2)*pmargin);
-y1 =  ceil(wh(2)*(1+pmargin));
-distortionH=y1-y0;
-distortionW=x1-x0;
-fx = (N-1)/distortionW;
-fy = (N-1)/distortionH;
+wh=fliplr(wh);
+shift = double(regs.DIGG.bitshift);
+
+x0 = single(regs.DIGG.undistX0)/(2^shift);
+y0 = single(regs.DIGG.undistY0)/(2^shift);
+fx = single(regs.DIGG.undistFx)/(2^shift);
+fy = single(regs.DIGG.undistFy)/(2^shift);
 [yg,xg]=ndgrid(1/fy*(0:31)+y0,1/fx*(0:31)+x0);
 
 %  bdpts=interp1(0:4,[0 0;1 0;1 1;0 1;0 0],(0:0.1:3.9))'.*[distortionW;distortionH]+[x0;y0];

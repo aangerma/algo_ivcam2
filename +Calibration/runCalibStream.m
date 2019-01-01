@@ -90,7 +90,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
     %% write version+intrinsics
-    writeVersionAndIntrinsics(verValue,fw,fnCalib);
+    writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff);
     
     %% ::Fix ang2xy Bug using undistort table::
     [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
@@ -235,11 +235,8 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         pause(0.1);
         hw.runPresetScript('maRestart');
         pause(0.1);
-        hw.runPresetScript('maReset');
-        hw.runPresetScript('maRestart');
-%         hw.cmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame');
         hw.shadowUpdate();
-        hw.setSize();
+        hw.setUsefullRegs();
         fprintff('Done(%ds)\n',round(toc(t)));
     else
         fprintff('skipped\n');
@@ -254,7 +251,6 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams);
         
         fw.setRegs(delayRegs,fnCalib);
-        regs = fw.get();
         
         results.delayS = (1- delayCalibResults.slowDelayCalibSuccess);
         results.delaySlowPixelVar = delayCalibResults.delaySlowPixelVar;
@@ -302,7 +298,7 @@ end
 
 function [results,calibPassed] = validateLos(hw, runParams, calibParams, results, fprintff)
     calibPassed = 1;
-    if runParams.validation
+    if runParams.pre_calib_validation
         %test coverage
         [losResults] = Calibration.validation.validateLOS(hw,runParams,[],[]);
         if ~isempty(losResults)
@@ -328,7 +324,7 @@ end
 
 function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, calibParams, results, fprintff)
     calibPassed = 1;
-    if runParams.validation
+    if runParams.pre_calib_validation
         if sphericalEn 
             sphericalmode = 'Spherical Enable';
             fname = strcat('irCoverage','SpEn');
@@ -419,7 +415,7 @@ end
 function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
 
     calibPassed = 1;
-    fprintff('[-] FOV, System Delay, Zenith and Distortion calibration...\n');
+    fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     if(runParams.DFZ)
         calibPassed = 0;
         if(runParams.uniformProjectionDFZ)
@@ -448,7 +444,8 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         
         % dodluts=struct;
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,0);
-        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV]);
+        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
+            regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
@@ -458,7 +455,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
             fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
             [regs,luts]=fw.get();%run autogen
-            fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
+            fw.genMWDcmd('DEST|DIGG|EXTLdsm',fnAlgoTmpMWD);
             hw.runScript(fnAlgoTmpMWD);
             hw.shadowUpdate();
             calibPassed = 1;
@@ -556,10 +553,11 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
         hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));
     else
+        [~,luts]=fw.get();
         fprintff('[?] skipped\n');
     end
 end
-function writeVersionAndIntrinsics(verValue,fw,fnCalib)
+function writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff)
     regs = fw.get();
     intregs.DIGG.spare=zeros(1,8,'uint32');
     intregs.DIGG.spare(1)=verValue;
@@ -575,6 +573,8 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib)
     intregs.JFIL.spare(1)=uint32(zoRow)*2^16 + uint32(zoCol);
     fw.setRegs(intregs,fnCalib);
     fw.get();
+    
+    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(zoRow),uint32(zoCol));
 end
 
 

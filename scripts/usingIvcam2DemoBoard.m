@@ -28,11 +28,12 @@ fw.disp('baseline'); % Displays regs whos names fit the expression and their val
 Interface with the demoboard. 
 %}
 hw = HWinterface();
+z2mm = hw.z2mm;
 frame = hw.getFrame(); % Grab a frame (with z,i and c)  
 pause(1); % wait for a second so the unit will warm up (open full fov, activate laser)
-figure,tabplot; subplot(131), imagesc(frame.z/8); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
+figure,tabplot; subplot(131), imagesc(frame.z/z2mm); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
 frame = hw.getFrame(30); % Grab 30 frames and average them (with z,i and c)  
-tabplot; subplot(131), imagesc(frame.z/8); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
+tabplot; subplot(131), imagesc(frame.z/z2mm); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
 
 %% Update configuration
 %{
@@ -50,11 +51,12 @@ regs = fw.get(); % Runs the auto gen and gives an updated reg struct.
 fw.genMWDcmd('sphericalEn',mwdFileName) % Show the commands relevant for spherical mode
 % hw.cmd('mwd a0020bf8 a0020bfc 00000001 // DIGGsphericalEn')% Send a command. Set spherical enable to 'on' 
 hw.runScript(mwdFileName); % Run multiple lines of commands via text
+% hw.setReg('sphericalEn'        ,0);
 % file.
 hw.shadowUpdate(); % Apply the change. Some registers needs shadow update.
 
 frame = hw.getFrame(); % Grab a frame (with z,i and c)  
-tabplot; subplot(131), imagesc(frame.z/8); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
+tabplot; subplot(131), imagesc(frame.z/z2mm); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
 
 % 2. By RegState
 r=Calibration.RegState(hw); % create the object
@@ -62,7 +64,7 @@ r.add('sphericalEn'        ,0 ); % Return spherical enable to false.
 % r.add('JFILinvConfThr',uint8(0));
 r.set();% Apply the new values (includes shadow update)
 frame = hw.getFrame(); 
-tabplot; subplot(131), imagesc(frame.z/8); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
+tabplot; subplot(131), imagesc(frame.z/z2mm); title('z'); subplot(132), imagesc(frame.c);title('c');subplot(133), imagesc(frame.i);title('i');
 r.reset();% Return regs to previous values. (sphericalEn is now 1)
 
 % 3. By registerUpdateGUI.m

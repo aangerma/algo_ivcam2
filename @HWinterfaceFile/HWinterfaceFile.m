@@ -5,7 +5,7 @@ classdef HWinterfaceFile <handle
         m_fw
         m_recData;
         
-        sizeRegs
+        usefullRegs
     end
     
     methods (Access=private)
@@ -95,15 +95,16 @@ classdef HWinterfaceFile <handle
         end
         function startStream(obj,varargin)
             imgVsize = obj.read('GNRLimgVsize');
-            obj.setSize();
+            obj.setUsefullRegs();
         end
-        function setSize(obj)
-           obj.sizeRegs.PCKR.padding = obj.read('PCKRpadding');
-           obj.sizeRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
-           obj.sizeRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+        function setUsefullRegs(obj)
+           obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
+           obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
+           obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+           obj.usefullRegs.GNRL.zNorm = obj.z2mm;
         end
         function sz = streamSize(obj)
-           sz = [obj.sizeRegs.GNRL.imgVsize,obj.sizeRegs.GNRL.imgHsize];
+           sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
         end
         function setReg(obj,varargin)
             
@@ -157,28 +158,32 @@ classdef HWinterfaceFile <handle
             
           end
         
-        
-        
-          function v=readVersion(obj)
-             [~,v]=obj.cmd('ERB 210 8');
-             v=vec(dec2hex(fliplr(v))')';
-
-          end
-          function v=getSerial(obj)
-             [~,v]=obj.cmd('ERB 210 8');
-             v=vec(dec2hex(fliplr(v))')';
-             if strcmp(v(1:8),'00000000')
-                 v = v(9:end);
-             else
-                 v = v(1:8);
-             end
-          end
+        function [info,serial] = getInfo(obj)
+            info = obj.cmd('gvd');
+            expression = 'OpticalHeadModuleSN:.*';
+            ma = regexp(info,expression,'match');
+            split = strsplit(ma{1});
+            serial = split{2};
+        end
+        function v=getSerial(obj)
+            [~,v]=obj.cmd('ERB 210 8');
+            v=vec(dec2hex(fliplr(v))')';
+            if strcmp(v(1:8),'00000000')
+                v = v(9:end);
+            else
+                v = v(1:8);
+            end
+        end
         function varargout=displayStream(obj,varargin)
             
             
         end
         function hwa = assertions(obj)%#ok
             
+        end
+        function factor = z2mm(obj)
+            % Divide z image by this value to get depth in mm
+           factor = uint16(typecast(obj.read('GNRLzNorm'),'single'));
         end
     end
 end

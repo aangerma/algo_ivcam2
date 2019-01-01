@@ -1,6 +1,6 @@
 function regsOut = trigoCalcs(regs)
-xfovPix = regs.FRMW.xfov * (1-regs.FRMW.guardBandH*2);
-yfovPix = regs.FRMW.yfov * (1-regs.FRMW.guardBandV*2);
+xfovPix = regs.FRMW.xfov;
+yfovPix = regs.FRMW.yfov;
 if(regs.DIGG.undistBypass==0)
     xfovPix = xfovPix*regs.FRMW.undistXfovFactor;
     yfovPix = yfovPix*regs.FRMW.undistYfovFactor;

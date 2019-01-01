@@ -8,17 +8,18 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
     defaultDebug = 0;
     valResults = [];
     allResults = [];
-    if runParams.validation
+    if runParams.post_calib_validation
         % open stream and capture image of the validation target
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.getFrame;
+        z2mm = hw.z2mm;
         fprintff('opening stream...');
         frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
         
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
-        subplot(1,3,2); imagesc(frame.z/8); title('Validation Z');
+        subplot(1,3,2); imagesc(frame.z/hw.z2mm); title('Validation Z');
         subplot(1,3,3); imagesc(frame.c); title('Validation C');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Frame');
         
@@ -63,6 +64,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 tempNConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(tempNConfig.numOfFrames,0);
                 params = Validation.aux.defaultMetricsParams();
+                params.camera.zMaxSubMM = z2mm;
                 params.enabledMetrics{i} = tempNConfig.roi;
                 [tns,allTnsResults] = Validation.metrics.zStd(frames, params);
                 tnsRes.temporalNoise = tns;

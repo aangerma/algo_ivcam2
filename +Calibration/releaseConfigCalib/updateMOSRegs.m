@@ -20,6 +20,7 @@ regs.JFIL.bilt3bypass = uint8(0);
 regs.RAST.biltAdapt = uint8(0);
 regs.JFIL.biltAdaptR = uint8(0);
 regs.JFIL.biltAdaptS = uint8(0);
+regs.JFIL.biltIRAdaptS = uint8(0);
 
 regs.RAST.biltSharpnessS = uint8(RAST_sharpS);
 regs.RAST.biltSharpnessR = uint8(RAST_sharpR);

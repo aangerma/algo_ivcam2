@@ -2,7 +2,6 @@ function dsmregs = calibCoarseDSM(hw,calibParams,runParams)
 % Set regs such that -angmax,+angmax will cover the entire image
 % Look at the image, calculate the true angle range and set the scale and
 % offset accordingly.
-verbose = runParams.verbose;
 [angxRaw,angyRaw] = memsRawData(hw,calibParams.coarseDSM.nSamples);
 [rawXmin,rawXmax] = minmax_(angxRaw);
 [rawYmin,rawYmax] = minmax_(angyRaw);

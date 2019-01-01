@@ -38,7 +38,7 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figTitle)
     end
     close(f);
     
-    raw=hw.getFrame(30);
+    raw=hw.getFrame(45);
     
 end
 function exitOnEnter(figHandle,varargin)

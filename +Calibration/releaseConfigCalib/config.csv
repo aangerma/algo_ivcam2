@@ -1,3 +1,4 @@
+GNRLzMaxSubMMExp     h00000003
 FRMWcoarseSampleRate h00000002
 DIGGnotchBypass      b1       
 RASTbiltAdapt        h00000000
@@ -86,6 +87,7 @@ JFILbilt3SharpnessR  h0000000C
 JFILbilt3bypass      h00000000
 JFILbiltAdaptR       h00000000
 JFILbiltAdaptS       h00000000
+JFILbiltIRAdaptS     h00000000
 JFILbiltIRbypass     b1       
 JFILbiltSharpnessS   h00000000
 JFILdnnBypass        b1       
@@ -106,4 +108,4 @@ JFILsort2bypassMode  h00000000
 JFILsort3bypassMode  h00000000
 JFILsort1Edge01      b1       
 JFILsort1Edge03      b1       
-JFILirShadingBypass  b1
+JFILirShadingBypass  b1       

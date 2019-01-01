@@ -784,14 +784,14 @@ uniqueID    , regName                      , type   , arraySize,group, defaultVa
 990.014.001 , EXTLrangeFinderBuffer        , uint32 , 1        ,  7  , h00000000                        ,2685273588,        ,{[0:4294967295]}                                              ,RegsRangeDataOut
 
 
-990.020.000 , EXTLhwaMaskDIGG              , uint32 , 1        ,  1  , h00000000                        ,2684814348,        ,{[0:2147483647]}                                                       ,Hardware assertion mask DIGG
-990.015.000 , EXTLhwaMaskRAST              , uint32 , 1        ,  1  , h00000000                        ,2684814352,        ,{[0:2147483647]}                                                       ,Hardware assertion mask RAST
-990.016.000 , EXTLhwaMaskDCOR              , uint32 , 1        ,  1  , h00000000                        ,2684814356,        ,{[0:2147483647]}                                                       ,Hardware assertion mask DCOR
-990.017.000 , EXTLhwaMaskDEST              , uint32 , 1        ,  1  , h00000000                        ,2684814360,        ,{[0:2147483647]}                                                       ,Hardware assertion mask DEST
-990.018.000 , EXTLhwaMaskCBUF              , uint32 , 1        ,  1  , h00000000                        ,2684814364,        ,{[0:2147483647]}                                                       ,Hardware assertion mask CBUF
-990.019.000 , EXTLhwaMaskJFIL              , uint32 , 1        ,  1  , h00000000                        ,2684814368,        ,{[0:2147483647]}                                                       ,Hardware assertion mask JFIL
+990.020.000 , EXTLhwaMaskDIGG              , uint32 , 1        ,  7  , h00000000                        ,2684814348,        ,{[0:2147483647]}                                                       ,Hardware assertion mask DIGG
+990.015.000 , EXTLhwaMaskRAST              , uint32 , 1        ,  7  , h00000000                        ,2684814352,        ,{[0:2147483647]}                                                       ,Hardware assertion mask RAST
+990.016.000 , EXTLhwaMaskDCOR              , uint32 , 1        ,  7  , h00000000                        ,2684814356,        ,{[0:2147483647]}                                                       ,Hardware assertion mask DCOR
+990.017.000 , EXTLhwaMaskDEST              , uint32 , 1        ,  7  , h00000000                        ,2684814360,        ,{[0:2147483647]}                                                       ,Hardware assertion mask DEST
+990.018.000 , EXTLhwaMaskCBUF              , uint32 , 1        ,  7  , h00000000                        ,2684814364,        ,{[0:2147483647]}                                                       ,Hardware assertion mask CBUF
+990.019.000 , EXTLhwaMaskJFIL              , uint32 , 1        ,  7  , h00000000                        ,2684814368,        ,{[0:2147483647]}                                                       ,Hardware assertion mask JFIL
 
-990.021.000 , EXTLvAPD                     , uint32 , 1        ,  1  , d2000                        ,2684616836,        ,{[2000:8000]}                                                       ,APD voltage
+990.021.000 , EXTLvAPD                     , uint32 , 1        ,  7  , d2000                        ,2684616836,        ,{[2000:8000]}                                                       ,APD voltage
 
 
 100.001.000 , DIGGgamma_000                , uint12 , 2        ,  7  , h040000                          ,2684488308,        ,{[0:4096]}                                                            ,                                                                                                                                                                    

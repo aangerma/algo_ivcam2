@@ -20,6 +20,7 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     
     params = Validation.aux.defaultMetricsParams();
     params.verbose = 0;
+    params.expectedGridSize = [9,13];
     
     frames = hw.getFrame(validationParams.numOfFrames,false);
     [score, allResults,dbgData] = Validation.metrics.losGridDrift(frames, params);
@@ -45,15 +46,15 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     title('Drifts');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Drifts');
     
-    ff = Calibration.aux.invisibleFigure();
-    imagesc(frames(1).i),colormap gray;
-    hold on;
-    for i=1:size(dbgData.gridPoints,1)
-        draw_ellipse(dbgData.gridPoints(i,:)',reshape(dbgData.pStd(i,[1 2 2 1])*3,[2 2]),'r');
-    end
-    hold off;
-    title('Location stability');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Location stability');
+%     ff = Calibration.aux.invisibleFigure();
+%     imagesc(frames(1).i),colormap gray;
+%     hold on;
+%     for i=1:size(dbgData.gridPoints,1)
+%         draw_ellipse(dbgData.gridPoints(i,:)',reshape(dbgData.pStd(i,[1 2 2 1])*3,[2 2]),'r');
+%     end
+%     hold off;
+%     title('Location stability');
+%     Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Location stability');
     
     
     ff = Calibration.aux.invisibleFigure();

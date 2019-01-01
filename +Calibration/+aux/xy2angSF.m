@@ -17,7 +17,7 @@ else
     angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
 end
 
-marginT = regs.FRMW.marginT;
+marginB = regs.FRMW.marginB;
 marginL = regs.FRMW.marginL;
 xyz2nrmx = @(xyz) xyz(1,:)./xyz(3,:);
 xyz2nrmy = @(xyz) xyz(2,:)./xyz(3,:);
@@ -39,7 +39,7 @@ xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];
 xy00 = [rangeL;rangeB];
 
 
-xy = [x(:)+double(marginL+int16(guardXinc)) y(:)+double(marginT+int16(guardYinc))];
+xy = [x(:)+double(marginL+int16(guardXinc)) y(:)+double(marginB+int16(guardYinc))];
 xy = bsxfun(@rdivide,xy,xys');
 xy = bsxfun(@plus,xy,xy00');
 xynrm = invrotmat*xy';
