@@ -39,7 +39,7 @@ classdef Spark<handle
         
         function delete(obj)
             mkdirSafe(obj.m_outputFolder);
-            obj.m_gen.EndSession(obj.m_outputFolder);
+            obj.m_gen.EndSession(obj.m_outputFolder);% To use cell array of strings
         end
         
         function num=startDUTsession(obj,sessName,setAsCurrent)
@@ -76,7 +76,7 @@ classdef Spark<handle
         end
        
          function addTestProperty(obj,prop,value)
-            obj.m_gen.AddPropertiesToTestSession(Spark.sprivMakeProp(prop,value));
+            obj.m_gen.AddPropertiesToTestSession(Spark.sprivMakeProp(prop,value));% 1 or list
         end
         
         function addDTSproperty(obj,prop,value)
