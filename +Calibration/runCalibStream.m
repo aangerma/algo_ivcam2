@@ -220,6 +220,15 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
     currregs.PCKR.padding = uint32(prod(calibParams.gnrl.externalImSize)-prod(calibParams.gnrl.internalImSize));
+    
+    currregs.DEST.hbaseline = ~calibParams.gnrl.verticalBaseline;
+    if currregs.DEST.hbaseline
+        currregs.DEST.baseline = single(calibParams.dest.hBaseline);
+    else
+        currregs.DEST.baseline = single(calibParams.dest.vBaseline);
+    end
+    currregs.GNRL.zMaxSubMMExp = uint16(log(calibParams.gnrl.zNorm)/log(2));
+    
     fw.setRegs(currregs,fnCalib);
     fw.get();
     

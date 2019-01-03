@@ -20,6 +20,7 @@ Kinv=[p2axa            0                   p2axb;
       0                0                   1    ];
 
 K=pinv(Kinv);
+K=abs(K); % Make it so the K matrix is positive. This way the orientation of the cloud point is identical to DS. 
 regsOut.CBUF.spare=typecast(K([1 4 7 2 5 8 3 6]),'uint32');
 end
 

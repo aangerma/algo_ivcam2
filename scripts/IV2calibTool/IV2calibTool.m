@@ -3,7 +3,6 @@ function IV2calibTool
     loadDefaults(app);
     outputFolderChange_callback(app.figH);
 end
-
 function outputFolderChange_callback(varargin)
     app=guidata(varargin{1});
     
@@ -119,7 +118,7 @@ function app=createComponents()
     app.StartButton = uicontrol('style','pushbutton','parent',configurationTab);
     app.StartButton.Callback = @statrtButton_callback;
     app.StartButton.FontWeight = 'bold';
-    app.StartButton.Position = [1 sz(2)-131 sz(1)-4 52];
+    app.StartButton.Position = [1 sz(2)-139 sz(1)-4 52];
     app.StartButton.String = 'Start';
     
     
@@ -127,15 +126,15 @@ function app=createComponents()
     app.AbortButton = uicontrol('style','pushbutton','parent',configurationTab);
     app.AbortButton.Callback = @abortButton_callback;
     app.AbortButton.FontWeight = 'bold';
-    app.AbortButton.Position = [1 sz(2)-131 sz(1)-4 52];
+    app.AbortButton.Position = [1 sz(2)-139 sz(1)-4 52];
     app.AbortButton.String = 'Abort';
     app.AbortButton.Visible='off';
     
     
     % Create outputdirectortyEditFieldLabel
     app.outputdirectortyEditFieldLabel = uicontrol('style','text','parent',configurationTab);
-    app.outputdirectortyEditFieldLabel.HorizontalAlignment = 'right';
-    app.outputdirectortyEditFieldLabel.Position = [1 sz(2)-54 94 15];
+    app.outputdirectortyEditFieldLabel.HorizontalAlignment = 'left';
+    app.outputdirectortyEditFieldLabel.Position = [10 sz(2)-56 94 15];
     app.outputdirectortyEditFieldLabel.String = 'Output directorty';
     
     % Create outputdirectorty
@@ -143,11 +142,22 @@ function app=createComponents()
     app.outputdirectorty.HorizontalAlignment='left';
     app.outputdirectorty.Position = [110 sz(2)-60 490 22];
     app.outputdirectorty.KeyReleaseFcn=@outputFolderChange_callback;
+   
+    % Create Operator field label
+    app.operatorEditFieldLabel = uicontrol('style','text','parent',configurationTab);
+    app.operatorEditFieldLabel.HorizontalAlignment = 'left';
+    app.operatorEditFieldLabel.Position = [10 sz(2)-80 94 15];
+    app.operatorEditFieldLabel.String = 'Operator';
+    
+    % Create operator name string
+    app.operatorName =  uicontrol('style','edit','parent',configurationTab);
+    app.operatorName.HorizontalAlignment='left';
+    app.operatorName.Position = [110 sz(2)-84 200 22];
     
     % Create VersionLabel
     app.VersionLabel = uicontrol('style','text','parent',configurationTab);
     app.VersionLabel.HorizontalAlignment = 'left';
-    app.VersionLabel.Position = [5 sz(2)-146 94 15];
+    app.VersionLabel.Position = [5 sz(2)-154 94 15];
     app.VersionLabel.String = sprintf('version: %5.2f',calibToolVersion());
     
     
@@ -173,7 +183,7 @@ function app=createComponents()
     app.logarea.UserData=app.logarea.BackgroundColor;
     app.logarea.Max=10;
     app.logarea.String='';
-    app.logarea.Position = [1 1 640 sz(2)-151];
+    app.logarea.Position = [1 1 640 sz(2)-159];
     app.logarea.FontName='courier new';
     % Create verboseCheckBox
     
@@ -315,11 +325,11 @@ function statrtButton_callback(varargin)
         end
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
-        sparkFolders = strsplit(calibParams.sparkOutputFolders);
         if app.cb.replayMode.Value==0
-            s=Spark('Algo','AlgoCalibration',sparkFolders{1});
-            s.addTestProperty('TesterSwVersion',calibToolVersion)
+            s=Spark(app.operatorName,'AlgoCalibration',calibParams.sparkParams,fprintffS);
+            s.addTestProperty('CalibToolVersion',calibToolVersion)
             s.startDUTsession(serialStr);
+            s.addTestProperty('FWVersion',hw.getFWVersion);
             s.addTestProperty('gvd',info);
 %             s.addDTSproperty('TargetType','IRcalibrationChart');
         else
@@ -362,10 +372,6 @@ function statrtButton_callback(varargin)
         end
         if app.cb.replayMode.Value == 0
             s.endDUTsession([], true);
-%             for i = 2:numel(sparkFolders) % Copy spark output to all directories.
-%                 sparkfn = []; % Todo - get the spark file name
-%                 copyfile(fullfile(sparkFolders{1},sparkfn), sparkFolders{i})
-%             end
         end
     end
     

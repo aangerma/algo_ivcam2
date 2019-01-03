@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <sparkOutputFolders>c:\temp</sparkOutputFolders>
+   <sparkParams>
+        <resultsFolder>E:\IV2Calib_Results</resultsFolder>
+        <reserveFolder>E:\IV2CAM20_SPARK_Results</reserveFolder>
+        <azureFolder>E:\SPARK\iv2-CAL01</azureFolder>
+        <testMode>ATP</testMode>
+   </sparkParams>
    <gnrl>
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
-       
+       <zNorm>8</zNorm>
+       <verticalBaseline>0</verticalBaseline>
    </gnrl>
    <errRange>
       <delayF>[0 0.9]</delayF>
@@ -208,4 +214,8 @@
             40	47.8995100000000]
         </table>
     </fovExpander>
+    <dest>
+        <hBaseline>-31</hBaseline>
+        <vBaseline>10</vBaseline>
+    </dest>
 </struct>

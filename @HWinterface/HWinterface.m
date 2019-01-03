@@ -359,7 +359,16 @@ classdef HWinterface <handle
             fw=obj.m_fw;
             obj.privRecFunc('getFirmware',{},{fw});
         end
-        
+        function fwVersion = getFWVersion(obj)
+            % Checks if fw version is smaller (or equal) to 1.1.3.77
+            gvdstr = obj.cmd('gvd');
+            linenum = strfind(gvdstr,'FunctionalPayloadVersion:');
+            gvdTargetLine = gvdstr(linenum:end);
+            fwVersionLine = strsplit(gvdTargetLine);
+            fwVersion = fwVersionLine{2};
+
+        end
+
         
         
         function frame = getFrame(obj,n,postproc)
