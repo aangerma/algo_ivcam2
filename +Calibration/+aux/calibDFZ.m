@@ -52,16 +52,20 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
         end
         
         %find CB points
+        %{
         warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
         [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         if isempty(p)
             fprintff('Error: checkerboard not detected!');
         end
+        
         it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz),reshape(p(:,2)-1,bsz)); % Used to get depth and ir values at checkerboard locations.
-        
-        %rtd,phi,theta
-        darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-        
+        %}
+        if ~isempty(darr(i).pts)
+            it = @(k) interp2(xg,yg,k,darr(i).pts(:,1)-1,darr(i).pts(:,2)-1); % Used to get depth and ir values at checkerboard locations.
+            %rtd,phi,theta
+            darr(i).rpt=cat(2,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+        end
     end
     
     %%
@@ -94,7 +98,7 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f, xOff = %.2f, yOff = %.2f, eGeom=%.2f.\n',...
         outregs.FRMW.xfov, outregs.FRMW.yfov, outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear,xbest(7),xbest(8),minerr);
     printPlaneAng(darr,outregs_full,xbest,FE,fprintff);
-    outregs.EXTL.dsmXoffset = regs.EXTL.dsmXoffset+xbest(7)/regs.EXTL.dsmXscale; 
+    outregs.EXTL.dsmXoffset = regs.EXTL.dsmXoffset+xbest(7)/regs.EXTL.dsmXscale;
     outregs.EXTL.dsmYoffset = regs.EXTL.dsmYoffset+xbest(8)/regs.EXTL.dsmYscale;
     %% Do it for each in array
     % if nargout > 3
@@ -117,52 +121,52 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
     rtlRegs = x2regs(X,rtlRegs);
     for i = 1:numel(darr)
         d = darr(i);
-        vUnit = Calibration.aux.ang2vec(d.rpt(:,:,2)+X(7),d.rpt(:,:,3)+X(8),rtlRegs,FE);
-        vUnit = reshape(vUnit',size(d.rpt));
-        vUnit(:,:,1) = vUnit(:,:,1);
+        vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+X(7),d.rpt(:,3)+X(8),rtlRegs,FE)';
+        %vUnit = reshape(vUnit',size(d.rpt));
+        %vUnit(:,:,1) = vUnit(:,:,1);
         % Update scale to take margins into acount.
-        sing = vUnit(:,:,1);
-        rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
+        sing = vUnit(:,1);
+        rtd_=d.rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
         r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-        v = vUnit.*r;
+        v = double(vUnit.*r);
         
-        [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);
+        [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d.pts3d,false);
     end
     eFit = mean(eFit);
-    e = mean(e);    
+    e = mean(e);
 end
 
 function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
-rtlRegs = x2regs(X,rtlRegs);
-horizAng = zeros(1,numel(darr));
-verticalAngl = zeros(1,numel(darr));
-fprintff('                       Plane horizontal angle:       Plane Vertical angle:\n');
-
-for i = 1:numel(darr)
-    d = darr(i);
-    vUnit = Calibration.aux.ang2vec(d.rpt(:,:,2)+X(7),d.rpt(:,:,3)+X(8),rtlRegs,FE);
-    vUnit = reshape(vUnit',size(d.rpt));
-    vUnit(:,:,1) = vUnit(:,:,1);
-    % Update scale to take margins into acount.
-    sing = vUnit(:,:,1);
-    rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
-    r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-    v = vUnit.*r;
-    x = reshape(v(:,:,1), size(v,1)*size(v,2), []);
-    y = reshape(v(:,:,2), size(v,1)*size(v,2), []);
-    z = reshape(v(:,:,3), size(v,1)*size(v,2), []);
-    A = [x y ones(length(x),1)*mean(z)];
-    p = (A'*A)\(A'*z);
-    horizAng(1,i) = 90-atan2d(p(3,:),p(1,:));
-    verticalAngl(1,i) = 90-atan2d(p(3,:),p(2,:));
-    fprintff('frame number %3d:              %7.3g                          %7.3g         \n', i, horizAng(i), verticalAngl(i));
-end
+    rtlRegs = x2regs(X,rtlRegs);
+    horizAng = zeros(1,numel(darr));
+    verticalAngl = zeros(1,numel(darr));
+    fprintff('                       Plane horizontal angle:       Plane Vertical angle:\n');
+    
+    for i = 1:numel(darr)
+        d = darr(i);
+        vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+X(7),d.rpt(:,3)+X(8),rtlRegs,FE);
+        vUnit = reshape(vUnit',size(d.rpt));
+        vUnit(:,1) = vUnit(:,1);
+        % Update scale to take margins into acount.
+        sing = vUnit(:,1);
+        rtd_=d.rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
+        r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+        v = vUnit.*r;
+        x = v(:,1);
+        y = v(:,2);
+        z = v(:,3);
+        A = [x y ones(length(x),1)*mean(z)];
+        p = (A'*A)\(A'*z);
+        horizAng(1,i) = 90-atan2d(p(3,:),p(1,:));
+        verticalAngl(1,i) = 90-atan2d(p(3,:),p(2,:));
+        fprintff('frame number %3d:              %7.3g                          %7.3g         \n', i, horizAng(i), verticalAngl(i));
+    end
 end
 
 
 function [zNorm] = zenithNorm(regs,x)
-     rtlRegs = x2regs(x,regs);
-     zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
+    rtlRegs = x2regs(x,regs);
+    zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
 end
 
 function printErrAndX(X,e,eFit,preSTR,verbose)
