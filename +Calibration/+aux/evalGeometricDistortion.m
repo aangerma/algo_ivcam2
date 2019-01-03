@@ -1,5 +1,6 @@
-function [e,e_dist,ptsOut]=evalGeometricDistortion(p,verbose,tileSizeMM)
+function [e,e_dist,ptsOut]=evalGeometricDistortion(p,pts3d,verbose)
 %%
+%{
 if ~exist('tileSizeMM','var')
     tileSizeMM = 30;
 end
@@ -7,21 +8,28 @@ h=size(p,1);
 w=size(p,2);
 p=p(:,:,1:3);
 [oy,ox]=ndgrid(linspace(-1,1,h)*(h-1)*tileSizeMM/2,linspace(-1,1,w)*(w-1)*tileSizeMM/2);
-ptsOpt = [ox(:) oy(:) zeros(w*h,1)]';
+pts3d = [ox(:) oy(:) zeros(w*h,1)]';
 xyzmes =reshape(p,[],3)';
+%}
+ %get the tile size from the 3d points
+tileSize = min(sqrt(sum(diff(pts3d).^2,2)));
 
-[~,fitP] = rigidFit(xyzmes,ptsOpt);
-diff = sqrt(sum((xyzmes-fitP).^2));
-valid = ~isnan(sum(xyzmes));
+%perform rigid fit and find distance from optimal grid
+[err,fitP] = rigidFit(p,pts3d);
+fitErr = sqrt(sum((p-fitP).^2,2));
+
 % Remove outlier points when we are close to the right solution.
-if sum(diff<tileSizeMM/2)>=(w*h-h)
-    valid = logical(valid .* (diff<tileSizeMM/2));
+valid = ~isnan(sum(p,2));
+if sum(fitErr<tileSize/2) >= 0.92*size(pts3d,1)
+    valid = logical(valid .* (fitErr<tileSize/2));
 end
-distMat = @(m) sqrt(sum((permute(m,[2 3 1])-permute(m,[3 2 1])).^2,3));
-emat=abs(distMat(xyzmes(:,valid))-distMat(ptsOpt(:,valid)));
-e = mean(emat(:));
+%gtDistances = triu(squareform(pdist(cornersWorld)));
+%observedDistances = triu(squareform(pdist(ptV')));
+distMat = @(m) (triu(squareform(pdist(m))));
+emat=abs(distMat(p(valid,:))-distMat(pts3d(valid,:)));
+e = sum(emat(:))*2./numel(emat);
 ptsOut=[];
-[e_dist,fitP] = rigidFit(xyzmes(:,valid),ptsOpt(:,valid));
+[e_dist,fitP] = rigidFit(p(valid,:),pts3d(valid,:));
 
 if(exist('verbose','var') && verbose)
 %     subplot(131);
@@ -36,7 +44,7 @@ if(exist('verbose','var') && verbose)
 %     subplot(133);
     figure(190789)
     tabplot;
-    plot3(xyzmes(1,valid),xyzmes(2,valid),xyzmes(3,valid),'ro',fitP(1,:),fitP(2,:),fitP(3,:),'g.',xyzmes(1,logical(1-valid)),xyzmes(2,logical(1-valid)),xyzmes(3,logical(1-valid)),'bo');
+    plot3(p(valid,1),p(valid,2),p(valid,3),'ro',fitP(:,1),fitP(:,2),fitP(:,3),'g.',p(~valid,1),p(~valid,2),p(~valid,3),'bo');
     titlestr = sprintf('Checkerboard Points in 3D.\n eGeom = %.2f. Invalid#=%d',e,sum(1-valid));
     xlabel('x'),ylabel('y'),zlabel('z'),title(titlestr)
     if sum(1-valid)> 1
@@ -89,13 +97,13 @@ return
 end
 function [e_dist,fitP] = rigidFit(p1,p2)
 % finds optimal rot and translation. Returns the error.
-c = mean(p1,2);
-p1=p1-mean(p1,2);
-p2=p2-mean(p2,2);
+c = mean(p1,1);
+p1=p1-c;
+p2=p2-mean(p2);
 
 %shift to center, find rotation along PCA
-[u,~,vt]=svd(p1*p2');
+[u,~,vt]=svd(p1'*p2);
 rotmat=u*vt';
-e_dist = mean(vec(sqrt((sum((p1-rotmat*p2).^2)))));
-fitP = rotmat*p2+c; 
+e_dist = mean(vec(sqrt((sum((p1'-rotmat*p2').^2)))));
+fitP = p2*rotmat'+c; 
 end

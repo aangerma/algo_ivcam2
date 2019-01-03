@@ -430,7 +430,27 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         r.add('DIGGsphericalEn',true);
         r.set();
         
-        nCorners = 9*13;
+        
+        cdParams = cdParamsGenerator('iv2');
+        captures = fieldnames(calibParams.dfz.captures);
+        trainImages = cellfun(@(x)(~isempty(x)),(strfind(captures, 'train')));
+        for i=1:length(captures)
+            cap = calibParams.dfz.captures.(captures{i});
+            targetInfo = targetInfoGenerator(cap.target);
+            im = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,[],targetInfo);
+            [pts, grid] = detectCheckerboard(im.i,targetInfo,cdParams);
+            nPointDetected = prod(grid);
+            nCornersExpected = targetInfo.cornersX * targetInfo.cornersY * (targetInfo.isDouble+1);
+            if nPointDetected < nCornersExpected
+                 fprintff('%d/%d CB corners detected.\n',nPointDetected,nCornersExpected);
+            end
+            d(i).i = im.i;
+            d(i).c = im.c;
+            d(i).z = im.z;
+            d(i).pts = pts;
+            d(i).pts3d = create3DCorners(targetInfo)';
+        end
+        %{
         d(1)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]));
         Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
         d(2)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
@@ -440,13 +460,13 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
         d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
 %         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
-        
+        %}
         
         % dodluts=struct;
-        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,0);
+        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0);
         x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
             regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
-        [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
+        [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(~trainImages),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
         
