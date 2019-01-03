@@ -532,13 +532,13 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         end
         %{
         d(1)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]));
-%         Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
         d(2)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
-%         Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
         d(3)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
-%         Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
-%         d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
-%         d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
+        d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
+        d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
 %         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
         %}
         
