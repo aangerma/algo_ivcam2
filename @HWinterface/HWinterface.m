@@ -18,7 +18,7 @@ classdef HWinterface <handle
     
     
     methods ( Access=private)
-       function frame=privGetSingleFrame_FG(obj)
+        function frame=privGetSingleFrame_FG(obj)
             %get single frame
             imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 15000);
             % get depth
@@ -26,10 +26,40 @@ classdef HWinterface <handle
             dImByte = imageObj.Item(0).Data;
             frame.fg = cast(dImByte,'uint8');
         end
-       
+        
+        function frames=privGetSeveralFrames(obj,n)
+            %get single frame
+            imageCollection = obj.m_dotnetcam.Stream.GetFrames(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth,n, 15000);
+            % get depth
+            frames = struct('z',[],'i',[],'c',[]);
+            for i=1:imageCollection.Count
+                currImage = imageCollection.Item(i-1);
+                imageObj = currImage.Images;
+                dImByte = imageObj.Item(0).Item(0).Data;
+                frames(i).z = typecast(cast(dImByte,'uint8'),'uint16');
+                frames(i).z = reshape(frames(i).z(1:end-obj.usefullRegs.PCKR.padding),obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize);
+                % get IR
+                iImByte = imageObj.Item(1).Item(0).Data;
+                frames(i).i = cast(iImByte,'uint8');
+                frames(i).i = reshape(frames(i).i(1:end-obj.usefullRegs.PCKR.padding),obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize);
+                
+                % get C
+                cImByte = imageObj.Item(2).Item(0).Data;
+                cIm8 = cast(cImByte,'uint8');
+                frames(i).c = bitand(cIm8(:),uint8(15))';
+                frames(i).c = reshape(frames(i).c(1:end-obj.usefullRegs.PCKR.padding),obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize);
+            end
+            %             if obj.usefullRegs.PCKR.padding>0
+            %                nRows2Add =  obj.usefullRegs.PCKR.padding/obj.usefullRegs.GNRL.imgHsize;
+            %                frame.z = [frame.z;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+            %                frame.c = [frame.c;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+            %                frame.i = [frame.i;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+            %             end
+        end
+        
         function frame=privGetSingleFrame(obj)
             %get single frame
-            imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth);
+            imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 15000);
             % get depth
             imageObj = imageCollection.Images.Item(0);
             dImByte = imageObj.Item(0).Data;
@@ -47,13 +77,13 @@ classdef HWinterface <handle
             cIm8 = cast(cImByte,'uint8');
             frame.c = bitand(cIm8(:),uint8(15))';
             frame.c = reshape(frame.c(1:end-obj.usefullRegs.PCKR.padding),obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize);
-
-%             if obj.usefullRegs.PCKR.padding>0
-%                nRows2Add =  obj.usefullRegs.PCKR.padding/obj.usefullRegs.GNRL.imgHsize;
-%                frame.z = [frame.z;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
-%                frame.c = [frame.c;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
-%                frame.i = [frame.i;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
-%             end
+            
+            %             if obj.usefullRegs.PCKR.padding>0
+            %                nRows2Add =  obj.usefullRegs.PCKR.padding/obj.usefullRegs.GNRL.imgHsize;
+            %                frame.z = [frame.z;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+            %                frame.c = [frame.c;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+            %                frame.i = [frame.i;zeros(nRows2Add,obj.usefullRegs.GNRL.imgHsize)];
+            %             end
         end
         
         function privRecFunc(obj,caller,varin,varout)
@@ -130,13 +160,13 @@ classdef HWinterface <handle
     
     methods (Access=public)
         function sz = streamSize(obj)
-           sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
+            sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
         end
         function setUsefullRegs(obj)
-           obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
-           obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
-           obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
-           obj.usefullRegs.GNRL.zNorm = obj.z2mm;
+            obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
+            obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
+            obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+            obj.usefullRegs.GNRL.zNorm = obj.z2mm;
         end
         function [res,val] = cmd(obj,str)
             [res,val]=obj.privCmd(str);
@@ -337,13 +367,18 @@ classdef HWinterface <handle
             if(~exist('n','var'))
                 n=1;
             end
-            if (~exist('postproc','var')) 
+            if (~exist('postproc','var'))
                 postproc = true;
             end
-            stream(1) = obj.privGetSingleFrame();%capture atleast 1
-            for i = 2:n
-                stream(i) = obj.privGetSingleFrame();%#ok
+            if n == 1
+                stream(1) = obj.privGetSingleFrame();%capture atleast 1
+                for i = 2:n
+                    stream(i) = obj.privGetSingleFrame();%#ok
+                end
+            else
+               stream = obj.privGetSeveralFrames(n);%capture atleast 1    
             end
+            
             if(length(stream)>1) && postproc
                 meanNoZero = @(m) sum(double(m),3)./sum(m~=0,3);
                 collapseM = @(x) meanNoZero(reshape([stream.(x)],size(stream(1).(x),1),size(stream(1).(x),2),[]));
@@ -361,7 +396,7 @@ classdef HWinterface <handle
             
         end
         
-     function frame = FG_getFrame(obj,n,res,pos)
+        function frame = FG_getFrame(obj,n,res,pos)
             if(~exist('n','var'))
                 n=1;
             end
@@ -372,21 +407,21 @@ classdef HWinterface <handle
                 pos.left = 0;
                 pos.top = 0;
             end
-%% config FG grabber
+            %% config FG grabber
             if(~obj.m_dotnetcam.Stream.IsDepthPlaying) % check that not in streaming
                 obj.cmd('fgcfgbypass 1'); % bypass internal configuration by FW
                 obj.cmd('mwd a0050004 a0050008 11'); % inverse direction bit for frame graber block
-        
+                
                 if(res == [720 1280])         %res 720x1280
                     obj.runPresetScript('fg_time_1280x720');
                     limit_diff = hex2dec('3540');
                     top_range =  [256 17184];
                     left_range = [255 1023];
                 else if (res == [600 800])    %res 800x600
-                    obj.runPresetScript('fg_time_800x600');
-                    limit_diff = hex2dec('1CC0');    
-                    top_range =  [256 16348];
-                    left_range = [255 1280];
+                        obj.runPresetScript('fg_time_800x600');
+                        limit_diff = hex2dec('1CC0');
+                        top_range =  [256 16348];
+                        left_range = [255 1280];
                     else
                         % invalid resolution
                         error('invalid resolution');
@@ -400,13 +435,13 @@ classdef HWinterface <handle
                 CmdLowLimit     = ['mwd a00a0034 a00a0038 ',LowLimit];
                 CmdUpperLimit   = ['mwd a00a0030 a00a0034 ',UpperLimit];
                 CmdLeftOffset   = ['mwd a00a0044 a00a0048 ',LeftOffset];
-                obj.cmd(CmdLowLimit); 
-                obj.cmd(CmdUpperLimit); 
-                obj.cmd(CmdLeftOffset); 
-                FG_mode = true;    
+                obj.cmd(CmdLowLimit);
+                obj.cmd(CmdUpperLimit);
+                obj.cmd(CmdLeftOffset);
+                FG_mode = true;
                 obj.startStream(FG_mode,res);
             end
-%%            
+            %%
             stream(1) = obj.privGetSingleFrame_FG();%capture atleast 1
             for i = 2:n
                 stream(i) = obj.privGetSingleFrame_FG();%#ok
@@ -470,7 +505,7 @@ classdef HWinterface <handle
         end
         function factor = z2mm(obj)
             % Divide z image by this value to get depth in mm
-           factor = uint16(typecast(obj.read('GNRLzNorm'),'single'));
+            factor = uint16(typecast(obj.read('GNRLzNorm'),'single'));
         end
         function [info,serial] = getInfo(obj)
             info = obj.cmd('gvd');
