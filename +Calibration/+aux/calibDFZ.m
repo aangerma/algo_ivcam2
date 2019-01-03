@@ -1,4 +1,4 @@
-function [outregs,minerr,dWithRpt]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0)
+function [outregs,minerr]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0)
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
 par = calibParams.dfz;
@@ -146,7 +146,7 @@ for i = 1:numel(darr)
         [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d.pts3d,false);
 end
 eFit = mean(eFit);
-    e = mean(e);    
+    e = mean(e);
 end
 
 function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
@@ -178,8 +178,8 @@ end
 
 
 function [zNorm] = zenithNorm(regs,x)
-     rtlRegs = x2regs(x,regs);
-     zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
+    rtlRegs = x2regs(x,regs);
+    zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
 end
 
 function printErrAndX(X,e,eFit,preSTR,verbose)

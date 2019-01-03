@@ -482,7 +482,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         r.add('DIGGsphericalEn',true);
         r.set();
         
-        nCorners = 9*13;
+        
         cdParams = cdParamsGenerator('iv2');
         captures = fieldnames(calibParams.dfz.captures);
         trainImages = cellfun(@(x)(~isempty(x)),(strfind(captures, 'train')));
