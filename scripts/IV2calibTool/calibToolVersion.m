@@ -1,3 +1,3 @@
 function v = calibToolVersion()
-    v = 1.17;
+    v = 1.18;
 end

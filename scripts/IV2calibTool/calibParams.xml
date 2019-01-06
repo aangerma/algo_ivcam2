@@ -122,7 +122,7 @@
         
     </dfz>
     <roi>
-     <useExtraMargins>1</useExtraMargins>  
+     <useExtraMargins>0</useExtraMargins>  
      <extraMarginL>7</extraMarginL>  
      <extraMarginR>5</extraMarginR>  
      <extraMarginT>3</extraMarginT>  

@@ -31,7 +31,7 @@ classdef Spark<handle
                 end
             end
             if ~sparkFolderExists
-                fprintff('[!] Error - No spark folders exist in sparkParams.xml\n Using default path: c:\temp\n');
+                fprintff('[!] Error - No spark folders exist in sparkParams.xml\n Using default path: c\:\\temp\n');
                 outputFolders{end+1} = 'C:\temp';
             end
             

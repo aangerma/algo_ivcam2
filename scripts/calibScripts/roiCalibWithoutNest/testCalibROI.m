@@ -1,5 +1,7 @@
 % Create a spherical image with 3 levels - 0, 0.5 and
 % 1
+clear
+close all
 fw = Pipe.loadFirmware('C:\source\algo_ivcam2\+Calibration\releaseConfigCalib');
 % regs2.GNRL.imgVsize = uint16(480);
 % fw.setRegs(regs2,'');
