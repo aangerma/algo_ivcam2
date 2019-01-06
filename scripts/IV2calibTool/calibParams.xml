@@ -12,7 +12,7 @@
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
        <zNorm>8</zNorm>
-       <verticalBaseline>0</verticalBaseline>
+       <verticalBaseline>1</verticalBaseline>
    </gnrl>
    <errRange>
       <delayF>[0 0.9]</delayF>
@@ -21,7 +21,7 @@
       <geomErr>[0.01 1.5]</geomErr>
       <extraImagesGeomErr>[0.01 1.75]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.0 0.5]</maxPixelDisplacement>
+      <maxPixelDisplacement>[0.0 1]</maxPixelDisplacement>
       <upDownFovDiff>[0 2]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[50 inf]</imFovX>

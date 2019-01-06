@@ -518,7 +518,7 @@ classdef HWinterface <handle
         end
         function [info,serial] = getInfo(obj)
             info = obj.cmd('gvd');
-            expression = 'OpticalHeadModuleSN:.*';
+            expression = 'AsicModuleSerial:.*';
             ma = regexp(info,expression,'match');
             split = strsplit(ma{1});
             serial = split{2};

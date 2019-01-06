@@ -26,12 +26,12 @@ classdef Spark<handle
                         outputFolders{end+1} = sparkParams.(fnames{i});
                         sparkFolderExists = 1;
                     else
-                        fprintff('[!] %s in sparkParams.xml does not exist (%s)\n',fnames{i},sparkParams.(fnames{i}));
+                        fprintff('[!] spark.%s in calibParams.xml does not exist (%s)\n',fnames{i},sparkParams.(fnames{i}));
                     end
                 end
             end
             if ~sparkFolderExists
-                fprintff('[!] Error - No spark folders exist in sparkParams.xml\n Using default path: c\:\\temp\n');
+                fprintff('[!] Warning - No spark folders exist in calibParams.xml\n');
                 outputFolders{end+1} = 'C:\temp';
             end
             

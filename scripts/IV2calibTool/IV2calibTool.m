@@ -271,7 +271,7 @@ function statrtButton_callback(varargin)
         fprintffS=@(varargin) fprintff(app,varargin{:});
         info = ''; % Until reading from unit
         serialStr = '00000000'; % Until reading from unit
-            
+        fwVersion = ''; % Until reading from unit
         origOutputFolder = app.outputdirectorty.String;
         if app.cb.replayMode.Value
             seesionFile = app.outputdirectorty.String;
@@ -289,6 +289,7 @@ function statrtButton_callback(varargin)
             try
                 hw = HWinterface;
                 [info,serialStr] = hw.getInfo();
+                fwVersion = hw.getFWVersion;
                 clear hw;
             catch e
                 fprintffS('[!] ERROR:%s\n',strtrim(e.message));
@@ -326,10 +327,10 @@ function statrtButton_callback(varargin)
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
         if app.cb.replayMode.Value==0
-            s=Spark(app.operatorName,'AlgoCalibration',calibParams.sparkParams,fprintffS);
+            s=Spark(app.operatorName.String,'AlgoCalibration',calibParams.sparkParams,fprintffS);
             s.addTestProperty('CalibToolVersion',calibToolVersion)
             s.startDUTsession(serialStr);
-            s.addTestProperty('FWVersion',hw.getFWVersion);
+            s.addTestProperty('FWVersion',fwVersion);
             s.addTestProperty('gvd',info);
 %             s.addDTSproperty('TargetType','IRcalibrationChart');
         else
