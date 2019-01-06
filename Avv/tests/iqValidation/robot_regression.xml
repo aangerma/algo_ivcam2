@@ -12,6 +12,34 @@
         <test name="planeFit_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:6]" />
         <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
         <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
-        <!--<test name="losGridDrift_50cm" metrics="losGridDrift" target="checkerboard_50" distance="50cm" threshold="[0:120]" />-->
+        <test name="planeFit_1m" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:0.5]" extra="verticalAngle[5:30]"/>
+        <test name="planeFit_3m" metrics="planeFit" target="wall_80Reflectivity" distance="3m" threshold="[0:1]" extra="verticalAngle[-10:10]" />
+        <test name="zStd_1m" metrics="zStd" target="checkerboard_50" distance="1m" threshold="[0:0.5]" extra=''/>
+        <test name="zStd_3m" metrics="zStd" target="checkerboard_50" distance="3m" threshold="[0:0.5]" extra=''/>
+        <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_50" distance="1m" threshold="[0:0.7]" extra=''/>
+        <test name="gridInterDist_3m" metrics="gridInterDist" target="checkerboard_50" distance="3m" threshold="[0:2.5]" extra=''/>
+
+        <test name="fillRate_160cm" metrics="fillRate" target="wall_10Reflectivity" distance="160cm" threshold="[95 : 100]" />
+        <test name="zStd_160cm" metrics="zStd" target="wall_10Reflectivity" distance="160cm" threshold="[0:10]" />
+        <test name="fillRate_170cm" metrics="fillRate" target="wall_10Reflectivity" distance="170cm" threshold="[95 : 100]" />
+        <test name="zStd_170cm" metrics="zStd" target="wall_10Reflectivity" distance="170cm" threshold="[0:10]" />
+        <test name="fillRate_180cm" metrics="fillRate" target="wall_10Reflectivity" distance="180cm" threshold="[95 : 100]" />
+        <test name="zStd_180cm" metrics="zStd" target="wall_10Reflectivity" distance="180cm" threshold="[0:10]" />
+        <test name="fillRate_190cm" metrics="fillRate" target="wall_10Reflectivity" distance="190cm" threshold="[95 : 100]" />
+        <test name="zStd_190cm" metrics="zStd" target="wall_10Reflectivity" distance="190cm" threshold="[0:10]" />
+        <test name="fillRate_200cm" metrics="fillRate" target="wall_10Reflectivity" distance="200cm" threshold="[95 : 100]" />
+        <test name="zStd_200cm" metrics="zStd" target="wall_10Reflectivity" distance="200cm" threshold="[0:10]" />
+        <test name="fillRate_210cm" metrics="fillRate" target="wall_10Reflectivity" distance="210cm" threshold="[95 : 100]" />
+        <test name="zStd_210cm" metrics="zStd" target="wall_10Reflectivity" distance="210cm" threshold="[0:10]" />
+        <test name="fillRate_220cm" metrics="fillRate" target="wall_10Reflectivity" distance="220cm" threshold="[95 : 100]" />
+        <test name="zStd_220cm" metrics="zStd" target="wall_10Reflectivity" distance="220cm" threshold="[0:10]" />
+        <test name="fillRate_230cm" metrics="fillRate" target="wall_10Reflectivity" distance="230cm" threshold="[95 : 100]" />
+        <test name="zStd_230cm" metrics="zStd" target="wall_10Reflectivity" distance="230cm" threshold="[0:10]" />
+        <test name="fillRate_240cm" metrics="fillRate" target="wall_10Reflectivity" distance="240cm" threshold="[95 : 100]" />
+        <test name="zStd_240cm" metrics="zStd" target="wall_10Reflectivity" distance="240cm" threshold="[0:10]" />
+        <test name="fillRate_250cm" metrics="fillRate" target="wall_10Reflectivity" distance="250cm" threshold="[95 : 100]" />
+        <test name="zStd_250cm" metrics="zStd" target="wall_10Reflectivity" distance="250cm" threshold="[0:10]" />
+        <test name="fillRate_260cm" metrics="fillRate" target="wall_10Reflectivity" distance="260cm" threshold="[95 : 100]" />
+        <test name="zStd_260cm" metrics="zStd" target="wall_10Reflectivity" distance="260cm" threshold="[0:10]" />
     </tests>
 </root>
