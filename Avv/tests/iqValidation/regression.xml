@@ -7,7 +7,13 @@
         <dataSource>HW</dataSource>
     </params>
     <tests>
-        <test name="minRange" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="0.9" />
-        <test name="losGridDrift" metrics="losGridDrift" target="checker_80Reflectivity_50" distance="100cm" threshold="0.5" />
+        <test name="minRange_20cm" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="[99.8 : 100]" extra='' />
+        <test name="fillRate_50cm" metrics="fillRate" target="wall_80Reflectivity" distance="50cm" threshold="[99.8 : 100]" extra='' />
+        <test name="planeFit_1m" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:0.5]" extra=""/>
+        <test name="planeFit_3m" metrics="planeFit" target="wall_80Reflectivity" distance="3m" threshold="[0:1]" extra="" />
+        <test name="zStd_1m" metrics="zStd" target="checkerboard_50" distance="1m" threshold="[0:0.5]" extra=''/>
+        <test name="zStd_3m" metrics="zStd" target="checkerboard_50" distance="3m" threshold="[0:0.5]" extra=''/>
+        <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_50" distance="1m" threshold="[0:0.7]" extra=''/>
+        <test name="gridInterDist_3m" metrics="gridInterDist" target="checkerboard_50" distance="3m" threshold="[0:2.5]" extra=''/>
     </tests>
 </root>
