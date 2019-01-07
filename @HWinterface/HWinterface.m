@@ -380,7 +380,7 @@ classdef HWinterface <handle
             if (~exist('postproc','var'))
                 postproc = true;
             end
-            if n == 1
+            if n < 2
                 stream(1) = obj.privGetSingleFrame();%capture atleast 1
                 for i = 2:n
                     stream(i) = obj.privGetSingleFrame();%#ok
