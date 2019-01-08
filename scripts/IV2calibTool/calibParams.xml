@@ -12,17 +12,16 @@
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
        <zNorm>8</zNorm>
-       <verticalBaseline>1</verticalBaseline>
    </gnrl>
    <errRange>
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 1.5]</geomErr>
+      <geomErr>[0.01 1.6]</geomErr>
       <extraImagesGeomErr>[0.01 1.75]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.0 1]</maxPixelDisplacement>
-      <upDownFovDiff>[0 2]</upDownFovDiff>
+      <maxPixelDisplacement>[0.0 0.5]</maxPixelDisplacement>
+      <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[50 inf]</imFovX>
       <imFovY>[35 inf] </imFovY>
@@ -95,6 +94,10 @@
        <t0>32.8</t0>
        <tslope>0.45</tslope>
    </thermal>
+   <scanDir>
+      <stickerLocationIsLeft>0</stickerLocationIsLeft>
+      <stickerLocationIsTop>1</stickerLocationIsTop>
+   </scanDir>
    <dataDelay>
       <slowDelayInitVal>28915</slowDelayInitVal> 
       <fastDelatInitOffset>40</fastDelatInitOffset>
@@ -122,11 +125,11 @@
         
     </dfz>
     <roi>
-     <useExtraMargins>0</useExtraMargins>  
-     <extraMarginL>7</extraMarginL>  
-     <extraMarginR>5</extraMarginR>  
-     <extraMarginT>3</extraMarginT>  
-     <extraMarginB>3</extraMarginB>       
+     <useExtraMargins>1</useExtraMargins>  
+     <extraMarginL>3</extraMarginL>  
+     <extraMarginR>7</extraMarginR>  
+     <extraMarginT>2</extraMarginT>  
+     <extraMarginB>2</extraMarginB>       
    </roi>
     <fovExpander>
         <valid>0</valid>  
@@ -216,6 +219,6 @@
     </fovExpander>
     <dest>
         <hBaseline>-31</hBaseline>
-        <vBaseline>10</vBaseline>
+        <vBaseline>-10</vBaseline>
     </dest>
 </struct>

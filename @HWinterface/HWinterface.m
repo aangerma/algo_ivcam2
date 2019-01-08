@@ -199,6 +199,7 @@ classdef HWinterface <handle
         burn2device(obj,basedir,burnCalib,burnConfig);
         cma = readCMA(obj,nAvg);
         setConfidenceAs(obj, input );
+        burnCalibConfigFiles( obj, directory,verbose,fileType );
         %----------------------CONSTRUCTOR----------------------
         function obj = HWinterface(fw,recfn)
             if(nargin==0)
@@ -516,12 +517,21 @@ classdef HWinterface <handle
             % Divide z image by this value to get depth in mm
             factor = uint16(typecast(obj.read('GNRLzNorm'),'single'));
         end
-        function [info,serial] = getInfo(obj)
+        function [info,serial,isId] = getInfo(obj)
             info = obj.cmd('gvd');
-            expression = 'AsicModuleSerial:.*';
+            expression = 'OpticalHeadModuleSN:.*';
             ma = regexp(info,expression,'match');
             split = strsplit(ma{1});
             serial = split{2};
+            serial = serial(end-7:end);
+            
+            expression = 'StrapState:.*';
+            ma = regexp(info,expression,'match');
+            split = strsplit(ma{1});
+            StrapState = split{2};
+            unitType = mod(hex2dec(StrapState(end-3)),4);
+            assert(any(unitType == [0,3]),sprintf('StrapState bits 13-12 should be either 10 or 11. Can not identify unit type. %s',StrapState));
+            isId = unitType == 3;
         end
         function v=getSerial(obj)
             [~,v]=obj.cmd('ERB 210 8');

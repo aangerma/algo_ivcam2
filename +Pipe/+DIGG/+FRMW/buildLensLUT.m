@@ -48,14 +48,14 @@ else
     % MARGINS ARE FIXED TO +-p%
     wh=double([regs.GNRL.imgHsize regs.GNRL.imgVsize]);
     
-    a=2047; pixelMargin=.05; 
+    a=2047; pixelMargin=2; 
     [angx,angy] = meshgrid(linspace(-a,a,100));
     [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],0);
     % block rectangle
-    x0 = min(x(:))-pixelMargin*wh(1);
-    x1 = max(x(:))+pixelMargin*wh(1);
-    y0 = min(y(:))-pixelMargin*wh(2);
-    y1 = max(y(:))+pixelMargin*wh(2);
+    x0 = min(x(:))-pixelMargin;
+    x1 = max(x(:))+pixelMargin;
+    y0 = min(y(:))-pixelMargin;
+    y1 = max(y(:))+pixelMargin;
     
     
     distortionH=y1-y0;

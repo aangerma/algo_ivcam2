@@ -34,7 +34,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% Load hw interface
     hw = loadHWInterface(runParams,fw,fprintff,t);
-    fprintff('%-15s %8s\n','serial',hw.getSerial());
+    [~,serialNum,~] = hw.getInfo(); 
+    fprintff('%-15s %8s\n','serial',serialNum);
     
     
     %% Update init configuration
@@ -59,6 +60,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
         return;
+    end
+    %% Verify Scan Direction
+    [results,calibPassed] = validateScanDirection(hw, results,runParams,calibParams, fprintff);
+    if ~calibPassed
+      return 
     end
     
     %% ::dsm calib::
@@ -221,7 +227,8 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
     currregs.PCKR.padding = uint32(prod(calibParams.gnrl.externalImSize)-prod(calibParams.gnrl.internalImSize));
     
-    currregs.DEST.hbaseline = ~calibParams.gnrl.verticalBaseline;
+    [~,~,isId] = hw.getInfo();
+    currregs.DEST.hbaseline = ~isId;
     if currregs.DEST.hbaseline
         currregs.DEST.baseline = single(calibParams.dest.hBaseline);
     else
@@ -329,6 +336,38 @@ function [results,calibPassed] = validateLos(hw, runParams, calibParams, results
         end
     end
     
+end
+function [results,calibPassed] = validateScanDirection(hw, results,runParams,calibParams, fprintff)
+    calibPassed = 1;
+    if runParams.pre_calib_validation
+        IR = hw.getFrame().i;
+        fprintff('[-] Validating scan direction...\n');
+        ff = Calibration.aux.invisibleFigure; 
+        imagesc(IR); 
+        title('ScanDir Validation Image');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'PreCalibValidation','ScanDirImage')
+        
+        [ isLeft, isTop ] = Calibration.aux.CBTools.detectStickerOnBlackCorner(IR);
+        worldViewIsLeft = calibParams.scanDir.stickerLocationIsLeft;
+        worldViewIsTop = calibParams.scanDir.stickerLocationIsTop;
+        
+        if isLeft == worldViewIsLeft
+           hDirStr = 'Left2Right';
+        else
+           hDirStr = 'Right2Left'; 
+        end
+        if isTop == worldViewIsTop
+           vDirStr = 'Top2Bottom';
+        else
+           vDirStr = 'Bottom2Top'; 
+        end
+        
+        fprintff('Scan direction is: %s & %s\n',hDirStr,vDirStr);
+        calibPassed = (isLeft ~= worldViewIsLeft) && (isTop ~= worldViewIsTop);
+        if ~calibPassed
+            fprintff('[x] Scan direction validation failed\n');
+        end
+    end
 end
 
 function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, calibParams, results, fprintff)

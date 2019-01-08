@@ -288,7 +288,7 @@ function statrtButton_callback(varargin)
             
             try
                 hw = HWinterface;
-                [info,serialStr] = hw.getInfo();
+                [info,serialStr,~] = hw.getInfo();
                 fwVersion = hw.getFWVersion;
                 clear hw;
             catch e
@@ -301,7 +301,7 @@ function statrtButton_callback(varargin)
             currRev = sprintf('PC%02d',round(max([0;revInt(:)])+1));
             app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
             runparams.outputFolder=app.outputdirectorty.String;
-
+            
         end
         mkdirSafe(runparams.outputFolder);
         infoFn = fullfile(runparams.outputFolder,'unit_info.txt');
