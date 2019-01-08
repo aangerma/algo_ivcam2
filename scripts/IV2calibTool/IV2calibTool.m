@@ -160,6 +160,17 @@ function app=createComponents()
     app.operatorName.HorizontalAlignment='left';
     app.operatorName.Position = [110 sz(2)-84 200 22];
     
+    % Create work order field label
+    app.workOrderEditFieldLabel = uicontrol('style','text','parent',configurationTab);
+    app.workOrderEditFieldLabel.HorizontalAlignment = 'left';
+    app.workOrderEditFieldLabel.Position = [330 sz(2)-80 94 15];
+    app.workOrderEditFieldLabel.String = 'WorkOrder';
+    
+    % Create work order name string
+    app.workOrder =  uicontrol('style','edit','parent',configurationTab);
+    app.workOrder.HorizontalAlignment='left';
+    app.workOrder.Position = [400 sz(2)-84 200 22];
+    
     % Create VersionLabel
     app.VersionLabel = uicontrol('style','text','parent',configurationTab);
     app.VersionLabel.HorizontalAlignment = 'left';
@@ -334,7 +345,7 @@ function statrtButton_callback(varargin)
         calibParams = xml2structWrapper(calibfn);
         calibParams.sparkParams.resultsFolder = runparams.outputFolder;
         if app.cb.replayMode.Value==0
-            s=Spark(app.operatorName.String,'AlgoCalibration',calibParams.sparkParams,fprintffS);
+            s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
             s.addTestProperty('CalibToolVersion',calibToolVersion)
             s.startDUTsession(serialStr);
             s.addTestProperty('FWVersion',fwVersion);
