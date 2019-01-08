@@ -3,9 +3,9 @@ function [outRegs,outLuts] = getRegsForfwBootCalcs(inRegs,inLuts)
 fw=Firmware;
 m=fw.getMeta();
 
-TransferToFw='1';
+%TransferToFw='1';
 
-regs2write={m([m.TransferToFW]==TransferToFw).regName};
+regs2write={m([m.TransferToFW]~='0').regName};
 
 
 outRegs=struct;
