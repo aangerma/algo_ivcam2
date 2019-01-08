@@ -318,7 +318,7 @@ function [results,calibPassed] = validateLos(hw, runParams, calibParams, results
         %test coverage
         [losResults] = Calibration.validation.validateLOS(hw,runParams,[],[]);
         if ~isempty(losResults)
-            metrics = {'losMaxDrift','losMeanStdX','losMeanStdY'};
+            metrics = {'losMaxP2p','losMeanStdX','losMeanStdY'};
             for m=1:length(metrics)
                 results.(metrics{m}) = losResults.(metrics{m});
                 metricPassed = losResults.(metrics{m}) <= calibParams.errRange.(metrics{m})(2) && ...
@@ -326,9 +326,9 @@ function [results,calibPassed] = validateLos(hw, runParams, calibParams, results
                 calibPassed = calibPassed & metricPassed;
             end
             if calibPassed
-                fprintff('[v] los max drift passed[e=%g]\n',losResults.losMaxDrift);
+                fprintff('[v] los max peak to peak passed[e=%g]\n',losResults.losMaxP2p);
             else
-                fprintff('[x] los max drift failed[e=%g]\n',losResults.losMaxDrift);
+                fprintff('[x] los max peak to peak failed[e=%g]\n',losResults.losMaxP2p);
             end
         else
             calibPassed = false;

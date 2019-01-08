@@ -33,7 +33,7 @@
       <projFovx>[55 65]</projFovx>
       <projFovy>[35 45]</projFovy>
       <ambVal>[0,255]</ambVal>
-      <losMaxDrift>[0 1]</losMaxDrift>
+      <losMaxP2p>[0 3]</losMaxP2p>
       <losMeanStdX>[0 0.5] </losMeanStdX>
       <losMeanStdY>[0 0.5]</losMeanStdY>
    </errRange>
@@ -82,7 +82,7 @@
       <irDistanceDrift>[-5 5]</irDistanceDrift>
       <roiHorizontalLoss>[0 4]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
-      <losMaxDrift>[0 1]</losMaxDrift>
+      <losMaxP2p>[0 3]</losMaxP2p>
       <losMeanStdX>[0 0.5] </losMeanStdX>
       <losMeanStdY>[0 0.5]</losMeanStdY>
       <MirrorRestAngX>[-30 30]</MirrorRestAngX>
