@@ -15,7 +15,7 @@
    <cb_pre_calib_validation>1</cb_pre_calib_validation>
    <cb_post_calib_validation>1</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
-   <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
+   <outputdirectorty>E:\IV2Calib_Results\</outputdirectorty>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Calibration Tool</toolName>
 </struct>

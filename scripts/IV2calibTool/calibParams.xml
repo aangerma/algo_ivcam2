@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
    <sparkParams>
-        <resultsFolder>E:\IV2Calib_Results</resultsFolder>
         <reserveFolder>E:\IV2CAM20_SPARK_Results</reserveFolder>
         <azureFolder>E:\SPARK\iv2-CAL01</azureFolder>
         <testMode>ATP</testMode>

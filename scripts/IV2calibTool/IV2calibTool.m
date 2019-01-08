@@ -25,6 +25,10 @@ function loadDefaults(app)
         return;
     end
     s=xml2structWrapper(app.defaultsFilename);
+    if ~(exist(s.outputdirectorty,'dir'))
+        s.outputdirectorty = 'C:\temp\unitCalib\';
+    end
+    
     ff=fieldnames(s);
     for fld_=ff(:)'
         
@@ -89,6 +93,8 @@ end
 
 function app=createComponents()
     runParams = xml2structWrapper('IV2calibTool.xml');
+    
+    
     sz=[640 700];
     % Create figH
     app.figH = figure('units','pixels',...
@@ -326,6 +332,7 @@ function statrtButton_callback(varargin)
         end
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
+        calibParams.sparkParams.resultsFolder = runparams.outputFolder;
         if app.cb.replayMode.Value==0
             s=Spark(app.operatorName.String,'AlgoCalibration',calibParams.sparkParams,fprintffS);
             s.addTestProperty('CalibToolVersion',calibToolVersion)
@@ -365,7 +372,6 @@ function statrtButton_callback(varargin)
         
     catch e
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
-        errordlg(e.message);
         fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
         if(fid~=-1)
             fprintf(fid,strrep(getReport(e),'\','\\'));
