@@ -483,6 +483,26 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         r.set();
         
         
+        frame = hw.getFrame(10);
+        bwIm = frame.i>0;
+        %{
+        imNoise = collectNoiseIm(hw);
+        noiseLevel = prctile_(imNoise(imNoise(:)~=0),99)*255;
+        props = regionprops(bwIm,'BoundingBox','Area');
+        largest = maxind([props.Area]);
+        bbox = round(props(largest).BoundingBox);
+        %}
+        
+        %find effective image "bounding box"
+        bbox = [];
+        bbox([1,3]) = minmax(find(bwIm(round(size(bwIm,1)/2),:)>0.9));
+        lcoords = minmax(find(bwIm(:,bbox(1)+10)>0.9)');
+        mcoords = minmax(find(bwIm(:,round(size(bwIm,2)/2))>0.9)');
+        rcoords = minmax(find(bwIm(:,bbox(3)-10)>0.9)');
+        bbox(2) = max([lcoords(1),mcoords(1),rcoords(1)]);
+        bbox(4) = min([lcoords(2),mcoords(2),rcoords(2)])-bbox(2);
+
+        
         cdParams = cdParamsGenerator('iv2');
         captures = fieldnames(calibParams.dfz.captures);
         trainImages = cellfun(@(x)(~isempty(x)),(strfind(captures, 'train')));
