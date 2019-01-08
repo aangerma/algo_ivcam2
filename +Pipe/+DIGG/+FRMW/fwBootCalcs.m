@@ -3,6 +3,7 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 %=======================================DIGG - ang2xy- calib res =======================================
 t = Pipe.DIGG.FRMW.getAng2xyCoeffs(regs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,t);
+regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %=======================================DIGG - spherical=======================================
  
@@ -29,6 +30,7 @@ autogenRegs.DIGG.undistFx=regs.DIGG.undistFx;
 autogenRegs.DIGG.undistFy=regs.DIGG.undistFy;
 autogenRegs.DIGG.undistX0=regs.DIGG.undistX0;
 autogenRegs.DIGG.undistY0=regs.DIGG.undistY0;
+regs = Firmware.mergeRegs(regs,autogenRegs);
 
 [ScaleAndShiftRegs] = Pipe.DIGG.FRMW.getUndistScaleAndShift(regs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,ScaleAndShiftRegs);

@@ -10,9 +10,15 @@ all angles.
 %}
 %% ----STAIGHT FORWARD------
 
-angXfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
-angYfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
-mirang = atand(regs.FRMW.projectionYshear);
+
+mode=regs.FRMW.mirrorMovmentMode;
+xfov=regs.FRMW.xfov(mode);
+yfov=regs.FRMW.yfov(mode);
+projectionYshear=regs.FRMW.projectionYshear(mode);
+
+angXfactor = single(xfov*0.25/(2^11-1));
+angYfactor = single(yfov*0.25/(2^11-1));
+mirang = atand(projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
 if ~useFix
     angles2xyz = @(angx,angy) [             sind(angx) cosd(angx).*sind(angy) cosd(angy).*cosd(angx)]';
@@ -28,10 +34,10 @@ xyz2nrmy = @(xyz) xyz(2,:)./xyz(3,:);
 xyz2nrmxy= @(xyz) [xyz2nrmx(xyz)  ;  xyz2nrmy(xyz)];
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
 oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
-rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( regs.FRMW.xfov*0.25,                   0)));rangeR=rangeR(1);
-rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-regs.FRMW.xfov*0.25,                   0)));rangeL=rangeL(1);
-rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov*0.25)));rangeT =rangeT (2);
-rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov*0.25)));rangeB=rangeB(2);
+rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( xfov*0.25,                   0)));rangeR=rangeR(1);
+rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-xfov*0.25,                   0)));rangeL=rangeL(1);
+rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , yfov*0.25)));rangeT =rangeT (2);
+rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-yfov*0.25)));rangeB=rangeB(2);
 
 guardXinc = regs.FRMW.guardBandH*single(regs.FRMW.xres);
 guardYinc = regs.FRMW.guardBandV*single(regs.FRMW.yres);

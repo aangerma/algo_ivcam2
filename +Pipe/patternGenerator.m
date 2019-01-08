@@ -6,7 +6,7 @@ warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
 % check ROI cover
 %  if( ~isROICovered(regs,luts))
 %       error('Bad configuration: scan line not covering all ROI window');
-%  end 
+%  end
 %
 
 multiFocal = false;
@@ -58,7 +58,7 @@ if(multiFocal)
     io.writeIVS(ivsFilename,ivs);
     return;
 end
-    rng(regs.EPTG.seed)
+rng(regs.EPTG.seed)
 if(regs.GNRL.rangeFinder)
     %%
     [ivs,flag_ld_on,flag_tx_code_start,flag_scandir,flag_txrx_mode] = rangeFinderData(regs);
@@ -96,12 +96,12 @@ else
     returnTime = regs.EPTG.returnTime;
     t = (0:dt:1/double(regs.EPTG.frameRate)*1e9-dt);
     if(length(t)>regs.EPTG.nMaxSamples)
-    t = t(1:min(single(regs.EPTG.nMaxSamples),length(t)));
-    returnTime=0; %if truncating rest of frame - do not add return time
+        t = t(1:min(single(regs.EPTG.nMaxSamples),length(t)));
+        returnTime=0; %if truncating rest of frame - do not add return time
     end
     tF = (0:length(t)*64-1)*dt/64;
     
-
+    
     c = Utils.uint322bin(regs.FRMW.txCode,regs.GNRL.codeLength);
     c = vec(repmat(c(:),1,regs.GNRL.sampleRate)');
     % [yg,xg]=ndgrid(linspace(-1,1,size(im.zImg,1)),linspace(-1,1,size(im.zImg,2)));
@@ -115,25 +115,30 @@ else
     tscan = t(1:retInd);
     frameTime = tscan(end)-tscan(1);
     tret = t(retInd+1:end);
+    
+    mode=regs.FRMW.mirrorMovmentMode;
+    xfov=regs.FRMW.xfov(mode);
+    yfov=regs.FRMW.yfov(mode);
+    
     switch(regs.EPTG.slowscanType)
         case 0%linear
-            angxIn  = regs.FRMW.xfov/4*(tscan/frameTime*2-1);
+            angxIn  = xfov/4*(tscan/frameTime*2-1);
         case 1%sine
-            angxIn  =  -regs.FRMW.xfov/4*cos(tscan/frameTime*2*pi/2);
+            angxIn  =  -xfov/4*cos(tscan/frameTime*2*pi/2);
         case 2%atan
-            angxIn  =  atand(tand(regs.FRMW.xfov/2) * (2 *  tscan/frameTime-1))/2;
+            angxIn  =  atand(tand(xfov/2) * (2 *  tscan/frameTime-1))/2;
         case 3%raster
             angxIn =(cumsum([diff(sin(2*pi*tscan/frameTime*2)>0) 0]>0)*2-1);
             angxIn =angxIn /angxIn (end);
-            angxIn  =regs.FRMW.xfov/2*(angxIn*2-1);
+            angxIn  =xfov/2*(angxIn*2-1);
             
         otherwise
             error('unknonw scan type');
             
     end
     if(length(tret)>1)
-    angxInRet = interp1([tscan(end-1:end) tret(end-1:end)],[angxIn(end-1:end) angxIn(1:2)],tret,'spline');
-    angxIn = [angxIn angxInRet];
+        angxInRet = interp1([tscan(end-1:end) tret(end-1:end)],[angxIn(end-1:end) angxIn(1:2)],tret,'spline');
+        angxIn = [angxIn angxInRet];
     end
     scPhase = regs.EPTG.slowCouplingPhase;
     smPhase = regs.EPTG.scndModePhase;
@@ -147,29 +152,29 @@ else
     
     angy = angyIn(regs.EPTG.mirrorFastFreq,0)+angxIn*regs.FRMW.projectionYshear;
     angx = angxIn ...
-            + angyIn(fmir ,-scPhase*pi/180)*scFactor ...
-            + angyIn(fscnd,-smPhase*pi/180)*smFactor;
+        + angyIn(fmir ,-scPhase*pi/180)*scFactor ...
+        + angyIn(fscnd,-smPhase*pi/180)*smFactor;
     angx=double(angx);
     angy=double(angy);
     
     mm = @(x) max(-2047,min(2047,x));
     %12bit signed
-    angxQ = mm(int16(round(angx/(regs.FRMW.xfov/2*.5)*(2^11-1))));
-    angyQ = mm(int16(round(angy/(regs.FRMW.yfov/2*.5)*(2^11-1))));
+    angxQ = mm(int16(round(angx/(xfov/2*.5)*(2^11-1))));
+    angyQ = mm(int16(round(angy/(yfov/2*.5)*(2^11-1))));
     
     %     [yi,xi]=ndgrid(0:oh-1,0:ow-1);
     regs4digg=regs;
-%     regs4digg.FRMW.marginL=int16(0);
-%     regs4digg.FRMW.marginR=int16(0);
-%     regs4digg.FRMW.marginT=int16(0);
-%     regs4digg.FRMW.marginB=int16(0);
-%     regs4digg.FRMW.guardBandH=single(0);
-%     regs4digg.FRMW.guardBandV=single(0);
+    %     regs4digg.FRMW.marginL=int16(0);
+    %     regs4digg.FRMW.marginR=int16(0);
+    %     regs4digg.FRMW.marginT=int16(0);
+    %     regs4digg.FRMW.marginB=int16(0);
+    %     regs4digg.FRMW.guardBandH=single(0);
+    %     regs4digg.FRMW.guardBandV=single(0);
     regs4digg = Firmware.mergeRegs(regs4digg,Pipe.DIGG.FRMW.getAng2xyCoeffs(regs4digg));
     [regs4digg_,luts4digg_] = Pipe.DIGG.FRMW.buildLensLUT(regs4digg,[]);
     regs4digg = Firmware.mergeRegs(regs4digg,regs4digg_);
     luts4digg = Firmware.mergeRegs(luts    ,luts4digg_);
-
+    
     
     [xA,yA]=Pipe.DIGG.ang2xy(angxQ,angyQ,regs4digg,Logger(),[]);
     [xA,yA] = Pipe.DIGG.undist(xA,yA,regs4digg,luts4digg,Logger(),[]);
@@ -227,7 +232,7 @@ else
     %genereate slow
     albedoImg = max(0,gt.aImg);
     ivs.slow = griddata(angxg,angyg,albedoImg,angx,angy);
-     if(isempty(ivs.slow))
+    if(isempty(ivs.slow))
         ivs.slow=zeros(size(angx));
     end
     %genererate fast
@@ -345,7 +350,6 @@ if(regs.EPTG.calibVariationsP~=0)
     randp =@(x) (1+(rand*2-1)*regs.EPTG.calibVariationsP)*x;
     minmaxval =@(x,m) max(m(1),min(m(2),x));
     randpSafe=@(x,s) minmaxval(randp(x),metaMM(s));
-    
     newregs.FRMW.xfov             = randpSafe(regs.FRMW.xfov             ,fw.getMeta('FRMWxfov'             ));
     newregs.FRMW.yfov             = randpSafe(regs.FRMW.yfov             ,fw.getMeta('FRMWyfov'             ));
     newregs.FRMW.xoffset          = randpSafe(regs.FRMW.xoffset          ,fw.getMeta('FRMWxoffset'          ));
@@ -356,7 +360,7 @@ if(regs.EPTG.calibVariationsP~=0)
     newregs.FRMW.shadingCurve     = randpSafe(regs.FRMW.shadingCurve     ,fw.getMeta('FRMWshadingCurve'     ));
     newregs.FRMW.undistXfovFactor = randpSafe(regs.FRMW.undistXfovFactor ,fw.getMeta('FRMWundistXfovFactor' ));
     newregs.FRMW.undistYfovFactor = randpSafe(regs.FRMW.undistYfovFactor ,fw.getMeta('FRMWundistYfovFactor' ));
-
+    
 end
 
 fw.setRegs(newregs,p.configOutputFilename);
@@ -767,7 +771,7 @@ function imgot=imresize_(imgin,szot)
 szin = size(imgin);
 [yin,xin]=ndgrid(linspace(0,1,szin(1)),linspace(0,1,szin(2)));
 [yot,xot]=ndgrid(linspace(0,1,szot(1)),linspace(0,1,szot(2)));
-imgot=interp2(xin,yin,imgin,xot,yot,'nearest'); %tmund - nearest neighbor method seems better for learning depth across the edges.  
+imgot=interp2(xin,yin,imgin,xot,yot,'nearest'); %tmund - nearest neighbor method seems better for learning depth across the edges.
 end
 
 
@@ -792,16 +796,16 @@ end
 % roiT = roiB + roiH;
 % angy = [-1 -1 -1 1 1 1] * 2047;
 % angx = [-1 0 1 -1 0 1] * 2047;
-% 
+%
 % [xA,yA]=Pipe.DIGG.ang2xy(angx,angy,regs,Logger(),[]);
-% [xA,yA] = Pipe.DIGG.undist(xA,yA,regs,luts,Logger(),[]);  
+% [xA,yA] = Pipe.DIGG.undist(xA,yA,regs,luts,Logger(),[]);
 % dn = @(x) bitshift(x+2^(double(regs.DIGG.bitshift)-1),-double(regs.DIGG.bitshift));
 % %xA = dn(xA);
 % yA = dn(yA);
-% 
+%
 % if regs.FRMW.yflip
 %   yA = [yA(4:6) yA(1:3)];
 % end
 % isCovered =  ~any(yA(1:3)>roiB | yA(4:6)<roiT);
-% 
+%
 % end

@@ -1,10 +1,13 @@
 function [oXYZ] = ang2vec(angxQin,angyQin,regs,fovExpander)
 
 %% ----STAIGHT FORWARD------
-
-angXfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
-angYfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
-mirang = atand(regs.FRMW.projectionYshear);
+mode=regs.FRMW.mirrorMovmentMode;
+xfov=regs.FRMW.xfov(mode);
+yfov=regs.FRMW.yfov(mode);
+projectionYshear=regs.FRMW.projectionYshear(mode);
+angXfactor = single(xfov*0.25/(2^11-1));
+angYfactor = single(yfov*0.25/(2^11-1));
+mirang = atand(projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
 angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
 

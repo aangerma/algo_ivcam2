@@ -209,8 +209,8 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     end
     if ~runParams.DFZ
         DIGGspare = hw.read('DIGGspare');
-        currregs.FRMW.xfov = typecast(DIGGspare(2),'single');
-        currregs.FRMW.yfov = typecast(DIGGspare(3),'single');
+        currregs.FRMW.xfov(1) = typecast(DIGGspare(2),'single');
+        currregs.FRMW.yfov(1) = typecast(DIGGspare(3),'single');
         currregs.FRMW.laserangleH = typecast(DIGGspare(4),'single');
         currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
         currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
@@ -496,8 +496,8 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         
         % dodluts=struct;
         [dfzRegs,results.geomErr,dWithRpt] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,1);
-        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
-            regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
+        x0 = double([dfzRegs.FRMW.xfov(1) dfzRegs.FRMW.yfov(1) dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
+            regs.FRMW.projectionYshear(1) (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
 %         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
@@ -621,8 +621,8 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff)
     regs = fw.get();
     intregs.DIGG.spare=zeros(1,8,'uint32');
     intregs.DIGG.spare(1)=verValue;
-    intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov),'uint32');
-    intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov),'uint32');
+    intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov(1)),'uint32');
+    intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov(1)),'uint32');
     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
     intregs.DIGG.spare(6)=verValue; %config version

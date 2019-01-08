@@ -4,6 +4,7 @@ function [regs,autogenRegs,autogenLuts] = preCalcs(regs,luts,autogenRegs,autogen
 t = Pipe.DIGG.FRMW.getAng2xyCoeffs(regs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,t);
 
+regs = Firmware.mergeRegs(regs,autogenRegs);
 
 
 % %=======================================DIGG - iptg=======================================
