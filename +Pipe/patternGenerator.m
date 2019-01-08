@@ -119,6 +119,7 @@ else
     mode=regs.FRMW.mirrorMovmentMode;
     xfov=regs.FRMW.xfov(mode);
     yfov=regs.FRMW.yfov(mode);
+    projectionYshear=regs.FRMW.projectionYshear; 
     
     switch(regs.EPTG.slowscanType)
         case 0%linear
@@ -150,7 +151,7 @@ else
     smFactor = regs.EPTG.scndModeFactor;
     
     
-    angy = angyIn(regs.EPTG.mirrorFastFreq,0)+angxIn*regs.FRMW.projectionYshear;
+    angy = angyIn(regs.EPTG.mirrorFastFreq,0)+angxIn*projectionYshear;
     angx = angxIn ...
         + angyIn(fmir ,-scPhase*pi/180)*scFactor ...
         + angyIn(fscnd,-smPhase*pi/180)*smFactor;
@@ -350,11 +351,11 @@ if(regs.EPTG.calibVariationsP~=0)
     randp =@(x) (1+(rand*2-1)*regs.EPTG.calibVariationsP)*x;
     minmaxval =@(x,m) max(m(1),min(m(2),x));
     randpSafe=@(x,s) minmaxval(randp(x),metaMM(s));
-    newregs.FRMW.xfov             = randpSafe(regs.FRMW.xfov             ,fw.getMeta('FRMWxfov'             ));
-    newregs.FRMW.yfov             = randpSafe(regs.FRMW.yfov             ,fw.getMeta('FRMWyfov'             ));
+    newregs.FRMW.xfov             = randpSafe(regs.FRMW.xfov             ,fw.getMeta('FRMWxfov_000'             ));
+    newregs.FRMW.yfov             = randpSafe(regs.FRMW.yfov             ,fw.getMeta('FRMWyfov_000'             ));
     newregs.FRMW.xoffset          = randpSafe(regs.FRMW.xoffset          ,fw.getMeta('FRMWxoffset'          ));
     newregs.FRMW.yoffset          = randpSafe(regs.FRMW.yoffset          ,fw.getMeta('FRMWyoffset'          ));
-    newregs.FRMW.projectionYshear = randpSafe(regs.FRMW.projectionYshear ,fw.getMeta('FRMWprojectionYshear' ));
+    newregs.FRMW.projectionYshear = randpSafe(regs.FRMW.projectionYshear ,fw.getMeta('FRMWprojectionYshear_000' ));
     newregs.FRMW.laserangleH      = randpSafe(regs.FRMW.laserangleH      ,fw.getMeta('FRMWlaserangleH'      ));
     newregs.FRMW.laserangleV      = randpSafe(regs.FRMW.laserangleV      ,fw.getMeta('FRMWlaserangleV'      ));
     newregs.FRMW.shadingCurve     = randpSafe(regs.FRMW.shadingCurve     ,fw.getMeta('FRMWshadingCurve'     ));
