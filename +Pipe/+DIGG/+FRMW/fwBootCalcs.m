@@ -7,7 +7,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %=======================================DIGG - spherical=======================================
  
-[newRegs] = Pipe.DIGG.FRMW.getSpherialCoeff(regs);
+[newRegs] = Pipe.DIGG.FRMW.getSphericalCoeff(regs);
 
 autogenRegs = Firmware.mergeRegs(autogenRegs,newRegs);
 regs = Firmware.mergeRegs(regs,autogenRegs);

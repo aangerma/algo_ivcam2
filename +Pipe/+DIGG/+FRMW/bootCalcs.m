@@ -1,12 +1,12 @@
 function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
 
 %% pre calc
-[PreCalasRegs,autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.preCalcs(regs,luts,autogenRegs,autogenLuts);
-PreCalasluts = Firmware.mergeRegs(luts,autogenLuts);
+[PreCalcsRegs,autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.preCalcs(regs,luts,autogenRegs,autogenLuts);
+PreCalcsluts = Firmware.mergeRegs(luts,autogenLuts);
 
 %% write to EPROM
 
-[FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(PreCalasRegs,PreCalasluts );
+[FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(PreCalcsRegs,PreCalcsluts );
 regs = Firmware.mergeRegs(regs,FWinputRegs);
 luts = Firmware.mergeRegs(luts,FWinputLuts);
 
