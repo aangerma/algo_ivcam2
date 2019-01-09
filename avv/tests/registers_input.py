@@ -150,7 +150,7 @@ def read_regs_file(file_path):
                     columns_names.append(d.strip())
             else:
                 if len(data) != len(columns_names):
-                    slash.logger.error("file error, line {} doesnt have enough columns".format(index))
+                    slash.logger.error("file error, line {} doesn't have enough columns".format(index))
                     raise IndexError
                 reg_data = {}
                 for index in range(len(columns_names)):
@@ -272,10 +272,10 @@ def check_for_all_regs(selected_regs={}, regs=list()):
 
 def check_constraint(selected_regs={}, constraint=None):
     constr = constraint.get_constraint()
-    if constr == "[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>32":
-        return selected_regs["EPTGframeRate"] == 0 | 1 * 10 ** 9 / (
+    if constr == "[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>27":
+        return selected_regs["EPTGframeRate"] == 0 or 1 * 10 ** 9 / (
                 selected_regs["GNRLimgHsize"] * selected_regs["GNRLimgVsize"]) * (
-                       1 / selected_regs["EPTGframeRate"] - selected_regs["EPTGreturnTime"] / 1000) > 32
+                       1 / selected_regs["EPTGframeRate"] - selected_regs["EPTGreturnTime"] / 1000) > 27
     elif constr == "mod([GNRLcodeLength],2)==0":
         return modulo(selected_regs["GNRLcodeLength"], 2) == 0
     elif constr == "([GNRLcodeLength]*[GNRLsampleRate]<=1024 & [GNRLcodeLength]*[GNRLsampleRate]>=128) | ([GNRLrangeFinder]==1 & [GNRLcodeLength]*[GNRLsampleRate]==2048)":
@@ -1045,8 +1045,7 @@ def test_random_registers_randomize_100():
     slash.logger.info(test_status, extra={"highlight": True})
 
 
-@a_common.ivcam2
-def test_random_registers_autogen_100():
+def random_registers(iterations=1):
     test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
                    "Randomize_failed": 0}
     eng = slash.g.mat
@@ -1060,7 +1059,6 @@ def test_random_registers_autogen_100():
     regs_def = read_regs_file(regs_def_path)
     regs_def = clean_regs_list_to_generate(regs_def)
 
-    iterations = 100
     slash.logger.info("Start test, number of iterations: {}".format(iterations))
 
     reg_order = get_regs_order(regs_def)
@@ -1103,3 +1101,14 @@ def test_random_registers_autogen_100():
         test_status["pass"] += 1
 
     slash.logger.info(test_status, extra={"highlight": True})
+
+    if test_status["fail"] > 0 or test_status["pattern_generator_crash"] > 0:
+        raise a_common.TestFail("Test failed please review log")
+
+@a_common.ivcam2
+def test_random_registers_autogen_100():
+    random_registers(iterations=100)
+
+slash.tag('turn_in')
+def test_random_registers_autogen_turn_in():
+    random_registers(iterations=10)
