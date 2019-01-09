@@ -1,13 +1,11 @@
 calibfn =  'calibParams.xml';
 calibParams = xml2structWrapper(calibfn);
-sparkFolders = 'C:\source\algo_ivcam2\scripts\IV2calibTool';
-s=Spark('Algo','AlgoCalibration',sparkFolders);
-s.addTestProperty('CalibVersion',113)
+sparkParams = calibParams.sparkParams;
+s=Spark('','AlgoCalibration',sparkParams,@fprintf);
+s.addTestProperty('CalibToolVersion',1.17)
 s.startDUTsession('my_string');
 s.addDTSproperty('TargetType','IRcalibrationChart');
-
-
-s.AddMetrics('score', 99,calibParams.passScore,100,true);
+s.AddMetrics('score', 99,1,100,true);
 % s.endDUTsession([], true);
 s.endDUTsession();
     

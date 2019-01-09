@@ -34,7 +34,7 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Max_Drift_Input');
         return
     else
-        losResults.losMaxDrift = allResults.maxDrift;
+        losResults.losMaxP2p = allResults.maxP2p;
         losResults.losMeanStdX = allResults.meanStdX;
         losResults.losMeanStdY = allResults.meanStdY;
     end

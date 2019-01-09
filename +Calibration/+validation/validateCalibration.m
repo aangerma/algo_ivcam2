@@ -13,7 +13,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.getFrame;
-        z2mm = hw.z2mm;
+        z2mm = double(hw.z2mm);
         fprintff('opening stream...');
         frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
         

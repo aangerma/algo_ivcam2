@@ -3,7 +3,6 @@ function IV2calibTool
     loadDefaults(app);
     outputFolderChange_callback(app.figH);
 end
-
 function outputFolderChange_callback(varargin)
     app=guidata(varargin{1});
     
@@ -26,6 +25,10 @@ function loadDefaults(app)
         return;
     end
     s=xml2structWrapper(app.defaultsFilename);
+    if ~(exist(s.outputdirectorty,'dir'))
+        s.outputdirectorty = 'C:\temp\unitCalib\';
+    end
+    
     ff=fieldnames(s);
     for fld_=ff(:)'
         
@@ -90,6 +93,8 @@ end
 
 function app=createComponents()
     runParams = xml2structWrapper('IV2calibTool.xml');
+    
+    
     sz=[640 700];
     % Create figH
     app.figH = figure('units','pixels',...
@@ -119,7 +124,7 @@ function app=createComponents()
     app.StartButton = uicontrol('style','pushbutton','parent',configurationTab);
     app.StartButton.Callback = @statrtButton_callback;
     app.StartButton.FontWeight = 'bold';
-    app.StartButton.Position = [1 sz(2)-131 sz(1)-4 52];
+    app.StartButton.Position = [1 sz(2)-139 sz(1)-4 52];
     app.StartButton.String = 'Start';
     
     
@@ -127,15 +132,15 @@ function app=createComponents()
     app.AbortButton = uicontrol('style','pushbutton','parent',configurationTab);
     app.AbortButton.Callback = @abortButton_callback;
     app.AbortButton.FontWeight = 'bold';
-    app.AbortButton.Position = [1 sz(2)-131 sz(1)-4 52];
+    app.AbortButton.Position = [1 sz(2)-139 sz(1)-4 52];
     app.AbortButton.String = 'Abort';
     app.AbortButton.Visible='off';
     
     
     % Create outputdirectortyEditFieldLabel
     app.outputdirectortyEditFieldLabel = uicontrol('style','text','parent',configurationTab);
-    app.outputdirectortyEditFieldLabel.HorizontalAlignment = 'right';
-    app.outputdirectortyEditFieldLabel.Position = [1 sz(2)-54 94 15];
+    app.outputdirectortyEditFieldLabel.HorizontalAlignment = 'left';
+    app.outputdirectortyEditFieldLabel.Position = [10 sz(2)-56 94 15];
     app.outputdirectortyEditFieldLabel.String = 'Output directorty';
     
     % Create outputdirectorty
@@ -143,11 +148,33 @@ function app=createComponents()
     app.outputdirectorty.HorizontalAlignment='left';
     app.outputdirectorty.Position = [110 sz(2)-60 490 22];
     app.outputdirectorty.KeyReleaseFcn=@outputFolderChange_callback;
+   
+    % Create Operator field label
+    app.operatorEditFieldLabel = uicontrol('style','text','parent',configurationTab);
+    app.operatorEditFieldLabel.HorizontalAlignment = 'left';
+    app.operatorEditFieldLabel.Position = [10 sz(2)-80 94 15];
+    app.operatorEditFieldLabel.String = 'Operator';
+    
+    % Create operator name string
+    app.operatorName =  uicontrol('style','edit','parent',configurationTab);
+    app.operatorName.HorizontalAlignment='left';
+    app.operatorName.Position = [110 sz(2)-84 200 22];
+    
+    % Create work order field label
+    app.workOrderEditFieldLabel = uicontrol('style','text','parent',configurationTab);
+    app.workOrderEditFieldLabel.HorizontalAlignment = 'left';
+    app.workOrderEditFieldLabel.Position = [330 sz(2)-80 94 15];
+    app.workOrderEditFieldLabel.String = 'WorkOrder';
+    
+    % Create work order name string
+    app.workOrder =  uicontrol('style','edit','parent',configurationTab);
+    app.workOrder.HorizontalAlignment='left';
+    app.workOrder.Position = [400 sz(2)-84 200 22];
     
     % Create VersionLabel
     app.VersionLabel = uicontrol('style','text','parent',configurationTab);
     app.VersionLabel.HorizontalAlignment = 'left';
-    app.VersionLabel.Position = [5 sz(2)-146 94 15];
+    app.VersionLabel.Position = [5 sz(2)-154 94 15];
     app.VersionLabel.String = sprintf('version: %5.2f',calibToolVersion());
     
     
@@ -173,7 +200,7 @@ function app=createComponents()
     app.logarea.UserData=app.logarea.BackgroundColor;
     app.logarea.Max=10;
     app.logarea.String='';
-    app.logarea.Position = [1 1 640 sz(2)-151];
+    app.logarea.Position = [1 1 640 sz(2)-159];
     app.logarea.FontName='courier new';
     % Create verboseCheckBox
     
@@ -261,7 +288,7 @@ function statrtButton_callback(varargin)
         fprintffS=@(varargin) fprintff(app,varargin{:});
         info = ''; % Until reading from unit
         serialStr = '00000000'; % Until reading from unit
-            
+        fwVersion = ''; % Until reading from unit
         origOutputFolder = app.outputdirectorty.String;
         if app.cb.replayMode.Value
             seesionFile = app.outputdirectorty.String;
@@ -278,7 +305,8 @@ function statrtButton_callback(varargin)
             
             try
                 hw = HWinterface;
-                [info,serialStr] = hw.getInfo();
+                [info,serialStr,~] = hw.getInfo();
+                fwVersion = hw.getFWVersion;
                 clear hw;
             catch e
                 fprintffS('[!] ERROR:%s\n',strtrim(e.message));
@@ -290,7 +318,7 @@ function statrtButton_callback(varargin)
             currRev = sprintf('PC%02d',round(max([0;revInt(:)])+1));
             app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
             runparams.outputFolder=app.outputdirectorty.String;
-
+            
         end
         mkdirSafe(runparams.outputFolder);
         infoFn = fullfile(runparams.outputFolder,'unit_info.txt');
@@ -315,11 +343,12 @@ function statrtButton_callback(varargin)
         end
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
-        sparkFolders = strsplit(calibParams.sparkOutputFolders);
+        calibParams.sparkParams.resultsFolder = runparams.outputFolder;
         if app.cb.replayMode.Value==0
-            s=Spark('Algo','AlgoCalibration',sparkFolders{1});
-            s.addTestProperty('TesterSwVersion',calibToolVersion)
+            s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
+            s.addTestProperty('CalibToolVersion',calibToolVersion)
             s.startDUTsession(serialStr);
+            s.addTestProperty('FWVersion',fwVersion);
             s.addTestProperty('gvd',info);
 %             s.addDTSproperty('TargetType','IRcalibrationChart');
         else
@@ -354,7 +383,6 @@ function statrtButton_callback(varargin)
         
     catch e
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
-        errordlg(e.message);
         fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
         if(fid~=-1)
             fprintf(fid,strrep(getReport(e),'\','\\'));
@@ -362,10 +390,6 @@ function statrtButton_callback(varargin)
         end
         if app.cb.replayMode.Value == 0
             s.endDUTsession([], true);
-%             for i = 2:numel(sparkFolders) % Copy spark output to all directories.
-%                 sparkfn = []; % Todo - get the spark file name
-%                 copyfile(fullfile(sparkFolders{1},sparkfn), sparkFolders{i})
-%             end
         end
     end
     

@@ -13,9 +13,9 @@ function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams,runParams)
 
 noiseThresh = max(imNoise(:));
 %% Get margins for each image
-edgesU = calcBounds(imU,noiseThresh,runParams,'imU');
+edgesU = calcBounds(imU,noiseThresh,runParams,regs,'imU');
 marginsU = calcMargins(edgesU,regs,calibParams);
-edgesD = calcBounds(imD,noiseThresh,runParams,'imD');
+edgesD = calcBounds(imD,noiseThresh,runParams,regs,'imD');
 marginsD = calcMargins(edgesD,regs,calibParams);
 
 % As weird as it is, extra margins are consistent with FRMWmargin*.
@@ -56,50 +56,63 @@ for i = 1:numel(st)
 end
 
 end
-function edges = calcBounds(im,noiseThresh,runParams,description)
+function edges = calcBounds(im,noiseThresh,runParams,regs,description)
 %% Mark desired pixels on spherical image
 % Todo - in any case, do not allow the bound toslice into the real image.
 
 binaryIm = im > 0;
 [binaryIm,stats] = maxAreaStat(binaryIm,size(im));% Keep only the largest connected component.
 im(~binaryIm) = 0;
-leftCol = ceil(stats.BoundingBox(1));
-rightCol = min(leftCol+stats.BoundingBox(3),size(im,2));
-
-% Use the 3 outermost columns for nest estimation
-noiseValues = im(:,[leftCol:leftCol+2,rightCol-2:rightCol]);
-% noiseThresh = max(noiseValues(noiseValues>0));
 
 % Find noise pixels
 noiseIm = (im > 0) .* (im <= noiseThresh);
 notNoiseIm = im > noiseThresh;
 noiseColumns = (sum(noiseIm)>0) .*  (sum(notNoiseIm)==0);
 
-% Find the right and left margins - index of the pixels that bound the
-% image without the noise.
-leftImIndex = find(diff(noiseColumns)==-1,1,'first')+1;
-rightImIndex = find(diff(noiseColumns)==1,1,'last');
-if isempty(leftImIndex) || leftImIndex>(size(im,2)/2)
-    leftImIndex = find(sum(notNoiseIm)>0,1,'first');
-end
-if isempty(rightImIndex) || rightImIndex<(size(im,2)/2)
-    rightImIndex = find(sum(notNoiseIm)>0,1,'last');
-end
+% Find the corners of the not noise image - connect them
+[xi,yi] = meshgrid(1:size(im,2),1:size(im,1));
+xi(~notNoiseIm) = inf;
+yi(~notNoiseIm) = inf;
+xy = [xi(:),yi(:)];
+xyTopLeft = closest2pointL1(xy,[1,1]);
+xyTopRight = closest2pointL1(xy,[regs.GNRL.imgHsize,1]);
+xyBottomLeft = closest2pointL1(xy,[1,regs.GNRL.imgVsize]);
+xyBottomRight = closest2pointL1(xy,[regs.GNRL.imgHsize,regs.GNRL.imgVsize]);
 
-% The top noise strip of the image is diagonal. Find the pixel where the noise stops for each column.
-noiseStartRowPerCol = arrayfun(@(x) find(binaryIm(:,x)>0,1,'first'), leftImIndex:rightImIndex);
-noiseEndRowPerCol = arrayfun(@(x) find(binaryIm(:,x)>0,1,'last'), leftImIndex:rightImIndex);
-notNoiseStartRowPerCol = arrayfun(@(x) find(notNoiseIm(:,x)>0,1,'first'), leftImIndex:rightImIndex);
-notNoiseEndRowPerCol = arrayfun(@(x) find(notNoiseIm(:,x)>0,1,'last'), leftImIndex:rightImIndex);
+n = 1000;
+topEdge = [linspace(xyTopLeft(2),xyTopRight(2),n)',linspace(xyTopLeft(1),xyTopRight(1),n)']; 
+bottomEdge = [linspace(xyBottomRight(2),xyBottomLeft(2),n)',linspace(xyBottomRight(1),xyBottomLeft(1),n)']; 
+leftEdge = [linspace(xyBottomLeft(2),xyTopLeft(2),n)',linspace(xyBottomLeft(1),xyTopLeft(1),n)']; 
+rightEdge = [linspace(xyTopRight(2),xyBottomRight(2),n)',linspace(xyTopRight(1),xyBottomRight(1),n)']; 
+imageFrame = [topEdge; rightEdge; bottomEdge; leftEdge];% Add left column
 
-topWidth = median(notNoiseStartRowPerCol - noiseStartRowPerCol);
-bottomWidth = median(noiseEndRowPerCol-notNoiseEndRowPerCol);
 
-topEdge = [min(noiseStartRowPerCol+topWidth,notNoiseStartRowPerCol)',(leftImIndex:rightImIndex)']; 
-bottomEdge = [max(noiseEndRowPerCol-bottomWidth,notNoiseEndRowPerCol)',(leftImIndex:rightImIndex)']; 
-leftEdge = (topEdge(1,1):bottomEdge(1,1))'; leftEdge = [leftEdge,leftImIndex*ones(size(leftEdge))];
-rightEdge = ((topEdge(end,1)):(bottomEdge(end,1)))'; rightEdge = [rightEdge,rightImIndex*ones(size(rightEdge))];
+% % Find the right and left margins - index of the pixels that bound the
+% % image without the noise.
+% leftImIndex = find(diff(noiseColumns)==-1,1,'first')+1;
+% rightImIndex = find(diff(noiseColumns)==1,1,'last');
+% if isempty(leftImIndex) || leftImIndex>(size(im,2)/2)
+%     leftImIndex = find(sum(notNoiseIm)>0,1,'first');
+% end
+% if isempty(rightImIndex) || rightImIndex<(size(im,2)/2)
+%     rightImIndex = find(sum(notNoiseIm)>0,1,'last');
+% end
+% 
+% % The top noise strip of the image is diagonal. Find the pixel where the noise stops for each column.
+topEdgeX = (xyTopLeft(1):xyTopRight(1));
+topEdgeY = arrayfun(@(x) find(notNoiseIm(:,x)>0,1,'first'), topEdgeX);
+topEdge = [topEdgeY',topEdgeX'];
+bottomEdgeX = (xyBottomLeft(1):xyBottomRight(1));
+bottomEdgeY = arrayfun(@(x) find(notNoiseIm(:,x)>0,1,'last'), bottomEdgeX);
+bottomEdge = [bottomEdgeY',bottomEdgeX'];
+leftEdgeY = (xyTopLeft(2):xyBottomLeft(2));
+leftEdgeX = arrayfun(@(y) find(notNoiseIm(y,:)>0,1,'first'), leftEdgeY);
+leftEdge = [leftEdgeY',leftEdgeX'];
+rightEdgeY = (xyTopRight(2):xyBottomRight(2));
+rightEdgeX = arrayfun(@(y) find(notNoiseIm(y,:)>0,1,'last'), rightEdgeY);
+rightEdge = [rightEdgeY',rightEdgeX'];
 imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
+
 
 ff = Calibration.aux.invisibleFigure; 
 imagesc(im); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
@@ -112,14 +125,18 @@ edges.L = leftEdge;
 edges.R = rightEdge;
 
 end
+function xyClose = closest2pointL1(xy,p)
+    [~,Imin] = min(sum(abs(double(xy)-double(p)),2));
+    xyClose = xy(Imin,:);
+end
 function marginsTBLR = calcMargins(edges,regs,calibParams)
 ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs,calibParams); 
 edgesXY = structfun(ang2xy,edges,'UniformOutput',false); 
 factor = 0.80;
 marginsTBLR(1) = ceil(max(edgesXY.T(innerIndices(edgesXY.T,factor),2)));
-marginsTBLR(2) = single(regs.GNRL.imgVsize)-1 - floor(min(edgesXY.B(innerIndices(edgesXY.B,factor),2)));
+marginsTBLR(2) = single(regs.GNRL.imgVsize) - floor(min(edgesXY.B(innerIndices(edgesXY.B,factor),2)));
 marginsTBLR(3) = ceil(max(edgesXY.L(innerIndices(edgesXY.L,factor),1)));
-marginsTBLR(4) = single(regs.GNRL.imgHsize)-1 - floor(min(edgesXY.R(innerIndices(edgesXY.R,factor),1)));
+marginsTBLR(4) = single(regs.GNRL.imgHsize) - floor(min(edgesXY.R(innerIndices(edgesXY.R,factor),1)));
 
 marginsTBLR(1:2) = marginsTBLR([2,1]); % marginT actually refers to the bottom of the image and vice versa (names should be swapped)
 end
@@ -158,6 +175,36 @@ function xy = spherical2xy(sphericalPixels,regs,calibParams)
         xy = [x,y];
 end
 function roiregs = margins2regs(margins,regs)
+% y = (1-t)*0 +t*Hsz 
+% t1 = L/Hsz
+% t2 = 1-R/Hsz
+% 0 = -(1-t1)*mL+t1*(Hsz+mR)
+% Hsz = -(1-t2)*mL+t2*(Hsz+mR)
+
+% 0 = (L/Hsz-1)*mL +L + L/Hsz*mR
+% Hsz = -R/Hsz*mL +Hsz - R + (1 - R/Hsz)*mR
+
+% Ax=B
+% A = [L/Hsz-1 , L/Hsz;
+%       -R/Hsz, 1-R/Hsz];
+% B = [-L
+%      R]; 
+
+T = margins(1); B = margins(2);
+L = margins(3); R = margins(4);
+Vsz = single(regs.GNRL.imgVsize);
+Hsz = single(regs.GNRL.imgHsize);
+
+getA = @(m0,m1,sz) [1-m0/sz, -m0/sz; -m1/sz, 1-m1/sz]; 
+getB = @(m0,m1,sz) [m0, m1]';
+
+LR = getA(L,R,Hsz)\getB(L,R,Hsz);
+BT = getA(B,T,Vsz)\getB(B,T,Vsz);
+
+roiregs.FRMW.marginL = int16(LR(1));
+roiregs.FRMW.marginR = int16(LR(2));
+roiregs.FRMW.marginB = int16(BT(1));
+roiregs.FRMW.marginT = int16(BT(2));
 % T/Vsz = rT/(Vsz+rT+rB)
 % B/Vsz = rB/(Vsz+rT+rB)
 % 
@@ -168,24 +215,24 @@ function roiregs = margins2regs(margins,regs)
 % rT*(T-Vsz-T*B/(B-Vsz)) + T*Vsz - T*B*Vsz/(B-Vsz) = 0
 % 
 % rT = (-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz));
-% rB = (-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz));
-T = margins(1); B = margins(2);
-L = margins(3); R = margins(4);
-Vsz = single(regs.GNRL.imgVsize);
-Hsz = single(regs.GNRL.imgHsize);
-
-
-% Note - marginB refers to margin taken for y == 0. marginT is the margin
-% for y == imVsize-1. Therefore, marginB should be calculated by the margin
-% at the top of the image, and marginT should be calculated by the margin
-% at the bottom of the image - as pixel 0 is on top and pixel 479 is at the
-% bottom. 
-roiregs.FRMW.marginB = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
-roiregs.FRMW.marginT = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
-roiregs.FRMW.marginL = int16((-L*Hsz + L*R*Hsz/(R-Hsz)) / (L-Hsz-L*R/(R-Hsz)));
-roiregs.FRMW.marginR = int16((-R*Hsz + L*R*Hsz/(L-Hsz)) / (R-Hsz-L*R/(L-Hsz)));
-
-
+% % rB = (-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz));
+% T = margins(1); B = margins(2);
+% L = margins(3); R = margins(4);
+% Vsz = single(regs.GNRL.imgVsize);
+% Hsz = single(regs.GNRL.imgHsize);
+% 
+% 
+% % Note - marginB refers to margin taken for y == 0. marginT is the margin
+% % for y == imVsize-1. Therefore, marginB should be calculated by the margin
+% % at the top of the image, and marginT should be calculated by the margin
+% % at the bottom of the image - as pixel 0 is on top and pixel 479 is at the
+% % bottom. 
+% roiregs.FRMW.marginB = int16((-B*Vsz + T*B*Vsz/(T-Vsz)) / (B-Vsz-T*B/(T-Vsz)));
+% roiregs.FRMW.marginT = int16((-T*Vsz + T*B*Vsz/(B-Vsz)) / (T-Vsz-T*B/(B-Vsz)));
+% roiregs.FRMW.marginL = int16((-L*Hsz + L*R*Hsz/(R-Hsz)) / (L-Hsz-L*R/(R-Hsz)));
+% roiregs.FRMW.marginR = int16((-R*Hsz + L*R*Hsz/(L-Hsz)) / (R-Hsz-L*R/(L-Hsz)));
+% 
+% 
 
 
 end
