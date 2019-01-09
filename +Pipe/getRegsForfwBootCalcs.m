@@ -3,7 +3,7 @@ function [outRegs,outLuts] = getRegsForfwBootCalcs(inRegs,inLuts)
 fw=Firmware;
 m=fw.getMeta();
 
-%TransferToFw='1';
+% group 0: = don't transfer, 1: from EPROM , 2: User config / other 
 
 regs2write={m([m.TransferToFW]~='0').regName};
 
@@ -19,7 +19,7 @@ for i=1:length(regs2write)
 end
 
 
-outLuts.DIGG.diggundistModel=inLuts.DIGG.undistModel;
+outLuts.DIGG.undistModel=inLuts.DIGG.undistModel;
 
 
 
