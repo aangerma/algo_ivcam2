@@ -109,17 +109,16 @@ else
     % d=sqrt(xg.*xg+yg.*yg);
     
     
+    mode=regs.FRMW.mirrorMovmentMode;
+    xfov=regs.FRMW.xfov(mode);
+    yfov=regs.FRMW.yfov(mode);
+    projectionYshear=regs.FRMW.projectionYshear(mode); 
     
-    angyIn =@(f,phi)  -regs.FRMW.yfov/2/2*cos(2*pi*t*double(f*1e-9)+phi); %fast
+    angyIn =@(f,phi)  -yfov/2/2*cos(2*pi*t*double(f*1e-9)+phi); %fast
     retInd = find(t>=t(end)-double(returnTime*1e6),1);
     tscan = t(1:retInd);
     frameTime = tscan(end)-tscan(1);
     tret = t(retInd+1:end);
-    
-    mode=regs.FRMW.mirrorMovmentMode;
-    xfov=regs.FRMW.xfov(mode);
-    yfov=regs.FRMW.yfov(mode);
-    projectionYshear=regs.FRMW.projectionYshear; 
     
     switch(regs.EPTG.slowscanType)
         case 0%linear
