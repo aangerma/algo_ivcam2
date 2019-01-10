@@ -78,5 +78,13 @@ def test_validation_robot_system():
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
+
+@slash.tag('robot')
+def test_validation_robot_grid_angle():
+    filePath = r'Avv/tests/iqValidation/robot_grid_angle.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.validation_test(filePath)
+
+
 if __name__ == "__main__":
     validation_debug()
