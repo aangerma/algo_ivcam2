@@ -511,6 +511,12 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             targetInfo = targetInfoGenerator(cap.target);
             im = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,[],targetInfo);
             [pts, grid] = detectCheckerboard(im.i,targetInfo,cdParams);
+            if isempty(grid)
+                [pts, grid] = detectCheckerboard(imcrop(im.i,bbox),targetInfo,cdParams);
+                if ~isempty(pts)
+                    pts = pts + (bbox(1:2)-1);
+                end
+            end
             nPointDetected = prod(grid);
             nCornersExpected = targetInfo.cornersX * targetInfo.cornersY * (targetInfo.isDouble+1);
             if nPointDetected < nCornersExpected
@@ -520,6 +526,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             d(i).c = im.c;
             d(i).z = im.z;
             d(i).pts = pts;
+            d(i).grid = grid;
             d(i).pts3d = create3DCorners(targetInfo)';
         end
         %{
