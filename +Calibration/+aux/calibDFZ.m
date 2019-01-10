@@ -127,21 +127,39 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE,cbSquareSz)
     %build registers array
     % X(3) = 4981;
     rtlRegs = x2regs(X,rtlRegs);
+    e = [];
+    eFit = [];
     for i = 1:numel(darr)
         d = darr(i);
-        vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+X(7),d.rpt(:,3)+X(8),rtlRegs,FE)';
-        %vUnit = reshape(vUnit',size(d.rpt));
-        %vUnit(:,:,1) = vUnit(:,:,1);
-        % Update scale to take margins into acount.
-        sing = vUnit(:,1);
-        rtd_=d.rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
-        r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-        v = double(vUnit.*r);
-        
-        [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,d.pts3d,false);
+        v = calcVerices(d,X,rtlRegs,FE);
+        numVert = d.grid(1)*d.grid(2);
+        numPlanes = d.grid(3);
+        for pid=1:numPlanes
+            idxs = (pid-1)*numVert+1:pid*numVert;
+            vPlane  = v(idxs,:);
+            refPlane = d.pts3d(idxs,:);
+            isValid = ~isnan(vPlane(:,1));
+            [e(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane(isValid,:),refPlane(isValid,:),false);
+        end
     end
     eFit = mean(eFit);
     e = mean(e);
+end
+function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE)
+    vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+X(7),d.rpt(:,3)+X(8),rtlRegs,FE)';
+    %vUnit = reshape(vUnit',size(d.rpt));
+    %vUnit(:,:,1) = vUnit(:,:,1);
+    % Update scale to take margins into acount.
+    sing = vUnit(:,1);
+    rtd_=d.rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
+    r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+    v = double(vUnit.*r);
+    if nargout>1
+        x = v(:,1);
+        y = v(:,2);
+        z = v(:,3);
+    end
+    
 end
 
 function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
@@ -152,22 +170,19 @@ function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
     
     for i = 1:numel(darr)
         d = darr(i);
-        vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+X(7),d.rpt(:,3)+X(8),rtlRegs,FE);
-        vUnit = reshape(vUnit',size(d.rpt));
-        vUnit(:,1) = vUnit(:,1);
-        % Update scale to take margins into acount.
-        sing = vUnit(:,1);
-        rtd_=d.rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
-        r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-        v = vUnit.*r;
-        x = v(:,1);
-        y = v(:,2);
-        z = v(:,3);
-        A = [x y ones(length(x),1)*mean(z)];
-        p = (A'*A)\(A'*z);
-        horizAng(1,i) = 90-atan2d(p(3,:),p(1,:));
-        verticalAngl(1,i) = 90-atan2d(p(3,:),p(2,:));
-        fprintff('frame number %3d:              %7.3g                          %7.3g         \n', i, horizAng(i), verticalAngl(i));
+        [~,x,y,z] = calcVerices(d,X,rtlRegs,FE);
+        numVert = d.grid(1)*d.grid(2);
+        numPlanes = d.grid(3);
+        for pid=1:numPlanes
+            idxs = [(pid-1)*numVert+1:pid*numVert]';
+            isValid = ~isnan(x(idxs,:));
+            idxs = idxs(isValid(:));
+            A = [x(idxs) y(idxs) ones(size(idxs))*mean(z(idxs))];
+            p = (A'*A)\(A'*z(idxs));
+            horizAng(1,i) = 90-atan2d(p(3,:),p(1,:));
+            verticalAngl(1,i) = 90-atan2d(p(3,:),p(2,:));
+            fprintff('frame %3d plane %d:              %7.3g                          %7.3g         \n', i,pid, horizAng(i), verticalAngl(i));
+        end
     end
 end
 
