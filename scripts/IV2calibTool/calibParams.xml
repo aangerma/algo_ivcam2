@@ -12,7 +12,7 @@
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 infs]</geomErr>
+      <geomErr>[0.01 inf]</geomErr>
       <extraImagesGeomErr>[0.01 1.75]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 0.5]</maxPixelDisplacement>
@@ -104,22 +104,26 @@
    </dsm>
     <dfz>
         <captures>
-             <train_1>
-                <target>Vshape25</target>
+             <capture>
+                <target>Vshape35s</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
-            </train_1>
-            <test_1>
+                <type>train</type>
+            </capture>
+            <capture>
                 <target>Iv2Default</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
-            </test_1>
-            <test_2>
+                <type>test</type>
+            </capture>
+            <capture>
                 <target>Iv2Default</target>
                 <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-            </test_2>
-            <test_3>
+                <type>test</type>
+            </capture>
+            <capture>
                 <target>Iv2Default</target>
                 <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-            </test_3>
+                <type>test</type>
+            </capture>
             <!--<test_1>
                 <target>Iv2Default</target>
                 <transformation>[0.5 0 0.1; 0 0.5 0; 0.2 0 1]</transformation>

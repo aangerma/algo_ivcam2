@@ -452,10 +452,11 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
 
         
         cdParams = cdParamsGenerator('iv2');
-        captures = fieldnames(calibParams.dfz.captures);
-        trainImages = cellfun(@(x)(~isempty(x)),(strfind(captures, 'train')));
+        captures = {calibParams.dfz.captures.capture(:).type};
+        trainImages = strcmp('train',captures);
+        testImages = ~trainImages;
         for i=1:length(captures)
-            cap = calibParams.dfz.captures.(captures{i});
+            cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);
             im = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,[],targetInfo);
             [pts, grid] = detectCheckerboard(im.i,targetInfo,cdParams);
@@ -493,7 +494,8 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0);
         x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
             regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
-        [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(~trainImages),regs,calibParams,fprintff,0,1,x0);
+        [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,x0);
+        fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
         r.reset();
         
         
@@ -506,9 +508,6 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             hw.runScript(fnAlgoTmpMWD);
             hw.shadowUpdate();
             calibPassed = 1;
-
-            
-
 
         else
             fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
