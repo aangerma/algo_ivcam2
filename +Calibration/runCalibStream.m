@@ -568,7 +568,6 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
 %             hw.shadowUpdate();
             calibPassed = 1;
 
-
         else
             fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
         end
