@@ -10,7 +10,7 @@
        <externalImSize>[360,640]</externalImSize>
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
-       <zNorm>8</zNorm>
+       <zNorm>4</zNorm>
    </gnrl>
    <errRange>
       <delayF>[0 0.9]</delayF>

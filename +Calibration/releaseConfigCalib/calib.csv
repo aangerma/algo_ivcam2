@@ -14,4 +14,8 @@ DESTtxFRQpd_001      f5000
 DESTtxFRQpd_002      f5000    
 EXTLconLocDelaySlow  h80000010
 EXTLconLocDelayFastC h0070F8  
-EXTLconLocDelayFastF d0       
+EXTLconLocDelayFastF d0
+EXTLdsmXscale        f65
+EXTLdsmYscale        f86
+EXTLdsmXoffset       f30.3
+EXTLdsmYoffset       f23.6
