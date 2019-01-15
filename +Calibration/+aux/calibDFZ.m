@@ -1,4 +1,4 @@
-function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0)
+function [outregs,minerr,dWithRpt]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0)
     % When eval == 1: Do not optimize, just evaluate. When it is not there,
     % train.
     par = calibParams.dfz;
@@ -53,7 +53,8 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
 
             %find CB points
             warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-            [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+            [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), calibParams.gnrl.cbPtsSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+            
             if isempty(p)
                 fprintff('Error: checkerboard not detected!');
             end
@@ -61,20 +62,27 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
 
             %rtd,phi,theta
             darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-
+            
         end
+    end
+    dWithRpt = darr;% Use it later for undistort
+    for i = 1:numel(darr)
+        % Take the middle 9x13 sub checkerboard -> LOS reports seems solid
+        % there
+        h = 9;
+        w = 13;
+        darr(i).rpt = darr(i).rpt(1+floor((end-h)/2):h+floor((end-h)/2),1+floor((end-w)/2):w+floor((end-w)/2),3);
     end
     %%
     xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) par.projectionYshear(1) par.dsmXOffset(1) par.dsmYOffset(1)];
     xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) par.projectionYshear(2) par.dsmXOffset(2) par.dsmYOffset(2)];
     regs = x2regs(x0,regs);
     if iseval
-        [minerr,eFit]=errFunc(darr,regs,x0,FE);
+        [minerr,~]=errFunc(darr,regs,x0,FE,calibParams.gnrl.cbSquareSz);
         outregs = [];
-        darrNew = [];
         return
     end
-    [e,eFit]=errFunc(darr,regs,x0,FE);
+    [e,eFit]=errFunc(darr,regs,x0,FE,calibParams.gnrl.cbSquareSz);
     printErrAndX(x0,e,eFit,'X0:',verbose)
     
     % Define optimization settings
@@ -83,11 +91,11 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     opt.TolFun = 1e-6;
     opt.TolX = 1e-6;
     opt.Display ='none';
-    optFunc = @(x) (errFunc(darr,regs,x,FE) + par.zenithNormW * zenithNorm(regs,x));
+    optFunc = @(x) (errFunc(darr,regs,x,FE,calibParams.gnrl.cbSquareSz) + par.zenithNormW * zenithNorm(regs,x));
     xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
     xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
-    [minerr,eFit]=errFunc(darr,outregs,xbest,FE);
+    [minerr,eFit]=errFunc(darr,outregs,xbest,FE,calibParams.gnrl.cbSquareSz);
     printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
     outregs_full = outregs;
     outregs = x2regs(xbest);
@@ -111,7 +119,7 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     
 end
 
-function [e,eFit]=errFunc(darr,rtlRegs,X,FE,verbose)
+function [e,eFit]=errFunc(darr,rtlRegs,X,FE,cbSquareSz)
     %build registers array
     % X(3) = 4981;
     rtlRegs = x2regs(X,rtlRegs);
@@ -125,11 +133,8 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE,verbose)
         rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
         r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
         v = vUnit.*r;
-        if exist('verbose','var')
-            [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,verbose);
-        else
-            [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);
-        end
+        
+        [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false,cbSquareSz);
     end
     eFit = mean(eFit);
     e = mean(e);    

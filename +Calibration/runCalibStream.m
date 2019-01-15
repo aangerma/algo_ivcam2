@@ -264,7 +264,7 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     if(runParams.dataDelay)
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.8 .8 1]));
-        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams);
+        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
         
         fw.setRegs(delayRegs,fnCalib);
         
@@ -478,38 +478,45 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         r.add('DIGGsphericalEn',true);
         r.set();
         
-        nCorners = 9*13;
+%         nCorners = 9*13;
         d(1)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
+%         Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
         d(2)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
+%         Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
         d(3)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
+%         Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
         d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
         d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
 %         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
         
         
         % dodluts=struct;
-        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,0);
+        [dfzRegs,results.geomErr,dWithRpt] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,1);
         x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
             regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
+        fw.setRegs(dfzRegs,fnCalib);
+            
+        % Calibrate polimonial undistort params
+        [polyVars,results.geomEr] = Calibration.Undist.calibPolinomialUndistParams(dWithRpt,regs,calibParams);
+        undistRegs.FRMW.polyVars = single(polyVars);
+        fw.setRegs(undistRegs,fnCalib);
+        fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomEr);   
+        
         
         if(results.geomErr<calibParams.errRange.geomErr(2))
-            fw.setRegs(dfzRegs,fnCalib);
             fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
-            fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
-            [regs,luts]=fw.get();%run autogen
-            fw.genMWDcmd('DEST|DIGG|EXTLdsm',fnAlgoTmpMWD);
-            hw.runScript(fnAlgoTmpMWD);
-            hw.shadowUpdate();
+%             fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
+%             [regs,luts]=fw.get();%run autogen
+%             fw.genMWDcmd('DEST|DIGG|EXTLdsm',fnAlgoTmpMWD);
+%             hw.runScript(fnAlgoTmpMWD);
+%             hw.shadowUpdate();
             calibPassed = 1;
 
             
-
+                                               
 
         else
             fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
@@ -517,6 +524,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         if(runParams.uniformProjectionDFZ)
             Calibration.aux.setLaserProjectionUniformity(hw,false);
         end
+        
         
     else
         fprintff('[?] skipped\n');

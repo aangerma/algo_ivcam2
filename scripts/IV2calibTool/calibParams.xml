@@ -11,6 +11,8 @@
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
        <zNorm>4</zNorm>
+       <cbSquareSz>35</cbSquareSz>
+       <cbPtsSz>[]</cbPtsSz>
    </gnrl>
    <errRange>
       <delayF>[0 0.9]</delayF>

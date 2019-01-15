@@ -1,4 +1,4 @@
-function [delayIR,ok, pixelVar] = calibIRdelay(hw,dataDelayParams,runParams)
+function [delayIR,ok, pixelVar] = calibIRdelay(hw,dataDelayParams,runParams,calibParams)
     verbose = runParams.verbose;
     delayIR = dataDelayParams.slowDelayInitVal;
 
@@ -16,7 +16,7 @@ function [delayIR,ok, pixelVar] = calibIRdelay(hw,dataDelayParams,runParams)
            Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'IR_Delay','Initial',sprintf('Up/Down Images - Initial (%d)',delayIR)); 
         end
         
-        [d(i),im, pixelVar]=Calibration.dataDelay.calcIRDelayFix(hw);
+        [d(i),im, pixelVar]=Calibration.dataDelay.calcIRDelayFix(hw,calibParams.gnrl.cbPtsSz);
         if (isnan(d(i)))%CB was not found, throw delay forward to find a good location
             d(i) = 3000;
         end

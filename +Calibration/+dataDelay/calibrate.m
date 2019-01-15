@@ -1,4 +1,4 @@
-function [regs, results]=calibrate(hw,dataDelayParams,fprintff,runParams)
+function [regs, results]=calibrate(hw,dataDelayParams,fprintff,runParams,calibParams)
 
 results = struct('fastDelayCalibSuccess',[],'slowDelayCalibSuccess',[],'delaySlowPixelVar',[]);
 
@@ -34,7 +34,7 @@ r.set();
 hw.cmd('mwd a005006c a0050070 00000100');  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 
 %% CALIBRATE IR
-[delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,runParams);
+[delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,runParams,calibParams);
 results.slowDelayCalibSuccess = delayIRsuccess;
 results.delaySlowPixelVar = pixelVar;
 
