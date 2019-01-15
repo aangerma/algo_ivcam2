@@ -2,5 +2,6 @@ general.py
 plain_fit.py
 registers_input.py
 iqValidation\validation_test.py
+iqValidation\location_test.py
 calibration\calibration_test.py
 ..\..\..\algo_automation\tests\calibrateRobot.py
