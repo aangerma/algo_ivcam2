@@ -32,7 +32,7 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
             C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
             rtd=r+sqrt(r.^2-C);
             rtd=rtd+regs.DEST.txFRQpd(1);
-            
+
             %calc angles per pixel
             [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
             if(regs.DIGG.sphericalEn)
@@ -44,13 +44,13 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
                 yy = yy*2^12;%bitshift(yy,+12);
                 xx = xx/double(regs.DIGG.sphericalScale(1));
                 yy = yy/double(regs.DIGG.sphericalScale(2));
-                
+
                 angx = single(xx);
                 angy = single(yy);
             else
                 [angx,angy]=Calibration.aux.xy2angSF(xg,yg,regs,0);
             end
-            
+
             %find CB points
             warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
             [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
@@ -58,10 +58,10 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
                 fprintff('Error: checkerboard not detected!');
             end
             it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz),reshape(p(:,2)-1,bsz)); % Used to get depth and ir values at checkerboard locations.
-            
+
             %rtd,phi,theta
             darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-            
+
         end
     end
     %%
