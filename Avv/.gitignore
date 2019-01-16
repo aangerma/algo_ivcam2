@@ -1,7 +1,5 @@
 # Avv
-tests/__pycache__/
+*__pycache__*
 test_data/
 tests/Avv/data/
 tests/data
-tests/iqValidation/__pycache__/
-tests/calibration/__pycache__/

@@ -11,20 +11,16 @@
         <test name="fillRate_far" metrics="fillRate" target="far" distance="100cm" threshold="[95:100]" extra=""/>
 
         <test name="zStd_50cm" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:5]" extra="" />
-        <test name="zStd_1m" metrics="zStd" target="checkerboard_50" distance="1m" threshold="[0:10]" extra=''/>
-        <test name="zStd_3m" metrics="zStd" target="checkerboard_50" distance="3m" threshold="[0:30]" extra=''/>
+        <test name="zStd_1m" metrics="zStd" target="checkerboard_50" distance="100cm" threshold="[0:10]" extra=''/>
+        <test name="zStd_3m" metrics="zStd" target="checkerboard_50" distance="300cm" threshold="[0:30]" extra=''/>
         <test name="gridInterDist_50cm" metrics="gridInterDist" target="checkerboard_50" distance="50cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_50" distance="1m" threshold="[0:3]" extra=''/>
-        <test name="gridInterDist_3m" metrics="gridInterDist" target="checkerboard_50" distance="3m" threshold="[0:5]" extra=''/>
+        <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra=''/>
+        <test name="gridInterDist_3m" metrics="gridInterDist" target="checkerboard_50" distance="300cm" threshold="[0:5]" extra=''/>
 
         <test name="fillRate_200cm" metrics="fillRate" target="wall_10Reflectivity" distance="200cm" threshold="[90 : 100]" extra=""/>
         <test name="zStd_200cm" metrics="zStd" target="wall_10Reflectivity" distance="200cm" threshold="[0:56]" extra=""/>
-        <test name="fillRate_230cm" metrics="fillRate" target="wall_10Reflectivity" distance="230cm" threshold="[90 : 100]" extra=""/>
-        <test name="zStd_230cm" metrics="zStd" target="wall_10Reflectivity" distance="230cm" threshold="[0:65]" extra=""/>
-        <test name="fillRate_260cm" metrics="fillRate" target="wall_10Reflectivity" distance="260cm" threshold="[90 : 100]" extra=""/>
-        <test name="zStd_260cm" metrics="zStd" target="wall_10Reflectivity" distance="260cm" threshold="[0:74]" extra=""/>
-        <test name="fillRate_290cm" metrics="fillRate" target="wall_10Reflectivity" distance="290cm" threshold="[90 : 100]" extra=""/>
-        <test name="zStd_290cm" metrics="zStd" target="wall_10Reflectivity" distance="290cm" threshold="[0:82]" extra=""/>
+        <test name="fillRate_250cm" metrics="fillRate" target="wall_10Reflectivity" distance="250cm" threshold="[90 : 100]" extra=""/>
+        <test name="zStd_250cm" metrics="zStd" target="wall_10Reflectivity" distance="250cm" threshold="[0:65]" extra=""/>
         <test name="fillRate_300cm" metrics="fillRate" target="wall_10Reflectivity" distance="300cm" threshold="[90 : 100]" extra=""/>
         <test name="zStd_300cm" metrics="zStd" target="wall_10Reflectivity" distance="300cm" threshold="[0:85]" extra=""/>
         <test name="fillRate_310cm" metrics="fillRate" target="wall_10Reflectivity" distance="310cm" threshold="[90 : 100]" extra=""/>
@@ -33,5 +29,11 @@
         <test name="zStd_320cm" metrics="zStd" target="wall_10Reflectivity" distance="320cm" threshold="[0:91]" extra=""/>
         <test name="fillRate_330cm" metrics="fillRate" target="wall_10Reflectivity" distance="330cm" threshold="[90 : 100]" extra=""/>
         <test name="zStd_330cm" metrics="zStd" target="wall_10Reflectivity" distance="330cm" threshold="[0:93]" extra=""/>
+        <test name="fillRate_340cm" metrics="fillRate" target="wall_10Reflectivity" distance="340cm" threshold="[90 : 100]" extra=""/>
+        <test name="zStd_340cm" metrics="zStd" target="wall_10Reflectivity" distance="340cm" threshold="[0:93]" extra=""/>
+        <test name="fillRate_350cm" metrics="fillRate" target="wall_10Reflectivity" distance="350cm" threshold="[0 : 20]" extra=""/>
+        <test name="zStd_350cm" metrics="zStd" target="wall_10Reflectivity" distance="350cm" threshold="[0:1000]" extra=""/>
+
+        <!--<test name="gridInterDist_150cm_Deg" metrics="gridInterDist" target="checkerboard_50" distance="150cm" angle_offset="-40:40" threshold="[0:3]" extra=''/>-->
     </tests>
 </root>

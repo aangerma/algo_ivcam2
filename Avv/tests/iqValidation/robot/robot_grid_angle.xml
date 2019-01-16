@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="yes">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>c:\temp\valTest\data</dataFolder>
+        <dataSource>robot</dataSource>
+    </params>
+    <tests>
+        <test name="gridInterDist_150cm_Deg" metrics="gridInterDist" target="checkerboard_50" distance="150cm" angle_offset="-40:40" threshold="[0:3]" extra=''/>
+        <!--<test name="gridInterDist_150cm_side" metrics="gridInterDist" target="checkerboard_50" distance="100cm:110cm" angle_offset="0" threshold="[0:3]" extra=''/>-->
+        <!--<test name="gridInterDist_20cm" metrics="gridInterDist" target="checkerboard_50" distance="20cm" angle_offset="0" threshold="[0:3]" extra=''/>-->
+    </tests>
+</root>
