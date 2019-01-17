@@ -2,32 +2,47 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 
 %% =======================================DIGG - ang2xy- calib res =======================================
 % Ang2xy is the transformation from angular data to rasterized grid over the projected plane.
-
-%  The pre calculations produces:
-
+%  The calculations produces:
 %  *18 floating point coefficients for the runtime calculations (DIGG: nx,dx,ny,dy.)
-
 %  *4 output registers for other blocks in the pipe: DIGG.angXfactor, DIGG.angYfactor.
-
 %  2 parameters for firmware to save: FRMW.xres,FRMW.yres.
+% Ang2xyCoeff function should be calculated when one of the following is changing: 
+% Regs from EPROM: regs.FRMW.xfov, regs.FRMW.yfov, regs.FRMW.laserangleH,regs.FRMW.laserangleV,regs.FRMW.marginL/R/T/B, regs.FRMW.guardBandH,regs.FRMW.guardBandV, regs.FRMW.xR2L,regs.FRMW.xoffset, regs.FRMW.yoffset
+%  Regs from external configuration: regs.GNRL.rangeFinder,regs.FRMW.mirrorMovmentMode, regs.FRMW.marginL/R/T/B, regs.FRMW.yflip,regs.GNRL.imgHsize,regs.GNRL.imgVsize  
 
-% Ang2xyCoeff function should be calculated when one of the following is change: 
-
-% Regs from EPROM: regs.FRMW.xfov, regs.FRMW.yfov, regs.FRMW.laserangleH,regs.FRMW.laserangleV, regs.GNRL.imgHsize,regs.GNRL.imgVsize,regs.FRMW.marginL/R/T/B, regs.FRMW.guardBandH,regs.FRMW.guardBandV, regs.FRMW.xR2L,regs.FRMW.xoffset, regs.FRMW.yoffset
-
-%  Regs from external configuration: regs.GNRL.rangeFinder,regs.FRMW.mirrorMovmentMode, regs.FRMW.marginL/R/T/B, regs.FRMW.yflip,  
 [regs,autogenRegs] = ang2xyCoeff(regs,autogenRegs);
 
 
 %% =======================================DIGG - spherical=======================================
+% Calculating scale and shift for spherical mode. 
+% The calculations produces:
+% 2 output registers: DIGG.sphericalScale, DIGG.sphericalOffset
+% SphericalCoeff function should be calculated when one of the following is changing: 
+% Regs from EPROM:regs.FRMW.xR2L
+%  Regs from external configuration:regs.FRMW.yflip,regs.GNRL.imgHsize,regs.GNRL.imgVsize
+
 [regs,autogenRegs] = SphericalCoeff(regs,autogenRegs);
 
 
 %% =======================================DIGG - notch filters=======================================
+% Calculating coefficients for notch filters. 
+% The calculations produces:DIGG.notchA, DIGG.notchB (coefficients vectors)
+% NotchFilterCoeffs function should be calculated when one of the following is changing: 
+% Regs from EPROM:regs.GNRL.codeLength, regs.FRMW.notchBw0, regs.FRMW.notchBwDecay
+%  Regs from external configuration:regs.GNRL.sampleRate
+
 [regs,autogenRegs] = NotchFilterCoeffs(regs,autogenRegs);
 
 
 %% =======================================DIGG - undist=======================================
+% Calculating coefficients for using Undist Lut 
+% The function produces:
+% copy from EPROM: REGS: DIGG.undistFx,DIGG.undistFy,DIGG.undistX0,DIGG.undistY0,LUTS: DIGG.undistModel; 
+% and calculating:
+% DIGG.xShiftIn,DIGG.yShiftIn,DIGG.xScaleIn,DIGG.yScaleIn,DIGG.xShiftOut,DIGG.yShiftOut,DIGG.xScaleOut,DIGG.yScaleOut
+% UndistCoeff function should be calculated when one of the following is changing: 
+% Regs from EPROM:regs.DIGG.bitshift, regs.FRMW.undistCalImgHsize,regs.FRMW.undistCalImgVsize
+%  Regs from external configuration:regs.DIGG.undistBypass,regs.GNRL.imgHsize, regs.GNRL.imgVsize
 
 [regs,autogenRegs] = UndistCoeff(regs,luts,autogenRegs);
 
