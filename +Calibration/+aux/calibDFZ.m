@@ -105,10 +105,10 @@ printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
 outregs = x2regs(xbest);
 fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f, xOff = %.2f, yOff = %.2f, eGeom=%.2f.\n',...
-    outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear(1),xbest(7),xbest(8),minerr);
-printPlaneAng(darr,outregs_full,xbest,FE,fprintff);
-outregs.EXTL.dsmXoffset = regs.EXTL.dsmXoffset+xbest(7)/regs.EXTL.dsmXscale;
-outregs.EXTL.dsmYoffset = regs.EXTL.dsmYoffset+xbest(8)/regs.EXTL.dsmYscale;
+        outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear(1),xbest(7),xbest(8),minerr);
+    printPlaneAng(darr,outregs_full,xbest,FE,fprintff);
+    outregs.EXTL.dsmXoffset = regs.EXTL.dsmXoffset+xbest(7)/regs.EXTL.dsmXscale; 
+    outregs.EXTL.dsmYoffset = regs.EXTL.dsmYoffset+xbest(8)/regs.EXTL.dsmYscale;
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
