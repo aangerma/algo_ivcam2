@@ -1109,6 +1109,6 @@ def random_registers(iterations=1):
 def test_random_registers_autogen_100():
     random_registers(iterations=100)
 
-
+slash.tag('turn_in')
 def test_random_registers_autogen_turn_in():
     random_registers(iterations=10)
