@@ -39,3 +39,7 @@ def test_validation_robot_grid_angle():
     filePath = r'Avv/tests/iqValidation/robot/robot_grid_angle.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
+
+
+if __name__ == "__main__":
+    test_validation_robot_grid_angle()
