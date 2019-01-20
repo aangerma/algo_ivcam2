@@ -10,7 +10,7 @@ if isempty(strfind(version, 'R2017a')) %#ok
 end
 
 %%
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2calibTool\\%4.2f\\',calibToolVersion());
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2calibTool\\1.19.2\\',calibToolVersion());
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2calibTool.m ' ...

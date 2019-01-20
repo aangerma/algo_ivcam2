@@ -30,7 +30,7 @@ r.set();
 
 
 %% IR Delay 
-[d,imIR,pixVar]=Calibration.dataDelay.calcIRDelayFix(hw);
+[d,imIR,pixVar]=Calibration.dataDelay.calcIRDelayFix(hw,calibParams.gnrl.cbPtsSz);
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end

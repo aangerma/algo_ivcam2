@@ -1,4 +1,4 @@
-function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,validationParams,fprintff)
+function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,validationParams,calibParams,fprintff)
     %VALIDATELOS Summary of this function goes here
     %   Detailed explanation goes here
     losResults = struct;
@@ -20,7 +20,7 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     
     params = Validation.aux.defaultMetricsParams();
     params.verbose = 0;
-    params.expectedGridSize = [9,13];
+    params.expectedGridSize = calibParams.validationConfig.cbGridSz;
     
     frames = hw.getFrame(validationParams.numOfFrames,false);
     [score, allResults,dbgData] = Validation.metrics.losGridDrift(frames, params);

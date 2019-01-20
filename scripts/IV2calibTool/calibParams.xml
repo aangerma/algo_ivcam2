@@ -11,7 +11,7 @@
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
        <zNorm>4</zNorm>
-       <cbSquareSz>35</cbSquareSz>
+       <cbSquareSz>34.88</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
    </gnrl>
    <errRange>
@@ -21,7 +21,7 @@
       <geomErr>[0.01 1.6]</geomErr>
       <extraImagesGeomErr>[0.01 1.75]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.0 0.5]</maxPixelDisplacement>
+      <maxPixelDisplacement>[0.0 2]</maxPixelDisplacement>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[50 inf]</imFovX>
@@ -45,6 +45,8 @@
       For running the same metric more then once add <metric_name>_n, for example:
       <roi_2></roi_2>
       -->
+      <cbSquareSz>30</cbSquareSz>
+      <cbGridSz>[9,13]</cbGridSz>
       <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
       <wait>
           <timeoutSec>1</timeoutSec>

@@ -15,7 +15,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         hw.getFrame;
         z2mm = double(hw.z2mm);
         fprintff('opening stream...');
-        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
+        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align old (small) checkerboard to screen');
         
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
@@ -79,7 +79,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif strfind(enabledMetrics{i},'dfz')
                 dfzConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(dfzConfig.numOfFrames);
-                [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff);
+                [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff,calibParams);
                 valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allDfzRes;
@@ -90,7 +90,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 allResults.Validation.(enabledMetrics{i}) = roiRes;
             elseif strfind(enabledMetrics{i},'los')
                 losConfig = calibParams.validationConfig.(enabledMetrics{i});
-                [losRes,allLosResults,frames,dbg] = Calibration.validation.validateLOS(hw,runParams,losConfig,fprintff);
+                [losRes,allLosResults,frames,dbg] = Calibration.validation.validateLOS(hw,runParams,losConfig,calibParams,fprintff);
                 valResults = Validation.aux.mergeResultStruct(valResults, losRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allLosResults;

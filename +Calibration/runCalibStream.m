@@ -314,10 +314,10 @@ end
 
 function [results,calibPassed] = validateLos(hw, runParams, calibParams, results, fprintff)
     calibPassed = 1;
-    if runParams.pre_calib_validation
+    if runParams.validateLOS
         %test coverage
-        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],[]);
-        if ~isempty(losResults)
+        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],calibParams,fprintff);
+        if ~isempty(fieldnames(losResults))
             metrics = {'losMaxP2p','losMeanStdX','losMeanStdY'};
             for m=1:length(metrics)
                 results.(metrics{m}) = losResults.(metrics{m});
@@ -339,9 +339,11 @@ function [results,calibPassed] = validateLos(hw, runParams, calibParams, results
 end
 function [results,calibPassed] = validateScanDirection(hw, results,runParams,calibParams, fprintff)
     calibPassed = 1;
-    if runParams.pre_calib_validation
-        IR = hw.getFrame().i;
-        fprintff('[-] Validating scan direction...\n');
+    fprintff('[-] Validating scan direction...\n');
+    if runParams.scanDir
+        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]),'Please align small checkerboard with sticker to overlay');
+        IR = frame.i;
+
         ff = Calibration.aux.invisibleFigure; 
         imagesc(IR); 
         title('ScanDir Validation Image');
@@ -367,6 +369,8 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
         if ~calibPassed
             fprintff('[x] Scan direction validation failed\n');
         end
+    else
+        fprintff('[?] skipped\n');
     end
 end
 
@@ -485,8 +489,8 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
 %         Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
         d(3)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
 %         Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
-        d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
-        d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
+%         d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
+%         d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
 %         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
         
         
@@ -494,16 +498,16 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         [dfzRegs,results.geomErr,dWithRpt] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,1);
         x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
             regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
-        [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
+%         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);
-            
+        regs = fw.get();
         % Calibrate polimonial undistort params
-        [polyVars,results.geomEr] = Calibration.Undist.calibPolinomialUndistParams(dWithRpt,regs,calibParams);
+        [polyVars,results.geomErr] = Calibration.Undist.calibPolinomialUndistParams(dWithRpt,regs,calibParams);
         undistRegs.FRMW.polyVars = single(polyVars);
         fw.setRegs(undistRegs,fnCalib);
-        fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomEr);   
+        fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomErr);   
         
         
         if(results.geomErr<calibParams.errRange.geomErr(2))

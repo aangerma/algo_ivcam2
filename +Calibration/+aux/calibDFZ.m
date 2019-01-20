@@ -71,7 +71,7 @@ function [outregs,minerr,dWithRpt]=calibDFZ(darr,regs,calibParams,fprintff,verbo
         % there
         h = 9;
         w = 13;
-        darr(i).rpt = darr(i).rpt(1+floor((end-h)/2):h+floor((end-h)/2),1+floor((end-w)/2):w+floor((end-w)/2),3);
+        darr(i).rpt = darr(i).rpt(1+floor((end-h)/2):h+floor((end-h)/2),1+floor((end-w)/2):w+floor((end-w)/2),:);
     end
     %%
     xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) par.projectionYshear(1) par.dsmXOffset(1) par.dsmYOffset(1)];
