@@ -90,7 +90,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 allResults.Validation.(enabledMetrics{i}) = roiRes;
             elseif strfind(enabledMetrics{i},'los')
                 losConfig = calibParams.validationConfig.(enabledMetrics{i});
-                [losRes,allLosResults,frames,dbg] = Calibration.validation.validateLOS(hw,runParams,losConfig,calibParams,fprintff);
+                [losRes,allLosResults,frames,dbg] = Calibration.validation.validateLOS(hw,runParams,losConfig,calibParams.validationConfig.cbGridSz,fprintff);
                 valResults = Validation.aux.mergeResultStruct(valResults, losRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allLosResults;

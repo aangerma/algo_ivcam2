@@ -45,23 +45,27 @@ else
     % % %     x1=ceil(x1)+1;
     % % %     y1=ceil(y1)+1;
     % % %
-    % MARGINS ARE FIXED TO +-p%
+
     wh=double([regs.GNRL.imgHsize regs.GNRL.imgVsize]);
     
-    a=2047; pixelMargin=2; 
+    % Calculate the bounding rectangle of the image plane (before undistort) and set its boundaries to be [x1,x30,y1,y30] . x/y runs from 0 to 31. We don't want to use the duplication of the undistort table at the edges.
+    
+    a=2047; 
     [angx,angy] = meshgrid(linspace(-a,a,100));
     [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],0);
-    % block rectangle
-    x0 = min(x(:))-pixelMargin;
-    x1 = max(x(:))+pixelMargin;
-    y0 = min(y(:))-pixelMargin;
-    y1 = max(y(:))+pixelMargin;
+
+    x1 = min(x(:));
+    x30 = max(x(:));
+    y1 = min(y(:));
+    y30 = max(y(:));
     
-    
-    distortionH=y1-y0;
-    distortionW=x1-x0;
-    fx = (N-1)/distortionW;
-    fy = (N-1)/distortionH;
+    dx = (x30-x1)/(N-3);
+    x0 = x1 - dx;
+    dy = (y30-y1)/(N-3);
+    y0 = y1 - dy;
+
+    fx = 1/dx;
+    fy = 1/dy;
     if(~isfield(luts,'FRMW') || ~isfield(luts.FRMW,'undistModel') || all(luts.FRMW.undistModel==0))
         xDisplacment=zeros(32,'single');
         yDisplacment=zeros(32,'single');
@@ -75,17 +79,11 @@ else
     xDisplacment=xDisplacment*wh(1);
     yDisplacment=yDisplacment*wh(2);
     %%   build output ditortion grid
-    [odgy,odgx]=ndgrid(linspace(y0,y1,N),linspace(x0,x1,N));
+    [odgy,odgx]=ndgrid(linspace(y0,y0+(N-1)*dy,N),linspace(x0,x0+(N-1)*dx,N));
     %% build input distortion grid
-    %     [idgy,idgx]=ndgrid(linspace(0,wh(2)-1,N),linspace(0,wh(1)-1,N));
-%     idgy=odgy;idgx=odgx;
-%     %% build output distotion grid
-%     xLUT=idgx+interp2(idgx,idgy,xDisplacment,odgx,odgy,'spline');
-%     yLUT=idgy+interp2(idgx,idgy,yDisplacment,odgx,odgy,'spline');
-      xLUT=odgx+xDisplacment;
-      yLUT=odgy+yDisplacment;
-      yLUT=min(y1,max(y0,yLUT));
-      xLUT=min(x1,max(x0,xLUT));
+    xLUT=odgx+xDisplacment;
+    yLUT=odgy+yDisplacment;
+
     
 end
 

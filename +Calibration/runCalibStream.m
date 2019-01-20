@@ -316,7 +316,7 @@ function [results,calibPassed] = validateLos(hw, runParams, calibParams, results
     calibPassed = 1;
     if runParams.validateLOS
         %test coverage
-        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],calibParams,fprintff);
+        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],calibParams.los.cbPtsSz,fprintff);
         if ~isempty(fieldnames(losResults))
             metrics = {'losMaxP2p','losMeanStdX','losMeanStdY'};
             for m=1:length(metrics)

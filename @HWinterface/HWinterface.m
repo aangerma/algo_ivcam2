@@ -20,7 +20,7 @@ classdef HWinterface <handle
     methods ( Access=private)
         function frame=privGetSingleFrame_FG(obj)
             %get single frame
-            imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 15000);
+            imageCollection = obj.m_dotnetcam.Stream.GetFrame(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 30000);
             % get depth
             imageObj = imageCollection.Images.Item(0);
             dImByte = imageObj.Item(0).Data;
@@ -29,7 +29,7 @@ classdef HWinterface <handle
         
         function frames=privGetSeveralFrames(obj,n)
             %get single frame
-            imageCollection = obj.m_dotnetcam.Stream.GetFrames(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth,n, 15000);
+            imageCollection = obj.m_dotnetcam.Stream.GetFrames(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth,n, 30000);
             % get depth
             frames = struct('z',[],'i',[],'c',[]);
             for i=1:imageCollection.Count
