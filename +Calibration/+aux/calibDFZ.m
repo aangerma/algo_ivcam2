@@ -19,51 +19,51 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
         x0 = double([regs.FRMW.xfov regs.FRMW.yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV regs.FRMW.projectionYshear 0 0]);
     end
     
-    
-    for i = 1:numel(darr)
-        % Get r from d.z
-        if ~regs.DEST.depthAsRange
-            [~,r] = Pipe.z16toVerts(darr(i).z,regs);
-        else
-            r = double(darr(i).z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
-        end
-        % get rtd from r
-        [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
-        C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
-        rtd=r+sqrt(r.^2-C);
-        rtd=rtd+regs.DEST.txFRQpd(1);
-        
-        %calc angles per pixel
-        [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
-        if(regs.DIGG.sphericalEn)
-            yy = double(yg);
-            xx = double((xg)*4);
-            xx = xx-double(regs.DIGG.sphericalOffset(1));
-            yy = yy-double(regs.DIGG.sphericalOffset(2));
-            xx = xx*2^10;%bitshift(xx,+12-2);
-            yy = yy*2^12;%bitshift(yy,+12);
-            xx = xx/double(regs.DIGG.sphericalScale(1));
-            yy = yy/double(regs.DIGG.sphericalScale(2));
+    if ~isfield(darr, 'rpt')
+        for i = 1:numel(darr)
+            % Get r from d.z
+            if ~regs.DEST.depthAsRange
+                [~,r] = Pipe.z16toVerts(darr(i).z,regs);
+            else
+                r = double(darr(i).z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
+            end
+            % get rtd from r
+            [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
+            C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
+            rtd=r+sqrt(r.^2-C);
+            rtd=rtd+regs.DEST.txFRQpd(1);
             
-            angx = single(xx);
-            angy = single(yy);
-        else
-            [angx,angy]=Calibration.aux.xy2angSF(xg,yg,regs,0);
+            %calc angles per pixel
+            [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
+            if(regs.DIGG.sphericalEn)
+                yy = double(yg);
+                xx = double((xg)*4);
+                xx = xx-double(regs.DIGG.sphericalOffset(1));
+                yy = yy-double(regs.DIGG.sphericalOffset(2));
+                xx = xx*2^10;%bitshift(xx,+12-2);
+                yy = yy*2^12;%bitshift(yy,+12);
+                xx = xx/double(regs.DIGG.sphericalScale(1));
+                yy = yy/double(regs.DIGG.sphericalScale(2));
+                
+                angx = single(xx);
+                angy = single(yy);
+            else
+                [angx,angy]=Calibration.aux.xy2angSF(xg,yg,regs,0);
+            end
+            
+            %find CB points
+            warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
+            [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+            if isempty(p)
+                fprintff('Error: checkerboard not detected!');
+            end
+            it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz),reshape(p(:,2)-1,bsz)); % Used to get depth and ir values at checkerboard locations.
+            
+            %rtd,phi,theta
+            darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+            
         end
-        
-        %find CB points
-        warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-        [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-        if isempty(p)
-            fprintff('Error: checkerboard not detected!');
-        end
-        it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz),reshape(p(:,2)-1,bsz)); % Used to get depth and ir values at checkerboard locations.
-        
-        %rtd,phi,theta
-        darr(i).rpt=cat(3,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-        
     end
-    
     %%
     xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) par.projectionYshear(1) par.dsmXOffset(1) par.dsmYOffset(1)];
     xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) par.projectionYshear(2) par.dsmXOffset(2) par.dsmYOffset(2)];
@@ -111,7 +111,7 @@ function [outregs,minerr,eFit,darrNew]=calibDFZ(darr,regs,calibParams,fprintff,v
     
 end
 
-function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
+function [e,eFit]=errFunc(darr,rtlRegs,X,FE,verbose)
     %build registers array
     % X(3) = 4981;
     rtlRegs = x2regs(X,rtlRegs);
@@ -125,8 +125,11 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
         rtd_=d.rpt(:,:,1)-rtlRegs.DEST.txFRQpd(1);
         r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
         v = vUnit.*r;
-        
-        [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);
+        if exist('verbose','var')
+            [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,verbose);
+        else
+            [e(i),eFit(i)]=Calibration.aux.evalGeometricDistortion(v,false);
+        end
     end
     eFit = mean(eFit);
     e = mean(e);    
