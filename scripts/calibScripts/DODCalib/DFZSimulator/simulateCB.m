@@ -1,6 +1,7 @@
-function [rpt,cbxyz] = simulateCB(dist,yRot,regs,CBParams,noiseStdAng,noiseStdR)
+function [rpt,cbxyz] = simulateCB(displacement,yRot,regs,CBParams,noiseStdAng,noiseStdR,verbose)
 % SimulateSB receives:
-% 1. Distance from board in mm
+% 1. displacement from board in mm (if displacement is a scalar the
+%       addition is to the z dimension 
 % 2. The DFZ parameters
 % 3. CB parameters (optional)
 
@@ -21,11 +22,19 @@ cbxz = [reshape(cbx,[],1),zeros(prod(CBParams.bsz),1)];
 rotmat = [cosd(yRot),sind(yRot);-sind(yRot),cosd(yRot)];
 cbxz = cbxz*rotmat;
 cbxyz = cat(3,reshape(cbxz(:,1),CBParams.bsz),cby,reshape(cbxz(:,2),CBParams.bsz));
-cbxyz(:,:,3) = cbxyz(:,:,3)+dist;
+
+if length(displacement) == 1
+    cbxyz(:,:,3) = cbxyz(:,:,3) + displacement;
+else
+    cbxyz(:,:,1) = cbxyz(:,:,1) + displacement(1);
+    cbxyz(:,:,2) = cbxyz(:,:,2) + displacement(2);
+    cbxyz(:,:,3) = cbxyz(:,:,3) + displacement(3);
+end
 
 % cbxyz = cbxyz + randn(size(cbxyz))*noiseStd;
-
-figure,plot3(cbxyz(:,:,1),cbxyz(:,:,2),cbxyz(:,:,3),'r*')
+if exist('verbose', 'var') &&  verbose
+    figure,plot3(cbxyz(:,:,1),cbxyz(:,:,2),cbxyz(:,:,3),'r*')
+end
 % Calculate the range for each point (include the delay)
 cbr = sqrt(sum(cbxyz.^2,3));
 % get rtd from r
