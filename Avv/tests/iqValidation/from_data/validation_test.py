@@ -44,3 +44,8 @@ def test_validation_d4m_camera():
     filePath = r'Avv/tests/iqValidation/from_data/d4m_camera.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
+
+
+
+if __name__ == "__main__":
+    test_validation_turn_in()

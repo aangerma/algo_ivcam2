@@ -42,4 +42,4 @@ def test_validation_robot_grid_angle():
 
 
 if __name__ == "__main__":
-    test_validation_robot_grid_angle()
+    test_validation_robot_regression()
