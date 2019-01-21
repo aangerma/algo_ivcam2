@@ -12,23 +12,26 @@ if(regs.DIGG.undistBypass)
     y1=int32(regs.FRMW.undistCalImgVsize-1);
     
 else
-    a=2047; pixelMarginp=0.0025; % to make sure any x,y is inside thr rectangle
-    pixelMarginx=pixelMarginp*double(regs.FRMW.undistCalImgHsize); 
-    pixelMarginy=pixelMarginp*double(regs.FRMW.undistCalImgVsize); 
-
+    a=2047; 
     [angx,angy] = meshgrid(linspace(-a,a,100));
-    [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],0);
-    % block rectangle
-    x0 = min(x(:))-pixelMarginx;
-    x1 = max(x(:))+pixelMarginx;
-    y0 = min(y(:))-pixelMarginy;
-    y1 = max(y(:))+pixelMarginy;
+    tmpregs = regs;
+    tmpregs.GNRL.imgHsize = regs.FRMW.undistCalImgHsize;
+    tmpregs.GNRL.imgVsize = regs.FRMW.undistCalImgVsize;
     
+    [x,y] = Calibration.aux.ang2xySF(angx,angy,tmpregs,[],0);
+
+    x1 = min(x(:));
+    x30 = max(x(:));
+    y1 = min(y(:));
+    y30 = max(y(:));
     
-    distortionH=y1-y0;
-    distortionW=x1-x0;
-    fx = (N-1)/distortionW;
-    fy = (N-1)/distortionH;
+    dx = (x30-x1)/(N-3);
+    x0 = x1 - dx;
+    dy = (y30-y1)/(N-3);
+    y0 = y1 - dy;
+
+    fx = 1/dx;
+    fy = 1/dy;
 end
 
 outRegs.DIGG.undistFx = uint32(toint32(fx));

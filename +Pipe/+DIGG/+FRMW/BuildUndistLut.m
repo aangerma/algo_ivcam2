@@ -53,8 +53,6 @@ else
     %% build input distortion grid
     xLUT=odgx+xDisplacment;
     yLUT=odgy+yDisplacment;
-    yLUT=min(y1,max(y0,yLUT));
-    xLUT=min(x1,max(x0,xLUT));
 end
 
 
