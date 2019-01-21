@@ -4,7 +4,7 @@ function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autoge
 [PreCalcsRegs,autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.preCalcs(regs,luts,autogenRegs,autogenLuts);
 PreCalcsluts = Firmware.mergeRegs(luts,autogenLuts);
 
-%% write to EPROM
+%% prepare for FW
 
 [FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(PreCalcsRegs,PreCalcsluts );
 regs = Firmware.mergeRegs(regs,FWinputRegs);
