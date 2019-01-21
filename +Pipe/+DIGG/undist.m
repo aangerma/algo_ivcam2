@@ -47,7 +47,7 @@ if(~isempty(traceOutDir) )
     %% undist LUT trace
 %     s=1:4:32;
 %     lutxy4mem=zeros(1024,2,'int32');
-%     for i=1:16
+%     for i=1:16- 
 %         [yy,xx]=ind2sub([4 4],i);
 %         lutxy4mem((i-1)*64+(1:64),:)=[vec(xLUT(s+yy-1,s+xx-1)) vec(yLUT(s+yy-1,s+xx-1))];
 %     end

@@ -1,8 +1,9 @@
-function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff )
+function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff,calibParams)
     dfzRes = [];
     params.camera.K = getKMat(hw);
     params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
-    params.target.squareSize = 30;
+    params.target.squareSize = calibParams.validationConfig.cbSquareSz;
+    params.expectedGridSize = calibParams.validationConfig.cbGridSz;
     [score, allRes] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
     dfzRes.GeometricError = score;
     [~, geomRes,dbg] = Validation.metrics.geomUnproject(rotFrame180(frames), params);

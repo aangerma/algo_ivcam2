@@ -23,6 +23,13 @@ else
     udistRegs.FRMW.xfov = regs.FRMW.xfov;
     udistRegs.FRMW.yfov = regs.FRMW.yfov;
 end
+
+% For the current regs, the image plane should be made from the values at
+% the locations xbug/ybug. We need to translate xbug to xg and the same for
+% y.
+[udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs);
+
+
 % A grid of x-y coordinates in the image plane:
 margin = 10; % In pixels. How far from the image plane to correct the location. 
 dp = 10; % In pixels. Pixel grid spacing. Too small a number will provide insufficient number of examples for fixing, too great a number will take too long to compute.
@@ -38,13 +45,11 @@ if ~isempty(FE)
 else
     [angxg,angyg] = Calibration.aux.xy2angSF(xg,yg,origregs,true);
 end
-% Transform the angx-angy into x-y. Using the bugged ang2xy:
-[xbug,ybug] = Calibration.aux.ang2xySF(angxg,angyg,regs,[],false);
 
-% For the current regs, the image plane should be made from the values at
-% the locations xbug/ybug. We need to translate xbug to xg and the same for
-% y.
-[udistLUT,~,~,~,~]= Calibration.Undist.generateUndistTables([xbug(:),ybug(:)]',[xg(:),yg(:)]',double([regs.GNRL.imgVsize,regs.GNRL.imgHsize]),regs);
+angxPrePolyUndist = Calibration.Undist.inversePolyUndist(angxg,regs);
+
+% Transform the angx-angy into x-y. Using the bugged ang2xy:
+[xbug,ybug] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyg,regs,[],false);
 
 % Apply the lut to the bugged x-y and calculate the displacement error:
 luts.FRMW.undistModel = udistLUT;
@@ -55,7 +60,7 @@ luts = Firmware.mergeRegs(luts,autogenLuts);
 xnew = single(xnew)/2^15;
 ynew = single(ynew)/2^15;
 
-eMatPre = sqrt((xbug-xg).^2 + (ybug-yg).^2);
+% eMatPre = sqrt((xbug-xg).^2 + (ybug-yg).^2);
 eMatPost = sqrt((xnew-xg).^2 + (ynew-yg).^2);
 
 maxPixelDisplacement = max(eMatPost(:));

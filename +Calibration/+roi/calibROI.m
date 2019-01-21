@@ -170,6 +170,7 @@ function xy = spherical2xy(sphericalPixels,regs,calibParams)
             [x,y] = vec2xy(oXYZ',imaginaryRegs);
             x = x'; y = y';
         else
+            angx = Calibration.Undist.applyPolyUndist(angx,regs);
             [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],1);
         end
         xy = [x,y];

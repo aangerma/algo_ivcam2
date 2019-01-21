@@ -205,7 +205,7 @@ function app=createComponents()
     % Create verboseCheckBox
     
     %checkboxes
-    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ'};
+    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
