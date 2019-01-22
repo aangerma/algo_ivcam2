@@ -15,8 +15,8 @@ if(regs.DIGG.undistBypass || (regs.FRMW.undistCalImgHsize==regs.GNRL.imgHsize &&
     
 else
     
-    xScaleIn=double(regs.GNRL.imgHsize)/double(regs.FRMW.undistCalImgHsize);
-    yScaleIn=double(regs.GNRL.imgVsize)/double(regs.FRMW.undistCalImgVsize);
+    xScaleIn=double(regs.FRMW.undistCalImgHsize)/double(regs.GNRL.imgHsize);
+    yScaleIn=double(regs.FRMW.undistCalImgVsize)/double(regs.GNRL.imgVsize);
     xShiftIn=0;
     yShiftIn=0;
     xScaleOut=1/xScaleIn;
@@ -24,7 +24,7 @@ else
     xShiftOut=-xShiftIn/xScaleIn;
     yShiftOut=-yShiftIn/yScaleIn;
     
-%     [xScaleIn_,yScaleIn_,xShiftIn_,yShiftIn_,xScaleOut_,yScaleOut_,xShiftOut_,yShiftOut_]= CalculateAccurateScaleAndShiftFromAng2XY(regs,shift);
+%   [xScaleIn_,yScaleIn_,xShiftIn_,yShiftIn_,xScaleOut_,yScaleOut_,xShiftOut_,yShiftOut_]= CalculateAccurateScaleAndShiftFromAng2XY(regs,shift);
     
 end
 
@@ -62,10 +62,10 @@ end
 % y1=y0+(N-1)/fy;
 % 
 % % calculate scale and offset by block recs
-% xScaleIn=(x0-x1)/(Lut_x0-Lut_x1);
-% yScaleIn=(y0-y1)/(Lut_y0-Lut_y1);
-% xShiftIn=x1-xScaleIn*Lut_x1;
-% yShiftIn=y1-yScaleIn*Lut_y1;
+% xScaleIn=(Lut_x0-Lut_x1)/(x0-x1);
+% yScaleIn=(Lut_y0-Lut_y1)/(y0-y1);
+% xShiftIn=Lut_x1-xScaleIn*x1;
+% yShiftIn=Lut_y1-yScaleIn*y1;
 % 
 % xScaleOut=1/xScaleIn;
 % yScaleOut=1/yScaleIn;

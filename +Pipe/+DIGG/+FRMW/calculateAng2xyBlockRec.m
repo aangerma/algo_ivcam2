@@ -14,11 +14,8 @@ if(regs.DIGG.undistBypass)
 else
     a=2047; 
     [angx,angy] = meshgrid(linspace(-a,a,100));
-    tmpregs = regs;
-    tmpregs.GNRL.imgHsize = regs.FRMW.undistCalImgHsize;
-    tmpregs.GNRL.imgVsize = regs.FRMW.undistCalImgVsize;
-    
-    [x,y] = Calibration.aux.ang2xySF(angx,angy,tmpregs,[],0);
+
+    [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],0);
 
     x1 = min(x(:));
     x30 = max(x(:));
