@@ -58,17 +58,24 @@ for sid=1:length(shades)
 end
 
 %   draw black circle
-blackCircChecker = middleBChecker + [-2, -1]; %upper
+blackCircChecker = middleBChecker + [-1, -2]; %upper
 checkers((blackCircChecker(2)-1)*checkerPixSize+1:blackCircChecker(2)*checkerPixSize,(blackCircChecker(1)-1)*checkerPixSize+1:blackCircChecker(1)*checkerPixSize) =  1-circleTmplt*0.6;
-blackCircChecker = middleBChecker + [-3, 0]; %left
+blackCircChecker = middleBChecker + [-2, -1]; %left
 checkers((blackCircChecker(2)-1)*checkerPixSize+1:blackCircChecker(2)*checkerPixSize,(blackCircChecker(1)-1)*checkerPixSize+1:blackCircChecker(1)*checkerPixSize) =  1-circleTmplt;
 
 %draw operator marker
-opMarker = zeros(checkerPixSize);
+rChar = str2im('R',nan,'HorizontalAlignment','center','FontSize',checkerSize);
+rChar = double(rChar(:,:,1));
+rChar = imresize(rChar./max(rChar(:)),[checkerPixSize/2,checkerPixSize/2],'nearest');
+opMarker = ones(checkerPixSize);
+opMarker(1:checkerPixSize/2,checkerPixSize/2+1:end) = max(0,min(1,rChar));
+%{
+opMarker =
 [xx,yy] = meshgrid(linspace(0,1,checkerPixSize));
 opMarker(yy<0.9 & yy>0.4 & xx<1-0.6*yy & xx>0.6*yy)=1;
 opMarker = flipud(opMarker);
-if (labels(1,end))
+%}
+if (labels(1,end)==0)
     opMarker = 1-opMarker;
 end
 checkers(1:checkerPixSize,(checkersNum(1)-1)*checkerPixSize+1:checkersNum(1)*checkerPixSize) = opMarker;
