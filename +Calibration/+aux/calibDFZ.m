@@ -23,7 +23,7 @@ end
 if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
     x0 = double([xfov yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV projectionYshear 0 0]);
 end
-
+    %{
     if ~isfield(darr, 'rpt')
         for i = 1:numel(darr)
             % Get r from d.z
@@ -82,16 +82,17 @@ end
         w = 13;
         darr(i).rpt = darr(i).rpt(1+floor((end-h)/2):h+floor((end-h)/2),1+floor((end-w)/2):w+floor((end-w)/2),:);
     end
+    %}
     %%
     xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) par.projectionYshear(1) par.dsmXOffset(1) par.dsmYOffset(1)];
     xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) par.projectionYshear(2) par.dsmXOffset(2) par.dsmYOffset(2)];
     regs = x2regs(x0,regs);
     if iseval
-        [minerr,~]=errFunc(darr,regs,x0,FE,calibParams.gnrl.cbSquareSz);
+        [minerr,~]=errFunc(darr,regs,x0,FE);
         outregs = [];
         return
     end
-    [e,eFit]=errFunc(darr,regs,x0,FE,calibParams.gnrl.cbSquareSz);
+    [e,eFit]=errFunc(darr,regs,x0,FE);
     printErrAndX(x0,e,eFit,'X0:',verbose)
     
     % Define optimization settings
@@ -100,11 +101,11 @@ end
     opt.TolFun = 1e-6;
     opt.TolX = 1e-6;
     opt.Display ='none';
-    optFunc = @(x) (errFunc(darr,regs,x,FE,calibParams.gnrl.cbSquareSz) + par.zenithNormW * zenithNorm(regs,x));
+    optFunc = @(x) (errFunc(darr,regs,x,FE) + par.zenithNormW * zenithNorm(regs,x));
     xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
     xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
-    [minerr,eFit]=errFunc(darr,outregs,xbest,FE,calibParams.gnrl.cbSquareSz);
+    [minerr,eFit]=errFunc(darr,outregs,xbest,FE);
 printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
 outregs = x2regs(xbest);
@@ -128,7 +129,7 @@ fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f,
 
 end
 
-function [e,eFit]=errFunc(darr,rtlRegs,X,FE,cbSquareSz)
+function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
 %build registers array
 % X(3) = 4981;
 rtlRegs = x2regs(X,rtlRegs);
@@ -150,6 +151,7 @@ for i = 1:numel(darr)
     eFit = mean(eFit);
     e = mean(e);
 end
+
 function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE)
     vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+X(7),d.rpt(:,3)+X(8),rtlRegs,FE)';
     %vUnit = reshape(vUnit',size(d.rpt));
