@@ -10,6 +10,7 @@ import matlab_eng
 import re
 import math
 import struct
+
 sys.path.insert(0, r"Avv\tests")
 import a_common
 
@@ -24,7 +25,10 @@ def run_randomize(eng, file_path):
     slash.logger.debug("running matlab randomize")
     try:
         regs_random_list = [
-            'EPTGframeRate', 'FRMWxfov', 'FRMWyfov', 'FRMWprojectionYshear', 'FRMWlaserangleH',
+            'EPTGframeRate', 'FRMWxfov_000', 'FRMWxfov_001', 'FRMWxfov_002', 'FRMWxfov_003', 'FRMWxfov_004',
+            'FRMWyfov_000', 'FRMWyfov_001', 'FRMWyfov_002', 'FRMWyfov_003', 'FRMWyfov_004', 'FRMWprojectionYshear_000',
+            'FRMWprojectionYshear_001', 'FRMWprojectionYshear_002', 'FRMWprojectionYshear_003',
+            'FRMWprojectionYshear_004', 'FRMWlaserangleH',
             'FRMWlaserangleV', 'FRMWundistYfovFactor', 'DIGGundistBypass', 'EPTGmirrorFastFreq',
             'EPTGslowCouplingFactor', 'EPTGslowCouplingPhase', 'EPTGscndModePhase', 'EPTGscndModeFreq']
         if not os.path.isdir(os.path.dirname(file_path)):
@@ -146,7 +150,7 @@ def read_regs_file(file_path):
                     columns_names.append(d.strip())
             else:
                 if len(data) != len(columns_names):
-                    slash.logger.error("file error, line {} doesnt have enough columns".format(index))
+                    slash.logger.error("file error, line {}: data: {} doesn't have enough columns".format(index,data[0]))
                     raise IndexError
                 reg_data = {}
                 for index in range(len(columns_names)):
@@ -225,7 +229,8 @@ def get_constraints_list(file_path):
     constraints_list.append("mod([GNRLimgHsize],2)==0")
     constraints_list.append("mod([GNRLimgVsize],2)==0")
 
-    slash.logger.info("file number of constraints: {}, added: {}, total: ".format(num_of_constraints, len(constraints_list) - num_of_constraints, len(constraints_list)))
+    slash.logger.info("file number of constraints: {}, added: {}, total: ".format(num_of_constraints, len(
+        constraints_list) - num_of_constraints, len(constraints_list)))
     return constraints_list
 
 
@@ -267,8 +272,10 @@ def check_for_all_regs(selected_regs={}, regs=list()):
 
 def check_constraint(selected_regs={}, constraint=None):
     constr = constraint.get_constraint()
-    if constr == "[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>32":
-        return selected_regs["EPTGframeRate"]==0 |  1*10**9/(selected_regs["GNRLimgHsize"]*selected_regs["GNRLimgVsize"])*(1/selected_regs["EPTGframeRate"]-selected_regs["EPTGreturnTime"]/1000)>32
+    if constr == "[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>27":
+        return selected_regs["EPTGframeRate"] == 0 or 1 * 10 ** 9 / (
+                selected_regs["GNRLimgHsize"] * selected_regs["GNRLimgVsize"]) * (
+                       1 / selected_regs["EPTGframeRate"] - selected_regs["EPTGreturnTime"] / 1000) > 27
     elif constr == "mod([GNRLcodeLength],2)==0":
         return modulo(selected_regs["GNRLcodeLength"], 2) == 0
     elif constr == "([GNRLcodeLength]*[GNRLsampleRate]<=1024 & [GNRLcodeLength]*[GNRLsampleRate]>=128) | ([GNRLrangeFinder]==1 & [GNRLcodeLength]*[GNRLsampleRate]==2048)":
@@ -435,11 +442,35 @@ def check_constraint(selected_regs={}, constraint=None):
     elif constr == "~([FRMWtxCode_000]==0 & [FRMWtxCode_001]==0 & [FRMWtxCode_002]==0 & [FRMWtxCode_003]==0)":
         return not (selected_regs["FRMWtxCode_000"] == 0 and selected_regs["FRMWtxCode_001"] == 0 and selected_regs[
             "FRMWtxCode_002"] == 0 and selected_regs["FRMWtxCode_003"] == 0)
-    elif constr == "[DIGGundistBypass] | [FRMWxfov]*[FRMWundistXfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov"] * selected_regs[
+    elif constr == "[DIGGundistBypass] | [FRMWxfov_000]*[FRMWundistXfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_000"] * selected_regs[
             "FRMWundistXfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWyfov]*[FRMWundistYfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov"] * selected_regs[
+    elif constr == "[DIGGundistBypass] | [FRMWyfov_000]*[FRMWundistYfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_000"] * selected_regs[
+            "FRMWundistYfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWxfov_001]*[FRMWundistXfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_001"] * selected_regs[
+            "FRMWundistXfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWyfov_001]*[FRMWundistYfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_001"] * selected_regs[
+            "FRMWundistYfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWxfov_002]*[FRMWundistXfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_002"] * selected_regs[
+            "FRMWundistXfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWyfov_002]*[FRMWundistYfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_002"] * selected_regs[
+            "FRMWundistYfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWxfov_003]*[FRMWundistXfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_003"] * selected_regs[
+            "FRMWundistXfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWyfov_003]*[FRMWundistYfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_003"] * selected_regs[
+            "FRMWundistYfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWxfov_004]*[FRMWundistXfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_004"] * selected_regs[
+            "FRMWundistXfovFactor"] <= 89
+    elif constr == "[DIGGundistBypass] | [FRMWyfov_004]*[FRMWundistYfovFactor]<=89":
+        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_004"] * selected_regs[
             "FRMWundistYfovFactor"] <= 89
     elif constr == "at([JFILbiltGauss_000],0)~=0":
         s = format(selected_regs["JFILbiltGauss_000"], "032b")
@@ -559,28 +590,42 @@ def check_constraint(selected_regs={}, constraint=None):
                 selected_regs["STATstt2src"] <= 1 or modulo(selected_regs["STATstt2skipVsize"],
                                                             selected_regs["GNRLimgHsize"]) == 0)
     elif constr == "mod([GNRLimgHsize],2)==0":
-        return modulo(selected_regs["GNRLimgHsize"],2) ==0
+        return modulo(selected_regs["GNRLimgHsize"], 2) == 0
     elif constr == "mod([GNRLimgVsize],2)==0":
-        return modulo(selected_regs["GNRLimgVsize"],2) ==0
+        return modulo(selected_regs["GNRLimgVsize"], 2) == 0
 
     elif constr == "[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi>64/[GNRLsampleRate]":
-        return selected_regs["EPTGframeRate"]==0 or 1*10**9 / (2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWguardBandV"]))*2/math.pi>64/selected_regs["GNRLsampleRate"]
-    elif constr =="4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi > [GNRLcodeLength]":
-        return 4*16/selected_regs["GNRLsampleRate"]*1*10**9/(2*selected_regs["EPTGmirrorFastFreq"]*(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*(1+2*selected_regs["FRMWguardBandV"]))*2/math.pi > selected_regs["GNRLcodeLength"]
-    elif constr =="[FRMWmarginT]<([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
-        return selected_regs["FRMWmarginT"]<(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
-    elif constr =="[FRMWmarginL]<([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
-        return selected_regs["FRMWmarginL"]<(selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
+        return selected_regs["EPTGframeRate"] == 0 or 1 * 10 ** 9 / (2 * selected_regs["EPTGmirrorFastFreq"] * (
+                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"]) * (
+                                                                             1 + 2 * selected_regs[
+                                                                         "FRMWguardBandV"])) * 2 / math.pi > 64 / \
+               selected_regs["GNRLsampleRate"]
+    elif constr == "4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi > [GNRLcodeLength]":
+        return 4 * 16 / selected_regs["GNRLsampleRate"] * 1 * 10 ** 9 / (2 * selected_regs["EPTGmirrorFastFreq"] * (
+                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"]) * (
+                                                                                 1 + 2 * selected_regs[
+                                                                             "FRMWguardBandV"])) * 2 / math.pi > \
+               selected_regs["GNRLcodeLength"]
+    elif constr == "[FRMWmarginT]<([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
+        return selected_regs["FRMWmarginT"] < (
+                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
+    elif constr == "[FRMWmarginL]<([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
+        return selected_regs["FRMWmarginL"] < (
+                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
     elif constr == "abs([FRMWmarginB]-[FRMWmarginT]) < ([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
-        return abs(selected_regs["FRMWmarginB"]-selected_regs["FRMWmarginT"]) < (selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
+        return abs(selected_regs["FRMWmarginB"] - selected_regs["FRMWmarginT"]) < (
+                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
     elif constr == "abs([FRMWmarginL]-[FRMWmarginR]) < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
-        return abs(selected_regs["FRMWmarginL"]-selected_regs["FRMWmarginR"]) < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
-    elif constr == "[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8":
-        return  selected_regs["GNRLrangeFinder"] or abs((selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])/(selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])*selected_regs["FRMWyfov"]/selected_regs["FRMWxfov"]*(1+2*selected_regs["FRMWguardBandV"])/(1+2*selected_regs["FRMWguardBandH"])-1)<0.8
+        return abs(selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"]) < (
+                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
     elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
-        return selected_regs["STATstt1Bypass"] == 1 or (selected_regs["STATstt1src"] <=  1 or selected_regs["STATstt1skipHsize"] < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
+        return selected_regs["STATstt1Bypass"] == 1 or (
+                selected_regs["STATstt1src"] <= 1 or selected_regs["STATstt1skipHsize"] < (
+                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
     elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
-        return selected_regs["STATstt2Bypass"] == 1 or (selected_regs["STATstt2src"] <=  1 or selected_regs["STATstt2skipHsize"] < (selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
+        return selected_regs["STATstt2Bypass"] == 1 or (
+                selected_regs["STATstt2src"] <= 1 or selected_regs["STATstt2skipHsize"] < (
+                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
 
     else:
         slash.logger.warning("constraint not recognized: {}".format(constr))
@@ -712,7 +757,6 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             i += 1
             continue
 
-
         if selected_regs.get("GNRLrangeFinder") == 1:
             if reg_name == "GNRLimgHsize":
                 selected_regs[reg_name] = 2
@@ -754,7 +798,9 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             i += 1
             continue
 
-        if reg_name in ("FRMWundistYfovFactor", "FRMWundistXfovFactor", "EPTGmultiFocalROI_000", "EPTGmultiFocalROI_001", "EPTGmultiFocalROI_002", "EPTGmultiFocalROI_003","MTLBassertionStop","FRMWxR2L", "MTLBdebug"):
+        if reg_name in (
+                "FRMWundistYfovFactor", "FRMWundistXfovFactor", "EPTGmultiFocalROI_000", "EPTGmultiFocalROI_001",
+                "EPTGmultiFocalROI_002", "EPTGmultiFocalROI_003", "MTLBassertionStop", "FRMWxR2L", "MTLBdebug"):
             selected_regs[reg_name] = convert_to_number(reg["defaultValue"][1:])
             i += 1
             continue
@@ -763,8 +809,6 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             selected_regs[reg_name] = convert_to_number(reg["defaultValue"][1:])
             i += 1
             continue
-
-
 
         reg_added = False
         constraint_fail_index = 0
@@ -813,9 +857,11 @@ def get_regs_order(regs_def):
     slash.logger.info("setting regs generation order")
     reg_order = list()
     reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "GNRLimgHsize", "FRMWmarginT",
-                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "FRMWyfov", "FRMWguardBandV", "GNRLsampleRate",
+                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "FRMWyfov_000", "FRMWyfov_001",
+                      "FRMWyfov_002", "FRMWyfov_003", "FRMWyfov_004", "FRMWguardBandV", "GNRLsampleRate",
                       "EPTGmirrorFastFreq",
-                      "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov", "FRMWguardBandH",
+                      "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov_000", "FRMWxfov_001",
+                      "FRMWxfov_002", "FRMWxfov_003", "FRMWxfov_004", "FRMWguardBandH",
                       "DIGGundistBypass",
                       "FRMWundistYfovFactor", "FRMWundistXfovFactor", "DCORoutIRnest", "DCORoutIRcma", "DESTaltIrEn",
                       "RASToutIRvar", "JFILbypass", "DCORbypass", "DIGGnestBypass", "FRMWtxCode_000", "FRMWtxCode_001",
@@ -956,6 +1002,7 @@ def get_data_path():
     slash.logger.info("regs file path: {}".format(file_path))
     return data_path, file_path
 
+
 @a_common.ivcam2
 def test_random_registers_randomize_100():
     test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
@@ -998,8 +1045,7 @@ def test_random_registers_randomize_100():
     slash.logger.info(test_status, extra={"highlight": True})
 
 
-@a_common.ivcam2
-def test_random_registers_autogen_100():
+def random_registers(iterations=1):
     test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
                    "Randomize_failed": 0}
     eng = slash.g.mat
@@ -1013,7 +1059,6 @@ def test_random_registers_autogen_100():
     regs_def = read_regs_file(regs_def_path)
     regs_def = clean_regs_list_to_generate(regs_def)
 
-    iterations = 100
     slash.logger.info("Start test, number of iterations: {}".format(iterations))
 
     reg_order = get_regs_order(regs_def)
@@ -1038,7 +1083,8 @@ def test_random_registers_autogen_100():
 
         status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
         if status == 1:
-            slash.logger.info("test {} failed - pattern_generator_constraint".format(iteration), extra={"highlight": True})
+            slash.logger.info("test {} failed - pattern_generator_constraint".format(iteration),
+                              extra={"highlight": True})
             test_status["pattern_generator_constraint"] += 1
             continue
         if status == 2:
@@ -1055,3 +1101,10 @@ def test_random_registers_autogen_100():
         test_status["pass"] += 1
 
     slash.logger.info(test_status, extra={"highlight": True})
+
+    if test_status["fail"] > 0 or test_status["pattern_generator_crash"] > 0:
+        raise a_common.TestFail("Test failed please review log")
+
+@a_common.ivcam2
+def test_random_registers_autogen_100():
+    random_registers(iterations=100)

@@ -1,6 +1,10 @@
 function regsOut = trigoCalcs(regs)
-xfovPix = regs.FRMW.xfov;
-yfovPix = regs.FRMW.yfov;
+mode=regs.FRMW.mirrorMovmentMode;
+xfov=regs.FRMW.xfov(mode);
+yfov=regs.FRMW.yfov(mode);
+xfovPix = xfov;
+yfovPix = yfov;
+
 if(regs.DIGG.undistBypass==0)
     xfovPix = xfovPix*regs.FRMW.undistXfovFactor;
     yfovPix = yfovPix*regs.FRMW.undistYfovFactor;
@@ -16,8 +20,8 @@ end
 % respect to our internal representation.
 [p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfovPix,yfovPix,1);
 Kinv=[p2axa            0                   p2axb;
-      0                p2aya               p2ayb;
-      0                0                   1    ];
+    0                p2aya               p2ayb;
+    0                0                   1    ];
 
 K=pinv(Kinv);
 K=abs(K); % Make it so the K matrix is positive. This way the orientation of the cloud point is identical to DS. 
@@ -26,13 +30,16 @@ end
 
 function [p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfov,yfov,rot180)
 %{
-Calculates tanx and tany for the four sides of the image. 
+Calculates tanx and tany for the four sides of the image.
 if rot90 is true,calculate the coefficients for an outside image - which is
 the matlab image rotated by 180 degrees. fliplr(flipud()).
 %}
 %% ----STAIGHT FORWARD------
+mode=regs.FRMW.mirrorMovmentMode;
 
-mirang = atand(regs.FRMW.projectionYshear);
+projectionYshear=regs.FRMW.projectionYshear(mode);
+
+mirang = atand(projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
 
 angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';

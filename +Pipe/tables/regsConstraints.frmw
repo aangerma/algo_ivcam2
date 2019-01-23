@@ -195,9 +195,25 @@ sum([[JFILsort3dWeights]])<128
 ~[DCORoutIRnest] |  ~[DCORbypass]
 
 %pixel squreness
-%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov]/[FRMWxfov]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_000]/[FRMWxfov_000]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_001]/[FRMWxfov_001]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_002]/[FRMWxfov_002]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_003]/[FRMWxfov_003]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_004]/[FRMWxfov_004]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
 
 
 %max fov (non spherical)
-[DIGGundistBypass] | [FRMWyfov]*[FRMWundistYfovFactor]<=89
-[DIGGundistBypass] | [FRMWxfov]*[FRMWundistXfovFactor]<=89
+[DIGGundistBypass] | [FRMWyfov_000]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_000]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_001]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_001]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_002]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_002]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_003]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_003]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_004]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_004]*[FRMWundistXfovFactor]<=89

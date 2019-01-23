@@ -1,8 +1,8 @@
 GNRLimgHsize         d640     
 GNRLimgVsize         d360     
 PCKRpadding          h00000000     
-FRMWxfov             f72      
-FRMWyfov             f56      
+FRMWxfov_000         f72      
+FRMWyfov_000         f56      
 FRMWlaserangleH      f0       
 FRMWlaserangleV      f0       
 FRMWcbufConstLUT     b1       

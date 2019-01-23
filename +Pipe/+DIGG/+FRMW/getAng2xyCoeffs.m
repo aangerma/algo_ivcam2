@@ -21,9 +21,13 @@ function newRegs = getAng2xyCoeffs(regs)
         return;
     end
     
+    mode=regs.FRMW.mirrorMovmentMode; 
+    xfov=regs.FRMW.xfov(mode); 
+    yfov=regs.FRMW.yfov(mode); 
+    projectionYshear=regs.FRMW.projectionYshear(mode); 
     
-    xfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
-    yfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
+    xfactor = single(xfov*0.25/(2^11-1));
+    yfactor = single(yfov*0.25/(2^11-1));
     
     newRegs.DIGG.angXfactor = xfactor*127/90;
     newRegs.DIGG.angYfactor = yfactor*127/90;
@@ -32,7 +36,7 @@ function newRegs = getAng2xyCoeffs(regs)
     newRegs.DIGG.ang2Yfactor = yfactor*254/90;
     
     
-    mirang = atand(regs.FRMW.projectionYshear);
+    mirang = atand(projectionYshear);
     rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
     
     %mirror angles to norm
@@ -50,10 +54,10 @@ function newRegs = getAng2xyCoeffs(regs)
     oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
     
     
-    rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( regs.FRMW.xfov*0.25,                   0)));rangeR=rangeR(1);
-    rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-regs.FRMW.xfov*0.25,                   0)));rangeL=rangeL(1);
-    rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov*0.25)));rangeT =rangeT (2);
-    rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov*0.25)));rangeB=rangeB(2);
+    rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( xfov*0.25,                   0)));rangeR=rangeR(1);
+    rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-xfov*0.25,                   0)));rangeL=rangeL(1);
+    rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , yfov*0.25)));rangeT =rangeT (2);
+    rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-yfov*0.25)));rangeB=rangeB(2);
     
     %ROI in pixels
     xres = uint16(int16(regs.GNRL.imgHsize)+regs.FRMW.marginL+regs.FRMW.marginR);
@@ -88,7 +92,7 @@ function newRegs = getAng2xyCoeffs(regs)
     
     k0 = yresN*cosd(regs.FRMW.laserangleH);
     k1 = xresN*cosd(regs.FRMW.laserangleH);
-    k2 = sqrt(regs.FRMW.projectionYshear.*regs.FRMW.projectionYshear+1.0);
+    k2 = sqrt(projectionYshear.*projectionYshear+1.0);
     k3 = cosd(regs.FRMW.laserangleH).*sind(regs.FRMW.laserangleV).*k2;
     k4 = cosd(regs.FRMW.laserangleH).*cosd(regs.FRMW.laserangleV).*k2;
     k5 = sind(regs.FRMW.laserangleH)*k2;
@@ -98,20 +102,20 @@ function newRegs = getAng2xyCoeffs(regs)
     k9 = (rangeL.*xresN+k6*marginLN);
     
     
-    newRegs.DIGG.nx(6) = single(  k1*sind(regs.FRMW.laserangleV)*regs.FRMW.projectionYshear                                                                 );
+    newRegs.DIGG.nx(6) = single(  k1*sind(regs.FRMW.laserangleV)*projectionYshear                                                                 );
     newRegs.DIGG.nx(1) = single( -xresN*sind(regs.FRMW.laserangleH)                                                                                         );
     newRegs.DIGG.nx(2) = single( -k9*k4 +regs.FRMW.xoffset*k6*k4                                                                                                                    );
     newRegs.DIGG.nx(3) = single( ((k1*cosd(regs.FRMW.laserangleV)+(rangeL*xresN+k6*marginLN)*k5)  +regs.FRMW.xoffset*(-k6*k5))*xsign                                                          );
-    newRegs.DIGG.nx(4) = single( (-xresN*sind(regs.FRMW.laserangleH)*regs.FRMW.projectionYshear+k1*sind(regs.FRMW.laserangleV))*ysign*xsign                               );
-    newRegs.DIGG.nx(5) = single(  (k1*cosd(regs.FRMW.laserangleV)*regs.FRMW.projectionYshear-k9*k3 + regs.FRMW.xoffset*k6*k3 )*ysign                                                   );
+    newRegs.DIGG.nx(4) = single( (-xresN*sind(regs.FRMW.laserangleH)*projectionYshear+k1*sind(regs.FRMW.laserangleV))*ysign*xsign                               );
+    newRegs.DIGG.nx(5) = single(  (k1*cosd(regs.FRMW.laserangleV)*projectionYshear-k9*k3 + regs.FRMW.xoffset*k6*k3 )*ysign                                                   );
     newRegs.DIGG.dx2 = single(   k6*k4                                                                                                                    );
     newRegs.DIGG.dx3 = single(  -k6*k5*xsign                                                                                                                    );
     newRegs.DIGG.dx5 = single(   k6*k3*ysign                                                                                                                    );
     newRegs.DIGG.ny(6) = single( k0*sind(regs.FRMW.laserangleV)                                                                                             );
-    newRegs.DIGG.ny(1) = single( yresN*sind(regs.FRMW.laserangleH)*regs.FRMW.projectionYshear                                                               );
+    newRegs.DIGG.ny(1) = single( yresN*sind(regs.FRMW.laserangleH)*projectionYshear                                                               );
     newRegs.DIGG.ny(2) = single( - k8*k4   +regs.FRMW.yoffset*(-k7*k4)                                                                                                                 );
-    newRegs.DIGG.ny(3) = single( ( k8*k5-k0.*cosd(regs.FRMW.laserangleV)*regs.FRMW.projectionYshear   +regs.FRMW.yoffset* ( k7*k5 ) )*xsign                                                     );
-    newRegs.DIGG.ny(4) = single( -(yresN*(sind(regs.FRMW.laserangleH)+regs.FRMW.projectionYshear.*cosd(regs.FRMW.laserangleH).*sind(regs.FRMW.laserangleV)))*ysign*xsign);
+    newRegs.DIGG.ny(3) = single( ( k8*k5-k0.*cosd(regs.FRMW.laserangleV)*projectionYshear   +regs.FRMW.yoffset* ( k7*k5 ) )*xsign                                                     );
+    newRegs.DIGG.ny(4) = single( -(yresN*(sind(regs.FRMW.laserangleH)+projectionYshear.*cosd(regs.FRMW.laserangleH).*sind(regs.FRMW.laserangleV)))*ysign*xsign);
     newRegs.DIGG.ny(5) = single(  ((k0.*cosd(regs.FRMW.laserangleV)-k8*k3)    +regs.FRMW.yoffset*   (-k7*k3   ))*ysign                                                                            );
     newRegs.DIGG.dy2 = single(  -k7*k4                                                                                                                    );
     newRegs.DIGG.dy3 = single(   k7*k5*xsign                                                                                                                    );
