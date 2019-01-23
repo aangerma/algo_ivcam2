@@ -6,10 +6,10 @@ opt.TolX = 1e-8;
 opt.Display ='none';
 func = @(x,a) x/2047*a(1)+(x/2047).^2*a(2)+(x/2047).^3*a(3);
 
-optFunc = @(a) (errFunc(darr,regs,a,func,0,calibParams.gnrl.cbSquareSz));
+optFunc = @(a) (errFunc(darr,regs,a,func,0));
 if exist('aEval','var')
     abest = aEval;
-    [meanerr,errors]=errFunc(darr,regs,abest,func,0,calibParams.gnrl.cbSquareSz);
+    [meanerr,errors]=errFunc(darr,regs,abest,func,0);
 %     
 %     for i = 1:numel(darr)
 %        dUndist(i) = darr(i);
@@ -19,10 +19,10 @@ if exist('aEval','var')
     return 
 end
 a0 = double([0,0,0]);
-[meanerr,errors]=errFunc(darr,regs,a0,func,0,calibParams.gnrl.cbSquareSz);
+[meanerr,errors]=errFunc(darr,regs,a0,func,0);
 abest = fminsearch(@(a) optFunc(a),a0,opt);
 abest = fminsearch(@(a) optFunc(a),abest,opt);
-[meanerr,errors]=errFunc(darr,regs,abest,func,0,calibParams.gnrl.cbSquareSz);
+[meanerr,errors]=errFunc(darr,regs,abest,func,0);
 % 
 % for i = 1:numel(darr)
 %    dUndist(i) = darr(i);
@@ -32,24 +32,28 @@ abest = fminsearch(@(a) optFunc(a),abest,opt);
 end
 
 
-function [e,eAll]=errFunc(darr,regs,a,func,verbose,squareSz)
+function [e,eAll]=errFunc(darr,regs,a,func,verbose)
     if ~exist('verbose','var')
         verbose = 0;
     end
     for i = 1:numel(darr)
         d = darr(i);
-        vUnit = Calibration.aux.ang2vec(d.rpt(:,:,2)+func(d.rpt(:,:,2),a),d.rpt(:,:,3),regs,[]);
-        vUnit = reshape(vUnit',size(d.rpt));
-        vUnit(:,:,1) = vUnit(:,:,1);
+        vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+func(d.rpt(:,2),a),d.rpt(:,3),regs)';
         % Update scale to take margins into acount.
         sing = vUnit(:,:,1);
         rtd_=d.rpt(:,:,1)-regs.DEST.txFRQpd(1);
         r = (0.5*(rtd_.^2 - regs.DEST.baseline2))./(rtd_ - regs.DEST.baseline.*sing);
         v = vUnit.*r;
-        e(i)=Calibration.aux.evalGeometricDistortion(v,verbose,squareSz);
+        numVert = d.grid(1)*d.grid(2);
+        numPlanes = d.grid(3);
+        for pid = 1:numPlanes
+            idxs = (pid-1)*numVert+1:pid*numVert;
+            vPlane  = v(idxs,:);
+            refPlane = d.pts3d(idxs,:);
+            isValid = ~isnan(vPlane(:,1));
+            [e(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane(isValid,:),refPlane(isValid,:),verbose);
+        end
     end
     eAll = e;
     e = mean(e);    
 end
-
-
