@@ -150,7 +150,7 @@ def read_regs_file(file_path):
                     columns_names.append(d.strip())
             else:
                 if len(data) != len(columns_names):
-                    slash.logger.error("file error, line {} doesn't have enough columns".format(index))
+                    slash.logger.error("file error, line {}: data: {} doesn't have enough columns".format(index,data[0]))
                     raise IndexError
                 reg_data = {}
                 for index in range(len(columns_names)):
