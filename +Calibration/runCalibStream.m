@@ -547,10 +547,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0);
         x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
             regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
-        if ~isempty(testImages)
-            [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,x0);
-            fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
-        end
+        
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);
@@ -561,6 +558,10 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         fw.setRegs(undistRegs,fnCalib);
         fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomErr);   
         
+        if ~isempty(testImages)
+            [~,results.extraImagesGeomErr] = Calibration.Undist.calibPolinomialUndistParams(d(testImages),regs,calibParams,polyVars);
+            fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
+        end
         
         if(results.geomErr<calibParams.errRange.geomErr(2))
             fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);

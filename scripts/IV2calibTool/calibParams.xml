@@ -119,39 +119,46 @@
    </dsm>
     <dfz>
         <captures>
-             <capture>
+             <!--<capture>
                 <target>Iv2L50</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
             <capture>
-                <target>Vshape35s</target>
+                <target>Iv2L50</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>-->
+            <capture>
+                <target>Iv2L50</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
             <capture>
-                <target>Iv2Default</target>
-                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
-                <type>test</type>
-            </capture>
-            <capture>
-                <target>Iv2Default</target>
+                <target>Iv2L50</target>
                 <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>test</type>
+                <type>train</type>
             </capture>
             <capture>
-                <target>Iv2Default</target>
+                <target>Iv2L50</target>
                 <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-                <type>test</type>
+                <type>train</type>
             </capture>
-            <!--<test_1>
+            <capture>
                 <target>Iv2Default</target>
                 <transformation>[0.5 0 0.1; 0 0.5 0; 0.2 0 1]</transformation>
-            </test_1>
-            <test_2>
+                <type>test</type>
+            </capture>
+            <capture>
                 <target>Iv2Default</target>
                 <transformation>[0.5 0 -0.1; 0 0.5 0; -0.2 0 1]</transformation>
-            </test_2>-->
+                <type>test</type>
+            </capture>
         </captures>
         <fovxRange>[40,70]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
