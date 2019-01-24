@@ -1,6 +1,6 @@
-function raw=showImageRequestDialog(hw,figNum,tformData,figTitle)
+function raw=showImageRequestDialog(hw,figNum,tformData,figTitle,targetInfo)
     persistent figImgs;
-    if ~exist('figTitle','var')
+    if ~exist('figTitle','var') || isempty(figTitle)
         figTitle = 'Please align image board to overlay';
     end
     if(isempty(figImgs))

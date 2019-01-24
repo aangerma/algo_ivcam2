@@ -482,33 +482,86 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         r.add('DIGGsphericalEn',true);
         r.set();
         
-%         nCorners = 9*13;
-        d(1)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]));
-%         Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
-        d(2)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
-%         Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
-        d(3)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
-%         Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
-%         d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
-%         d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
-%         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
         
+        frame = hw.getFrame(10);
+        bwIm = frame.i>0;
+        %{
+        imNoise = collectNoiseIm(hw);
+        noiseLevel = prctile_(imNoise(imNoise(:)~=0),99)*255;
+        props = regionprops(bwIm,'BoundingBox','Area');
+        largest = maxind([props.Area]);
+        bbox = round(props(largest).BoundingBox);
+        %}
+        
+        %find effective image "bounding box"
+        bbox = [];
+        bbox([1,3]) = minmax(find(bwIm(round(size(bwIm,1)/2),:)>0.9));
+        lcoords = minmax(find(bwIm(:,bbox(1)+10)>0.9)');
+        mcoords = minmax(find(bwIm(:,round(size(bwIm,2)/2))>0.9)');
+        rcoords = minmax(find(bwIm(:,bbox(3)-10)>0.9)');
+        bbox(2) = max([lcoords(1),mcoords(1),rcoords(1)]);
+        bbox(4) = min([lcoords(2),mcoords(2),rcoords(2)])-bbox(2);
+
+        
+        cdParams = cdParamsGenerator('iv2');
+        captures = {calibParams.dfz.captures.capture(:).type};
+        trainImages = strcmp('train',captures);
+        testImages = ~trainImages;
+        for i=1:length(captures)
+            cap = calibParams.dfz.captures.capture(i);
+            targetInfo = targetInfoGenerator(cap.target);
+            im = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,[],targetInfo);
+            [pts, grid] = detectCheckerboard(im.i,targetInfo,cdParams);
+            if isempty(grid)
+                [pts, grid] = detectCheckerboard(imcrop(im.i,bbox),targetInfo,cdParams);
+                if ~isempty(pts)
+                    pts = pts + (bbox(1:2)-1);
+                end
+            end
+            nPointDetected = prod(grid);
+            nCornersExpected = targetInfo.cornersX * targetInfo.cornersY * (targetInfo.isDouble+1);
+            if nPointDetected < nCornersExpected
+                 fprintff('%d/%d CB corners detected.\n',nPointDetected,nCornersExpected);
+            end
+            d(i).i = im.i;
+            d(i).c = im.c;
+            d(i).z = im.z;
+            d(i).pts = pts;
+            d(i).grid = grid;
+            d(i).pts3d = create3DCorners(targetInfo)';
+            d(i).rpt = Calibration.aux.samplePointsRtd(im.z,pts,regs);
+        end
+        %{
+        d(1)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]));
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
+        d(2)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
+        d(3)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
+        Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
+        d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
+        d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
+%         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
+        %}
         
         % dodluts=struct;
-        [dfzRegs,results.geomErr,dWithRpt] = Calibration.aux.calibDFZ(d(1:3),regs,calibParams,fprintff,1);
-        x0 = double([dfzRegs.FRMW.xfov(1) dfzRegs.FRMW.yfov(1) dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
-            regs.FRMW.projectionYshear(1) (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
-%         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(4:end),regs,calibParams,fprintff,0,1,x0);
+        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0);
+        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
+            regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
+        
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);
         regs = fw.get();
         % Calibrate polimonial undistort params
-        [polyVars,results.geomErr] = Calibration.Undist.calibPolinomialUndistParams(dWithRpt,regs,calibParams);
+        [polyVars,results.geomErr] = Calibration.Undist.calibPolinomialUndistParams(d(trainImages),regs,calibParams);
         undistRegs.FRMW.polyVars = single(polyVars);
         fw.setRegs(undistRegs,fnCalib);
         fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomErr);   
         
+        if ~isempty(testImages)
+            [~,results.extraImagesGeomErr] = Calibration.Undist.calibPolinomialUndistParams(d(testImages),regs,calibParams,polyVars);
+            fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
+        end
         
         if(results.geomErr<calibParams.errRange.geomErr(2))
             fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
@@ -518,10 +571,6 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
 %             hw.runScript(fnAlgoTmpMWD);
 %             hw.shadowUpdate();
             calibPassed = 1;
-
-            
-                                               
-
         else
             fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
         end

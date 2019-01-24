@@ -118,6 +118,48 @@
      <margin>100</margin>  
    </dsm>
     <dfz>
+        <captures>
+             <!--<capture>
+                <target>Iv2L50</target>
+                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>-->
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2Default</target>
+                <transformation>[0.5 0 0.1; 0 0.5 0; 0.2 0 1]</transformation>
+                <type>test</type>
+            </capture>
+            <capture>
+                <target>Iv2Default</target>
+                <transformation>[0.5 0 -0.1; 0 0.5 0; -0.2 0 1]</transformation>
+                <type>test</type>
+            </capture>
+        </captures>
         <fovxRange>[40,70]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 
@@ -127,8 +169,6 @@
         <dsmXOffset>[0,0]</dsmXOffset>
         <dsmYOffset>[0,0]</dsmYOffset>
         <zenithNormW>0.05</zenithNormW>
-        
-        
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
