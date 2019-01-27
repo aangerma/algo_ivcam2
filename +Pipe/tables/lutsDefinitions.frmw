@@ -3,3 +3,4 @@ DIGGundistModel           , 2048    ,32      ,2232418304
 FRMWundistModel           , 2048    ,32      ,
 DCORtmpltFine			  , 8192    ,32      , 2250252288
 DCORtmpltCrse			  , 2048    ,32      , 2250244096
+FRMWtmpTrans              , 1792    ,32      ,
