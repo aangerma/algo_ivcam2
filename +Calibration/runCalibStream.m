@@ -678,12 +678,12 @@ function writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff)
     intregs.DIGG.spare(7)=uint32(regs.FRMW.marginL)*2^16 + uint32(regs.FRMW.marginR);
     intregs.DIGG.spare(8)=uint32(regs.FRMW.marginT)*2^16 + uint32(regs.FRMW.marginB);
     intregs.JFIL.spare=zeros(1,8,'uint32');
-    [zoCol,zoRow] = Calibration.aux.zoLoc(fw);
-    intregs.JFIL.spare(1)=uint32(zoRow)*2^16 + uint32(zoCol);
+    %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
+    intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow)*2^16 + uint32(regs.FRMW.zoWorldCol);
     fw.setRegs(intregs,fnCalib);
     fw.get();
     
-    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(zoRow),uint32(zoCol));
+    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow),uint32(regs.FRMW.zoWorldCol));
 end
 
 

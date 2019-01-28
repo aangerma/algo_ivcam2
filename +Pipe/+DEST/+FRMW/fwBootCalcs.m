@@ -42,11 +42,9 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 % calculateIntrinsic function calculates camera intrinsic
 % The calculations produces:DEST.p2axa,DEST.p2axb,DEST.p2aya,DEST.p2ayb,FRMW.kRaw, FRMW.kWorld,FRMW.zoRaw,FRMW.zoWorld
 % calculateIntrinsic function should be calculated when one of the following is changing:
-%  Regs from external
-%  configuration:regs.FRMW.mirrorMovmentMode,regs.DIGG.undistBypass,regs.FRMW.undistXfovFactor,regs.FRMW.undistYfovFactor,regs.FRMW.xres,regs.FRMW.yres,regs.GNRL.imgHsize,regs.GNRL.imgVsize
-% %  Regs from EPROM:
-% regs.FRMW.laserangleH,regs.FRMW.laserangleV,regs.FRMW.projectionYshear,
-% regs.FRMW.xfov, regs.FRMW.yfov, regs.FRMW.marginL/R/T/B,
+% regs from previous bootcalc: regs.FRMW.xres,regs.FRMW.yres
+%  Regs from external configuration:regs.FRMW.mirrorMovmentMode,regs.DIGG.undistBypass,regs.FRMW.undistXfovFactor,regs.FRMW.undistYfovFactor,regs.GNRL.imgHsize,regs.GNRL.imgVsize
+%  Regs from EPROM: regs.FRMW.laserangleH,regs.FRMW.laserangleV,regs.FRMW.projectionYshear,regs.FRMW.xfov, regs.FRMW.yfov, regs.FRMW.marginL/R/T/B,
 
 [regs,autogenRegs]=calculateIntrinsic(regs,autogenRegs); 
 
