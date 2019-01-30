@@ -18,6 +18,22 @@ autogenRegs.DEST.fineCorrRange = uint16(16);
 %     autogenRegs.DEST.rxPWRpd=autogenRegs.DEST.rxPWRpd/2^10;
     
 % % % autogenRegs.DEST.txPWRpd=zeros(1,65,'single')/2^10; %set by firmware in runtime from laser power
+
+
+
+%% zero order location
+%ZOLOC calculates the location of the ZO pixel (in the users rectified
+%image).
+regs = Firmware.mergeRegs(regs,autogenRegs);
+
+[xZOraw,yZOraw] = Calibration.aux.ang2xySF(0,0,regs,[],1); % ZO location
+autogenRegs.FRMW.zoRawCol= uint16(floor(xZOraw))*uint16(ones(1,5));
+autogenRegs.FRMW.zoRawRow= uint16(floor(yZOraw))*uint16(ones(1,5));
+
+autogenRegs.FRMW.zoWorldCol = (regs.GNRL.imgHsize - uint16(floor(xZOraw)))*uint16(ones(1,5));
+autogenRegs.FRMW.zoWorldRow =(regs.GNRL.imgVsize - uint16(floor(yZOraw)))*uint16(ones(1,5));
+
+%%
 regs = Firmware.mergeRegs(regs,autogenRegs);
 end
 

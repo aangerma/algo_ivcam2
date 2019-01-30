@@ -32,17 +32,7 @@ Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
 regsOut.CBUF.spare=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
 regsOut.FRMW.kWorld=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
 
-%% zero order location
-%ZOLOC calculates the location of the ZO pixel (in the users rectified
-%image).
-regs = Firmware.mergeRegs(regs,regsOut);
 
-[xZOraw,yZOraw] = Calibration.aux.ang2xySF(0,0,regs,[],1); % ZO location
-regsOut.FRMW.zoRawCol= uint16(floor(xZOraw));
-regsOut.FRMW.zoRawRow= uint16(floor(yZOraw));
-
-regsOut.FRMW.zoWorldCol = regs.GNRL.imgHsize - uint16(floor(xZOraw));
-regsOut.FRMW.zoWorldRow  =regs.GNRL.imgVsize - uint16(floor(yZOraw));
 
 end
 
