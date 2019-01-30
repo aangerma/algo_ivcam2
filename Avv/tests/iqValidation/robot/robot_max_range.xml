@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <root>
-    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <db saveData="no">X:\Avv\dbValidation.csv</db>
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
