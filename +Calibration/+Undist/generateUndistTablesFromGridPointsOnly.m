@@ -1,4 +1,4 @@
-function [udistLUT,undistx,undisty]=generateUndistTablesFromGridPointsOnly(regs)
+function [udistLUT,undistx,undisty]=generateUndistTablesFromGridPointsOnly(regs,origRegs,FE)
 
 wh=double([regs.GNRL.imgHsize,regs.GNRL.imgVsize]);
 shift = double(regs.DIGG.bitshift);
@@ -9,11 +9,22 @@ fx = single(regs.DIGG.undistFx)/(2^shift);
 fy = single(regs.DIGG.undistFy)/(2^shift);
 [ybug,xbug]=ndgrid(1/fy*(0:31)+y0,1/fx*(0:31)+x0);
 
-
 [angxg,angyg] = Calibration.aux.xy2angSF(xbug(:),ybug(:),regs,false);
 angxPostPolyUndist = Calibration.Undist.applyPolyUndist(angxg,regs);
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
-[xg,yg] = Calibration.aux.ang2xySF(angxPostPolyUndist,angyg,regs,[],true);
+
+
+if ~isempty(FE)
+%     v = Calibration.aux.xy2vec(xg,yg,regs); % for each pixel, get the unit vector in space corresponding to it.
+%     [angxg,angyg] = Calibration.aux.vec2ang(v,origregs,FE);
+    
+    v = Calibration.aux.ang2vec(angxPostPolyUndist,angyg,origRegs,FE);
+    [xg,yg] = Calibration.aux.vec2xy(v,regs);
+else
+    [xg,yg] = Calibration.aux.ang2xySF(angxPostPolyUndist,angyg,origRegs,[],true);
+end
+
+
 undist = [xg-xbug(:),yg-ybug(:)];
 
 undistx=reshape(undist(:,1),size(xbug));
@@ -33,12 +44,3 @@ udistLUT = typecast(vec(single([undistx(:) undisty(:)]')./wh'),'uint32');
 end
 
 
-function m=removeXscaling(matin)
-[~,xg]=ndgrid(linspace(-1,1,32));
-H=[xg(:) ones(32*32,1)];
-th = H\matin(:);
-e=abs(H*th-matin(:));
-inl=(e<prctile(e,75));
-th = H(inl,:)\matin(inl);
-m=matin-(xg*th(1)+th(2));
-end

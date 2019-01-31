@@ -5,18 +5,18 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figTitle,targetInfo)
     end
     if(isempty(figImgs))
         bd = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))),'targets',filesep);
-        figImgs{1} = imread([bd 'calibrationChart.png']);
+        figImgs{1} = imread([bd 'sampleCalibrationChart.png']);
         figImgs{2} = imread([bd 'fineCheckerboardA3.png']);
     end
     f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@exitOnEnter,'WindowButtonDownFcn',@(varargin) set(varargin{1},'userdata',1));
     a=axes('parent',f);
     maximizeFig(f);
-    I = mean(figImgs{figNum},3);
+    I = 255-mean(figImgs{figNum},3);
     %%
     sz = hw.streamSize();
     move2Ncoords = [2/size(I,2) 0 0 ; 0 2/size(I,1) 0; -1/size(I,2)-1 -1/size(I,1)-1 1];
     if ~isempty(tformData)
-        It= imwarp(I, projective2d(move2Ncoords*tformData'),'bicubic','fill',0,'OutputView',imref2d(sz,[-1 1],[-1 1]));
+        It = imwarp(I, projective2d(move2Ncoords*tformData'),'bicubic','fill',0,'OutputView',imref2d(sz,[-1 1],[-1 1]));
         It = uint8(It.*permute([0 1 0],[3 1 2]));
     else
         It = uint8(zeros([sz,3]));

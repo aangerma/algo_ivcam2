@@ -151,12 +151,11 @@ classdef HWinterfaceFile <handle
         function varargout = runScript(obj,varargin)
 %             varargout=obj.privInOutRec('runScript',varargin);
         end
-        
-          function tmptr=getTemperature(obj)
+        function tmptr=getLddTemperature(obj)
             [~,val]=obj.cmd('irb e2 13 02');
             tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
-            
-          end
+        end
+
         
         function [info,serial,isId] = getInfo(obj)
             info = obj.cmd('gvd');

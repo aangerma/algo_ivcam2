@@ -175,7 +175,8 @@ function app=createComponents()
     app.VersionLabel = uicontrol('style','text','parent',configurationTab);
     app.VersionLabel.HorizontalAlignment = 'left';
     app.VersionLabel.Position = [5 sz(2)-154 94 15];
-    app.VersionLabel.String = sprintf('version: %5.2f',calibToolVersion());
+    [ver,sub] = calibToolVersion();
+    app.VersionLabel.String = sprintf('version: %5.2f.%1.0f',ver,sub);
     
     
     % Create outputFldrBrowseBtn
@@ -279,7 +280,7 @@ function statrtButton_callback(varargin)
     try
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
-        runparams.version=calibToolVersion();
+        [runparams.version,runparams.subVersion] = calibToolVersion(); 
         runparams.outputFolder = [];
         runparams.replayFile = [];
 
@@ -346,10 +347,12 @@ function statrtButton_callback(varargin)
         calibParams.sparkParams.resultsFolder = runparams.outputFolder;
         if app.cb.replayMode.Value==0
             s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
-            s.addTestProperty('CalibToolVersion',calibToolVersion)
+            s.addTestProperty('CalibToolVersion',runparams.version)
+            s.addTestProperty('CalibToolSubVersion',runparams.subVersion)
             s.startDUTsession(serialStr);
             s.addTestProperty('FWVersion',fwVersion);
-            s.addTestProperty('gvd',info);
+            addGvd2Spark(s,info);
+            
 %             s.addDTSproperty('TargetType','IRcalibrationChart');
         else
             s = [];
@@ -403,4 +406,14 @@ function statrtButton_callback(varargin)
     end
     fclose(app.m_logfid);
     set_watches(app.figH,true);
+end
+function addGvd2Spark(s,gvd)
+    C = strsplit(gvd,newline);
+    for i = 1:numel(C)
+        line = strsplit(C{i},{':',' '});
+        if numel(line) > 1
+            s.addTestProperty(['gvd_' line{1}(1:end-1)],line{2});
+        end
+    end
+    
 end

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <cb_replayMode>1</cb_replayMode>
+   <cb_replayMode>0</cb_replayMode>
    <cb_verbose>1</cb_verbose>
    <cb_init>1</cb_init>
    <cb_DSM>1</cb_DSM>

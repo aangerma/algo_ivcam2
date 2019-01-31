@@ -21,6 +21,7 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     params = Validation.aux.defaultMetricsParams();
     params.verbose = 0;
     params.expectedGridSize = expectedGridSize;
+    params.calibrationTargetIV2 = 1;
     
     frames = hw.getFrame(validationParams.numOfFrames,false);
     [score, allResults,dbgData] = Validation.metrics.losGridDrift(frames, params);

@@ -41,6 +41,8 @@ function [rpt] = samplePointsRtd(z,pts,regs)
         
             it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz),reshape(p(:,2)-1,bsz)); % Used to get depth and ir values at checkerboard locations.
     %}
+%     pts(isnan(pts(:,1)),:) = []; 
+    pts = reshape(pts,[],2);
     it = @(k) interp2(xg,yg,k,pts(:,1)-1,pts(:,2)-1); % Used to get depth and ir values at checkerboard locations.
     %rtd,phi,theta
     rpt=cat(2,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
