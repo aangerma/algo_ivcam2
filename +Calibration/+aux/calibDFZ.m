@@ -6,7 +6,6 @@ FE = [];
 mode=regs.FRMW.mirrorMovmentMode;
 xfov=regs.FRMW.xfov(mode);
 yfov=regs.FRMW.yfov(mode);
-projectionYshear=regs.FRMW.projectionYshear(mode);
 
 if calibParams.fovExpander.valid
     FE = calibParams.fovExpander.table;
@@ -21,78 +20,21 @@ if(~exist('fprintff','var')|| isempty(fprintff))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
-    x0 = double([xfov yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV projectionYshear 0 0]);
+    x0 = double([xfov yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV regs.FRMW.polyVars]);    
 end
-    %{
-    if ~isfield(darr, 'rpt')
-        for i = 1:numel(darr)
-            % Get r from d.z
-            if ~regs.DEST.depthAsRange
-                [~,r] = Pipe.z16toVerts(darr(i).z,regs);
-            else
-                r = double(darr(i).z)/bitshift(1,regs.GNRL.zMaxSubMMExp);
-            end
-            % get rtd from r
-            [~,~,~,~,~,~,sing]=Pipe.DEST.getTrigo(size(r),regs);
-            C=2*r*regs.DEST.baseline.*sing- regs.DEST.baseline2;
-            rtd=r+sqrt(r.^2-C);
-            rtd=rtd+regs.DEST.txFRQpd(1);
 
-            %calc angles per pixel
-            [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
-            if(regs.DIGG.sphericalEn)
-                yy = double(yg);
-                xx = double((xg)*4);
-                xx = xx-double(regs.DIGG.sphericalOffset(1));
-                yy = yy-double(regs.DIGG.sphericalOffset(2));
-                xx = xx*2^10;%bitshift(xx,+12-2);
-                yy = yy*2^12;%bitshift(yy,+12);
-                xx = xx/double(regs.DIGG.sphericalScale(1));
-                yy = yy/double(regs.DIGG.sphericalScale(2));
-
-                angx = single(xx);
-                angy = single(yy);
-            else
-                [angx,angy]=Calibration.aux.xy2angSF(xg,yg,regs,0);
-            end
-
-            %find CB points
-        %{
-            warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-            [p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(darr(i).i)), calibParams.gnrl.cbPtsSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-            
-            if isempty(p)
-                fprintff('Error: checkerboard not detected!');
-            end
-        
-            it = @(k) interp2(xg,yg,k,reshape(p(:,1)-1,bsz),reshape(p(:,2)-1,bsz)); % Used to get depth and ir values at checkerboard locations.
-        %}
-        if ~isempty(darr(i).pts)
-            it = @(k) interp2(xg,yg,k,darr(i).pts(:,1)-1,darr(i).pts(:,2)-1); % Used to get depth and ir values at checkerboard locations.
-            %rtd,phi,theta
-            darr(i).rpt=cat(2,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
-        end
-        end
-    end
-    dWithRpt = darr;% Use it later for undistort
-    for i = 1:numel(darr)
-        % Take the middle 9x13 sub checkerboard -> LOS reports seems solid
-        % there
-        h = 9;
-        w = 13;
-        darr(i).rpt = darr(i).rpt(1+floor((end-h)/2):h+floor((end-h)/2),1+floor((end-w)/2):w+floor((end-w)/2),:);
-    end
-    %}
     %%
-    xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) par.projectionYshear(1) par.dsmXOffset(1) par.dsmYOffset(1)];
-    xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) par.projectionYshear(2) par.dsmXOffset(2) par.dsmYOffset(2)];
+    xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) 0 0 0];
+    xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) 0 0 0];
     regs = x2regs(x0,regs);
+    undistFunc = @(ax,polyVars) ax + ax/2047*polyVars(1)+(ax/2047).^2*polyVars(2)+(ax/2047).^3*polyVars(3);
     if iseval
-        [minerr,~]=errFunc(darr,regs,x0,FE);
+        
+        [minerr,~]=errFunc(darr,regs,x0,undistFunc,FE,0);
         outregs = [];
         return
     end
-    [e,eFit]=errFunc(darr,regs,x0,FE);
+    [e,eFit]=errFunc(darr,regs,x0,undistFunc,FE,1);
     printErrAndX(x0,e,eFit,'X0:',verbose)
     
     % Define optimization settings
@@ -101,19 +43,34 @@ end
     opt.TolFun = 1e-6;
     opt.TolX = 1e-6;
     opt.Display ='none';
-    optFunc = @(x) (errFunc(darr,regs,x,FE) + par.zenithNormW * zenithNorm(regs,x));
+    
+    optFunc = @(x) (errFunc(darr,regs,x,undistFunc,FE,1) + par.zenithNormW * zenithNorm(regs,x));
     xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
     xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
-    [minerr,eFit]=errFunc(darr,outregs,xbest,FE);
-printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
-outregs_full = outregs;
-outregs = x2regs(xbest);
-fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f, xOff = %.2f, yOff = %.2f, eGeom=%.2f.\n',...
-        outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, outregs.FRMW.projectionYshear(1),xbest(7),xbest(8),minerr);
-    printPlaneAng(darr,outregs_full,xbest,FE,fprintff);
-    outregs.EXTL.dsmXoffset = regs.EXTL.dsmXoffset+xbest(7)/regs.EXTL.dsmXscale;
-    outregs.EXTL.dsmYoffset = regs.EXTL.dsmYoffset+xbest(8)/regs.EXTL.dsmYscale;
+    [minerrPreUndist,eFit]=errFunc(darr,outregs,xbest,undistFunc,FE,1);
+    % Optimize Undist poly params
+    optFunc = @(x) (errFunc(darr,regs,x,undistFunc,FE,0));
+    
+    x0 = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV outregs.FRMW.polyVars]);    
+    xL = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV par.polyVarRange(1,:)]);    
+    xH = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV par.polyVarRange(2,:)]);    
+
+    xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
+    xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
+    outregs = x2regs(xbest,regs);
+    [minerr,eFit]=errFunc(darr,outregs,xbest,undistFunc,FE,0);
+    
+    printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
+    outregs_full = outregs;
+    outregs = x2regs(xbest);
+    fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, eGeom=%.2f.\n',...
+        outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, minerrPreUndist);
+    fprintff('Undist result: polyVars=[%.2f,%.2f,%.2f], eGeom=%.2f.\n',...
+         xbest(6),xbest(7),xbest(8),minerr);
+    
+    
+    printPlaneAng(darr,outregs_full,xbest,undistFunc,FE,fprintff,0);
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
@@ -129,17 +86,22 @@ fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, yShear=%.2f,
 
 end
 
-function [e,eFit]=errFunc(darr,rtlRegs,X,FE)
-%build registers array
-% X(3) = 4981;
-rtlRegs = x2regs(X,rtlRegs);
+function [e,eFit]=errFunc(darr,rtlRegs,X,undistFunc,FE,useCropped)
+    %build registers array
+    % X(3) = 4981;
+    rtlRegs = x2regs(X,rtlRegs);
     e = [];
     eFit = [];
-for i = 1:numel(darr)
-    d = darr(i);
-        v = calcVerices(d,X,rtlRegs,FE);
-        numVert = d.grid(1)*d.grid(2);
-        numPlanes = d.grid(3);
+    for i = 1:numel(darr)
+        d = darr(i);
+        if useCropped
+            grid = d.gridCropped;
+        else
+            grid = d.grid;
+        end
+        v = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped);
+        numVert = grid(1)*grid(2);
+        numPlanes = grid(3);
         for pid = 1:numPlanes
             idxs = (pid-1)*numVert+1:pid*numVert;
             vPlane  = v(idxs,:);
@@ -152,24 +114,29 @@ for i = 1:numel(darr)
     e = mean(e);
 end
 
-function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE)
-    vUnit = Calibration.aux.ang2vec(d.rpt(:,2)+X(7),d.rpt(:,3)+X(8),rtlRegs,FE)';
+function [v,x,y,z] = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped)
+    if useCropped
+        rpt = d.rptCropped;
+    else
+        rpt = d.rpt;
+    end
+    vUnit = Calibration.aux.ang2vec(undistFunc(rpt(:,2),[X(6),X(7),X(8)]),rpt(:,3),rtlRegs,FE)';
     %vUnit = reshape(vUnit',size(d.rpt));
     %vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.
     sing = vUnit(:,1);
-    rtd_=d.rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
+    rtd_=rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
     r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
     v = double(vUnit.*r);
     if nargout>1
         x = v(:,1);
         y = v(:,2);
         z = v(:,3);
-end
+    end
     
 end
 
-function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
+function [] = printPlaneAng(darr,rtlRegs,X,undistFunc,FE,fprintff,useCropped)
     rtlRegs = x2regs(X,rtlRegs);
     horizAng = zeros(1,numel(darr));
     verticalAngl = zeros(1,numel(darr));
@@ -177,9 +144,14 @@ function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff)
     
     for i = 1:numel(darr)
         d = darr(i);
-        [~,x,y,z] = calcVerices(d,X,rtlRegs,FE);
-        numVert = d.grid(1)*d.grid(2);
-        numPlanes = d.grid(3);
+        if useCropped
+            grid = d.gridCropped;
+        else
+            grid = d.grid;
+        end
+        [~,x,y,z] = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped);
+        numVert = grid(1)*grid(2);
+        numPlanes = grid(3);
         for pid=1:numPlanes
             idxs = [(pid-1)*numVert+1:pid*numVert]';
             isValid = ~isnan(x(idxs,:));
@@ -213,11 +185,12 @@ function rtlRegs = x2regs(x,rtlRegs)
 for(i=1:5)
     iterRegs.FRMW.xfov(i)=single(x(1));
     iterRegs.FRMW.yfov(i)=single(x(2));
-    iterRegs.FRMW.projectionYshear(i)=single(x(6));
+    iterRegs.FRMW.projectionYshear(i)=single(0);
 end
 iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
 iterRegs.FRMW.laserangleH=single(x(4));
 iterRegs.FRMW.laserangleV=single(x(5));
+iterRegs.FRMW.polyVars =single([x(6),x(7),x(8)]);
 if(~exist('rtlRegs','var'))
     rtlRegs=iterRegs;
     return;

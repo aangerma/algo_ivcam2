@@ -1,16 +1,32 @@
-function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff,calibParams)
+function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff,calibParams,runParams)
     dfzRes = [];
     params.camera.K = getKMat(hw);
     params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
     params.target.squareSize = calibParams.validationConfig.cbSquareSz;
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;
-    [score, allRes] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
+    [score, allRes,dbg] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
+    
+    
+    ff = Calibration.aux.invisibleFigure();
+    imagesc(dbg.ir); 
+    pCirc = Calibration.DFZ.getCBCircPoints(dbg.gridPoints,dbg.gridSize);
+    hold on;
+    plot(pCirc(:,1),pCirc(:,2),'r','linewidth',2);
+    hold off
+    title(sprintf('Validation interDist image: Grid=[%d,%d]',dbg.gridSize(1),dbg.gridSize(2)));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','GridInterdistImage');
+
+    
+    
+    
     dfzRes.GeometricError = score;
     [~, geomRes,dbg] = Validation.metrics.geomUnproject(rotFrame180(frames), params);
     dfzRes.reprojRmsPix = geomRes.reprojRmsPix;
     dfzRes.reprojZRms = geomRes.reprojZRms;
     dfzRes.irDistanceDrift = geomRes.irDistanceDrift;
     allRes = Validation.aux.mergeResultStruct(allRes,geomRes);
+    
+    
     
     fprintff('%s: %2.4g\n','eGeom',score);
 end

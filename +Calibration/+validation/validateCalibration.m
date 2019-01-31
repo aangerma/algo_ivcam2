@@ -16,7 +16,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         z2mm = double(hw.z2mm);
         fprintff('opening stream...');
         frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align old (small) checkerboard to screen');
-        
+        Calibration.aux.collectTempData(hw,runParams,'Before validation stage:');
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
         subplot(1,3,2); imagesc(frame.z/hw.z2mm); title('Validation Z');
@@ -79,7 +79,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif strfind(enabledMetrics{i},'dfz')
                 dfzConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(dfzConfig.numOfFrames);
-                [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff,calibParams);
+                [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff,calibParams,runParams);
                 valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allDfzRes;

@@ -11,7 +11,7 @@
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
        <zNorm>4</zNorm>
-       <cbSquareSz>34.88</cbSquareSz>
+       <cbSquareSz>30</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
    </gnrl>
    <errRange>
@@ -19,7 +19,7 @@
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
       <geomErr>[0.01 1.6]</geomErr>
-      <extraImagesGeomErr>[0.01 1.75]</extraImagesGeomErr>
+      <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 2]</maxPixelDisplacement>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
@@ -45,12 +45,15 @@
       For running the same metric more then once add <metric_name>_n, for example:
       <roi_2></roi_2>
       -->
-      <cbSquareSz>34.88</cbSquareSz>
+      <cbSquareSz>30</cbSquareSz>
       <cbGridSz>[]</cbGridSz>
       <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
       <wait>
           <timeoutSec>1</timeoutSec>
       </wait>
+      <dfz>
+          <numOfFrames>30</numOfFrames>
+      </dfz>
       <coverage>
           <numOfFrames>100</numOfFrames>
           <sphericalMode>1</sphericalMode>
@@ -63,9 +66,6 @@
           <roi>0.5</roi>
       </temporalNoise>
       <delays></delays>
-      <dfz>
-          <numOfFrames>30</numOfFrames>
-      </dfz>
       <roi></roi>
       <los>
           <numOfFrames>100</numOfFrames>
@@ -101,12 +101,9 @@
       <stickerLocationIsLeft>0</stickerLocationIsLeft>
       <stickerLocationIsTop>1</stickerLocationIsTop>
    </scanDir>
-   <los>
-       <cbPtsSz>[9,13]</cbPtsSz>
-   </los>
    <dataDelay>
-      <slowDelayInitVal>28915</slowDelayInitVal> 
-      <fastDelatInitOffset>40</fastDelatInitOffset>
+      <slowDelayInitVal>29072</slowDelayInitVal> 
+      <fastDelatInitOffset>159</fastDelatInitOffset>
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
    </dataDelay>
@@ -135,27 +132,27 @@
                 <type>train</type>
             </capture>-->
             <capture>
-                <target>Iv2L50</target>
+                <target>Iv2A1</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
             <capture>
-                <target>Iv2L50</target>
+                <target>Iv2A1</target>
                 <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
             <capture>
-                <target>Iv2L50</target>
+                <target>Iv2A1</target>
                 <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
             <capture>
-                <target>Iv2Default</target>
+                <target>Iv2A1</target>
                 <transformation>[0.5 0 0.1; 0 0.5 0; 0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
             <capture>
-                <target>Iv2Default</target>
+                <target>Iv2A1</target>
                 <transformation>[0.5 0 -0.1; 0 0.5 0; -0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
@@ -165,9 +162,7 @@
         <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 
         <zenithyRange>[-6,6]</zenithyRange> 
-        <projectionYshear>[0,0]</projectionYshear>
-        <dsmXOffset>[0,0]</dsmXOffset>
-        <dsmYOffset>[0,0]</dsmYOffset>
+        <polyVarRange>[-200,-200,-200;200,200,200]</polyVarRange>
         <zenithNormW>0.05</zenithNormW>
     </dfz>
     <roi>

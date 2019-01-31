@@ -508,7 +508,7 @@ classdef HWinterface <handle
             
         end
         
-        function tmptr=getTemperature(obj)
+        function tmptr=getLddTemperature(obj)
             [~,val]=obj.cmd('irb e2 13 02');
             tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
             obj.privRecFunc('getTemperature',{},{tmptr});

@@ -24,7 +24,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     fprintff('Starting calibration:\n');
     fprintff('%-15s %s\n','stated at',datestr(now));
-    fprintff('%-15s %5.2f\n','version',runParams.version);
+    fprintff('%-15s %5.2f.%1.0f\n','version',runParams.version,runParams.subVersion);
     
     %% Load init fw
     fprintff('Loading initial firmware...');
@@ -41,11 +41,12 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% Update init configuration
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
     %% Start stream to load the configuration
+    Calibration.aux.collectTempData(hw,runParams,'Before starting stream:');
     fprintff('Opening stream...');
     hw.startStream();
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
-    verValue = getVersion(hw,runParams);  
+   [verValue,verValuefull] = getVersion(hw,runParams);  
     %% Init hw configuration
     initConfiguration(hw,fw,runParams,fprintff,t);
 
@@ -75,7 +76,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
    if ~calibPassed
        return 
    end
-   
+   Calibration.aux.collectTempData(hw,runParams,'Before los validation:');
    [results,calibPassed] = validateLos(hw, runParams, calibParams,results, fprintff);
    if ~calibPassed
        return
@@ -86,6 +87,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
+    Calibration.aux.collectTempData(hw,runParams,'Before DFZ calibration:');
     [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     if ~calibPassed
        return 
@@ -96,7 +98,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
     %% write version+intrinsics
-    writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff);
+    writeVersionAndIntrinsics(verValue,verValuefull,fw,fnCalib,calibParams,fprintff);
     
     %% ::Fix ang2xy Bug using undistort table::
     [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
@@ -187,13 +189,14 @@ function hw = loadHWInterface(runParams,fw,fprintff,t)
     fprintff('Done(%ds)\n',round(toc(t)));
 end
 
-function verValue = getVersion(hw,runParams)
+function [verValue,versionFull] = getVersion(hw,runParams)
     verValue = typecast(uint8([round(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
     
     unitConfigVersion=hw.read('DIGGspare_005');
     if(unitConfigVersion~=verValue)
         warning('incompatible configuration versions!');
     end
+    versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
 function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     if ~runParams.DSM
@@ -263,7 +266,8 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     fprintff('[-] Depth and IR delay calibration...\n');
     if(runParams.dataDelay)
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.8 .8 1]));
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]),'Delay Calibration');
+        Calibration.aux.collectTempData(hw,runParams,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
         
         fw.setRegs(delayRegs,fnCalib);
@@ -316,7 +320,7 @@ function [results,calibPassed] = validateLos(hw, runParams, calibParams, results
     calibPassed = 1;
     if runParams.validateLOS
         %test coverage
-        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],calibParams.los.cbPtsSz,fprintff);
+        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],calibParams.gnrl.cbPtsSz,fprintff);
         if ~isempty(fieldnames(losResults))
             metrics = {'losMaxP2p','losMeanStdX','losMeanStdY'};
             for m=1:length(metrics)
@@ -341,31 +345,23 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
     calibPassed = 1;
     fprintff('[-] Validating scan direction...\n');
     if runParams.scanDir
-        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]),'Please align small checkerboard with sticker to overlay');
+        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]),'Scan Direction Validation');
         IR = frame.i;
 
-        ff = Calibration.aux.invisibleFigure; 
-        imagesc(IR); 
-        title('ScanDir Validation Image');
-        Calibration.aux.saveFigureAsImage(ff,runParams,'PreCalibValidation','ScanDirImage')
-        
-        [ isLeft, isTop ] = Calibration.aux.CBTools.detectStickerOnBlackCorner(IR);
-        worldViewIsLeft = calibParams.scanDir.stickerLocationIsLeft;
-        worldViewIsTop = calibParams.scanDir.stickerLocationIsTop;
-        
-        if isLeft == worldViewIsLeft
+        [ isLeft, isTop ] = Calibration.aux.CBTools.detectCBOrientation(IR,runParams);      
+        if ~isLeft
            hDirStr = 'Left2Right';
         else
            hDirStr = 'Right2Left'; 
         end
-        if isTop == worldViewIsTop
+        if isTop
            vDirStr = 'Top2Bottom';
         else
            vDirStr = 'Bottom2Top'; 
         end
         
         fprintff('Scan direction is: %s & %s\n',hDirStr,vDirStr);
-        calibPassed = (isLeft ~= worldViewIsLeft) && (isTop ~= worldViewIsTop);
+        calibPassed = (isLeft) && (~isTop);% Currenly the scan directoin makes it so the gray circle is below and to the left of the black circle.
         if ~calibPassed
             fprintff('[x] Scan direction validation failed\n');
         end
@@ -507,13 +503,22 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
         testImages = ~trainImages;
-        for i=1:length(captures)
+        for i=1:3 %length(captures)
             cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);
-            im = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,[],targetInfo);
-            [pts, grid] = detectCheckerboard(im.i,targetInfo,cdParams);
+            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
+        end
+        for i = 1:3
+            cap = calibParams.dfz.captures.capture(i);
+            targetInfo = targetInfoGenerator(cap.target);
+            targetInfo.cornersX = 20;
+            targetInfo.cornersY = 28;
+            
+%             [pts, grid] = detectCheckerboard(im(i).i,targetInfo,cdParams);
+            pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 1);
+            grid = [size(pts,1),size(pts,2),1];
             if isempty(grid)
-                [pts, grid] = detectCheckerboard(imcrop(im.i,bbox),targetInfo,cdParams);
+                [pts, grid] = detectCheckerboard(imcrop(im(i).i,bbox),targetInfo,cdParams);
                 if ~isempty(pts)
                     pts = pts + (bbox(1:2)-1);
                 end
@@ -523,13 +528,34 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             if nPointDetected < nCornersExpected
                  fprintff('%d/%d CB corners detected.\n',nPointDetected,nCornersExpected);
             end
-            d(i).i = im.i;
-            d(i).c = im.c;
-            d(i).z = im.z;
+            d(i).i = im(i).i;
+            d(i).c = im(i).c;
+            d(i).z = im(i).z;
             d(i).pts = pts;
             d(i).grid = grid;
             d(i).pts3d = create3DCorners(targetInfo)';
-            d(i).rpt = Calibration.aux.samplePointsRtd(im.z,pts,regs);
+            d(i).rpt = Calibration.aux.samplePointsRtd(im(i).z,pts,regs);
+            
+            
+            croppedBbox = bbox;
+            cropRatioX = 0.2;
+            cropRatioY = 0.1;
+            croppedBbox(1) = croppedBbox(1) + cropRatioX*croppedBbox(3);
+            croppedBbox(3) = (1-2*cropRatioX)*croppedBbox(3);
+            croppedBbox(2) = croppedBbox(2) + cropRatioY*croppedBbox(4);
+            croppedBbox(4) = (1-2*cropRatioY)*croppedBbox(4);
+            croppedBbox = int32(croppedBbox);
+            imCropped = zeros(size(im(i).i));
+            imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
+                im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
+%             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
+            ptsCropped = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
+            gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
+            
+            d(i).ptsCropped = ptsCropped;
+            d(i).gridCropped = gridCropped;
+            d(i).rptCropped = Calibration.aux.samplePointsRtd(im(i).z,ptsCropped,regs);
+            
         end
         %{
         d(1)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]));
@@ -542,26 +568,23 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
 %         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
         %}
-        
+        Calibration.DFZ.saveDFZInputImage(d,runParams);
         % dodluts=struct;
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0);
-        x0 = double([dfzRegs.FRMW.xfov dfzRegs.FRMW.yfov dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV...
-            regs.FRMW.projectionYshear (dfzRegs.EXTL.dsmXoffset-regs.EXTL.dsmXoffset)*regs.EXTL.dsmXscale (dfzRegs.EXTL.dsmYoffset-regs.EXTL.dsmYoffset)*regs.EXTL.dsmYscale]);
-        
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);
-        regs = fw.get();
+%         regs = fw.get();
         % Calibrate polimonial undistort params
-        [polyVars,results.geomErr] = Calibration.Undist.calibPolinomialUndistParams(d(trainImages),regs,calibParams);
-        undistRegs.FRMW.polyVars = single(polyVars);
-        fw.setRegs(undistRegs,fnCalib);
-        fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomErr);   
+%         [polyVars,results.geomErr] = Calibration.Undist.calibPolinomialUndistParams(d(trainImages),regs,calibParams);
+%         undistRegs.FRMW.polyVars = single(polyVars);
+%         fw.setRegs(undistRegs,fnCalib);
+%         fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomErr);   
         
-        if ~isempty(testImages)
-            [~,results.extraImagesGeomErr] = Calibration.Undist.calibPolinomialUndistParams(d(testImages),regs,calibParams,polyVars);
-            fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
-        end
+%         if ~isempty(testImages)
+%             [~,results.extraImagesGeomErr] = Calibration.Undist.calibPolinomialUndistParams(d(testImages),regs,calibParams,polyVars);
+%             fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
+%         end
         
         if(results.geomErr<calibParams.errRange.geomErr(2))
             fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
@@ -603,7 +626,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         r.add('DIGGsphericalEn'    ,true     );
         r.set();
         fprintff('[-] Collecting up/down frames... ');
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Make sure image is bright');
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Make sure image is bright');
         [imUbias,imDbias]=Calibration.dataDelay.getScanDirImgs(hw,1);
         pause(0.1);
         fprintff('Done.\n');
@@ -666,10 +689,10 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
         fprintff('[?] skipped\n');
     end
 end
-function writeVersionAndIntrinsics(verValue,fw,fnCalib,fprintff)
+function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
     regs = fw.get();
     intregs.DIGG.spare=zeros(1,8,'uint32');
-    intregs.DIGG.spare(1)=verValue;
+    intregs.DIGG.spare(1)=verValueFull;
     intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov(1)),'uint32');
     intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov(1)),'uint32');
     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
