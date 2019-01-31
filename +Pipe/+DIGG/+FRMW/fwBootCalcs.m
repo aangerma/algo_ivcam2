@@ -5,10 +5,10 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 %  The calculations produces:
 %  *18 floating point coefficients for the runtime calculations (DIGG: nx,dx,ny,dy.)
 %  *4 output registers for other blocks in the pipe: DIGG.angXfactor, DIGG.angYfactor.
-%  2 parameters for firmware to save: FRMW.xres,FRMW.yres.
+% parameters for firmware to save: FRMW.xres,FRMW.yres,FRMW.marginL/R/T/B .
 % Ang2xyCoeff function should be calculated when one of the following is changing: 
 % Regs from EPROM: regs.FRMW.xfov, regs.FRMW.yfov, regs.FRMW.laserangleH,regs.FRMW.laserangleV,regs.FRMW.marginL/R/T/B, regs.FRMW.guardBandH,regs.FRMW.guardBandV, regs.FRMW.xR2L,regs.FRMW.xoffset, regs.FRMW.yoffset
-%  Regs from external configuration: regs.GNRL.rangeFinder,regs.FRMW.mirrorMovmentMode, regs.FRMW.marginL/R/T/B, regs.FRMW.yflip,regs.GNRL.imgHsize,regs.GNRL.imgVsize  
+%  Regs from external configuration: regs.GNRL.rangeFinder,regs.FRMW.mirrorMovmentMode, regs.FRMW.calMarginL/R/T/B, regs.FRMW.yflip,regs.GNRL.imgHsize,regs.GNRL.imgVsize  
 
 [regs,autogenRegs] = ang2xyCoeff(regs,autogenRegs);
 
@@ -54,6 +54,9 @@ end
 
 
 function [regs,autogenRegs] = ang2xyCoeff(regs,autogenRegs)
+% update margins
+[autogenRegs,regs] =Pipe.DIGG.FRMW.calculateMargins(regs,autogenRegs);
+% ang2xy coeff
 t = Pipe.DIGG.FRMW.getAng2xyCoeffs(regs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,t);
 regs = Firmware.mergeRegs(regs,autogenRegs);

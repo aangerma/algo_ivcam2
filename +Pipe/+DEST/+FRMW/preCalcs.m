@@ -1,6 +1,5 @@
 function [regs,autogenRegs,autogenLuts] = preCalcs(regs,luts,autogenRegs,autogenLuts)
 
-autogenRegs.DEST.fineCorrRange = uint16(16);
 
 %------------rx/txPWR LUT-----------------%
     
@@ -25,13 +24,11 @@ autogenRegs.DEST.fineCorrRange = uint16(16);
 %ZOLOC calculates the location of the ZO pixel (in the users rectified
 %image).
 regs = Firmware.mergeRegs(regs,autogenRegs);
+FElut=Utils.feVec2Mat(regs,autogenLuts); 
+[xZOraw,yZOraw] = Calibration.aux.ang2xySF(0,0,regs,FElut,1); % ZO location
+autogenRegs.FRMW.zoRawCol= uint32(floor(xZOraw))*uint32(ones(1,5));
+autogenRegs.FRMW.zoRawRow= uint32(floor(yZOraw))*uint32(ones(1,5));
 
-[xZOraw,yZOraw] = Calibration.aux.ang2xySF(0,0,regs,[],1); % ZO location
-autogenRegs.FRMW.zoRawCol= uint16(floor(xZOraw))*uint16(ones(1,5));
-autogenRegs.FRMW.zoRawRow= uint16(floor(yZOraw))*uint16(ones(1,5));
-
-autogenRegs.FRMW.zoWorldCol = (regs.GNRL.imgHsize - uint16(floor(xZOraw)))*uint16(ones(1,5));
-autogenRegs.FRMW.zoWorldRow =(regs.GNRL.imgVsize - uint16(floor(yZOraw)))*uint16(ones(1,5));
 
 %%
 regs = Firmware.mergeRegs(regs,autogenRegs);

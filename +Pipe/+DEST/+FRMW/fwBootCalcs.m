@@ -3,6 +3,8 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 N_TMPLT_BITS=3;
 N_CMA_BITS = 6;
 speedOfLightMMnsec = 299702547*1000/1e9;
+autogenRegs.DEST.fineCorrRange = uint16(16);
+regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% =======================================rx/txPWR LUT =======================================
 % rx_txFactors function calculates LUTS factors for tx and rx RPD.

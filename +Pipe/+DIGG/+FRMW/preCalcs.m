@@ -1,7 +1,15 @@
 function [regs,autogenRegs,autogenLuts] = preCalcs(regs,luts,autogenRegs,autogenLuts)
 
 %=======================================DIGG - ang2xy- calib res =======================================
-t = Pipe.DIGG.FRMW.getAng2xyCoeffs(regs);
+tmpRegs=regs; 
+tmpRegs.GNRL.imgHsize=regs.FRMW.calImgHsize; 
+tmpRegs.GNRL.imgVsize=regs.FRMW.calImgVsize; 
+tmpRegs.FRMW.marginL=regs.FRMW.calMarginL; 
+tmpRegs.FRMW.marginR=regs.FRMW.calMarginL; 
+tmpRegs.FRMW.marginT=regs.FRMW.calMarginL; 
+tmpRegs.FRMW.marginB=regs.FRMW.calMarginL; 
+
+t = Pipe.DIGG.FRMW.getAng2xyCoeffs(tmpRegs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,t);
 
 regs = Firmware.mergeRegs(regs,autogenRegs);
