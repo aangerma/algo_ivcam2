@@ -21,7 +21,7 @@
       <geomErr>[0.01 1.6]</geomErr>
       <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
       <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.0 2]</maxPixelDisplacement>
+      <maxPixelDisplacement>[0.0 5]</maxPixelDisplacement>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[50 inf]</imFovX>
