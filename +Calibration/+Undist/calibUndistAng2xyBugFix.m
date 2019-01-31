@@ -27,7 +27,7 @@ end
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
 % y.
-[udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs);
+[udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs,origregs,FE);
 
 
 % A grid of x-y coordinates in the image plane:

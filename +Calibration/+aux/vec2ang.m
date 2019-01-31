@@ -1,8 +1,8 @@
 function [angx,angy] = vec2ang(vorig,regs,fovExpander)
 %{Receives a 3d unit vector v and calculates the corresponding received angx angy.%}
 v = reshape(vorig,[size(vorig,1)*size(vorig,2),3]);
-angXfactor = single(regs.FRMW.xfov*0.25/(2^11-1));
-angYfactor = single(regs.FRMW.yfov*0.25/(2^11-1));
+angXfactor = single(regs.FRMW.xfov(1)*0.25/(2^11-1));
+angYfactor = single(regs.FRMW.yfov(1)*0.25/(2^11-1));
 angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
 

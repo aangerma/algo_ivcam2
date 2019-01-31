@@ -35,7 +35,7 @@
       <projFovx>[55 65]</projFovx>
       <projFovy>[35 45]</projFovy>
       <ambVal>[0,255]</ambVal>
-      <losMaxP2p>[0 1.5]</losMaxP2p>
+      <losMaxP2p>[0 2]</losMaxP2p>
       <losMeanStdX>[0 0.5] </losMeanStdX>
       <losMeanStdY>[0 0.2]</losMeanStdY>
    </errRange>
@@ -173,7 +173,7 @@
      <extraMarginB>4</extraMarginB>       
    </roi>
     <fovExpander>
-        <valid>0</valid>  
+        <valid>1</valid>  
         <table>
             [0	0
             0.500000000000000	0.547892600000000
