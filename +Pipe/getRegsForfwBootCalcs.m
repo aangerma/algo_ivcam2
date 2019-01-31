@@ -19,8 +19,8 @@ for i=1:length(regs2write)
 end
 
 
-outLuts.DIGG.undistModel=inLuts.DIGG.undistModel;
-
+outLuts.DIGG.undistModel = inLuts.DIGG.undistModel;
+outLuts.CBUF.xSections = inLuts.CBUF.xSections;
 
 
 

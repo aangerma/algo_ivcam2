@@ -10,6 +10,7 @@ regs = Firmware.mergeRegs(regs,FWinputRegs);
 luts = Firmware.mergeRegs(luts,FWinputLuts);
 
 %% Run fw bootcalcs
+% Why do we need autogenRegs,autogenLuts here as well?
 [regs,autogenRegs,autogenLuts] = Pipe.CBUF.FRMW.fwBootCalcs(regs,luts,autogenRegs,autogenLuts);
 
 end

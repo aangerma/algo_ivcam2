@@ -5,4 +5,4 @@ DCORtmpltFine			  , 8192    ,32      , 2250252288
 DCORtmpltCrse			  , 2048    ,32      , 2250244096
 FRMWtmpTrans              , 1792    ,32      ,
 FRMWfovExpander           , 162     ,32      ,
-FRMWcbufXsections         , 128     ,32      ,
+CBUFxSections             , 128     ,32      ,
