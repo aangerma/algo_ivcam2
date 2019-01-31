@@ -24,6 +24,8 @@ end
 end
 
 
+
+
 function [maxBufferSize] = getMaxBufferSize(imgVsize)
 if(imgVsize>=721)
     maxBufferSize=64;
@@ -38,30 +40,6 @@ BUFFER_TOP_MARGIN=10;
 maxBufferSize = maxBufferSize-BUFFER_TOP_MARGIN;
 end
 
-function [sectionVec] = calcCbufSection(regs)
-NUM_SECTIONS = 128;
-MIN_BUFFER_SIZE = 8; %Get rid of this!
 
-ANG_STEP = 8;
-dXpix = regs.FRMW.CalImgVsize/NUM_SECTIONS;
-xPix = 1:dXpix:regs.FRMW.CalImgVsize;
-num_of_samples = length(xPix);
-% x = reshape(repmat(xPix,1,3)', [],1);
-% y = [ones(num_of_samples,1); ones(num_of_samples,1)*regs.FRMW.CalImgHsize /2; ones(num_of_samples,1)*regs.FRMW.CalImgHsize ];
-[angX,~] = Calibration.aux.xy2angSF(xPix,ones(num_of_samples,1)*regs.FRMW.CalImgHsize /2,regs,true);
-[angYgrid,angXgrid] = ndgrid(int16(-2^11-1:ANG_STEP:2^11-1),angX);
-[xF,yF] = Calibration.aux.ang2xySF(angXgrid,angYgrid,regs,[],true);
-
-
-roiMask = (yF>=0 & yF<regs.FRMW.CalImgHsize );
-xF(~roiMask)=nan;
-
-sectionVec = max(ceil(nanmax_(xF)-nanmin_(xF)),MIN_BUFFER_SIZE);
-end
-
-%{
-regs.FRMW.CalImgHsize = 360;
-regs.FRMW.CalImgVsize = 640;
-%}
 
 
