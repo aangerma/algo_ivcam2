@@ -4,12 +4,12 @@ toint32 = @(x) int32(x*2^shift);
 N = 32;%LUT size
 
 if(regs.DIGG.undistBypass)
-    fx = (N-1)/double(regs.FRMW.undistCalImgHsize-1);
-    fy = (N-1)/double(regs.FRMW.undistCalImgVsize-1);
+    fx = (N-1)/double(regs.FRMW.calImgHsize-1);
+    fy = (N-1)/double(regs.FRMW.calImgVsize-1);
     x0=int32(0);
     y0=int32(0);
-    x1=int32(regs.FRMW.undistCalImgHsize-1);
-    y1=int32(regs.FRMW.undistCalImgVsize-1);
+    x1=int32(regs.FRMW.calImgHsize-1);
+    y1=int32(regs.FRMW.calImgVsize-1);
     
 else
     a=2047; 

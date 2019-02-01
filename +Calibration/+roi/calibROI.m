@@ -202,10 +202,10 @@ getB = @(m0,m1,sz) [m0, m1]';
 LR = getA(L,R,Hsz)\getB(L,R,Hsz);
 BT = getA(B,T,Vsz)\getB(B,T,Vsz);
 
-roiregs.FRMW.marginL = int16(LR(1));
-roiregs.FRMW.marginR = int16(LR(2));
-roiregs.FRMW.marginB = int16(BT(1));
-roiregs.FRMW.marginT = int16(BT(2));
+roiregs.FRMW.calMarginL = int16(LR(1));
+roiregs.FRMW.calMarginR = int16(LR(2));
+roiregs.FRMW.calMarginB = int16(BT(1));
+roiregs.FRMW.calMarginT = int16(BT(2));
 % T/Vsz = rT/(Vsz+rT+rB)
 % B/Vsz = rB/(Vsz+rT+rB)
 % 

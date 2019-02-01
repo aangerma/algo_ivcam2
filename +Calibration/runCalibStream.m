@@ -113,6 +113,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
        return 
     end
     % Update fnCalin and undist lut in output dir
+    writeCalibRegsProps(fw,fnCalib);
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
     Calibration.aux.logResults(results,runParams);
@@ -221,10 +222,10 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     if ~runParams.ROI
         DIGGspare06 = hw.read('DIGGspare_006');
         DIGGspare07 = hw.read('DIGGspare_007');
-        currregs.FRMW.marginL = int16(DIGGspare06/2^16);
-        currregs.FRMW.marginR = int16(mod(DIGGspare06,2^16));
-        currregs.FRMW.marginT = int16(DIGGspare07/2^16);
-        currregs.FRMW.marginB = int16(mod(DIGGspare07,2^16));
+        currregs.FRMW.calMarginL = int16(DIGGspare06/2^16);
+        currregs.FRMW.calMarginR = int16(mod(DIGGspare06,2^16));
+        currregs.FRMW.calMarginT = int16(DIGGspare07/2^16);
+        currregs.FRMW.calMarginB = int16(mod(DIGGspare07,2^16));
     end
     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
@@ -698,18 +699,26 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
     intregs.DIGG.spare(6)=verValue; %config version
-    intregs.DIGG.spare(7)=uint32(regs.FRMW.marginL)*2^16 + uint32(regs.FRMW.marginR);
-    intregs.DIGG.spare(8)=uint32(regs.FRMW.marginT)*2^16 + uint32(regs.FRMW.marginB);
+    intregs.DIGG.spare(7)=uint32(regs.FRMW.calMarginL)*2^16 + uint32(regs.FRMW.calMarginR);
+    intregs.DIGG.spare(8)=uint32(regs.FRMW.calMarginT)*2^16 + uint32(regs.FRMW.calMarginB);
     intregs.JFIL.spare=zeros(1,8,'uint32');
     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
-    intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow)*2^16 + uint32(regs.FRMW.zoWorldCol);
+    intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
     fw.setRegs(intregs,fnCalib);
     fw.get();
     
-    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow),uint32(regs.FRMW.zoWorldCol));
+    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow(1)),uint32(regs.FRMW.zoWorldCol(1)));
 end
 
+function writeCalibRegsProps(fw,fnCalib)
+    regs = fw.get();
+    intregs.FRMW.calImgHsize=regs.GNRL.imgHsize;
+    intregs.FRMW.calImgVsize=regs.GNRL.imgVsize;
 
+    fw.setRegs(intregs,fnCalib);
+    fw.get();
+    
+end
 
 function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     

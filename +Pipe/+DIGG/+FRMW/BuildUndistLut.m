@@ -37,7 +37,7 @@ else
         
     end
     %% renormalize
-    wh=double([regs.FRMW.undistCalImgHsize regs.FRMW.undistCalImgVsize]);
+    wh=double([regs.FRMW.calImgHsize regs.FRMW.calImgVsize]);
     
     xDisplacment=xDisplacment*wh(1);
     yDisplacment=yDisplacment*wh(2);
