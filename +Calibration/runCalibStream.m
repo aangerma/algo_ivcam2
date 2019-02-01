@@ -222,10 +222,10 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     if ~runParams.ROI
         DIGGspare06 = hw.read('DIGGspare_006');
         DIGGspare07 = hw.read('DIGGspare_007');
-        currregs.FRMW.marginL = int16(DIGGspare06/2^16);
-        currregs.FRMW.marginR = int16(mod(DIGGspare06,2^16));
-        currregs.FRMW.marginT = int16(DIGGspare07/2^16);
-        currregs.FRMW.marginB = int16(mod(DIGGspare07,2^16));
+        currregs.FRMW.calMarginL = int16(DIGGspare06/2^16);
+        currregs.FRMW.calMarginR = int16(mod(DIGGspare06,2^16));
+        currregs.FRMW.calMarginT = int16(DIGGspare07/2^16);
+        currregs.FRMW.calMarginB = int16(mod(DIGGspare07,2^16));
     end
     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
