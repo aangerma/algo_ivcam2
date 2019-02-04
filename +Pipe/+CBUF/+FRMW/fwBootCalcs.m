@@ -23,7 +23,7 @@ xcrossPix = bitshift((0:num_sections-1),autogenRegs.CBUF.xBitShifts); % The divi
 
 if(regs.FRMW.cbufConstLUT || regs.GNRL.rangeFinder)
 %     All sections are equal and get the maximal value of xSections
-    xSecPixLgth = ones(1,num_sections)*max(xSections);
+    xSecPixLgth = ones(1,num_sections)*(max(xSections) + single(regs.FRMW.cbufMargin));
 else
 %     Calculate the buffer size by finding the maximal values in xSections for each range determined by xcrossPix
     dPixInXsections = single(regs.GNRL.imgHsize)/single(length(xSections));
@@ -33,10 +33,10 @@ else
     MIN_BUFFER_SIZE = getMinBufferSize;
     for k = 2:num_sections
         xSecIxEnd = min(ceil(xcrossPix(k)/dPixInXsections) + 1, length(xSections)); 
-        xSecPixLgth(k-1) = max(xSections(xSecIxStart:xSecIxEnd));
+        xSecPixLgth(k-1) = min(max(xSections(xSecIxStart:xSecIxEnd))+ single(regs.FRMW.cbufMargin), MAX_BUFFER_SIZE);
         xSecIxStart = max(1, xSecIxEnd - 2);
     end
-    xSecPixLgth(num_sections) = min(max([xSections(xSecIxStart:end),MIN_BUFFER_SIZE]), MAX_BUFFER_SIZE);
+    xSecPixLgth(num_sections) = min(max([xSections(xSecIxStart:end),MIN_BUFFER_SIZE])+ single(regs.FRMW.cbufMargin), MAX_BUFFER_SIZE);
 end
 autogenRegs.CBUF.xRelease = uint16(zeros(1,getMaxNumSections));
 autogenRegs.CBUF.xRelease(1:numel(xSecPixLgth)) = uint16(round(xSecPixLgth));

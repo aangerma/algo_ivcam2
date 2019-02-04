@@ -8,7 +8,7 @@ end
 
 function [sectionVec] = calcCbufSection(regs)
 NUM_SECTIONS = single(128);
-MIN_BUFFER_SIZE = 8; %Get rid of this!
+MIN_BUFFER_SIZE = single(regs.FRMW.cbufMargin);
 ANG_STEP = 8;
 
 dXpix = round(single(regs.FRMW.calImgHsize)/NUM_SECTIONS); % Delta pixel between sections on x axis 
