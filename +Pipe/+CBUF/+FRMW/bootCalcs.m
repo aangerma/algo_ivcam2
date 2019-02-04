@@ -1,4 +1,4 @@
-function [regs,autogenRegs,autogenLuts] = newBootCalcs(regs,luts,autogenRegs,autogenLuts)
+function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
 %% pre calc
 % Add if not preCalc bypass here !!!
 [preCalcsRegs,autogenRegs,autogenLuts] = Pipe.CBUF.FRMW.preCalcs(regs,luts,autogenRegs,autogenLuts);
