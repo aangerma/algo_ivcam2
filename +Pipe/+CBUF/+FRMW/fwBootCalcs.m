@@ -18,7 +18,7 @@ xSections = calcXsections(regs,luts);
 
 autogenRegs.CBUF.xBitShifts = uint8(ceil(log2(double(regs.GNRL.imgHsize-1)))-4);
 num_sections =  bitshift(double(regs.GNRL.imgHsize-1),-int16(autogenRegs.CBUF.xBitShifts))+1;
-assert(num_sections <= maxNumSections);
+assert(num_sections <= getMaxNumSections);
 xcrossPix = bitshift((0:num_sections-1),autogenRegs.CBUF.xBitShifts); % The division of the x axis up to getMaxNumSections of sections where the maximal scanline width will be calculated
 
 if(regs.FRMW.cbufConstLUT || regs.GNRL.rangeFinder)
