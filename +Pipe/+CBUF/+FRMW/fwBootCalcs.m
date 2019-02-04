@@ -14,7 +14,7 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 % regs.GNRL.imgHsize, regs.GNRL.imgVsize, autogenRegs.CBUF.xBitShifts, regs.FRMW.cbufConstLUT,
 % regs.GNRL.rangeFinder, regs.JFIL.upscalexyBypass, regs.FRMW.cropXfactor, regs.FRMW.cropYfactor
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-xSections = calcXsections(regs,luts);
+xSections = calcXsections(regs);
 
 autogenRegs.CBUF.xBitShifts = uint8(ceil(log2(double(regs.GNRL.imgHsize-1)))-4);
 num_sections =  bitshift(double(regs.GNRL.imgHsize-1),-int16(autogenRegs.CBUF.xBitShifts))+1;
@@ -30,13 +30,12 @@ else
     xSecPixLgth = zeros(1,num_sections);
     xSecIxStart = 1;
     MAX_BUFFER_SIZE = getMaxBufferSize(regs);
-    MIN_BUFFER_SIZE = getMinBufferSize;
     for k = 2:num_sections
         xSecIxEnd = min(ceil(xcrossPix(k)/dPixInXsections) + 1, length(xSections)); 
         xSecPixLgth(k-1) = min(max(xSections(xSecIxStart:xSecIxEnd))+ single(regs.FRMW.cbufMargin), MAX_BUFFER_SIZE);
         xSecIxStart = max(1, xSecIxEnd - 2);
     end
-    xSecPixLgth(num_sections) = min(max([xSections(xSecIxStart:end),MIN_BUFFER_SIZE])+ single(regs.FRMW.cbufMargin), MAX_BUFFER_SIZE);
+    xSecPixLgth(num_sections) = min(max([xSections(xSecIxStart:end),0])+ single(regs.FRMW.cbufMargin), MAX_BUFFER_SIZE);
 end
 autogenRegs.CBUF.xRelease = uint16(zeros(1,getMaxNumSections));
 autogenRegs.CBUF.xRelease(1:numel(xSecPixLgth)) = uint16(round(xSecPixLgth));
@@ -66,7 +65,7 @@ end
 % -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 % Helper Functios:
-function [xSections] = calcNewSectionsForXcrop(regs,luts,xSections )
+function [xSections] = calcNewSectionsForXcrop(regs,xSections )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % In case of X cropping the distance between sampling does not change and
 % also the maxmium scanline arch in each section does not change.
@@ -76,44 +75,44 @@ resXafterCrop = regs.FRMW.cropXfactor*single(regs.FRMW.calImgHsize);
 resDiff = single(regs.FRMW.calImgHsize) - resXafterCrop;
 startXfromCalib = resDiff*0.5 + 1.0;
 endXfromCalib = startXfromCalib + resXafterCrop - 1.0;
-if nargin == 3
-    originalXsectionsLUT = single(xSections);
+if nargin == 2
+    originalXsectionsRegs = single(xSections);
 else
-    originalXsectionsLUT = typecast(luts.CBUF.xSections, 'single');
+    originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
 end
-dPixInLUT = single(regs.FRMW.calImgHsize)/single(length(originalXsectionsLUT));
+dPixInLUT = single(regs.FRMW.calImgHsize)/single(length(originalXsectionsRegs));
 ix_start = max(round(startXfromCalib/dPixInLUT),1);
-ix_end = min(round(endXfromCalib/dPixInLUT), length(originalXsectionsLUT));
-xSections = originalXsectionsLUT(ix_start:ix_end);
+ix_end = min(round(endXfromCalib/dPixInLUT), length(originalXsectionsRegs));
+xSections = originalXsectionsRegs(ix_start:ix_end);
 end
 
-function [xSections] = calcNewSectionsForYcrop(regs,luts,xSections)
+function [xSections] = calcNewSectionsForYcrop(regs,xSections)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % In case of Y cropping the distance between sampling does not change but
 % the maxmium scanline arch in each section is scaled dowm the factor.
 % The range of the sections we are looking at does not change.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if nargin == 3
-    originalXsectionsLUT = single(xSections);
+if nargin == 2
+    originalXsectionsRegs = single(xSections);
 else
-    originalXsectionsLUT = typecast(luts.CBUF.xSections, 'single');
+    originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
 end
-xSections = uint32(ceil(originalXsectionsLUT.*regs.FRMW.cropYfactor));
+xSections = uint32(ceil(originalXsectionsRegs.*regs.FRMW.cropYfactor));
 end
 
-function [xSections] = calcNewSectionsForXscale(regs,luts,xSections)
+function [xSections] = calcNewSectionsForXscale(regs,xSections)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % In case of X scale the distance between sampling changes and also
 % the maxmium scanline arch in each section is scaled by the factor.
 % The range of the sections we are looking at does not change.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%s
-if nargin == 3
-    originalXsectionsLUT = single(xSections);
+if nargin == 2
+    originalXsectionsRegs = single(xSections);
 else
-    originalXsectionsLUT = typecast(luts.CBUF.xSections, 'single');
+    originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
 end
-scaleFactor = single(regs.GNRL.imgHsize)/single(regs.FRMW.calImgHsize);
-xSections = uint32(ceil(originalXsectionsLUT.*scaleFactor));
+scaleFactor = round(single(regs.GNRL.imgHsize)/(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor));
+xSections = uint32(ceil(originalXsectionsRegs.*scaleFactor));
 end
 
 function [maxBufferSize] = getMaxBufferSize(regs)
@@ -133,31 +132,27 @@ BUFFER_TOP_MARGIN = 10;
 maxBufferSize = maxBufferSize - BUFFER_TOP_MARGIN;
 end
 
-function [minBufferSize] = getMinBufferSize()
-minBufferSize = 8;
-end
-
 function [maxNumSections] = getMaxNumSections()
 maxNumSections = 16;
 end
 
-function [xSections] = calcXsections(regs,luts)
+function [xSections] = calcXsections(regs)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This function calculates the new x sections that will determine the x releases for the CBUF.
 % The calculation takes into account the scale and crop that might have
-% been performed on the image since the luts.CBUF.xSections was calculated
+% been performed on the image since the regs.CBUF.xSections was calculated
 % in calibration.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-xSections = typecast(luts.CBUF.xSections, 'single');
-if regs.FRMW.xres ~= regs.FRMW.calImgHsize
+xSections = typecast(regs.CBUF.xSections, 'single');
+if regs.GNRL.imgHsize ~= regs.FRMW.calImgHsize
     if regs.FRMW.cropXfactor < 1 % There was cropping in x
-        xSections = calcNewSectionsForXcrop(regs,luts);
+        xSections = calcNewSectionsForXcrop(regs);
     end
     if regs.FRMW.cropYfactor < 1 % There was cropping in y
-        xSections = calcNewSectionsForYcrop(regs,luts,xSections);
+        xSections = calcNewSectionsForYcrop(regs,xSections);
     end
     if round(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor) ~= regs.GNRL.imgHsize  % There was scaling in x (or x and y which is the same case here)
-        xSections = calcNewSectionsForXscale(regs,luts,xSections);
+        xSections = calcNewSectionsForXscale(regs,xSections);
     end
 end
 end

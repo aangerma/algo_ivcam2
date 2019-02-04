@@ -20,8 +20,6 @@ end
 
 
 outLuts.DIGG.undistModel = inLuts.DIGG.undistModel;
-outLuts.CBUF.xSections = inLuts.CBUF.xSections;
-
 
 
 
