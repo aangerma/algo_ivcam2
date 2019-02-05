@@ -26,6 +26,7 @@ function [rpt] = samplePointsRtd(z,pts,regs)
         
         angx = single(xx);
         angy = single(yy);
+        [angy,angx] = ndgrid(linspace(-2047,2047,size(rtd,1)),linspace(-2047,2047,size(rtd,2)));
     else
         [angx,angy]=Calibration.aux.xy2angSF(xg,yg,regs,0);
     end

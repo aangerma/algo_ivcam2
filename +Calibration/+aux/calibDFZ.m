@@ -124,7 +124,11 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped)
     %vUnit = reshape(vUnit',size(d.rpt));
     %vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.
-    sing = vUnit(:,1);
+    if rtlRegs.DEST.hbaseline
+        sing = vUnit(:,1);
+    else
+        sing = vUnit(:,2);
+    end
     rtd_=rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
     r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
     v = double(vUnit.*r);
