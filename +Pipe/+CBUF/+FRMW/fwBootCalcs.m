@@ -97,7 +97,7 @@ if nargin == 2
 else
     originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
 end
-xSections = uint32(ceil(originalXsectionsRegs.*regs.FRMW.cropYfactor));
+xSections = single(ceil(originalXsectionsRegs.*regs.FRMW.cropYfactor));
 end
 
 function [xSections] = calcNewSectionsForXscale(regs,xSections)
@@ -112,7 +112,7 @@ else
     originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
 end
 scaleFactor = round(single(regs.GNRL.imgHsize)/(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor));
-xSections = uint32(ceil(originalXsectionsRegs.*scaleFactor));
+xSections = single(ceil(originalXsectionsRegs.*scaleFactor));
 end
 
 function [maxBufferSize] = getMaxBufferSize(regs)
