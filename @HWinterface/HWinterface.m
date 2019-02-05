@@ -338,6 +338,7 @@ classdef HWinterface <handle
         
         function k=getIntrinsics(obj)
             k=reshape([typecast(obj.read('CBUFspare'),'single');1],3,3)';
+            k([2,3,4,6]) = 0;
             obj.privRecFunc('getIntrinsics',{},{k});
         end
         
@@ -508,10 +509,15 @@ classdef HWinterface <handle
             
         end
         
-        function tmptr=getLddTemperature(obj)
+        function [lddTmptr,tSense,vSense ,tmpPvt ]=getLddTemperature(obj)
             [~,val]=obj.cmd('irb e2 13 02');
-            tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
+            lddTmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
 %             obj.privRecFunc('getTemperature',{},{tmptr});
+            % tsense, apd temperature monitor
+            [~,tSense] = obj.cmd('mrd a00401a4 a00401a8');
+            [~,vSense] = obj.cmd('mrd a00401a0 a00401a4');
+            [~,tmpPvt] = obj.cmd('mrd b00a00c8 b00a00cc');
+
         end
         function factor = z2mm(obj)
             % Divide z image by this value to get depth in mm

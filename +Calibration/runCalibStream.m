@@ -128,10 +128,60 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         fprintff('PASSED.\n');
     end
     
+    %% Validate DFZ
+    frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,[0.6 0 0; 0 0.6 0; 0 0 1],'DFZ Validation image');
+    ff = Calibration.aux.invisibleFigure;
+    imagesc(frames.i);
+
+    title(sprintf('Pre reset dfz validation image')); 
+    Calibration.aux.saveFigureAsImage(ff,runParams,'PreResetValidation',sprintf('Pre reset dfz validation image '));
+    Calibration.aux.collectTempData(hw,runParams,'DFZ validation before reset:');
+    [regs,luts]=fw.get();
+    regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+    r=Calibration.RegState(hw);
+    r.add('JFILinvBypass',true);
+    r.add('DESTdepthAsRange',true);
+    r.add('DIGGsphericalEn',true);
+    r.set();
+    pause(0.1);
+    framesSpherical = hw.getFrame(30);
+    
+    
+    
+    [ dfzRes,allRes ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
+    
+    i = 1;
+    targetInfo = targetInfoGenerator('Iv2A1');
+    targetInfo.cornersX = 20;
+    targetInfo.cornersY = 28;
+    d(i).i = framesSpherical(i).i;
+    d(i).c = framesSpherical(i).c;
+    d(i).z = framesSpherical(i).z;
+    pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical(i).i, 1);
+    grid = [size(pts,1),size(pts,2),1];
+    d(i).pts = pts;
+    d(i).grid = grid;
+    d(i).pts3d = create3DCorners(targetInfo)';
+    d(i).rpt = Calibration.aux.samplePointsRtd(framesSpherical(i).z,pts,regs);
+    
+    [~,dfzResSpherical] = Calibration.aux.calibDFZ(d,regs,calibParams,fprintff,0,1);
+    fprintff('Geometric Error Validation Before Reset regular val eGeom: %2.2g\n',dfzRes.GeometricError);
+%     fprintff('Geometric Error Validation Before Reset regular RMS: %2.2g\n',allRes.rmsError);
+    fprintff('Geometric Error Validation Before Reset spherical: %2.2g\n',dfzResSpherical);
+    r.reset();
     %% Burn 2 device
+    % Collecting hardware state
+    if runParams.saveRegState
+        fprintff('Collecting registers state...');
+        hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
+        fprintff('Done\n');
+    end
+    
+    
     burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
     
     fprintff('Calibration finished(%d)\n',round(toc(t)));
+    
     
     %% Validation
     clear hw;
@@ -161,7 +211,7 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
+    initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
     copyfile(fullfile(initFldr,'*.csv'), runParams.internalFolder)
     
 end
@@ -507,12 +557,12 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
         testImages = ~trainImages;
-        for i=1:3 %length(captures)
+        for i=1:length(captures)
             cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);
             im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
         end
-        for i = 1:3
+        for i = 1:numel(captures)
             cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);
             targetInfo.cornersX = 20;
@@ -578,18 +628,14 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);
-%         regs = fw.get();
-        % Calibrate polimonial undistort params
-%         [polyVars,results.geomErr] = Calibration.Undist.calibPolinomialUndistParams(d(trainImages),regs,calibParams);
-%         undistRegs.FRMW.polyVars = single(polyVars);
-%         fw.setRegs(undistRegs,fnCalib);
-%         fprintff('[v] Undistorted geom calib result [e=%g]\n',results.geomErr);   
+        regs = fw.get(); 
+        if ~isempty(d(testImages))
+            [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1);
+            fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
+        end
         
-%         if ~isempty(testImages)
-%             [~,results.extraImagesGeomErr] = Calibration.Undist.calibPolinomialUndistParams(d(testImages),regs,calibParams,polyVars);
-%             fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
-%         end
         
+
         if(results.geomErr<calibParams.errRange.geomErr(2))
             fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
 %             fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
@@ -684,7 +730,7 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
             
         end
         ttt=[tempname '.txt'];
-        fw.genMWDcmd('DIGGundist_',ttt);
+        fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',ttt);
         hw.runScript(ttt);
         hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));

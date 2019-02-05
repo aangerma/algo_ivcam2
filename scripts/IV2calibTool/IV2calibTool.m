@@ -206,7 +206,7 @@ function app=createComponents()
     % Create verboseCheckBox
     
     %checkboxes
-    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ'};
+    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -220,12 +220,23 @@ function app=createComponents()
         app.cb.(f).Value = true;
         app.cb.(f).Callback=@outputFolderChange_callback;
     end
-    % Create outputFldrBrowseBtn
+    % Create advancedSaveBtn
     app.advancedSaveBtn = uicontrol('style','pushbutton','parent',advancedTab);
     app.advancedSaveBtn.Callback = @saveDefaults;
     app.advancedSaveBtn.Position = [560 10 50 22];
     app.advancedSaveBtn.String = 'save';
+    
+    % Create clear cb button
+    app.advancedClearBtn = uicontrol('style','pushbutton','parent',advancedTab);
+    app.advancedClearBtn.Callback = @clearCB;
+    app.advancedClearBtn.Position = [30 10 50 22];
+    app.advancedClearBtn.String = 'clear';
 %     set(handles.checkbox1,'Enable','off')  %disable checkbox1
+
+
+
+
+
     guidata(app.figH,app);
     
     
@@ -249,7 +260,10 @@ function addPoxtFix_callback(varargin)
     set_watches(app.figH,true);
 end
 
+function clearCB(varargin)
+    app=guidata(varargin{1});
 
+end
 function saveDefaults(varargin)
     app=guidata(varargin{1});
     

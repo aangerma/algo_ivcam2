@@ -1,10 +1,14 @@
-function [  ] = collectTempData( hw,runParams,stageStr )
+function [ lddTmptr,tSense,vSense,tmpPvt ] = collectTempData( hw,runParams,stageStr )
 %COLLECTTEMPDATA reads the Ldd temperature and add it to log
 
+
+
+
 logName = fullfile(runParams.outputFolder,'temperatures.log');
-temp = hw.getLddTemperature();
+[lddTmptr,tSense,vSense,tmpPvt] = hw.getLddTemperature();
 fid = fopen(logName,'a');
-line = sprintf('%-30s %5.2f\r\n',stageStr,temp);
+c = clock;
+line = sprintf('%s %-30s, lddTmptr: %5.2f, vSense: %5.2f, tSense: %5.2f, tmpPvt: %5.2f\r\n',sprintf('%02.0f:%02.0f:%02.0f',c(4:end)),stageStr,lddTmptr,vSense,tSense,tmpPvt);
 fprintf(fid, line);
 fclose(fid);
 

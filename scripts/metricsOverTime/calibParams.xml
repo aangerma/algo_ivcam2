@@ -51,10 +51,8 @@
       <wait>
           <timeoutSec>1</timeoutSec>
       </wait>
-      <!--<readRegState>
-      </readRegState> -->   
       <readRegState>
-      </readRegState>
+      </readRegState>    
       <dfz>
           <numOfFrames>30</numOfFrames>
       </dfz>

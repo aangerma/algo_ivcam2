@@ -13,10 +13,12 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.getFrame;
+        % Collecting hardware state
         z2mm = double(hw.z2mm);
         fprintff('opening stream...');
         frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align old (small) checkerboard to screen');
         Calibration.aux.collectTempData(hw,runParams,'Before validation stage:');
+        
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
         subplot(1,3,2); imagesc(frame.z/hw.z2mm); title('Validation Z');
@@ -51,6 +53,12 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             if strfind(enabledMetrics{i},'debugMode')
                  debugMode = flip(dec2bin(uint16(calibParams.validationConfig.(enabledMetrics{i})),2)=='1');
                  fprintff('Changeing debug mode to %d.\n',calibParams.validationConfig.(enabledMetrics{i}));
+            elseif  strfind(enabledMetrics{i},'readRegState')
+                if runParams.saveRegState
+                    fprintff('Collecting registers state...');
+                    hw.getRegsFromUnit(fullfile(runParams.outputFolder,'validationRegState.txt') ,0 );  
+                    fprintff('Done\n');
+                end
             elseif  strfind(enabledMetrics{i},'sharpness')
                 sharpConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(sharpConfig.numOfFrames,0);
