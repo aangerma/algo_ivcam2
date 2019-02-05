@@ -23,11 +23,11 @@ xcrossPix = bitshift((0:num_sections-1),autogenRegs.CBUF.xBitShifts); % The divi
 
 if(regs.FRMW.cbufConstLUT || regs.GNRL.rangeFinder)
 %     All sections are equal and get the maximal value of xSections
-    xSecPixLgth = ones(1,num_sections)*(max(xSections) + single(regs.FRMW.cbufMargin));
+    xSecPixLgth = single(ones(1,num_sections))*(max(xSections) + single(regs.FRMW.cbufMargin));
 else
 %     Calculate the buffer size by finding the maximal values in xSections for each range determined by xcrossPix
     dPixInXsections = single(regs.GNRL.imgHsize)/single(length(xSections));
-    xSecPixLgth = zeros(1,num_sections);
+    xSecPixLgth = single(zeros(1,num_sections));
     xSecIxStart = 1;
     MAX_BUFFER_SIZE = getMaxBufferSize(regs);
     for k = 2:num_sections
