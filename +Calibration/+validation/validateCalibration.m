@@ -87,10 +87,16 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif strfind(enabledMetrics{i},'dfz')
                 dfzConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(dfzConfig.numOfFrames);
+                save(fullfile(runParams.outputFolder,'postResetValCbFrame.mat'),'frames');
+
                 [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff,calibParams,runParams);
                 valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allDfzRes;
+            elseif strfind(enabledMetrics{i},'compareCalVal') && runParams.DFZ && any(strcmp(enabledMetrics(1:i),'dfz'))
+                calFrame = load(fullfile(runParams.outputFolder,'preResetCalCbFrame.mat'));
+                valFrame = load(fullfile(runParams.outputFolder,'postResetValCbFrame.mat'));
+                Calibration.aux.plotDiffBetweenCBImages( [calFrame.frames,valFrame.frames],hw.getIntrinsics,hw.z2mm ,runParams);
             elseif strfind(enabledMetrics{i},'roi')
                 [roiRes, frames,dbg] = Calibration.validation.validateROI(hw,calibParams,fprintff);
                 valResults = Validation.aux.mergeResultStruct(valResults, roiRes);

@@ -127,11 +127,14 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     else
         fprintff('PASSED.\n');
     end
+    %% Burn 2 device
+    burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
     
     %% Validate DFZ
     frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,[0.6 0 0; 0 0.6 0; 0 0 1],'DFZ Validation image');
     ff = Calibration.aux.invisibleFigure;
     imagesc(frames.i);
+    save(fullfile(runParams.outputFolder,'preResetCalCbFrame.mat'),'frames');
 
     title(sprintf('Pre reset dfz validation image')); 
     Calibration.aux.saveFigureAsImage(ff,runParams,'PreResetValidation',sprintf('Pre reset dfz validation image '));
@@ -169,8 +172,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 %     fprintff('Geometric Error Validation Before Reset regular RMS: %2.2g\n',allRes.rmsError);
     fprintff('Geometric Error Validation Before Reset spherical: %2.2g\n',dfzResSpherical);
     r.reset();
-    %% Burn 2 device
-    % Collecting hardware state
+    
+    %% Collecting hardware state
     if runParams.saveRegState
         fprintff('Collecting registers state...');
         hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
@@ -178,7 +181,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     end
     
     
-    burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
     
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
@@ -211,7 +213,8 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
+%     initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
+    initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
     copyfile(fullfile(initFldr,'*.csv'), runParams.internalFolder)
     
 end

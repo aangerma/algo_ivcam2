@@ -262,6 +262,11 @@ end
 
 function clearCB(varargin)
     app=guidata(varargin{1});
+    
+    f = fieldnames(app.cb);
+    for i = 1:numel(f)
+        app.cb.(f{i}).Value = 0;
+    end
 
 end
 function saveDefaults(varargin)

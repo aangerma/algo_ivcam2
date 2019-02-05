@@ -6,20 +6,21 @@ function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff,calibParams,run
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;
     [score, allRes,dbg] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
     
-    ff = Calibration.aux.invisibleFigure();
-    imagesc(dbg.ir); 
-    pCirc = Calibration.DFZ.getCBCircPoints(dbg.gridPoints,dbg.gridSize);
-    hold on;
-    plot(pCirc(:,1),pCirc(:,2),'r','linewidth',2);
-    hold off
-    title(sprintf('Validation interDist image: Grid=[%d,%d]',dbg.gridSize(1),dbg.gridSize(2)));
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','GridInterdistImage',1);
+    if exist('runParams','var')
+        ff = Calibration.aux.invisibleFigure();
+        imagesc(dbg.ir); 
+        pCirc = Calibration.DFZ.getCBCircPoints(dbg.gridPoints,dbg.gridSize);
+        hold on;
+        plot(pCirc(:,1),pCirc(:,2),'r','linewidth',2);
+        hold off
+        title(sprintf('Validation interDist image: Grid=[%d,%d]',dbg.gridSize(1),dbg.gridSize(2)));
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','GridInterdistImage',1);
 
-    ff = Calibration.aux.invisibleFigure();
-    plot(dbg.r,'*'); 
-    title('r for cb points');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','R for CB points',1);
-    
+        ff = Calibration.aux.invisibleFigure();
+        plot(dbg.r,'*'); 
+        title('r for cb points');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','R for CB points',1);
+    end
     
     dfzRes.GeometricError = score;
     [~, geomRes,dbg] = Validation.metrics.geomUnproject(rotFrame180(frames), params);
