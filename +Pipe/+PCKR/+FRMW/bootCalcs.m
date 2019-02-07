@@ -1,17 +1,12 @@
-function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,~,autogenRegs,autogenLuts)
+function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
 
-xr = double(regs.FRMW.xres);
-yr = double(regs.FRMW.yres);
-xroi = double(regs.GNRL.imgHsize);
-yroi = double(regs.GNRL.imgVsize);
-if(~regs.JFIL.upscalexyBypass && regs.JFIL.upscalex1y0==1)
-    xroi=xroi*2;
-elseif(~regs.JFIL.upscalexyBypass && regs.JFIL.upscalex1y0==0)
-    yroi=yroi*2;
-end
+%% prepare for FW
+[FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(regs,luts);
+regs = Firmware.mergeRegs(regs,FWinputRegs);
+luts = Firmware.mergeRegs(luts,FWinputLuts);
 
-% autogenRegs.PCKR.padding = uint32(xr*yr-xroi*yroi);
-% autogenRegs.PCKR.padding = uint32(640*480-xroi*yroi);
-regs = Firmware.mergeRegs(regs,autogenRegs);
+%% Run fw bootcalcs
+[regs,autogenRegs,autogenLuts] = Pipe.PCKR.FRMW.fwBootCalcs(regs,luts,autogenRegs,autogenLuts);
+
 end
 

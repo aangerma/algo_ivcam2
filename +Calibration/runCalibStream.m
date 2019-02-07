@@ -227,10 +227,7 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
         currregs.FRMW.calMarginT = int16(DIGGspare07/2^16);
         currregs.FRMW.calMarginB = int16(mod(DIGGspare07,2^16));
     end
-    currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
-    currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
-    currregs.PCKR.padding = uint32(prod(calibParams.gnrl.externalImSize)-prod(calibParams.gnrl.internalImSize));
-    
+        
     [~,~,isId] = hw.getInfo();
     currregs.DEST.hbaseline = ~isId;
     if currregs.DEST.hbaseline

@@ -1,7 +1,7 @@
 function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,autogenLuts)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This function calculated the distances (in pixels) along the x axis
-% between the reat and write pointer of the CBUF block.
+% This function calculates the distances (in pixels) along the x axis
+% between the read and write pointer of the CBUF block.
 % This function should be re-calculated when one of the following variables changes: 
 % -----------------------------------
 % Regs from EPROM: 
