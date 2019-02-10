@@ -11,7 +11,7 @@ function [sectionVec] = calcCbufSection(regs)
 NUM_SECTIONS = single(128);
 ANG_STEP = 8;
 
-dXpix = round(single(regs.FRMW.calImgHsize)/NUM_SECTIONS); % Delta pixel between sections on x axis 
+dXpix = single(regs.FRMW.calImgHsize)/NUM_SECTIONS; % Delta pixel between sections on x axis 
 xPix = 1:dXpix:single(regs.FRMW.calImgHsize);
 num_of_samples = length(xPix); % Sampled x pixels that are transformed to the angle domain
 [angX,~] = Calibration.aux.xy2angSF(xPix,ones(num_of_samples,1)*single(regs.FRMW.calImgVsize)*0.5,regs,true);
