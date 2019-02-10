@@ -111,7 +111,7 @@ if nargin == 2
 else
     originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
 end
-scaleFactor = round(single(regs.GNRL.imgHsize)/(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor));
+scaleFactor = single(regs.GNRL.imgHsize)/(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor);
 xSections = single(ceil(originalXsectionsRegs.*scaleFactor));
 end
 

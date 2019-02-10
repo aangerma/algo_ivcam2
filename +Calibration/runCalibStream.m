@@ -229,7 +229,11 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     end
     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
-    
+    currregs.FRMW.calImgHsize = currregs.GNRL.imgHsize;
+    currregs.FRMW.calImgVsize = currregs.GNRL.imgVsize;
+    currregs.FRMW.externalVsize = uint32(calibParams.gnrl.externalImSize(1));
+    currregs.FRMW.externalHsize = uint32(calibParams.gnrl.externalImSize(2));
+
     [~,~,isId] = hw.getInfo();
     currregs.DEST.hbaseline = ~isId;
     if currregs.DEST.hbaseline
