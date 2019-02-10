@@ -8,8 +8,8 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 % regs.JFIL.upscalexyBypass, regs.JFIL.upscalex1y
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-xr = single(regs.PCKR.externalHsize);
-yr = single(regs.PCKR.externalVsize);
+xr = single(regs.FRMW.externalHsize);
+yr = single(regs.FRMW.externalVsize);
 xroi = double(regs.GNRL.imgHsize);
 yroi = double(regs.GNRL.imgVsize);
 if(~regs.JFIL.upscalexyBypass && regs.JFIL.upscalex1y0==1)
