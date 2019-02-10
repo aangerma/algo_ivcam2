@@ -6,10 +6,11 @@ import random
 import matlab
 import io
 import sys
-import matlab_eng
 import re
 import math
-import struct
+
+sys.path.insert(0, r"..\algo_automation\infra")
+import regs_files
 
 sys.path.insert(0, r"Avv\tests")
 import a_common
@@ -19,8 +20,11 @@ try:
 except:
     pass
 
+try:
+    import matlab_eng
+except Exception:
+    pass
 
-# slash run -vv -l Avv/logs/ -o log.highlights_subpath={context.session.id}/highlights.log -f Avv/tests/test_list.txt -k test_random_registers_autogen_100
 def run_randomize(eng, file_path):
     slash.logger.debug("running matlab randomize")
     try:
@@ -99,71 +103,6 @@ out = io.StringIO()
 err = io.StringIO()
 
 
-def test_random_registers_debug():
-    test_status = {"pass": 0, "fail": 0, "constraints": 0, "Randomize_crash": 0}
-    eng = slash.g.mat
-
-    data_path = os.path.join(os.path.dirname(os.path.realpath("__file__")), "Avv", "test_data", "regs_random")
-    file_name = "regs_info"
-    file_ext = ".csv"
-    file_path = os.path.join(data_path, file_name + file_ext)
-    slash.logger.debug("regs file path: {}".format(file_path))
-
-    iterations = 1
-    slash.logger.info("Start test, number of iterations: {}".format(iterations))
-    for i in range(iterations):
-        slash.logger.info("start iteration: {}".format(i + 1))
-
-        out.truncate(0)
-        err.truncate(0)
-        if not run_randomize(eng, file_path):
-            test_status["Randomize_crash"] += 1
-            continue
-
-        status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
-        if not status:
-            test_status["constraints"] += 1
-            continue
-
-        if not run_autopipe(eng, ivs_file_name, data_path, i):
-            test_status["fail"] += 1
-            continue
-
-        slash.logger.info("test passed")
-        test_status["pass"] += 1
-
-    slash.logger.info(test_status, extra={"highlight": True})
-
-
-def read_regs_file(file_path):
-    regs_list = {}
-    slash.logger.info("reading file: {}".format(file_path))
-    line_index = 0
-    columns_names = list()
-    with open(file_path, "r") as dataFile:
-        for line in dataFile:
-            if len(line) <= 3:
-                continue
-            data = line.split(",")
-            if line_index == 0:
-                for d in data:
-                    columns_names.append(d.strip())
-            else:
-                if len(data) != len(columns_names):
-                    slash.logger.error("file error, line {}: data: {} doesn't have enough columns".format(index,data[0]))
-                    raise IndexError
-                reg_data = {}
-                for index in range(len(columns_names)):
-                    reg_data[columns_names[index]] = data[index].strip()
-
-                regs_list[reg_data["regName"]] = reg_data
-
-            line_index += 1
-
-    slash.logger.info("file number of entries: {}".format(len(regs_list)))
-    return regs_list
-
-
 def clean_regs_list_to_generate(regs):
     regs_to_generate = {}
     for reg_name, reg in regs.items():
@@ -181,26 +120,17 @@ def clean_regs_list_to_generate(regs):
     return regs_to_generate
 
 
-def convert_to_number(str_number):
-    try:
-        num = int(str_number)
-    except ValueError:
-        num = float(str_number)
-
-    return num
-
-
-def get_reg_range(reg={}):
+def get_reg_range(reg):
     reg_range = str(reg["range"]).strip().replace("{", "").replace("}", "").replace("[", "").replace("]", "")
-    ranages = reg_range.split(";")
+    ranges = reg_range.split(";")
     reg_ranges = list()
     reg_ranges_weight = list()
     selected_range = None
-    for this_range in ranages:
+    for this_range in ranges:
         if ":/" in this_range:
             this_range = this_range.split(":/")
             reg_ranges.append(this_range[0])
-            reg_ranges_weight.append(convert_to_number(this_range[1]))
+            reg_ranges_weight.append(regs_files.convert_to_number(this_range[1]))
         else:
             reg_ranges.append(this_range)
     if len(reg_ranges_weight) > 0:
@@ -696,11 +626,11 @@ def get_random_value(reg, selected_regs):
         selected_range = get_reg_range(reg)
 
         if ":" not in selected_range:
-            num.append(convert_to_number(selected_range))
+            num.append(regs_files.convert_to_number(selected_range))
         else:
             ranges = str(selected_range).split(":")
-            start = convert_to_number(ranges[0])
-            end = convert_to_number(ranges[1])
+            start = regs_files.convert_to_number(ranges[0])
+            end = regs_files.convert_to_number(ranges[1])
 
             if reg_name in (
                     "JFILsort1iWeights", "JFILsort2iWeights", "JFILsort3iWeights", "JFILsort1dWeights",
@@ -801,12 +731,12 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
         if reg_name in (
                 "FRMWundistYfovFactor", "FRMWundistXfovFactor", "EPTGmultiFocalROI_000", "EPTGmultiFocalROI_001",
                 "EPTGmultiFocalROI_002", "EPTGmultiFocalROI_003", "MTLBassertionStop", "FRMWxR2L", "MTLBdebug"):
-            selected_regs[reg_name] = convert_to_number(reg["defaultValue"][1:])
+            selected_regs[reg_name] = regs_files.convert_to_number(reg["defaultValue"][1:])
             i += 1
             continue
 
         if "MTLB" in reg_name and "MTLBtxSymbolLength" not in reg_name:
-            selected_regs[reg_name] = convert_to_number(reg["defaultValue"][1:])
+            selected_regs[reg_name] = regs_files.convert_to_number(reg["defaultValue"][1:])
             i += 1
             continue
 
@@ -878,7 +808,7 @@ def get_regs_order(regs_def):
 
 def get_constrains_map():
     regs_def_path = r"../../+Pipe/tables/regsDefinitions.frmw"
-    regs_def = read_regs_file(regs_def_path)
+    regs_def = regs_files.read_regs_file(regs_def_path)
     regs_def = clean_regs_list_to_generate(regs_def)
 
     constraints_def_path = r"../../+Pipe/tables/regsConstraints.frmw"
@@ -897,27 +827,15 @@ def get_constrains_map():
         print(k, v)
 
 
-def to_hex(val, nbits):
-    return hex((val + (1 << nbits)) % (1 << nbits))
-
-
-def write_regs_file(file_path, selected_regs, regs_def):
-    data = list()
-    for reg, value in selected_regs.items():
-        reg_data = regs_def[reg]
-        reg_type = reg_data["type"]
-        if reg_type == "single":
-            val = hex(struct.unpack('<I', struct.pack('<f', value))[0])[2:]
-            data.append("{}{}{}{}\n".format(reg, " " * (30 - len(reg)), "h", val))
+def create_regs_def(regs):
+    regs_def = {}
+    for reg, value in regs.items():
+        if type(value) is not int:
+            regs_def[reg] = {"type": "single"}
         else:
-            data.append("{}{}{}{}\n".format(reg, " " * (30 - len(reg)), "h", to_hex(value, 32)[2:]))
+            regs_def[reg] = {"type": "int"}
 
-    print_regs(data)
-    slash.logger.debug("writing file: {}".format(file_path))
-    if not os.path.isdir(os.path.dirname(os.path.relpath(file_path))):
-        os.makedirs(os.path.dirname(os.path.relpath(file_path)))
-    with open(file_path, "w") as txt_file:
-        txt_file.writelines(data)
+    return regs_def
 
 
 def print_regs(selected_regs):
@@ -930,59 +848,76 @@ def debug_test():
     logging.info("init matlab")
     eng = matlab_eng.MyMatlab()
     eng.add_path(os.path.join("../../../algo_ivcam2"))
+    eng.add_path(os.path.join("../../../algo_common/Common"))
 
     test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
                    "Randomize_failed": 0}
 
     data_path, file_path = get_data_path()
 
-    constraints_def_path = r"../../+Pipe/tables/regsConstraints.frmw"
-    constraints_list = get_constraints_list(constraints_def_path)
-    constraints = create_constrains_table(constraints_list)
+    csv_file_path = r"../../docs/IVCAM2.0_AlgoPipe_AD.csv"
+    logging.info("reading file: {}".format(csv_file_path))
+    data = list()
+    with open(csv_file_path, "r") as dataFile:
+        for line in dataFile:
+            data.append(line.split(","))
 
-    regs_def_path = r"../../+Pipe/tables/regsDefinitions.frmw"
-    regs_def = read_regs_file(regs_def_path)
-    regs_def = clean_regs_list_to_generate(regs_def)
+    regsTests = {}
+    for index in range(1, len(data[0])):
+        tmp_data = {}
+        for reg_index in range(1, len(data)):
+            if data[reg_index][index] != "" and "\n" not in data[reg_index][index]:
+                if data[reg_index][index].lower() in "true":
+                    tmp_data[data[reg_index][0]] = 1
+                elif data[reg_index][index].lower() in "false":
+                    tmp_data[data[reg_index][0]] = 0
+                else:
+                    tmp_data[data[reg_index][0]] = regs_files.convert_to_number(data[reg_index][index])
 
-    iterations = 10
-    logging.info("Start test, number of iterations: {}".format(iterations))
+        regsTests[data[0][index]] = tmp_data
 
-    reg_order = get_regs_order(regs_def)
+    logging.info("file number of entries: {}".format(len(regsTests)))
 
-    for i in range(iterations):
-        iteration = i + 1
-        logging.info("start iteration: {}".format(iteration))
-        logging.debug("clear matlab memory")
-        eng.s.clear_memory(stdout=out, stderr=err, nargout=0)
+    for mode, regs in regsTests.items():
         out.truncate(0)
         err.truncate(0)
 
-        status, reg_order, selected_regs = generate_regs(regs_def, constraints, reg_order)
-        if not status:
-            test_status["Randomize_failed"] += 1
-            logging.info("generate randomize failed")
-            continue
+        logging.info("start mode: {}".format(mode))
+        logging.info("clear matlab memory")
+        # eng.clear_memory(stdout=out, stderr=err, nargout=0)
 
-        print_regs(selected_regs)
-        write_regs_file(file_path, selected_regs, regs_def)
+        print_regs(regs)
+        regs_def = create_regs_def(regs)
+        regs_files.write_regs_file(file_path, regs, regs_def)
 
         status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
         if status == 1:
+            logging.info("test {} failed - pattern_generator_constraint".format(mode), extra={"highlight": True})
             test_status["pattern_generator_constraint"] += 1
             continue
         if status == 2:
+            logging.info("test {} failed - pattern_generator_crash".format(mode), extra={"highlight": True})
             test_status["pattern_generator_crash"] += 1
             continue
 
-        if not run_autopipe(eng, ivs_file_name, data_path, iteration):
+        if not run_autopipe(eng, ivs_file_name, data_path, mode):
             test_status["fail"] += 1
+            logging.info("test {} failed - FAIL".format(mode), extra={"highlight": True})
             continue
 
-        slash.logger.info("test passed")
-
+        logging.info("test {} passed".format(mode), extra={"highlight": True})
         test_status["pass"] += 1
 
     logging.info(test_status)
+
+
+def get_data_path():
+    data_path = os.path.join(os.path.dirname(os.path.realpath("__file__")), "Avv", "test_data", "regs_random")
+    file_name = "regs_info"
+    file_ext = ".csv"
+    file_path = os.path.join(data_path, file_name + file_ext)
+    slash.logger.info("regs file path: {}".format(file_path))
+    return data_path, file_path
 
 
 if __name__ == "__main__":
@@ -1039,13 +974,21 @@ def test_random_registers_randomize_100():
             slash.logger.info("test {} failed - FAIL".format(i), extra={"highlight": True})
             continue
 
-        slash.logger.info("test {} passed".format(i), extra={"highlight": True})
+        slash.logger.info("test {} passed".format(iteration), extra={"highlight": True})
         test_status["pass"] += 1
 
     slash.logger.info(test_status, extra={"highlight": True})
 
 
 def random_registers(iterations=1):
+    debug = False
+    if debug:
+        slash.logger.warning("Running in DEBUG mode")
+        slash.logger.warning("Running in DEBUG mode")
+        slash.logger.warning("Running in DEBUG mode")
+        slash.logger.warning("Running in DEBUG mode")
+        slash.logger.warning("Running in DEBUG mode")
+
     test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
                    "Randomize_failed": 0}
     eng = slash.g.mat
@@ -1056,8 +999,12 @@ def random_registers(iterations=1):
     constraints = create_constrains_table(constraints_list)
 
     regs_def_path = r"+Pipe/tables/regsDefinitions.frmw"
-    regs_def = read_regs_file(regs_def_path)
+    regs_def = regs_files.read_regs_file(regs_def_path)
     regs_def = clean_regs_list_to_generate(regs_def)
+
+    iterations = 100
+    if debug:
+        iterations = 10
 
     slash.logger.info("Start test, number of iterations: {}".format(iterations))
 
@@ -1079,7 +1026,7 @@ def random_registers(iterations=1):
             continue
 
         print_regs(selected_regs)
-        write_regs_file(file_path, selected_regs, regs_def)
+        regs_files.write_regs_file(file_path, selected_regs, regs_def)
 
         status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
         if status == 1:
@@ -1105,6 +1052,59 @@ def random_registers(iterations=1):
     if test_status["fail"] > 0 or test_status["pattern_generator_crash"] > 0:
         raise a_common.TestFail("Test failed please review log")
 
+
 @a_common.ivcam2
 def test_random_registers_autogen_100():
     random_registers(iterations=100)
+
+
+@slash.tag('turn_in')
+def test_regs_mode_table():
+    eng = slash.g.mat
+
+    test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
+                   "Randomize_failed": 0}
+    data_path, file_path = get_data_path()
+
+    mode_table_path = r'docs/IVCAM2.0_AlgoPipe_AD.xlsx'
+    regsTests = regs_files.get_mode_table(mode_table_path)
+
+    regs_def_path = r"+Pipe/tables/regsDefinitions.frmw"
+    regs_def = regs_files.read_regs_file(regs_def_path)
+
+    executed_tests = 0
+    for mode, modeTest in regsTests.items():
+        if not modeTest.automated():
+            continue
+        executed_tests += 1
+        out.truncate(0)
+        err.truncate(0)
+
+        slash.logger.info("start mode: {}".format(mode))
+        slash.logger.debug("clear matlab memory")
+        eng.s.clear_memory(stdout=out, stderr=err, nargout=0)
+
+        print_regs(modeTest.get_regs())
+        regs_files.write_regs_file(file_path, modeTest.get_regs(), regs_def)
+
+        status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
+        if status == 1:
+            slash.logger.info("test {} failed - pattern_generator_constraint".format(mode), extra={"highlight": True})
+            test_status["pattern_generator_constraint"] += 1
+            continue
+        if status == 2:
+            slash.logger.info("test {} failed - pattern_generator_crash".format(mode), extra={"highlight": True})
+            test_status["pattern_generator_crash"] += 1
+            continue
+
+        if not run_autopipe(eng, ivs_file_name, data_path, mode):
+            test_status["fail"] += 1
+            slash.logger.info("test {} failed - FAIL".format(mode), extra={"highlight": True})
+            continue
+
+        slash.logger.info("test {} passed".format(mode), extra={"highlight": True})
+        test_status["pass"] += 1
+
+    slash.logger.info(test_status)
+    if test_status["pass"] != executed_tests:
+        raise a_common.TestFail("Test failed please review log")
