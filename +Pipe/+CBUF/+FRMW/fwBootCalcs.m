@@ -1,7 +1,7 @@
 function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,autogenLuts)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This function calculated the distances (in pixels) along the x axis
-% between the reat and write pointer of the CBUF block.
+% This function calculates the distances (in pixels) along the x axis
+% between the read and write pointer of the CBUF block.
 % This function should be re-calculated when one of the following variables changes: 
 % -----------------------------------
 % Regs from EPROM: 
@@ -111,7 +111,7 @@ if nargin == 2
 else
     originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
 end
-scaleFactor = round(single(regs.GNRL.imgHsize)/(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor));
+scaleFactor = single(regs.GNRL.imgHsize)/(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor);
 xSections = single(ceil(originalXsectionsRegs.*scaleFactor));
 end
 

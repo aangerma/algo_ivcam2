@@ -1,6 +1,7 @@
 function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
 
 [regs,autogenRegs,autogenLuts] = generalRegisters(regs,autogenRegs,autogenLuts);
+luts = Firmware.mergeRegs(luts,autogenLuts);
 [regs,autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
 [regs,autogenRegs,autogenLuts] = Pipe.RAST.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
 [regs,autogenRegs,autogenLuts] = Pipe.DCOR.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
