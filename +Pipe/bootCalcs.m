@@ -10,6 +10,7 @@ luts = Firmware.mergeRegs(luts,autogenLuts);
 [regs,autogenRegs,autogenLuts] = Pipe.JFIL.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
 [regs,autogenRegs,autogenLuts] = Pipe.PCKR.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
 [regs,autogenRegs,autogenLuts] = Pipe.STAT.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
+[regs,autogenRegs,autogenLuts] = Pipe.INFC.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
 
 end
 

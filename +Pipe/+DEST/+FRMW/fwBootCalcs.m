@@ -44,14 +44,13 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 [regs,autogenRegs] = altIR_peakVal(regs,autogenRegs,N_TMPLT_BITS,N_CMA_BITS);
 
 %% %---------trigo funcs linear transofrmation------------------
-% calculateIntrinsic function calculates camera intrinsic
-% The calculations produces:DEST.p2axa,DEST.p2axb,DEST.p2aya,DEST.p2ayb,FRMW.kRaw, FRMW.kWorld,FRMW.zoRaw,FRMW.zoWorld
-% calculateIntrinsic function should be calculated when one of the following is changing:
+% The calculations produces:DEST.p2axa,DEST.p2axb,DEST.p2aya,DEST.p2ayb
+% getTrigo function should be calculated when one of the following is changing:
 % regs from previous bootcalc: regs.FRMW.xres,regs.FRMW.yres
-%  Regs from external configuration:regs.FRMW.mirrorMovmentMode,regs.DIGG.undistBypass,regs.FRMW.undistXfovFactor,regs.FRMW.undistYfovFactor,regs.GNRL.imgHsize,regs.GNRL.imgVsize
+%  Regs from external configuration:regs.FRMW.mirrorMovmentMode,regs.DIGG.undistBypass,regs.FRMW.undistXfovFactor,regs.FRMW.undistYfovFactor
 %  Regs from EPROM: regs.FRMW.laserangleH,regs.FRMW.laserangleV,regs.FRMW.projectionYshear,regs.FRMW.xfov, regs.FRMW.yfov, regs.FRMW.marginL/R/T/B,
 
-[regs,autogenRegs]=calculateIntrinsic(regs,autogenRegs); 
+[regs,autogenRegs]=getTrigo(regs,autogenRegs); 
 
 
 %% -------ambiguity-----------------
@@ -101,7 +100,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 end 
 
 
-function [regs,autogenRegs]=calculateIntrinsic(regs,autogenRegs)
+function [regs,autogenRegs]=getTrigo(regs,autogenRegs)
 trigoRegs = Pipe.DEST.FRMW.trigoCalcs(regs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,trigoRegs);
 regs = Firmware.mergeRegs(regs,autogenRegs);
