@@ -30,6 +30,9 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 autogenRegs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
 regs = Firmware.mergeRegs(regs,autogenRegs);
+%% % DEST.decRatio             %   ratio between coarse and fine in DEST block
+autogenRegs.DEST.decRatio = regs.DCOR.decRatio;
+regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% %------------ALT IR & PEAK_VAL_NORM-----------------%
 % altIR_peakVal function calculates parameters for alternate IR image base

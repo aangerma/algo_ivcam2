@@ -1,6 +1,6 @@
 function [undistLut] = BuildUndistLut(regs,luts)
 %%
-shift = double(regs.DIGG.bitshift);
+shift = 15;
 N = 32;%LUT size
 toint32 = @(x) int32(x*2^shift);
 %%

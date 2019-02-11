@@ -1,6 +1,6 @@
 function [autogenRegs] = getUndistScaleAndShift(regs)
 
-shift = double(regs.DIGG.bitshift);
+shift = 15;
 toint32 = @(x) int32(x*2^shift);
 
 if(regs.DIGG.undistBypass || (regs.FRMW.calImgHsize==regs.GNRL.imgHsize && regs.FRMW.calImgVsize==regs.GNRL.imgVsize))
