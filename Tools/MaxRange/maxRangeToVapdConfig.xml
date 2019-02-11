@@ -13,7 +13,8 @@
         Conf Masked Mean,
         Duty Cycle Masked Mean}
     </plotsToShow>
+    <sweepEnabled>false</sweepEnabled> <!--wheather to change the register value or stay in default-->
     <regToSweep>EXTLvAPD</regToSweep> <!--which register to work on-->
     <sweepDefaultVal>5120</sweepDefaultVal> <!--default value as a baseline-->
-    <sweepVals>[5761:64:7041]</sweepVals> <!--the values to sweep-->
+    <sweepVals>5</sweepVals> <!--the values to sweep or nuimber of iteraion in case sweepEnabled is false-->
 </struct>
