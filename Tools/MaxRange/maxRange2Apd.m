@@ -23,8 +23,17 @@ function [allDistancesRes] = maxRange2Apd(hw,configFile)
     
     
     %register to sweep parameters
+    sweepEn = config.sweepEnabled;
     regToSweep = config.regToSweep;
-    sweepVals = [config.sweepDefaultVal config.sweepVals];
+    if sweepEn
+        sweepVals = [config.sweepDefaultVal config.sweepVals];
+    else
+        if length(config.sweepVals) > 1      
+            sweepVals = config.sweepVals;
+        else
+            sweepVals = 1:config.sweepVals;
+        end
+    end
     fw = Firmware;
     metaD = fw.getMeta(regToSweep);
     sweepVals = cast(sweepVals,metaD.type);
@@ -63,6 +72,7 @@ function [allDistancesRes] = maxRange2Apd(hw,configFile)
         allRes = [];
         fprintf('Moving to distance %d\n',distances(d));
         % set capture mode to default confidence and IR
+        hw.setReg(regToSweep,config.sweepDefaultVal);
         hw.setReg('DESTaltIrEn',0);
         hw.setConfidenceAs();
             
@@ -89,12 +99,16 @@ function [allDistancesRes] = maxRange2Apd(hw,configFile)
         % main loop
         for ridx=1:length(sweepVals)
             
-            %set apd register
-            regVal = sweepVals(ridx);
-            fprintf_r(sprintf('Changing %s to %d',regToSweep,regVal),[]);
-            hw.setReg(regToSweep,regVal);
-            pause(0.1);
-            hw.getFrame(10); %clear buffer;
+            if sweepEn
+                %set apd register
+                regVal = sweepVals(ridx);
+                fprintf_r(sprintf('Changing %s to %d',regToSweep,regVal),[]);
+                hw.setReg(regToSweep,regVal);
+                pause(0.1);
+                hw.getFrame(10); %clear buffer;
+            else
+                regVal = config.sweepDefaultVal;
+            end
             
             % set capture mode to default confidence and IR
             hw.setReg('DESTaltIrEn',0);
@@ -139,16 +153,26 @@ function [allDistancesRes] = maxRange2Apd(hw,configFile)
         defaultIdx = 1;
         xAx = [allRes(defaultIdx+1:end).(regToSweep)];
         for pid=1:length(plotsToShow)
-            fig = figure(pid);
-            plt = plotsToShow{pid};
-            fieldname = plt(~isspace(plt));
-            yAx = [allRes(defaultIdx+1:end).(fieldname)];
-            plot(xAx,yAx,'b',xAx,repmat(allRes(defaultIdx).(fieldname),size(xAx)),'r');
-            title(sprintf('%s as a function of the %s',plt,regToSweep))
-            xlabel([regToSweep 'register value'])
-            ylabel(plt);
-            legend({'Manual','Flyback'});
-            saveas(fig,fullfile(outfolder,sprintf('%s to %s distance %d.png',fieldname,regToSweep,distances(d))));
+                fig = figure(pid);
+                plt = plotsToShow{pid};
+                fieldname = plt(~isspace(plt));
+                yAx = [allRes(defaultIdx+1:end).(fieldname)];
+            if sweepEn
+                plot(xAx,yAx,'b',xAx,repmat(allRes(defaultIdx).(fieldname),size(xAx)),'r');
+                title(sprintf('%s as a function of the %s',plt,regToSweep))
+                xlabel([regToSweep 'register value'])
+                ylabel(plt);
+                legend({'Manual','Flyback'});
+                saveas(fig,fullfile(outfolder,sprintf('%s to %s distance %d.png',fieldname,regToSweep,distances(d))));
+            else
+               
+                plot(1:length(yAx),yAx,'b');
+                title(sprintf('%s as a function of the iterations',plt))
+                xlabel('Iteration')
+                ylabel(plt);
+                legend({'Default'});
+                saveas(fig,fullfile(outfolder,sprintf('%s to %s distance %d.png',fieldname,regToSweep,distances(d))));
+            end
         end
         allDistancesRes = [allDistancesRes allRes];
         fprintf('Done!\n');
