@@ -11,10 +11,39 @@ if(regs.DIGG.undistBypass==0)
 end
 
 [regsOut.DEST.p2axa,regsOut.DEST.p2axb,regsOut.DEST.p2aya,regsOut.DEST.p2ayb] = p2aCalc(regs,xfovPix,yfovPix);
+KinvRaw=[regsOut.DEST.p2axa            0                   regsOut.DEST.p2axb;
+    0                regsOut.DEST.p2aya               regsOut.DEST.p2ayb;
+    0                0                   1    ];
+KRaw=inv(KinvRaw);
+KRaw=abs(KRaw); % Make it so the K matrix is positive. This way the orientation of the cloud point is identical to DS.
+regsOut.FRMW.kRaw=typecast(KRaw([1 4 7 2 5 8 3 6]),'uint32');
+
 if(regs.GNRL.rangeFinder)
     regsOut.DEST.p2aya = single(0);
     regsOut.DEST.p2ayb  = single(0);
 end
+
+% Calculate K matrix. Note - users image is rotated by 180 degrees in
+% respect to our internal representation.
+Kworld=KRaw;
+Kworld(1,3)=single(regs.GNRL.imgHsize)-1-KRaw(1,3);
+Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+
+regsOut.CBUF.spare=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
+regsOut.FRMW.kWorld=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
+
+%% zero order location
+%ZOLOC calculates the location of the ZO pixel (in the users rectified
+%image).
+regs = Firmware.mergeRegs(regs,regsOut);
+
+[xZOraw,yZOraw] = Calibration.aux.ang2xySF(0,0,regs,[],1); % ZO location
+regsOut.FRMW.zoRawCol= uint16(floor(xZOraw));
+regsOut.FRMW.zoRawRow= uint16(floor(yZOraw));
+
+regsOut.FRMW.zoWorldCol = regs.GNRL.imgHsize - 1 - uint16(floor(xZOraw));
+regsOut.FRMW.zoWorldRow  =regs.GNRL.imgVsize - 1 - uint16(floor(yZOraw));
+
 end
 
 function [p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfov,yfov)
@@ -23,6 +52,8 @@ Calculates tanx and tany for the four sides of the image.
 if rot90 is true,calculate the coefficients for an outside image - which is
 the matlab image rotated by 180 degrees. fliplr(flipud()).
 %}
+
+% Take angx/y that maps to 0.5 - 639.5
 %% ----STAIGHT FORWARD------
 mode=regs.FRMW.mirrorMovmentMode;
 
@@ -43,9 +74,20 @@ rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-xfov*0.25,                
 rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , yfov*0.25)));rangeT =rangeT (2);
 rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-yfov*0.25)));rangeB=rangeB(2);
 
-p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
-p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
-p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres-1);
-p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
+% p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
+% p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
+% p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres-1);
+% p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
+
+% p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres);
+% p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres)*(rangeR-rangeL) ;
+% p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres);
+% p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres)*(rangeT-rangeB) ;
+
+
+p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres);
+p2axb = 0.5*(rangeR-rangeL)/ single(regs.FRMW.xres) + rangeL + single(regs.FRMW.marginL) / single(regs.FRMW.xres)*(rangeR-rangeL) ;
+p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres);
+p2ayb = 0.5*(rangeT-rangeB)/ single(regs.FRMW.yres) + rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres)*(rangeT-rangeB) ;
 
 end

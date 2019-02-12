@@ -93,7 +93,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allDfzRes;
-            elseif strfind(enabledMetrics{i},'compareCalVal') && runParams.DFZ && any(strcmp(enabledMetrics(1:i),'dfz'))
+            elseif ~isempty(strfind(enabledMetrics{i},'compareCalVal')) && (runParams.DFZ) && (any(strcmp(enabledMetrics(1:i),'dfz')))
                 calFrame = load(fullfile(runParams.outputFolder,'preResetCalCbFrame.mat'));
                 valFrame = load(fullfile(runParams.outputFolder,'postResetValCbFrame.mat'));
                 Calibration.aux.plotDiffBetweenCBImages( [calFrame.frames,valFrame.frames],hw.getIntrinsics,hw.z2mm ,runParams);

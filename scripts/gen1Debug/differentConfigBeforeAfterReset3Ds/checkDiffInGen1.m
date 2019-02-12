@@ -24,6 +24,7 @@ calibParams = xml2structWrapper('calibParams.xml');
 
 calibParams = xml2structWrapper('calibParams.xml');
 params.camera.K = reshape([typecast(regs.CBUF.spare,'single'),1],3,3)';
+params.camera.K(7) = 639 - params.camera.K(7);
 params.camera.zMaxSubMM = 2^double(regs.GNRL.zMaxSubMMExp);
 params.target.squareSize = calibParams.validationConfig.cbSquareSz;
 params.expectedGridSize = calibParams.validationConfig.cbGridSz;

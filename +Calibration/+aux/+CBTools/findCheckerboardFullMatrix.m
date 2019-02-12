@@ -17,8 +17,8 @@ gridPointsFull = GetSquaresCorners(ir);
 
 if imageRotatedBy180
     gridPointsFull = rot90(gridPointsFull,2);
-    gridPointsFull(:,:,1) = size(ir,2) - gridPointsFull(:,:,1);
-    gridPointsFull(:,:,2) = size(ir,1) - gridPointsFull(:,:,2);
+    gridPointsFull(:,:,1) = 1 + size(ir,2) - gridPointsFull(:,:,1);
+    gridPointsFull(:,:,2) = 1 + size(ir,1) - gridPointsFull(:,:,2);
     
 end
 

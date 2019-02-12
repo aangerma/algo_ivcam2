@@ -11,7 +11,7 @@ stlwriteMatrix('\\invcam450\D\temp\11.stl',v(:,:,1),v(:,:,2),v(:,:,3))
         zUINT16=varargin{1};
         regs = varargin{2};
         z2mm=bitshift(1,regs.GNRL.zMaxSubMMExp);
-        matK=reshape([typecast(regs.CBUF.spare,'single') 1],3,3)';
+        matK=reshape([typecast(regs.FRMW.kRaw,'single') 1],3,3)';
     elseif(nargin==3)
         zUINT16=varargin{1};
         matK=varargin{2};

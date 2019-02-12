@@ -131,6 +131,9 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
     
     %% Validate DFZ
+    
+    
+    % compareEGeomSphericalDisableEnable(hw, fw, fprintff, calibParams, runParams);
     frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,[0.6 0 0; 0 0.6 0; 0 0 1],'DFZ Validation image');
     ff = Calibration.aux.invisibleFigure;
     imagesc(frames.i);
@@ -213,8 +216,8 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-%     initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
+    initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
+%     initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
     copyfile(fullfile(initFldr,'*.csv'), runParams.internalFolder)
     
 end
@@ -295,6 +298,7 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
         currregs.DEST.baseline = single(calibParams.dest.vBaseline);
     end
     currregs.GNRL.zMaxSubMMExp = uint16(log(calibParams.gnrl.zNorm)/log(2));
+    currregs.JFIL.invMinMax = uint16([calibParams.gnrl.minRange*calibParams.gnrl.zNorm,intmax('uint16')]);
     
     fw.setRegs(currregs,fnCalib);
     fw.get();

@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <regexpHistory>vapd|jfil*byp|gamma*scal|rast*bilt*byp|sphericalen,vapd|jfil*byp|gamma*scal|rast*bilt*byp|spherical,vapd|jfil*byp|gamma*scal|rast*bilt*byp,vapd|jfil*byp|gamma*scal|rast*bilt,vapd|jfil*byp|gamma*scal|rast</regexpHistory>
+   <regexpHistory>spherical,DEST.*tmp,DEST.*temp,vapd|jfil*byp|gamma*scal|rast*bilt*byp|sphericalen,vapd|jfil*byp|gamma*scal|rast*bilt*byp|spherical</regexpHistory>
 </struct>
