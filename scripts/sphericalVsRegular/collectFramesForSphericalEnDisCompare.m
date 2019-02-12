@@ -11,7 +11,7 @@ hw.cmd('ALGO_THERMLOOP_EN 0');
 % hw.setReg('DESTdepthAsRange',true);
 hw.setReg('DESTtmptrOffset',single(0));
 hw.setReg('JFILinvBypass',true);
-hw.cmd('mwd a0020c00 a0020c04 019002EE // DIGGsphericalScale');
+% hw.cmd('mwd a0020c00 a0020c04 019002EE // DIGGsphericalScale');
 % hw.cmd('mwd a0020a6c a0020a70 01000100 // DIGGgammaScale');
 hw.shadowUpdate;
 
@@ -19,6 +19,7 @@ frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,[0.6 0 0; 0 0.6 0; 
 hw.read('DESTtmptrOffset')
 r=Calibration.RegState(hw);
 r.add('DIGGsphericalEn',true);
+r.add('DIGGsphericalScale',[730,430]);
 r.add('DESTdepthAsRange',true);
 r.set();
 pause(0.3);
@@ -29,7 +30,7 @@ regs.DEST.depthAsRange=true;
 regs.DEST.baseline = single(0);
 regs.DEST.baseline2 = single(0);
 regs.DIGG.sphericalEn=0;
-regs.DIGG.sphericalScale(1) = 750;
-regs.DIGG.sphericalScale(2) = 400;
+regs.DIGG.sphericalScale(1) = 730;
+regs.DIGG.sphericalScale(2) = 430;
 
 r.reset();

@@ -19,14 +19,14 @@ if axis == 1 % Y angle
     ymin = find(spBinIm(:,xp),1);
     ymax = find(spBinIm(:,xp),1,'last');
     yy = double([ymin,ymax]');
-    xx = double([xp,xp]'*4);
+    xx = double(([xp,xp]'-0.5)*4);
     
 else % X angle
     yp = regs.GNRL.imgVsize/2;
     xmin = find(spBinIm(yp,:),1);
     xmax = find(spBinIm(yp,:),1,'last');
     yy = double([yp,yp]');
-    xx = double([xmin,xmax]'*4);
+    xx = double(([xmin,xmax]'-0.5)*4);
     
 end
 xx = xx-double(regs.DIGG.sphericalOffset(1));

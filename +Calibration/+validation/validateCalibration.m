@@ -128,9 +128,9 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                  fprintff('Done.\n');
             end
         end
-        
+        Calibration.aux.collectTempData(hw,runParams,'End of validation:');
         Calibration.aux.logResults(valResults,runParams,'validationResults.txt');
-        Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark);
+        Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark,'Val');
         valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff,1);
         struct2xml_(allResults,fullfile(outFolder,'fullReport.xml'));
         Calibration.aux.logResults(allResults,runParams,'fullValidationReport.txt');

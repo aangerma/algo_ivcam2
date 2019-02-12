@@ -1,7 +1,6 @@
 function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spark)
        
     t=tic;
-    score=0;
     results = struct;
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
@@ -112,12 +111,21 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     if ~calibPassed
        return 
     end
+    
+    
+    %% Print image final fov
+    [results,calibPassed] = prResetDFZValidation(hw,fw,results,calibParams,fprintff);
+    if ~calibPassed
+       return 
+    end
+    
+    
     % Update fnCalin and undist lut in output dir
     writeCalibRegsProps(fw,fnCalib);
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
     Calibration.aux.logResults(results,runParams);
-    Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark);
+    Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
     %% merge all scores outputs
     calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff);
     
@@ -129,52 +137,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     end
     %% Burn 2 device
     burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
-    
-    %% Validate DFZ
-    
-    
-    % compareEGeomSphericalDisableEnable(hw, fw, fprintff, calibParams, runParams);
-    frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,[0.6 0 0; 0 0.6 0; 0 0 1],'DFZ Validation image');
-    ff = Calibration.aux.invisibleFigure;
-    imagesc(frames.i);
-    save(fullfile(runParams.outputFolder,'preResetCalCbFrame.mat'),'frames');
-
-    title(sprintf('Pre reset dfz validation image')); 
-    Calibration.aux.saveFigureAsImage(ff,runParams,'PreResetValidation',sprintf('Pre reset dfz validation image '));
-    Calibration.aux.collectTempData(hw,runParams,'DFZ validation before reset:');
-    [regs,luts]=fw.get();
-    regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
-    r=Calibration.RegState(hw);
-    r.add('JFILinvBypass',true);
-    r.add('DESTdepthAsRange',true);
-    r.add('DIGGsphericalEn',true);
-    r.set();
-    pause(0.1);
-    framesSpherical = hw.getFrame(30);
-    
-    
-    
-    [ dfzRes,allRes ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
-    
-    i = 1;
-    targetInfo = targetInfoGenerator('Iv2A1');
-    targetInfo.cornersX = 20;
-    targetInfo.cornersY = 28;
-    d(i).i = framesSpherical(i).i;
-    d(i).c = framesSpherical(i).c;
-    d(i).z = framesSpherical(i).z;
-    pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical(i).i, 1);
-    grid = [size(pts,1),size(pts,2),1];
-    d(i).pts = pts;
-    d(i).grid = grid;
-    d(i).pts3d = create3DCorners(targetInfo)';
-    d(i).rpt = Calibration.aux.samplePointsRtd(framesSpherical(i).z,pts,regs);
-    
-    [~,dfzResSpherical] = Calibration.aux.calibDFZ(d,regs,calibParams,fprintff,0,1);
-    fprintff('Geometric Error Validation Before Reset regular val eGeom: %2.2g\n',dfzRes.GeometricError);
-%     fprintff('Geometric Error Validation Before Reset regular RMS: %2.2g\n',allRes.rmsError);
-    fprintff('Geometric Error Validation Before Reset spherical: %2.2g\n',dfzResSpherical);
-    r.reset();
     
     %% Collecting hardware state
     if runParams.saveRegState
@@ -194,7 +156,69 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
 end
 
+function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff)
+    % Compare the geometric error between spherical image and regular image
+    calibPassed = 1;
+    if runParams.pre_calib_validation
+        frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,[0.6 0 0; 0 0.6 0; 0 0 1],'DFZ Validation image');
+        ff = Calibration.aux.invisibleFigure;
+        imagesc(frames.i);
+        save(fullfile(runParams.outputFolder,'preResetCalCbFrame.mat'),'frames');
+        
+        title(sprintf('Pre reset dfz validation image'));
+        Calibration.aux.saveFigureAsImage(ff,runParams,'PreResetValidation',sprintf('Pre reset dfz validation image '));
+        Calibration.aux.collectTempData(hw,runParams,'DFZ validation before reset:');
+        [regs,luts]=fw.get();
+        regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+        regs.DIGG.sphericalScale = int16(double(regs.DIGG.sphericalScale).*calibParams.dfz.sphericalScaleFactors);
+        r=Calibration.RegState(hw);
+        r.add('JFILinvBypass',true);
+        r.add('DESTdepthAsRange',true);
+        r.add('DIGGsphericalEn',true);
+        r.add('DIGGsphericalScale',regs.DIGG.sphericalScale);
+        
+        r.set();
+        pause(0.1);
+        framesSpherical = hw.getFrame(30);
+        
+        
+        
+        [ dfzRes,allRes ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
+        
+        i = 1;
+        targetInfo = targetInfoGenerator('Iv2A1');
+        targetInfo.cornersX = 20;
+        targetInfo.cornersY = 28;
+        d(i).i = framesSpherical(i).i;
+        d(i).c = framesSpherical(i).c;
+        d(i).z = framesSpherical(i).z;
+        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical(i).i, 1);
+        grid = [size(pts,1),size(pts,2),1];
+        d(i).pts = pts;
+        d(i).grid = grid;
+        d(i).pts3d = create3DCorners(targetInfo)';
+        d(i).rpt = Calibration.aux.samplePointsRtd(framesSpherical(i).z,pts,regs);
+        
+        [~,dfzResSpherical] = Calibration.aux.calibDFZ(d,regs,calibParams,fprintff,0,1);
+        fprintff('Geometric Error Validation Before Reset regular val eGeom: %2.2g\n',dfzRes.GeometricError);
+        %     fprintff('Geometric Error Validation Before Reset regular RMS: %2.2g\n',allRes.rmsError);
+        fprintff('Geometric Error Validation Before Reset spherical: %2.2g\n',dfzResSpherical);
+        r.reset();
+        hw.setReg('DIGGsphericalScale',[640,360]);
 
+        
+        
+        calibPassed = (results.eGeomSphericalDis<calibParams.errRange.eGeomSphericalDis(2)) && (results.eGeomSphericalEn<calibParams.errRange.eGeomSphericalEn(2));
+        if calibPassed
+            fprintff('[v] DFZ pre reset validation passed[e=%g]\n',results.eGeomSphericalDis,results.eGeomSphericalEn);
+        else
+            fprintff('[x] DFZ pre reset validation failed[e=%g]\n',results.eGeomSphericalDis,results.eGeomSphericalEn);
+        end
+        
+    end
+    
+
+end
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     %backward compatibility
@@ -308,7 +332,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
     fprintff('init hw configuration...');
     if(runParams.init)
         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLauxShadow.*$).*',fnAlgoInitMWD);
+        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLvAPD|EXTLauxShadow.*$).*',fnAlgoInitMWD);
         hw.runPresetScript('maReset');
         pause(0.1);
         hw.runScript(fnAlgoInitMWD);
@@ -531,12 +555,17 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             Calibration.aux.setLaserProjectionUniformity(hw,true);
         end
         [regs,luts]=fw.get();
+        
         regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
+        regs.DIGG.sphericalScale = int16(double(regs.DIGG.sphericalScale).*calibParams.dfz.sphericalScaleFactors);
+    
         r=Calibration.RegState(hw);
         
         r.add('JFILinvBypass',true);
         r.add('DESTdepthAsRange',true);
         r.add('DIGGsphericalEn',true);
+        r.add('DIGGsphericalScale',regs.DIGG.sphericalScale);
+
         r.set();
         
         
@@ -560,13 +589,14 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         bbox(4) = min([lcoords(2),mcoords(2),rcoords(2)])-bbox(2);
 
         
-        cdParams = cdParamsGenerator('iv2');
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
         testImages = ~trainImages;
         for i=1:length(captures)
             cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);
+            cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
+            cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
             im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
         end
         for i = 1:numel(captures)
@@ -577,18 +607,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             
 %             [pts, grid] = detectCheckerboard(im(i).i,targetInfo,cdParams);
             pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 1);
-            grid = [size(pts,1),size(pts,2),1];
-            if isempty(grid)
-                [pts, grid] = detectCheckerboard(imcrop(im(i).i,bbox),targetInfo,cdParams);
-                if ~isempty(pts)
-                    pts = pts + (bbox(1:2)-1);
-                end
-            end
-            nPointDetected = prod(grid);
-            nCornersExpected = targetInfo.cornersX * targetInfo.cornersY * (targetInfo.isDouble+1);
-            if nPointDetected < nCornersExpected
-                 fprintff('%d/%d CB corners detected.\n',nPointDetected,nCornersExpected);
-            end
+            grid = [size(pts,1),size(pts,2),1];            
             d(i).i = im(i).i;
             d(i).c = im(i).c;
             d(i).z = im(i).z;
@@ -618,17 +637,6 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             d(i).rptCropped = Calibration.aux.samplePointsRtd(im(i).z,ptsCropped,regs);
             
         end
-        %{
-        d(1)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(1),fprintff,nCorners);
-        d(2)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(2),fprintff,nCorners);
-        d(3)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.5 .5 1]));
-        Calibration.aux.CBTools.checkerboardInfoMessage(d(3),fprintff,nCorners);
-        d(4)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 .1;0 .5 0; 0.2 0 1]);
-        d(5)=Calibration.aux.CBTools.showImageRequestDialog(hw,1,[.5 0 -.1;0 .5 0; -0.2 0 1]);
-%         d(6)=Calibration.aux.CBTools.showImageRequestDialog(hw,2,diag([2 2 1]));
-        %}
         Calibration.DFZ.saveDFZInputImage(d,runParams);
         % dodluts=struct;
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0);
@@ -636,6 +644,10 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         
         fw.setRegs(dfzRegs,fnCalib);
         regs = fw.get(); 
+        hw.setReg('DIGGsphericalScale',regs.DIGG.sphericalScale);
+        hw.shadowUpdate;
+        
+        
         if ~isempty(d(testImages))
             [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1);
             fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
