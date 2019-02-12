@@ -22,7 +22,8 @@ function [rpt,cbr,cbsing,verts] = mySamplePointsRtd(z,pts,regs)
     [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
     if(regs.DIGG.sphericalEn)
         xx = (xg+0.5)*4 - double(regs.DIGG.sphericalOffset(1));
-        yy = yg+0.5 - double(regs.DIGG.sphericalOffset(2));
+%         yy = yg+0.5 - double(regs.DIGG.sphericalOffset(2));
+        yy = yg+1 - double(regs.DIGG.sphericalOffset(2));
         
         xx = xx*2^10;
         yy = yy*2^12;

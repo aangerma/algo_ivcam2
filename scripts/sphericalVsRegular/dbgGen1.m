@@ -12,11 +12,19 @@ targetInfo.cornersY = 28;
 %% For the regular frame, compare eGeom with calibDFZ 
 
 pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(frames.i, 1);
-regs.DEST.depthAsRange=1;regs.DIGG.sphericalEn=0;
+regs.DEST.depthAsRange=0;regs.DIGG.sphericalEn=0;
 [rptRegular,frames.r,frames.sing,frames.verts] = mySamplePointsRtd(frames.z,pts,regs);
+
+
 frames.pts3d = create3DCorners(targetInfo)';
 frames.rpt = rptRegular;
 rptRegular = reshape(rptRegular,[20,28,3]);
+rtd = rptRegular(:,:,1);
+cols = find(sum(~isnan(rtd),1)); 
+rows = find(sum(~isnan(rtd),2)); 
+rpt = rptRegular*nan;
+rpt(row(2:end-1),cols(2:end-1),:) = rptRegular(row(2:end-1),cols(2:end-1),:);
+
 calibParams = xml2structWrapper('calibParams.xml');
 
 frames.pts = pts;
@@ -32,7 +40,9 @@ regs.DEST.depthAsRange=1;regs.DIGG.sphericalEn=1;
 framesSpherical.pts3d = create3DCorners(targetInfo)';
 framesSpherical.rpt = rptSpherical;
 framesSpherical.rpt(isnan(frames.rpt)) = nan;
-framesSpherical.rpt(:,1) = frames.rpt(:,1)
+framesSpherical.rpt(:,1) = frames.rpt(:,1);
+% framesSpherical.rpt(:,2) = frames.rpt(:,2);
+% framesSpherical.rpt(:,3) = frames.rpt(:,3);
 rptSpherical = reshape(rptSpherical,[20,28,3]);
 
 framesSpherical.pts = pts;
@@ -51,16 +61,16 @@ imagesc(reshape(frames.r,[20,28])-reshape(framesSpherical.r,[20,28])); colorbar;
 
 figure,
 histogram(rptRegular(:,:,1)-rptSpherical(:,:,1))
-
-vxyDfz = reshape(frames.vCalibDfz,[20,28,3]);
-vspDfz = reshape(framesSpherical.vCalibDfz,[20,28,3]);
-
-figure,
-for i = 1:3
-tabplot
-imagesc(vxyDfz(:,:,i)-vspDfz(:,:,i)); colorbar;
-end
 % 
+% vxyDfz = reshape(frames.vCalibDfz,[20,28,3]);
+% vspDfz = reshape(framesSpherical.vCalibDfz,[20,28,3]);
+% 
+% figure,
+% for i = 1:3
+% tabplot
+% imagesc(vxyDfz(:,:,i)-vspDfz(:,:,i)); colorbar;
+% end
+% % 
 
 figure, imagesc(frames.i);
 hold on;
