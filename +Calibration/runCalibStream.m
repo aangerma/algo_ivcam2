@@ -156,7 +156,9 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
     %% Enable U0 Idle
-    hw.cmd('U0_IDLE_ENABLE 1');
+    if calibParams.gnrl.disable_u0_idle
+        hw.cmd('U0_IDLE_ENABLE 1');
+    end
     %% Validation
     
     clear hw;

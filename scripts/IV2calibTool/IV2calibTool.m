@@ -315,7 +315,13 @@ function statrtButton_callback(varargin)
         [runparams.version,runparams.subVersion] = calibToolVersion(); 
         runparams.outputFolder = [];
         runparams.replayFile = [];
-
+        if isdeployed
+            toolDir = pwd;
+        else
+            toolDir = fileparts(mfilename('fullpath'));
+        end
+        calibfn =  fullfile(toolDir,'calibParams.xml');
+        calibParams = xml2structWrapper(calibfn);
         %temporary until we have valid log file
         app.m_logfid = 1;
         fprintffS=@(varargin) fprintff(app,varargin{:});
@@ -340,8 +346,10 @@ function statrtButton_callback(varargin)
                 hw = HWinterface;
                 [info,serialStr,~] = hw.getInfo();
                 fwVersion = hw.getFWVersion;
-                hw.cmd('U0_IDLE_ENABLE 0');
-                hw.cmd('rst');
+                if calibParams.gnrl.disable_u0_idle
+                    hw.cmd('U0_IDLE_ENABLE 0');
+                    hw.cmd('rst');
+                end
                 clear hw;
             catch e
                 fprintffS('[!] ERROR:%s\n',strtrim(e.message));
@@ -371,13 +379,7 @@ function statrtButton_callback(varargin)
 
         
         % clear log
-        if isdeployed
-            toolDir = pwd;
-        else
-            toolDir = fileparts(mfilename('fullpath'));
-        end
-        calibfn =  fullfile(toolDir,'calibParams.xml');
-        calibParams = xml2structWrapper(calibfn);
+        
         calibParams.sparkParams.resultsFolder = runparams.outputFolder;
         if app.cb.replayMode.Value==0
             s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
@@ -403,7 +405,8 @@ function statrtButton_callback(varargin)
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
-            [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s);
+            pause(3);
+            [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s,app);
         end
         
         if calibPassed == 1 || calibPassed == -1

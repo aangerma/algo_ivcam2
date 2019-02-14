@@ -1,4 +1,4 @@
-function [valPassed, valResults] = validateCalibration(runParams,calibParams,fprintff,spark)
+function [valPassed, valResults] = validateCalibration(runParams,calibParams,fprintff,spark,app)
     
     if(~exist('spark','var'))
         spark=[];
@@ -125,6 +125,8 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                  fprintff('waiting for %d seconds...',waitConfig.timeoutSec);
                  pause(waitConfig.timeoutSec);
                  fprintff('Done.\n');
+            elseif strfind(enabledMetrics{i},'warmUp')
+                 Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
             end
         end
         Calibration.aux.collectTempData(hw,runParams,fprintff,'End of validation:');

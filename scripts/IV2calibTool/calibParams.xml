@@ -6,7 +6,7 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       
+       <disable_u0_idle>1</disable_u0_idle>
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
        <irInnerRange>[0,255]</irInnerRange>
@@ -58,6 +58,7 @@
       <wait>
           <timeoutSec>1</timeoutSec>
       </wait>
+      <warmUp></warmUp>
       <dfz>
           <numOfFrames>30</numOfFrames>
           
