@@ -16,8 +16,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         % Collecting hardware state
         z2mm = double(hw.z2mm);
         fprintff('opening stream...');
-        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align old (small) checkerboard to screen');
-        Calibration.aux.collectTempData(hw,runParams,'Before validation stage:');
+        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align checkerboard to screen');
         
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
@@ -40,6 +39,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         hw.cmd('mwd a0020a6c a0020a70 04000400 // DIGGgammaScale'); % Todo - fix regstate to read gammascale correctly
         hw.shadowUpdate;
         fprintff('Done.\n');
+        Calibration.aux.collectTempData(hw,runParams,fprintff,'Before validation stage:');
         
         
         outFolder = fullfile(runParams.outputFolder,'Validation',[]);
@@ -127,7 +127,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                  fprintff('Done.\n');
             end
         end
-        Calibration.aux.collectTempData(hw,runParams,'End of validation:');
+        Calibration.aux.collectTempData(hw,runParams,fprintff,'End of validation:');
         Calibration.aux.logResults(valResults,runParams,'validationResults.txt');
         Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark,'Val');
         valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff,1);

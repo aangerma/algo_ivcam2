@@ -340,6 +340,8 @@ function statrtButton_callback(varargin)
                 hw = HWinterface;
                 [info,serialStr,~] = hw.getInfo();
                 fwVersion = hw.getFWVersion;
+                hw.cmd('U0_IDLE_ENABLE 0');
+                hw.cmd('rst');
                 clear hw;
             catch e
                 fprintffS('[!] ERROR:%s\n',strtrim(e.message));

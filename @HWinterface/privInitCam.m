@@ -8,16 +8,20 @@ function obj=privInitCam(obj)
             
             dnet(cellfun(@(x) any(strcmpi(x,not_net_dll)),dnet))=[];
             dnet=strcat(p,dnet);
+            
             res=cellfun(@(x) NET.addAssembly(x),dnet,'uni',0);%#ok
+            
+            
+            
           
             %% create cam obj
             dm = NET.createGeneric('IVCam.Tools.CamerasSdk.Cameras.DeviceManager',...
-                {'IVCam.Tools.CamerasSdk.Cameras.Generic.IVCam20.Devices.IVCam20DeviceDetails'});
+                {'IVCam.Tools.CamerasSdk.Cameras.Generic.IVCam20.Devices.IIVCam20DeviceDetails'});
             
             if(0)
                 %% logger data for debug
                 dm.LoggerManager.CamerasSdkLogger.SetLogDirectory(System.String('c:\\temp\\IVCam20Sample\\'));%#ok
             end
             
-            obj.m_dotnetcam = dm.CameraFactory.CreateFirstAvailableCamera();            
+            obj.m_dotnetcam = dm.CameraFactory.CreateFirstAvailableCamera();    
 end

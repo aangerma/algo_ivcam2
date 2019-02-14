@@ -43,7 +43,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% Update init configuration
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
     %% Start stream to load the configuration
-    Calibration.aux.collectTempData(hw,runParams,'Before starting stream:');
+    Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     fprintff('Opening stream...');
     hw.startStream();
     fprintff('Done(%ds)\n',round(toc(t)));
@@ -81,7 +81,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
    if ~calibPassed
        return 
    end
-   Calibration.aux.collectTempData(hw,runParams,'Before los validation:');
+   Calibration.aux.collectTempData(hw,runParams,fprintff,'Before los validation:');
    [results,calibPassed] = validateLos(hw, runParams, calibParams,results, fprintff);
    if ~calibPassed
        return
@@ -92,7 +92,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
-    Calibration.aux.collectTempData(hw,runParams,'Before DFZ calibration:');
+    
     [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     if ~calibPassed
        return 
@@ -155,8 +155,10 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
-    
+    %% Enable U0 Idle
+    hw.cmd('U0_IDLE_ENABLE 1');
     %% Validation
+    
     clear hw;
 %     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     
@@ -167,7 +169,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
     if runParams.pre_calib_validation
         regs=fw.get();
         frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
-        Calibration.aux.collectTempData(hw,runParams,'DFZ validation before reset:');
+        Calibration.aux.collectTempData(hw,runParams,fprintff,'DFZ validation before reset:');
         regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
         regs.DIGG.sphericalScale = int16(double(regs.DIGG.sphericalScale).*calibParams.dfz.sphericalScaleFactors);
         r=Calibration.RegState(hw);
@@ -346,7 +348,7 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     if(runParams.dataDelay)
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]),'Delay Calibration');
-        Calibration.aux.collectTempData(hw,runParams,'Before delays calibration:');
+        Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
         
         fw.setRegs(delayRegs,fnCalib);
@@ -583,6 +585,9 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         bbox(4) = min([lcoords(2),mcoords(2),rcoords(2)])-bbox(2);
 
         
+        dfzCalTmp = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
+        dfzTmpRegs.FRMW.dfzCalTmp = single(dfzCalTmp);
+        
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
         testImages = ~trainImages;
@@ -637,6 +642,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);
+        fw.setRegs(dfzTmpRegs,fnCalib);
         regs = fw.get(); 
         hw.setReg('DIGGsphericalScale',regs.DIGG.sphericalScale);
         hw.shadowUpdate;
@@ -644,7 +650,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         
         if ~isempty(d(testImages))
             [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1);
-            fprintff('geom error on test set =%g\n',results.extraImagesGeomErr);
+            fprintff('geom error on test set =%.2g\n',results.extraImagesGeomErr);
         end
         
         
@@ -766,6 +772,7 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     intregs.JFIL.spare=zeros(1,8,'uint32');
     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
+    intregs.JFIL.spare(2)=typecast(regs.FRMW.dfzCalTmp,'uint32');
     fw.setRegs(intregs,fnCalib);
     fw.get();
     
