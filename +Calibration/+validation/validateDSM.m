@@ -1,7 +1,7 @@
-function [ results,dbg  ] = validateDSM( hw,fprintff )
+function [ results,dbg  ] = validateDSM( hw,fprintff,runParams )
     results = [];
     dbg = [];
-    [angxRawZO,angyRawZO,restFailed] = Calibration.aux.zeroOrderAngles(hw);
+    [angxRawZO,angyRawZO,restFailed] = Calibration.aux.zeroOrderAngles(hw,fprintff,runParams);
     dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
     dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
     dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');

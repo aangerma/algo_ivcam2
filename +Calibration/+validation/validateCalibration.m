@@ -88,7 +88,6 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 dfzConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(dfzConfig.numOfFrames);
                 save(fullfile(runParams.outputFolder,'postResetValCbFrame.mat'),'frames');
-
                 [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff,calibParams,runParams);
                 valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
@@ -109,7 +108,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allLosResults;
             elseif strfind(enabledMetrics{i},'dsm')
-                [dsmRes, dbg] = Calibration.validation.validateDSM(hw,fprintff);
+                [dsmRes, dbg] = Calibration.validation.validateDSM(hw,fprintff,runParams);
                 valResults = Validation.aux.mergeResultStruct(valResults, dsmRes);
                 saveValidationData(dbg,[],enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = dsmRes;

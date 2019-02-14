@@ -6,6 +6,7 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
+       
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
        <irInnerRange>[0,255]</irInnerRange>
@@ -15,12 +16,17 @@
        <cbSquareSz>30</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
    </gnrl>
+   <warmUp>
+       <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+   </warmUp>
    <errRange>
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
       <geomErr>[0.01 1.6]</geomErr>
       <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
+      <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
+      <eGeomSphericalDis>[0.01 3]</eGeomSphericalDis>
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 5]</maxPixelDisplacement>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
@@ -153,13 +159,19 @@
                 <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
+            
+            
+            
+        </captures>
+        <preResetCapture>
             <capture>
                 <target>Iv2A1</target>
                 <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
                 <type>test</type>
             </capture>
-            
-        </captures>
+        </preResetCapture>
+        
+        
         <fovxRange>[40,70]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 

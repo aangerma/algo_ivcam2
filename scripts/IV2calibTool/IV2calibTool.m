@@ -205,8 +205,16 @@ function app=createComponents()
     app.logarea.FontName='courier new';
     % Create verboseCheckBox
     
+    % Create invisible skip button
+    app.skipWarmUpButton = uicontrol('style','pushbutton','parent',configurationTab);
+    app.skipWarmUpButton.Callback = @skip_button_callback;
+    app.skipWarmUpButton.FontWeight = 'bold';
+    app.skipWarmUpButton.Position = [sz(1)-85 10 60 30];
+    app.skipWarmUpButton.String = 'Skip';
+    app.skipWarmUpButton.Visible = 'off';
+    Calibration.aux.globalSkip( 1,0 );
     %checkboxes
-    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState'};
+    cbnames = {'replayMode','verbose','warm_up','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -293,7 +301,12 @@ function abortButton_callback(varargin)
     app.AbortButton.UserData=0;
     app.AbortButton.Enable='off';
 end
-
+function skip_button_callback(varargin)
+    app=guidata(varargin{1});
+    app.skipWarmUpButton.Visible = 'off';
+    app.skipWarmUpButton.Enable = 'off';
+    Calibration.aux.globalSkip(1,1);
+end
 function statrtButton_callback(varargin)
     app=guidata(varargin{1});
     try
@@ -384,7 +397,7 @@ function statrtButton_callback(varargin)
         %=======================================================RUN CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
-        [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
+        [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));

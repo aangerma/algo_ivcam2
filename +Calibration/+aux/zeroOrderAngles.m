@@ -1,4 +1,4 @@
-function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,numOfMeasurments)
+function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,numOfMeasurments)
     % % Enable the MC - Enable_MEMS_Driver
     % hw.cmd('execute_table 140');
     % % Enable the logger
@@ -7,8 +7,8 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,numOfMeasurments)
         numOfMeasurments = 101;
     end
     
-    angyRaw = zeros(1,numOfMeasurments);
-    angxRaw = zeros(1,numOfMeasurments);
+    angyRawVec = zeros(1,numOfMeasurments);
+    angxRawVec = zeros(1,numOfMeasurments);
 
     
     hw.runPresetScript('stopStream');
@@ -28,15 +28,30 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,numOfMeasurments)
         hw.cmd('mwd fffe2cf4 fffe2cf8 40');
         %  Read FA (float, 32 bits)
         [~,FA] = hw.cmd('mrd fffe882C fffe8830');
-        angyRaw(i) = typecast(FA,'single');
+        angyRawVec(i) = typecast(FA,'single');
         % Read SA (float, 32 bits)
         [~,SA] = hw.cmd('mrd fffe880C fffe8810');
-        angxRaw(i) = typecast(SA,'single');
+        angxRawVec(i) = typecast(SA,'single');
         hw.cmd('mwd fffe2cf4 fffe2cf8 00');
         
     end
-    angxRaw = median(angxRaw);
-    angyRaw = median(angyRaw);
+    
+    angxRaw = median(angxRawVec);
+    angyRaw = median(angyRawVec);
+    
+    ff=Calibration.aux.invisibleFigure();
+    plot(angxRawVec,angyRawVec,'r*');
+    
+    xlabel('x angle raw');
+    ylabel('y angle raw');
+    hold on
+    plot(angxRaw,angyRaw,'b*')
+    title(sprintf('Rest Angle Measurements [%.2g,%.2g]',angxRaw,angyRaw));
+    
+    Calibration.aux.saveFigureAsImage(ff,runParams,'DSM','Rest_Angle');
+    fprintff('DSM: Rest Angle Measurements [%.2g,%.2g], Std: [%.2g,%.2g]\n ',angxRaw,angyRaw,std(angxRawVec),std(angyRawVec));
+    
+    
     
     % % Disable MC - Disable_MEMS_Driver
     hw.runPresetScript('resetRestAngle');

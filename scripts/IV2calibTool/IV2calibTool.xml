@@ -2,6 +2,7 @@
 <struct>
    <cb_replayMode>0</cb_replayMode>
    <cb_verbose>1</cb_verbose>
+   <cb_warm_up>1</cb_warm_up>
    <cb_init>1</cb_init>
    <cb_DSM>1</cb_DSM>
    <cb_gamma>1</cb_gamma>
