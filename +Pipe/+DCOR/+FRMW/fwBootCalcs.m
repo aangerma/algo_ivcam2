@@ -8,7 +8,7 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 % GNRL.imgVsize             %   conf
 % GNRL.codeLength           %   conf
 % DEST.txFRQpd              %   conf
-% DEST.sampleDist           %   Auto gen
+% FRMW.sampleDist           %   Auto gen
 % GNRL.tmplLength           %   Auto gen
 % FRMW.txCode               %   conf
 % DCOR.decRatio             %   Auto gen
@@ -17,7 +17,6 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 %%==============================================================================================================
 % DCOR.yScaler              %   confconfigure the select template selected table in RXTX mode.
 % DCOR.decRatio             %   ratio between coarse and fine in DCOR block
-% DEST.decRatio             %   ratio between coarse and fine in DEST block
 % DCOR.outIRcmaIndex        %   debug mode to output CMA bin out
 % DCOR.coarseTmplLength     %   coarse template Length
 % DCOR.coarseMasking        %   form multi focal mode currntly "bypass" values
@@ -27,15 +26,16 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 
 autogenRegs.DCOR.yScaler = uint8(zeros(128,1)); %it's uint4
 autogenRegs.DCOR.decRatio = uint8(log2(double(regs.GNRL.sampleRate)/double(regs.FRMW.coarseSampleRate)));
-autogenRegs.DEST.decRatio = autogenRegs.DCOR.decRatio;
 
 autogenRegs.DCOR.outIRcmaIndex = uint8([floor(double(regs.FRMW.outIRcmaBin)/84) mod(regs.FRMW.outIRcmaBin,84)]);
 
 autogenRegs.DCOR.yScalerDivExp = uint8(ceil(log2(double(regs.GNRL.imgVsize)))-7);
 downSamplingR = 2 ^ double(autogenRegs.DCOR.decRatio);
 autogenRegs.DCOR.coarseTmplLength = uint16(double(regs.GNRL.codeLength)*double(regs.GNRL.sampleRate)/downSamplingR);
+
+
 %% coarse masking
-pdSampleOffsetFine = (regs.DEST.txFRQpd./regs.DEST.sampleDist); %ofsset caused by pd [mm]/ offset caused by pd [mm/sample] -> [sample]
+pdSampleOffsetFine = (regs.DEST.txFRQpd./regs.FRMW.sampleDist); %ofsset caused by pd [mm]/ offset caused by pd [mm/sample] -> [sample]
 pdSampleOffsetCoarse = uint8(floor(pdSampleOffsetFine/(downSamplingR)+0.5));
 
 maskLength = double(regs.GNRL.tmplLength)/downSamplingR;

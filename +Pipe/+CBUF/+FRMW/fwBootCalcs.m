@@ -14,6 +14,7 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 % regs.GNRL.imgHsize, regs.GNRL.imgVsize, autogenRegs.CBUF.xBitShifts, regs.FRMW.cbufConstLUT,
 % regs.GNRL.rangeFinder, regs.JFIL.upscalexyBypass, regs.FRMW.cropXfactor, regs.FRMW.cropYfactor
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+autogenRegs.CBUF.xSections=regs.CBUF.xSections; % copy to hw
 xSections = calcXsections(regs);
 
 autogenRegs.CBUF.xBitShifts = uint8(ceil(log2(double(regs.GNRL.imgHsize-1)))-4);

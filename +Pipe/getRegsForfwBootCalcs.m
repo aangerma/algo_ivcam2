@@ -5,36 +5,37 @@ m=fw.getMeta();
 
 % group 0: = don't transfer, 1: from EPROM , 2: User config / other 
 
-regs2write={m([m.TransferToFW]~='0').regName};
-
-
+MetaForFW=m([m.TransferToFW]~='0');
+RegsNum=length(MetaForFW); 
 outRegs=struct;
-for i=1:length(regs2write)
-    [b,aname]=ConvertRegName2blockNameId (regs2write{i});
-    if (isfield(inRegs,b))
-        if(isfield(inRegs.(b),aname))            
-            outRegs.(b).(aname)=inRegs.(b).(aname);
+for i=1:RegsNum
+    metareg=MetaForFW(i); 
+    if (isfield(inRegs,metareg.algoBlock))
+        if(isfield(inRegs.(metareg.algoBlock),metareg.algoName))            
+            outRegs.(metareg.algoBlock).(metareg.algoName)=inRegs.(metareg.algoBlock).(metareg.algoName);
         end
     end
 end
 
-
 outLuts.DIGG.undistModel = inLuts.DIGG.undistModel;
+outLuts.FRMW.tmpTrans=inLuts.FRMW.tmpTrans; 
+
+%% for pre calc and internal to run
+outRegs.FRMW.preCalcBypass = inRegs.FRMW.preCalcBypass;
+outRegs.MTLB=inRegs.MTLB; 
+outRegs.EPTG=inRegs.EPTG;
+if ~inRegs.FRMW.preCalcBypass
+    % keep registers for jfilPreCalc
+    outRegs.FRMW.nnMaxRange=inRegs.FRMW.nnMaxRange; 
+    outRegs.FRMW.shadingCurve=inRegs.FRMW.shadingCurve; 
+    outRegs.FRMW.jfilGammaFactor=inRegs.FRMW.jfilGammaFactor;
+
+end
 
 
 
 end
 
 
-function [b,aname,sb]=ConvertRegName2blockNameId (blkDataName)
-sb = nan;
-b = blkDataName(1:4);
-[bi,ei]=regexp(blkDataName,'_(?<num>[\d]+)');
-if(~isempty(bi) && ei==length(blkDataName))
-    sb = str2double(blkDataName(bi+1:ei));
-    aname = blkDataName(5:bi-1);
-else
-    aname = blkDataName(5:end);
-end
 
-end
+

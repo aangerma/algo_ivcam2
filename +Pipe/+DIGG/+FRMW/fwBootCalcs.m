@@ -91,6 +91,7 @@ end
 
 
 function [regs,autogenRegs,autogenLuts] = UndistCoeff(regs,luts,autogenRegs)
+regs.DIGG.bitshift=uint8(15); % const
 autogenRegs.DIGG.undistFx=regs.DIGG.undistFx;
 autogenRegs.DIGG.undistFy=regs.DIGG.undistFy;
 autogenRegs.DIGG.undistX0=regs.DIGG.undistX0;

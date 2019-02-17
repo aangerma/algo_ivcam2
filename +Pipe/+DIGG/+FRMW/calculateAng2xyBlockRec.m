@@ -1,5 +1,5 @@
 function [outRegs] = calculateAng2xyBlockRec(regs)
-shift = double(regs.DIGG.bitshift);
+shift = 15;
 toint32 = @(x) int32(x*2^shift);
 N = 32;%LUT size
 

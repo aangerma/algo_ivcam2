@@ -16,12 +16,10 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% %------------sampleDist-----------------%
 % calculateSampleDist function gives us the length in mm per sample time, i.e.: the distance travled by light between two samples.
-% The calculations produces:DEST.sampleDist
-% calculateSampleDist function should be calculated when one of the following is changing:
-%  Regs from external configuration:regs.GNRL.sampleRate, regs.FRMW.pllClock
+% The calculations has been done in general block and just need to be
+% copied from firmware register sampledist
 
-[regs,autogenRegs] = calculateSampleDist(regs,autogenRegs,speedOfLightMMnsec);
-
+autogenRegs.DEST.sampleDist=regs.FRMW.sampleDist;
 
 %% %------------baseline-----------------%
 % The calculations produces:DEST.baseline2
@@ -29,6 +27,9 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 %  Regs from EPROM: regs.DEST.baseline
 
 autogenRegs.DEST.baseline2 = single(single(regs.DEST.baseline).^2);
+regs = Firmware.mergeRegs(regs,autogenRegs);
+%% % DEST.decRatio             %   ratio between coarse and fine in DEST block
+autogenRegs.DEST.decRatio = regs.DCOR.decRatio;
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% %------------ALT IR & PEAK_VAL_NORM-----------------%
@@ -41,14 +42,13 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 [regs,autogenRegs] = altIR_peakVal(regs,autogenRegs,N_TMPLT_BITS,N_CMA_BITS);
 
 %% %---------trigo funcs linear transofrmation------------------
-% calculateIntrinsic function calculates camera intrinsic
-% The calculations produces:DEST.p2axa,DEST.p2axb,DEST.p2aya,DEST.p2ayb,FRMW.kRaw, FRMW.kWorld,FRMW.zoRaw,FRMW.zoWorld
-% calculateIntrinsic function should be calculated when one of the following is changing:
+% The calculations produces:DEST.p2axa,DEST.p2axb,DEST.p2aya,DEST.p2ayb
+% getTrigo function should be calculated when one of the following is changing:
 % regs from previous bootcalc: regs.FRMW.xres,regs.FRMW.yres
-%  Regs from external configuration:regs.FRMW.mirrorMovmentMode,regs.DIGG.undistBypass,regs.FRMW.undistXfovFactor,regs.FRMW.undistYfovFactor,regs.GNRL.imgHsize,regs.GNRL.imgVsize
+%  Regs from external configuration:regs.FRMW.mirrorMovmentMode,regs.DIGG.undistBypass,regs.FRMW.undistXfovFactor,regs.FRMW.undistYfovFactor
 %  Regs from EPROM: regs.FRMW.laserangleH,regs.FRMW.laserangleV,regs.FRMW.projectionYshear,regs.FRMW.xfov, regs.FRMW.yfov, regs.FRMW.marginL/R/T/B,
 
-[regs,autogenRegs]=calculateIntrinsic(regs,autogenRegs); 
+[regs,autogenRegs]=getTrigo(regs,autogenRegs); 
 
 
 %% -------ambiguity-----------------
@@ -74,11 +74,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 end
 
-function [regs,autogenRegs] = calculateSampleDist(regs,autogenRegs,speedOfLightMMnsec)
-hfClk = regs.FRMW.pllClock/4;
-autogenRegs.DEST.sampleDist =[1 2 4]./single(regs.GNRL.sampleRate)*speedOfLightMMnsec/hfClk;
-regs = Firmware.mergeRegs(regs,autogenRegs);
-end
+
 
 function [regs,autogenRegs] = altIR_peakVal(regs,autogenRegs,N_TMPLT_BITS,N_CMA_BITS)
 al1 = @(n) 2^n-1;
@@ -98,7 +94,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 end 
 
 
-function [regs,autogenRegs]=calculateIntrinsic(regs,autogenRegs)
+function [regs,autogenRegs]=getTrigo(regs,autogenRegs)
 trigoRegs = Pipe.DEST.FRMW.trigoCalcs(regs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,trigoRegs);
 regs = Firmware.mergeRegs(regs,autogenRegs);
