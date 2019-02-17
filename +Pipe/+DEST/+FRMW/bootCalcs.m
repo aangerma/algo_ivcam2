@@ -11,11 +11,11 @@ end
 %% prepare for FW
 
 [FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(PreCalcsRegs,PreCalcsluts );
-regs = Firmware.mergeRegs(regs,FWinputRegs);
-luts = Firmware.mergeRegs(luts,FWinputLuts);
+FWinputRegs = Firmware.mergeRegs(FWinputRegs,autogenRegs);
+FWinputLuts = Firmware.mergeRegs(FWinputLuts,autogenLuts);
 
 
 %% Run fw bootcalcs
-[regs,autogenRegs,autogenLuts] = Pipe.DEST.FRMW.fwBootCalcs(regs,luts,autogenRegs,autogenLuts);
+[regs,autogenRegs,autogenLuts] = Pipe.DEST.FRMW.fwBootCalcs(FWinputRegs,FWinputLuts,autogenRegs,autogenLuts);
 
 end

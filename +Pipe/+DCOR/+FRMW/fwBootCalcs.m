@@ -8,7 +8,7 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 % GNRL.imgVsize             %   conf
 % GNRL.codeLength           %   conf
 % DEST.txFRQpd              %   conf
-% DEST.sampleDist           %   Auto gen
+% FRMW.sampleDist           %   Auto gen
 % GNRL.tmplLength           %   Auto gen
 % FRMW.txCode               %   conf
 % DCOR.decRatio             %   Auto gen
@@ -32,8 +32,10 @@ autogenRegs.DCOR.outIRcmaIndex = uint8([floor(double(regs.FRMW.outIRcmaBin)/84) 
 autogenRegs.DCOR.yScalerDivExp = uint8(ceil(log2(double(regs.GNRL.imgVsize)))-7);
 downSamplingR = 2 ^ double(autogenRegs.DCOR.decRatio);
 autogenRegs.DCOR.coarseTmplLength = uint16(double(regs.GNRL.codeLength)*double(regs.GNRL.sampleRate)/downSamplingR);
+
+
 %% coarse masking
-pdSampleOffsetFine = (regs.DEST.txFRQpd./regs.DEST.sampleDist); %ofsset caused by pd [mm]/ offset caused by pd [mm/sample] -> [sample]
+pdSampleOffsetFine = (regs.DEST.txFRQpd./regs.FRMW.sampleDist); %ofsset caused by pd [mm]/ offset caused by pd [mm/sample] -> [sample]
 pdSampleOffsetCoarse = uint8(floor(pdSampleOffsetFine/(downSamplingR)+0.5));
 
 maskLength = double(regs.GNRL.tmplLength)/downSamplingR;

@@ -6,7 +6,9 @@ classdef Firmware < FirmwareBase
     methods (Access=public)
         
         writeFirmwareFiles(obj,outputFldr,oldVersion);
-            
+        [EPROMtable,Configtable] = generateTablesForFw(obj,outputFldr);
+        fns=writeLUTbin(obj,d,fn,oneBaseCount); 
+        
         function obj = Firmware()
         
             fwFolder = fileparts(fileparts(mfilename('fullpath')));

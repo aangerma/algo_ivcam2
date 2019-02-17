@@ -32,9 +32,9 @@ function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
     writeMWD(d,fullfile(outputFldr,filesep,['Reserved_512_Calibration_%d_CalibData' calibpostfix 'txt']),2,62);
     
     
-    undistfns=writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' calibpostfix 'bin']),true);
+    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' calibpostfix 'bin']),true);
     
-    gammafn =writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,['DIGG_Gamma_Info_CalibInfo' calibpostfix 'bin']));
+    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,['DIGG_Gamma_Info_CalibInfo' calibpostfix 'bin']));
     
     %no room for undist3: concat it to gamma file
     data = [readbin(gammafn{1});readbin(undistfns{3})];
@@ -48,22 +48,13 @@ function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
     
     writeMWD(obj.getAddrData(config_regs2write),fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' configpostfix 'txt']),3,510);
     
-    writeLUTbin(obj.getAddrData('DCORtmpltCrse'),fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' configpostfix 'bin']));
+    obj.writeLUTbin(obj.getAddrData('DCORtmpltCrse'),fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' configpostfix 'bin']));
     
-    writeLUTbin(obj.getAddrData('DCORtmpltFine'),fullfile(outputFldr,filesep,['DCOR_fml_%d_Info_ConfigInfo' configpostfix 'bin']));
+    obj.writeLUTbin(obj.getAddrData('DCORtmpltFine'),fullfile(outputFldr,filesep,['DCOR_fml_%d_Info_ConfigInfo' configpostfix 'bin']));
     
     
 end
-function s=getLUTdata(addrdata)
-    
-    %ALL SHOULD BE LITTLE ENDIAN
-    data = [addrdata{:,2}];
-    addr = uint32(addrdata{1,1});
-    
-    touint8 = @(x,n)  vec((reshape(typecast(x,'uint8'),n,[])))';
-    
-    s=[uint8(133) uint8(7) touint8(uint32(addr),4) touint8(uint16(length(data)),2) touint8(data,4)];
-end
+
 
 function d=readbin(fn)
     fid = fopen(fn,'r');
@@ -77,26 +68,7 @@ function d=writebin(fn,d)
     fclose(fid);
 end
 
-function fns=writeLUTbin(d,fn,oneBaseCount)
-    if ~exist('oneBaseCount','var')
-        oneBaseCount = false;
-    end
-    PL_SZ=4072*8/32;
-    
-    n = ceil(size(d,1)/PL_SZ);
-    fns=cell(n,1);
-    for i=0:n-1
-        fns{i+1}=sprintf(strrep(fn,'\','\\'),i+oneBaseCount*1);
-        fid = fopen(fns{i+1},'w');
-        ibeg = i*PL_SZ+1;
-        iend = min((i+1)*PL_SZ,size(d,1));
-        fwrite(fid,getLUTdata(d(ibeg:iend,:)),'uint8');
-        fclose(fid);
-    end
-    
-    
-    
-end
+
 
 function writeMWD(d,fn,nMax,PL_SZ)
     

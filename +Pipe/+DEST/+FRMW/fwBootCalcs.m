@@ -16,12 +16,10 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% %------------sampleDist-----------------%
 % calculateSampleDist function gives us the length in mm per sample time, i.e.: the distance travled by light between two samples.
-% The calculations produces:DEST.sampleDist
-% calculateSampleDist function should be calculated when one of the following is changing:
-%  Regs from external configuration:regs.GNRL.sampleRate, regs.FRMW.pllClock
+% The calculations has been done in general block and just need to be
+% copied from firmware register sampledist
 
-[regs,autogenRegs] = calculateSampleDist(regs,autogenRegs,speedOfLightMMnsec);
-
+autogenRegs.DEST.sampleDist=regs.FRMW.sampleDist;
 
 %% %------------baseline-----------------%
 % The calculations produces:DEST.baseline2
@@ -76,11 +74,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 end
 
-function [regs,autogenRegs] = calculateSampleDist(regs,autogenRegs,speedOfLightMMnsec)
-hfClk = regs.FRMW.pllClock/4;
-autogenRegs.DEST.sampleDist =[1 2 4]./single(regs.GNRL.sampleRate)*speedOfLightMMnsec/hfClk;
-regs = Firmware.mergeRegs(regs,autogenRegs);
-end
+
 
 function [regs,autogenRegs] = altIR_peakVal(regs,autogenRegs,N_TMPLT_BITS,N_CMA_BITS)
 al1 = @(n) 2^n-1;

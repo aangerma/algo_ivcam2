@@ -17,8 +17,20 @@ for i=1:RegsNum
     end
 end
 
-
 outLuts.DIGG.undistModel = inLuts.DIGG.undistModel;
+outLuts.FRMW.tmpTrans=inLuts.FRMW.tmpTrans; 
+
+%% for pre calc and internal to run
+outRegs.FRMW.preCalcBypass = inRegs.FRMW.preCalcBypass;
+outRegs.MTLB=inRegs.MTLB; 
+outRegs.EPTG=inRegs.EPTG;
+if ~inRegs.FRMW.preCalcBypass
+    % keep registers for jfilPreCalc
+    outRegs.FRMW.nnMaxRange=inRegs.FRMW.nnMaxRange; 
+    outRegs.FRMW.shadingCurve=inRegs.FRMW.shadingCurve; 
+    outRegs.FRMW.jfilGammaFactor=inRegs.FRMW.jfilGammaFactor;
+
+end
 
 
 

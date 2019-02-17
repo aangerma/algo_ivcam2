@@ -2,11 +2,11 @@ function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autoge
 
 %% prepare for FW
 [FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(regs,luts);
-regs = Firmware.mergeRegs(regs,FWinputRegs);
-luts = Firmware.mergeRegs(luts,FWinputLuts);
+FWinputRegs = Firmware.mergeRegs(FWinputRegs,autogenRegs);
+FWinputLuts = Firmware.mergeRegs(FWinputLuts,autogenLuts);
 
 %% Run fw bootcalcs
-[regs,autogenRegs,autogenLuts] = Pipe.PCKR.FRMW.fwBootCalcs(regs,luts,autogenRegs,autogenLuts);
+[regs,autogenRegs,autogenLuts] = Pipe.PCKR.FRMW.fwBootCalcs(FWinputRegs,FWinputLuts,autogenRegs,autogenLuts);
 
 end
 
