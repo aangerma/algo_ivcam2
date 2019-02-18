@@ -99,7 +99,7 @@
       <irDistanceDrift>[-5 5]</irDistanceDrift>
       <roiHorizontalLoss>[0 10]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
-      <losMaxP2p>[0 3]</losMaxP2p>
+      <losMaxP2p>[0 2]</losMaxP2p>
       <losMeanStdX>[0 0.5] </losMeanStdX>
       <losMeanStdY>[0 0.2]</losMeanStdY>
       <MirrorRestAngX>[-30 30]</MirrorRestAngX>
