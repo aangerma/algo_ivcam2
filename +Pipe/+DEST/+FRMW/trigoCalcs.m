@@ -11,38 +11,10 @@ if(regs.DIGG.undistBypass==0)
 end
 
 [regsOut.DEST.p2axa,regsOut.DEST.p2axb,regsOut.DEST.p2aya,regsOut.DEST.p2ayb] = p2aCalc(regs,xfovPix,yfovPix);
-KinvRaw=[regsOut.DEST.p2axa            0                   regsOut.DEST.p2axb;
-    0                regsOut.DEST.p2aya               regsOut.DEST.p2ayb;
-    0                0                   1    ];
-KRaw=inv(KinvRaw);
-KRaw=abs(KRaw); % Make it so the K matrix is positive. This way the orientation of the cloud point is identical to DS.
-regsOut.FRMW.kRaw=typecast(KRaw([1 4 7 2 5 8 3 6]),'uint32');
-
 if(regs.GNRL.rangeFinder)
     regsOut.DEST.p2aya = single(0);
     regsOut.DEST.p2ayb  = single(0);
 end
-
-% Calculate K matrix. Note - users image is rotated by 180 degrees in
-% respect to our internal representation.
-Kworld=KRaw;
-Kworld(1,3)=single(regs.GNRL.imgHsize)-1-KRaw(1,3);
-Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
-
-regsOut.CBUF.spare=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
-regsOut.FRMW.kWorld=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
-
-%% zero order location
-%ZOLOC calculates the location of the ZO pixel (in the users rectified
-%image).
-regs = Firmware.mergeRegs(regs,regsOut);
-
-[xZOraw,yZOraw] = Calibration.aux.ang2xySF(0,0,regs,[],1); % ZO location
-regsOut.FRMW.zoRawCol= uint16(floor(xZOraw));
-regsOut.FRMW.zoRawRow= uint16(floor(yZOraw));
-
-regsOut.FRMW.zoWorldCol = regs.GNRL.imgHsize - 1 - uint16(floor(xZOraw));
-regsOut.FRMW.zoWorldRow  =regs.GNRL.imgVsize - 1 - uint16(floor(yZOraw));
 
 end
 
