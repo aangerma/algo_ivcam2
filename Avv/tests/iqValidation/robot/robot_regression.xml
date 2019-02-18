@@ -5,6 +5,7 @@
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
+        <stableTemp>true</stableTemp>
     </params>
     <tests>
         <test name="planeFit_far" metrics="planeFit" target="far" distance="100cm" threshold="[0:0.5]" extra=""/>\
