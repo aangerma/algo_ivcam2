@@ -1,17 +1,19 @@
 function collectTempData(fwPath)
 fw = Pipe.loadFirmware(fwPath);
 regs = fw.get();
-outputDir = 'X:\Data\IvCam2\temperaturesData\rptCollection';
+outputDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014';
 tempTh = 0.2; 
 tempSamplePer = 60;
 iter = 0;
 N = 3;
 hw = HWinterface;
+hw.cmd('DIRTYBITBYPASS');
 hw.cmd('algo_thermloop_en 0');
-hw.startStream;
 hw.setReg('DESTtmptrOffset',single(0));
 hw.shadowUpdate;
 while 1
+    hw.startStream;
+    hw.getFrame(10);
     prevTmp = hw.getLddTemperature();
     prevTime = 0;
     tic;
