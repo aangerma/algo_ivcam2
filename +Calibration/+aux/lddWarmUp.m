@@ -24,7 +24,7 @@ if runParams.warm_up
     %     
     %     % Calculate next estimate 
     %     currTime = toc;
-        if currTime-lastCurrTime>60
+        if (currTime-lastCurrTime>60) || runParams.replayMode
             lastCurrTime = currTime;
             [lddTmptr,~,~ ,~ ] = hw.getLddTemperature();
             fprintff(',%2.2f',lddTmptr);
