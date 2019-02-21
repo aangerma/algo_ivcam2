@@ -1,17 +1,20 @@
-function collectTempData(fwPath)
+function collectTempData(fwPath,outputDir)
+hw = HWinterface;
+roiRegs = readRoiRegs(hw);
 fw = Pipe.loadFirmware(fwPath);
+fw.setRegs(roiRegs,'');
 regs = fw.get();
-outputDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014';
 tempTh = 0.2; 
 tempSamplePer = 60;
 iter = 0;
 N = 3;
-hw = HWinterface;
+
 hw.cmd('DIRTYBITBYPASS');
 hw.cmd('algo_thermloop_en 0');
 hw.setReg('DESTtmptrOffset',single(0));
 hw.shadowUpdate;
-while 1
+maxIters = 200;
+for i = 1:maxIters
     hw.startStream;
     hw.getFrame(10);
     prevTmp = hw.getLddTemperature();
@@ -52,10 +55,10 @@ while 1
 
     %% Prepare for next cycle
     iter = iter + 1;
-    clearvars -except hw iter tempTh tempSamplePer fw regs outputDir N
+    clearvars -except hw iter tempTh tempSamplePer fw regs outputDir N i maxIters
     pack;
     
-    sendolmail('mundtal1@gmail.com',sprintf('Iteration %d finished',iter),'Test update');
+%     sendolmail('mundtal1@gmail.com',sprintf('Iteration %d finished',iter),'Test update');
 end
 
 end
