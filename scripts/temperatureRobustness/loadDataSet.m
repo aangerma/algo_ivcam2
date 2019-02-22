@@ -1,13 +1,16 @@
-function [frames,coolingStage] = loadDataSet()
-dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0021';
+function [frames,coolingStage] = loadDataSet(dataSetDir)
 
 
 %% Plot temperature over time graph
 iteration = dir(dataSetDir);
 iteration = iteration(3:end);
+k = 1;
 for i = 1:numel(iteration)
-        subdir = fullfile(dataSetDir,iteration(i).name);
-        [frames{i},coolingStage(i).data] = loadDataSetDir(subdir);
+    subdir = fullfile(dataSetDir,iteration(i).name);
+    if contains(iteration(i).name,'iter')
+        [frames{k},coolingStage(k).data] = loadDataSetDir(subdir);
+        k = k+1;
+    end
         
 end
 

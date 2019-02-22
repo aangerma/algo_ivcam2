@@ -1,36 +1,23 @@
-function plotEGeom(frames,coolingStage,regs)
+function plotEGeomByTemp(frames,regs)
 Temp = [];
 eGeomErr = [];
-Time = [];
-lastTime = 0;
 for i = 1:numel(frames)
     iterFrames = frames{i};
+    if isempty(iterFrames)
+        continue;
+    end
     currtmp = [iterFrames.temp];
     currtmp = [currtmp.ldd]';
     errors = arrayfun(@(f) eGeom(f,regs), iterFrames);
     Temp = [Temp;currtmp];
     eGeomErr = [eGeomErr;errors(:)];
-    currtime = [iterFrames.time]';
-    Time = [Time;lastTime+currtime];
-    if isempty(coolingStage(i).data)
-        collingTimeLength = 0;
-    else
-        collingTimeLength =  coolingStage(i).data(end,1)-currtime(end);
-    end
     
-    lastTime = max(Time) +collingTimeLength;
 end
 figure,
-subplot(211);
 plot(Temp,eGeomErr,'*');
 xlabel('ldd temperature [degrees]');
 ylabel('eGeom [mm]');
 title('Grid Inter Dist Over Temperature')
-subplot(212);
-plot(Time/3600,eGeomErr,'*');
-xlabel('[hours]');
-ylabel('eGeom [mm]');
-title('Grid Inter Dist Over Time')
 end
 
 function e1 = eGeom(f,regs)
