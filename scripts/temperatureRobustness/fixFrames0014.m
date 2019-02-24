@@ -3,10 +3,9 @@ function fixFrames0014()
     % version
 fw = Pipe.loadFirmware('X:\Data\IvCam2\temperaturesData\rptCollection\F8480014\PC03\AlgoInternal');
 badregs = fw.get();
-load('X:\Data\IvCam2\temperaturesData\rptCollection\0014_bad_regs\iter_0000\frameData_00000.mat');
 load('X:\Data\IvCam2\temperaturesData\rptCollection\0014_latest\regs.mat');
 
-dataDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_bad_regs - Copy';
+dataDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_bad_regs - Copy (2)';
 
 iterations = dir(dataDir);
 for iter = 1:numel(iterations)

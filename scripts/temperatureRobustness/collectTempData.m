@@ -4,7 +4,8 @@ roiRegs = readRoiRegs(hw);
 fw = Pipe.loadFirmware(fwPath);
 fw.setRegs(roiRegs,'');
 regs = fw.get();
-tempTh = 0.2; 
+save(fullfile(outputDir,'regs.mat'),'regs');
+tempTh = 0.10; % 0.2
 tempSamplePer = 60;
 iter = 0;
 N = 3;
@@ -13,10 +14,10 @@ hw.cmd('DIRTYBITBYPASS');
 hw.cmd('algo_thermloop_en 0');
 hw.setReg('DESTtmptrOffset',single(0));
 hw.shadowUpdate;
-maxIters = 200;
+maxIters = 3;
 for i = 1:maxIters
     hw.startStream;
-    hw.getFrame(10);
+    hw.getFrame(60);
     prevTmp = hw.getLddTemperature();
     prevTime = 0;
     tic;
@@ -58,7 +59,7 @@ for i = 1:maxIters
     clearvars -except hw iter tempTh tempSamplePer fw regs outputDir N i maxIters
     pack;
     
-%     sendolmail('mundtal1@gmail.com',sprintf('Iteration %d finished',iter),'Test update');
+    sendolmail('mundtal1@gmail.com',sprintf('Iteration %d finished',iter),'Test update');
 end
 
 end

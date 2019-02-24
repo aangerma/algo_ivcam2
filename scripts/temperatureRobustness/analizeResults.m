@@ -1,6 +1,7 @@
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_latest';
-dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0021';
-dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_bad_regs - Copy';
+dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_third_trial';
+dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0021_Regular_24_2_num_2';
+% dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_bad_regs - Copy (2)';
 [frames,coolingStage] = loadDataSet(dataSetDir);
 regsPath = fullfile(dataSetDir,'regs.mat');
 regs = load(regsPath); regs = regs.regs;
@@ -17,18 +18,36 @@ plotEGeom(frames,coolingStage,regs);
 tmpBinEdges = 25:0.5:70;
 framesPerTemperature = groupFramesByTemp(frames,25:0.5:70,'ldd');
 refTmp = typecast(regs.JFIL.spare(2),'single');
+refTmp = 53.1
 refTmpIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 transformationPerTemp = calcLinearTransformPerTemp(framesPerTemperature,refTmpIndex);
 transformedFrames = applyTransformPerTemp(framesPerTemperature,transformationPerTemp);
-plotEGeomByTemp(framesPerTemperature,regs);
-plotEGeomByTemp(transformedFrames,regs);
+[pitchTransformationPerTemp,pitchTransFrames] = calcPitchTransformPerTemp(framesPerTemperature,refTmpIndex);
 
-
-tempStages = 42.1:10:62.1;
+% 42.1:10:62.1
+tempStages = linspace(45.1,62.1,3);
+tempStages = 44:10:54;
 refTmpIndices = 1+floor((tempStages-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
-plotLOSByTemp(framesPerTemperature,regs,tempStages,refTmpIndices);
-plotLOSByTemp(transformedFrames,regs,tempStages,refTmpIndices);
+plotLOSDriftByTemp(framesPerTemperature,regs,tempStages,refTmpIndices);
+plotLOSDriftByTemp(transformedFrames,regs,tempStages,refTmpIndices);
+plotLOSDriftByTemp(pitchTransFrames,regs,tempStages,refTmpIndices);
 
-plotRPTOverTemp(framesPerTemperature,regs,tmpBinEdges);
-plotRPTOverTemp(transformedFrames,regs,tmpBinEdges);
+res(1) = calcLOSErrorByTemp(framesPerTemperature,regs,refTmpIndex);
+res(2) = calcLOSErrorByTemp(transformedFrames,regs,refTmpIndex);
+res(3) = calcLOSErrorByTemp(pitchTransFrames,regs,refTmpIndex);
+plotLOSErrorByTemp(res,{'orig','linear fix','imported linear fix'});
+
+plotEGeomByTemp(framesPerTemperature,regs);
+plotEGeomByTemp(transformedFrames,regs);
+plotEGeomByTemp(pitchTransFrames,regs);
+
+resGeom(1) = calcAvgEGeomByTemp(framesPerTemperature,regs);
+resGeom(2) = calcAvgEGeomByTemp(transformedFrames,regs);
+resGeom(3) = calcAvgEGeomByTemp(pitchTransFrames,regs);
+plotAvgEGeomErrByTemp(resGeom,{'orig','linear fix','imported linear fix'});
+
+
+% plotRPTOverTemp(framesPerTemperature,regs,tmpBinEdges);
+% plotRPTOverTemp(transformedFrames,regs,tmpBinEdges);
+
