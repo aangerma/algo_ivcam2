@@ -151,9 +151,34 @@ classdef HWinterfaceFile <handle
         function varargout = runScript(obj,varargin)
 %             varargout=obj.privInOutRec('runScript',varargin);
         end
-        function tmptr=getLddTemperature(obj)
-            [~,val]=obj.cmd('irb e2 13 02');
-            tmptr=(double(val(1)))* 0.8046 +double((val(2)))* 0.00314296875-53.2358;
+        function [lddTmptr,mcTmptr,maTmptr,tSense,vSense ]=getLddTemperature(obj,N)
+            if ~exist('N','var')
+                N = 100;
+            end
+            getTmptr = zeros(N,3);
+            
+            tSense = zeros(N,1);
+            vSense = zeros(N,1);
+            for i = 1:N
+                strtmp = obj.cmd('TEMPERATURES_GET');
+                lines = strsplit(strtmp,newline);
+                for k = 1:numel(lines)
+                    line = strsplit(lines{k},{':',' '});
+                    if numel(line) > 1
+                        getTmptr(i,k) = str2num(line{2});
+                    end
+                end
+                % tsense, apd temperature monitor
+                [~,tSense(i)] = obj.cmd('mrd a00401a4 a00401a8');
+                [~,vSense(i)] = obj.cmd('mrd a00401a0 a00401a4');
+            end
+            tSense = mean(tSense);
+            vSense = mean(vSense);
+            lddTmptr = mean(getTmptr(:,1));
+            mcTmptr = mean(getTmptr(:,2));
+            maTmptr = mean(getTmptr(:,3));
+            
+
         end
 
         

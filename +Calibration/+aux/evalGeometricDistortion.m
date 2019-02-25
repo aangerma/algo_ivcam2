@@ -1,4 +1,4 @@
-function [e,e_dist,ptsOut]=evalGeometricDistortion(p,pts3d,verbose)
+function [e,e_dist,ptsOut]=evalGeometricDistortion(p,pts3d,verbose,runParams)
 %%
 %{
 if ~exist('tileSizeMM','var')
@@ -12,6 +12,9 @@ pts3d = [ox(:) oy(:) zeros(w*h,1)]';
 xyzmes =reshape(p,[],3)';
 %}
  %get the tile size from the 3d points
+if ~exist('runParsm','var')
+    runParams = [];
+end
 tileSize = min(sqrt(sum(diff(pts3d).^2,2)));
 
 %perform rigid fit and find distance from optimal grid

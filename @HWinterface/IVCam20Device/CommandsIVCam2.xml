@@ -37,6 +37,7 @@
     <KVP Key="0" Value="Unlocked" />
     <KVP Key="1" Value="Locked" />
   </CustomFormatter>
+  
   <!-- Custom formats end -->
   <Command Name="MRD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x01" I2cRegOffset="0x3008" I2cCmdType="ReadAfterWrite" CmdPermission="Public" ReadFormat="Doubles" IsReadCommand="true" Description="Read Tensilica memory ( 32bit ). Output : 32bit dump">
     <Parameter1 Name="Offset" />
@@ -161,13 +162,13 @@
       <Section Name="SkuComponent " Title="SKU component" Offset="166" Size="1" FormatType="HexNumber" />
       <Section Name="DepthCamera" Title="--&gt;Depth camera" Offset="170" Size="4" FormatType="depthCamera" />
       <Section Name="DepthActiveMode" Title="--&gt;Depth active mode" Offset="174" Size="4" FormatType="Boolean" />
-      <Section Name="WithRGB" Title="--&gt;WithRGB" Offset="178" Size="1" FormatType="Boolean" />
-      <Section Name="WithImu" Title="--&gt;WithImu" Offset="182" Size="1" FormatType="Boolean" />
-      <Section Name="ProjectorType" Title="--&gt;Projector type" Offset="186" Size="1" FormatType="projectorType" />
-      <Section Name="EepromVersion" Title="EEPROM version" Offset="190" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="EepromModuleInfoVersion" Title="EEPROM module info version" Offset="192" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="WithRGB" Title="--&gt;WithRGB" Offset="182" Size="1" FormatType="Boolean" />
+      <Section Name="WithImu" Title="--&gt;WithImu" Offset="186" Size="1" FormatType="Boolean" />
+      <Section Name="ProjectorType" Title="--&gt;Projector type" Offset="190" Size="1" FormatType="projectorType" />
+      <Section Name="EepromVersion" Title="EEPROM version" Offset="194" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="EepromModuleInfoVersion" Title="EEPROM module info version" Offset="196" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="AsicModuleInfoTableVersion" Title="Asic module info table version" Offset="194" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="CalibrationTableVersion" Title="Calibration table version" Offset="196" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="CalibrationTableVersion" Title="Calibration table version" Offset="198" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="DepthVersion" Title="--&gt;Depth sub table  version" Offset="200" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="RgbVersion" Title="--&gt;RGB sub table  version" Offset="202" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="ImuVersion" Title="--&gt;IMU sub table version" Offset="204" Size="2" FormatType="MajorMinorVersion" />
@@ -365,7 +366,7 @@
   <Command Name="HWASSERTSTIMERSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x54" CmdPermission="Public" Description="Set new HwAsserts time interval">
     <Parameter1 Name="HwAsserts time interval ms" />
   </Command>
-  <Command Name="PVTTIMERSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x55" CmdPermission="Public" Description="Set new PVT time interval">
+  <Command Name="TEMP_TIMER_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x55" CmdPermission="Public" Description="Set new PVT time interval">
     <Parameter1 Name="PVT time interval ms" />
   </Command>
   <Command Name="GTI" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x56" I2cRegOffset="0x200" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="Get Table Info (Version and Size)">
@@ -426,11 +427,80 @@
   <Command Name="FGCFGBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x63" CmdPermission="Public" Description="Frame grabber configuration bypass">
     <Parameter1 Name="1 - bypass, 0 - use FW cfg" />
   </Command>
-  <Command Name="APD_FBVSENSE_CFG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x64" CmdPermission="Public" Description="Enable Cbuf statistics collection">
-    <Parameter1 Name="threhold (0-0x3FF)" />
-	<Parameter2 Name="window (0-0xFFFFFFFF)" />
+  <Command Name="APD_FBVSENSE_CFG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x64" CmdPermission="Public" Description="Update VSense/Tsense debounce/threshold">
+    <Parameter1 Name="threhold (1 - 0x3FF)" />
+	<Parameter2 Name="debounce cnt" />
   </Command>
-    
+  <Command Name="U0_IDLE_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x65" CmdPermission="Public" Description="U0 idle low power enable">
+    <Parameter1 Name="1 - enable, 0 - disable" />
+  </Command>
+  <Command Name="AFE_SEQ_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x66" CmdPermission="Public" Description="Control Afe sequencer mode">
+    <Parameter1 Name="1 - enable, 0 - disable" />
+  </Command>
+  <Command Name="IspReadCmd" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x67" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Apical ISP read command">
+    <Parameter1 Name="command_type" />
+	<Parameter2 Name="command" />
+  </Command>
+  <Command Name="IspWriteCmd" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x68" CmdPermission="Private" Description="Apical ISP write command">
+    <Parameter1 Name="command_type" />
+	<Parameter2 Name="command" />
+	<Parameter3 Name="value" />
+  </Command>
+  <Command Name="ES_STATUS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x69" IsReadCommand="true" CmdPermission="Public" Description="Eye Safety (PL0) Status Get">
+    <ReadData>
+      <Section Name="EyeSafety Status" Title="EyeSafetyStatus" Offset="0" Size="2" FormatType="HexNumberTwoBytes" />
+    </ReadData>
+  </Command>
+  <Command Name="TEMPERATURES_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x6A" IsReadCommand="true" CmdPermission="Public" Description="Get Temperature 0-LDD, 1-MC, 2-MA">
+    <ReadData>
+      <Section Name="LDD_Temperature" Title="LDD Temperature" Offset="0" Size="8" FormatType="Double" />
+      <Section Name="MC_Temperature" Title="MC Temperature" Offset="8" Size="8" FormatType="Double" />
+      <Section Name="MA_Temperature" Title="MA (PVT) Temperature" Offset="16" Size="8" FormatType="Double" />
+    </ReadData>
+  </Command>
+  <Command Name="PZR_POWER_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x6B" IsReadCommand="true" CmdPermission="Public" Description="Get PZR vBias and iBias">
+    <Parameter1 Name="PZR" />  
+    <ReadData>
+      <Section Name="vBias" Title="vBias" Offset="0" Size="8" FormatType="Double" />
+      <Section Name="iBias" Title="iBias" Offset="8" Size="8" FormatType="Double" />
+    </ReadData>
+  </Command>
+  <Command Name="APD_ISENSE_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x70" IsReadCommand="true" CmdPermission="Public" Description="Get APD I-Sense">
+    <ReadData>
+      <Section Name="APD I-Sense" Title="iSense" Offset="0" Size="8" FormatType="Double" />
+    </ReadData>
+  </Command>  
+  <Command Name="THERMLOOPSTATUSGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x71" IsReadCommand="true" CmdPermission="Public" Description="Pzr Thermal state (0-NotInitialized, 1-Initialized, 2-Started,3-Running,4-Stopped,5-Error)">
+    <ReadData>
+      <Section Name="Pzr Thermal Status" Title="PzrThermalStatus" Offset="0" Size="4" FormatType="HexNumber" />
+    </ReadData>
+  </Command>  
+   <Command Name="MA_BASED_STREAMING_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x72" IsReadCommand="true" CmdPermission="Public" Description="Get MA based streaming">
+    <ReadData>
+      <Section Name="MA based streaming" Title="MA" Offset="0" Size="1" FormatType="DecByte" />
+    </ReadData>
+  </Command>
+  <Command Name="RGB_START_DELAY_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x73" CmdPermission="Public" Description="Define RGB start delay">
+    <Parameter1 Name="Start delay" IsDecimal="true" />
+  </Command>
+  <Command Name="RGB_STOP_DELAY_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x74" CmdPermission="Public" Description="Define RGB stop delay">
+    <Parameter1 Name="Stop delay" IsDecimal="true"/>
+  </Command>
+  <Command Name="APD_FLYBACK_BYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x75" CmdPermission="Public" Description="Apd flyback loop bypass">
+    <Parameter1 Name="1 - bypass, 0 - no bypass" />
+  </Command>  
+  <Command Name="APD_FLYBACK_VERBOSE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x76" CmdPermission="Public" Description="Apd flyback loop verbose">
+    <Parameter1 Name="1 - enable printouts, 0 - disable printouts" />
+  </Command>  
+  <Command Name="APD_FLYBACK_EX_TRIGGER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x77" CmdPermission="Public" Description="Apd flyback loop external trigger">
+    <Parameter1 Name="1 - start, 0 - stop" />
+  </Command>  
+  <Command Name="APD_FLYBACK_STATE_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x78" IsReadCommand="true" CmdPermission="Public" Description="Apd Flyback state (0-NotInitialized, 1-Initialized, 2-Started,3-Running,4-Stopped,5-Error, 6-Bypassed)">
+    <ReadData>
+      <Section Name="Apd Flyback State" Title="ApdFlybackState" Offset="0" Size="4" FormatType="HexNumber" />
+    </ReadData>
+  </Command>  
+  
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
   </Command>
   <Command Name="MCSTOP" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA2" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTOP">
@@ -474,6 +544,4 @@
   <Command Name="MCREGISTERBATCH" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA8" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCREGISTERBATCH">
     <Data IsReverseBytes="false" FormatLength="8" />
   </Command>
-
-
 </Commands>

@@ -152,7 +152,7 @@ function xy = spherical2xy(sphericalPixels,regs,calibParams)
 % Then the xyz is translated to te cordinate in the image plane. If a fov
 % expander model is valid, 
         yy = double(sphericalPixels(:,1));
-        xx = double(sphericalPixels(:,2)*4);
+        xx = double((sphericalPixels(:,2)-0.5)*4);
         xx = xx-double(regs.DIGG.sphericalOffset(1));
         yy = yy-double(regs.DIGG.sphericalOffset(2));
         xx = xx*2^10;%bitshift(xx,+12-2);

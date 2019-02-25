@@ -15,6 +15,7 @@ if(regs.GNRL.rangeFinder)
     regsOut.DEST.p2aya = single(0);
     regsOut.DEST.p2ayb  = single(0);
 end
+
 end
 
 function [p2axa,p2axb,p2aya,p2ayb] = p2aCalc(regs,xfov,yfov)
@@ -23,6 +24,8 @@ Calculates tanx and tany for the four sides of the image.
 if rot90 is true,calculate the coefficients for an outside image - which is
 the matlab image rotated by 180 degrees. fliplr(flipud()).
 %}
+
+% Take angx/y that maps to 0.5 - 639.5
 %% ----STAIGHT FORWARD------
 mode=regs.FRMW.mirrorMovmentMode;
 
@@ -43,9 +46,20 @@ rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-xfov*0.25,                
 rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , yfov*0.25)));rangeT =rangeT (2);
 rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-yfov*0.25)));rangeB=rangeB(2);
 
-p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
-p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
-p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres-1);
-p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
+% p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres-1);
+% p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres-1)*(rangeR-rangeL) ;
+% p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres-1);
+% p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres-1)*(rangeT-rangeB) ;
+
+% p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres);
+% p2axb = rangeL  + single(regs.FRMW.marginL) / single(regs.FRMW.xres)*(rangeR-rangeL) ;
+% p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres);
+% p2ayb = rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres)*(rangeT-rangeB) ;
+
+
+p2axa = (rangeR-rangeL)/ single(regs.FRMW.xres);
+p2axb = 0.5*(rangeR-rangeL)/ single(regs.FRMW.xres) + rangeL + single(regs.FRMW.marginL) / single(regs.FRMW.xres)*(rangeR-rangeL) ;
+p2aya = (rangeT-rangeB)/ single(regs.FRMW.yres);
+p2ayb = 0.5*(rangeT-rangeB)/ single(regs.FRMW.yres) + rangeB  + single(regs.FRMW.marginB) / single(regs.FRMW.yres)*(rangeT-rangeB) ;
 
 end

@@ -2,6 +2,7 @@
 <struct>
    <cb_replayMode>0</cb_replayMode>
    <cb_verbose>1</cb_verbose>
+   <cb_warm_up>1</cb_warm_up>
    <cb_init>1</cb_init>
    <cb_DSM>1</cb_DSM>
    <cb_gamma>1</cb_gamma>
@@ -17,6 +18,7 @@
    <cb_pre_calib_validation>1</cb_pre_calib_validation>
    <cb_post_calib_validation>1</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
+   <cb_saveRegState>0</cb_saveRegState>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Calibration Tool</toolName>

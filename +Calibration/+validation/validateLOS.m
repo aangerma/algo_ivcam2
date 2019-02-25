@@ -62,9 +62,7 @@ function [losResults,allResults,frames,dbgData] = validateLOS(hw,runParams,valid
     imshowpair(frames(end).i,frames(1).i);
     title('LOS test: Last image over first image');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','LOS test');
-    if ~isempty(fprintff)
-        fprintff('Max drift %2.2g\n',score);
-    end
+
     r.reset();
 end
 

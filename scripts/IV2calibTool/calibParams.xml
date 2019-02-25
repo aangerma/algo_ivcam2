@@ -6,20 +6,27 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
+       <disable_u0_idle>0</disable_u0_idle>
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
        <zNorm>4</zNorm>
+       <minRange>200</minRange>
        <cbSquareSz>30</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
    </gnrl>
+   <warmUp>
+       <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+   </warmUp>
    <errRange>
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
       <geomErr>[0.01 1.6]</geomErr>
       <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
+      <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
+      <eGeomSphericalDis>[0.01 3]</eGeomSphericalDis>
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 5]</maxPixelDisplacement>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
@@ -51,8 +58,10 @@
       <wait>
           <timeoutSec>1</timeoutSec>
       </wait>
+      <warmUp></warmUp>
       <dfz>
           <numOfFrames>30</numOfFrames>
+          
       </dfz>
       <coverage>
           <numOfFrames>100</numOfFrames>
@@ -72,6 +81,10 @@
           <sphericalMode>1</sphericalMode>
       </los>
       <dsm></dsm>
+      <readRegState>
+      </readRegState>
+      
+      
    </validationConfig>
    <validationErrRange>
       <horizontalSharpness>[1 3]</horizontalSharpness>
@@ -115,6 +128,7 @@
      <margin>100</margin>  
    </dsm>
     <dfz>
+        <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
         <captures>
              <!--<capture>
                 <target>Iv2L50</target>
@@ -138,25 +152,36 @@
             </capture>
             <capture>
                 <target>Iv2A1</target>
-                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
                 <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
             <capture>
                 <target>Iv2A1</target>
-                <transformation>[0.5 0 0.1; 0 0.5 0; 0.2 0 1]</transformation>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0.1; 0 0.6 0; 0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
             <capture>
                 <target>Iv2A1</target>
-                <transformation>[0.5 0 -0.1; 0 0.5 0; -0.2 0 1]</transformation>
+                <transformation>[0.6 0 -0.1; 0 0.6 0; -0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
+            
+            
         </captures>
+        <preResetCapture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>test</type>
+            </capture>
+        </preResetCapture>
+        
+        
         <fovxRange>[40,70]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 

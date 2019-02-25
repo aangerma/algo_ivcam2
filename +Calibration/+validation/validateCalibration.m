@@ -1,4 +1,4 @@
-function [valPassed, valResults] = validateCalibration(runParams,calibParams,fprintff,spark)
+function [valPassed, valResults] = validateCalibration(runParams,calibParams,fprintff,spark,app)
     
     if(~exist('spark','var'))
         spark=[];
@@ -13,10 +13,11 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.getFrame;
+        % Collecting hardware state
         z2mm = double(hw.z2mm);
         fprintff('opening stream...');
-        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align old (small) checkerboard to screen');
-        Calibration.aux.collectTempData(hw,runParams,'Before validation stage:');
+        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align checkerboard to screen');
+        
         ff = Calibration.aux.invisibleFigure();
         subplot(1,3,1); imagesc(frame.i); title('Validation I');
         subplot(1,3,2); imagesc(frame.z/hw.z2mm); title('Validation Z');
@@ -38,6 +39,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         hw.cmd('mwd a0020a6c a0020a70 04000400 // DIGGgammaScale'); % Todo - fix regstate to read gammascale correctly
         hw.shadowUpdate;
         fprintff('Done.\n');
+        Calibration.aux.collectTempData(hw,runParams,fprintff,'Before validation stage:');
         
         
         outFolder = fullfile(runParams.outputFolder,'Validation',[]);
@@ -51,6 +53,12 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             if strfind(enabledMetrics{i},'debugMode')
                  debugMode = flip(dec2bin(uint16(calibParams.validationConfig.(enabledMetrics{i})),2)=='1');
                  fprintff('Changeing debug mode to %d.\n',calibParams.validationConfig.(enabledMetrics{i}));
+            elseif  strfind(enabledMetrics{i},'readRegState')
+                if runParams.saveRegState
+                    fprintff('Collecting registers state...');
+                    hw.getRegsFromUnit(fullfile(runParams.outputFolder,'validationRegState.txt') ,0 );  
+                    fprintff('Done\n');
+                end
             elseif  strfind(enabledMetrics{i},'sharpness')
                 sharpConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(sharpConfig.numOfFrames,0);
@@ -79,10 +87,15 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif strfind(enabledMetrics{i},'dfz')
                 dfzConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(dfzConfig.numOfFrames);
+                save(fullfile(runParams.outputFolder,'postResetValCbFrame.mat'),'frames');
                 [dfzRes,allDfzRes,dbg] = Calibration.validation.validateDFZ(hw,frames,fprintff,calibParams,runParams);
                 valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allDfzRes;
+            elseif ~isempty(strfind(enabledMetrics{i},'compareCalVal')) && (runParams.DFZ) && (any(strcmp(enabledMetrics(1:i),'dfz')))
+                calFrame = load(fullfile(runParams.outputFolder,'preResetCalCbFrame.mat'));
+                valFrame = load(fullfile(runParams.outputFolder,'postResetValCbFrame.mat'));
+                Calibration.aux.plotDiffBetweenCBImages( [calFrame.frames,valFrame.frames],hw.getIntrinsics,hw.z2mm ,runParams);
             elseif strfind(enabledMetrics{i},'roi')
                 [roiRes, frames,dbg] = Calibration.validation.validateROI(hw,calibParams,fprintff);
                 valResults = Validation.aux.mergeResultStruct(valResults, roiRes);
@@ -95,7 +108,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allLosResults;
             elseif strfind(enabledMetrics{i},'dsm')
-                [dsmRes, dbg] = Calibration.validation.validateDSM(hw,fprintff);
+                [dsmRes, dbg] = Calibration.validation.validateDSM(hw,fprintff,runParams);
                 valResults = Validation.aux.mergeResultStruct(valResults, dsmRes);
                 saveValidationData(dbg,[],enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = dsmRes;
@@ -112,11 +125,13 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                  fprintff('waiting for %d seconds...',waitConfig.timeoutSec);
                  pause(waitConfig.timeoutSec);
                  fprintff('Done.\n');
+            elseif strfind(enabledMetrics{i},'warmUp')
+                 Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
             end
         end
-        
+        Calibration.aux.collectTempData(hw,runParams,fprintff,'End of validation:');
         Calibration.aux.logResults(valResults,runParams,'validationResults.txt');
-        Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark);
+        Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark,'Val');
         valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff,1);
         struct2xml_(allResults,fullfile(outFolder,'fullReport.xml'));
         Calibration.aux.logResults(allResults,runParams,'fullValidationReport.txt');

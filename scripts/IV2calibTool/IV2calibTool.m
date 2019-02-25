@@ -205,8 +205,16 @@ function app=createComponents()
     app.logarea.FontName='courier new';
     % Create verboseCheckBox
     
+    % Create invisible skip button
+    app.skipWarmUpButton = uicontrol('style','pushbutton','parent',configurationTab);
+    app.skipWarmUpButton.Callback = @skip_button_callback;
+    app.skipWarmUpButton.FontWeight = 'bold';
+    app.skipWarmUpButton.Position = [sz(1)-85 10 60 30];
+    app.skipWarmUpButton.String = 'Skip';
+    app.skipWarmUpButton.Visible = 'off';
+    Calibration.aux.globalSkip( 1,0 );
     %checkboxes
-    cbnames = {'replayMode','verbose','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ'};
+    cbnames = {'replayMode','verbose','warm_up','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -220,12 +228,23 @@ function app=createComponents()
         app.cb.(f).Value = true;
         app.cb.(f).Callback=@outputFolderChange_callback;
     end
-    % Create outputFldrBrowseBtn
+    % Create advancedSaveBtn
     app.advancedSaveBtn = uicontrol('style','pushbutton','parent',advancedTab);
     app.advancedSaveBtn.Callback = @saveDefaults;
     app.advancedSaveBtn.Position = [560 10 50 22];
     app.advancedSaveBtn.String = 'save';
+    
+    % Create clear cb button
+    app.advancedClearBtn = uicontrol('style','pushbutton','parent',advancedTab);
+    app.advancedClearBtn.Callback = @clearCB;
+    app.advancedClearBtn.Position = [30 10 50 22];
+    app.advancedClearBtn.String = 'clear';
 %     set(handles.checkbox1,'Enable','off')  %disable checkbox1
+
+
+
+
+
     guidata(app.figH,app);
     
     
@@ -249,7 +268,15 @@ function addPoxtFix_callback(varargin)
     set_watches(app.figH,true);
 end
 
+function clearCB(varargin)
+    app=guidata(varargin{1});
+    
+    f = fieldnames(app.cb);
+    for i = 1:numel(f)
+        app.cb.(f{i}).Value = 0;
+    end
 
+end
 function saveDefaults(varargin)
     app=guidata(varargin{1});
     
@@ -274,7 +301,12 @@ function abortButton_callback(varargin)
     app.AbortButton.UserData=0;
     app.AbortButton.Enable='off';
 end
-
+function skip_button_callback(varargin)
+    app=guidata(varargin{1});
+    app.skipWarmUpButton.Visible = 'off';
+    app.skipWarmUpButton.Enable = 'off';
+    Calibration.aux.globalSkip(1,1);
+end
 function statrtButton_callback(varargin)
     app=guidata(varargin{1});
     try
@@ -283,7 +315,13 @@ function statrtButton_callback(varargin)
         [runparams.version,runparams.subVersion] = calibToolVersion(); 
         runparams.outputFolder = [];
         runparams.replayFile = [];
-
+        if isdeployed
+            toolDir = pwd;
+        else
+            toolDir = fileparts(mfilename('fullpath'));
+        end
+        calibfn =  fullfile(toolDir,'calibParams.xml');
+        calibParams = xml2structWrapper(calibfn);
         %temporary until we have valid log file
         app.m_logfid = 1;
         fprintffS=@(varargin) fprintff(app,varargin{:});
@@ -308,6 +346,10 @@ function statrtButton_callback(varargin)
                 hw = HWinterface;
                 [info,serialStr,~] = hw.getInfo();
                 fwVersion = hw.getFWVersion;
+                if calibParams.gnrl.disable_u0_idle
+                    hw.cmd('U0_IDLE_ENABLE 0');
+                    hw.cmd('rst');
+                end
                 clear hw;
             catch e
                 fprintffS('[!] ERROR:%s\n',strtrim(e.message));
@@ -337,13 +379,7 @@ function statrtButton_callback(varargin)
 
         
         % clear log
-        if isdeployed
-            toolDir = pwd;
-        else
-            toolDir = fileparts(mfilename('fullpath'));
-        end
-        calibfn =  fullfile(toolDir,'calibParams.xml');
-        calibParams = xml2structWrapper(calibfn);
+        
         calibParams.sparkParams.resultsFolder = runparams.outputFolder;
         if app.cb.replayMode.Value==0
             s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
@@ -365,11 +401,12 @@ function statrtButton_callback(varargin)
         %=======================================================RUN CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
-        [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s);
+        [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
-            [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s);
+            pause(3);
+            [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s,app);
         end
         
         if calibPassed == 1 || calibPassed == -1

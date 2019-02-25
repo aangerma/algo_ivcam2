@@ -9,7 +9,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
     verbose = runParams.verbose;
     margin = params.dsm.margin;
     
-    [angxRawZO,angyRawZO,restFailed] = Calibration.aux.zeroOrderAngles(hw);
+    [angxRawZO,angyRawZO,restFailed] = Calibration.aux.zeroOrderAngles(hw,fprintff,runParams);
     
     dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
     dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
@@ -22,7 +22,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
     angyZO = (angyRawZO+dsmYoffset)*dsmYscale - 2047;
     
     if restFailed
-        warning('Raw rest angle is zero. This is not likely. setRestAngle script failed.')
+        fprintff('Raw rest angle is zero. This is not likely. setRestAngle script failed.')
         [angxZO,angyZO] = centerProjectZO(hw);
         angxRawZO = invertDSM(angxZO,dsmXscale,dsmXoffset);
         angyRawZO = invertDSM(angyZO,dsmYscale,dsmYoffset);
