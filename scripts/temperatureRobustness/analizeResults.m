@@ -2,6 +2,7 @@ dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_latest';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_third_trial';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0021_Regular_24_2_num_2';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0093_25_2';
+dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0093_25_2_num_2';
 [frames,coolingStage] = loadDataSet(dataSetDir);
 regsPath = fullfile(dataSetDir,'regs.mat');
 regs = load(regsPath); regs = regs.regs;
@@ -17,10 +18,10 @@ plotEGeom(frames,coolingStage,regs);
 %% Show Los Error
 % Group frames for each ldd temperature - compute los metric. Once for all,
 % and one is the mean for each trial seperately.
-tmpBinEdges = 25:0.5:70;
+tmpBinEdges = (25:0.5:70) - 0.25;
 framesPerTemperature = groupFramesByTemp(frames,25:0.5:70,'ldd');
 refTmp = typecast(regs.JFIL.spare(2),'single');
-% refTmp = 53.1
+refTmp = 50
 refTmpIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 transformationPerTemp = calcLinearTransformPerTemp(framesPerTemperature,refTmpIndex);
 transformedFrames = applyTransformPerTemp(framesPerTemperature,transformationPerTemp);

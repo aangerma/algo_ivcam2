@@ -1,6 +1,10 @@
-function [rpt] = samplePointsRtd(z,pts,regs)
+function [rpt] = samplePointsRtd(z,pts,regs,addZ)
     %SAMPLEPOINTSRTD Summary of this function goes here
     %   Detailed explanation goes here
+    if ~exist('addZ','var')
+        addZ = 0;
+    end
+    
     if ~regs.DEST.depthAsRange
         [~,r] = Pipe.z16toVerts(z,regs);
     else
@@ -31,6 +35,10 @@ function [rpt] = samplePointsRtd(z,pts,regs)
     pts = reshape(pts,[],2);
     it = @(k) interp2(xg,yg,k,pts(:,1)-1,pts(:,2)-1); % Used to get depth and ir values at checkerboard locations.
     %rtd,phi,theta
-    rpt=cat(2,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+    if addZ
+        rpt=cat(2,it(rtd),it(angx),it(angy),it(z)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+    else
+        rpt=cat(2,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+    end
 end
 

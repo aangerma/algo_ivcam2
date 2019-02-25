@@ -48,6 +48,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
     %% Start stream to load the configuration
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
+    
+    hw.cmd('DIRTYBITBYPASS');
+    hw.cmd('algo_thermloop_en 0');
+    hw.setReg('DESTtmptrOffset',single(0));
+    hw.shadowUpdate;
     fprintff('Opening stream...');
     hw.startStream();
     fprintff('Done(%ds)\n',round(toc(t)));
