@@ -1,11 +1,13 @@
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_latest';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_third_trial';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0021_Regular_24_2_num_2';
-% dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0014_bad_regs - Copy (2)';
+dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0093_25_2';
 [frames,coolingStage] = loadDataSet(dataSetDir);
 regsPath = fullfile(dataSetDir,'regs.mat');
 regs = load(regsPath); regs = regs.regs;
 regs.DEST.tmptrOffset = -27.5536;
+regs.DEST.tmptrOffset = 0;
+
 %% plot temperature over time
 plotTemperature(frames,coolingStage);
 
@@ -18,14 +20,14 @@ plotEGeom(frames,coolingStage,regs);
 tmpBinEdges = 25:0.5:70;
 framesPerTemperature = groupFramesByTemp(frames,25:0.5:70,'ldd');
 refTmp = typecast(regs.JFIL.spare(2),'single');
-refTmp = 53.1
+% refTmp = 53.1
 refTmpIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 transformationPerTemp = calcLinearTransformPerTemp(framesPerTemperature,refTmpIndex);
 transformedFrames = applyTransformPerTemp(framesPerTemperature,transformationPerTemp);
 [pitchTransformationPerTemp,pitchTransFrames] = calcPitchTransformPerTemp(framesPerTemperature,refTmpIndex);
 
 % 42.1:10:62.1
-tempStages = linspace(45.1,62.1,3);
+% tempStages = linspace(45.1,62.1,3);
 tempStages = 44:10:54;
 refTmpIndices = 1+floor((tempStages-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
