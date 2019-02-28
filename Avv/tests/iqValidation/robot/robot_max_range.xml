@@ -5,9 +5,7 @@
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
-        <xRes>640</xRes>
-        <yRes>480</yRes>
-        <frameRate>30</frameRate>
+        <stableTemp>true</stableTemp>
     </params>
     <tests>
         <test name="fillRate_160cm" metrics="fillRate" target="wall_10Reflectivity" distance="160cm" threshold="[95 : 100]" />

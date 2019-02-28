@@ -3,4 +3,3 @@ function randomize_registers(filePath, regsRandomList)
     fw.randomize(filePath,regsRandomList)
     fw.writeUpdated(filePath)
 end
-
