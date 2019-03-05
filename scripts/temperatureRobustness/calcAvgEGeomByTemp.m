@@ -6,7 +6,7 @@ for i = 1:numel(frames)
     if isempty(iterFrames)
         continue;
     end
-    currRpt = reshape([iterFrames.rpt],[20*28,3,numel(iterFrames)]);
+    currRpt = reshape([iterFrames.rpt],[20*28,size(iterFrames(1).rpt,2),numel(iterFrames)]);
     d.rpt = currRpt;
     currtmp = iterFrames(1).temp.ldd;
     errors = arrayfun(@(f) eGeom(f,regs), d);

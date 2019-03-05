@@ -4,9 +4,9 @@ for i = 1:numel(refTmpIndices)-1
    frame1 = framesPerTemperature{refTmpIndices(i)};
    frame2 = framesPerTemperature{refTmpIndices(i+1)};
    
-   rpt1 = reshape([frame1.rpt],[20*28,3,numel(frame1)]);
+   rpt1 = reshape([frame1.rpt],[20*28,size(frame1(1).rpt,2),numel(frame1)]);
    rpt1 = mean(rpt1,3);
-   rpt2 = reshape([frame2.rpt],[20*28,3,numel(frame2)]);
+   rpt2 = reshape([frame2.rpt],[20*28,size(frame2(1).rpt,2),numel(frame2)]);
    rpt2 = mean(rpt2,3);
    
    if i == 1

@@ -36,7 +36,7 @@ function [rpt] = samplePointsRtd(z,pts,regs,addZ)
     it = @(k) interp2(xg,yg,k,pts(:,1)-1,pts(:,2)-1); % Used to get depth and ir values at checkerboard locations.
     %rtd,phi,theta
     if addZ
-        rpt=cat(2,it(rtd),it(angx),it(angy),it(z)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
+        rpt=cat(2,it(rtd),it(angx),it(angy),it(single(z))); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
     else
         rpt=cat(2,it(rtd),it(angx),it(angy)); % Convert coordinate system to angles instead of xy. Makes it easier to apply zenith optimization.
     end

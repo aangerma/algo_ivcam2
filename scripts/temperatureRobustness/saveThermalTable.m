@@ -6,7 +6,7 @@ function [  ] = saveThermalTable( table , fname )
 table = single(table);
 table = reshape(table',[],1);
 fileID = fopen(fname,'w');
-fwrite(fileID,table);
+fwrite(fileID,table','single');
 fclose(fileID);
 
 end

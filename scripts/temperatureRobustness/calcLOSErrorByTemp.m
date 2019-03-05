@@ -1,7 +1,7 @@
 function [ data ] = calcLOSErrorByTemp( framesPerTemperature,regs,refTmpIndex )
 
 refFrames = framesPerTemperature{refTmpIndex};
-refRpt = reshape([refFrames.rpt],[20*28,3,numel(refFrames)]);
+refRpt = reshape([refFrames.rpt],[20*28,size(refFrames(1).rpt,2),numel(refFrames)]);
 refValidPoints = ~isnan(sum(sum(refRpt,3),2));
 rptErrorsPerTempMax = nan(3,numel(framesPerTemperature));
 rptErrorsPerTempRMS = nan(3,numel(framesPerTemperature));
@@ -13,7 +13,7 @@ for i = 1:numel(framesPerTemperature)
        continue; 
    end
    % Get the valid points;
-   currRpt = reshape([frames.rpt],[20*28,3,numel(frames)]);
+   currRpt = reshape([frames.rpt],[20*28,size(frames(1).rpt,2),numel(frames)]);
    currValidPoints = ~isnan(sum(sum(currRpt,3),2));
    validPoints = logical(refValidPoints.*currValidPoints);
    currRefRpt = mean(refRpt(validPoints,:,:),3);
@@ -24,9 +24,12 @@ for i = 1:numel(framesPerTemperature)
    [x,y] = Calibration.aux.ang2xySF(Calibration.Undist.applyPolyUndist(currRpt(:,2),regs),currRpt(:,3),regs,[],1);
    
    
-   rptErrorsPerTempMax(1,i) = max(abs(currRefRpt(:,1)-currRpt(:,1)));
+%    rptErrorsPerTempMax(1,i) = max(abs(currRefRpt(:,1)-currRpt(:,1)));
+   rptErrorsPerTempMax(1,i) = prctile(abs(currRefRpt(:,1)-currRpt(:,1)),95);
    rptErrorsPerTempRMS(1,i) = rms(currRefRpt(:,1)-currRpt(:,1));
-   rptErrorsPerTempMax(2:3,i) = max(abs([x,y]-[xRef,yRef]));
+%    rptErrorsPerTempMax(2:3,i) = max(abs([x,y]-[xRef,yRef]));
+   rptErrorsPerTempMax(2:3,i) = prctile(abs([x,y]-[xRef,yRef]),95);
+
    rptErrorsPerTempRMS(2:3,i) = rms([x,y]-[xRef,yRef]);
    
    

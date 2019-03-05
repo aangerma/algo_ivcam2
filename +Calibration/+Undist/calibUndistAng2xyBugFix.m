@@ -1,4 +1,4 @@
-function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,calibParams)
+function [udistLUT,udistRegs,maxPixelDisplacement,undistRms] = calibUndistAng2xyBugFix(fw,calibParams)
 
 % When fixing the ang2xy bug using the undististortion table the following
 % steps need to be taken:
@@ -47,6 +47,9 @@ else
 end
 
 angxPrePolyUndist = Calibration.Undist.inversePolyUndist(angxg,regs);
+
+[xNoPolyUndist,yNoPolyUndist] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyg,regs,[],1);
+undistRms = rms(reshape(sqrt((xg - xNoPolyUndist).^2 + (yg - yNoPolyUndist).^2),[],1));
 
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
 [xbug,ybug] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyg,regs,[],false);

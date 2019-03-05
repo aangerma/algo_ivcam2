@@ -1,4 +1,4 @@
-function collectTempData(fwPath,outputDir)
+function collectDemoData(fwPath,outputDir)
 hw = HWinterface;
 % roiRegs = readRoiRegs(hw);
 fw = Pipe.loadFirmware(fwPath);
@@ -7,14 +7,14 @@ regs = fw.get();
 save(fullfile(outputDir,'regs.mat'),'regs');
 tempTh = 0.10; % 0.2
 tempSamplePer = 60;
-iter = 0;
+iter = 2;
 N = 3;
 
 hw.cmd('DIRTYBITBYPASS');
 hw.cmd('algo_thermloop_en 10');
-hw.setReg('DESTtmptrOffset',single(0));
-hw.shadowUpdate;
-maxIters = 20;
+% hw.setReg('DESTtmptrOffset',single(0));
+% hw.shadowUpdate;
+maxIters = 3;
 for i = 1:maxIters
     hw.startStream;
     hw.getFrame(60);
@@ -35,6 +35,7 @@ for i = 1:maxIters
             prevTmp = frameData(N).temp.ldd;
             prevTime = frameData(N).time;
         end
+        pause(5);
     end
 
     %% Let unit cool down
@@ -86,6 +87,7 @@ function frameData_ = getNFrame(hw,regs,N)
         frameData.pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame(i).i, 1);
         frameData.rpt = Calibration.aux.samplePointsRtd(frame(i).z,frameData.pts,regs,1);
         frameData.time = toc;
+        frameData.i = frame(i).i;
         frameData_(i) = frameData;
         
 %         params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));

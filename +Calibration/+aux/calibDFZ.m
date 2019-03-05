@@ -49,6 +49,7 @@ end
     xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
     [minerrPreUndist,eFit]=errFunc(darr,outregs,xbest,undistFunc,FE,1);
+    [minerrPreUndistFullImage,~]=errFunc(darr,outregs,xbest,undistFunc,FE,0);
     % Optimize Undist poly params
     optFunc = @(x) (errFunc(darr,regs,x,undistFunc,FE,0));
     
@@ -64,9 +65,9 @@ end
     printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
     outregs_full = outregs;
     outregs = x2regs(xbest);
-    fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, eGeom=%.2f.\n',...
-        outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, minerrPreUndist);
-    fprintff('Undist result: polyVars=[%.2f,%.2f,%.2f], eGeom=%.2f.\n',...
+    fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, eGeomCropped=%.2f, eGeomFull=%.2f, .\n',...
+        outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, minerrPreUndist, minerrPreUndistFullImage);
+    fprintff('Undist result: polyVars=[%.2f,%.2f,%.2f], eGeomFull=%.2f.\n',...
          xbest(6),xbest(7),xbest(8),minerr);
     
     

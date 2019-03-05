@@ -7,7 +7,7 @@ figure,
 subplot(231);
 plot(Temp,squeeze(resultsMax(1,:,:)));title('Max Rtd Diff From Ref');xlabel('Temperature'); ylabel('mm');legend(legendStr);
 subplot(234);hold on
-plot(Temp,squeeze(resultsRMS(1,:,:)));title('Max Rtd Diff From Ref');xlabel('Temperature'); ylabel('mm');legend(legendStr);
+plot(Temp,squeeze(resultsRMS(1,:,:)));title('RMS Rtd Diff From Ref');xlabel('Temperature'); ylabel('mm');legend(legendStr);
 subplot(232);hold on
 plot(Temp,squeeze(resultsMax(2,:,:)));title('Max X Pixel Diff From Ref');xlabel('Temperature'); ylabel('Pixels');legend(legendStr);
 subplot(235);hold on

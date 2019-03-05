@@ -761,15 +761,15 @@ end
 function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
     if(runParams.undist)
-        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
+        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement,undistRms] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
         udistRegs.DIGG.undistBypass = false;
         fw.setRegs(udistRegs,fnCalib);
         fw.setLut(udistlUT);
         [~,luts]=fw.get();
         if(results.maxPixelDisplacement<calibParams.errRange.maxPixelDisplacement(2))
-            fprintff('[v] undist calib passed[e=%g]\n',results.maxPixelDisplacement);
+            fprintff('[v] undist calib passed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,undistRms);
         else
-            fprintff('[x] undist calib failed[e=%g]\n',results.maxPixelDisplacement);
+            fprintff('[x] undist calib failed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,undistRms);
             
         end
         ttt=[tempname '.txt'];
