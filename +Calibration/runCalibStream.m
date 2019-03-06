@@ -791,8 +791,8 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
     intregs.DIGG.spare(6)=verValue; %config version
-    intregs.DIGG.spare(7)=uint32(regs.FRMW.calMarginL)*2^16 + uint32(regs.FRMW.calMarginR);
-    intregs.DIGG.spare(8)=uint32(regs.FRMW.calMarginT)*2^16 + uint32(regs.FRMW.calMarginB);
+    intregs.DIGG.spare(7)=typecast(int32(regs.FRMW.calMarginL)*2^16 + int32(regs.FRMW.calMarginR),'uint32');
+    intregs.DIGG.spare(8)=typecast(int32(regs.FRMW.calMarginT)*2^16 + int32(regs.FRMW.calMarginB),'uint32');
     intregs.JFIL.spare=zeros(1,8,'uint32');
     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));

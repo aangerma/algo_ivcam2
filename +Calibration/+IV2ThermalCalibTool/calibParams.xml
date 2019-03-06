@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+    <sparkParams>
+        <testMode>ATP</testMode>
+   </sparkParams>
+   <gnrl>
+       <cbSquareSz>30</cbSquareSz>
+       <cbGridSz>[]</cbGridSz>
+   </gnrl>
+   <warmUp>
+       <warmUpTh>1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+       <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
+       <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+       <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
+   </warmUp>
+   <errRange>
+      <delayF>[0 0.9]</delayF>
+   </errRange>
+   <fwTable>
+      <tempBinRange>[35 66]</tempBinRange>  
+      <name>Algo_Thermal_Loop_512_ 1_CalibInfo_Ver_20_00.bin</name> 
+   </fwTable>
+</struct>
