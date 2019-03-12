@@ -16,7 +16,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
-    %[runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
     [runParams,~] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
     
     if noCalibrations(runParams)
@@ -410,7 +409,6 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     % mode to be above a certain threshold.
     fprintff('[-] Coarse DSM calibration...\n');
     if(runParams.DSM)
-        %delete before turn_in  Calibration.aux.calibCoarseDSM(hw,calibParams,runParams);
         Calibration.DSM.DSM_CoarseCalib(hw,calibParams,runParams);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
