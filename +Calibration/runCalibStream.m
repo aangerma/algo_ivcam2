@@ -16,11 +16,15 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
-    [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
+    [runParams,~] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
+    
     if noCalibrations(runParams)
         calibPassed = -1;
         return;
     end
+    %% call HVM_cal_init
+    [calibParams , result] = HVM_Cal_init(calibParamsFn);
+        
     %% Calibration file names
     [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams);
     
@@ -387,12 +391,25 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     end
     
 end
+
+function [calibParams , result] = HVM_Cal_init(calib_params_fn)
+    output_dir          = 'C:\algo\playground\cal_tester\output';
+    debug_log_f         = 0;
+    verbose             = 0;
+    save_input_flag     = 1;
+    save_output_flag    = 1;
+    dummy_output_flag   = 0;
+
+    [calibParams , result] = Calibration.CompiledAPI.cal_init(output_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
+end
+
+
 function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     % Set a DSM value that makes the valid area of the image in spherical
     % mode to be above a certain threshold.
     fprintff('[-] Coarse DSM calibration...\n');
     if(runParams.DSM)
-        Calibration.aux.calibCoarseDSM(hw,calibParams,runParams);
+        Calibration.DSM.DSM_CoarseCalib(hw,calibParams,runParams);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
         fprintff('[?] skipped\n');
