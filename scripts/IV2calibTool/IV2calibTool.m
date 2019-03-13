@@ -423,6 +423,8 @@ function statrtButton_callback(varargin)
         
     catch e
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
+        fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
+        
         fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
         if(fid~=-1)
             fprintf(fid,strrep(getReport(e),'\','\\'));
