@@ -1,4 +1,4 @@
-function [table,results] = generateFWTable(framesData,regs,calibParams,runParams)
+function [table,results] = generateFWTable(framesData,regs,calibParams,runParams,fprintff)
 
 % Bin frames according to fw loop requirment.
 % Generate a linear fix for angles and an offset for rtd
@@ -9,6 +9,8 @@ function [table,results] = generateFWTable(framesData,regs,calibParams,runParams
 % •	Averaging of 10 last LDD temperature measurements every second. Temperature sample rate is 10Hz. 
 % •	Replace “Reserved_512_Calibration_1_CalibData_Ver_20_00.txt” with ~“Algo_Thermal_Loop_512_ 1_CalibInfo_Ver_21_00.bin” 
 % •	In case table does not exist, continue working with old thermal loop
+invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ),1:numel(framesData));
+framesData = framesData(~invalidFrames);
 
 tempVec = [framesData.temp];
 tempVec = [tempVec.ldd];
@@ -33,8 +35,15 @@ tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1))
 
 
 
-framesPerTemperature = medianFrameByTemp(framesData,tmpBinEdges,tmpBinIndices);
+framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,tmpBinEdges,tmpBinIndices);
+results.framesPerTemperature = framesPerTemperature;
 
+if all(all(isnan(framesPerTemperature(refBinIndex,:,:))))
+    fprintff('Self heat didn''t reach algo calibration temperature. Calib temperature: %2.1f.\n',refTmp);
+    table = [];
+    return;
+end
+    
 [angXscale,angXoffset] = linearTransformToRef(framesPerTemperature(:,:,2),refBinIndex);
 [angYscale,angYoffset] = linearTransformToRef(framesPerTemperature(:,:,3),refBinIndex);
 [destTmprtOffset] = constantTransformToRef(framesPerTemperature(:,:,1),refBinIndex);
@@ -65,13 +74,12 @@ table = [dsmXscale,...
         
         
 results.table = table;
-
+results.framesPerTemperature = framesPerTemperature;
 
 
 if ~isempty(runParams)
     titles = {'dsmXscale','dsmYscale','dsmXoffset','dsmYoffset','RTD Offset'};
     xlabels = 'Ldd Temperature [degrees]';
-    
     for i = 1:5
         ff = Calibration.aux.invisibleFigure;
         plot(tmpBinEdges,table(:,i));
@@ -131,17 +139,4 @@ A = [x1,ones(size(x1))];
 res = inv(A'*A)*A'*x2;
 a = res(1);
 b = res(2);
-end
-function framesPerTemperature = medianFrameByTemp(framesData,tmpBinEdges,tmpBinIndices)
-for i = 1:numel(tmpBinEdges)
-    currFrames = framesData(tmpBinIndices == i);
-    if isempty(currFrames)
-        framesPerTemperature(i,:,:) = nan(size(framesData(1).ptsWithZ));
-        continue;
-    end
-    currData = reshape([currFrames.ptsWithZ],[size(currFrames(1).ptsWithZ,1),size(currFrames(1).ptsWithZ,2),numel(currFrames)]);
-    framesPerTemperature(i,:,:) = median(currData,3);
-    
-end
-
 end

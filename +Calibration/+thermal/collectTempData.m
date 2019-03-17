@@ -1,8 +1,9 @@
-function [ framesData, info ] = collectTempData(hw,regs,calibParams,runParams,fprintff)
+function [ framesData, info ] = collectTempData(hw,regs,calibParams,runParams,fprintff,maxTime2Wait)
 
 tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
 timeBetweenFrames = calibParams.warmUp.timeBetweenFrames;
+maxTime2WaitSec = maxTime2Wait*60;
 
 hw.startStream;
 prevTmp = hw.getLddTemperature();
@@ -21,7 +22,7 @@ while ~finishedHeating
     tmpData = getFrameData(hw,regs,calibParams);
     tmpData.time = toc(startTime);
     framesData(i) = tmpData;
-    if (framesData(i).time - prevTime) >= tempSamplePeriod
+    if (framesData(i).time - prevTime) >= tempSamplePeriod  || framesData(i).time > maxTime2WaitSec
         finishedHeating = (framesData(i).temp.ldd - prevTmp) < tempTh;
         prevTmp = framesData(i).temp.ldd;
         prevTime = framesData(i).time;
@@ -41,7 +42,7 @@ if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     plot(heatTimeVec,tempVec)
     title('Heating Stage'); grid on;xlabel('sec');ylabel('ldd temperature [degrees]');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('LddTempOverTime'));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('LddTempOverTime'),1);
 end
 info.duration = heatTimeVec(end);
 info.startTemp = tempVec(1);
@@ -77,7 +78,8 @@ else
 end
 rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
 [angx,angy] = Calibration.aux.vec2ang(verts,regs,[]);
-ptsWithZ = [rtd,angx,angy,pts,zPts];
+ptsWithZ = [rtd,angx,angy,pts,verts];
+ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end
 
 function frameData = getFrameData(hw,regs,calibParams)

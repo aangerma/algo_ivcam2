@@ -2,15 +2,16 @@ function testGeom()
 if ~exist('hw','var')
     hw = HWinterface;
     hw.cmd('dirtybitbypass');
-    hw.cmd('ALGO_THERMLOOP_EN 10');
+%     hw.cmd('ALGO_THERMLOOP_EN 10');
     hw.getFrame();
     pause(5);
     
 end
-load("X:\Data\IvCam2\temperaturesData\demoData\F9010093_8_views_collectedFrames\regs.mat");
+% load("X:\Data\IvCam2\temperaturesData\demoData\F9010093_8_views_collectedFrames\regs.mat");
 % fw = Pipe.loadFirmware('C:\temp\unitCalib\F9010077\PC12\AlgoInternal');
 % regs = fw.get();
-
+fw = Pipe.loadFirmware('C:\temp\unitCalib\F9010077\PC19\AlgoInternal');
+regs = fw.get();
 memorySz = 200;
 tmpType = 'ldd';
 timeVec = nan(1,memorySz);

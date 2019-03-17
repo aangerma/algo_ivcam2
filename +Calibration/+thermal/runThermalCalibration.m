@@ -7,7 +7,11 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
-
+    if ~runParams.performCalibration
+       fprintff('Skipping calibration stage...\n'); 
+       calibPassed = 1;
+       return;
+    end
     fprintff('Starting thermal calibration:\n');
     fprintff('%-15s %s\n','stated at',datestr(now));
     fprintff('%-15s %5.2f.%1.0f\n','version',runParams.version,runParams.subVersion);
@@ -29,23 +33,30 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     
     %% Get regs state
     fprintff('Reading unit calibration regs...');
-    regs = readDFZRegsForThermalCalculation(hw);
+    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw);
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% Start stream to load the configuration
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
   
-    [framesData,data] = Calibration.thermal.collectSelfHeatData(hw,regs,calibParams,runParams,fprintff,runParams);
+    data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,[]);
+    [table,data.processed] = Calibration.thermal.generateFWTable(data.framesData,data.regs,calibParams,runParams,fprintff);
     
-    [table,data.results] = Calibration.thermal.generateFWTable(framesData,regs,calibParams,runParams);
-    Calibration.thermal.generateAndBurnTable(hw,table);
+    if isempty(table)
+       calibPassed = 0;
+       save(fullfile(runParams.outputFolder,'data.mat'),'data');
+       return;
+    end
+    [data.results] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff);
+    save(fullfile(runParams.outputFolder,'data.mat'),'data');
     
+   
     Calibration.aux.logResults(data.results,runParams);
     %% merge all scores outputs
     calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
     
-    
+        
     fprintff('[!] Calibration ended - ');
     if(calibPassed==0)
         fprintff('FAILED.\n');
@@ -53,61 +64,15 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
         fprintff('PASSED.\n');
     end
     %% Burn 2 device
+    fprintff('Burning thermal calibration\n',round(toc(t)));
+    Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,calibPassed);
     fprintff('Thrmal calibration finished(%d)\n',round(toc(t)));
     clear hw;
     
 end
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
-    %backward compatibility
-    if(~isfield(runParams,'uniformProjectionDFZ'))
-        runParams.uniformProjectionDFZ=true;
-    end
-   
-    if(~exist('calibParamsFn','var') || isempty(calibParamsFn))
-        %% ::load default caliration configuration
-        calibParamsFn='calibParams.xml';
-    end
     calibParams = xml2structWrapper(calibParamsFn);
     
-end
-
-
-function currregs = readDFZRegsForThermalCalculation(hw)
-    
-    currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
-    currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
-    currregs.EXTL.dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
-    currregs.EXTL.dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single'); 
-
-    DIGGspare = hw.read('DIGGspare');
-    currregs.FRMW.xfov(1) = typecast(DIGGspare(2),'single');
-    currregs.FRMW.yfov(1) = typecast(DIGGspare(3),'single');
-    currregs.FRMW.laserangleH = typecast(DIGGspare(4),'single');
-    currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
-    currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
-
-    DIGGspare06 = hw.read('DIGGspare_006');
-    DIGGspare07 = hw.read('DIGGspare_007');
-    currregs.FRMW.calMarginL = int16(DIGGspare06/2^16);
-    currregs.FRMW.calMarginR = int16(mod(DIGGspare06,2^16));
-    currregs.FRMW.calMarginT = int16(DIGGspare07/2^16);
-    currregs.FRMW.calMarginB = int16(mod(DIGGspare07,2^16));
-    
-    currregs.GNRL.imgHsize = hw.read('GNRLimgHsize');
-    currregs.GNRL.imgVsize = hw.read('GNRLimgVsize');
-
-    currregs.DEST.baseline = typecast(hw.read('DESTbaseline$'),'single');
-    currregs.DEST.baseline2 = typecast(hw.read('DESTbaseline2'),'single');
-    currregs.DEST.hbaseline = hw.read('DESThbaseline');
-    
-    currregs.FRMW.kWorld = hw.getIntrinsics();
-    currregs.FRMW.kRaw = currregs.FRMW.kWorld;
-    currregs.FRMW.kRaw(7) = single(currregs.GNRL.imgHsize) - 1 - currregs.FRMW.kRaw(7);
-    currregs.FRMW.kRaw(8) = single(currregs.GNRL.imgVsize) - 1 - currregs.FRMW.kRaw(8);
-    currregs.GNRL.zNorm = hw.z2mm;
-    
-    JFILspare = hw.read('JFILspare');
-    currregs.FRMW.dfzCalTmp = typecast(JFILspare(2),'single');
 end
 

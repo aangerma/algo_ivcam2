@@ -6,6 +6,7 @@ classdef Firmware < FirmwareBase
     methods (Access=public)
         
         writeFirmwareFiles(obj,outputFldr,oldVersion);
+        writeAlgoThermalBin(obj,fname);
         [EPROMtable,Configtable] = generateTablesForFw(obj,outputFldr);
         fns=writeLUTbin(obj,d,fn,oneBaseCount); 
         

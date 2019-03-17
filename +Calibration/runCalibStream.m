@@ -51,8 +51,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
-    hw.setReg('DESTtmptrOffset',single(0));
-    hw.shadowUpdate;
     fprintff('Opening stream...');
     hw.startStream();
     fprintff('Done(%ds)\n',round(toc(t)));
@@ -164,10 +162,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
-    %% Enable U0 Idle
-    if calibParams.gnrl.disable_u0_idle
-        hw.cmd('U0_IDLE_ENABLE 1');
-    end
     %% Validation
     
     clear hw;
@@ -309,10 +303,10 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     if ~runParams.ROI
         DIGGspare06 = hw.read('DIGGspare_006');
         DIGGspare07 = hw.read('DIGGspare_007');
-        currregs.FRMW.calMarginL = int16(DIGGspare06/2^16);
-        currregs.FRMW.calMarginR = int16(mod(DIGGspare06,2^16));
-        currregs.FRMW.calMarginT = int16(DIGGspare07/2^16);
-        currregs.FRMW.calMarginB = int16(mod(DIGGspare07,2^16));
+        currregs.FRMW.calMarginL = typecast(uint16(bitshift(DIGGspare06,-16)),'int16');
+        currregs.FRMW.calMarginR = typecast(uint16(mod(DIGGspare06,2^16)),'int16');
+        currregs.FRMW.calMarginT = typecast(uint16(bitshift(DIGGspare07,-16)),'int16');
+        currregs.FRMW.calMarginB = typecast(uint16(mod(DIGGspare07,2^16)),'int16');
     end
     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
@@ -625,12 +619,15 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         for i = 1:numel(captures)
             cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);
-            targetInfo.cornersX = 20;
-            targetInfo.cornersY = 28;
             
-%             [pts, grid] = detectCheckerboard(im(i).i,targetInfo,cdParams);
+            
             pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 1);
-            grid = [size(pts,1),size(pts,2),1];            
+            grid = [size(pts,1),size(pts,2),1];  
+%             [pts,grid] = Validation.aux.findCheckerboard(im(i).i,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+%             grid(end+1) = 1;
+             
+            targetInfo.cornersX = grid(1);
+            targetInfo.cornersY = grid(2);
             d(i).i = im(i).i;
             d(i).c = im(i).c;
             d(i).z = im(i).z;
@@ -654,6 +651,9 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
 %             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
             ptsCropped = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
             gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
+%             [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+            gridCropped(end+1) = 1;
+            
             
             d(i).ptsCropped = ptsCropped;
             d(i).gridCropped = gridCropped;
@@ -761,15 +761,15 @@ end
 function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
     if(runParams.undist)
-        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement,undistRms] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
+        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement,results.undistRms] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
         udistRegs.DIGG.undistBypass = false;
         fw.setRegs(udistRegs,fnCalib);
         fw.setLut(udistlUT);
         [~,luts]=fw.get();
         if(results.maxPixelDisplacement<calibParams.errRange.maxPixelDisplacement(2))
-            fprintff('[v] undist calib passed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,undistRms);
+            fprintff('[v] undist calib passed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,results.undistRms);
         else
-            fprintff('[x] undist calib failed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,undistRms);
+            fprintff('[x] undist calib failed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,results.undistRms);
             
         end
         ttt=[tempname '.txt'];
@@ -791,8 +791,8 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
     intregs.DIGG.spare(6)=verValue; %config version
-    intregs.DIGG.spare(7)=typecast(int32(regs.FRMW.calMarginL)*2^16 + int32(regs.FRMW.calMarginR),'uint32');
-    intregs.DIGG.spare(8)=typecast(int32(regs.FRMW.calMarginT)*2^16 + int32(regs.FRMW.calMarginB),'uint32');
+    intregs.DIGG.spare(7) = uint32(typecast(int16(regs.FRMW.calMarginL),'uint16'))*2^16 + uint32(typecast(int16(regs.FRMW.calMarginR),'uint16'));
+    intregs.DIGG.spare(8) = uint32(typecast(int16(regs.FRMW.calMarginT),'uint16'))*2^16 + uint32(typecast(int16(regs.FRMW.calMarginB),'uint16'));
     intregs.JFIL.spare=zeros(1,8,'uint32');
     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));

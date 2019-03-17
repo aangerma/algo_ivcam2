@@ -167,7 +167,7 @@ function app=createComponents()
     app.VersionLabel = uicontrol('style','text','parent',configurationTab);
     app.VersionLabel.HorizontalAlignment = 'left';
     app.VersionLabel.Position = [5 sz(2)-154 94 15];
-    [ver,sub] = Calibration.IV2ThermalCalibTool.thermalCalibToolVersion();
+    [ver,sub] = thermalCalibToolVersion();
     app.VersionLabel.String = sprintf('version: %5.2f.%1.0f',ver,sub);
     
     
@@ -198,7 +198,7 @@ function app=createComponents()
     % Create verboseCheckBox
     
     %checkboxes
-    cbnames = {'burnCalibrationToDevice','performValidationCycle'};
+    cbnames = {'performCalibration','performValidation'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -286,7 +286,7 @@ function statrtButton_callback(varargin)
     try
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
-        [runparams.version,runparams.subVersion] = Calibration.IV2ThermalCalibTool.thermalCalibToolVersion(); 
+        [runparams.version,runparams.subVersion] = thermalCalibToolVersion(); 
         runparams.outputFolder = [];
         if isdeployed
             toolDir = pwd;
@@ -345,13 +345,13 @@ function statrtButton_callback(varargin)
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibPassed = Calibration.thermal.runThermalCalibration(runparamsFn,calibfn,fprintffS);
         validPassed = 1;
-        if calibPassed~=0 && runparams.performValidationCycle 
-            waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
-            [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS,app);
+        if calibPassed~=0 && runparams.performValidation
+            waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
+            [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS);
         end
         
         if calibPassed == 1 || calibPassed == -1
-            if validPassed || ~runparams.performValidationCycle 
+            if validPassed || ~runparams.performValidation 
                 app.logarea.BackgroundColor = [0 0.8 0]; % Color green
             else
                 app.logarea.BackgroundColor = [1 1 0]; % Color yellow 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
-   <cb_performValidationCycle>1</cb_performValidationCycle>
+   <cb_performCalibration>1</cb_performCalibration>
+   <cb_performValidation>1</cb_performValidation>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <toolName>IV2 Thermal Calibration Tool</toolName>
 </struct>

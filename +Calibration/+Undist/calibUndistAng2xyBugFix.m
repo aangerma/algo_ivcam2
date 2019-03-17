@@ -43,7 +43,7 @@ if ~isempty(FE)
     v = Calibration.aux.xy2vec(xg,yg,regs); % for each pixel, get the unit vector in space corresponding to it.
     [angxg,angyg] = Calibration.aux.vec2ang(v,origregs,FE);
 else
-    [angxg,angyg] = Calibration.aux.xy2angSF(xg,yg,origregs,true);
+    [angxg,angyg] = Calibration.aux.xy2angSF(xg+0.5,yg+0.5,origregs,true);
 end
 
 angxPrePolyUndist = Calibration.Undist.inversePolyUndist(angxg,regs);
@@ -53,7 +53,6 @@ undistRms = rms(reshape(sqrt((xg - xNoPolyUndist).^2 + (yg - yNoPolyUndist).^2),
 
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
 [xbug,ybug] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyg,regs,[],false);
-
 % Apply the lut to the bugged x-y and calculate the displacement error:
 luts.FRMW.undistModel = udistLUT;
 [autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.buildLensLUT(regs,luts);
@@ -67,6 +66,10 @@ ynew = single(ynew)/2^15;
 eMatPost = sqrt((xnew-xg).^2 + (ynew-yg).^2);
 
 maxPixelDisplacement = max(eMatPost(:));
+
+
+%%
+
 
 if 0
     ff = figure;

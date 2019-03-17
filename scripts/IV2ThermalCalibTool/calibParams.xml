@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+    <sparkParams>
+        <testMode>ATP</testMode>
+   </sparkParams>
+   <gnrl>
+       <cbSquareSz>30</cbSquareSz>
+       <cbGridSz>[9,13]</cbGridSz>
+   </gnrl>
+   <warmUp>
+       <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+       <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
+       <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+       <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
+   </warmUp>
+   <errRange>
+      <stdRtd>[0 inf]</stdRtd>
+      <stdXim>[0 inf]</stdXim>
+      <stdYim>[0 inf]</stdYim>
+      <stdXmm>[0 inf]</stdXmm>
+      <stdYmm>[0 inf]</stdYmm>
+      <stdZmm>[0 inf]</stdZmm>
+      <p2pRtd>[0 inf]</p2pRtd>
+      <p2pXim>[0 inf]</p2pXim>
+      <p2pYim>[0 inf]</p2pYim>
+      <p2pXmm>[0 inf]</p2pXmm>
+      <p2pYmm>[0 inf]</p2pYmm>
+      <p2pZmm>[0 inf]</p2pZmm>
+      <meanEGeom>[0 inf]</meanEGeom>
+      <minEGeom>[0 inf]</minEGeom>
+      <maxEGeom>[0 inf]</maxEGeom>
+   </errRange>
+   <validation>
+       <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>
+   </validation>
+   <validationErrRange>
+      <stdRtd>[0 inf]</stdRtd>
+      <stdXim>[0 inf]</stdXim>
+      <stdYim>[0 inf]</stdYim>
+      <stdXmm>[0 inf]</stdXmm>
+      <stdYmm>[0 inf]</stdYmm>
+      <stdZmm>[0 inf]</stdZmm>
+      <p2pRtd>[0 inf]</p2pRtd>
+      <p2pXim>[0 inf]</p2pXim>
+      <p2pYim>[0 inf]</p2pYim>
+      <p2pXmm>[0 inf]</p2pXmm>
+      <p2pYmm>[0 inf]</p2pYmm>
+      <p2pZmm>[0 inf]</p2pZmm>
+      <meanEGeom>[0 inf]</meanEGeom>
+      <minEGeom>[0 inf]</minEGeom>
+      <maxEGeom>[0 inf]</maxEGeom>
+   </validationErrRange>
+   <fwTable>
+      <tempBinRange>[35 66]</tempBinRange>  
+      <name>Algo_Thermal_Loop_CalibInfo</name> 
+   </fwTable>
+</struct>

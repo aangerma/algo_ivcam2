@@ -346,10 +346,6 @@ function statrtButton_callback(varargin)
                 hw = HWinterface;
                 [info,serialStr,~] = hw.getInfo();
                 fwVersion = hw.getFWVersion;
-                if calibParams.gnrl.disable_u0_idle
-                    hw.cmd('U0_IDLE_ENABLE 0');
-                    hw.cmd('rst');
-                end
                 clear hw;
             catch e
                 fprintffS('[!] ERROR:%s\n',strtrim(e.message));
@@ -422,6 +418,8 @@ function statrtButton_callback(varargin)
         
         
     catch e
+       
+        fprintf('%s',getReport(e));
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
         
@@ -433,6 +431,7 @@ function statrtButton_callback(varargin)
         if app.cb.replayMode.Value == 0
             s.endDUTsession([], true);
         end
+        
     end
     
     %restore original folder

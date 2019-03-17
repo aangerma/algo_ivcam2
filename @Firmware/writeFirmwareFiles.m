@@ -36,6 +36,7 @@ function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
     
     gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,['DIGG_Gamma_Info_CalibInfo' calibpostfix 'bin']));
     
+    obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,['Algo_Thermal_Loop_CalibInfo' calibpostfix 'bin']))
     %no room for undist3: concat it to gamma file
     data = [readbin(gammafn{1});readbin(undistfns{3})];
     writebin(gammafn{1},data);
