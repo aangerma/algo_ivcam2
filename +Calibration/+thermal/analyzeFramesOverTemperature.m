@@ -18,10 +18,9 @@ tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1))
 
 
 framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,tmpBinEdges,tmpBinIndices);
-
+Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams);
 
 validTemps = ~all(all(isnan(framesPerTemperature),3),2);
-
 
 validFramesData = framesPerTemperature(validTemps,:,:);
 validCBPoints = all(all(~isnan(validFramesData),3),1);

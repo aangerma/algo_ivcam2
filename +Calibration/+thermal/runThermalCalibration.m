@@ -35,6 +35,8 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     fprintff('Reading unit calibration regs...');
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw);
     fprintff('Done(%ds)\n',round(toc(t)));
+    fprintff('Algo Calib Temp: %2.2fdeg\n',data.regs.FRMW.dfzCalTmp);
+    
     
     %% Start stream to load the configuration
     hw.cmd('DIRTYBITBYPASS');

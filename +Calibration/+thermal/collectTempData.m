@@ -27,10 +27,10 @@ while ~finishedHeating
         prevTmp = framesData(i).temp.ldd;
         prevTime = framesData(i).time;
         fprintff(', %2.2f',prevTmp);
-        hw.stopStream;
     end
     pause(timeBetweenFrames);
 end
+hw.stopStream;
 fprintff('\n');
 
 
