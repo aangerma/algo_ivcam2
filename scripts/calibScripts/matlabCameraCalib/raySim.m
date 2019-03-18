@@ -1,10 +1,11 @@
 NB = [0 0 1];
-RotZenith = rotSlow(5);
-RotRay = rotSlow(0);
-L = [0 0 -1];%*RotZenith*RotZenith;
+L = [0 0 -1];
 
-AX = -20:0.05:20;
-AY = -15:0.05:15;
+RotZenith = rotSlow(0);
+RotRay = rotSlow(0);
+
+AX = -20:0.1:20;
+AY = -12:0.1:12;
 nx = length(AX);
 ny = length(AY);
 X = zeros(ny,nx);
@@ -18,6 +19,8 @@ for ix=1:nx
         Y(iy,ix) = r(2)/r(3);
     end
 end
+
+figure; plot(X(:),Y(:),'.');
 
 L2 = [0 0 -1];
 NB = [0 0 1];

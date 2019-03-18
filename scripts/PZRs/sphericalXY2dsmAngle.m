@@ -1,4 +1,4 @@
-function [angX,angY] = sphericalXY2angle(x,y,regs)
+function [angX,angY] = sphericalXY2dsmAngle(x,y,regs)
 
 y = y-double(regs.DIGG.sphericalOffset(2));
 y = y*2^12; % bitshift(yy,-12);
@@ -13,9 +13,6 @@ angxQ = x;
 
 angX = (angxQ + 2047)/regs.EXTL.dsmXscale - regs.EXTL.dsmXoffset;
 angY = (angyQ + 2047)/regs.EXTL.dsmYscale - regs.EXTL.dsmYoffset;
-
-figure; plot(angxQ,angyQ,'.-');
-figure; plot(angX,angY,'.-');
 
 end
 

@@ -85,9 +85,6 @@ hw.setReg('JFILinvBypass',true);
 hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
 
-%hw.cmd('mwd a0020c00 a0020c04 01E00320 // DIGGsphericalScale'); % 01E00280
-%hw.cmd('mwd a0020bfc a0020c00 00f005E0 // DIGGsphericalOffset'); % 00f00500
-
 %% capture for metrics
 
 delay = 0;
@@ -102,7 +99,8 @@ for i = 1:nFrames
     end
 end
 
-%% read dsm
+%% read registers
+
 regs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
 regs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
 regs.EXTL.dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
@@ -120,16 +118,16 @@ regs.FRMW.yfov(1) = regs.DIGG.spare(3);
 regs.FRMW.laserangleH = regs.DIGG.spare(4);
 regs.FRMW.laserangleV = regs.DIGG.spare(5);
 
-intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov(1)),'uint32');
-intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov(1)),'uint32');
-intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
-intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
+xfov = regs.FRMW.xfov(1)
+yfov = regs.FRMW.yfov(1)
 
-xfov = regs.FRMW.xfov(1);
-yfov = regs.FRMW.yfov(1);
+%% capture
+hw.setReg('DIGGsphericalEn',false);
+hw.shadowUpdate();
 
 frame30 = hw.getFrame(30); figure; imagesc(frame30.i)
 [points, gridSize] = Validation.aux.findCheckerboard(frame30.i);
+hold on; plot(points(:,1),points(:,2),'+r');
 camera.zMaxSubMM = 2^regs.GNRL.zMaxSubMMExp;
 camera.K = reshape([typecast(regs.FRMW.kRaw,'single')';1],3,3)';
 
@@ -139,35 +137,79 @@ params.target.squareSize = 30;
 [score, results] = Validation.metrics.gridInterDist(frame30, params);
 
 v = Validation.aux.pointsToVertices(points, frame30.z, camera);
-[wAngx,wAngy] = vertices2ang(v, regs); % world angles for the grid
-figure; plot(wAngx,wAngy, '.-');
+[wAngX,wAngY] = vertices2worldAngles(v, regs);
+figure; plot(wAngX,wAngY, '.-'); title('world angles from the checkeckboard');
 
-[Y,X]=ndgrid(1:360,1:640);
+[mAngX,mAngY] = vertices2mirrorAngles(v, regs);
+figure; plot(mAngX,mAngY, '.-'); title('mirror angles from the checkeckboard');
+
+%% 
+%[Y,X]=ndgrid(1:360,1:640);
 %FangX = scatteredInterpolant(points(:,1),points(:,2),wAngX);
 %FangY = scatteredInterpolant(points(:,1),points(:,2),wAngY);
 %angX = FangX(Y,X);
 %angY = FangY(Y,X);
 
-% spherical
-frame = hw.getFrame();
+% capture one spherical frame
+hw.setReg('DIGGsphericalEn',true);
+hw.shadowUpdate();
+frame = hw.getFrame(); figure; imagesc(frame.i);
 [ptsSph, gridSizeSph] = Validation.aux.findCheckerboard(frame.i);
-figure; imagesc(frame.i); hold on; plot(ptsSph(:,1),ptsSph(:,2),'+r');
+hold on; plot(ptsSph(:,1),ptsSph(:,2),'+r');
 
-FwAngX = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),wAngx);
-FwAngY = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),wAngy);
-wAngX = FwAngX(X,Y);
-wAngY = FwAngY(X,Y);
-figure; imagesc(wAngX); title 'World angle X in spherical image';
-figure; imagesc(wAngY); title 'World angle Y in spherical image';
+%%
+[dsmAngX, dsmAngY] = sphericalXY2dsmAngle(ptsSph(:,1),ptsSph(:,2),regs);
+%[mAngX, mAngY] = applyZenithOnAngles(mAngX, mAngY, regs);
+figure; plot(dsmAngX, dsmAngY, '.-'); title('mirror angles from the spherical checkeckboard');
 
-iLog = 1;
+%% compare dsm vs real world mirror
+figure; plot(mAngX,mAngY, '.-'); title('real world mirror angles vs dsm angles');
+hold on; plot(dsmAngX/2, dsmAngY/2, '.-'); 
+
+%%
+[Y,X]=ndgrid(1:360,1:640);
+FwAngX = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),wAngX);
+FwAngY = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),wAngY);
+FmAngX = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),mAngX);
+FmAngY = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),mAngY);
+
+WAngX = FwAngX(X,Y); figure; imagesc(WAngX); title 'World angle X in spherical image';
+WAngY = FwAngY(X,Y); figure; imagesc(WAngY); title 'World angle Y in spherical image';
+
+%% spherical to XY of IR image
+FSph2ImgX = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),points(:,1));
+FSph2ImgY = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),points(:,2));
+
+%% mclog
+iLog = 8;
 mclog = mcLog(iLog);
 figure; plot(mclog.angX,mclog.angY, '.-');
 [xSph,ySph] = angle2sphericalXY(mclog.angX,mclog.angY,regs);
+figure; imagesc(frame.i); hold on; plot(xSph,ySph, '.-w');
 
-mcLogAngx = interp2(X,Y,wAngX,xSph,ySph);
-mcLogAngy = interp2(X,Y,wAngY,xSph,ySph);
-figure; plot(mcLogAngx, mcLogAngy, '.-');
+%% show PZR angles on the real world checker
+dsmInX = FSph2ImgX(xSph,ySph);
+dsmInY = FSph2ImgY(xSph,ySph);
+figure; imagesc(frame30.i); hold on; plot(dsmInX, dsmInY, '.-w');
+
+%% PZR to real world dsm
+dsmMAngX = FmAngX(xSph,ySph);
+dsmMAngY = FmAngY(xSph,ySph);
+figure; plot(dsmMAngX, dsmMAngY, '.-');
+
+%% compare PZR angles to real world mirror angles
+figure; plot(dsmMAngX, dsmMAngY, '.-');
+hold on; plot(mclog.angX/2,mclog.angY/2, '.-');
+
+figure; plot(dsmMAngX, '.-');
+hold on; plot(mclog.angX/2, '.-');
+figure; plot(dsmMAngY, '.-');
+hold on; plot(mclog.angY/2, '.-');
+
+figure; plot(mclog.angX,mclog.angY, '.-');
+mcLogWAngx = interp2(X,Y,WAngX,xSph,ySph);
+mcLogWAngy = interp2(X,Y,WAngY,xSph,ySph);
+figure; plot(mcLogAngx, mcLogWAngy, '.-');
 
 
 
