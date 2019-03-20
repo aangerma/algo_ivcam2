@@ -2,6 +2,7 @@
 <struct>
    <cb_performCalibration>1</cb_performCalibration>
    <cb_performValidation>1</cb_performValidation>
+   <cb_manualCaptures>0</cb_manualCaptures>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <toolName>IV2 Thermal Calibration Tool</toolName>
 </struct>

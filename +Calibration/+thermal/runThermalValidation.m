@@ -1,4 +1,4 @@
-function  [validationPassed] = runThermalValidation(runParams,calibParams, fprintff)
+function  [validationPassed] = runThermalValidation(runParams,calibParams, fprintff,app)
        
     t=tic;
     if(~exist('fprintff','var'))
@@ -13,7 +13,6 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     fprintff('Loading HW interface...');
     hw=HWinterface();
     fprintff('Done(%ds)\n',round(toc(t)));
-    
     %% Get regs state
     fprintff('Reading unit calibration regs...');
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw);
@@ -21,10 +20,11 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     
     %% Start stream to load the configuration
     hw.cmd('DIRTYBITBYPASS');
-  
+    Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     
-    data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,calibParams.validation.maximalCoolingAndHeatingTimes);
-    data.results = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff);
+    runParams.manualCaptures = 0;
+    data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,calibParams.validation.maximalCoolingAndHeatingTimes,app);
+    data.results = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,1);
     
     % Option two - partial validation, let it cool down to N degrees below calibration temperature and then compare to calibration temperature 
     

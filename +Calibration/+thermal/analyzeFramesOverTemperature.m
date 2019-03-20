@@ -1,7 +1,9 @@
-function [ metrics ] = analyzeFramesOverTemperature(data,calibParams,runParams,fprintff)
+function [ metrics ] = analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,inValidationStage)
 % Calculate the following metrics:
 % ,minEGeom,maxeGeom,meaneGeom
 % stdX,stdY,p2pY,p2pX
+
+
 
 regs = data.regs;
 
@@ -13,16 +15,29 @@ tempVec = [tempVec.ldd];
 
 refTmp = regs.FRMW.dfzCalTmp;
 tmpBinEdges = (calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2)) - 0.5;
+tmpBinEdgesLong = (calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2)+10) - 0.5;
 refBinIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
 
-framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,tmpBinEdges,tmpBinIndices);
-Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams);
+framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,tmpBinEdgesLong,tmpBinIndices);
 
-validTemps = ~all(all(isnan(framesPerTemperature),3),2);
+if inValidationStage
+   calibrationDataFn = fullfile(runParams.outputFolder,'data.mat'); 
+   if exist(calibrationDataFn, 'file') == 2
+       calibData = load(calibrationDataFn);
+       calibData = calibData.data;
+       framesPerTemperature = cat(4,framesPerTemperature,calibData.processed.framesPerTemperature);
+   end
+   
+end
 
-validFramesData = framesPerTemperature(validTemps,:,:);
+
+Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdgesLong,refBinIndex,runParams,inValidationStage);
+
+validTemps = ~all(all(isnan(framesPerTemperature(:,:,:,1)),3),2);
+
+validFramesData = framesPerTemperature(validTemps,:,:,1);
 validCBPoints = all(all(~isnan(validFramesData),3),1);
 validFramesData = validFramesData(:,validCBPoints,:);
 stdVals = mean(std(validFramesData));
@@ -51,19 +66,32 @@ else
     cbGridSz = [numel(validRows),numel(validCols)];
 end
 eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesData(i,:,end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
-eGeomOverTemp = nan(1,numel(tmpBinEdges));
+eGeomOverTemp = nan(1,numel(tmpBinEdgesLong));
 eGeomOverTemp(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
+
+
+
 
 metrics.meanEGeom = nanmean(eGeomOverTemp);
 metrics.maxEGeom = max(eGeomOverTemp);
 metrics.minEGeom = min(eGeomOverTemp);
 
-
+legends = {'Post Fix (val)';'Pre Fix (cal)'};
+if size(framesPerTemperature,4)>1 % Compare validation to calibration
+    validFramesCalData = framesPerTemperature(validTemps,:,:,2);
+    eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesCalData(i,:,end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
+    eGeomOverTempCal = nan(1,numel(tmpBinEdgesLong));
+    eGeomOverTempCal(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
+    eGeomOverTemp = [eGeomOverTemp;eGeomOverTempCal];
+    
+else
+    legends = legends(2-inValidationStage);
+end
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
-    plot(tmpBinEdges,eGeomOverTemp)
-    title('Heating Stage EGeom'); grid on;xlabel('degrees');ylabel('eGeom [mm]');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Cooling',sprintf('EGeomOverTemp'),1);
+    plot(tmpBinEdgesLong,eGeomOverTemp)
+    title('Heating Stage EGeom'); grid on;xlabel('degrees');ylabel('eGeom [mm]');legend(legends);
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('EGeomOverTemp'),1);
 end
 
 end

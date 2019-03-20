@@ -17,6 +17,7 @@ tempVec = [tempVec.ldd];
 
 refTmp = regs.FRMW.dfzCalTmp;
 tmpBinEdges = (calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2)) - 0.5;
+tmpBinEdgesLong = (calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2)+10) - 0.5;
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -35,7 +36,7 @@ tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1))
 
 
 
-framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,tmpBinEdges,tmpBinIndices);
+framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,tmpBinEdgesLong,tmpBinIndices);
 results.framesPerTemperature = framesPerTemperature;
 
 if all(all(isnan(framesPerTemperature(refBinIndex,:,:))))
@@ -71,10 +72,11 @@ table = [dsmXscale,...
             dsmYoffset,...
             destTmprtOffset];
 
-        
+table = fillInnerNans(table);   
         
 results.table = table;
 results.framesPerTemperature = framesPerTemperature;
+% results.framesPerTemperatureHindSightFix = transformFrames(framesPerTemperature,angXscale,angXoffset,angYscale,angYoffset,destTmprtOffset);
 
 
 if ~isempty(runParams)
@@ -140,3 +142,41 @@ res = inv(A'*A)*A'*x2;
 a = res(1);
 b = res(2);
 end
+
+function tableNoInnerNans = fillInnerNans(table)
+    % Find rows that are all nans:
+    nanRows = all(isnan(table),2);
+    rowId = (1:size(table,1))';
+    tableValid = table(~nanRows,:);
+    rowValid = rowId(~nanRows);
+    rowInvalid = rowId(nanRows);
+    newRows = interp1q(rowValid,tableValid,rowInvalid);
+    
+    tableNoInnerNans = table;
+    tableNoInnerNans(nanRows,:) = newRows;
+end
+% function framesPerTemperatureHindSightFix = transformFrames(framesPerTemperature,angXscale,angXoffset,angYscale,angYoffset,destTmprtOffset,regs)
+% %[rtd,angx,angy,pts,verts]
+% tableSz = numel(angYscale);
+% nTemps = size(framesPerTemperature,1);
+% framesPerTemperatureHindSightFix = framesPerTemperature;
+% angXscale(tableSz+1:nTemps) = angXscale(tableSz);
+% angYscale(tableSz+1:nTemps) = angYscale(tableSz);
+% angXoffset(tableSz+1:nTemps) = angXoffset(tableSz);
+% angYoffset(tableSz+1:nTemps) = angYoffset(tableSz);
+% destTmprtOffset(tableSz+1:nTemps) = destTmprtOffset(tableSz);
+% 
+% for i = 1:nTemps
+%     currFrame = squeeze(framesPerTemperature(i,:,:));
+%     currFrame(:,1) = currFrame(:,1) + destTmprtOffset(i);
+%     currFrame(:,2) = currFrame(:,2)*angXscale(i) + angXoffset(i);
+%     currFrame(:,3) = currFrame(:,3)*angYscale(i) + angYoffset(i);
+%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.ang2xySF(currFrame(:,2),currFrame(:,3),regs,[],1); % Cheating here as I do not apply the undistort
+%     
+%     [oXYZ] = ang2vec(currFrame(:,2),currFrame(:,3),regs,[]);
+%     
+%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.ang2xySF(currFrame(:,2),currFrame(:,3),regs,[],1);
+%     
+% end
+% 
+% end

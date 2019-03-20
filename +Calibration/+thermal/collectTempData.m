@@ -1,29 +1,56 @@
-function [ framesData, info ] = collectTempData(hw,regs,calibParams,runParams,fprintff,maxTime2Wait)
+function [ framesData, info ] = collectTempData(hw,regs,calibParams,runParams,fprintff,maxTime2Wait,app)
 
 tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
 timeBetweenFrames = calibParams.warmUp.timeBetweenFrames;
 maxTime2WaitSec = maxTime2Wait*60;
 
+pN = 1000;
+tempsForPlot = nan(1,pN);
+timesForPlot = nan(1,pN);
+plotDataI = 1;
+
 hw.startStream;
 prevTmp = hw.getLddTemperature();
 prevTime = 0;
+tempsForPlot(plotDataI) = prevTmp;
+timesForPlot(plotDataI) = prevTime/60;
+plotDataI = mod(plotDataI,pN)+1;
+
 startTime = tic;
 %% Collect data until temperature doesn't raise any more
 finishedHeating = 0; % A unit finished heating when LDD temperature doesn't raise by more than 0.2 degrees between 1 minute and the next
-
+manualCaptures = isfield(runParams,'manualCaptures') && runParams.manualCaptures;
+if manualCaptures
+    app.stopWarmUpButton.Visible = 'on';
+    app.stopWarmUpButton.Enable = 'on'; 
+end
 
 fprintff('[-] Starting heating stage (waiting for diff<%1.1f over %1.1f minutes) ...\n',tempTh,calibParams.warmUp.warmUpSP);
 fprintff('Ldd temperatures: %2.2f',prevTmp);
 
 i = 0;
+figure(190789);
+plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));
+
 while ~finishedHeating
     i = i + 1;
     tmpData = getFrameData(hw,regs,calibParams);
     tmpData.time = toc(startTime);
     framesData(i) = tmpData;
-    if (framesData(i).time - prevTime) >= tempSamplePeriod  || framesData(i).time > maxTime2WaitSec
-        finishedHeating = (framesData(i).temp.ldd - prevTmp) < tempTh;
+    
+    tempsForPlot(plotDataI) = framesData(i).temp.ldd;
+    timesForPlot(plotDataI) = framesData(i).time/60;
+    figure(190789);plot(timesForPlot([plotDataI+1:pN,1:plotDataI]),tempsForPlot([plotDataI+1:pN,1:plotDataI])); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));drawnow;
+    plotDataI = mod(plotDataI,pN)+1;
+    
+    if (framesData(i).time - prevTime) >= tempSamplePeriod  
+        if ~manualCaptures
+            finishedHeating = ((framesData(i).temp.ldd - prevTmp) < tempTh) || (framesData(i).time > maxTime2WaitSec) || (framesData(i).temp.ldd > calibParams.gnrl.lddTKill-1);
+        else
+            finishedHeating = Calibration.aux.globalSkip(0);
+        end
+        
         prevTmp = framesData(i).temp.ldd;
         prevTime = framesData(i).time;
         fprintff(', %2.2f',prevTmp);
@@ -31,7 +58,7 @@ while ~finishedHeating
     pause(timeBetweenFrames);
 end
 hw.stopStream;
-fprintff('\n');
+fprintff('Done\n');
 
 
 heatTimeVec = [framesData.time];
@@ -48,6 +75,12 @@ info.duration = heatTimeVec(end);
 info.startTemp = tempVec(1);
 info.endTemp = tempVec(end);
 
+
+if manualCaptures
+    app.stopWarmUpButton.Visible = 'off';
+    app.stopWarmUpButton.Enable = 'off'; 
+    Calibration.aux.globalSkip(1,0);
+end
 end
 
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
@@ -77,7 +110,7 @@ else
     rxLocation = [0,regs.DEST.baseline,0];
 end
 rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
-[angx,angy] = Calibration.aux.vec2ang(verts,regs,[]);
+[angx,angy] = Calibration.aux.vec2ang(normr(verts),regs,[]);
 ptsWithZ = [rtd,angx,angy,pts,verts];
 ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end

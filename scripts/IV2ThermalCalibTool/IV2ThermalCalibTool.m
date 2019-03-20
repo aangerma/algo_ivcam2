@@ -197,8 +197,18 @@ function app=createComponents()
     app.logarea.FontName='courier new';
     % Create verboseCheckBox
     
+    % Create invisible stop button
+    app.stopWarmUpButton = uicontrol('style','pushbutton','parent',configurationTab);
+    app.stopWarmUpButton.Callback = @stop_button_callback;
+    app.stopWarmUpButton.FontWeight = 'bold';
+    app.stopWarmUpButton.Position = [sz(1)-85 10 60 30];
+    app.stopWarmUpButton.String = 'Stop';
+    app.stopWarmUpButton.Visible = 'off';
+    Calibration.aux.globalSkip( 1,0 );
+    
+    
     %checkboxes
-    cbnames = {'performCalibration','performValidation'};
+    cbnames = {'performCalibration','performValidation','manualCaptures'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -251,31 +261,13 @@ function clearCB(varargin)
     end
 
 end
-function saveDefaults(varargin)
-    app=guidata(varargin{1});
-    
-    s=structfun(@(x) x.Value,app.cb,'uni',0);
-    s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
-    s.outputdirectorty=app.outputdirectorty.String;
-    s.disableAdvancedOptions = app.disableAdvancedOptions;
-    s.toolName = app.toolName;
-    if(isempty(s.outputdirectorty))
-        s.outputdirectorty=' ';%structxml bug
-    end
-    struct2xmlWrapper(s,app.defaultsFilename);
-    
-    
-    
-    
-    
-end
 
 function abortButton_callback(varargin)
     app=guidata(varargin{1});
     app.AbortButton.UserData=0;
     app.AbortButton.Enable='off';
 end
-function skip_button_callback(varargin)
+function stop_button_callback(varargin)
     app=guidata(varargin{1});
     app.skipWarmUpButton.Visible = 'off';
     app.skipWarmUpButton.Enable = 'off';
@@ -343,11 +335,11 @@ function statrtButton_callback(varargin)
         %=======================================================RUN THERMAL CALIBRATION=======================================================
         
         calibfn =  fullfile(toolDir,'calibParams.xml');
-        calibPassed = Calibration.thermal.runThermalCalibration(runparamsFn,calibfn,fprintffS);
+        calibPassed = Calibration.thermal.runThermalCalibration(runparamsFn,calibfn,fprintffS,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.performValidation
             waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
-            [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS);
+            [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS,app);
         end
         
         if calibPassed == 1 || calibPassed == -1
@@ -363,6 +355,7 @@ function statrtButton_callback(varargin)
         
         
     catch e
+        fprintf('%s',getReport(e));
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
         if(fid~=-1)

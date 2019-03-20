@@ -1,4 +1,4 @@
-function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprintff)
+function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprintff,app)
        
     t=tic;
     if(~exist('fprintff','var'))
@@ -36,13 +36,20 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw);
     fprintff('Done(%ds)\n',round(toc(t)));
     fprintff('Algo Calib Temp: %2.2fdeg\n',data.regs.FRMW.dfzCalTmp);
-    
-    
+    data.calibParams = calibParams;
+    data.runParams = runParams;
     %% Start stream to load the configuration
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
-  
-    data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,[]);
+    Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+    
+    if typecast(hw.read('DESTtmptrOffset'),'single') ~= 0
+        error('Algo thermal loop was active. Please disconnect and reconnect the unit before running.');
+    end
+    
+    data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,[],app);
+    save(fullfile(runParams.outputFolder,'data.mat'),'data');
+       
     [table,data.processed] = Calibration.thermal.generateFWTable(data.framesData,data.regs,calibParams,runParams,fprintff);
     
     if isempty(table)
@@ -50,7 +57,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
        save(fullfile(runParams.outputFolder,'data.mat'),'data');
        return;
     end
-    [data.results] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff);
+    [data.results] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
     save(fullfile(runParams.outputFolder,'data.mat'),'data');
     
    

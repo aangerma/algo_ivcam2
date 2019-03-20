@@ -7,7 +7,8 @@ hw.cmd('mwd a0020a6c a0020a70 01000100 // DIGGgammaScale');
 
 hw.setReg('JFILbypass$',1);
 hw.setReg('DIGGsphericalEn',1);
-hw.cmd('mwd a0020c00 a0020c04 01680c90 // DIGGsphericalScale');
+hw.cmd('mwd a0020c00 a0020c04 03200c90 // DIGGsphericalScale');
+hw.cmd('mwd a0020bfc a0020c00 00fa0500 // DIGGsphericalScale');
 hw.setReg('RASTbiltBypass',1);
 hw.setReg('DESTbaseline$',single(0));
 hw.setReg('DESTbaseline2$',single(0));

@@ -4,6 +4,10 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
+       <lddTKill>75</lddTKill>
+       <mcTKill>[]</mcTKill>
+       <maTKill>[]</maTKill>
+       <apdTKill>[]</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <cbGridSz>[9,13]</cbGridSz>
    </gnrl>
@@ -51,7 +55,8 @@
       <maxEGeom>[0 inf]</maxEGeom>
    </validationErrRange>
    <fwTable>
-      <tempBinRange>[35 66]</tempBinRange>  
+      <tempBinRange>[32 79]</tempBinRange> 
+      <!-- [35 66] -->
       <name>Algo_Thermal_Loop_CalibInfo</name> 
    </fwTable>
 </struct>
