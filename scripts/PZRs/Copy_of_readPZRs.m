@@ -11,8 +11,6 @@ mclog.PZR3 = PZR(:,10);
 mclog.angX = PZR(:,4);
 mclog.angY = PZR(:,12);
 
-mclog.t = PZR(:,13);
-
 end
 
 

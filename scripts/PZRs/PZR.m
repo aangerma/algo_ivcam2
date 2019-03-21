@@ -37,24 +37,27 @@ fa2 = [1;BA2(4:5)]';
 [be2,ae2] = ellip(2,0.2,60,26/(120000/2));
 
 % read files
-files = dir('MCLOG_I_640x360_*.bin');
-filesZ = dir('MCLOG_Z_640x360_*.bin');
-%range = 0:length(files)-1;
+sphericalCaptureDir = 'D:\Data\Ivcam2\PZR\FW_IVCAM2_1_2_5_1_LOS\Capture_Spherical_0319_01\';
+files = dir([sphericalCaptureDir 'MCLOG_I_640x360_*.bin']);
 for i=1:length(files)
-    fn = files(i).name;
+    fn = [sphericalCaptureDir files(i).name];
     ir{i} = io.readBin(fn, [640 360], 'type', 'bin8');
 end
+filesZ = dir('MCLOG_Z_640x360_*.bin');
 for i=1:length(filesZ)
-    fn = filesZ(i).name;
+    fn = [sphericalCaptureDir filesZ(i).name];
     z{i} = io.readBin(fn, [640 360], 'type', 'bin16');
 end
-
 
 sz = size(ir{1});
 IR = zeros([length(files) flip(sz)], 'uint8');
 for i=1:length(files)
-    IR(i,:,:) = rot90(shrinkScanlinesX(fliplr(ir{i})));
+    %IR(i,:,:) = rot90(shrinkScanlinesX(fliplr(ir{i})));
+    IR(i,:,:) = rot90(fliplr(ir{i}));
 end
+
+% for Capture_Spherical_0319_01
+iSphericalCapture = 61; % found manually using Utils.displayVolumeSliceGUI(IR)
 
 
 %% set regs
@@ -82,6 +85,8 @@ hw.setReg('JFILupscalexyBypass',true);
 hw.setReg('JFILgammaBypass'    ,false);
 hw.setReg('JFILgammaBypass'    ,false);
 hw.setReg('JFILinvBypass',true);
+hw.shadowUpdate();
+
 hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
 
@@ -133,7 +138,7 @@ camera.K = reshape([typecast(regs.FRMW.kRaw,'single')';1],3,3)';
 
 params = Validation.aux.defaultMetricsParams();
 params.camera = camera;
-params.target.squareSize = 30;
+params.target.squareSize = 20;
 [score, results] = Validation.metrics.gridInterDist(frame30, params);
 
 v = Validation.aux.pointsToVertices(points, frame30.z, camera);
@@ -154,8 +159,12 @@ figure; plot(mAngX,mAngY, '.-'); title('mirror angles from the checkeckboard');
 hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
 frame = hw.getFrame(); figure; imagesc(frame.i);
-[ptsSph, gridSizeSph] = Validation.aux.findCheckerboard(frame.i);
-hold on; plot(ptsSph(:,1),ptsSph(:,2),'+r');
+
+irSpherical = ir{iSphericalCapture};
+irSpherical = fillHolesMM(irSpherical);
+
+[ptsSph, gridSizeSph] = Validation.aux.findCheckerboard(irSpherical);
+figure; imagesc(irSpherical); hold on; plot(ptsSph(:,1),ptsSph(:,2),'+r');
 
 %%
 [dsmAngX, dsmAngY] = sphericalXY2dsmAngle(ptsSph(:,1),ptsSph(:,2),regs);
@@ -181,11 +190,12 @@ FSph2ImgX = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),points(:,1));
 FSph2ImgY = scatteredInterpolant(ptsSph(:,1),ptsSph(:,2),points(:,2));
 
 %% mclog
-iLog = 8;
-mclog = mcLog(iLog);
+%iLog = 8;
+%mclog = mcLog(iLog);
+mclog = readPZRs([sphericalCaptureDir 'record_PZR.csv']);
 figure; plot(mclog.angX,mclog.angY, '.-');
 [xSph,ySph] = angle2sphericalXY(mclog.angX,mclog.angY,regs);
-figure; imagesc(frame.i); hold on; plot(xSph,ySph, '.-w');
+figure; imagesc(irSpherical); hold on; plot(xSph,ySph, '.-w');
 
 %% show PZR angles on the real world checker
 dsmInX = FSph2ImgX(xSph,ySph);
@@ -201,15 +211,15 @@ figure; plot(dsmMAngX, dsmMAngY, '.-');
 figure; plot(dsmMAngX, dsmMAngY, '.-');
 hold on; plot(mclog.angX/2,mclog.angY/2, '.-');
 
-figure; plot(dsmMAngX, '.-');
-hold on; plot(mclog.angX/2, '.-');
-figure; plot(dsmMAngY, '.-');
-hold on; plot(mclog.angY/2, '.-');
+figure; plot(dsmMAngX, '.-'); hold on; plot(mclog.angX/2, '.-');
+figure; plot(dsmMAngY, '.-'); hold on; plot(mclog.angY/2, '.-');
 
 figure; plot(mclog.angX,mclog.angY, '.-');
 mcLogWAngx = interp2(X,Y,WAngX,xSph,ySph);
 mcLogWAngy = interp2(X,Y,WAngY,xSph,ySph);
-figure; plot(mcLogAngx, mcLogWAngy, '.-');
+figure; plot(mcLogWAngx, mcLogWAngy, '.-');
+
+
 
 
 
