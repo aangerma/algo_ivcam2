@@ -6,6 +6,7 @@
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
         <stableTemp>true</stableTemp>
+        <tag>regression</tag>
     </params>
     <tests>
         <test name="planeFit_far" metrics="planeFit" target="far" distance="100cm" threshold="[0:0.5]" extra=""/>\

@@ -6,6 +6,7 @@
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
         <stableTemp>true</stableTemp>
+        <tag>max_range</tag>
     </params>
     <tests>
         <test name="fillRate_160cm" metrics="fillRate" target="wall_10Reflectivity" distance="160cm" threshold="[95 : 100]" />
