@@ -6,6 +6,7 @@
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
         <stableTemp>true</stableTemp>
+        <tag>grid_angle</tag>
     </params>
     <tests>
         <test name="gridInterDist_150cm_Deg" metrics="gridInterDist" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:3]" extra=''/>

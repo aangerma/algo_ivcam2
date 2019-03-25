@@ -6,6 +6,7 @@
         <dataFolder>c:\temp\valTest\system\data</dataFolder>
         <dataSource>robot</dataSource>
         <stableTemp>true</stableTemp>
+        <tag>system</tag>
     </params>
     <tests>
         <test name="minDistance" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[90:100]" />
