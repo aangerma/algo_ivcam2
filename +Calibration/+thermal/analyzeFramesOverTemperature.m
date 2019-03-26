@@ -64,8 +64,8 @@ if ~isempty(calibParams.gnrl.cbGridSz)
     cbGridSz = calibParams.gnrl.cbGridSz;
 else
     validCBPoints = reshape(validCBPoints,20,28);
-    validRows = find(any(~isnan(validCBPoints),2));
-    validCols = find(any(~isnan(validCBPoints),1));
+    validRows = find(any((validCBPoints),2));
+    validCols = find(any((validCBPoints),1));
     cbGridSz = [numel(validRows),numel(validCols)];
 end
 eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesData(i,:,end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);

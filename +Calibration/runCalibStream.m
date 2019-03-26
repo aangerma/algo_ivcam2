@@ -51,6 +51,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
+    Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+    
     fprintff('Opening stream...');
     hw.startStream();
     fprintff('Done(%ds)\n',round(toc(t)));
@@ -351,8 +353,8 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     calibPassed = 1;
     fprintff('[-] Depth and IR delay calibration...\n');
     if(runParams.dataDelay)
-        Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.slowDelayInitVal,false);
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]),'Delay Calibration');
+        Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration');
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
         
@@ -444,7 +446,7 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
     calibPassed = 1;
     fprintff('[-] Validating scan direction...\n');
     if runParams.scanDir
-        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.7 .7 1]),'Scan Direction Validation');
+        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Scan Direction Validation');
         IR = frame.i;
 
         [ isLeft, isTop ] = Calibration.aux.CBTools.detectCBOrientation(IR,runParams);      
@@ -603,8 +605,8 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         bbox(4) = min([lcoords(2),mcoords(2),rcoords(2)])-bbox(2);
 
         
-        dfzCalTmp = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
-        dfzTmpRegs.FRMW.dfzCalTmp = single(dfzCalTmp);
+        dfzCalTmpStart = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
+%         
         
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
@@ -615,7 +617,11 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
             cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
             im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
+            if ~strcmp('train',cap.type)
+                dfzCalTmpEnd = hw.getLddTemperature();
+            end
         end
+        dfzTmpRegs.FRMW.dfzCalTmp = single(dfzCalTmpStart+dfzCalTmpEnd)/2;
         for i = 1:numel(captures)
             cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);

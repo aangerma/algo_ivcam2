@@ -13,6 +13,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.cmd('DIRTYBITBYPASS');
+        Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         hw.getFrame;
         % Collecting hardware state
         z2mm = double(hw.z2mm);

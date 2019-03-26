@@ -38,17 +38,18 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,nu
     
     angxRaw = median(angxRawVec);
     angyRaw = median(angyRawVec);
-    
-    ff=Calibration.aux.invisibleFigure();
-    plot(angxRawVec,angyRawVec,'r*');
-    
-    xlabel('x angle raw');
-    ylabel('y angle raw');
-    hold on
-    plot(angxRaw,angyRaw,'b*')
-    title(sprintf('Rest Angle Measurements [%.2g,%.2g]',angxRaw,angyRaw));
-    
-    Calibration.aux.saveFigureAsImage(ff,runParams,'DSM','Rest_Angle');
+    if ~isempty(runParams)
+        ff=Calibration.aux.invisibleFigure();
+        plot(angxRawVec,angyRawVec,'r*');
+
+        xlabel('x angle raw');
+        ylabel('y angle raw');
+        hold on
+        plot(angxRaw,angyRaw,'b*')
+        title(sprintf('Rest Angle Measurements [%.2g,%.2g]',angxRaw,angyRaw));
+
+        Calibration.aux.saveFigureAsImage(ff,runParams,'DSM','Rest_Angle');
+    end
     fprintff('DSM: Rest Angle Measurements [%.2g,%.2g], Std: [%.2g,%.2g]\n ',angxRaw,angyRaw,std(angxRawVec),std(angyRawVec));
     
     

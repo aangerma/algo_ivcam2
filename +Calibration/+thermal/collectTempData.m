@@ -30,7 +30,7 @@ fprintff('[-] Starting heating stage (waiting for diff<%1.1f over %1.1f minutes)
 fprintff('Ldd temperatures: %2.2f',prevTmp);
 
 i = 0;
-figure(190789);
+tempFig = figure(190789);
 plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));
 
 while ~finishedHeating
@@ -39,41 +39,97 @@ while ~finishedHeating
     tmpData.time = toc(startTime);
     framesData(i) = tmpData;
     
-    tempsForPlot(plotDataI) = framesData(i).temp.ldd;
-    timesForPlot(plotDataI) = framesData(i).time/60;
-    figure(190789);plot(timesForPlot([plotDataI+1:pN,1:plotDataI]),tempsForPlot([plotDataI+1:pN,1:plotDataI])); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));drawnow;
-    plotDataI = mod(plotDataI,pN)+1;
-    
-    if (framesData(i).time - prevTime) >= tempSamplePeriod  
-        if ~manualCaptures
-            finishedHeating = ((framesData(i).temp.ldd - prevTmp) < tempTh) || (framesData(i).time > maxTime2WaitSec) || (framesData(i).temp.ldd > calibParams.gnrl.lddTKill-1);
-        else
-            finishedHeating = Calibration.aux.globalSkip(0);
-        end
+    if tempFig.isvalid
+        tempsForPlot(plotDataI) = framesData(i).temp.ldd;
+        timesForPlot(plotDataI) = framesData(i).time/60;
+        figure(190789);plot(timesForPlot([plotDataI+1:pN,1:plotDataI]),tempsForPlot([plotDataI+1:pN,1:plotDataI])); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));drawnow;
+        plotDataI = mod(plotDataI,pN)+1;
+    end
+    if ((framesData(i).time - prevTime) >= tempSamplePeriod)  || (manualCaptures && Calibration.aux.globalSkip(0)) 
+        manualSkip = (manualCaptures && Calibration.aux.globalSkip(0));
+        reachedRequiredTempDiff = ((framesData(i).temp.ldd - prevTmp) < tempTh);
+        reachedTimeLimit = (framesData(i).time > maxTime2WaitSec);
+        reachedCloseToTKill = (framesData(i).temp.ldd > calibParams.gnrl.lddTKill-1);
+        raisedFarAboveCalibTemp = (framesData(i).temp.ldd > regs.FRMW.dfzCalTmp+calibParams.warmUp.teminationTempdiffFromCalibTemp);
+        
+        finishedHeating = manualSkip  || ...
+                          reachedRequiredTempDiff || ...
+                          reachedTimeLimit || ...
+                          reachedCloseToTKill || ...
+                          raisedFarAboveCalibTemp;
+        
         
         prevTmp = framesData(i).temp.ldd;
         prevTime = framesData(i).time;
         fprintff(', %2.2f',prevTmp);
+        
     end
     pause(timeBetweenFrames);
+    
+    if i == 4
+        sceneFig = figure(190790);
+        imshow(rot90(hw.getFrame().i,2));
+        title('Scene Image');
+    end
 end
+
+if i >=4 && sceneFig.isvalid
+    close(sceneFig);
+end
+if tempFig.isvalid
+    close(tempFig);
+end
+
 hw.stopStream;
 fprintff('Done\n');
+
+if manualSkip
+    reason = 'Manual skip';
+elseif reachedRequiredTempDiff
+    reason = 'Stable temperature';
+elseif reachedTimeLimit
+    reason = 'Passed time limit';
+elseif reachedCloseToTKill
+    reason = 'Reached close to TKILL';
+elseif raisedFarAboveCalibTemp
+    reason = 'Raised far above calib temperature';
+end
+fprintff('Finished heating reason: %s\n',reason);
 
 
 heatTimeVec = [framesData.time];
 tempVec = [framesData.temp];
-tempVec = [tempVec.ldd];
+LddTempVec = [tempVec.ldd];
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
-    plot(heatTimeVec,tempVec)
+    plot(heatTimeVec,LddTempVec)
     title('Heating Stage'); grid on;xlabel('sec');ylabel('ldd temperature [degrees]');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('LddTempOverTime'),1);
+    
+    ff = Calibration.aux.invisibleFigure;
+    plot(heatTimeVec,[tempVec.ma])
+    title('Heating Stage'); grid on;xlabel('sec');ylabel('ma temperature [degrees]');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MaTempOverTime'),1);
+    
+    ff = Calibration.aux.invisibleFigure;
+    plot(heatTimeVec,[tempVec.mc])
+    title('Heating Stage'); grid on;xlabel('sec');ylabel('mc temperature [degrees]');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('McTempOverTime'),1);
+    
+    ff = Calibration.aux.invisibleFigure;
+    plot(heatTimeVec,[tempVec.tSense])
+    title('Heating Stage'); grid on;xlabel('sec');ylabel('tSense temperature [degrees]');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TsenseTempOverTime'),1);
+    
+    ff = Calibration.aux.invisibleFigure;
+    plot(heatTimeVec,[tempVec.vSense])
+    title('Heating Stage'); grid on;xlabel('sec');ylabel('vSense temperature [degrees]');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('VsenseTempOverTime'),1);
 end
 info.duration = heatTimeVec(end);
-info.startTemp = tempVec(1);
-info.endTemp = tempVec(end);
+info.startTemp = LddTempVec(1);
+info.endTemp = LddTempVec(end);
 
 
 if manualCaptures

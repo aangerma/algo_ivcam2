@@ -14,6 +14,10 @@
        <minRange>200</minRange>
        <cbSquareSz>30</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
+       <lddTKill>75</lddTKill>
+       <mcTKill>[]</mcTKill>
+       <maTKill>[]</maTKill>
+       <apdTKill>[]</apdTKill>
    </gnrl>
    <warmUp>
        <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
@@ -115,8 +119,9 @@
       <stickerLocationIsTop>1</stickerLocationIsTop>
    </scanDir>
    <dataDelay>
-      <slowDelayInitVal>29072</slowDelayInitVal> 
-      <fastDelatInitOffset>159</fastDelatInitOffset>
+      <fastDelayInitVal>28920</fastDelayInitVal> 
+      <slowDelayInitVal>28904</slowDelayInitVal> 
+      <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
    </dataDelay>
@@ -192,8 +197,8 @@
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>10</extraMarginL>  
-     <extraMarginR>14</extraMarginR>  
+     <extraMarginL>5</extraMarginL>  
+     <extraMarginR>7</extraMarginR>  
      <extraMarginT>2</extraMarginT>  
      <extraMarginB>4</extraMarginB>       
    </roi>

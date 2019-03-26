@@ -4,7 +4,7 @@ function lddWarmUp(hw,app,calibParams,runParams,fprintff)
 if runParams.warm_up
     app.skipWarmUpButton.Visible = 'on';
     app.skipWarmUpButton.Enable='on';
-    [lastLddTmptr,~,~ ,~ ] = hw.getLddTemperature();
+    lastLddTmptr = hw.getLddTemperature();
 
     fprintff('[-] Ldd warm up...\n');
 
