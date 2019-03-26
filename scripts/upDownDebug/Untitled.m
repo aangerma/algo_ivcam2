@@ -13,11 +13,11 @@ plot(t,v);
 
 dt = t(2)-t(1);
 
-newDT = dt/250;
+newDT = dt;
 newT = t(1):newDT:t(end);
 newV = interp1(t,v,newT);
 
-for i = 516*10
+for i = 20
 nPeriod = round((3.984/4*64e-9)/newDT);
 nPeriod = nPeriod+i;
 nV = numel(newV);
@@ -25,14 +25,18 @@ scan = newV;
 scan(end-mod(nV,nPeriod)+1:end) = [];
 nScan = numel(scan);
 scan = reshape(scan,nPeriod,nScan/nPeriod);
-tabplot(i);plot(scan(:,10:100))
+figure(1)
+tabplot(i);plot(scan(:,[10:10:100]))
+% figure(2);
+% tabplot(i);
+% plot(1:size(scan,1),double(scan(:,40)>0.04),'r',1:size(scan,1),double(scan(:,50)>0.04)*2,'b')
 end
 
 
 ref = double(scan(:,180));
 scan = double(scan);
-x = Utils.correlator(scan(1:10:end,1:25:end),ref(1:10:end));
-x = circshift(x,32000,1);
+x = Utils.correlator(scan(1:end,1:end),ref(1:end));
+x = circshift(x,1000,1);
 tabplot;imagesc(x)
 [~,am] = max(x);
 tabplot;plot(am)

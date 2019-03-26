@@ -41,6 +41,9 @@ validFramesData = framesPerTemperature(validTemps,:,:,1);
 validCBPoints = all(all(~isnan(validFramesData),3),1);
 validFramesData = validFramesData(:,validCBPoints,:);
 stdVals = mean(std(validFramesData));
+
+metrics = Calibration.thermal.calcThermalScores(data,calibParams.fwTable.tempBinRange);
+
 metrics.stdRtd = stdVals(1);
 metrics.stdXim = stdVals(4);
 metrics.stdYim = stdVals(5);
@@ -75,6 +78,10 @@ eGeomOverTemp(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
 metrics.meanEGeom = nanmean(eGeomOverTemp);
 metrics.maxEGeom = max(eGeomOverTemp);
 metrics.minEGeom = min(eGeomOverTemp);
+
+
+
+
 
 legends = {'Post Fix (val)';'Pre Fix (cal)'};
 if size(framesPerTemperature,4)>1 % Compare validation to calibration
