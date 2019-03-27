@@ -1,11 +1,12 @@
 function [regs,autogenRegs] = fwBootCalcs(regs,autogenRegs)
 % calculate FRMW register for outside infrastructure
 % calculates camera intrinsic
-% The calculations produces: FRMW.kRaw, FRMW.kWorld,FRMW.zoRaw,FRMW.zoWorld
+% The calculations produces: FRMW.kRaw,
+% FRMW.kWorld,FRMW.zoRaw,FRMW.zoWorld, FRMW.depthOffset, FRMW.hscanDirR2L,FRMW.vscanDirD2U 
 % function inputs:
 % regs from previous bootcalc:regs.DEST.p2axa,regs.DEST.p2aya, regs.DEST.p2axb ,regs.DEST.p2ayb
 %  Regs from external configuration:regs.GNRL.imgHsize,regs.GNRL.imgVsize
-% regs from EPROM: regs.FRMW.zoRawCol,regs.FRMW.zoRawRow,
+% regs from EPROM: regs.FRMW.zoRawCol,regs.FRMW.zoRawRow,regs.DEST.hbaseline
 % regs.FRMW.calImgHsize,regs.FRMW.calImgVsize
 %%
 KinvRaw=[regs.DEST.p2axa            0                   regs.DEST.p2axb;
@@ -46,6 +47,18 @@ autogenRegs.FRMW.zoWorldCol = uint32(regs.GNRL.imgHsize)*uint32(ones(1,5)) - reg
 autogenRegs.FRMW.zoWorldRow =uint32(regs.GNRL.imgVsize)*uint32(ones(1,5)) - regs.FRMW.zoRawRow;
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
+%% set depth offset constant: distance from the MEMS to the front case
+if(regs.DEST.hbaseline==1) % demo-board
+    autogenRegs.FRMW.depthOffset=single(5.7);
+else % ID
+    autogenRegs.FRMW.depthOffset=single(6.437);    
+end
+regs = Firmware.mergeRegs(regs,autogenRegs);
+
+%% scan direction 
+autogenRegs.FRMW.hscanDirR2L=1; 
+autogenRegs.FRMW.vscanDirD2U=1; 
+regs = Firmware.mergeRegs(regs,autogenRegs);
 
 end
 
