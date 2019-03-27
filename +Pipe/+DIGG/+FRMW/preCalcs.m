@@ -5,9 +5,9 @@ tmpRegs=regs;
 tmpRegs.GNRL.imgHsize=regs.FRMW.calImgHsize; 
 tmpRegs.GNRL.imgVsize=regs.FRMW.calImgVsize; 
 tmpRegs.FRMW.marginL=regs.FRMW.calMarginL; 
-tmpRegs.FRMW.marginR=regs.FRMW.calMarginL; 
-tmpRegs.FRMW.marginT=regs.FRMW.calMarginL; 
-tmpRegs.FRMW.marginB=regs.FRMW.calMarginL; 
+tmpRegs.FRMW.marginR=regs.FRMW.calMarginR; 
+tmpRegs.FRMW.marginT=regs.FRMW.calMarginT; 
+tmpRegs.FRMW.marginB=regs.FRMW.calMarginB; 
 
 t = Pipe.DIGG.FRMW.getAng2xyCoeffs(tmpRegs);
 autogenRegs = Firmware.mergeRegs(autogenRegs,t);
