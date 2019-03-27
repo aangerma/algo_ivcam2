@@ -28,15 +28,34 @@ hw.shadowUpdate();
 dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
 dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
 
+sphericalOffset = typecast(hw.read('DIGGsphericalOffset'), 'int16');
+sphericalScale = typecast(hw.read('DIGGsphericalScale'), 'int16');
+
+newSphericalScale = sphericalScale;
+newSphericalOffset = sphericalOffset;
+newSphericalScale(1) = int16(round(double(sphericalScale(1))*0.97));
+newSphericalOffset(1) = int16(round(double(newSphericalOffset(1))*0.98));
+
+
 %% capture world init
 
-dummpyFrame = hw.getFrame(10);
+
+
+turnFilters(hw, true);
+dummyFrame = hw.getFrame(10);
 initWorld = captureWorld(hw);
+hw.cmd('ALGO_THERMLOOP_EN 0');
+dummyFrame = hw.getFrame(10);
+
 
 %% capture frames
 
-reqTemps = [0];
-%reqTemps = [35 45 55 65];
+%reqTemps = [0];
+reqTemps = [35 45 50 55 60];
+frameDelay = 0;
+nFrames = 100;
+tempEveryFrame = false;
+verbose = true;
 
 for ti=1:length(reqTemps)
     if (exist('tFrames','var') && length(tFrames) >= ti)
@@ -53,26 +72,37 @@ for ti=1:length(reqTemps)
         pause(0.5);
         lddTemp = hw.getLddTemperature;
     end
-    turnFilters(hw, false);
 
     % capture spherical
-    hw.setReg('EXTLdsmXscale',dsmXscale*0.95);
-    hw.setReg('EXTLdsmXoffset',dsmXoffset*1.05);
+    %hw.setReg('EXTLdsmXscale',dsmXscale*0.95);
+    %hw.setReg('EXTLdsmXoffset',dsmXoffset*1.05);
+    turnFilters(hw, false);
+    hw.writeAddr('A0020C00', typecast(newSphericalScale, 'uint32'));
+    hw.writeAddr('A0020BFC', typecast(newSphericalOffset, 'uint32'));
     hw.setReg('DIGGsphericalEn',true);
     hw.shadowUpdate();
-    dummpyFrame = hw.getFrame();
+    dummyFrame = hw.getFrame();
     
-    [tFrames{ti}, regsSph] = captureSpherical(hw, 500, 0.5, true);
+    [tFrames{ti}, regsSph] = captureSpherical(hw, nFrames,...
+        frameDelay, tempEveryFrame, verbose);
 
     % capture world
-    hw.setReg('EXTLdsmXscale',dsmXscale);
-    hw.setReg('EXTLdsmXoffset',dsmXoffset);
+    %hw.setReg('EXTLdsmXscale',dsmXscale);
+    %hw.setReg('EXTLdsmXoffset',dsmXoffset);
+    hw.writeAddr('A0020C00', typecast(sphericalScale, 'uint32'));
+    hw.writeAddr('A0020BFC', typecast(sphericalOffset, 'uint32'));
     hw.setReg('DIGGsphericalEn',false);
     hw.shadowUpdate();
-    dummpyFrame = hw.getFrame();
+    dummyFrame = hw.getFrame();
 
     tWorld{ti} = captureWorld(hw);
     
 end
+
+hw.cmd('ALGO_THERMLOOP_EN 1');
+turnFilters(hw, true);
+dummyFrame = hw.getFrame(10);
+finalWorld = captureWorld(hw);
+
 
     

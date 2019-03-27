@@ -68,10 +68,12 @@ title(sprintf('InterDist score: %.2f', score));
 
 tempLdd = hw.getLddTemperature;
 
+%{
 fileName = sprintf('checkWorld_%4.1fdeg_%s.mat', tempLdd, datetime);
 fileName = strrep(fileName, ':','');
 fileName = strrep(fileName, ' ','_');
 save(fileName, 'frame30', 'regs', 'camera', 'tempLdd');
+%}
 
 res.scoreInterDist = score;
 res.frame = frame30;

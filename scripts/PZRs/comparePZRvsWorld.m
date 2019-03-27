@@ -76,6 +76,13 @@ hold on; plot(mclog.angX/2, '.-');
 figure; plot(dsmMAngY, '.-');  title('dsm angles Y vs real mirror angles Y');
 hold on; plot(mclog.angY/2, '.-');
 
+figure; plot(dsmMAngX/25, '.-'); title('dsm angles X vs PZRs');
+hold on; plot(mclog.PZR1, '.-');
+hold on; plot(mclog.PZR3, '.-');
+hold on; plot(mclog.angX/50, '.-');
+legend('mirrorX/25', 'PZR1', 'PZR3', 'SA-slow-dsmInX');
+
+
 
 
 
