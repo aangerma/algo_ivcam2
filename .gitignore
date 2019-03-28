@@ -251,3 +251,4 @@ temp*.m
 *.gif
 *.mat
 scripts/maxRange/Results.xlsx
+.vscode/settings.json

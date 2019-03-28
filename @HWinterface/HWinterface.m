@@ -232,9 +232,9 @@ classdef HWinterface <handle
             if(~exist('regTokens','var'))
                 regTokens=[];
             end
-            [vals,algoNames]=obj.read(regTokens);
-            s=[num2cell(vals) algoNames]';
-            fprintf('%08x //%s\n',s{:});
+            [vals,algoNames, addr]=obj.read(regTokens);
+            s=[num2cell(vals) addr algoNames]';
+            fprintf('%08x // addr: %s | %s \n',s{:});
             
         end
         
@@ -293,7 +293,7 @@ classdef HWinterface <handle
             [~,val]=obj.cmd(sprintf('mrd %08x %08x',addr,addr+4));
             
         end
-        function [vals,algoNames]=read(obj,regTokens)
+        function [vals,algoNames,addr]=read(obj,regTokens)
             strOutFormat = 'mrd %08x %08x';
             if(~exist('regTokens','var'))
                 regTokens=[];
@@ -311,7 +311,7 @@ classdef HWinterface <handle
                 
             end
             algoNames=meta(:,3);
-            
+            addr = cellfun(@dec2hex, {meta{:,1}}', 'UniformOutput', false);
             
         end
         
