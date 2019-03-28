@@ -1,4 +1,4 @@
-function [outregs,minerr]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0)
+function [outregs,minerr]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0,runParams)
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
 par = calibParams.dfz;
@@ -13,13 +13,16 @@ end
 if(~exist('iseval','var') || isempty(iseval))
     iseval=false;
 end
+if~exist('runParams','var') 
+    runParams=[];
+end
 if(~exist('verbose','var')|| isempty(verbose))
     verbose=false;
 end
 if(~exist('fprintff','var')|| isempty(fprintff))
     fprintff=@(varargin) fprintf(varargin{:});
 end
-if(~exist('x0','var'))% If x0 is not given, using the regs used i nthe recording
+if(~exist('x0','var') || isempty(x0))% If x0 is not given, using the regs used i nthe recording
     x0 = double([xfov yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV regs.FRMW.polyVars]);    
 end
 
@@ -30,7 +33,7 @@ end
     undistFunc = @(ax,polyVars) ax + ax/2047*polyVars(1)+(ax/2047).^2*polyVars(2)+(ax/2047).^3*polyVars(3);
     if iseval
         
-        [minerr,~]=errFunc(darr,regs,x0,undistFunc,FE,0);
+        [minerr,~]=errFunc(darr,regs,x0,undistFunc,FE,0,runParams);
         outregs = [];
         return
     end
@@ -60,7 +63,7 @@ end
     xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
     xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
-    [minerr,eFit]=errFunc(darr,outregs,xbest,undistFunc,FE,0);
+    [minerr,eFit]=errFunc(darr,outregs,xbest,undistFunc,FE,0,runParams);
     
     printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
     outregs_full = outregs;
@@ -87,9 +90,12 @@ end
 
 end
 
-function [e,eFit]=errFunc(darr,rtlRegs,X,undistFunc,FE,useCropped)
+function [e,eFit]=errFunc(darr,rtlRegs,X,undistFunc,FE,useCropped,runParams)
     %build registers array
     % X(3) = 4981;
+    if ~exist('runParams','var')
+        runParams = [];
+    end
     rtlRegs = x2regs(X,rtlRegs);
     e = [];
     eFit = [];
@@ -108,7 +114,9 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,undistFunc,FE,useCropped)
             vPlane  = v(idxs,:);
             refPlane = d.pts3d(idxs,:);
             isValid = ~isnan(vPlane(:,1));
-            [e(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane(isValid,:),refPlane(isValid,:),false);
+            [e(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane(isValid,:),refPlane(isValid,:),runParams);
+            
+            
         end
     end
     eFit = mean(eFit);

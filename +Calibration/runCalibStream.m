@@ -204,7 +204,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         framesSpherical.pts3d = create3DCorners(targetInfo)';
         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs);
         
-        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
+        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1,[],runParams);
         
         r.reset();
         hw.setReg('DIGGsphericalScale',[640,360]);
@@ -668,7 +668,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         end
         Calibration.DFZ.saveDFZInputImage(d,runParams);
         % dodluts=struct;
-        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0);
+        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);
@@ -679,7 +679,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         
         
         if ~isempty(d(testImages))
-            [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1);
+            [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,[],runParams);
             fprintff('geom error on test set =%.2g\n',results.extraImagesGeomErr);
         end
         
