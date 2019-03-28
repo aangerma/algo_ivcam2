@@ -15,10 +15,10 @@ hw.setReg('DESTbaseline2$',single(0));
 hw.setReg('DESTdepthasrange$',1);
 hw.setReg('DESTbaseline2$',single(0));
 
-hw.cmd('mwd a005007c a0050080 ffff0000');  
-hw.cmd('mwd a00d01ec a00d01f0 1 ');
-hw.cmd('mwd fffe482c fffe4830 ffffffff'); 
-Calibration.aux.setLaserProjectionUniformity(hw,1);
+% hw.cmd('mwd a005007c a0050080 ffff0000');  
+% hw.cmd('mwd a00d01ec a00d01f0 1 ');
+% hw.cmd('mwd fffe482c fffe4830 ffffffff'); 
+% Calibration.aux.setLaserProjectionUniformity(hw,1);
 
 hw.shadowUpdate;
 %% Change Code Length
