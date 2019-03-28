@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="yes">X:\Avv\dbValidation.csv</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>X:\Data\robot\$</dataFolder>
+        <dataSource>robot</dataSource>
+        <stableTemp>true</stableTemp>
+        <numberOfPics>12</numberOfPics>
+        <delayPicsInSec>300</delayPicsInSec>
+        <tag>time_drift</tag>
+    </params>
+    <tests>
+        <test name="losGridDrift_150cm" metrics="losGridDrift" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra=''/>
+        <test name="fillRate_150cm" metrics="fillRate" target="checkerboard_50" distance="150cm" threshold="[99.8 : 100]" extra='' />
+        <test name="zStd_150cm" metrics="zStd" target="checkerboard_50" distance="150cm" threshold="[0:0.5]" extra=''/>
+        <test name="gridInterDist_150cm" metrics="gridInterDist" target="checkerboard_50" distance="150cm" threshold="[0:0.7]" extra=''/>
+    </tests>
+</root>

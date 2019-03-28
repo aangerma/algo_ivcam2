@@ -46,6 +46,5 @@ def test_validation_d4m_camera():
     runIqValidation.validation_test(filePath)
 
 
-
 if __name__ == "__main__":
     test_validation_turn_in()
