@@ -41,5 +41,12 @@ def test_validation_robot_grid_angle():
     runIqValidation.validation_test(filePath)
 
 
+@slash.tag('robot')
+def test_validation_robot_time_drift():
+    filePath = r'Avv/tests/iqValidation/robot/robot_long_test.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.validation_test(filePath)
+
+
 if __name__ == "__main__":
     test_validation_robot_regression()
