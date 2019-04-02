@@ -174,6 +174,10 @@ end
 function frameData = getFrameData(hw,regs,calibParams)
     frame = hw.getFrame();
     [frameData.temp.ldd,frameData.temp.mc,frameData.temp.ma,frameData.temp.tSense,frameData.temp.vSense] = hw.getLddTemperature;
+    frameData.pzrShifts = hw.pzrShifts;
+    [frameData.iBias(1), frameData.vBias(1)] = hw.pzrPowerGet(1,5);
+    [frameData.iBias(2), frameData.vBias(2)] = hw.pzrPowerGet(2,5);
+    [frameData.iBias(3), frameData.vBias(3)] = hw.pzrPowerGet(3,5);
     frameData.ptsWithZ = cornersData(frame,regs,calibParams);
 %         params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
 %         params.camera.K = (((reshape([typecast(regs.FRMW.kRaw,'single'),1],3,3)')));

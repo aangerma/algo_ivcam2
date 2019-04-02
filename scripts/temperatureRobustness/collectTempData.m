@@ -11,7 +11,7 @@ iter = 0;
 N = 3;
 
 hw.cmd('DIRTYBITBYPASS');
-hw.cmd('algo_thermloop_en 10');
+hw.cmd('algo_thermloop_en 0');
 hw.setReg('DESTtmptrOffset',single(0));
 hw.shadowUpdate;
 maxIters = 20;

@@ -508,7 +508,28 @@ classdef HWinterface <handle
             %             res = char(res.ResultFormatted);
             
         end
-        
+        function [shifts] = pzrShifts(obj)
+            str = obj.cmd('mrd fffe18a8 fffe18ac');
+            shifts(1) = hex2dec(str(end-7:end));
+            str = obj.cmd('mrd fffe18ac fffe18b0');
+            shifts(2) = hex2dec(str(end-7:end));
+            str = obj.cmd('mrd fffe18b0 fffe18b4');
+            shifts(3) = hex2dec(str(end-7:end));
+        end
+        function [ibias,vbias] = pzrPowerGet(obj,i,N)
+            ibias = zeros(1,N);
+            vbias = zeros(1,N);
+            for k = 1:N
+                str = obj.cmd(sprintf('PZR_POWER_GET %1.0f',i));
+                lines = strsplit(str,newline);
+                line = strsplit(lines{1},{':',' '});
+                ibias(k) = str2num(line{2});
+                line = strsplit(lines{2},{':',' '});
+                vbias(k) = str2num(line{2});
+            end
+            ibias = mean(ibias);
+            vbias = mean(vbias);
+        end
         function [lddTmptr,mcTmptr,maTmptr,tSense,vSense ]=getLddTemperature(obj,N)
             if ~exist('N','var')
                 N = 100;
