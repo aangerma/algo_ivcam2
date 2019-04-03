@@ -3,13 +3,13 @@ a = csvread("\\ger\ec\proj\ha\RSG\SA_3DCam\TMund\record\C3pass00000.dat");
 A=importdata('\\ger\ec\proj\ha\RSG\SA_3DCam\TMund\record\C3pass00000.dat');
 A=importdata('C:\Users\tmund\Desktop\C4pass00000.dat');
 A = importdata('C:\Users\tmund\Desktop\PLL1G_CodeA_CH3 - Copy.dat');
-
+A = importdata('\\ger\ec\proj\ha\RSG\SA_3DCam\miryamb\miri\AlgoJitter\Traces\SVB_1G_CodeA_CH4.dat');
 i0 = 515000;
 i1 = 1475000;
 
-i0 = round(size(A,1)/8);
+i0 = 1;
 
-i1 = round(3*size(A,1)/8);
+i1 = size(A,1);
 iv = i0:i1;
 
 t = A(iv,1);
