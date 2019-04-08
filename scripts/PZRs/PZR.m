@@ -29,12 +29,39 @@ AngY = FA_RW = Filt(PA_RAW) + Filt(FA_RAW)
 
 %}
 
+BA1 = zeros(5,1);
 BA2 = zeros(5,1);
+
+fb1 = BA1(1:3)';
+fa1 = [1;BA1(4:5)]';
 fb2 = BA2(1:3)';
 fa2 = [1;BA2(4:5)]';
 
+[be2,ae2] = ellip(2,0.002,10,2/(120000/2));
+h = fvtool(fb2, fa2, be2,ae2);
+
+fb2 = 1.0e-08*[  0.274135378286466   0.548270756572933   0.274135378286466];
+fa2 = [  1.000000000000000  -1.999851903902470   0.999851914867882];
+
+[be2,ae2] = ellip(2,0.1,15,1.0/(120000/2));
+h = fvtool(fb2, fa2, be2,ae2);
+h.Fs = 120e6;
+h.NumberofPoints = 2^20;
+h.FrequencyScale = 'log';
+
+b = firpm(150,[0 1 15 1e3/2]/(1e3/2),[1 1 0 0], [1 20]);
+[be2,ae2] = ellip(2,0.1,15,1.0/(1000/2));
+h = fvtool(b, 1, be2,ae2);
+h.Fs = 1e6;
+h.NumberofPoints = 2^20;
+h.FrequencyScale = 'log';
+
+
+PZR_A = 40.8254460518298;
+PZR_B = 28.6259521358624;
+
+
 %ellipti for MC
-[be2,ae2] = ellip(2,0.2,60,26/(120000/2));
 
 % read files
 sphericalCaptureDir = 'D:\Data\Ivcam2\PZR\FW_IVCAM2_1_2_5_1_LOS\Capture_Spherical_0319_01\';
@@ -87,6 +114,7 @@ hw.setReg('JFILgammaBypass'    ,false);
 hw.setReg('JFILinvBypass',true);
 hw.shadowUpdate();
 
+%%
 hw.setReg('DIGGsphericalEn',true);
 hw.shadowUpdate();
 
@@ -103,6 +131,12 @@ for i = 1:nFrames
         figure(171); imagesc(frames(i).i); title(sprintf('frame %g of %g', i, nFrames));
     end
 end
+
+%% set offset
+
+hw.writeAddr('A00E1BA8', uint32(12000)); % Algo JFILspare_007
+hw.shadowUpdate();
+
 
 %% read registers
 
