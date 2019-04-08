@@ -7,7 +7,8 @@ EXTLdsmYoffset = obj.getAddrData('EXTLdsmYoffset');
 DESTtmptrOffset = obj.getAddrData('DESTtmptrOffset');
 
 table = typecast([EXTLdsmXscale{2},EXTLdsmYscale{2},EXTLdsmXoffset{2},EXTLdsmYoffset{2},DESTtmptrOffset{2}],'single');
-table = repmat(table,48,1);
+% table = repmat(table,48,1);
+table = repmat(table,32,1);
 table = int16(table*2^8);
 
 

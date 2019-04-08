@@ -9,7 +9,7 @@ iteration = iteration(3:end);
 k = 1;
 for i = 1:numel(iteration)
     subdir = fullfile(dataSetDir,iteration(i).name);
-    if contains(iteration(i).name,'iter_0002')
+    if contains(iteration(i).name,'iter_00')
         [frames{k},coolingStage(k).data] = loadDataSetDir(subdir,ignoreFirstNDeg);
         k = k+1;
     end

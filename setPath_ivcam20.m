@@ -19,6 +19,11 @@ function  setPath_ivcam20(commonRoot)
     setPathCommon()
     
     cd (ivcamRoot);
+    
+    
+    addpath(genpath(fullfile(ivcamRoot,'scripts','IV2calibTool')));
+    addpath(genpath(fullfile(ivcamRoot,'scripts','IV2ThermalCalibTool')));
+    
     %close open documents that are not part of the current path
     X = matlab.desktop.editor.getAll;
     X={X(cellfun(@(x) ~startsWith(x,cd),{X.Filename})).Filename};

@@ -29,8 +29,8 @@ function [rpt] = samplePointsRtd(z,pts,regs,addZ)
         angx = xx/double(regs.DIGG.sphericalScale(1));
         angy = yy/double(regs.DIGG.sphericalScale(2));
     else
-        [angx,angy]=Calibration.aux.xy2angSF(xg+0.5,yg+0.5,regs,1);
-        angx = Calibration.Undist.inversePolyUndist(angx,regs);
+        [angx,angy] = Calibration.aux.xy2angSF(xg+0.5,yg+0.5,regs,1);
+        [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
     end
     pts = reshape(pts,[],2);
     it = @(k) interp2(xg,yg,k,pts(:,1)-1,pts(:,2)-1); % Used to get depth and ir values at checkerboard locations.

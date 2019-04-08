@@ -1,7 +1,10 @@
-function raw=showImageRequestDialog(hw,figNum,tformData,figTitle,targetInfo)
+function raw=showImageRequestDialog(hw,figNum,tformData,figTitle,nFrames)
     persistent figImgs;
     if ~exist('figTitle','var') || isempty(figTitle)
         figTitle = 'Please align image board to overlay';
+    end
+    if ~exist('nFrames','var')
+        nFrames = 45;
     end
     if(isempty(figImgs))
         bd = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))),'targets',filesep);
@@ -38,7 +41,7 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figTitle,targetInfo)
     end
     close(f);
     
-    raw=hw.getFrame(45);
+    raw=hw.getFrame(nFrames);
     
 end
 function exitOnEnter(figHandle,varargin)

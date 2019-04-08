@@ -6,7 +6,7 @@ dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0093_26_2';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0093_26_2_with_thermal_loop';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0077_26_2';
 dataSetDir = 'X:\Data\IvCam2\temperaturesData\rptCollection\0077_27_2_with_fw_loop';
-ignoreFirstNDeg = 2;
+ignoreFirstNDeg = 0;
 [frames,coolingStage] = loadDataSet(dataSetDir,ignoreFirstNDeg);
 regsPath = fullfile(dataSetDir,'regs.mat');
 regs = load(regsPath); regs = regs.regs;

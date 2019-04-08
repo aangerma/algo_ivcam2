@@ -23,21 +23,20 @@ if(~exist('fprintff','var')|| isempty(fprintff))
     fprintff=@(varargin) fprintf(varargin{:});
 end
 if(~exist('x0','var') || isempty(x0))% If x0 is not given, using the regs used i nthe recording
-    x0 = double([xfov yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV regs.FRMW.polyVars]);    
+    x0 = double([xfov yfov regs.DEST.txFRQpd(1) regs.FRMW.laserangleH regs.FRMW.laserangleV regs.FRMW.polyVars regs.FRMW.pitchFixFactor]);    
 end
 
     %%
-    xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) 0 0 0];
-    xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) 0 0 0];
+    xL = [par.fovxRange(1) par.fovyRange(1) par.delayRange(1) par.zenithxRange(1) par.zenithyRange(1) 0 0 0 par.pitchFixFactorRange(1)];
+    xH = [par.fovxRange(2) par.fovyRange(2) par.delayRange(2) par.zenithxRange(2) par.zenithyRange(2) 0 0 0 par.pitchFixFactorRange(2)];
     regs = x2regs(x0,regs);
-    undistFunc = @(ax,polyVars) ax + ax/2047*polyVars(1)+(ax/2047).^2*polyVars(2)+(ax/2047).^3*polyVars(3);
     if iseval
         
-        [minerr,~]=errFunc(darr,regs,x0,undistFunc,FE,0,runParams);
+        [minerr,~]=errFunc(darr,regs,x0,FE,0,runParams);
         outregs = [];
         return
     end
-    [e,eFit]=errFunc(darr,regs,x0,undistFunc,FE,1);
+    [e,eFit]=errFunc(darr,regs,x0,FE,1);
     printErrAndX(x0,e,eFit,'X0:',verbose)
     
     % Define optimization settings
@@ -47,34 +46,34 @@ end
     opt.TolX = 1e-6;
     opt.Display ='none';
     
-    optFunc = @(x) (errFunc(darr,regs,x,undistFunc,FE,1) + par.zenithNormW * zenithNorm(regs,x));
+    optFunc = @(x) (errFunc(darr,regs,x,FE,1) + par.zenithNormW * zenithNorm(regs,x));
     xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
     xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
-    [minerrPreUndist,eFit]=errFunc(darr,outregs,xbest,undistFunc,FE,1);
-    [minerrPreUndistFullImage,~]=errFunc(darr,outregs,xbest,undistFunc,FE,0);
+    [minerrPreUndist,eFit]=errFunc(darr,outregs,xbest,FE,1);
+    [minerrPreUndistFullImage,~]=errFunc(darr,outregs,xbest,FE,0);
     % Optimize Undist poly params
-    optFunc = @(x) (errFunc(darr,regs,x,undistFunc,FE,0));
+    optFunc = @(x) (errFunc(darr,regs,x,FE,0));
     
-    x0 = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV outregs.FRMW.polyVars]);    
-    xL = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV par.polyVarRange(1,:)]);    
-    xH = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV par.polyVarRange(2,:)]);    
+    x0 = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV outregs.FRMW.polyVars outregs.FRMW.pitchFixFactor]);    
+    xL = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV par.polyVarRange(1,:) outregs.FRMW.pitchFixFactor]);    
+    xH = double([outregs.FRMW.xfov(1) outregs.FRMW.yfov(1) outregs.DEST.txFRQpd(1) outregs.FRMW.laserangleH outregs.FRMW.laserangleV par.polyVarRange(2,:) outregs.FRMW.pitchFixFactor]);    
 
     xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
     xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt);
     outregs = x2regs(xbest,regs);
-    [minerr,eFit]=errFunc(darr,outregs,xbest,undistFunc,FE,0,runParams);
+    [minerr,eFit]=errFunc(darr,outregs,xbest,FE,0,runParams);
     
     printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
     outregs_full = outregs;
     outregs = x2regs(xbest);
     fprintff('DFZ result: fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, eGeomCropped=%.2f, eGeomFull=%.2f, .\n',...
         outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV, minerrPreUndist, minerrPreUndistFullImage);
-    fprintff('Undist result: polyVars=[%.2f,%.2f,%.2f], eGeomFull=%.2f.\n',...
-         xbest(6),xbest(7),xbest(8),minerr);
+    fprintff('Undist result: polyVars=[%.2f,%.2f,%.2f], pitchFixFactor=%.2f eGeomFull=%.2f.\n',...
+         xbest(6),xbest(7),xbest(8),xbest(9),minerr);
     
     
-    printPlaneAng(darr,outregs_full,xbest,undistFunc,FE,fprintff,0);
+    printPlaneAng(darr,outregs_full,xbest,FE,fprintff,0);
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
@@ -90,7 +89,7 @@ end
 
 end
 
-function [e,eFit]=errFunc(darr,rtlRegs,X,undistFunc,FE,useCropped,runParams)
+function [e,eFit]=errFunc(darr,rtlRegs,X,FE,useCropped,runParams)
     %build registers array
     % X(3) = 4981;
     if ~exist('runParams','var')
@@ -106,7 +105,7 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,undistFunc,FE,useCropped,runParams)
         else
             grid = d.grid;
         end
-        v = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped);
+        v = calcVerices(d,X,rtlRegs,FE,useCropped);
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid = 1:numPlanes
@@ -123,13 +122,14 @@ function [e,eFit]=errFunc(darr,rtlRegs,X,undistFunc,FE,useCropped,runParams)
     e = mean(e);
 end
 
-function [v,x,y,z] = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped)
+function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped)
     if useCropped
         rpt = d.rptCropped;
     else
         rpt = d.rpt;
     end
-    vUnit = Calibration.aux.ang2vec(undistFunc(rpt(:,2),[X(6),X(7),X(8)]),rpt(:,3),rtlRegs,FE)';
+    [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
+    vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs,FE)';
     %vUnit = reshape(vUnit',size(d.rpt));
     %vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.
@@ -149,7 +149,7 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped)
     
 end
 
-function [] = printPlaneAng(darr,rtlRegs,X,undistFunc,FE,fprintff,useCropped)
+function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff,useCropped)
     rtlRegs = x2regs(X,rtlRegs);
     horizAng = zeros(1,numel(darr));
     verticalAngl = zeros(1,numel(darr));
@@ -162,7 +162,7 @@ function [] = printPlaneAng(darr,rtlRegs,X,undistFunc,FE,fprintff,useCropped)
         else
             grid = d.grid;
         end
-        [~,x,y,z] = calcVerices(d,X,rtlRegs,undistFunc,FE,useCropped);
+        [~,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped);
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid=1:numPlanes
@@ -204,6 +204,8 @@ iterRegs.DEST.txFRQpd=single([1 1 1]*x(3));
 iterRegs.FRMW.laserangleH=single(x(4));
 iterRegs.FRMW.laserangleV=single(x(5));
 iterRegs.FRMW.polyVars =single([x(6),x(7),x(8)]);
+iterRegs.FRMW.polyVars =single([x(6),x(7),x(8)]);
+iterRegs.FRMW.pitchFixFactor =single(x(9));
 if(~exist('rtlRegs','var'))
     rtlRegs=iterRegs;
     return;

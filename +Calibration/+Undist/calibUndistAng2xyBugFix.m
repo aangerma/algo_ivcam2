@@ -46,13 +46,13 @@ else
     [angxg,angyg] = Calibration.aux.xy2angSF(xg+0.5,yg+0.5,origregs,true);
 end
 
-angxPrePolyUndist = Calibration.Undist.inversePolyUndist(angxg,regs);
+[angxPrePolyUndist,angyPrePolyUndist] = Calibration.Undist.inversePolyUndistAndPitchFix(angxg,angyg,regs);
 
-[xNoPolyUndist,yNoPolyUndist] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyg,regs,[],1);
+[xNoPolyUndist,yNoPolyUndist] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyPrePolyUndist,regs,[],1);
 undistRms = rms(reshape(sqrt((xg - xNoPolyUndist).^2 + (yg - yNoPolyUndist).^2),[],1));
 
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
-[xbug,ybug] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyg,regs,[],false);
+[xbug,ybug] = Calibration.aux.ang2xySF(angxPrePolyUndist,angyPrePolyUndist,regs,[],false);
 % Apply the lut to the bugged x-y and calculate the displacement error:
 luts.FRMW.undistModel = udistLUT;
 [autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.buildLensLUT(regs,luts);

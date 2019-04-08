@@ -51,7 +51,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
-    Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+%     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     
     fprintff('Opening stream...');
     hw.startStream();
@@ -354,7 +354,7 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     fprintff('[-] Depth and IR delay calibration...\n');
     if(runParams.dataDelay)
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration');
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
         
@@ -616,7 +616,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             targetInfo = targetInfoGenerator(cap.target);
             cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
             cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
-            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
+            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i));
             if ~strcmp('train',cap.type)
                 dfzCalTmpEnd = hw.getLddTemperature();
             end
@@ -725,7 +725,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         r.add('DIGGsphericalEn'    ,true     );
         r.set();
         fprintff('[-] Collecting up/down frames... ');
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Make sure image is bright');
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Make sure image is bright',1);
         [imUbias,imDbias]=Calibration.dataDelay.getScanDirImgs(hw,1);
         pause(0.1);
         fprintff('Done.\n');
@@ -804,7 +804,7 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
     intregs.JFIL.spare(2)=typecast(regs.FRMW.dfzCalTmp,'uint32');
     fw.setRegs(intregs,fnCalib);
-    fw.get();
+%     fw.get();
     
     fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow(1)),uint32(regs.FRMW.zoWorldCol(1)));
 end

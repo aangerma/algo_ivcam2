@@ -523,9 +523,9 @@ classdef HWinterface <handle
                 str = obj.cmd(sprintf('PZR_POWER_GET %1.0f',i));
                 lines = strsplit(str,newline);
                 line = strsplit(lines{1},{':',' '});
-                ibias(k) = str2num(line{2});
-                line = strsplit(lines{2},{':',' '});
                 vbias(k) = str2num(line{2});
+                line = strsplit(lines{2},{':',' '});
+                ibias(k) = str2num(line{2});
             end
             ibias = mean(ibias);
             vbias = mean(vbias);
