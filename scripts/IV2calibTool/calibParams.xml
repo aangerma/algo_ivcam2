@@ -49,6 +49,7 @@
       <losMaxP2p>[0 1.5]</losMaxP2p>
       <losMeanStdX>[0 0.3] </losMeanStdX>
       <losMeanStdY>[0 0.2]</losMeanStdY>
+      <potentialPitchFixInDegrees>[-inf,inf]</potentialPitchFixInDegrees>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:

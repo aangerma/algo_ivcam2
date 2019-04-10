@@ -33,7 +33,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
     hw.shadowUpdate();
     pause(0.1);
     sz = hw.streamSize();
-    hw.cmd('dirtybitbypass');
+
     d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
     
     [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO);
@@ -155,7 +155,6 @@ function [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO)
     
     
     % Get a sample image:
-    hw.runPresetScript('startStream');
     d = hw.getFrame(30);
     colZO = uint16(round((1 + angxZO/2047)/2*(axDim(1)-1)+1));
     rowZO = uint16(round((1 + angyZO/2047)/2*(axDim(2)-1)+1));

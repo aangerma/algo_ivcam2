@@ -71,6 +71,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% Warm up stage
     Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
+    %% ::dsm calib::
+    calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
     %% ::calibrate delays::
     [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
@@ -82,9 +84,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
       return 
     end
     
-    %% ::dsm calib::
-    calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
-
+    
    %% Validate spherical fill rate
    [results,calibPassed] = validateCoverage(hw,1, runParams, calibParams,results, fprintff);
    if ~calibPassed
@@ -296,8 +296,8 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
     end
     if ~runParams.DFZ
         DIGGspare = hw.read('DIGGspare');
-        currregs.FRMW.xfov(1) = typecast(DIGGspare(2),'single');
-        currregs.FRMW.yfov(1) = typecast(DIGGspare(3),'single');
+        currregs.FRMW.xfov = repmat(typecast(DIGGspare(2),'single'),1,5);
+        currregs.FRMW.yfov = repmat(typecast(DIGGspare(3),'single'),1,5);
         currregs.FRMW.laserangleH = typecast(DIGGspare(4),'single');
         currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
         currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
@@ -668,7 +668,12 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         end
         Calibration.DFZ.saveDFZInputImage(d,runParams);
         % dodluts=struct;
-        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
+        %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
+        [dfzRegs,~] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
+%         calibParams.dfz.pitchFixFactorRange = [0,0];
+        results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
+        fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
+%         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
         r.reset();
         
         fw.setRegs(dfzRegs,fnCalib);

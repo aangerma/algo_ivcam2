@@ -15,7 +15,7 @@ function outputFolderChange_callback(varargin)
         end
     else
         app.logarea.String={''};
-        app.StartButton.BackgroundColor=[.94 .94 .94];
+        app.StartButton.BackgroundColor=[.25 .94 .94];
     end
 end
 
@@ -126,7 +126,7 @@ function app=createComponents()
     app.StartButton.FontWeight = 'bold';
     app.StartButton.Position = [1 sz(2)-139 sz(1)-4 52];
     app.StartButton.String = 'Start';
-    
+    app.StartButton.BackgroundColor = [.25 .94 .94];
     
     % Create abort
     app.AbortButton = uicontrol('style','pushbutton','parent',configurationTab);
@@ -440,7 +440,7 @@ function statrtButton_callback(varargin)
     app.AbortButton.Visible='off';
     app.AbortButton.Enable='off';
     if app.cb.replayMode.Value == 0
-        s.endDUTsession();
+        s.endDUTsession([],~calibPassed ||  ~validPassed);
     end
     fclose(app.m_logfid);
     set_watches(app.figH,true);
