@@ -669,7 +669,7 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         Calibration.DFZ.saveDFZInputImage(d,runParams);
         % dodluts=struct;
         %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
-        [dfzRegs,~] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
+        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
 %         calibParams.dfz.pitchFixFactorRange = [0,0];
         results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
         fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
