@@ -1,6 +1,6 @@
 function [delayZ,ok] = calibZdelay(hw,dataDelayParams,runParams)
 verbose = runParams.verbose;
-delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;
+delayZ=dataDelayParams.fastDelayInitVal;
 
 
 imB=double(hw.getFrame(30).i)/255;

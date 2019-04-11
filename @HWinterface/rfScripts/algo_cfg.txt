@@ -8,7 +8,7 @@ apbw a00e05ec 1000070f //[m_regmodel.algo_post_algo_post.RegsRangeLoc] TYPE_REG
 apbw a0020a5c 00000000 //[m_regmodel.digg_digg.RegsDIGGdy2] TYPE_REG
 apbw a0020a60 00000000 //[m_regmodel.digg_digg.RegsDIGGdy3] TYPE_REG
 apbw a0020a6c 04000400 //[m_regmodel.digg_digg.RegsDIGGgammaScale] TYPE_REG
-
+apbw a00e0b08 41000000 // GNRLzNorm
 
 apbw a0020ba8 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_000] TYPE_REG
 apbw a0020bac 00000000 //[m_regmodel.digg_digg.RegsDIGGnx_001] TYPE_REG
@@ -29,7 +29,7 @@ apbw a0020c54 00000001 //[m_regmodel.digg_digg.RegsGNRLsideLobeDir] TYPE_REG
 apbw a002010c 0000113f //[m_regmodel.rast_rast.RegsRastCmacCycPerValid] TYPE_REG
 apbw a0020110 00000d82 //[m_regmodel.rast_rast.RegsRastLnBufCycPerValid] TYPE_REG
 apbw a0020114 00000007 //[m_regmodel.rast_rast.RegsRastCmaFiltMode] TYPE_REG
-apbw a002011c 00000001 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
+////apbw a002011c 00000001 //[m_regmodel.rast_rast.RegsRastCmaNumOfBinsOvrd] TYPE_REG
 apbw a0020124 00000ea9 //[m_regmodel.rast_rast.RegsRastDbgLobPerPcqPix] TYPE_REG
 apbw a0020128 00000001 //[m_regmodel.rast_rast.RegsRastRngfndrEofPixCntr] TYPE_REG
 apbw a0020c9c 00000001 //[m_regmodel.rast_rast.RegsRASTbiltBypass] TYPE_REG

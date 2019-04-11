@@ -11,7 +11,9 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,nu
     angxRawVec = zeros(1,numOfMeasurments);
 
     
-    hw.runPresetScript('stopStream');
+%     hw.runPresetScript('stopStream');
+    hw.stopStream;
+
     pause(0.5);
     hw.cmd('exec_table 140');% setRestAngle
     pause(0.5);
@@ -38,17 +40,18 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,nu
     
     angxRaw = median(angxRawVec);
     angyRaw = median(angyRawVec);
-    
-    ff=Calibration.aux.invisibleFigure();
-    plot(angxRawVec,angyRawVec,'r*');
-    
-    xlabel('x angle raw');
-    ylabel('y angle raw');
-    hold on
-    plot(angxRaw,angyRaw,'b*')
-    title(sprintf('Rest Angle Measurements [%.2g,%.2g]',angxRaw,angyRaw));
-    
-    Calibration.aux.saveFigureAsImage(ff,runParams,'DSM','Rest_Angle');
+    if ~isempty(runParams)
+        ff=Calibration.aux.invisibleFigure();
+        plot(angxRawVec,angyRawVec,'r*');
+
+        xlabel('x angle raw');
+        ylabel('y angle raw');
+        hold on
+        plot(angxRaw,angyRaw,'b*')
+        title(sprintf('Rest Angle Measurements [%.2g,%.2g]',angxRaw,angyRaw));
+
+        Calibration.aux.saveFigureAsImage(ff,runParams,'DSM','Rest_Angle');
+    end
     fprintff('DSM: Rest Angle Measurements [%.2g,%.2g], Std: [%.2g,%.2g]\n ',angxRaw,angyRaw,std(angxRawVec),std(angyRawVec));
     
     
@@ -57,18 +60,20 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,nu
     hw.runPresetScript('resetRestAngle');
     % hw.runPresetScript('maRestart');
     % hw.runPresetScript('systemConfig');
-    hw.cmd('dirtybitbypass');
-    pause(0.1);
-    hw.cmd('exec_table 140//enable mems drive');
-    pause(2);
-    hw.cmd('thermloopstart');
-    pause(2);
-    hw.cmd('exec_table 141//enable mems');
-    pause(0.1);
-    hw.cmd('exec_table 142//enable FB');
-    pause(0.1);
-    hw.runPresetScript('startStream');
-    pause(0.1);
+%     hw.cmd('dirtybitbypass');
+%     pause(0.1);
+%     hw.cmd('exec_table 140//enable mems drive');
+%     pause(2);
+%     hw.cmd('thermloopstart');
+%     pause(2);
+%     hw.cmd('exec_table 141//enable mems');
+%     pause(0.1);
+%     hw.cmd('exec_table 142//enable FB');
+%     pause(0.1);
+%     hw.runPresetScript('startStream');
+%     pause(0.1);
+    
+    hw.startStream;
 %     hw.setSize();
     restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
     %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');

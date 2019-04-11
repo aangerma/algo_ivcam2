@@ -149,6 +149,7 @@
       <Section Name="AsicModuleChipID" Title="Asic module chip ID" Offset="80" Size="8" FormatType="BarCodeSerial12Char" />
       <Section Name="AsicModuleVersion" Title="Asic module version" Offset="88" Size="1" FormatType="HexNumber" />
       <Section Name="AsicModuleMm" Title="Asic module mm#" Offset="92" Size="4" FormatType="HexNumber" />
+      <Section Name="McAsicType" Title="Mc Asic Type" Offset="96" Size="1" FormatType="HexNumber" />      
       <Section Name="ImuModuleID" Title="Imu module ID" Offset="128" Size="2" FormatType="HexNumber" />
       <Section Name="ImuModuleVersion" Title="Imu module version" Offset="130" Size="1" FormatType="HexNumber" />
       <Section Name="ImuModuleSN" Title="Imu module SN" Offset="132" Size="6" FormatType="BarCodeSerial12Char" />
@@ -427,10 +428,7 @@
   <Command Name="FGCFGBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x63" CmdPermission="Public" Description="Frame grabber configuration bypass">
     <Parameter1 Name="1 - bypass, 0 - use FW cfg" />
   </Command>
-  <Command Name="APD_FBVSENSE_CFG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x64" CmdPermission="Public" Description="Update VSense/Tsense debounce/threshold">
-    <Parameter1 Name="threhold (1 - 0x3FF)" />
-	<Parameter2 Name="debounce cnt" />
-  </Command>
+
   <Command Name="U0_IDLE_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x65" CmdPermission="Public" Description="U0 idle low power enable">
     <Parameter1 Name="1 - enable, 0 - disable" />
   </Command>
@@ -495,10 +493,25 @@
   <Command Name="APD_FLYBACK_EX_TRIGGER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x77" CmdPermission="Public" Description="Apd flyback loop external trigger">
     <Parameter1 Name="1 - start, 0 - stop" />
   </Command>  
-  <Command Name="APD_FLYBACK_STATE_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x78" IsReadCommand="true" CmdPermission="Public" Description="Apd Flyback state (0-NotInitialized, 1-Initialized, 2-Started,3-Running,4-Stopped,5-Error, 6-Bypassed)">
+  <Command Name="APD_FLYBACK_VALUES_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x80" IsReadCommand="true" CmdPermission="Public" Description="FB values. States:0-NotInit,1-Initialized,2-Started,3-Running,4-Stopped,5-Err,6-Bypassed">
     <ReadData>
-      <Section Name="Apd Flyback State" Title="ApdFlybackState" Offset="0" Size="4" FormatType="HexNumber" />
+	      <Section Name="state" Title="state" Offset="0" Size="1" FormatType="DecByte" />
+	      <Section Name="isDataValid" Title="isDataValid" Offset="1" Size="1" FormatType="DecByte" />
+	      <Section Name="reserved16" Title="reserved16" Offset="2" Size="2" FormatType="HexNumber"/>
+	      <Section Name="vSenseReq" Title="vSenseReq" Offset="4" Size="2" FormatType="HexNumber" IsDecimal="true"/>
+	      <Section Name="pwmValue" Title="pwmValue" Offset="6" Size="2" FormatType="HexNumber" IsDecimal="true"/>
+	      <Section Name="tSenseRead" Title="tSenseRead" Offset="8" Size="2" FormatType="HexNumber" IsDecimal="true"/>
+	      <Section Name="vSenseRead" Title="vSenseRead" Offset="10" Size="2" FormatType="HexNumber" IsDecimal="true"/>
+	      <Section Name="tSenseC" Title="tSenseC" Offset="12" Size="8" FormatType="Double" />
+	      <Section Name="vSeneseReadV" Title="vSeneseReadV" Offset="20" Size="8" FormatType="Double" />
+	      <Section Name="reqV" Title="reqV" Offset="28" Size="8" FormatType="Double" />
     </ReadData>
+  </Command>
+  <Command Name="CT_KILL_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x79"  CmdPermission="Public" Description="Set CT KILL thresholds: LDD, MA, MC, APD (FF will set default threshold for the relevant thermistor)">
+    <Parameter1 Name="LDD" />
+	<Parameter2 Name="MA" />
+	<Parameter3 Name="MC" />
+	<Parameter4 Name="APD" />
   </Command>  
   
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">

@@ -111,7 +111,7 @@ abs([FRMWmarginB]-[FRMWmarginT]) < ([GNRLimgVsize] + [FRMWmarginT] + [FRMWmargin
 mod([GNRLcodeLength],2)==0
 
 %template length should be constrainted according to vertical resolution
-[GNRLrangeFinder]==1 | [GNRLtmplLength]<=1216-0.8*double([GNRLimgVsize])
+%[GNRLrangeFinder]==1 | [GNRLtmplLength]<=1216-0.8*double([GNRLimgVsize])
 
 %actual sampling frequency should be eith 4 8 or 16
 any(single([GNRLsampleRate])/[MTLBtxSymbolLength]==[4 8 16])

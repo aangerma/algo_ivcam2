@@ -6,7 +6,6 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       <disable_u0_idle>0</disable_u0_idle>
        <internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>
        <irInnerRange>[0,255]</irInnerRange>
@@ -15,6 +14,10 @@
        <minRange>200</minRange>
        <cbSquareSz>30</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
+       <lddTKill>75</lddTKill>
+       <mcTKill>[]</mcTKill>
+       <maTKill>[]</maTKill>
+       <apdTKill>[]</apdTKill>
    </gnrl>
    <warmUp>
        <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
@@ -28,7 +31,8 @@
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
       <eGeomSphericalDis>[0.01 3]</eGeomSphericalDis>
       <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.0 5]</maxPixelDisplacement>
+      <maxPixelDisplacement>[0.0 10]</maxPixelDisplacement>
+      <undistRms>[0.0 inf]</undistRms>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[50 inf]</imFovX>
@@ -40,11 +44,12 @@
       <horizEdge>[0 inf]</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
       <projFovx>[55 65]</projFovx>
-      <projFovy>[35 45]</projFovy>
+      <projFovy>[37 45]</projFovy>
       <ambVal>[0,255]</ambVal>
-      <losMaxP2p>[0 2]</losMaxP2p>
-      <losMeanStdX>[0 0.5] </losMeanStdX>
+      <losMaxP2p>[0 1.5]</losMaxP2p>
+      <losMeanStdX>[0 0.3] </losMeanStdX>
       <losMeanStdY>[0 0.2]</losMeanStdY>
+      <potentialPitchFixInDegrees>[-inf,inf]</potentialPitchFixInDegrees>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -100,7 +105,7 @@
       <roiHorizontalLoss>[0 10]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
       <losMaxP2p>[0 2]</losMaxP2p>
-      <losMeanStdX>[0 0.5] </losMeanStdX>
+      <losMeanStdX>[0 0.3] </losMeanStdX>
       <losMeanStdY>[0 0.2]</losMeanStdY>
       <MirrorRestAngX>[-30 30]</MirrorRestAngX>
       <MirrorRestAngY>[-30 30]</MirrorRestAngY>
@@ -115,8 +120,9 @@
       <stickerLocationIsTop>1</stickerLocationIsTop>
    </scanDir>
    <dataDelay>
-      <slowDelayInitVal>29072</slowDelayInitVal> 
-      <fastDelatInitOffset>159</fastDelatInitOffset>
+      <fastDelayInitVal>28920</fastDelayInitVal> 
+      <slowDelayInitVal>28904</slowDelayInitVal> 
+      <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
    </dataDelay>
@@ -187,13 +193,14 @@
         <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 
         <zenithyRange>[-6,6]</zenithyRange> 
-        <polyVarRange>[-200,-200,-200;200,200,200]</polyVarRange>
+        <polyVarRange>[-200,-200,-8;200,200,8]</polyVarRange>
         <zenithNormW>0.05</zenithNormW>
+        <pitchFixFactorRange>[-100,100]</pitchFixFactorRange>
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
-     <extraMarginL>6</extraMarginL>  
-     <extraMarginR>10</extraMarginR>  
+     <extraMarginL>5</extraMarginL>  
+     <extraMarginR>7</extraMarginR>  
      <extraMarginT>2</extraMarginT>  
      <extraMarginB>4</extraMarginB>       
    </roi>

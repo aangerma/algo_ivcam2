@@ -10,7 +10,7 @@ fy = single(regs.DIGG.undistFy)/(2^shift);
 [ybug,xbug]=ndgrid(1/fy*(0:31)+y0,1/fx*(0:31)+x0);
 
 [angxg,angyg] = Calibration.aux.xy2angSF(xbug(:),ybug(:),regs,false);
-angxPostPolyUndist = Calibration.Undist.applyPolyUndist(angxg,regs);
+[angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angxg,angyg,regs);
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
 
 
@@ -18,10 +18,10 @@ if ~isempty(FE)
 %     v = Calibration.aux.xy2vec(xg,yg,regs); % for each pixel, get the unit vector in space corresponding to it.
 %     [angxg,angyg] = Calibration.aux.vec2ang(v,origregs,FE);
     
-    v = Calibration.aux.ang2vec(angxPostPolyUndist,angyg,origRegs,FE);
+    v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,origRegs,FE);
     [xg,yg] = Calibration.aux.vec2xy(v,regs);
 else
-    [xg,yg] = Calibration.aux.ang2xySF(angxPostPolyUndist,angyg,origRegs,[],true);
+    [xg,yg] = Calibration.aux.ang2xySF(angxPostPolyUndist,angyPostPolyUndist,origRegs,[],true);
 end
 
 

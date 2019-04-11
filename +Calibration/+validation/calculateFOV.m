@@ -38,7 +38,7 @@ yy = yy/double(regs.DIGG.sphericalScale(2));
 angx = single(xx);
 angy = single(yy);
 
-angx = Calibration.Undist.applyPolyUndist(angx,regs);
+[angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
 vUnit = Calibration.aux.ang2vec(angx,angy,regs,FE);
 if axis == 1 % y angle
     angles = atand(vUnit(2,:)./vUnit(3,:));

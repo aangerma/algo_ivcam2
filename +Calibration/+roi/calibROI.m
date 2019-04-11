@@ -161,7 +161,8 @@ function xy = spherical2xy(sphericalPixels,regs,calibParams)
         yy = yy/double(regs.DIGG.sphericalScale(2));
         angx = single(xx);
         angy = single(yy);
-        angx = Calibration.Undist.applyPolyUndist(angx,regs);
+        
+        [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
         if calibParams.fovExpander.valid
             FE = calibParams.fovExpander.table;
             oXYZ = Calibration.aux.ang2vec(angx,angy,regs,FE)';

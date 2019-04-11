@@ -22,6 +22,7 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibData' ,'Reserved_512_Calibration_1_CalibData_Ver_*.txt'         ,'0a1'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibData' ,'Reserved_512_Calibration_2_CalibData_Ver_*.txt'         ,'0a2'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Gamma_Info_CalibInfo_Ver_*.bin'                    ,'030'};
+        filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'Algo_Thermal_Loop_CalibInfo_Ver_*.bin'                  ,'00d'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_1_CalibInfo_Ver_*.bin'                 ,'040'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_2_CalibInfo_Ver_*.bin'                 ,'041'};
     end
@@ -50,11 +51,18 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
             warning('could not burn table %s',filenamesTableIndexLUT{i,2})
             continue;
         end
-         fn=fullfile(basedir,fn(1).name);
-       
-        cmdA = sprintf('%s "%s"',filenamesTableIndexLUT{i,1},fn);
-        cmdB = sprintf('exec_table %s',filenamesTableIndexLUT{i,3});
-        ret=obj.cmd(cmdA);
+            fn=fullfile(basedir,fn(1).name);
+        
+            cmdA = sprintf('%s "%s"',filenamesTableIndexLUT{i,1},fn);
+        
+            
+        
+%         cmdB = sprintf('exec_table %s',filenamesTableIndexLUT{i,3});
+        try
+            ret=obj.cmd(cmdA);
+        catch
+            warning('cmd %s failed',cmdA);
+        end
 %         ret=obj.cmd(cmdB);
         
         

@@ -15,10 +15,17 @@ for i = 1:numel(fileType)
     fnames = dir(fullfile(directory,['*',fileType{i},'*']));
     for fn = 1:numel(fnames)
         burnCmd = ['Wr',fileType{i},' ','"',fullfile(directory,fnames(fn).name),'"'];
-        obj.cmd(burnCmd);
-        if verbose
-           disp(burnCmd); 
-        end
+        try
+            obj.cmd(burnCmd);
+            if verbose
+               disp(burnCmd); 
+            end
+        catch
+            if verbose
+               fprintf('Table %s doesn''t have a place in EPROM, skipping...\n',fullfile(directory,fnames(fn).name)); 
+            end
+        end  
+        
     end
 end
 

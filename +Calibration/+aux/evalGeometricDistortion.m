@@ -1,4 +1,4 @@
-function [e,e_dist,ptsOut]=evalGeometricDistortion(p,pts3d,verbose,runParams)
+function [e,e_dist,ptsOut]=evalGeometricDistortion(p,pts3d,runParams)
 %%
 %{
 if ~exist('tileSizeMM','var')
@@ -12,7 +12,7 @@ pts3d = [ox(:) oy(:) zeros(w*h,1)]';
 xyzmes =reshape(p,[],3)';
 %}
  %get the tile size from the 3d points
-if ~exist('runParsm','var')
+if ~exist('runParams','var')
     runParams = [];
 end
 tileSize = min(sqrt(sum(diff(pts3d).^2,2)));
@@ -34,7 +34,7 @@ e = sum(emat(:))*2./numel(emat);
 ptsOut=[];
 [e_dist,fitP] = rigidFit(p(valid,:),pts3d(valid,:));
 
-if(exist('verbose','var') && verbose)
+if ~isempty(runParams)
 %     subplot(131);
 %     imagesc(emat);
 %     axis square
@@ -45,7 +45,9 @@ if(exist('verbose','var') && verbose)
     %     quiver3(ptsOptR(1,in),ptsOptR(2,in),ptsOptR(3,in),xyzmes(1,in)-ptsOptR(1,in),xyzmes(2,in)-ptsOptR(2,in),xyzmes(3,in)-ptsOptR(3,in),0)
     %     plotPlane(mdl);
 %     subplot(133);
-    figure(190789)
+
+%     currfig = figure(190789);
+    currfig = Calibration.aux.invisibleFigure;
     tabplot;
     plot3(p(valid,1),p(valid,2),p(valid,3),'ro',fitP(:,1),fitP(:,2),fitP(:,3),'g.',p(~valid,1),p(~valid,2),p(~valid,3),'bo');
     titlestr = sprintf('Checkerboard Points in 3D.\n eGeom = %.2f. Invalid#=%d',e,sum(1-valid));
@@ -57,6 +59,10 @@ if(exist('verbose','var') && verbose)
     end
     drawnow;
     axis equal
+    if currfig.isvalid
+        Calibration.aux.saveFigureAsImage(currfig,runParams,'DFZ','3D',1,1);
+    end
+    % openfig("C:\temp\unitCalib\F9090111\PC04\F9090111\PC01\figures\DFZ_3D_00.fig",'new','visible')
 end
 
 return
