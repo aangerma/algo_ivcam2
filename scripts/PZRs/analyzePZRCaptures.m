@@ -3,6 +3,8 @@
 %matchPZRs(sphCap, sphRegs, wCap);
 
 %folder = 'D:\Data\Ivcam2\PZR\Captures\0312\';
+
+%% read filenames
 folder = 'D:\Data\Ivcam2\PZR\Captures\0404\';
 load([folder 'world_PZR.mat']);
 if ~exist('sphRegs','var')
@@ -26,33 +28,107 @@ X1 = zeros(3,n);
 X2 = zeros(3,n);
 mclogs = cell(1,n);
 
+%%
+
 verbose = true;
 
-%{
+strRead = ['reading and matching PZRs %u of ' sprintf('%u', n)];
+fprintf_r('reset');
+
 for i=1:n
     f = [folder folders(i).name];
     mclog = matchPZRs(readSphericalSyncPZR(f), sphRegs, wCap, false, folders(i).name);
-end
-%}
-
-for i=1:n
-    f = [folder folders(i).name];
-    mclog = matchPZRs(readSphericalSyncPZR(f), sphRegs, wCap);
     mclogs{i} = mclog;
+    fprintf_r(strRead, i);
 end
+
+
+%%
 
 shift = 223;
 
-for i=1:n
-    res(i) = new_pzr2ang(mclogs{i}, shift, verbose);
-end
+
+%%
 
 for i=1:n
-    %delay(i) = computeDelay(mclogs{i});
-    %[X0(:,i),X1(:,i),X2(:,i), errAngBest(:,i), tBest(:,i), errMaxAbsBest(:,i)] = tom_pzr2ang(mclogs{i});
-    resP(i) = new_pzr2ang_polyfit(mclogs{i}, shift);
-    close all;
+    res(i) = new_pzr2ang_all(mclogs{i}, shift, [], verbose);
 end
+
+%%
+
+
+%% analyze
+
+%figure; plot(1:n, [res.c]); title('Full fit');
+figure; plot(1:n, [res.cfLF]); title('Low pass fit');
+figure; plot(1:n, [res.cfHF]); title('High pass fit');
+figure; plot(1:n, [res.cfdHF]); title('High pass diff fit');
+figure; plot(1:n, [res.cpLF]); title('Low pass poly fit');
+figure; plot(1:n, [res.cpdHF]); title('High pass diff poly fit');
+
+errFilter = [res.errFilter];
+errFilterD = [res.errFilterD];
+errPolyD = [res.errPolyD];
+
+figure; plot(1:n, [errFilter.offset]); title('Offset: filters');
+figure; plot(1:n, [errFilterD.offset]); title('Offset: filter diff');
+figure; plot(1:n, [errPolyD.offset]); title('Offset: poly');
+
+figure; plot(1:n, [errPolyD.std]); title('Std error: poly');
+figure; plot(1:n, [errFilter.std]); title('Std error: filter');
+figure; plot(1:n, [errFilterD.std]); title('Std error: filter diff');
+figure; plot(1:n, [res.meanErrHF]); title('Mean error: high pass fit');
+
+%% global coefficients
+
+gConf.CL = mean([res.cpLF],2);
+gConf.CH = mean([res.cpdHF],2);
+gConf.offsetFD = mean([errFilterD.offset]);
+gConf.offsetF = mean([errFilter.offset]);
+
+hfAtten = mean(gConf.CL(1:2) ./ gConf.CH(1:2));
+hfAttenDb = mag2db(hfAtten);
+
+% !!!!! checkboad linear interpolation error is high
+i = 11;
+figure; plot(mclogs{i}.angX-mclogs{i}.actAngX+D(i));
+title('Difference between dsm angles and actual angles');
+
+for i=1:n
+    resG(i) = new_pzr2ang_all(mclogs{i}, shift, gConf, verbose);
+end
+
+R = 1:length(mclog.angX);
+for i=1:n
+    resA(i).px = polyfit(R, mclogs{i}.angX, 1)';
+    resA(i).pax = polyfit(R, mclogs{i}.actAngX, 1)';
+    D(i) = resA(i).pax(2)-resA(i).px(2);
+end
+
+N = length(mclogs{1}.angX);
+for i=1:n
+    RA = 1+shift:N;
+    RZ = 1:N-shift;
+    resErr(i) = computeError(mclogs{i}.angX(RZ), mclogs{i}.actAngX(RA)+mean(D));
+end
+
+gErrFilter = [resG.errFilter];
+gErrFilterD = [resG.errFilterD];
+
+figure; plot(1:n, [gErrFilter.offset]); title('Offset: filters');
+figure; plot(1:n, [gErrFilterD.offset]); title('Offset: filter diff');
+
+figure; plot(1:n, [gErrFilter.std]); title('STD: global coeffs with filters');
+figure; plot(1:n, [gErrFilterD.std]); title('STD: global coeffs with filters diff');
+figure; plot(1:n, [resErr.std]); title('STD: dsm angle vs actual angles');
+
+figure; plot(1:n, [gErrFilter.max]); title('Max error: filters');
+figure; plot(1:n, [gErrFilterD.max]); title('Max error: filter diff');
+
+%i = 2;
+%figure; plot(resG(i).resFangX); hold on; plot(resG(i).actAngX);
+
+%%
 
 for i=1:n
     delay(i) = computeDelay(mclogs{i});
@@ -75,14 +151,6 @@ for i=1:n
     close all;
 end
 
-figure; plot(1:n, [res.c]); title('Full fit');
-figure; plot(1:n, [res.cLF]); title('Low pass fit');
-figure; plot(1:n, [res.cHF]); title('High pass fit');
-figure; plot(1:n, [res.meanErr]); title('Mean error: full fit');
-figure; plot(1:n, [res.meanErrLF]); title('Mean error: low pass fit');
-figure; plot(1:n, [res.meanErrHF]); title('Mean error: high pass fit');
-
-%%
 
 C = mean([resP.cLF],2);
 
