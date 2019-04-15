@@ -94,7 +94,7 @@ mclog = sphCap.mclog;
 %figure; plot(mclog.angX,mclog.angY, '.-');
 [xSph,ySph] = angle2sphericalXY(mclog.angX, mclog.angY, sphRegs);
 if (verbose || ~isempty(fileName))
-    figure; imagesc(irSph); hold on; plot(xSph,ySph, '.-r');
+    figure(12543); imagesc(irSph); hold on; plot(xSph,ySph, '.-r');
     title(sprintf('%s: spherical with PZR data', fileName));
 end
 
@@ -121,7 +121,32 @@ if (verbose)
     figure; plot(actMirAngX, '.-'); hold on; plot(mclog.angX/2, '.-');
     figure; plot(actMirAngY, '.-'); hold on; plot(mclog.angY/2, '.-');
 end
-   
+
+%% find out of checkerboad points
+xSphPts = reshape(ptsSph(:,1), gridSize);
+ySphPts = reshape(ptsSph(:,2), gridSize);
+xMinSph = min(xSph);
+xMaxSph = max(xSph);
+yMinSph = min(ySph);
+yMaxSph = max(ySph);
+
+xTop = xSphPts(1,:);
+ixTop0 = max(find(xTop > xMinSph, 1) - 1, 1);
+ixTop1 = min(find(xTop < xMaxSph, 1, 'last') + 1, length(xTop));
+yMinTop = min(ySphPts(1,ixTop0:ixTop1));
+yTopGridSize = mean(diff(ySphPts(1:2,ixTop0:ixTop1),1));
+
+xBottom = xSphPts(end,:);
+ixBottom0 = max(find(xBottom > xMinSph, 1) - 1, 1);
+ixBottom1 = min(find(xBottom < xMaxSph, 1, 'last') + 1, length(xBottom));
+yMaxBottom = max(ySphPts(end,ixBottom0:ixBottom1));
+yBottomGridSize = mean(diff(ySphPts(end-1:end,ixBottom0:ixBottom1),1));
+
+extrapolated = or(ySph < yMinTop - yTopGridSize*0.3, ySph > yMaxBottom + yBottomGridSize*0.3);
+if (verbose)
+    figure(12543); hold on; plot(xSph(extrapolated),ySph(extrapolated), 'wo');
+end
+
 %% output
 
 res = mclog;
@@ -130,6 +155,8 @@ res.angY = mclog.angY/2;
 
 res.actAngX = actMirAngX;
 res.actAngY = actMirAngY;
+
+res.extrapolated = extrapolated;
 
 end
 

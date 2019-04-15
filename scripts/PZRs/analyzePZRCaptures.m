@@ -143,6 +143,7 @@ for i=1:n
         
         figure; plot(mclog.actAngX, '.-');
         hold on; plot(mclog.angX, '.-');
+        hold on; plot(find(mclog.extrapolated), mclog.actAngX(mclog.extrapolated), '.g');
         %hold on; plot((mclog.PZR1*PZR_A+mclog.PZR3*PZR_B)/2, '.-b');
         %hold on; plot(mclog.PZR1*X1(1,i)+mclog.PZR3*X1(2,i), '.-');
         %legend('Actual','DSM input', 'PZR1+PZR3');

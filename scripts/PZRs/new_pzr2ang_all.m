@@ -77,11 +77,12 @@ lph2k = conv(pdHfActAngX,bLPpzr,'same');
 nlpPZR1 = conv(mclog.PZR1, bLPpzr,'valid');
 nlpPZR3 = conv(mclog.PZR3, bLPpzr,'valid');
 
-if (verbose)
-    figure; plot(1:n,hfPZR1,1:n,hfPZR3);
-    figure; plot(hfActAngX);
-    figure; plot(dcActAngX+hfActAngX); hold on; plot(mclog.actAngX(RF));
-end
+% if (verbose)
+%     figure; plot(1:n,fHfPZR1,1:n,fHfPZR3);
+%     figure; plot(fHfActAngX);
+%     figure; plot(dcActAngX+hfActAngX); hold on; plot(mclog.actAngX(RF));
+% end
+
 if (verbose)
     figure; plot(R, pdHfActAngX, RF, fdHfActAngX, RF, fHfActAngX);
     title('High frequences of angle X'); legend('poly diff', 'LP filter diff', 'HP filter');
