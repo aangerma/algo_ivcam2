@@ -1,6 +1,7 @@
 %folder = 'C:\Program Files (x86)\IVCAM.2.0.Tool\HWMonitorServer\Records\offset_0000\';
 %folder = 'C:\Program Files (x86)\IVCAM.2.0.Tool\HWMonitorServer\Records\offset_3000\';
-folder = 'C:\Program Files (x86)\IVCAM.2.0.Tool\HWMonitorServer\Records\offset_0000_0314\';
+%folder = 'C:\Program Files (x86)\IVCAM.2.0.Tool\HWMonitorServer\Records\offset_0000_0314\';
+folder = 'C:\Program Files (x86)\IVCAM.2.0.Tool\HWMonitorServer\Records\offsets_0-25000\';
 fLogs = dir([folder '*.csv']);
 
 for i=1:length(fLogs)
@@ -8,11 +9,21 @@ for i=1:length(fLogs)
     mcLog(i) = readPZRs([folder f]);
 end
 
-figure(17); hold on
+figure; hold on
 for iLog=1:length(mcLog)
     plot(mcLog(iLog).angX, mcLog(iLog).angY, '.-'); title(sprintf('%u',iLog))
     %pause
 end
+
+figure(17); hold on
+for i=1:length(mcLog)/3
+    for j=1:3
+        iLog = (i-1)*3+j;
+        plot(mcLog(iLog).angX, mcLog(iLog).angY, '.-'); title(sprintf('%u',iLog));
+    end
+    pause
+end
+
 
 figure(19); hold on;
 for i=1:length(mcLog)
