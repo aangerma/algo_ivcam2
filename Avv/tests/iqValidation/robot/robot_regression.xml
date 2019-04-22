@@ -5,7 +5,7 @@
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
-        <stableTemp>true</stableTemp>
+        <stableTemp>false</stableTemp>
         <tag>regression</tag>
     </params>
     <tests>

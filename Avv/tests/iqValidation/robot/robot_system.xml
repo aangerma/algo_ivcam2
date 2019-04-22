@@ -5,7 +5,7 @@
         <outputFolder>c:\temp\valTest\system</outputFolder>
         <dataFolder>c:\temp\valTest\system\data</dataFolder>
         <dataSource>robot</dataSource>
-        <stableTemp>true</stableTemp>
+        <stableTemp>false</stableTemp>
         <tag>system</tag>
     </params>
     <tests>
