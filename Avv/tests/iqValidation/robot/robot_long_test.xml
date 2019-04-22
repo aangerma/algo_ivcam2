@@ -5,7 +5,7 @@
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
-        <stableTemp>true</stableTemp>
+        <stableTemp>false</stableTemp>
         <numberOfPics>12</numberOfPics>
         <delayPicsInSec>300</delayPicsInSec>
         <tag>time_drift</tag>
