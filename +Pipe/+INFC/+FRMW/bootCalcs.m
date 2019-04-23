@@ -1,6 +1,6 @@
-function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
+function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts,regMeta)
 %% prepare for FW
-[FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(regs,luts);
+[FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(regs,luts,regMeta);
 FWinputRegs = Firmware.mergeRegs(FWinputRegs,autogenRegs);
 
 %% Run fw bootcalcs

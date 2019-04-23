@@ -16,15 +16,15 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
-    [runParams,~] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
+    [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
     
     if noCalibrations(runParams)
         calibPassed = -1;
         return;
     end
-    %% call HVM_cal_init
-    [calibParams , result] = HVM_Cal_init(calibParamsFn);
-        
+    %% output all RegState to files 
+    RegStateSetOutDir(runParams.outputFolder);
+
     %% Calibration file names
     [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams);
     
@@ -46,6 +46,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% Update init configuration
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
+    
+    %% call HVM_cal_init
+    cal_output_dir = fileparts(fopen(app.m_logfid));
+    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
+    
     %% Start stream to load the configuration
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
@@ -72,9 +77,9 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% Warm up stage
     Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
     %% ::dsm calib::
-    calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
+    dsmregs = calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
     %% ::calibrate delays::
-    [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
+    [results,calibPassed ,delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
         return;
     end
@@ -102,31 +107,46 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
     
-    [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+%    [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+    [results,calibPassed,dfzRegs,~] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
     if ~calibPassed
        return 
     end
 
     
     %% ::roi::
-    [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
-    
-    %% write version+intrinsics
-    writeVersionAndIntrinsics(verValue,verValuefull,fw,fnCalib,calibParams,fprintff);
-    
-    %% ::Fix ang2xy Bug using undistort table::
-    [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
-    % Coverage within ROI 
+%   [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+    [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+    final_calib_f = true;
+    if final_calib_f %%
+        END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams);
+        %         [results ,luts] = final_calib(verValue, verValuefull ,roiRegs,dfzRegs,results,fnCalib, fprintff, t,runParams.internalFolder,calibParams);
+% update HW before final check
+        ttt=[tempname '.txt'];
+        fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',ttt);
+        hw.runScript(ttt);
+        hw.shadowUpdate();
+
+    else
+        %% write version+intrinsics
+        writeVersionAndIntrinsics(verValue,verValuefull,fw,fnCalib,calibParams,fprintff);
+
+        %% ::Fix ang2xy Bug using undistort table::
+        [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
+    end
+    %% Coverage within ROI 
     [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
     if ~calibPassed
        return 
     end
-    %% Print image final fov
-    [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
-    if ~calibPassed
-       return 
-    end
     
+    if ~final_calib_f %% moved to final calib
+        %% Print image final fov
+        [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
+        if ~calibPassed
+           return 
+        end
+    end    
     
     %% Validate DFZ before reset
     [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
@@ -136,9 +156,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     
     % Update fnCalin and undist lut in output dir
-    writeCalibRegsProps(fw,fnCalib);
-    fw.writeUpdated(fnCalib);
-    io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
+    if ~final_calib_f %% moved to final calib
+        writeCalibRegsProps(fw,fnCalib);
+        fw.writeUpdated(fnCalib);
+        io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
+    end
     Calibration.aux.logResults(results,runParams);
     Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
     %% merge all scores outputs
@@ -204,7 +226,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         framesSpherical.pts3d = create3DCorners(targetInfo)';
         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs);
         
-        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1,[],runParams);
+        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
         
         r.reset();
         hw.setReg('DIGGsphericalScale',[640,360]);
@@ -237,7 +259,6 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     
 end
 function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams)
-    
     runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
     mkdirSafe(runParams.outputFolder);
     mkdirSafe(runParams.internalFolder);
@@ -245,8 +266,8 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
     initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
 %     initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
-    copyfile(fullfile(initFldr,'*.csv'), runParams.internalFolder)
-    
+    copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
+    copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), runParams.internalFolder);
 end
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
@@ -349,7 +370,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         fprintff('skipped\n');
     end
 end
-function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff)
+function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff)
     calibPassed = 1;
     fprintff('[-] Depth and IR delay calibration...\n');
     if(runParams.dataDelay)
@@ -393,15 +414,18 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
     
 end
 
-function [calibParams , result] = HVM_Cal_init(calib_params_fn)
-    output_dir          = 'C:\algo\playground\cal_tester\output';
+function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
+    if(~exist('output_dir','var'))
+        output_dir = fullfile(tempdir,'\cal_tester\output');
+    end
     debug_log_f         = 0;
     verbose             = 0;
     save_input_flag     = 1;
     save_output_flag    = 1;
     dummy_output_flag   = 0;
-
-    [calibParams , result] = Calibration.CompiledAPI.cal_init(output_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
+    ret = 1;
+    addpath('./CompiledAPI'); % added path for compiled API (HVM tester functions);
+    [calibParams ,~] = cal_init(output_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
 
 
@@ -511,11 +535,10 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         end
     end
 end
-function calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
+function [dsmregs] = calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
-        
-        dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams);
+        dsmregs = Calibration.DSM.DSM_Calib(hw,fprintff,calibParams,runParams);
         fw.setRegs(dsmregs,fnCalib);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
@@ -561,8 +584,11 @@ function results = calibrateDiggGamma(runParams, calibParams, results, fprintff,
         fprintff('[?] skipped\n');
     end
 end
-function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
-
+function [results,calibPassed,dfzRegs,dfzTmpRegs] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
+        [results,calibPassed,dfzRegs,dfzTmpRegs] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
+%        [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
+end
+function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
     calibPassed = 1;
     fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     if(runParams.DFZ)
@@ -855,4 +881,8 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
 end
 function res = noCalibrations(runParams)
     res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist);
+end
+function RegStateSetOutDir(Outdir)
+    global g_reg_state_dir;
+    g_reg_state_dir = Outdir;
 end

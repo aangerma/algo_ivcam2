@@ -14,6 +14,7 @@
        <minRange>200</minRange>
        <cbSquareSz>30</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
+       <Nof2avg>30</Nof2avg>
        <lddTKill>75</lddTKill>
        <mcTKill>[]</mcTKill>
        <maTKill>[]</maTKill>
@@ -131,6 +132,7 @@
       <margin>150</margin>  
    </coarseDSM>
    <dsm>
+     <nSamples>101</nSamples>  
      <margin>100</margin>  
    </dsm>
     <dfz>
