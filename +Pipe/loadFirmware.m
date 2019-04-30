@@ -1,7 +1,7 @@
 function [fw,p] = loadFirmware(varargin)
 p = inputHandler(varargin{:});
 
-fw = Firmware(p.tablesFolder);
+fw = Firmware();
 fw.setRegHandle(p.regHandle);
 
 
@@ -84,7 +84,6 @@ defs.fastApprox = -1;
 defs.saveResults = 1;
 defs.memoryLayout = Pipe.setDefaultMemoryLayout();
 defs.regHandle = 'throw';
-defs.tablesFolder = [];
 
 if(~exist('ivsFilename','var'))
     ivsFilename = 'patgen::wall';
@@ -141,7 +140,6 @@ p = inputParser;
 
 isfile = @(x) true;
 isflag = @(x) or(isnumeric(x),islogical(x));
-isDir  = @(x) exist(x,'dir');
 
 addOptional(p,'outputDir',defs.outputDir);
 addOptional(p,'saveResults',defs.saveResults,isflag);
@@ -157,7 +155,7 @@ addOptional(p,'memoryLayout',defs.memoryLayout);
 addOptional(p,'rewrite',defs.rewrite,isflag);
 addOptional(p,'fastApprox',defs.fastApprox,@isnumeric);
 addOptional(p,'regHandle','throw',@ischar);
-addOptional(p,'tablesFolder',defs.tablesFolder,isDir);
+
 
 parse(p,varargin{:});
 

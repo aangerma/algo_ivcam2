@@ -1,4 +1,4 @@
-function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts,regMeta)
+function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
 
 %% pre calc
 if(~regs.FRMW.preCalcBypass)
@@ -10,7 +10,7 @@ else
 end
 %% prepare for FW
 
-[FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(PreCalcsRegs,PreCalcsluts ,regMeta);
+[FWinputRegs,FWinputLuts] = Pipe.getRegsForfwBootCalcs(PreCalcsRegs,PreCalcsluts );
 FWinputRegs = Firmware.mergeRegs(FWinputRegs,autogenRegs);
 FWinputLuts = Firmware.mergeRegs(FWinputLuts,autogenLuts);
 

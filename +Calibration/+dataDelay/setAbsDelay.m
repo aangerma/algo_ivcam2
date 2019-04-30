@@ -72,8 +72,7 @@ mwd a0050458 a005045c 00000004 //[m_regmodel.proj_proj.RegsProjConLocDelayHfclkR
 mwd a0060008 a006000c 80000020  //[m_regmodel.ansync_ansync_rt.RegsAnsyncAsLateLatencyFixEn] TYPE_REG
 %}
 
-absFast = uint32(absFast);
-absSlow = uint32(absSlow);
+
 latelate = absFast-absSlow;
 
 regs.EXTL.conLocDelaySlow = uint32(latelate)+uint32(bitshift(1,31));
