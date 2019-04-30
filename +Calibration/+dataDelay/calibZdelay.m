@@ -1,12 +1,9 @@
-function [delayZ,ok] = calibZdelay(hw,dataDelayParams,runParams,calibParams)
+function [delayZ,ok] = calibZdelay(hw,dataDelayParams,runParams)
 verbose = runParams.verbose;
-NumberOfFrames = calibParams.gnrl.Nof2avg;
 delayZ=dataDelayParams.fastDelayInitVal;
-% delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;
 
-%imB=double(hw.getFrame(30).i)/255;
-path_both = fullfile(tempdir,'Z_Delay_both');
-Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_both);             % get frame without post processing (averege) (SDK like)
+
+imB=double(hw.getFrame(30).i)/255;
 
 
 [~,saveVal] = hw.cmd('irb e2 06 01'); % Original Laser Bias
@@ -23,23 +20,33 @@ for i=1:dataDelayParams.nAttempts
        % Save initial up down frames
        Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'Z_Delay','Initial',sprintf('Up/Down Images - Initial (%d)',delayZ)); 
     end
-        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, path_both ,delayZ ,calibParams); 
-		
-       if (verbose)
-            figure(sum(mfilename));
-            imagesc(im);
-            title(sprintf('Z delay: %d (%d)',delayZ,d(i)));
-            drawnow;
-        end
-        delayZ = d(i);
-        if (res==1)
-            ok=true;
-            break;    
-        end
-        if (res==-1)
-            warning('delay not converging!');
-            break;
-        end
+    [d(i),im]=Calibration.dataDelay.calcZDelayFix(hw,imB);
+    if (isnan(d(i)))%CB was not found, throw delay forward to find a good location
+        d(i) = 3000;
+    end
+    if (verbose)
+        figure(sum(mfilename));
+        imagesc(im);
+        title(sprintf('Z delay: %d (%d)',delayZ,d(i)));
+        drawnow;
+    end
+    
+    if (abs(d(i))<=dataDelayParams.iterFixThr)
+        ok=true;
+        break;
+    end
+    
+    nsEps = 2;
+    if (i>1 && abs(d(i))-nsEps > abs(d(i-1)))
+        warning('delay not converging!');
+        break;
+    end
+    
+    delayZ=delayZ+d(i);
+    
+    if (delayZ<0)
+        break;
+    end
 end
 
 hw.setReg('DESTaltIrEn', false);

@@ -1,10 +1,8 @@
-function [outRegs,outLuts] = getRegsForfwBootCalcs(inRegs,inLuts,getMeta)
-if(~exist('getMeta','var'))
-    fw=Firmware;
-    m=fw.getMeta();
-else
-    m=getMeta;
-end
+function [outRegs,outLuts] = getRegsForfwBootCalcs(inRegs,inLuts)
+
+fw=Firmware;
+m=fw.getMeta();
+
 % group 0: = don't transfer, 1: from EPROM , 2: User config / other 
 
 MetaForFW=m([m.TransferToFW]~='0');

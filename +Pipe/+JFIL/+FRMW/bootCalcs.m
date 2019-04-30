@@ -1,16 +1,12 @@
-function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts,regMeta)
+function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
 %% pre calc
 if ~regs.FRMW.preCalcBypass
     [preCalcsRegs,autogenRegs,autogenLuts] = Pipe.JFIL.FRMW.preCalcs(regs,luts,autogenRegs,autogenLuts);
     regs = Firmware.mergeRegs(regs,preCalcsRegs);
 else 
     % copy to autogen regs from precalc
-    if(~exist('regMeta','var'))
-        f=Firmware();
-        m=f.getMeta(); 
-    else
-        m = regMeta;
-    end
+    f=Firmware();
+    m=f.getMeta(); 
     Autojfilregs=m(strcmp('JFIL',{m.algoBlock}) & [m.autogen]==-1); 
     algoNames=unique({Autojfilregs.algoName});
     for i=1:length(algoNames)

@@ -3,11 +3,8 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
     if ~exist('isCopyToPrebuild','var')
         isCopyToPrebuild = 1;
     end
-    source = fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
-    target = fullfile(ivcam2root,'CompiledAPI','calibParams.xml');
-    copyfile(source,target,'f');
     
-    Files = { 'cal_init.m' ,'IR_DelayCalibCalc' ,'Z_DelayCalibCalc' ,'DSM_CoarseCalib_Calc.m' ,'Version.m' ,'DSM_Calib_Calc.m' , 'DFZ_Calib_Calc.m' ,'ROI_Calib_Calc.m', 'END_calib_Calc.m'};
+    Files = { 'cal_init.m' ,'DSM_CoarseCalib_Calc.m' ,'Version.m' };
     
     Attachments = {'calibParams.xml'};
     
@@ -27,8 +24,8 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
         rmdir(OutDir, 's');
     end
     
-    if isempty(strfind(version, 'R2018a')) %#ok
-        error('buildCalibrationEngine() must be ran with Matlab R2018a!');
+    if isempty(strfind(version, 'R2017a')) %#ok
+        error('buildCalibrationEngine() must be ran with Matlab R2015a!');
     end
     
     args = { '-W', Target, '-d', OutDir, '-T', 'link:lib', '-v', Files{:}, '-a', Attachments{:} }; %#ok

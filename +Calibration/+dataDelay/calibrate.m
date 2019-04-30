@@ -52,7 +52,7 @@ results.vertEdge =  metricsResults.vertMean;
 
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;
-[delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,runParams,calibParams);
+[delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw,dataDelayParams,runParams);
 results.fastDelayCalibSuccess = delayZsuccess;
 
 %% SET REGISTERS
