@@ -39,3 +39,4 @@ path = fullfile(current_dir(1:ix(end)-1), '..\scripts\IV2calibTool\calibParams.x
 calibParams = xml2structWrapper(path);
 fovExpanderLut = typecast(reshape(single(calibParams.fovExpander.table), length(calibParams.fovExpander.table)*2,1),'uint32');
 end
+
