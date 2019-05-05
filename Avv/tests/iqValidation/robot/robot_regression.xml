@@ -8,6 +8,10 @@
         <stableTemp>false</stableTemp>
         <tag>regression</tag>
     </params>
+    <cameraConfig_beforeStartStream>
+        <cmd>DIRTYBITGET</cmd>
+    </cameraConfig_beforeStartStream>
+    <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
     <tests>
         <test name="planeFit_far" metrics="planeFit" target="far" distance="100cm" threshold="[0:0.5]" extra=""/>\
         <test name="fillRate_far" metrics="fillRate" target="far" distance="100cm" threshold="[95:100]" extra=""/>

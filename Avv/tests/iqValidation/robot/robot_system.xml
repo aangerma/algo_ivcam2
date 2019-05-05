@@ -8,6 +8,10 @@
         <stableTemp>false</stableTemp>
         <tag>system</tag>
     </params>
+    <cameraConfig_beforeStartStream>
+        <cmd>DIRTYBITGET</cmd>
+    </cameraConfig_beforeStartStream>
+    <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
     <tests>
         <test name="minDistance" metrics="fillRate" target="checkerboard_50" distance="20cm" threshold="[90:100]" />
         <test name="zStd_50" metrics="zStd" target="checkerboard_50" distance="50cm" threshold="[0:5]" />
