@@ -8,6 +8,10 @@
         <stableTemp>false</stableTemp>
         <tag>max_range</tag>
     </params>
+    <cameraConfig_beforeStartStream>
+        <cmd>DIRTYBITGET</cmd>
+    </cameraConfig_beforeStartStream>
+    <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
     <tests>
         <test name="fillRate_w10_60cm" metrics="fillRate" target="wall_10Reflectivity" distance="60cm" threshold="[90 : 100]" extra=""/>
         <test name="fillRate_w10_70cm" metrics="fillRate" target="wall_10Reflectivity" distance="70cm" threshold="[90 : 100]" extra=""/>

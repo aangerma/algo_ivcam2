@@ -8,6 +8,10 @@
         <stableTemp>false</stableTemp>
         <tag>grid_angle</tag>
     </params>
+    <cameraConfig_beforeStartStream>
+        <cmd>DIRTYBITGET</cmd>
+    </cameraConfig_beforeStartStream>
+    <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
     <tests>
         <test name="gridInterDist_150cm_Deg" metrics="gridInterDist" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:3]" extra=''/>
         <test name="losGridDrift_150cm_Deg" metrics="losGridDrift" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:3]" extra=''/>
