@@ -47,6 +47,11 @@ def test_validation_robot_time_drift():
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
+@slash.tag('robot')
+def test_validation_robot_warmup():
+    filePath = r'Avv/tests/iqValidation/robot/robot_warmup.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.validation_test(filePath)
 
 if __name__ == "__main__":
     test_validation_robot_regression()
