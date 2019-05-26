@@ -1,65 +1,157 @@
-function [table,results] = generateFWTable(framesData,regs,calibParams,runParams,fprintff)
+function [table,results] = generateFWTable(data,calibParams,runParams,fprintff)
 
 % Bin frames according to fw loop requirment.
 % Generate a linear fix for angles and an offset for rtd
 
 % •	All values are fixed point 8.8
-% •	Range is [35,66] – row for every 1 degree
+% •	Range is [32,79] degrees – row for every 1 degree of Ldd for
+% temperature offset fix
 % •	Linear interpolation
-% •	Averaging of 10 last LDD temperature measurements every second. Temperature sample rate is 10Hz. 
+% •	Averaging of 10 last LDD temperature measurements every second. Temperature sample rate is 10Hz. Same for vBias and Ibias 
 % •	Replace “Reserved_512_Calibration_1_CalibData_Ver_20_00.txt” with ~“Algo_Thermal_Loop_512_ 1_CalibInfo_Ver_21_00.bin” 
 % •	In case table does not exist, continue working with old thermal loop
+framesData = data.framesData;
+regs = data.regs;
 invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ),1:numel(framesData));
+fprintff('Invalid frames: %.0f/%.0f\n',sum(invalidFrames),numel(invalidFrames));
 framesData = framesData(~invalidFrames);
 
-tempVec = [framesData.temp];
-tempVec = [tempVec.ldd];
 
-refTmp = regs.FRMW.dfzCalTmp;
-tmpBinEdges = (calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2)) - 0.5;
-tmpBinEdgesLong = (calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2)+10) - 0.5;
+nBins = 48;
+N = nBins+1;
+tempData = [framesData.temp];
+vBias = reshape([framesData.vBias],3,[]);
+ldd = [tempData.ldd];
+timev = [framesData.time];
+
+%% Linear RTD fix
+refTmp = data.dfzRefTmp;
+% a*ldd +b = rtdPerFrame;
+rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(:,1)),framesData);
+startI = round(numel(rtdPerFrame)/80);
+[a,b] = linearTrans(vec(ldd(startI:end)),vec(rtdPerFrame(startI:end)));
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
-    histogram(tempVec,25.5:80.5)
+    plot(ldd,rtdPerFrame,'*');
+    title('RTD(ldd) and Fitted line');
+    grid on;xlabel('Ldd Temperature');ylabel('mean rtd');
+    hold on
+    plot(ldd,a*ldd+b);
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_Temp'));
+end
+ 
+results.rtd.refTemp = refTmp;
+results.rtd.slope = a;
+fwBinCenters = calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2);
+results.rtd.tmptrOffsetValues = -((fwBinCenters-refTmp)*results.rtd.slope)';
+
+
+tmpBinEdges = fwBinCenters - 0.5;
+
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    histogram(ldd,25.5:80.5)
     title('Frames Per Ldd Temperature Histogram'); grid on;xlabel('Ldd Temperature');ylabel('count');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Histogram_Frames_Per_Temp'));
 end
 
-refBinIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
-tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
-
-
-% tmpBinIndices(tmpBinIndices < 1) = nan;
-% tmpBinIndices(tmpBinIndices < 1) = nan;
-
-
-
-framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,tmpBinEdgesLong,tmpBinIndices);
-results.framesPerTemperature = framesPerTemperature;
-
-if all(all(isnan(framesPerTemperature(refBinIndex,:,:))))
-    fprintff('Self heat didn''t reach algo calibration temperature. Calib temperature: %2.1f.\n',refTmp);
+%% Y Fix
+% groupByVBias2
+vbias2 = vBias(2,:);
+minMaxVBias2 = minmax(vbias2);
+maxVBias2 = minMaxVBias2(2);
+minVBias2 = minMaxVBias2(1);
+binEdges = linspace(minVBias2,maxVBias2,N);
+dbin = binEdges(2)-binEdges(1);
+binIndices = max(1,min(48,floor((vbias2-minVBias2)/dbin)+1));
+refBinIndex = max(1,min(48,floor((regs.FRMW.dfzVbias(2)-minVBias2)/dbin)+1));
+framesPerVBias2 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binIndices);
+if all(all(isnan(framesPerVBias2(refBinIndex,:,:))))
+    fprintff('Self heat didn''t reach algo calibration vBias2. \n');
     table = [];
     return;
 end
+
+[results.angy.scale,results.angy.offset] = linearTransformToRef(framesPerVBias2(:,:,3),refBinIndex);
+results.angy.minval = mean(binEdges(1:2));
+results.angy.maxval = mean(binEdges(end-1:end));
+results.angy.nBins = nBins;
+
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    subplot(131)
+    plot((binEdges(1:end-1)+binEdges(2:end))*0.5,results.angy.scale);
+    title('AngYScale per vBias2'); xlabel('vBias2 (V)'); ylabel('AngYScale'); grid on;
+    subplot(132)
+    plot(timev,vBias(2,:));title('vBias2(t)'); xlabel('time [sec]'); ylabel('vBias2[v]'); grid on;
+    subplot(133)
+    plot((binEdges(1:end-1)+binEdges(2:end))*0.5,results.angy.offset);
+    title('AngYOffset per vBias2'); xlabel('vBias2 (V)'); ylabel('AngYOffset'); grid on;
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Scale and Offset Per vBias2'));
+end
+
+
+%% X Fix - groupByVBias1+3
+vbias1 = vBias(1,:);
+vbias3 = vBias(3,:);
+[a,b] = linearTrans(vec(vbias1(startI:end)),vec(vbias3(startI:end)));
+
+
+minmaxvbias1 = minmax(vbias1);
+maxvbias1 = minmaxvbias1(2);
+minvbias1 = minmaxvbias1(1);
+p0 = [minvbias1,a*minvbias1 + b];
+p1 = [maxvbias1,a*maxvbias1 + b];
+
+t = linspace(0,1,N);
+% For some p, find ||p - p1 + tgal(pend-p1)||^2
+% tgal = (1/||(pend-p1||^2)*(pend-p1)*(p-p1)';
+tgal = (1/norm(p1-p0)^2)*(p1-p0)*([vbias1(:),vbias3(:)]-p0)';
+% figure,plot(tgal);
+binEdges = t;
+dbin = binEdges(2)-binEdges(1);
+binIndices = floor((tgal)/dbin)+1;
+refBinTGal = (1/norm(p1-p0)^2)*(p1-p0)*([regs.FRMW.dfzVbias(1),regs.FRMW.dfzVbias(3)]-p0)';
+refBinIndex = max(1,min(48,floor((refBinTGal)/dbin)+1));
+framesPerVBias13 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binIndices);
+
+if all(all(isnan(framesPerVBias13(refBinIndex,:,:))))
+    fprintff('Self heat didn''t reach algo calibration vbias1/3.\n');
+    table = [];
+    return;
+end
+
+
+[results.angx.scale,results.angx.offset] = linearTransformToRef(framesPerVBias13(:,:,2),refBinIndex);
+results.angx.p0 = p0;
+results.angx.p1 = p1;
+results.angx.nBins = nBins;
+
+
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    subplot(132);
+    pEdges = p0+t'.*(p1-p0);
+    plot(vbias1,vbias3); hold on; plot(pEdges(:,1),pEdges(:,2),'o');title('vBias3(vBias1)'); xlabel('vBias1');ylabel('vBias3');grid on;
+    subplot(131);
+    plot(results.angx.scale);
+    title('AngXScale per point'); xlabel('bin index'); ylabel('AngXScale'); grid on;
+    subplot(133);
+    plot(results.angx.offset);
+    title('AngXOffset per point'); xlabel('bin index'); ylabel('AngXOffset'); grid on;
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Scale and Offset Per vBias13'));
+end
+
+
+
+angXscale = vec(results.angx.scale);
+angXoffset = vec(results.angx.offset);
+angYscale = vec(results.angy.scale);
+angYoffset = vec(results.angy.offset);
+destTmprtOffset = vec(results.rtd.tmptrOffsetValues);
     
-[angXscale,angXoffset] = linearTransformToRef(framesPerTemperature(:,:,2),refBinIndex);
-[angYscale,angYoffset] = linearTransformToRef(framesPerTemperature(:,:,3),refBinIndex);
-[destTmprtOffset] = constantTransformToRef(framesPerTemperature(:,:,1),refBinIndex);
-
-nTableRows = numel(tmpBinEdges);
-
-nonEmptyT = find(~isnan(destTmprtOffset));
-usedTmpIndex = max(min(1:nTableRows,nonEmptyT(end)),nonEmptyT(1));
-
-angXscale = angXscale(usedTmpIndex)';
-angXoffset = angXoffset(usedTmpIndex)';
-angYscale = angYscale(usedTmpIndex)';
-angYoffset = angYoffset(usedTmpIndex)';
-destTmprtOffset = destTmprtOffset(usedTmpIndex)';
-
 % Convert to dsm values
 dsmXscale = angXscale*regs.EXTL.dsmXscale;
 dsmXoffset = (regs.EXTL.dsmXoffset*dsmXscale-2048*angXscale+angXoffset+2048)./dsmXscale;
@@ -73,18 +165,16 @@ table = [dsmXscale,...
             destTmprtOffset];
 
 table = fillInnerNans(table);   
-        
+table = fillStartNans(table);   
+table = flipud(fillStartNans(flipud(table)));   
 results.table = table;
-results.framesPerTemperature = framesPerTemperature;
-% results.framesPerTemperatureHindSightFix = transformFrames(framesPerTemperature,angXscale,angXoffset,angYscale,angYoffset,destTmprtOffset);
-
 
 if ~isempty(runParams)
     titles = {'dsmXscale','dsmYscale','dsmXoffset','dsmYoffset','RTD Offset'};
-    xlabels = 'Ldd Temperature [degrees]';
+    xlabels = 'Table Row';
     for i = 1:5
         ff = Calibration.aux.invisibleFigure;
-        plot(tmpBinEdges,table(:,i));
+        plot(table(:,i));
         title(titles{i});
         xlabel(xlabels);
         Calibration.aux.saveFigureAsImage(ff,runParams,'FWTable',titles{i});
@@ -142,7 +232,14 @@ res = inv(A'*A)*A'*x2;
 a = res(1);
 b = res(2);
 end
-
+function table = fillStartNans(table)
+    for i = 1:size(table,2)
+        ni = find(~isnan(table(:,i)),1);
+        if ni>1
+            table(1:ni-1,i) = table(ni,i);
+        end
+    end
+end
 function tableNoInnerNans = fillInnerNans(table)
     % Find rows that are all nans:
     nanRows = all(isnan(table),2);

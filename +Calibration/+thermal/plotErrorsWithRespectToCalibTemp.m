@@ -20,18 +20,26 @@ for i = 1:size(framesPerTemperature,1)
     meanRtdXYOffset(i,:,:) = nanmean( RtdXY );
     validPts = ~any(isnan(diff(:,:,1)),2);
     rmsRtdXYOffset(i,:,:) =  rms(RtdXY(validPts,:,:));
-    maxRtdXYOffset(i,:,:) = max(abs(RtdXY(validPts,:,:)));
+    maxOffset = max(abs(RtdXY(validPts,:,:)));
+    if ~isempty(maxOffset)
+        maxRtdXYOffset(i,:,:) = maxOffset;
+    end
+    
 end
 
 
 sq = @squeeze;
 if ~isempty(runParams)
     % RTD error
-    legends = {'Post Fix (val)';'Pre Fix (cal)'};
+    if ~inValidationStage
+        legends = {'Pre Fix (cal)';'Theoretical Fix (val)'};
+    else
+        legends = {'Post Fix (val)';'Pre Fix (cal)';'Theoretical Fix (val)'};
+    end
     if nCollection > 1
         legends = legends(1:nCollection);
     else
-        legends = legends(2-inValidationStage);
+        legends = legends(1);
     end
     ff = Calibration.aux.invisibleFigure;
     subplot(131);

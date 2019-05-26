@@ -15,10 +15,12 @@ subplot(532);
 hold on,plot([tempData.ma],eGeom),title('eGeom Over ma')
 subplot(533);
 hold on,plot([tempData.mc],eGeom),title('eGeom Over mc')
-subplot(534);
-hold on,plot([tempData.tSense],eGeom),title('eGeom Over tSense')
-subplot(535);
-hold on,plot([tempData.vSense],eGeom),title('eGeom Over vSense')
+if isfield(tempData(1),'tSense')
+    subplot(534);
+    hold on,plot([tempData.tSense],eGeom),title('eGeom Over tSense')
+    subplot(535);
+    hold on,plot([tempData.vSense],eGeom),title('eGeom Over vSense')
+end
 subplot(536);
 hold on,plot(vBias(1,:),eGeom),title('eGeom Over vBias 1')
 subplot(537);
@@ -38,7 +40,10 @@ hold on,plot(rBias(2,:),eGeom),title('eGeom Over rBias 2')
 subplot(5,3,14);
 hold on,plot(rBias(3,:),eGeom),title('eGeom Over rBias 3')
 
-
+if isfield(tempData(1),'apdTmptr')
+    subplot(5,3,15);
+    hold on,plot([tempData.apdTmptr],eGeom),title('eGeom Over Apd')
+end
 % figure(1907810);
 % hold on; plot(vBias(1,:),vBias(3,:));
 % xlabel('vBias1'); ylabel('vBias3');
@@ -76,5 +81,7 @@ subplot(5,3,13);hold on;
 plot([ref.rBias(2),ref.rBias(2)],[0,6]);
 subplot(5,3,14);hold on;
 plot([ref.rBias(3),ref.rBias(3)],[0,6]);
+subplot(5,3,15);hold on;
+plot([ref.apdTmptr,ref.apdTmptr],[0,6]);
 end
 

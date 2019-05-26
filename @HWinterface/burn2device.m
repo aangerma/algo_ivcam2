@@ -10,9 +10,9 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
         burnCalib=false;
     end
     
-    fw=obj.getFirmware();
-    oldFWVersion = checkFWVersion(obj);
-    fw.writeFirmwareFiles(basedir,oldFWVersion);
+%     fw=obj.getFirmware();
+%     oldFWVersion = checkFWVersion(obj);
+%     fw.writeFirmwareFiles(basedir,oldFWVersion);
     if(basedir(end)~=filesep)
         basedir(end+1)=filesep;
     end
@@ -25,6 +25,7 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'Algo_Thermal_Loop_CalibInfo_Ver_*.bin'                  ,'00d'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_1_CalibInfo_Ver_*.bin'                 ,'040'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_2_CalibInfo_Ver_*.bin'                 ,'041'};
+        filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'RGB_int_ext_Info_CalibInfo_Ver_*.bin'                   ,'010'};
     end
     if(burnConfig)
             filenamesTableIndexLUT(end+1,:)={'WrConfigData','Algo_Dynamic_Configuration_VGA30_1_ConfigData_Ver_*.txt','133'};

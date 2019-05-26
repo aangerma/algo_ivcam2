@@ -34,8 +34,24 @@ function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
     pause(0.1);
     sz = hw.streamSize();
 
-    d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
-    
+    try
+        d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
+    catch
+        fprintff('Frame didn''t arrive after DSM stop/start. Reseting the unit and trying again (patience please).\n');
+        
+        hw.cmd('APD_FLYBACK_EX_TRIGGER 0');
+        hw.stopStream();
+        hw.cmd('rst');
+        pause(10);
+%         hw = HWinterface();
+        hw.cmd('DIRTYBITBYPASS');
+        hw.cmd('ALGO_THERMLOOP_EN 0');
+        pause(10);
+        Calibration.aux.startHwStream(hw,runParams);
+        d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
+        d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
+        
+    end
     [angmin,angmax] = minAndMaxAngs(hw,angxZO,angyZO);
     % Calulcate raw angx/y of the edges:
     angx = [angmin(1);angmax(1)];

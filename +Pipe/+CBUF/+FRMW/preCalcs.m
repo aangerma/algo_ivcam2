@@ -1,6 +1,6 @@
 function [regs,autogenRegs,autogenLuts] = preCalcs(regs,luts,autogenRegs,autogenLuts)
 % Create regs for CBUF x sections according to calibration resolution
-sectionVecRegs.CBUF.xSections = typecast(calcCbufSection(regs,luts), 'uint32');
+sectionVecRegs.FRMW.cbufxSections = typecast(calcCbufSection(regs,luts), 'uint32');
 autogenRegs = Firmware.mergeRegs(autogenRegs,sectionVecRegs);
 regs = Firmware.mergeRegs(regs,autogenRegs);
 end

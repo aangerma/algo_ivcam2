@@ -6,14 +6,15 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       <internalImSize>[360,640]</internalImSize>
-       <externalImSize>[360,640]</externalImSize>
+       <!--<internalImSize>[360,640]</internalImSize>
+       <externalImSize>[360,640]</externalImSize>-->
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
-       <zNorm>4</zNorm>
-       <minRange>200</minRange>
+       <!--<zNorm>4</zNorm>
+       <minRange>200</minRange>-->
        <cbSquareSz>30</cbSquareSz>
        <cbPtsSz>[]</cbPtsSz>
+       <Nof2avg>30</Nof2avg>
        <lddTKill>75</lddTKill>
        <mcTKill>[]</mcTKill>
        <maTKill>[]</maTKill>
@@ -49,7 +50,9 @@
       <losMaxP2p>[0 1.5]</losMaxP2p>
       <losMeanStdX>[0 0.3] </losMeanStdX>
       <losMeanStdY>[0 0.2]</losMeanStdY>
-      <potentialPitchFixInDegrees>[-inf,inf]</potentialPitchFixInDegrees>
+      <potentialPitchFixInDegrees>[-1.5,1.5]</potentialPitchFixInDegrees>
+      <rgbIntReprojRms>[0 inf]</rgbIntReprojRms>
+      <rgbExtReprojRms>[0 inf] </rgbExtReprojRms>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -131,6 +134,7 @@
       <margin>150</margin>  
    </coarseDSM>
    <dsm>
+     <nSamples>101</nSamples>  
      <margin>100</margin>  
    </dsm>
     <dfz>
@@ -195,7 +199,7 @@
         <zenithyRange>[-6,6]</zenithyRange> 
         <polyVarRange>[-200,-200,-8;200,200,8]</polyVarRange>
         <zenithNormW>0.05</zenithNormW>
-        <pitchFixFactorRange>[-100,100]</pitchFixFactorRange>
+        <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
@@ -290,8 +294,13 @@
             40	47.8995100000000]
         </table>
     </fovExpander>
-    <dest>
+    <!--<dest>
         <hBaseline>-31</hBaseline>
         <vBaseline>-10</vBaseline>
-    </dest>
+    </dest>-->
+    <rgb>
+        <rgbDistoration>0</rgbDistoration>
+        <arePixelsSquare>0</arePixelsSquare>
+        <imSize>[1920,1080]</imSize>
+    </rgb>
 </struct>

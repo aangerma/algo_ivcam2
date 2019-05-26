@@ -16,15 +16,15 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
-    [runParams,~] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
+    [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
     
     if noCalibrations(runParams)
         calibPassed = -1;
         return;
     end
-    %% call HVM_cal_init
-    [calibParams , result] = HVM_Cal_init(calibParamsFn);
-        
+    %% output all RegState to files 
+    RegStateSetOutDir(runParams.outputFolder);
+
     %% Calibration file names
     [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams);
     
@@ -46,15 +46,21 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% Update init configuration
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
+    
+    %% call HVM_cal_init
+    cal_output_dir = fileparts(fopen(app.m_logfid));
+    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
+    
     %% Start stream to load the configuration
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
-%     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+    Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     
     fprintff('Opening stream...');
-    hw.startStream();
+    Calibration.aux.startHwStream(hw,runParams);
+    
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
    [verValue,verValuefull] = getVersion(hw,runParams);  
@@ -72,9 +78,9 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% Warm up stage
     Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
     %% ::dsm calib::
-    calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
+    dsmregs = calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
     %% ::calibrate delays::
-    [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
+    [results,calibPassed ,delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
         return;
     end
@@ -102,43 +108,61 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
     
-    [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+%    [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+    [results,calibPassed,dfzRegs] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
     if ~calibPassed
        return 
     end
 
+    %% ::ROI::
+    [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
-    %% ::roi::
-    [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
-    
-    %% write version+intrinsics
-    writeVersionAndIntrinsics(verValue,verValuefull,fw,fnCalib,calibParams,fprintff);
-    
-    %% ::Fix ang2xy Bug using undistort table::
-    [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw, fnCalib, fprintff, t);
-    % Coverage within ROI 
-    [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
-    if ~calibPassed
-       return 
+    %% Undist and table burn
+    if ~runParams.rgb
+        results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
     end
-    %% Print image final fov
-    [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
-    if ~calibPassed
-       return 
+       
+    
+     %% rgb calibration
+     [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+     if rgbPassed
+        fnRgbTable = fullfile(runParams.outputFolder,...
+            sprintf('RGB_int_ext_Info_CalibInfo_Ver_%02d_%02d.bin',rgbTable.version));
+        writeAllBytes(rgbTable.data,fnRgbTable);
+        hw.cmd(sprintf('WrCalibInfo "%s"',fnRgbTable));
+     end
+   
+    
+%     %% Print image final fov
+%     [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
+%     if ~calibPassed
+%        return 
+%     end
+    if ~runParams.rgb
+        try
+            hw.runPresetScript('maReset');
+            pause(0.1);
+            hw.runScript(fullfile(runParams.outputFolder,'AlgoInternal','postUndistState.txt'));
+            pause(0.1);
+            hw.runPresetScript('maRestart');
+            pause(0.1);
+            hw.shadowUpdate();
+
+            %% Coverage within ROI 
+            [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
+            if ~calibPassed
+               return 
+            end
+            %% Validate DFZ before reset
+            [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
+            if ~calibPassed
+               return 
+            end
+        catch e
+            fprintffS('[!] ERROR:%s\n',strtrim(e.message));
+            fprintff('CoverageValidation or preResetDFZValidation failed. Skipping...\n');
+        end
     end
-    
-    
-    %% Validate DFZ before reset
-    [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
-    if ~calibPassed
-       return 
-    end
-    
-    
-    % Update fnCalin and undist lut in output dir
-    writeCalibRegsProps(fw,fnCalib);
-    fw.writeUpdated(fnCalib);
-    io.writeBin(fnUndsitLut,luts.FRMW.undistModel);
     Calibration.aux.logResults(results,runParams);
     Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
     %% merge all scores outputs
@@ -150,17 +174,18 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     else
         fprintff('PASSED.\n');
     end
-    %% Burn 2 device
-    burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
+    if ~runParams.rgb
+        %% Burn 2 device
+        burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
+
+        %% Collecting hardware state
+        if runParams.saveRegState
+            fprintff('Collecting registers state...');
+            hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
+            fprintff('Done\n');
+        end
     
-    %% Collecting hardware state
-    if runParams.saveRegState
-        fprintff('Collecting registers state...');
-        hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
-        fprintff('Done\n');
     end
-    
-    
     
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
@@ -204,7 +229,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         framesSpherical.pts3d = create3DCorners(targetInfo)';
         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs);
         
-        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1,[],runParams);
+        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
         
         r.reset();
         hw.setReg('DIGGsphericalScale',[640,360]);
@@ -237,7 +262,6 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     
 end
 function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams)
-    
     runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
     mkdirSafe(runParams.outputFolder);
     mkdirSafe(runParams.internalFolder);
@@ -245,8 +269,10 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
     initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
 %     initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
-    copyfile(fullfile(initFldr,'*.csv'), runParams.internalFolder)
-    
+    copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
+    copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), runParams.internalFolder);
+    copyfile(fullfile(runParams.internalFolder ,'*.frmw'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
+    copyfile(fullfile(runParams.internalFolder ,'*.csv'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
 end
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
@@ -301,6 +327,16 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
         currregs.FRMW.laserangleH = typecast(DIGGspare(4),'single');
         currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
         currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
+    
+        
+        JFILspare = hw.read('JFILspare');
+        currregs.FRMW.pitchFixFactor = typecast(JFILspare(3),'single');
+        currregs.FRMW.polyVars = typecast(JFILspare(4:6),'single');
+        currregs.FRMW.dfzCalTmp = typecast(JFILspare(2),'single');
+        currregs.FRMW.dfzApdCalTmp = typecast(JFILspare(7),'single');
+        DCORspare = hw.read('DCORspare');
+        currregs.FRMW.dfzVbias = typecast(DCORspare(3:5),'single');
+        currregs.FRMW.dfzIbias = typecast(DCORspare(6:8),'single');
     end
     if ~runParams.ROI
         DIGGspare06 = hw.read('DIGGspare_006');
@@ -310,25 +346,27 @@ function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
         currregs.FRMW.calMarginT = typecast(uint16(bitshift(DIGGspare07,-16)),'int16');
         currregs.FRMW.calMarginB = typecast(uint16(mod(DIGGspare07,2^16)),'int16');
     end
-    currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
-    currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
-    currregs.FRMW.calImgHsize = currregs.GNRL.imgHsize;
-    currregs.FRMW.calImgVsize = currregs.GNRL.imgVsize;
-    currregs.FRMW.externalVsize = uint32(calibParams.gnrl.externalImSize(1));
-    currregs.FRMW.externalHsize = uint32(calibParams.gnrl.externalImSize(2));
-
-    [~,~,isId] = hw.getInfo();
-    currregs.DEST.hbaseline = ~isId;
-    if currregs.DEST.hbaseline
-        currregs.DEST.baseline = single(calibParams.dest.hBaseline);
-    else
-        currregs.DEST.baseline = single(calibParams.dest.vBaseline);
+%     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
+%     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
+%     currregs.FRMW.calImgHsize = currregs.GNRL.imgHsize;
+%     currregs.FRMW.calImgVsize = currregs.GNRL.imgVsize;
+%     currregs.FRMW.externalVsize = uint32(calibParams.gnrl.externalImSize(1));
+%     currregs.FRMW.externalHsize = uint32(calibParams.gnrl.externalImSize(2));
+% 
+%     [~,~,isId] = hw.getInfo();
+%     currregs.DEST.hbaseline = ~isId;
+%     if currregs.DEST.hbaseline
+%         currregs.DEST.baseline = single(calibParams.dest.hBaseline);
+%     else
+%         currregs.DEST.baseline = single(calibParams.dest.vBaseline);
+%     end
+%     currregs.GNRL.zMaxSubMMExp = uint16(log(calibParams.gnrl.zNorm)/log(2));
+%     currregs.JFIL.invMinMax = uint16([calibParams.gnrl.minRange*calibParams.gnrl.zNorm,intmax('uint16')]);
+    if(exist('currregs','var'))
+        fw.setRegs(currregs,fnCalib);
+        fw.get();
     end
-    currregs.GNRL.zMaxSubMMExp = uint16(log(calibParams.gnrl.zNorm)/log(2));
-    currregs.JFIL.invMinMax = uint16([calibParams.gnrl.minRange*calibParams.gnrl.zNorm,intmax('uint16')]);
     
-    fw.setRegs(currregs,fnCalib);
-    fw.get();
     
 end
 function initConfiguration(hw,fw,runParams,fprintff,t)  
@@ -347,9 +385,16 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         fprintff('Done(%ds)\n',round(toc(t)));
     else
         fprintff('skipped\n');
+        txDelay = typecast(hw.read('DESTtxFRQpd_000'),'single');
+        txDelayRef = fw.getAddrData('DESTtxFRQpd_000');
+        txDelayRef = typecast(txDelayRef{2},'single');
+        if abs(txDelay-txDelayRef)>0.5
+           fprintff('WARNING: Calibration should be done with default EEPROM or with init stage checked!\n'); 
+        end
+
     end
 end
-function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff)
+function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff)
     calibPassed = 1;
     fprintff('[-] Depth and IR delay calibration...\n');
     if(runParams.dataDelay)
@@ -388,20 +433,23 @@ function [results,calibPassed] = calibrateDelays(hw, runParams, calibParams, res
         end
         
     else
+        delayRegs = struct;
         fprintff('skipped\n');
     end
     
 end
 
-function [calibParams , result] = HVM_Cal_init(calib_params_fn)
-    output_dir          = 'C:\algo\playground\cal_tester\output';
+function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
+    if(~exist('output_dir','var'))
+        output_dir = fullfile(tempdir,'\cal_tester\output');
+    end
     debug_log_f         = 0;
     verbose             = 0;
     save_input_flag     = 1;
     save_output_flag    = 1;
     dummy_output_flag   = 0;
-
-    [calibParams , result] = Calibration.CompiledAPI.cal_init(output_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
+    ret = 1;
+    [calibParams ,~] = cal_init(output_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
 
 
@@ -511,14 +559,15 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         end
     end
 end
-function calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
+function [dsmregs] = calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
+
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
-        
-        dsmregs = Calibration.aux.calibDSM(hw,calibParams,fprintff,runParams);
+        dsmregs = Calibration.DSM.DSM_Calib(hw,fprintff,calibParams,runParams);
         fw.setRegs(dsmregs,fnCalib);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
+        dsmregs = struct;
         fprintff('[?] skipped\n');
     end
     
@@ -561,8 +610,11 @@ function results = calibrateDiggGamma(runParams, calibParams, results, fprintff,
         fprintff('[?] skipped\n');
     end
 end
-function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
-
+function [results,calibPassed,dfzRegs,dfzTmpRegs] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
+        [results,calibPassed,dfzRegs,dfzTmpRegs] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
+%        [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
+end
+function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
     calibPassed = 1;
     fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     if(runParams.DFZ)
@@ -605,9 +657,10 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
         bbox(4) = min([lcoords(2),mcoords(2),rcoords(2)])-bbox(2);
 
         
-        dfzCalTmpStart = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
-%         
-        
+        [dfzCalTmpStart,~,~,dfzApdCalTmpStart] = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
+        for j = 1:3
+            [pzrsIBiasStart(j),pzrsVBiasStart(j)] = hw.pzrPowerGet(j,5);
+        end
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
         testImages = ~trainImages;
@@ -618,10 +671,22 @@ function [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, result
             cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
             im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i));
             if ~strcmp('train',cap.type)
-                dfzCalTmpEnd = hw.getLddTemperature();
+                [dfzCalTmpEnd,~,~,dfzApdCalTmpEnd] = hw.getLddTemperature();
+                for j = 1:3
+                    [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrPowerGet(j,5);
+                end
             end
         end
-        dfzTmpRegs.FRMW.dfzCalTmp = single(dfzCalTmpStart+dfzCalTmpEnd)/2;
+        if all(trainImages)
+            [dfzCalTmpEnd,~,~,dfzApdCalTmpEnd] = hw.getLddTemperature();
+            for j = 1:3
+                [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrPowerGet(j,5);
+            end
+        end
+        dfzTmpRegs.FRMW.dfzCalTmp = single(dfzApdCalTmpStart+dfzApdCalTmpEnd)/2;
+        dfzTmpRegs.FRMW.dfzApdCalTmp = single(dfzCalTmpStart+dfzCalTmpEnd)/2;
+        dfzTmpRegs.FRMW.dfzVbias = single(pzrsVBiasStart+pzrsVBiasEnd)/2;
+        dfzTmpRegs.FRMW.dfzIbias = single(pzrsIBiasStart+pzrsIBiasEnd)/2;
         for i = 1:numel(captures)
             cap = calibParams.dfz.captures.capture(i);
             targetInfo = targetInfoGenerator(cap.target);
@@ -715,7 +780,7 @@ function imNoise = collectNoiseIm(hw)
         hw.cmd('iwb e2 08 01 0'); % modulation amp is 0
         hw.cmd('iwb e2 03 01 10');% internal modulation (from register)
         pause(0.1);
-        imNoise = double(hw.getFrame(10).i)/255;
+        imNoise = hw.getFrame(10).i;
         hw.cmd('iwb e2 03 01 90');% 
         hw.cmd('iwb e2 06 01 70'); % Return bias
 end
@@ -746,10 +811,10 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
         [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,regs,calibParams,runParams);
         fw.setRegs(roiRegs, fnCalib);
         fw.get(); % run bootcalcs
-        fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
-        fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
-        hw.runScript(fnAlgoTmpMWD);
-        hw.shadowUpdate();
+%         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
+%         fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
+%         hw.runScript(fnAlgoTmpMWD);
+%         hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));
         
         FE = [];
@@ -785,15 +850,20 @@ function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, res
         end
         ttt=[tempname '.txt'];
         fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',ttt);
+        hw.runPresetScript('maReset');
+        pause(0.1);
         hw.runScript(ttt);
+        pause(0.1);
+        hw.runPresetScript('maRestart');
+        pause(0.1);
         hw.shadowUpdate();
-        fprintff('[v] Done(%ds)\n',round(toc(t)));
+
     else
         [~,luts]=fw.get();
         fprintff('[?] skipped\n');
     end
 end
-function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
+function writeVersionAndIntrinsics(hw,verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
     regs = fw.get();
     intregs.DIGG.spare=zeros(1,8,'uint32');
     intregs.DIGG.spare(1)=verValueFull;
@@ -808,6 +878,20 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
     intregs.JFIL.spare(2)=typecast(regs.FRMW.dfzCalTmp,'uint32');
+    intregs.JFIL.spare(3)=typecast(single(regs.FRMW.pitchFixFactor),'uint32');
+    intregs.JFIL.spare(4)=typecast(single(regs.FRMW.polyVars(1)),'uint32');
+    intregs.JFIL.spare(5)=typecast(single(regs.FRMW.polyVars(2)),'uint32');
+    intregs.JFIL.spare(6)=typecast(single(regs.FRMW.polyVars(3)),'uint32');
+    intregs.JFIL.spare(7)=typecast(regs.FRMW.dfzApdCalTmp,'uint32');
+    
+    
+    dcorSpares = typecast(hw.read('DCORspare')','single');
+    dcorSpares(3:5) = single(regs.FRMW.dfzVbias);
+    dcorSpares(6:8) = single(regs.FRMW.dfzIbias);
+    intregs.DCOR.spare = dcorSpares;
+    
+    
+    
     fw.setRegs(intregs,fnCalib);
 %     fw.get();
     
@@ -854,5 +938,9 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     fprintff('Done(%ds)\n',round(toc(t)));
 end
 function res = noCalibrations(runParams)
-    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist);
+    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb);
+end
+function RegStateSetOutDir(Outdir)
+    global g_reg_state_dir;
+    g_reg_state_dir = Outdir;
 end
