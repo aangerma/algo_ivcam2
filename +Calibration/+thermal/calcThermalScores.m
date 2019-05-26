@@ -10,14 +10,13 @@ framesData = framesData(~invalidFrames);
 tempVec = [framesData.temp];
 tempVec = [tempVec.ldd];
 
-refTmp = data.regs.FRMW.dfzCalTmp;
+refTmp = data.dfzRefTmp;
 tmpBinEdges = (tablerange(1):tablerange(2)) - 0.5;
-tmpBinEdgesLong = (tablerange(1):tablerange(2)+10) - 0.5;
 
 refBinIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
-framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,tmpBinEdgesLong,tmpBinIndices);
+framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,48,tmpBinIndices);
     
 [Xscale,Xoffset] = linearTransformToRef(framesPerTemperature(:,:,4)-639/2,refBinIndex);
 [Yscale,Yoffset] = linearTransformToRef(framesPerTemperature(:,:,5)-179/2,refBinIndex);

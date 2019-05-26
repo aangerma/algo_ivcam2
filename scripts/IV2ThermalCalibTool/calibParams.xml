@@ -10,14 +10,14 @@
        <apdTKill>[]</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
-       <cbGridSz>[]</cbGridSz>
+       <cbGridSz>[9,13]</cbGridSz>
    </gnrl>
    <warmUp>
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
        <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
-       <teminationTempdiffFromCalibTemp>7</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
+       <teminationTempdiffFromCalibTemp>4</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
    </warmUp>
    <errRange>
       <stdRtd>[0 inf]</stdRtd>

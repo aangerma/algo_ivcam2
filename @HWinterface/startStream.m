@@ -1,15 +1,22 @@
-function startStream(obj,FrameGraberMode,resolution)
+function startStream(obj,FrameGraberMode,resolution,colorResolution)
     timeout = 10; %timeout until first frame is valid
     if(obj.m_dotnetcam.Stream.IsDepthPlaying)
         return;
     end
-        if(~exist('FrameGraberMode'))
+    
+    if ~exist('FrameGraberMode','var') || isempty(FrameGraberMode)
         FrameGraberMode = false;
     end
     
-    if(~exist('resolution'))
+    
+    if ~exist('resolution','var') || isempty(resolution)
         resolution = [720 1280];
     end
+    obj.m_streamWithcolor = false;
+    if ~exist('colorResolution','var')
+        colorResolution = [];
+    end
+     
 
  %   FrameGraberMode = true;
 
@@ -48,13 +55,28 @@ function startStream(obj,FrameGraberMode,resolution)
 	        IVCam.Tools.CamerasSdk.Common.Configuration.IVCam20.IVCam20DepthMode.C.ToString(),...
 	        eImageResolutionConf,...
 	        30));
-	%         IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir240x640,...
-    
-	    scwList = NET.createGeneric('System.Collections.Generic.List',...
-	        {'IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper'});
-	    scwList.Add(scwD)
-	    scwList.Add(scwI)
-	    scwList.Add(scwC)
+        %         IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir240x640,...
+       
+        
+        scwList = NET.createGeneric('System.Collections.Generic.List',...
+            {'IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper'});
+        scwList.Add(scwD)
+        scwList.Add(scwI)
+        scwList.Add(scwC)
+        
+         if ~isempty(colorResolution)
+             eImageResolutionColor = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir1920x1080;
+            scwColor = IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper(...
+                IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Color,...
+                IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfiguration(...
+                IVCam.Tools.CamerasSdk.Common.Configuration.IVCam20.IVCam20ColorMode.YUY2.ToString(),...
+                eImageResolutionColor,...
+                30));
+            scwList.Add(scwColor);
+            obj.m_streamWithcolor = true;
+
+        end
+       
 	    camConfig = IVCam.Tools.CamerasSdk.Cameras.Configuration.CameraConfiguration(scwList);
     
 	    obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);

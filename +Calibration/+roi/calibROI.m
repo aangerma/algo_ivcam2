@@ -12,6 +12,7 @@ function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams,runParams)
 % hardest margin. At the end add the extra margins from calibParams.  
 
 noiseThresh = max(imNoise(:));
+noiseThresh = noiseThresh*1.2;
 %% Get margins for each image
 edgesU = calcBounds(imU,noiseThresh,runParams,regs,'imU');
 marginsU = calcMargins(edgesU,regs,calibParams);

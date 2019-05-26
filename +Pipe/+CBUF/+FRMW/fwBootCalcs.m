@@ -14,7 +14,7 @@ function [regs,autogenRegs,autogenLuts] = fwBootCalcs(regs,luts,autogenRegs,auto
 % regs.GNRL.imgHsize, regs.GNRL.imgVsize, autogenRegs.CBUF.xBitShifts, regs.FRMW.cbufConstLUT,
 % regs.GNRL.rangeFinder, regs.JFIL.upscalexyBypass, regs.FRMW.cropXfactor, regs.FRMW.cropYfactor
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-autogenRegs.CBUF.xSections=regs.CBUF.xSections; % copy to hw
+autogenRegs.FRMW.cbufxSections=regs.FRMW.cbufxSections; % copy to hw
 xSections = calcXsections(regs);
 
 autogenRegs.CBUF.xBitShifts = uint8(ceil(log2(double(regs.GNRL.imgHsize-1)))-4);
@@ -79,7 +79,7 @@ endXfromCalib = startXfromCalib + resXafterCrop - 1.0;
 if nargin == 2
     originalXsectionsRegs = single(xSections);
 else
-    originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
+    originalXsectionsRegs = typecast(regs.FRMW.cbufxSections, 'single');
 end
 dPixInLUT = single(regs.FRMW.calImgHsize)/single(length(originalXsectionsRegs));
 ix_start = max(round(startXfromCalib/dPixInLUT),1);
@@ -96,7 +96,7 @@ function [xSections] = calcNewSectionsForYcrop(regs,xSections)
 if nargin == 2
     originalXsectionsRegs = single(xSections);
 else
-    originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
+    originalXsectionsRegs = typecast(regs.FRMW.cbufxSections, 'single');
 end
 xSections = single(ceil(originalXsectionsRegs.*regs.FRMW.cropYfactor));
 end
@@ -110,7 +110,7 @@ function [xSections] = calcNewSectionsForXscale(regs,xSections)
 if nargin == 2
     originalXsectionsRegs = single(xSections);
 else
-    originalXsectionsRegs = typecast(regs.CBUF.xSections, 'single');
+    originalXsectionsRegs = typecast(regs.FRMW.cbufxSections, 'single');
 end
 scaleFactor = single(regs.GNRL.imgHsize)/(single(regs.FRMW.calImgHsize)*regs.FRMW.cropXfactor);
 xSections = single(ceil(originalXsectionsRegs.*scaleFactor));
@@ -141,10 +141,10 @@ function [xSections] = calcXsections(regs)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This function calculates the new x sections that will determine the x releases for the CBUF.
 % The calculation takes into account the scale and crop that might have
-% been performed on the image since the regs.CBUF.xSections was calculated
+% been performed on the image since the regs.FRMW.cbufxSections was calculated
 % in calibration.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-xSections = typecast(regs.CBUF.xSections, 'single');
+xSections = typecast(regs.FRMW.cbufxSections, 'single');
 if regs.GNRL.imgHsize ~= regs.FRMW.calImgHsize
     if regs.FRMW.cropXfactor < 1 % There was cropping in x
         xSections = calcNewSectionsForXcrop(regs);

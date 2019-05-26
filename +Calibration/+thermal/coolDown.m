@@ -3,7 +3,7 @@ function [ info ] = coolDown(hw,calibParams,runParams,fprintff,maxTime2Wait)
 startTime = tic;
 finishedCooling = 0;
 coolTimeVec(1) = toc(startTime);
-[coolTmpVec(1,1),coolTmpVec(1,2),coolTmpVec(1,3),coolTmpVec(1,4),coolTmpVec(1,5)] = hw.getLddTemperature;
+[coolTmpVec(1,1),coolTmpVec(1,2),coolTmpVec(1,3),coolTmpVec(1,4)] = hw.getLddTemperature;
 tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
 maxTime2WaitSec = maxTime2Wait*60;
@@ -15,7 +15,7 @@ while ~finishedCooling
     pause(tempSamplePeriod);
     coolTimeVec(end+1) = toc(startTime);
     newI = size(coolTmpVec,1)+1;
-    [coolTmpVec(newI,1),coolTmpVec(newI,2),coolTmpVec(newI,3),coolTmpVec(newI,4),coolTmpVec(newI,5)] = hw.getLddTemperature;
+    [coolTmpVec(newI,1),coolTmpVec(newI,2),coolTmpVec(newI,3),coolTmpVec(newI,4)] = hw.getLddTemperature;
     
     fprintff(', %2.2f',coolTmpVec(newI,1));
     if coolTmpVec(newI-1,1) - coolTmpVec(newI,1) < tempTh || (coolTimeVec(end) > maxTime2WaitSec)

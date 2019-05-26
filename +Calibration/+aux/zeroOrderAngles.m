@@ -10,11 +10,9 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,nu
     angyRawVec = zeros(1,numOfMeasurments);
     angxRawVec = zeros(1,numOfMeasurments);
 
-    
-%     hw.runPresetScript('stopStream');
     hw.stopStream;
 
-    pause(0.5);
+    pause(3);
     hw.cmd('exec_table 140');% setRestAngle
     pause(0.5);
     % assert(res.IsCompletedOk, 'For DSM calib to work, it should be the first thing that happens after connecting the USB. Before any capturing.' )
@@ -72,8 +70,8 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,nu
 %     pause(0.1);
 %     hw.runPresetScript('startStream');
 %     pause(0.1);
+    Calibration.aux.startHwStream(hw,runParams);
     
-    hw.startStream;
 %     hw.setSize();
     restFailed = (angxRaw == 0 && angyRaw == 0); % We don't really have the resting angle...
     %     warning('Raw rest angle is zero... This is not likely. Probably setRestAngle script failed.');

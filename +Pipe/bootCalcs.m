@@ -1,16 +1,20 @@
-function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts)
+function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta)
+if(~exist('RegMeta','var'))
+    fw=Firmware;
+    RegMeta=fw.getMeta();
+end
 
 [regs,autogenRegs,autogenLuts] = generalRegisters(regs,autogenRegs,autogenLuts);
 luts = Firmware.mergeRegs(luts,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.RAST.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.DCOR.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.DEST.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.CBUF.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.JFIL.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.PCKR.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.STAT.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
-[regs,autogenRegs,autogenLuts] = Pipe.INFC.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts);
+[regs,autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.RAST.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.DCOR.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.DEST.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.CBUF.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.JFIL.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.PCKR.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.STAT.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
+[regs,autogenRegs,autogenLuts] = Pipe.INFC.FRMW.bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta);
 
 end
 
@@ -39,4 +43,3 @@ path = fullfile(current_dir(1:ix(end)-1), '..\scripts\IV2calibTool\calibParams.x
 calibParams = xml2structWrapper(path);
 fovExpanderLut = typecast(reshape(single(calibParams.fovExpander.table), length(calibParams.fovExpander.table)*2,1),'uint32');
 end
-

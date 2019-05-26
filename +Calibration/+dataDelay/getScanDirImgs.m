@@ -33,6 +33,6 @@ if ~unFiltered
     im(im==0)=nan;
     imv=im(Utils.indx2col(size(im),[5 5]));
     imo=reshape(nanmedian_(imv),size(im));
+    imo=normByMax(imo);
 end
-imo=normByMax(imo);
 end

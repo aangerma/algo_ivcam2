@@ -10,7 +10,7 @@ classdef HWinterface <handle
         m_presetScripts
         m_recData
         m_recfn                  char
-        
+        m_streamWithcolor        logical
         usefullRegs
         
     end
@@ -26,6 +26,8 @@ classdef HWinterface <handle
             dImByte = imageObj.Item(0).Data;
             frame.fg = cast(dImByte,'uint8');
         end
+        
+        
         
         function frames=privGetSeveralFrames(obj,n)
             %get single frame
@@ -142,7 +144,46 @@ classdef HWinterface <handle
             end
             
         end
+        
+        function [I] = privReadColorStream(obj,data, imSize)
+            
+            if ~exist('imSize','var') || isempty(imSize)
+                imSize = [1920 1080];
+            end
+            
+              data = reshape(data,imSize);
+              Y = double(bitand(data,255));
+              
+              I = uint8(Y');
+              %{
+              %for RGB and not just grayscale:
+              
+              U = zeros(imSize,'double');
+              V = zeros(imSize,'double');
+              UV = bitshift(data,-8);
+              U(:,1:2:end) = UV(:,1:2:end);
+              U(:,2:2:end) = UV(:,1:2:end);
+              V(:,1:2:end) = UV(:,2:2:end);
+              V(:,2:2:end) = UV(:,2:2:end);
+
+              C = Y - 16;
+              D = U - 128;
+              E = V - 128;
+              
+              R = uint8((298*C+409*E+128)/256);
+              G = uint8((298*C-100*D-208*E+128)/256);
+              B = uint8((298*C+516*D+128)/256);
+
+              Irgb(:,:,1)=B;
+              Irgb(:,:,2)=G;
+              Irgb(:,:,3)=R;
+              Irgb = uint8(Irgb);
+               %}
+        end
+
     end
+    
+    
     methods (Static=true, Access=private)
         %
         function sprivDispFigClose(t)
@@ -175,11 +216,12 @@ classdef HWinterface <handle
         end
         
         %startStream(obj);
-        startStream(obj,FrameGraberMode,resolution);
+        startStream(obj,FrameGraberMode,resolution,colorResolution);
         function stopStream(obj)
             if(obj.m_dotnetcam.Stream.IsDepthPlaying)
-                obj.runScript(obj.getPresetScript('stopStream'));
+%                 obj.runScript(obj.getPresetScript('stopStream'));
                 obj.m_dotnetcam.Close();
+                obj.m_streamWithcolor = false;
             end
             
             
@@ -212,7 +254,7 @@ classdef HWinterface <handle
             obj.m_recfn=recfn;
             obj.m_fw = fw;
             obj.privInitCam();
-            
+            obj.m_streamWithcolor = false;
             obj.privLoadPresetScripts();
             obj.m_recData={};
             obj.privRecFunc('HWinterface',{fw},{});
@@ -370,13 +412,58 @@ classdef HWinterface <handle
             fwVersion = fwVersionLine{2};
 
         end
+        
+       function frames = getColorFrameRAW(obj,n)
+            colorRes = [1920 1080];
+            if ~obj.m_streamWithcolor
+                obj.startStream(false,[],colorRes);
+            end
+            if(~exist('n','var'))
+                n=1;
+            end
+            
+            imageCollection = obj.m_dotnetcam.Stream.GetFrames(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Color,n, 30000);
+            % extract images
+            frames = struct('color',[]);
+            for i=1:imageCollection.Count
+                currImage = imageCollection.Item(i-1);
+                imageObj = currImage.Images;
+                dImByte = imageObj.Item(0).Item(0).Data;
+                frame = typecast(cast(dImByte,'uint8'),'uint16');
+                frames(i).color = frame;    %obj.privReadColorStream(frame, colorRes);
+            end
+        end
 
         
+        function frames = getColorFrame(obj,n)
+            colorRes = [1920 1080];
+            if ~obj.m_streamWithcolor
+                obj.startStream(false,[],colorRes);
+            end
+            if(~exist('n','var'))
+                n=1;
+            end
+            
+            imageCollection = obj.m_dotnetcam.Stream.GetFrames(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Color,n, 30000);
+            % extract images
+            frames = struct('color',[]);
+            for i=1:imageCollection.Count
+                currImage = imageCollection.Item(i-1);
+                imageObj = currImage.Images;
+                dImByte = imageObj.Item(0).Item(0).Data;
+                frame = typecast(cast(dImByte,'uint8'),'uint16');
+                frames(i).color = obj.privReadColorStream(frame, colorRes);
+            end
+        end
         
-        function frame = getFrame(obj,n,postproc)
+        
+        function frame = getFrame(obj,n,postproc,rot180)
             obj.startStream();
             if(~exist('n','var'))
                 n=1;
+            end
+            if(~exist('rot180','var'))
+                rot180=0;
             end
             if (~exist('postproc','var'))
                 postproc = true;
@@ -399,7 +486,13 @@ classdef HWinterface <handle
             else
                 frame=stream;
             end
-            
+            if rot180
+                for i = 1:numel(frame)
+                    frame(i).i = rot90(frame(i).i,2);
+                    frame(i).z = rot90(frame(i).z,2);
+                    frame(i).c = rot90(frame(i).c,2);
+                end
+            end
             
             if(n~=-1)%do not save it to rec stream (for display usages)
                 obj.privRecFunc('getFrame',{n},{frame});
@@ -526,13 +619,14 @@ classdef HWinterface <handle
                 vbias(k) = str2num(line{2});
                 line = strsplit(lines{2},{':',' '});
                 ibias(k) = str2num(line{2});
+                pause(0.005);
             end
             ibias = mean(ibias);
             vbias = mean(vbias);
         end
-        function [lddTmptr,mcTmptr,maTmptr,tSense,vSense ]=getLddTemperature(obj,N)
+        function [lddTmptr,mcTmptr,maTmptr,apdTmptr ]=getLddTemperature(obj,N)
             if ~exist('N','var')
-                N = 100;
+                N = 10;
             end
             getTmptr = zeros(N,3);
             
@@ -547,16 +641,14 @@ classdef HWinterface <handle
                         getTmptr(i,k) = str2num(line{2});
                     end
                 end
-                % tsense, apd temperature monitor
-                [~,tSense(i)] = obj.cmd('mrd a00401a4 a00401a8');
-                [~,vSense(i)] = obj.cmd('mrd a00401a0 a00401a4');
+                pause(0.005);
             end
             tSense = mean(tSense);
             vSense = mean(vSense);
             lddTmptr = mean(getTmptr(:,1));
             mcTmptr = mean(getTmptr(:,2));
             maTmptr = mean(getTmptr(:,3));
-            
+            apdTmptr = mean(getTmptr(:,4));
 
         end
         function factor = z2mm(obj)

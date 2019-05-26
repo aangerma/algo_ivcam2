@@ -43,15 +43,8 @@ end
 function setFolder(varargin)
     textboxH = varargin{3};
     app = guidata(varargin{1});
-    if app.cb.replayMode.Value
-        [fname, pathStr] = uigetfile('*.mat', 'Replay Mode',textboxH.String);
-        if ~isempty(fname)
-            f = fullfile(pathStr,fname);
-        end
-    else
-        f = uigetdir(textboxH.String);
-    end
-    
+    f = uigetdir(textboxH.String);
+        
     if f~=0
         textboxH.String=f;
         outputFolderChange_callback(textboxH);

@@ -177,14 +177,12 @@ classdef HWinterfaceFile <handle
             ibias = mean(ibias);
             vbias = mean(vbias);
         end
-        function [lddTmptr,mcTmptr,maTmptr,tSense,vSense ]=getLddTemperature(obj,N)
+        function [lddTmptr,mcTmptr,maTmptr,apdTmptr]=getLddTemperature(obj,N)
             if ~exist('N','var')
-                N = 100;
+                N = 10;
             end
             getTmptr = zeros(N,3);
             
-            tSense = zeros(N,1);
-            vSense = zeros(N,1);
             for i = 1:N
                 strtmp = obj.cmd('TEMPERATURES_GET');
                 lines = strsplit(strtmp,newline);
@@ -194,17 +192,12 @@ classdef HWinterfaceFile <handle
                         getTmptr(i,k) = str2num(line{2});
                     end
                 end
-                % tsense, apd temperature monitor
-                [~,tSense(i)] = obj.cmd('mrd a00401a4 a00401a8');
-                [~,vSense(i)] = obj.cmd('mrd a00401a0 a00401a4');
             end
-            tSense = mean(tSense);
-            vSense = mean(vSense);
             lddTmptr = mean(getTmptr(:,1));
             mcTmptr = mean(getTmptr(:,2));
             maTmptr = mean(getTmptr(:,3));
-            
-
+            apdTmptr = mean(getTmptr(:,4));
+          
         end
 
         

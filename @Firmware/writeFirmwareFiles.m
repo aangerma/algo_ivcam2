@@ -8,8 +8,8 @@ function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
     mkdirSafe(outputFldr);
     regs=obj.get();%force autogen
     
-    v1=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(255));
-    v2=bitand(bitshift(regs.DIGG.spare(1),0),uint32(255));
+    v1=bitand(bitshift(regs.DIGG.spare(1),-16),uint32(255));
+    v2=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(255));
     configpostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
     if oldFWVersion
         calibpostfix = sprintf('_Ver_%02d_%02d.',v2,v1);
@@ -29,7 +29,7 @@ function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
     writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' calibpostfix 'txt']),1,510);
     
     d=obj.getAddrData(calibR_regs2write);
-    writeMWD(d,fullfile(outputFldr,filesep,['Reserved_512_Calibration_%d_CalibData' calibpostfix 'txt']),2,62);
+    writeMWD(d,fullfile(outputFldr,filesep,['Reserved_512_Calibration_2_CalibData' calibpostfix 'txt']),1,62);
     
     
     undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' calibpostfix 'bin']),true);
