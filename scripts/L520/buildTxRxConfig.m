@@ -1,8 +1,8 @@
 txregs = [];
-changeCode = 0;
-changeRes = 0;
+changeCode = 1;
+changeRes = 1;
 if changeCode
-    codeLen = 32;
+    codeLen = 16;
     txregs.FRMW.txCode = Utils.bin2uint32(flip(Codes.propCode(codeLen,1)));
     txregs.GNRL.codeLength = uint8(codeLen);
     txregs.FRMW.coarseSampleRate = uint8(4);
@@ -17,12 +17,10 @@ if changeRes
 end
 
 fw = Pipe.loadFirmware(fullfile(ivcam2root,'+Calibration/releaseConfigCalibL520'));
-if ~isempty(txregs)
-    fw.setRegs(txregs,'');
-end
-regs = fw.get();
+fw.setRegs(txregs,'');
+fw.get();
 
-outputFolder = 'L520Config_v3';
+outputFolder = 'L520Config_v1';
 fw.writeFirmwareFiles(fullfile(outputFolder),false);
 hw = HWinterface;
 hw.burnCalibConfigFiles(outputFolder)
