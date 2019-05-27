@@ -1,6 +1,6 @@
-function [lddTmptr,mcTmptr,maTmptr,tSense,vSense] = getTemp()    
+function [lddTmptr,mcTmptr,maTmptr,apdTemp] = getTemp()    
     hw = HWinterface();
-    [lddTmptr,mcTmptr,maTmptr,tSense,vSense] = hw.getLddTemperature();
+    [lddTmptr,mcTmptr,maTmptr,apdTemp] = hw.getLddTemperature();
 end
 
     
