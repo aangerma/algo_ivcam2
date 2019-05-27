@@ -67,9 +67,11 @@
           <timeoutSec>1</timeoutSec>
       </wait>
       <warmUp></warmUp>
+      <HVM_Val> 
+          <numOfFrames>100</numOfFrames>
+      </HVM_Val>
       <dfz>
           <numOfFrames>30</numOfFrames>
-          
       </dfz>
       <coverage>
           <numOfFrames>100</numOfFrames>

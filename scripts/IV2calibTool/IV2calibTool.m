@@ -402,6 +402,8 @@ function statrtButton_callback(varargin)
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
             pause(3);
+    %        cal_output_dir = fileparts(fopen(app.m_logfid));
+            [calibParams , ~] = HVM_Cal_init(calibfn,fprintffS,runparams.outputFolder);
             [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s,app);
         end
         
@@ -418,7 +420,7 @@ function statrtButton_callback(varargin)
         
         
     catch e
-       
+        calibPassed = 0;
         fprintf('%s',getReport(e));
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
@@ -455,3 +457,18 @@ function addGvd2Spark(s,gvd)
     end
     
 end
+
+function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
+    if(~exist('output_dir','var'))
+        output_dir = fullfile(tempdir,'\cal_tester\output');
+    end
+    debug_log_f         = 0;
+    verbose             = 0;
+    save_input_flag     = 1;
+    save_output_flag    = 1;
+    dummy_output_flag   = 0;
+    ret = 1;
+    [calibParams ,~] = cal_init(output_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
+end
+
+

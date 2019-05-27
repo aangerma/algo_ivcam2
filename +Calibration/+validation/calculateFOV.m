@@ -1,6 +1,5 @@
 function [ results ] = calculateFOV( imU,imD,imNoise,regs,FE )
-noiseThresh = max(imNoise(:));
-noiseThresh = 1.2*noiseThresh;
+noiseThresh = max(imNoise(:))*1.2;
 fullIm = imU > 0;
 notNoiseImU = calcLaserBounds(imU,noiseThresh);
 notNoiseImD = calcLaserBounds(imD,noiseThresh);
