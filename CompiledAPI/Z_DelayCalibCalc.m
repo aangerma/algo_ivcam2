@@ -27,6 +27,7 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff;
     fprinff = g_fprinff;
 
+    unFiltered  = 0;
      % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -53,34 +54,6 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
     imDs_z = Calibration.aux.GetFramesFromDir(path_down ,width , height);
     imBs_i = Calibration.aux.GetFramesFromDir(path_both ,width , height);
 
-    % save Input
-    if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_in.mat']);
-        save(fn,'imUs_z', 'imDs_z' , 'imBs_i','sz' , 'delay');
-    end
-
-    [res, delayZ, im ] = Z_DelayCalibCalc_int(imUs_z,imDs_z, imBs_i ,delay , calibParams.dataDelay, g_verbose); 
-    
-        % save output
-    if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_out.mat']);
-        save(fn,'res', 'delayZ', 'im' );
-    end
-
-end
-
-function [res , delayZ, im] = Z_DelayCalibCalc_int(imUs_z,imDs_z,imBs_i ,CurrentDelay, dataDelayParams ,verbose)
-    persistent n
-    nsEps       = 2;
-    unFiltered  = 0;
-
-    if isempty(n)
-        n = 0;
-    end
-    n = n + 1;
-    
-    res = 0; %(WIP) not finish calibrate
-    
     % average I image
     imU_z = average_image(imUs_z);
     imD_z = average_image(imDs_z);
@@ -89,9 +62,37 @@ function [res , delayZ, im] = Z_DelayCalibCalc_int(imUs_z,imDs_z,imBs_i ,Current
     imU=getFilteredImage(imU_z,unFiltered);
     imD=getFilteredImage(imD_z,unFiltered);
     imB=getFilteredImage(imB_i,unFiltered);
-% debug image
 
     
+    [res, delayZ, im ,phase] = Z_DelayCalibCalc_int(imU,imD,imB ,delay , calibParams.dataDelay, g_verbose); 
+    
+    % save Input
+    if g_save_input_flag && exist(g_output_dir,'dir')~=0 
+        fn = fullfile(g_output_dir, [func_name sprintf('_in%d.mat',phase)]);
+        save(fn,'imU', 'imD' , 'imB','sz' , 'delay');
+    end
+        % save output
+    if g_save_output_flag && exist(g_output_dir,'dir')~=0 
+        fn = fullfile(g_output_dir, [func_name sprintf('_out%d.mat',phase)]);
+        save(fn,'res', 'delayZ', 'im');
+    end
+
+end
+
+function [res , delayZ, im ,phase] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams ,verbose)
+    persistent n
+    nsEps       = 2;
+    unFiltered  = 0;
+
+    if isempty(n)
+        n = 0;
+    end
+    n = n + 1;
+    phase = n;
+    res = 0; %(WIP) not finish calibrate
+    
+% debug image
+   
     delayPx = findCoarseDelay(imB, imU, imD);
     % time per pixel in spherical coordinates
     delayZ = int32(round(25*10^3*delayPx/size(imB,1)/2));

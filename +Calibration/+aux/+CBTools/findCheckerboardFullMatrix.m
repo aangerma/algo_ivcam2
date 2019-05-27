@@ -1,4 +1,4 @@
-function [ gridPointsFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 )
+function [ gridPointsFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 ,isRgbImage)
 %FINDCHECKERBOARDFULLMATRIX detects the calibration chart with the black circle within the white square as an anchor.
 % Gets an IR image of the checkerboard
 % Returns a 20x28x2 matrix where the last 2 dimensions are the xy location
@@ -8,12 +8,16 @@ function [ gridPointsFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 )
 if ~exist('imageRotatedBy180','var')
     imageRotatedBy180 = 0;
 end
-
+if exist('isRgbImage','var') && isRgbImage
+    cornersDetectionThreshold = 0.2; 
+else
+    cornersDetectionThreshold = 0.35;
+end
 if imageRotatedBy180
     ir = rot90(ir,2);
 end
 
-gridPointsFull = GetSquaresCorners(ir);
+gridPointsFull = GetSquaresCorners(ir,cornersDetectionThreshold);
 
 if imageRotatedBy180
     gridPointsFull = rot90(gridPointsFull,2);
@@ -31,11 +35,11 @@ end
 end
 
 
-function [gridPointsFull] = GetSquaresCorners(ir)
+function [gridPointsFull] = GetSquaresCorners(ir,cornersDetectionThreshold)
 
 %find CB points
 
-[p,bsz] = Validation.aux.findCheckerboard(ir); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+[p,bsz] = Validation.aux.findCheckerboard(ir,[],cornersDetectionThreshold); % p - 3 checkerboard points. bsz - checkerboard dimensions.
 
 pmat = reshape(p,[bsz,2]);
 

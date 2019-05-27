@@ -8,6 +8,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
     defaultDebug = 0;
     valResults = [];
     allResults = [];
+    
     if runParams.post_calib_validation
         % open stream and capture image of the validation target
         fprintff('[-] Validation...\n');
@@ -61,6 +62,10 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                     hw.getRegsFromUnit(fullfile(runParams.outputFolder,'validationRegState.txt') ,0 );  
                     fprintff('Done\n');
                 end
+            elseif  strfind(enabledMetrics{i},'HVM_Val')
+                [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,spark,app,valResults);
+                [valResults ,allCovRes] = HVM_val_Coverage(hw,runParams,calibParams,fprintff,spark,app,valResults);
+                allResults.HVM.coverage = allCovRes;
             elseif  strfind(enabledMetrics{i},'sharpness')
                 sharpConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(sharpConfig.numOfFrames,0);
@@ -135,7 +140,11 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         Calibration.aux.logResults(valResults,runParams,'validationResults.txt');
         Calibration.aux.writeResults2Spark(valResults,spark,calibParams.validationErrRange,write2spark,'Val');
         valPassed = Calibration.aux.mergeScores(valResults,calibParams.validationErrRange,fprintff,1);
-        struct2xml_(allResults,fullfile(outFolder,'fullReport.xml'));
+        val.res = allResults.Validation;
+        hvm.res = allResults.HVM;
+        struct2xml_(hvm,fullfile(outFolder,'HVMReport.xml'));
+        struct2xml_(val,fullfile(outFolder,'ValReport.xml'));
+%        struct2xml_(allResults,fullfile(outFolder,'fullReport.xml'));
         Calibration.aux.logResults(allResults,runParams,'fullValidationReport.txt');
         %{
         fprintff('%s: %2.2gmm\n','zSTD',zSTD);
@@ -164,3 +173,68 @@ function saveValidationData(debugData,frames,metric,outFolder,debugMode)
     end
     
 end
+
+function [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,spark,app,valResults)
+% function : perform the DFZ, Sharpness, temporalNoise, roi
+%           capturing 100 frames 
+%           reading K matrix and zMaxSubMM
+% 		DFZ  (default configuration)
+% 			100 frames average
+% 			params.camera.K = getKMat(hw);
+% 			params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
+% 
+% 		sharpness (default configuration)
+% 			100 frames not average
+% 				
+% 		temporalNoise (default configuration)
+% 			100 frames not average
+% 
+% 		ROI (default configuration)
+%       LOS (default configuration)
+%
+%% capturing
+    nof_frames = calibParams.validationConfig.HVM_Val.numOfFrames;
+    InputPath = fullfile(tempdir,'HVM_V_1'); 
+    mkdirSafe(InputPath);
+    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , InputPath);  % save images Z and I in sub dir 
+
+%% get K zMaxSubMM
+    params.camera.K          = getKMat(hw);
+    params.camera.zMaxSubMM  = 2^double(hw.read('GNRLzMaxSubMMExp'));
+    sz = hw.streamSize();
+    [valResults ,allResults] = HVM_Val_Calc(InputPath,sz,params,calibParams,valResults);
+
+end 
+function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fprintff,spark,app,valResults)
+% function : perform the DFZ, Sharpness, temporalNoise, roi
+%           capturing 100 frames 
+% 		coverage (default configuration 'JFILBypass$' = true;
+% 			100 frames not average
+% 
+% 		ROI (default configuration)
+%       LOS (default configuration)
+%
+%% pre-capturing setting
+    r = Calibration.RegState(hw);
+    r.add('JFILBypass$',true);
+    r.set();
+    pause(0.1);
+%% capturing
+    InputPath = fullfile(tempdir,'HVM_Coverage');
+    nof_frames = calibParams.validationConfig.coverage.numOfFrames;
+    mkdirSafe(InputPath);
+    Calibration.aux.SaveFramesWrapper(hw, 'I' , nof_frames , InputPath);  % save images Z and I in sub dir 
+    sz = hw.streamSize();
+
+%calculate ir coverage metric
+    [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibParams,valResults);
+%clean up hw
+    r.reset();
+end 
+
+function K = getKMat(hw)
+    CBUFspare = typecast(hw.read('CBUFspare'),'single');
+    K = reshape([CBUFspare;1],3,3)';
+end
+
+
