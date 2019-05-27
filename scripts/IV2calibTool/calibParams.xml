@@ -39,8 +39,8 @@
       <undistRms>[0.0 inf]</undistRms>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
-      <imFovX>[50 inf]</imFovX>
-      <imFovY>[35 inf] </imFovY>
+      <imFovX>[0 inf]</imFovX>
+      <imFovY>[0 inf] </imFovY>
       <irCoverageSpEn>[88 100]</irCoverageSpEn>
       <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
       <irCoverageSpDis>[85 100]</irCoverageSpDis>
@@ -203,7 +203,7 @@
         </preResetCapture>
         
         
-        <fovxRange>[40,70]</fovxRange> 
+        <fovxRange>[17,27]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 

@@ -73,14 +73,13 @@ function startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR)
 	        IVCam.Tools.CamerasSdk.Common.Configuration.IVCam20.IVCam20DepthMode.C.ToString(),...
 	        imgVsize/2,imgHsize,...
 	        fps));
-        %         IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir240x640,...
-       
-        
-        scwList = NET.createGeneric('System.Collections.Generic.List',...
-            {'IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper'});
-        scwList.Add(scwD)
-        scwList.Add(scwI)
-        scwList.Add(scwC)
+	%         IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir240x640,...
+    
+	    scwList = NET.createGeneric('System.Collections.Generic.List',...
+	        {'IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper'});
+	    scwList.Add(scwD)
+	    scwList.Add(scwI)
+	    scwList.Add(scwC)
         
          if ~isempty(colorResolution)
              eImageResolutionColor = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir1920x1080;
@@ -94,7 +93,6 @@ function startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR)
             obj.m_streamWithcolor = true;
 
         end
-       
 	    camConfig = IVCam.Tools.CamerasSdk.Cameras.Configuration.CameraConfiguration(scwList);
     
 	    obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
