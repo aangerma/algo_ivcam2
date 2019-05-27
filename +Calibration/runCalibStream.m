@@ -48,9 +48,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
     
     %% call HVM_cal_init
- %   cal_output_dir = fileparts(fopen(app.m_logfid));
- %   [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
-    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff);
+    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,runParams.outputFolder);
 
     
     %% Start stream to load the configuration
