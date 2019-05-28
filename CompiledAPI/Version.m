@@ -1,5 +1,3 @@
-function v = Version()
-
-    v = '0.1';
-
+function [vers] = Version()
+    [vers,~,~] = calibToolVersion();
 end
