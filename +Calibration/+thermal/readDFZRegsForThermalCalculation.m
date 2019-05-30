@@ -1,4 +1,4 @@
-function currregs = readDFZRegsForThermalCalculation(hw)
+function currregs = readDFZRegsForThermalCalculation(hw,checkAssert)
     
     currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
     currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
@@ -43,6 +43,9 @@ function currregs = readDFZRegsForThermalCalculation(hw)
     DCORspare = hw.read('DCORspare');
     currregs.DCOR.spare = DCORspare';
     currregs.FRMW.dfzVbias = typecast(DCORspare(3:5),'single');
+    if checkAssert
+        assert(all(currregs.FRMW.dfzVbias ~= 0),'dfzVbias from DCORspare are 0\n');
+    end
     currregs.FRMW.dfzIbias = typecast(DCORspare(6:8),'single');
     
     currregs.DEST.p2axa = hex2single(dec2hex(hw.read('DESTp2axa')));

@@ -7,7 +7,7 @@ function dsmregs = DSM_Calib(hw,fprintff,calibParams,runParams)
 end
 
 function dsmregs = DSM_Calib_Output(hw,fprintff,DSM_data,angxZO,angyZO,runParams)
-    verbose = runParams.verbose;
+    verbose = 1;
     sz = hw.streamSize();
 %% matlab only
     d_pre       = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
@@ -111,7 +111,7 @@ function RestartMirror(hw,runParams)
     hw.runPresetScript('resetRestAngle');
     % hw.runPresetScript('maRestart');
     % hw.runPresetScript('systemConfig');
-    Calibration.aux.startHwStream(hw,runParams);
+    hw.startStream;
 end
 
 function [binIm1stat,stat] = maxAreaStat(binaryIm,sz)

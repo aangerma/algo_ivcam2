@@ -26,6 +26,7 @@ function burn2device(obj,basedir,burnCalib,burnConfig)
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_1_CalibInfo_Ver_*.bin'                 ,'040'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'DIGG_Undist_Info_2_CalibInfo_Ver_*.bin'                 ,'041'};
         filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'RGB_int_ext_Info_CalibInfo_Ver_*.bin'                   ,'010'};
+        filenamesTableIndexLUT(end+1,:)={ 'WrCalibInfo' ,'Dynamic_Range_Info_CalibInfo_Ver_*.bin'                 ,'00f'};
     end
     if(burnConfig)
             filenamesTableIndexLUT(end+1,:)={'WrConfigData','Algo_Dynamic_Configuration_VGA30_1_ConfigData_Ver_*.txt','133'};

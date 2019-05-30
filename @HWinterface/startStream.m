@@ -1,4 +1,4 @@
-function startStream(obj,FrameGraberMode,resolution,colorResolution)
+function startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR)
     timeout = 10; %timeout until first frame is valid
     if(obj.m_dotnetcam.Stream.IsDepthPlaying)
         return;
@@ -16,7 +16,9 @@ function startStream(obj,FrameGraberMode,resolution,colorResolution)
     if ~exist('colorResolution','var')
         colorResolution = [];
     end
-     
+    if ~exist('rgbFR','var')
+        rgbFR = 30;
+    end
 
  %   FrameGraberMode = true;
 
@@ -71,7 +73,7 @@ function startStream(obj,FrameGraberMode,resolution,colorResolution)
                 IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfiguration(...
                 IVCam.Tools.CamerasSdk.Common.Configuration.IVCam20.IVCam20ColorMode.YUY2.ToString(),...
                 eImageResolutionColor,...
-                30));
+                rgbFR));
             scwList.Add(scwColor);
             obj.m_streamWithcolor = true;
 

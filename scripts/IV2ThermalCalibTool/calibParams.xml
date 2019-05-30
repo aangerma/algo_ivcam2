@@ -7,39 +7,40 @@
        <lddTKill>75</lddTKill>
        <mcTKill>[]</mcTKill>
        <maTKill>[]</maTKill>
-       <apdTKill>[]</apdTKill>
+       <apdTKill>65</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
        <cbGridSz>[9,13]</cbGridSz>
+       <presetMode>1</presetMode>
    </gnrl>
    <warmUp>
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
        <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
-       <teminationTempdiffFromCalibTemp>4</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
+       <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
    </warmUp>
    <errRange>
-      <stdRtd>[0 inf]</stdRtd>
-      <stdXim>[0 inf]</stdXim>
-      <stdYim>[0 inf]</stdYim>
-      <stdXmm>[0 inf]</stdXmm>
-      <stdYmm>[0 inf]</stdYmm>
-      <stdZmm>[0 inf]</stdZmm>
-      <p2pRtd>[0 inf]</p2pRtd>
-      <p2pXim>[0 inf]</p2pXim>
-      <p2pYim>[0 inf]</p2pYim>
-      <p2pXmm>[0 inf]</p2pXmm>
-      <p2pYmm>[0 inf]</p2pYmm>
-      <p2pZmm>[0 inf]</p2pZmm>
-      <meanEGeom>[0 inf]</meanEGeom>
-      <minEGeom>[0 inf]</minEGeom>
-      <maxEGeom>[0 inf]</maxEGeom>
-      <xScale>[0 inf]</xScale>
-      <yScale>[0 inf]</yScale>
-      <xShift>[0 inf]</xShift>
-      <yShift>[0 inf]</yShift>
-      <rtdShit>[0 inf]</rtdShit>
+      <stdRtd>[0 17]</stdRtd>
+      <stdXim>[0 1.5]</stdXim>
+      <stdYim>[0 0.5]</stdYim>
+      <stdXmm>[0 1.55]</stdXmm>
+      <stdYmm>[0 1.33]</stdYmm>
+      <stdZmm>[0 9]</stdZmm>
+      <p2pRtd>[0 80]</p2pRtd>
+      <p2pXim>[0 16]</p2pXim>
+      <p2pYim>[0 4]</p2pYim>
+      <p2pXmm>[0 13]</p2pXmm>
+      <p2pYmm>[0 11]</p2pYmm>
+      <p2pZmm>[0 37]</p2pZmm>
+      <meanEGeom>[0 2.5]</meanEGeom>
+      <minEGeom>[0 1.1]</minEGeom>
+      <maxEGeom>[0 5]</maxEGeom>
+      <xScale>[0 0.01]</xScale>
+      <yScale>[0 0.008]</yScale>
+      <xShift>[0 1.11]</xShift>
+      <yShift>[0 0.8]</yShift>
+      <rtdShit>[0 25]</rtdShit>
    </errRange>
    <validation>
        <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>

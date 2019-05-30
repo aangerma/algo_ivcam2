@@ -1,5 +1,5 @@
 function [delayIR,ok, pixelVar] = calibIRdelay(hw,dataDelayParams,runParams,calibParams)
-    verbose = runParams.verbose;
+    verbose = 1;
     delayIR = dataDelayParams.slowDelayInitVal;
 
     ok=false;

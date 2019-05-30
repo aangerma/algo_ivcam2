@@ -6,7 +6,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
     
     % Start by setting  my own DSM values. This make sure none of the angles
     % are saturated.
-    verbose = runParams.verbose;
+    verbose = 1;
     margin = params.dsm.margin;
     
     [angxRawZO,angyRawZO,restFailed] = Calibration.aux.zeroOrderAngles(hw,fprintff,runParams);

@@ -216,7 +216,7 @@ classdef HWinterface <handle
         end
         
         %startStream(obj);
-        startStream(obj,FrameGraberMode,resolution,colorResolution);
+        startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR);
         function stopStream(obj)
             if(obj.m_dotnetcam.Stream.IsDepthPlaying)
 %                 obj.runScript(obj.getPresetScript('stopStream'));
@@ -226,14 +226,16 @@ classdef HWinterface <handle
             
             
         end
-        
-        %destructor
-        function delete(obj)
-            obj.stopStream();
+        function saveRecData(obj)
             if(~isempty(obj.m_recfn))
                 recData = obj.m_recData;%#ok
                 save(obj.m_recfn,'recData');
             end
+        end
+        %destructor
+        function delete(obj)
+            obj.stopStream();
+            obj.saveRecData();
         end
         
         setupRF(obj,codeLen,decRatio);
@@ -413,10 +415,13 @@ classdef HWinterface <handle
 
         end
         
-       function frames = getColorFrameRAW(obj,n)
+       function frames = getColorFrameRAW(obj,n,rgbFR)
             colorRes = [1920 1080];
+            if(~exist('rgbFR','var'))
+                rgbFR=30;
+            end
             if ~obj.m_streamWithcolor
-                obj.startStream(false,[],colorRes);
+                obj.startStream(false,[],colorRes,rgbFR);
             end
             if(~exist('n','var'))
                 n=1;
@@ -435,10 +440,13 @@ classdef HWinterface <handle
         end
 
         
-        function frames = getColorFrame(obj,n)
+        function frames = getColorFrame(obj,n,rgbFR)
             colorRes = [1920 1080];
+            if(~exist('rgbFR','var'))
+                rgbFR=30;
+            end
             if ~obj.m_streamWithcolor
-                obj.startStream(false,[],colorRes);
+                obj.startStream(false,[],colorRes,rgbFR);
             end
             if(~exist('n','var'))
                 n=1;
@@ -722,6 +730,23 @@ classdef HWinterface <handle
             obj.cmd('iwb e2 03 01 9a');% internal modulation (from register)
             obj.cmd('iwb e2 08 01 0'); % modulation amp is 0
             obj.cmd('iwb e2 06 01 70'); % Add bias
+        end
+        
+        
+        function [result] = getPresetControlState(obj)
+            try
+                result = obj.m_dotnetcam.PropertyProvider.QueryProperty(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 'Gain');
+            catch e
+                error(e.message);
+            end
+        end
+        
+        function [] = setPresetControlState(obj,value)
+            try
+                obj.m_dotnetcam.PropertyProvider.SetProperty(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 'Gain', value);
+            catch e
+                error(e.message);
+            end
         end
     end
 end

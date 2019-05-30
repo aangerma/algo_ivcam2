@@ -1,5 +1,5 @@
 function [delayZ,ok] = calibZdelay(hw,dataDelayParams,runParams,calibParams)
-verbose = runParams.verbose;
+verbose = 1;
 NumberOfFrames = calibParams.gnrl.Nof2avg;
 delayZ=dataDelayParams.fastDelayInitVal;
 % delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;

@@ -5,7 +5,7 @@ if(~exist('getMeta','var'))
 else
     m=getMeta;
 end
-% group 0: = don't transfer, 1: from EPROM , 2: User config / other 
+% group 0: = don't transfer, 1: from EPROM , 2: User config , 3:cbufxsections (eprom) , 4:DIGGgamma (eprom) 
 
 MetaForFW=m([m.TransferToFW]~='0');
 RegsNum=length(MetaForFW); 

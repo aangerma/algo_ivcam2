@@ -14,6 +14,9 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.cmd('DIRTYBITBYPASS');
+        if calibParams.gnrl.disableMetaData
+            hw.cmd('METADATA_ENABLE_SET 0');
+        end
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         hw.getFrame;
         % Collecting hardware state

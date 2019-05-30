@@ -14,12 +14,13 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     hw=HWinterface();
     hw.cmd('DIRTYBITBYPASS');
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+    hw.setPresetControlState(calibParams.gnrl.presetMode);
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Get regs state
     fprintff('Reading unit calibration regs...');
     hw.getFrame;
     hw.stopStream;
-    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw);
+    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0);
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% Start stream to load the configuration

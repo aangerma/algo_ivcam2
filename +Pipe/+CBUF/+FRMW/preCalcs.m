@@ -8,7 +8,7 @@ end
 
 
 function [sectionVec] = calcCbufSection(regs,luts)
-NUM_SECTIONS = single(128);
+NUM_SECTIONS = single(124);
 ANG_STEP = 8;
 FE = [];
 if regs.FRMW.fovExpanderValid

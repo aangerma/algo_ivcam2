@@ -56,11 +56,14 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
+    if calibParams.gnrl.disableMetaData
+        hw.cmd('METADATA_ENABLE_SET 0');
+    end
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     
     fprintff('Opening stream...');
-    Calibration.aux.startHwStream(hw,runParams);
-    
+%     Calibration.aux.startHwStream(hw,runParams);
+    hw.startStream;
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
    [verValue,verValuefull] = getVersion(hw,runParams);  
@@ -77,6 +80,15 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% Warm up stage
     Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
+    %% Only RGB Calib
+    if onlyRGBCalib(runParams)
+        results = struct;
+        calibPassed = 1;
+        calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
+        clear hw;
+        return
+    end
+    
     %% ::dsm calib::
     dsmregs = calibrateDSM(hw, fw, runParams, calibParams,results,fnCalib, fprintff,t);
     %% ::calibrate delays::
@@ -105,6 +117,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 	results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t);
 	calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff);
 
+    %% Calibrate min and max range preset
+    [results] = calibratePresets(hw, results,runParams,calibParams, fprintff,fw);
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
     
@@ -118,19 +132,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
     %% Undist and table burn
-    if ~runParams.rgb
-        results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
-    end
+    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams);
+    
        
     
-     %% rgb calibration
-     [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
-     if rgbPassed
-        fnRgbTable = fullfile(runParams.outputFolder,...
-            sprintf('RGB_int_ext_Info_CalibInfo_Ver_%02d_%02d.bin',rgbTable.version));
-        writeAllBytes(rgbTable.data,fnRgbTable);
-        hw.cmd(sprintf('WrCalibInfo "%s"',fnRgbTable));
-     end
+     
    
     
 %     %% Print image final fov
@@ -138,31 +144,32 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 %     if ~calibPassed
 %        return 
 %     end
-    if ~runParams.rgb
-        try
-            hw.runPresetScript('maReset');
-            pause(0.1);
-            hw.runScript(fullfile(runParams.outputFolder,'AlgoInternal','postUndistState.txt'));
-            pause(0.1);
-            hw.runPresetScript('maRestart');
-            pause(0.1);
-            hw.shadowUpdate();
+    hw.runPresetScript('maReset');
+    pause(0.1);
+    hw.runScript(fullfile(runParams.outputFolder,'AlgoInternal','postUndistState.txt'));
+    pause(0.1);
+    hw.runPresetScript('maRestart');
+    pause(0.1);
+    hw.shadowUpdate();
 
-            %% Coverage within ROI 
-            [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
-            if ~calibPassed
-               return 
-            end
-            %% Validate DFZ before reset
-            [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
-            if ~calibPassed
-               return 
-            end
-        catch e
-            fprintffS('[!] ERROR:%s\n',strtrim(e.message));
-            fprintff('CoverageValidation or preResetDFZValidation failed. Skipping...\n');
+    try
+        
+        %% Coverage within ROI 
+        [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
+        if ~calibPassed
+           return 
         end
+        %% Validate DFZ before reset
+        [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
+        if ~calibPassed
+           return 
+        end
+        
+    catch e
+        fprintffS('[!] ERROR:%s\n',strtrim(e.message));
+        fprintff('CoverageValidation or preResetDFZValidation failed. Skipping...\n');
     end
+
     Calibration.aux.logResults(results,runParams);
     Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
     %% merge all scores outputs
@@ -174,26 +181,67 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     else
         fprintff('PASSED.\n');
     end
-    if ~runParams.rgb
-        %% Burn 2 device
-        burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
+    %% Burn 2 device
+    burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
 
-        %% Collecting hardware state
-        if runParams.saveRegState
-            fprintff('Collecting registers state...');
-            hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
-            fprintff('Done\n');
-        end
-    
+    %% Collecting hardware state
+    if runParams.saveRegState
+        fprintff('Collecting registers state...');
+        hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
+        fprintff('Done\n');
     end
+    
+    
     
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
     %% Validation
     
-    clear hw;
 %     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
+    %% rgb calibration
+    calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
     
+    clear hw;
+end
+function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t)
+    if runParams.rgb && ~runParams.replayMode
+        fprintff('[-] Reseting before RGB calibration... '); 
+        hw.saveRecData();
+        hw.cmd('rst');
+        pause(10);
+        clear hw;
+        pause(1);
+        hw = HWinterface;
+        fprintff('Done \n');
+        hw.cmd('DIRTYBITBYPASS');
+        hw.cmd('algo_thermloop_en 0');
+        if calibParams.gnrl.disableMetaData
+            hw.cmd('METADATA_ENABLE_SET 0');
+        end
+        Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+        %% set preset to min range: Gain control=2
+        fprintff('Set preset to max range.\n');
+        hw.setPresetControlState(1);  
+        Calibration.aux.startHwStream(hw,runParams);
+        
+        Calibration.aux.collectTempData(hw,runParams,fprintff,'Before rgb calibration:');
+        [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fnCalib, fprintff, t);
+        if rgbPassed
+            fnRgbTable = fullfile(runParams.outputFolder,...
+                sprintf('RGB_int_ext_Info_CalibInfo_Ver_%02d_%02d.bin',rgbTable.version));
+            writeAllBytes(rgbTable.data,fnRgbTable);
+            try
+                hw.cmd(sprintf('WrCalibInfo "%s"',fnRgbTable));
+            catch
+                fprintff('Failed to write RGB calibration table. Check if EEPROM TOC supports RGB.\n');
+            end
+        end
+        rgbResults.rgbIntReprojRms = results.rgbIntReprojRms;
+        rgbResults.rgbExtReprojRms = results.rgbExtReprojRms;
+        %% merge all scores outputs
+        rgbCalibPassed = Calibration.aux.mergeScores(rgbResults,calibParams.errRange,fprintff);
+        calibPassed = calibPassed && rgbCalibPassed;
+    end
 end
 function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff)
     % Compare the geometric error between spherical image and regular image
@@ -268,8 +316,9 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
     initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalib');
-%     initFldr = fullfile(fileparts(mfilename('fullpath')),'initConfigCalib');
+    initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets','+defaultValues');
     copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
+    copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), runParams.internalFolder);
     copyfile(fullfile(runParams.internalFolder ,'*.frmw'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
     copyfile(fullfile(runParams.internalFolder ,'*.csv'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
@@ -489,6 +538,67 @@ function [results,calibPassed] = validateLos(hw, runParams, calibParams, results
         end
     end
     
+end
+function [results] = calibratePresets(hw, results,runParams,calibParams, fprintff,fw)
+%% calibrate min range
+    results = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff);
+%% switch presets
+%     hw.stopStream(); 
+%     fprintff('Switch to long range preset\n');
+%     % set preset to max range: Gain control=1
+%     hw.setPresetControlState(1);   
+%     hw.startStream();
+%% calibrate max range
+    results = calibrateMaxRangePreset(hw, results,runParams,calibParams, fprintff);
+
+%% burn presets
+    burnPresets(hw,runParams,calibParams, fprintff,fw);
+    hw.setPresetControlState(1);   
+end
+function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff)
+    if runParams.minRangePreset
+        fprintff('[-] Calibrating min range laser power...\n');
+        hw.setPresetControlState(2);   
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Min Range Calibration - 20c"m');
+        [results.minRangeScaleModRef,~] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
+        
+        % Update Presets csv in AlgoInternal 
+        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
+        shortRangePreset=readtable(shortRangePresetFn);
+        modRefInd=find(strcmp(shortRangePreset.name,'modulation_ref_factor')); 
+        shortRangePreset.value(modRefInd) = results.minRangeScaleModRef;
+        writetable(shortRangePreset,shortRangePresetFn);
+        hw.setPresetControlState(1);   
+    end
+end
+function [results] = calibrateMaxRangePreset(hw, results,runParams,calibParams, fprintff)
+    if runParams.maxRangePreset
+        fprintff('[-] Calibrating max range laser power...\n');
+       [results.maxRangeScaleModRef,results.maxModRefDec] = Calibration.presets.calibrateMaxRange(hw,calibParams,runParams,fprintff);
+  
+        % Update Presets csv in AlgoInternal 
+        longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
+        longRangePreset=readtable(longRangePresetFn);
+        modRefInd=find(strcmp(longRangePreset.name,'modulation_ref_factor')); 
+        longRangePreset.value(modRefInd) = results.maxRangeScaleModRef;
+        writetable(longRangePreset,longRangePresetFn);
+        %% set to max range laser
+        Calibration.aux.RegistersReader.setModRef(hw,results.maxModRefDec); 
+    end
+end
+function [] = burnPresets(hw,runParams,calibParams, fprintff,fw)
+    if runParams.minRangePreset || runParams.maxRangePreset         
+        % After max range calibration
+        calibTempTableFn = fullfile(runParams.outputFolder,sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(runParams.version,1)*100));
+        presetPath= fullfile(runParams.outputFolder,'AlgoInternal'); 
+        fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+        try
+            hw.cmd(sprintf('WrCalibInfo %s',calibTempTableFn));
+        catch
+            fprintff('Failed to burn presets table to EEPROM. skipping...\n'); 
+        end  
+        
+    end
 end
 function [results,calibPassed] = validateScanDirection(hw, results,runParams,calibParams, fprintff)
     calibPassed = 1;

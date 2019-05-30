@@ -1,4 +1,4 @@
-function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
+function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams, results,fnCalib, fprintff, t)
     rgbTable = zeros(1,112,'uint8');
     fprintff('[-] Calibrating rgb camera to depth... \n');
     rgbPassed = false;
@@ -8,8 +8,11 @@ function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams,
             z2mm = hw.z2mm;
             irImSize = hw.streamSize;
             captures = {calibParams.dfz.captures.capture(:).type};
-            trainImages = strcmp('train',captures);
+            captures = captures(~strcmp(captures,'shortRange'));
+            calibParams.dfz.captures.capture = calibParams.dfz.captures.capture(~strcmp(captures,'shortRange'));
+            fprintff('Collecting images for RGB calibration: ');
             for i=1:length(captures)
+                fprintff('%s',num2str(i));
                 cap = calibParams.dfz.captures.capture(i);
                 cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
                 cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
@@ -21,9 +24,13 @@ function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams,
                 mkdirSafe(path);
                 Calibration.aux.SaveFramesWrapper(hw, 'IC' , 30 , path);  % save images Z and C in sub dir 
             end
-            [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
+            fprintff('\n');
+            [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
+            results.rgbIntReprojRms = resultsRGB.rgbIntReprojRms;
+            results.rgbExtReprojRms = resultsRGB.rgbExtReprojRms;
         catch ex
-            dispEx(ex);
+            fprintff('[!] ERROR:%s\n',strtrim(ex.message));
+            fprintff('[!] Error in :%s (line %d)\n',strtrim(ex.stack(1).name),ex.stack(1).line);
             fprintff('[x] rgb calibration failed with exception, skipping\n');
         end
     else

@@ -7,7 +7,8 @@ classdef Firmware < FirmwareBase
         
         writeFirmwareFiles(obj,outputFldr,oldVersion);
         writeAlgoThermalBin(obj,fname);
-        [EPROMtable,Configtable] = generateTablesForFw(obj,outputFldr);
+        writeDynamicRangeTable(obj,fname,presetsPath);
+        [EPROMtable,ConfigTable,CbufXsections,DiggGammaTable]  = generateTablesForFw(obj,outputFldr);
         fns=writeLUTbin(obj,d,fn,oneBaseCount); 
         
         function obj = Firmware(tablesFolder)

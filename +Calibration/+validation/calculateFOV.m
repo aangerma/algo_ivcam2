@@ -1,5 +1,6 @@
-function [ results ] = calculateFOV( imU,imD,imNoise,regs,FE )
-noiseThresh = max(imNoise(:))*1.2;
+function [ results ] = calculateFOV( imU,imD,imNoise,regs,FE,calibParams )
+noiseThresh = max(imNoise(:));
+noiseThresh = noiseThresh*calibParams.roi.noiseMarginFactor;
 fullIm = imU > 0;
 notNoiseImU = calcLaserBounds(imU,noiseThresh);
 notNoiseImD = calcLaserBounds(imD,noiseThresh);
