@@ -29,9 +29,9 @@ function [dfzRes,allRes,dbg] = DFZCalc(params,frames,runParams,fprintff)
         [yg,xg]=ndgrid(0:imSize(2)-1,0:imSize(1)-1);
     
         
-        F = scatteredInterpolant(vec(ptx(1:end-1,1:end-1)),vec(pty(1:end-1,1:end-1)),vec(distX(1:end-1,:)), 'natural','none');
+        F = scatteredInterpolant(vec(ptx(1:end,1:end-1)),vec(pty(1:end,1:end-1)),vec(distX(1:end,:)), 'natural','none');
         scaleImX = F(xg, yg);
-        F = scatteredInterpolant(vec(ptx(1:end-1,1:end-1)),vec(pty(1:end-1,1:end-1)),vec(distY(1:end-1,:)), 'natural','none');
+        F = scatteredInterpolant(vec(ptx(1:end-1,1:end)),vec(pty(1:end-1,1:end)),vec(distY(1:end,:)), 'natural','none');
         scaleImY = F(xg, yg);
         
         ff = Calibration.aux.invisibleFigure();
