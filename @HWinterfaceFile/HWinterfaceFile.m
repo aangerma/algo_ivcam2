@@ -16,7 +16,9 @@ classdef HWinterfaceFile <handle
             end
             n=min(length(varargin{:}),length(obj.m_recData{1,2}));
             if(~isequal(obj.m_recData{1,2}(1:n),varargin{:}(1:n)))
-                error('Recorded stream state is not aligned with func (input missmatch)');
+                if ~(contains(obj.m_recData{1,2}(1:n),'WrCalibInfo') && contains(varargin{:}(1:n),'WrCalibInfo'))  
+                    error('Recorded stream state is not aligned with func (input missmatch)');
+                end
             end
             varo=obj.m_recData{1,3};
             obj.m_recData=obj.m_recData(2:end,:);
@@ -34,7 +36,15 @@ classdef HWinterfaceFile <handle
             
         end
         
-        
+         function filterGetTemperatureReadings(obj)
+           if numel(obj.m_recData) > 0
+              while strcmp(obj.m_recData{1,2},'TEMPERATURES_GET')
+                  obj.m_recData = obj.m_recData(2:end,:);
+              end
+               
+           end
+            
+        end 
         
         function varargout=burn2device(obj,varargin)
         
@@ -232,6 +242,12 @@ classdef HWinterfaceFile <handle
         end
         function hwa = assertions(obj)%#ok
             
+        end
+        function [] = setPresetControlState(obj,value)
+           
+        end
+        function state = getPresetControlState(obj)
+            state = 1;
         end
         function factor = z2mm(obj)
             % Divide z image by this value to get depth in mm
