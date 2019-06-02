@@ -1050,6 +1050,9 @@ end
 function res = noCalibrations(runParams)
     res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb);
 end
+function res = onlyRGBCalib(runParams)
+    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist) && runParams.rgb;
+end
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;
     g_reg_state_dir = Outdir;
