@@ -1,4 +1,4 @@
 function [version,subVersion] = thermalCalibToolVersion()
-    version = 2.02;
-    subVersion = 0;
+    version = 2.04;
+    subVersion = 1;
 end

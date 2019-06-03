@@ -1,6 +1,14 @@
 function lddWarmUp(hw,app,calibParams,runParams,fprintff)
 % Create StartButton
 
+if runParams.replayMode
+    % Filter all consecutive TEMPERATURES_GET readings
+%     recFile = hw.m_m_recData{1,3};
+%     strcmp(varargin{1},'TEMPERATURES_GET')
+    hw.filterGetTemperatureReadings();
+    return; 
+end
+
 if runParams.warm_up
     app.skipWarmUpButton.Visible = 'on';
     app.skipWarmUpButton.Enable='on';

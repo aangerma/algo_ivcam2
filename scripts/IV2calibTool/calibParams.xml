@@ -18,7 +18,8 @@
        <lddTKill>75</lddTKill>
        <mcTKill>[]</mcTKill>
        <maTKill>[]</maTKill>
-       <apdTKill>[]</apdTKill>
+       <apdTKill>65</apdTKill>
+       <disableMetaData>1</disableMetaData>
    </gnrl>
    <warmUp>
        <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
@@ -29,6 +30,8 @@
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
       <geomErr>[0.01 1.6]</geomErr>
       <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
+      <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
+      <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
       <eGeomSphericalDis>[0.01 3]</eGeomSphericalDis>
       <gammaErr>[0 inf]</gammaErr>
@@ -51,8 +54,9 @@
       <losMeanStdX>[0 0.3] </losMeanStdX>
       <losMeanStdY>[0 0.2]</losMeanStdY>
       <potentialPitchFixInDegrees>[-1.5,1.5]</potentialPitchFixInDegrees>
-      <rgbIntReprojRms>[0 inf]</rgbIntReprojRms>
-      <rgbExtReprojRms>[0 inf] </rgbExtReprojRms>
+      <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
+      <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
+      <minRangeScaleModRef>[0,1]</minRangeScaleModRef>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -125,8 +129,8 @@
       <stickerLocationIsTop>1</stickerLocationIsTop>
    </scanDir>
    <dataDelay>
-      <fastDelayInitVal>28920</fastDelayInitVal> 
-      <slowDelayInitVal>28904</slowDelayInitVal> 
+      <fastDelayInitVal>98488</fastDelayInitVal> 
+      <slowDelayInitVal>98488</slowDelayInitVal> 
       <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
@@ -161,6 +165,11 @@
                 <target>Iv2A1</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
                 <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
+                <type>shortRange</type>
             </capture>
             <capture>
                 <target>Iv2A1</target>
@@ -208,7 +217,8 @@
      <extraMarginL>5</extraMarginL>  
      <extraMarginR>7</extraMarginR>  
      <extraMarginT>2</extraMarginT>  
-     <extraMarginB>4</extraMarginB>       
+     <extraMarginB>4</extraMarginB>   
+     <noiseMarginFactor>1.2</noiseMarginFactor>    
    </roi>
     <fovExpander>
         <valid>0</valid>  

@@ -1,4 +1,4 @@
-function [regs]=setAbsDelay(hw, absFast, absSlow)
+function [regs, absFast, absSlow]=setAbsDelay(hw, absFast, absSlow)
 
 
 hw.runPresetScript('maReset');

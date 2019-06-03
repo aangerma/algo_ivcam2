@@ -41,11 +41,12 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+    hw.setPresetControlState(calibParams.gnrl.presetMode);
     hw.getFrame;
     hw.stopStream;
     
     
-    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw);
+    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1);
     fprintff('Done(%ds)\n',round(toc(t)));
     fprintff('Algo Calib Ldd Temp: %2.2fdeg\n',data.regs.FRMW.dfzCalTmp);
     fprintff('Algo Calib vBias: (%2.2f,%2.2f,%2.2f)\n',data.regs.FRMW.dfzVbias);

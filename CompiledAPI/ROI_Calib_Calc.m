@@ -69,7 +69,7 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc_int(InputPath, calibParams, 
     if calibParams.fovExpander.valid
         FE = calibParams.fovExpander.table;
     end
-    fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,ROI_regs,FE);
+    fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,ROI_regs,FE,calibParams);
     results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
 end
 

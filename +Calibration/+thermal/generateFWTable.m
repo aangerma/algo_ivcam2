@@ -181,6 +181,7 @@ if ~isempty(runParams)
     end
 end
 
+assert(~any(isnan(table(:))),'Thermal table contains nans \n');
 
 
 end
@@ -241,16 +242,19 @@ function table = fillStartNans(table)
     end
 end
 function tableNoInnerNans = fillInnerNans(table)
-    % Find rows that are all nans:
-    nanRows = all(isnan(table),2);
-    rowId = (1:size(table,1))';
-    tableValid = table(~nanRows,:);
-    rowValid = rowId(~nanRows);
-    rowInvalid = rowId(nanRows);
-    newRows = interp1q(rowValid,tableValid,rowInvalid);
-    
     tableNoInnerNans = table;
-    tableNoInnerNans(nanRows,:) = newRows;
+    
+    for i = 1:size(table,2)
+        col = table(:,i);
+        nanRows = isnan(col);
+        rowId = (1:size(table,1))';
+        tableValid = col(~nanRows);
+        rowValid = rowId(~nanRows);
+        rowInvalid = rowId(nanRows);
+        newVals = interp1q(rowValid,tableValid,rowInvalid);
+        tableNoInnerNans(nanRows,i) = newVals;
+    end
+
 end
 % function framesPerTemperatureHindSightFix = transformFrames(framesPerTemperature,angXscale,angXoffset,angYscale,angYoffset,destTmprtOffset,regs)
 % %[rtd,angx,angy,pts,verts]

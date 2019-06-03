@@ -69,8 +69,9 @@ end
 function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, OutputDir, calibParams, fprintff, regs)
     calibPassed = 0;
     captures = {calibParams.dfz.captures.capture(:).type};
+    shortRangeImages = strcmp('shortRange',captures);
     trainImages = strcmp('train',captures);
-    testImages = ~trainImages;
+    testImages = strcmp('test',captures);
 
     width = regs.GNRL.imgHsize;
     hight = regs.GNRL.imgVsize;
@@ -178,6 +179,40 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, OutputDir
         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,x0,runParams);
         fprintff('geom error on test set =%.2g\n',results.extraImagesGeomErr);
     end
+    
+    if ~isempty(d(shortRangeImages)) && sum(shortRangeImages) == 1
+        srInd = find(shortRangeImages,1,'first');
+        lrInd = srInd-1;
+        if nanmean(vec(abs((d(srInd).pts(:,:,1)-d(lrInd).pts(:,:,1))))) > 1 % If average corner location is bigger than 1 pixel we probably have missmatched captures
+            fprintff('Long and short range presets DFZ captures are not of the same scene! Short range preset calib failed \n')
+            calibPassed = 0;
+    
+        end
+        invalidCBPoints = isnan(d(lrInd).rpt(:,1).*d(srInd).rpt(:,1));
+        d(lrInd).rpt = d(lrInd).rpt.*(~invalidCBPoints);
+        d(lrInd).rpt(invalidCBPoints,:) = nan;
+        d(srInd).rpt = d(srInd).rpt.*(~invalidCBPoints);
+        d(srInd).rpt(invalidCBPoints,:) = nan;
+        d(lrInd).pts = d(lrInd).pts.*reshape(~invalidCBPoints,d(lrInd).grid);
+        d(lrInd).pts(invalidCBPoints,:) = nan;
+        d(srInd).pts = d(srInd).pts.*reshape(~invalidCBPoints,d(srInd).grid);
+        d(srInd).pts(invalidCBPoints,:) = nan;
+        
+        results.rtdDiffBetweenPresets = nanmean( d(lrInd).rpt(:,1) - d(srInd).rpt(:,1) );
+        d(srInd).rpt(:,1) = d(srInd).rpt(:,1) + results.rtdDiffBetweenPresets;
+        [~,results.shortRangeImagesGeomErr] = Calibration.aux.calibDFZ(d(srInd),regs,calibParams,fprintff,0,1,x0,runParams);
+        fprintff('geom error on short range image =%.2g\n',results.shortRangeImagesGeomErr);
+        fprintff('Rtd diff between presets =%.2g\n',results.rtdDiffBetweenPresets);
+        
+        % Write results to CSV and burn 2 device
+        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
+        shortRangePreset=readtable(shortRangePresetFn);
+        modRefInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset')); 
+        shortRangePreset.value(modRefInd) = results.rtdDiffBetweenPresets;
+        writetable(shortRangePreset,shortRangePresetFn);
+    end
+    
+    
     if(results.geomErr<calibParams.errRange.geomErr(2))
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
         calibPassed = 1;

@@ -4,7 +4,7 @@
 
 function [errors] = calcThermalScores(data,tablerange)
 framesData = data.framesData;
-invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ),1:numel(framesData));
+invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ) | all(all(isnan(framesData(j).ptsWithZ))),1:numel(framesData));
 framesData = framesData(~invalidFrames);
 
 tempVec = [framesData.temp];

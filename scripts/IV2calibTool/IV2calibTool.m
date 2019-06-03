@@ -214,7 +214,7 @@ function app=createComponents()
     app.skipWarmUpButton.Visible = 'off';
     Calibration.aux.globalSkip( 1,0 );
     %checkboxes
-    cbnames = {'replayMode','verbose','warm_up','init','DSM','gamma','dataDelay','scanDir','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState'};
+    cbnames = {'replayMode','warm_up','init','DSM','gamma','dataDelay','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;

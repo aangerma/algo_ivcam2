@@ -1,0 +1,219 @@
+%------------EPTG constraints--------------%
+%minimum pixel time 
+[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>20
+
+%return time should be smaller than frameRate
+[EPTGreturnTime]*1e-3<1/[EPTGframeRate]
+
+[EPTGminZ] <=[EPTGmaxZ] 
+
+[EPTGnMaxSamples] == floor([EPTGnMaxSamples])
+
+%PCQ cant handle different Y value in each chunk - constraint that the minimum pixel scantime is greater than the chunk rate
+[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi>64/[GNRLsampleRate]
+
+% PCQ : the code length in ns is atmost 4 pixels
+4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi > [GNRLcodeLength]
+%------------END EPTG constraints--------------%
+
+
+
+
+[JFILedge1maxTh] < [JFILedge1detectTh]
+[JFILedge4maxTh] < [JFILedge4detectTh]
+[JFILedge3maxTh] < [JFILedge3detectTh]
+
+
+%minimum image size
+[GNRLrangeFinder] | ([GNRLimgHsize]>=64 & [GNRLimgVsize]>=60)
+
+
+
+%DCOR size limitations
+%any([DCORcoarseTmplLength]==[16 24 32 40 48 52 60 64 68 72 76 80 84 88 92 96 100 104 108 112 116 120 124 128 132 136 140 180 192 208 212 224 232 248 252 256])
+%any([GNRLtmplLength]==[128 136 144 152 160 168 176 184 192 200 208 216 224 232 240 248 256 264 272 280 288 304 320 336 352 368 384 400 416 424 432 448 464 480 496 504 512 544 560 576 608 640 672 704 720 736 768 800 832 848 864 896 928 960 992  1024  2048])
+
+%invalidation depth limits
+at([JFILinvMinMax],1)>at([JFILinvMinMax],0)
+
+
+
+%Only one of these modes can be high at a time
+sum([[GNRLrangeFinder] [DIGGsphericalEn] [MTLBxyRasterInput]])<=1
+
+
+
+
+
+%chec JFIL bilateral sigmond central weight
+at([JFILbiltGauss_000],0)~=0
+at([JFILbiltGauss_001],2)~=0
+at([JFILbiltGauss_003],0)~=0
+at([JFILbiltGauss_004],2)~=0
+at([JFILbiltGauss_006],0)~=0
+at([JFILbiltGauss_007],2)~=0
+at([JFILbiltGauss_009],0)~=0
+at([JFILbiltGauss_010],2)~=0
+at([JFILbiltGauss_012],0)~=0
+at([JFILbiltGauss_013],2)~=0
+at([JFILbiltGauss_015],0)~=0
+at([JFILbiltGauss_016],2)~=0
+at([JFILbiltGauss_018],0)~=0
+at([JFILbiltGauss_019],2)~=0
+at([JFILbiltGauss_021],0)~=0
+at([JFILbiltGauss_022],2)~=0
+at([JFILbiltGauss_024],0)~=0
+at([JFILbiltGauss_025],2)~=0
+at([JFILbiltGauss_027],0)~=0
+at([JFILbiltGauss_028],2)~=0
+at([JFILbiltGauss_030],0)~=0
+at([JFILbiltGauss_031],2)~=0
+at([JFILbiltGauss_033],0)~=0
+at([JFILbiltGauss_034],2)~=0
+at([JFILbiltGauss_036],0)~=0
+at([JFILbiltGauss_037],2)~=0
+at([JFILbiltGauss_039],0)~=0
+at([JFILbiltGauss_040],2)~=0
+at([JFILbiltGauss_042],0)~=0
+at([JFILbiltGauss_043],2)~=0
+at([JFILbiltGauss_045],0)~=0
+at([JFILbiltGauss_046],2)~=0
+
+%max irOnly should be smaller than template length
+[DCORoutIRcma]<[GNRLtmplLength]
+
+%tx code should not be all zero
+~([FRMWtxCode_000]==0 & [FRMWtxCode_001]==0 & [FRMWtxCode_002]==0 & [FRMWtxCode_003]==0)
+
+%even img size (non rangeFinder)
+[GNRLrangeFinder]==1 | ( mod([GNRLimgHsize],2)==0 & mod([GNRLimgVsize],2)==0 )
+%due to packer, output resultion should be even
+% [GNRLrangeFinder]==1 | ( mod(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]),2)==0 & mod(([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB]),2)==0 )
+
+
+%image size is always positive
+[GNRLimgHsize]>0
+[GNRLimgVsize]>0
+%can have margin greater than image
+[FRMWmarginL]<([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])
+[FRMWmarginT]<([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])
+abs([FRMWmarginL]-[FRMWmarginR]) < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])
+abs([FRMWmarginB]-[FRMWmarginT]) < ([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])
+
+%range finder image size
+[GNRLrangeFinder]==0 | ( [GNRLimgHsize]==2 & [GNRLimgVsize]==1 )
+%range finder bypass 
+[GNRLrangeFinder]==0 | ( [RASTbiltBypass] & [CBUFbypass] )
+%range finder template length
+[GNRLrangeFinder]==0 |  any([GNRLtmplLength]==[848 1024 2048] )
+
+%code length must be even
+mod([GNRLcodeLength],2)==0
+
+%template length should be constrainted according to vertical resolution
+%[GNRLrangeFinder]==1 | [GNRLtmplLength]<=1216-0.8*double([GNRLimgVsize])
+
+%actual sampling frequency should be eith 4 8 or 16
+any(single([GNRLsampleRate])/[MTLBtxSymbolLength]==[4 8 16])
+
+
+[GNRLcodeLength]*[FRMWcoarseSampleRate]<=256
+([GNRLcodeLength]*[GNRLsampleRate]<=1024 & [GNRLcodeLength]*[GNRLsampleRate]>=128) | ([GNRLrangeFinder]==1 & [GNRLcodeLength]*[GNRLsampleRate]==2048)
+[JFILsort1fixedConfValue] > 0
+[JFILsort2fixedConfValue] > 0
+[JFILsort3fixedConfValue] > 0
+sum([GNRLsampleRate]/[FRMWcoarseSampleRate]==[2 4 8])==1
+
+%max coarse template size
+%[GNRLrangeFinder]==0 & [GNRLtmplLength]/2^[DESTdecRatio]<=128 | [GNRLrangeFinder]==1 & [GNRLtmplLength]/2^[DESTdecRatio]<=256
+[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))
+[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipVsize] / [GNRLimgHsize] < [GNRLimgVsize])
+[STATstt1Bypass] == 1 | ([STATstt1src] > 1 | [STATstt1skipHsize] < [MTLBtCamHsize])
+[STATstt1Bypass] == 1 | ([STATstt1src] > 1 | ([STATstt1skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])
+[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1lowThrPxlNum] < [STATstt1cellHsize]*[STATstt1cellVsize])
+[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 |  mod([STATstt1skipVsize],[GNRLimgHsize]) == 0)
+[STATstt1Bypass] == 1 | ([STATstt1src] >  1 |  mod([STATstt1skipVsize],[MTLBtCamVsize]) == 0)
+[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))
+[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipVsize] < [GNRLimgVsize])
+[STATstt2Bypass] == 1 | ([STATstt2src] > 1 | [STATstt2skipHsize] < [MTLBtCamHsize])
+[STATstt2Bypass] == 1 | ([STATstt2src] > 1 | ([STATstt2skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])
+[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2lowThrPxlNum] <= [STATstt2cellHsize]*[STATstt2cellVsize])
+[STATstt1lowerThr] < [STATstt1upperThr]
+[STATstt2lowerThr] < [STATstt2upperThr]
+[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 |  mod([STATstt2skipVsize],[GNRLimgHsize]) == 0)
+[STATstt2Bypass] == 1 | ([STATstt2src] >  1 |  mod([STATstt2skipVsize],[MTLBtCamVsize]) == 0)
+%number of shared bin should be smaller than 64
+bitshift([GNRLtmplLength],-int8([RASTsharedDenomExp]))<64
+
+sum([[JFILsort1iWeights]])<128
+sum([[JFILsort2iWeights]])<128
+sum([[JFILsort3iWeights]])<128
+
+sum([[JFILsort1dWeights]])<128
+sum([[JFILsort2dWeights]])<128
+sum([[JFILsort3dWeights]])<128
+
+
+%disable RAST outirVar in RF,
+~([GNRLrangeFinder] & [RASToutIRvar] )
+%diasble undist in RF
+%~([GNRLrangeFinder] & [DIGGundistBypass]==0)
+
+
+
+
+% jfil grad constraints
+[JFILgrad1thrAveDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad1thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));
+
+[JFILgrad2thrAveDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));
+[JFILgrad2thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));
+
+
+% outIR constraints
+~([DIGGnestBypass] & [DCORoutIRnest])
+([DCORoutIRnest] + [DCORoutIRcma] + [DESTaltIrEn] +  [RASToutIRvar]) <= 1
+~([DCORoutIRnest] | [DCORoutIRcma] ) | [JFILbypass]
+~[DCORoutIRnest] |  ~[DCORbypass]
+
+%pixel squreness
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_000]/[FRMWxfov_000]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_001]/[FRMWxfov_001]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_002]/[FRMWxfov_002]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_003]/[FRMWxfov_003]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+%[GNRLrangeFinder] | abs(([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])/([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*[FRMWyfov_004]/[FRMWxfov_004]*(1+2*[FRMWguardBandV])/(1+2*[FRMWguardBandH])-1)<0.8
+
+
+%max fov (non spherical)
+[DIGGundistBypass] | [FRMWyfov_000]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_000]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_001]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_001]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_002]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_002]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_003]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_003]*[FRMWundistXfovFactor]<=89
+
+[DIGGundistBypass] | [FRMWyfov_004]*[FRMWundistYfovFactor]<=89
+[DIGGundistBypass] | [FRMWxfov_004]*[FRMWundistXfovFactor]<=89

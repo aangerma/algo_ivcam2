@@ -1,7 +1,7 @@
 function [regs,autogenRegs,autogenLuts] = bootCalcs(regs,luts,autogenRegs,autogenLuts,RegMeta)
-if(~exist('RegMeta','var'))
-    fw=Firmware;
-    RegMeta=fw.getMeta();
+if ~exist('RegMeta','var')
+   fw = Firmware;
+   RegMeta = fw.getMeta();
 end
 
 [regs,autogenRegs,autogenLuts] = generalRegisters(regs,autogenRegs,autogenLuts);

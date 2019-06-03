@@ -10,7 +10,8 @@ if isempty(strfind(version, 'R2017a')) %#ok
 end
 
 %%
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2thermalCalibTool\\%1.2f\\',thermalCalibToolVersion());
+[ver,sub] = thermalCalibToolVersion();
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2thermalCalibTool\\%1.2f.%1.0f\\',ver,sub);
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2ThermalCalibTool.m ' ...

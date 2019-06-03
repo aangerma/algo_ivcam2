@@ -2,6 +2,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
     fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     calibPassed = 1;
     if(runParams.DFZ)
+        
         [r,DFZ_regs] = DFZ_calib_Init(hw,fw,runParams,calibParams);
 
 %% save temprature of DFZ calibration: 
@@ -12,37 +13,52 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
 %%      capture frame Z and I from 5 secnce for DFZ calibration 
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
-        testImages = ~trainImages;
         nof_frames = 45; %todo take it from calibparams
-        path = cell(1,5);
+        path = cell(1,length(captures));
         for i=1:length(captures)
-            cap = calibParams.dfz.captures.capture(i);
-            targetInfo = targetInfoGenerator(cap.target);
-            cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
-            cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
-            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i));
-            if i == sum(trainImages)
-                DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart);
-            end
-%            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
-            InputPath = fullfile(tempdir,'DFZ'); 
-            path{i} = fullfile(InputPath,sprintf('Pose%d',i));
-            mkdirSafe(path{i});
-            fn = fullfile(path{i},'image_params.xml');
-            struct2xmlWrapper(targetInfo,fn,'image_params');                        % save targetInfo as XML file. 
-            Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path{i});  % save images Z and I in sub dir 
+            [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path);
         end
         
         
         [dfzRegs,dfzresults,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs);
         results.geomErr = dfzresults.geomErr;
+        results.extraImagesGeomErr = dfzresults.extraImagesGeomErr;
         results.potentialPitchFixInDegrees = dfzresults.potentialPitchFixInDegrees;
-   
-        DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParams);
+        results.rtdDiffBetweenPresets = dfzresults.rtdDiffBetweenPresets;
+        results.shortRangeImagesGeomErr = dfzresults.shortRangeImagesGeomErr;
         
+        DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParams);
     else
         dfzRegs = struct;
         fprintff('[?] skipped\n');
+    end
+end
+function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path)
+    cap = calibParams.dfz.captures.capture(i);
+    targetInfo = targetInfoGenerator(cap.target);
+    cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
+    cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
+    
+    if strcmp(cap.type,'shortRange')
+        hw.setPresetControlState(2);
+        pause(2);
+    else
+        im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i));
+    end
+    
+    if i == find(trainImages,1,'last')
+        DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart);
+    end
+%            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
+    InputPath = fullfile(tempdir,'DFZ'); 
+    path{i} = fullfile(InputPath,sprintf('Pose%d',i));
+    mkdirSafe(path{i});
+    fn = fullfile(path{i},'image_params.xml');
+    struct2xmlWrapper(targetInfo,fn,'image_params');                        % save targetInfo as XML file. 
+    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path{i});  % save images Z and I in sub dir 
+    
+    if strcmp(cap.type,'shortRange')
+        hw.setPresetControlState(1);
     end
 end
 function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParams)
@@ -55,7 +71,10 @@ function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParam
         hw.setReg('DIGGsphericalScale',true);
         hw.shadowUpdate;
       
-        
+        if hw.getPresetControlState ~= 1 % Move to long range preset
+           hw.setPresetControlState( 1 );
+        end
+            
         if(runParams.uniformProjectionDFZ)
             Calibration.aux.setLaserProjectionUniformity(hw,false);
         end
@@ -63,6 +82,7 @@ end
 
 function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams)
 %function [r,DFZRegs,regs_reff] = DFZ_calib_Init(hw,fw,runParams,calibParams)
+        hw.setPresetControlState(1);
         if(runParams.uniformProjectionDFZ)
             Calibration.aux.setLaserProjectionUniformity(hw,true);
         end
