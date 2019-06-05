@@ -468,7 +468,7 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
     save_output_flag    = 1;
     dummy_output_flag   = 0;
     ret = 1;
-    [calibParams ,~] = cal_init(output_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
+    [calibParams ,~] = cal_init(output_dir,tempdir ,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
 
 

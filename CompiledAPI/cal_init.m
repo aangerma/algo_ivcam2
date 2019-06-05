@@ -1,15 +1,16 @@
-function [calibParams , result] = cal_init(output_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag ,fprintff )
+function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag ,fprintff )
 % descrition :
 %   this function configured the all calibration mode of work, initiate
 %   global variable for all cal function use.
 %   inputs:
 %   output_dir          - <string> directory for all outputs (saved images , logs , output results ...
+%   calib_dir           - path to calibration folder
 %   calib_params_fn     - <string> path of XML file include all calib_params 
 %   debug_log_f         - <bool> 1 to output log file pf the run. 
 %   verbose             - <uint> 1 to 5 varbositty level.
 %   save_input_flag     - <bool> 1 record all input params of all cal functions  
 %   save_output_flag    - <bool> 1 record all outputs of all cal functions
-%   dummy_output_flag   - <bool> 1 autuo generate / from files output for tester flow debug. 
+%   dummy_output_flag   - <bool> 1 autuo generate / from files output for tester flow debug.
 %   
 %   outputs:
 %       result      - <bool> 1- success 0 - fail
@@ -20,7 +21,8 @@ function [calibParams , result] = cal_init(output_dir, calib_params_fn, debug_lo
 
 
     clear delay_R_calib_calc;   % persistance variable in function.
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff ;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff ;
+    g_calib_dir             = calib_dir;
     g_output_dir            = output_dir;
     g_debug_log_f           = debug_log_f;
     g_verbose               = verbose;
@@ -44,6 +46,8 @@ function [calibParams , result] = cal_init(output_dir, calib_params_fn, debug_lo
     fprintff = g_fprintff; 
     
     mkdirSafe(output_dir);
+    mkdirSafe(fullfile(output_dir,'mat_files'));
+    
     result = 1;
     if (g_debug_log_f)
         fprintff('output_dir = %s   \n'        ,output_dir);

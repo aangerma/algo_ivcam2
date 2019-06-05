@@ -34,13 +34,19 @@ function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irI
     func_name = func_name(1).name;
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_in.mat']);
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath' , 'calibParams' ,'Kdepth' , 'z2mm' );
     end
-    [rgbPassed,rgbTable,results] = Calibration.rgb.cal_rgb(InputPath,calibParams,irImSize,Kdepth,z2mm,fprintff);
+    [rgbPassed,rgbTable,results,im,rgbs] = Calibration.rgb.cal_rgb(InputPath,calibParams,irImSize,Kdepth,z2mm,fprintff);
+    % save images
+    if g_save_output_flag && exist(g_output_dir,'dir')~=0 
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name '_img.mat']);
+        save(fn,'im','rgbs');
+    end
+    
     % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_out.mat']);
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'rgbPassed','rgbTable','results');
     end
 

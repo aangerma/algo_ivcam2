@@ -1,4 +1,4 @@
-function [rgbPassed,rgbTable,results] = cal_rgb(imagePath,calibParams,IrImSize,Kdepth,z2mm,fprintff)
+function [rgbPassed,rgbTable,results,im,rgbs] = cal_rgb(imagePath,calibParams,IrImSize,Kdepth,z2mm,fprintff)
     results = struct;
     rgbTable = [];
     rgbPassed = 0;
@@ -7,7 +7,6 @@ function [rgbPassed,rgbTable,results] = cal_rgb(imagePath,calibParams,IrImSize,K
     
     IrImSize = flip(IrImSize);
     for i=1:length(poses)
-        
         filesIR = dirFiles(fullfile(imagePath,poses{i}),'I*',1);
         filesRGB = dirFiles(fullfile(imagePath,poses{i}),'RGB*',1);
         img = readAllBytes(filesIR{1});

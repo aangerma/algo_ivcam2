@@ -65,7 +65,11 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                     hw.getRegsFromUnit(fullfile(runParams.outputFolder,'validationRegState.txt') ,0 );  
                     fprintff('Done\n');
                 end
-            elseif  strfind(enabledMetrics{i},'HVM_Val')
+            elseif  strfind(enabledMetrics{i},'longRangePreset')
+                hw.setPresetControlState(1);
+            elseif  strfind(enabledMetrics{i},'shortRangePreset')
+                hw.setPresetControlState(1);
+           elseif  strfind(enabledMetrics{i},'HVM_Val')
                 [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,spark,app,valResults);
                 [valResults ,allCovRes] = HVM_val_Coverage(hw,runParams,calibParams,fprintff,spark,app,valResults);
                 allResults.HVM.coverage = allCovRes;

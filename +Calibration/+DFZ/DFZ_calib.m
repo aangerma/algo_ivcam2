@@ -16,7 +16,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         nof_frames = 45; %todo take it from calibparams
         path = cell(1,length(captures));
         for i=1:length(captures)
-            [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path);
+            [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams);
         end
         
         
@@ -33,25 +33,44 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         fprintff('[?] skipped\n');
     end
 end
-function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path)
+function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams)
     cap = calibParams.dfz.captures.capture(i);
     targetInfo = targetInfoGenerator(cap.target);
     cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
     cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
+    ii = 0;
+    for n=1:numel(calibParams.dfz.captures.capture)
+        if (~strcmp(calibParams.dfz.captures.capture(n).type,'shortRange'))
+            ii = ii+1;
+        end
+        nx(n) = ii;
+    end
     
     if strcmp(cap.type,'shortRange')
         hw.setPresetControlState(2);
+% SET the modRef from the short range calibration. 
+        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
+        shortRangePreset=readtable(shortRangePresetFn);
+        modRefInd=find(strcmp(shortRangePreset.name,'modulation_ref_factor'));
+        s=hw.cmd('irb e2 09 01');
+        max_hex = sscanf(s,'Address: %*s => %s');
+        maxMod_dec = hex2dec(max_hex);
+        Calibration.aux.RegistersReader.setModRef(hw,shortRangePreset.value(modRefInd)*maxMod_dec);
         pause(2);
     else
-        im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i));
+        im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
     end
     
     if i == find(trainImages,1,'last')
         DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart);
     end
 %            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
-    InputPath = fullfile(tempdir,'DFZ'); 
-    path{i} = fullfile(InputPath,sprintf('Pose%d',i));
+    InputPath = fullfile(tempdir,'DFZ');
+    if strcmp(cap.type,'shortRange')
+        path{i} = fullfile(InputPath,sprintf('Pose%d_SR',nx(i)));
+    else
+        path{i} = fullfile(InputPath,sprintf('Pose%d',nx(i)));
+    end
     mkdirSafe(path{i});
     fn = fullfile(path{i},'image_params.xml');
     struct2xmlWrapper(targetInfo,fn,'image_params');                        % save targetInfo as XML file. 

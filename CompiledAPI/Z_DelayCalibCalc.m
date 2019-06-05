@@ -68,12 +68,12 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
     
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name sprintf('_in%d.mat',phase)]);
+        fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',phase)]);
         save(fn,'imU', 'imD' , 'imB','sz' , 'delay');
     end
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name sprintf('_out%d.mat',phase)]);
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name sprintf('_out%d.mat',phase)]);
         save(fn,'res', 'delayZ', 'im');
     end
 

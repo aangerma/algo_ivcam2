@@ -48,7 +48,7 @@ function [valResults ,allResults] = HVM_Val_Calc(InputPath,sz,params,calibParams
 
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_in.mat']);
+        fn = fullfile(output_dir,'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath','sz','params','calibParams','valResults');
     end
     runParams.outputFolder = output_dir;
@@ -56,7 +56,7 @@ function [valResults ,allResults] = HVM_Val_Calc(InputPath,sz,params,calibParams
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_out.mat']);
+        fn = fullfile(output_dir,'mat_files' , [func_name '_out.mat']);
         save(fn,'valResults', 'allResults');
     end
 
