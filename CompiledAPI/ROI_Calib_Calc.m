@@ -47,14 +47,14 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIr
     % save Input
     regs = ConvertROIReg(ROIregs);
     if g_save_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_in.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath', 'calibParams' , 'ROIregs','regs');
     end
 %     [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(InputPath, g_output_dir, calibParams, fprintff, regs); 
     [roiRegs,results,fovData] = ROI_Calib_Calc_int(InputPath, calibParams, regs,runParams,results);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_out.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'roiRegs', 'results','fovData');
     end
 end
@@ -110,7 +110,7 @@ function [imUbias,imDbias,imNoise] = GetROIImages(InputPath,width,hight)
     imNoise = Calibration.aux.average_images(imNoise);
     global g_output_dir g_save_input_flag; 
     if g_save_input_flag % save 
-        fn = fullfile(g_output_dir, 'ROI_im.mat');
+        fn = fullfile(g_output_dir, 'mat_files' , 'ROI_im.mat');
         save(fn,'imUbias', 'imDbias','imNoise');
     end
 end

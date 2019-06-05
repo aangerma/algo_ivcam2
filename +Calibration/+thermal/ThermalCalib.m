@@ -41,8 +41,8 @@ while ~finishedHeating
     i = i + 1;
     path = fullfile(tempdir,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
-%    [result,fd ,table]  = TempDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    [result, tableResults]  = TempDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
+%    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
+    [result, tableResults]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
     finishedHeating = (result~=0);
     
     if tempFig.isvalid

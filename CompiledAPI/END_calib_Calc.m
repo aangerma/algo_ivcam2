@@ -1,4 +1,5 @@
-function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
+%function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
+function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -42,14 +43,19 @@ function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmre
     func_name = func_name(1).name;
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_in.mat']);
-        save(fn,'verValue','verValueFull','delayRegs', 'dsmregs' ,'roiRegs','dfzRegs','results','fnCalib' ,'calibParams');
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
+        save(fn,'delayRegs', 'dsmregs' ,'roiRegs','dfzRegs','results','fnCalib' ,'calibParams');
     end
     runParams.outputFolder = g_output_dir;
     runParams.undist = undist_flag;
+    [~,~,versionBytes] = calibToolVersion();
+    verValue           = uint32(versionBytes(1))*2^8 + uint32(versionBytes(2));%0x00000203
+    verValueFull       = uint32(versionBytes(1))*2^16 +uint32(versionBytes(2))*2^8+uint32(versionBytes(3));%0x00020300 
+
+    
     [results ,luts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib, fprintff, calibParams,g_output_dir);    % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_out.mat']);
+        fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn,'results', 'luts');
     end
 
@@ -80,6 +86,10 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     mkdirSafe(temp_dir);
     fn = fullfile(temp_dir,'postUndistState.txt');
     fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',fn);
+    %% prepare preset table
+    calibTempTableFn = fullfile(runParams.outputFolder,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',bitshift(verValue,-8),bitand(verValue,hex2dec('ff'))));
+    presetPath= fullfile(runParams.outputFolder,'AlgoInternal'); 
+    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     %% Print image final fov
     [results,~] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
     OUT_path = output_dir;

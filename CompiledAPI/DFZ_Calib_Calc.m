@@ -48,7 +48,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     % save Input
     regs = ConvertDFZReg(DFZ_regs);
     if g_save_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_in.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath', 'regs' , 'DFZ_regs' , 'calibParams');
     end
     [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(InputPath, output_dir, calibParams, fprintff, regs);       
@@ -60,7 +60,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_out.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'dfzRegs', 'calibPassed','results');
     end
 
@@ -223,9 +223,10 @@ end
 
 function [im] = GetDFZImages(nof_secne,InputPath,width,hight)
     for i=1:nof_secne
+        pose_list = {'Pose1','Pose1_SR','Pose3','Pose3','Pose4','Pose5'};
 %        i_path = fullfile(InputPath,sprintf('%d',i),'I');
 %        z_path = fullfile(InputPath,sprintf('%d',i),'Z');
-        path = fullfile(InputPath,sprintf('Pose%d',i));
+        path = fullfile(InputPath,pose_list{i});
         im(i).i = Calibration.aux.GetFramesFromDir(path,width, hight);
         im(i).z = Calibration.aux.GetFramesFromDir(path,width, hight,'Z');
         im(i).i = Calibration.aux.average_images(im(i).i);
@@ -233,7 +234,7 @@ function [im] = GetDFZImages(nof_secne,InputPath,width,hight)
     end
     global g_output_dir g_save_input_flag; 
     if g_save_input_flag % save 
-            fn = fullfile(g_output_dir, 'DFZ_im.mat');
+            fn = fullfile(g_output_dir, 'mat_files' , 'DFZ_im.mat');
             save(fn,'im');
     end
 end

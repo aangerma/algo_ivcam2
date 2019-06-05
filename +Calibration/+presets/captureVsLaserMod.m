@@ -1,4 +1,4 @@
-function [LaserPoints,maxMod_dec,frames] = captureVsLaserMod(hw,minModprc,LaserDelta,FramesNum,AverageImBool)
+function [LaserPoints,maxMod_dec,frames] = captureVsLaserMod(hw,minModprc,LaserDelta,FramesNum,AverageImBool,output_folder)
 % minModprc=percent from max to be minimum value,  LaserDelta=laser loop
 % interval (decimal)
 frames={}; 
@@ -17,8 +17,11 @@ end
 hw.getFrame(FramesNum,false); 
 for i=1:length(LaserPoints)
     val=LaserPoints(i);
-    Calibration.aux.RegistersReader.setModRef(hw,val); 
-    frames{i} = hw.getFrame(FramesNum,AverageImBool);
+    Calibration.aux.RegistersReader.setModRef(hw,val);
+    path = fullfile(output_folder,sprintf('ModRef_%03d',val));
+    mkdirSafe(path);
+    Calibration.aux.SaveFramesWrapper(hw, 'I' , FramesNum , path);
+%    frames{i} = hw.getFrame(FramesNum,AverageImBool);
 end
 
 

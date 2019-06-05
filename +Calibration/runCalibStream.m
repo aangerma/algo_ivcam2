@@ -48,7 +48,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
     
     %% call HVM_cal_init
-    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,runParams.outputFolder);
+	calib_dir = fileparts(fnCalib);
+    [calibParams , ~] = HVM_Cal_init(calibParamsFn,calib_dir,fprintff,runParams.outputFolder);
 
     
     %% Start stream to load the configuration
@@ -132,9 +133,9 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
     %% Undist and table burn
-    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
-    
-       
+%    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
+ 
     
      
    
@@ -488,7 +489,7 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
     
 end
 
-function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
+function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
     if(~exist('output_dir','var'))
         output_dir = fullfile(tempdir,'\cal_tester\output');
     end
@@ -498,7 +499,7 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
     save_output_flag    = 1;
     dummy_output_flag   = 0;
     ret = 1;
-    [calibParams ,~] = cal_init(output_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
+    [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
 
 
@@ -552,7 +553,7 @@ function [results] = calibratePresets(hw, results,runParams,calibParams, fprintf
     results = calibrateMaxRangePreset(hw, results,runParams,calibParams, fprintff);
 
 %% burn presets
-    burnPresets(hw,runParams,calibParams, fprintff,fw);
+%    burnPresets(hw,runParams,calibParams, fprintff,fw);
     hw.setPresetControlState(1);   
 end
 function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff)
@@ -561,13 +562,6 @@ function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, 
         hw.setPresetControlState(2);   
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Min Range Calibration - 20c"m');
         [results.minRangeScaleModRef,~] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
-        
-        % Update Presets csv in AlgoInternal 
-        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
-        shortRangePreset=readtable(shortRangePresetFn);
-        modRefInd=find(strcmp(shortRangePreset.name,'modulation_ref_factor')); 
-        shortRangePreset.value(modRefInd) = results.minRangeScaleModRef;
-        writetable(shortRangePreset,shortRangePresetFn);
         hw.setPresetControlState(1);   
     end
 end

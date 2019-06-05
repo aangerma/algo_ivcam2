@@ -36,7 +36,7 @@ function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , 
     func_name = func_name(1).name;
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_in.mat']);
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn, 'path_spherical', 'sz' , 'angxRawZOVec' , 'angyRawZOVec' ,'dsmregs_current' ,'calibParams');
     end
     
@@ -44,7 +44,7 @@ function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , 
        
     % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, [func_name '_out.mat']);
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'result', 'DSM_data','angxZO','angyZO');
     end
 
