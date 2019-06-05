@@ -1,33 +1,50 @@
-function [ angx, angy ] = applyFOVex( angxPreExp, angyPreExp, regs )
+function outVec = applyFOVex( inVec, regs )
 % Applies distortion accounting for virtual mirror representation due to FOVex.
-%   Input & output angles are all in degrees.
-%   Note: linear scaling by the lens is actually assimilated in FOV estimation preceding this function.
 
-assert(size(angxPreExp,2)==1 && size(angxPreExp,2)==1, 'applyFOVex expects inputs to be column vectors')
-if regs.FRMW.fovexDistModel % FOVex distortion model applies for the pixels domain
-    xIn = tand(angxPreExp);
-    yIn = tand(angyPreExp);
-else % FOVex distortion model applies for the angles domain
-    xIn = angxPreExp;
-    yIn = angyPreExp;
+if ~regs.FRMW.fovexExistenceFlag % unit without FOVex
+    outVec = inVec;
+    return
 end
 
-% Auxiliary calculations
-xCentered = xIn - regs.FRMW.fovexCenter(1);
-yCentered = yIn - regs.FRMW.fovexCenter(2);
-r2 = xCentered.^2 + yCentered.^2;
+% Preparations
+assert(any(size(inVec)==3));
+transposed = 0;
+if (size(inVec,1)==3) % applyFOVex processes row vectors
+    transposed = 1;
+    inVec = inVec';
+end
+range = sqrt(sum(inVec.^2,2));
+inVec = inVec./range; % normalizing to ensure unit direction vectors
+nominalOutVec = zeros(size(inVec));
+
+% Applying FOV expansion
+angPreExp = acosd(inVec(:,3)); % angle w.r.t. Z-axis [deg]
+angPostExp = angPreExp + angPreExp.^[1,2,3,4]*vec(regs.FRMW.fovexNominal);
+nominalOutVec(:,3) = cosd(angPostExp);
+xyFactor = sqrt((1-nominalOutVec(:,3).^2)./(inVec(:,1).^2+inVec(:,2).^2));
+nominalOutVec(:,1:2) = inVec(:,1:2).*xyFactor;
+
+% Converting to image plane
+uv = nominalOutVec(:,1:2)./nominalOutVec(:,3);
+uvCentered = uv-regs.FRMW.fovexCenter;
+r2 = sum(uvCentered.^2,2);
 
 % Applying lens distortion
-radialDist = [r2, r2.^2, r2.^3]*regs.FRMW.fovexRadialK';
-tangentialDistX = regs.FRMW.fovexTangentP(1)*(r2+2*xCentered.^2) + 2*regs.FRMW.fovexTangentP(2)*xCentered.*yCentered;
-tangentialDistY = regs.FRMW.fovexTangentP(2)*(r2+2*yCentered.^2) + 2*regs.FRMW.fovexTangentP(1)*xCentered.*yCentered;
-xOut = xIn + xCentered.*radialDist + tangentialDistX;
-yOut = yIn + yCentered.*radialDist + tangentialDistY;
-
-if regs.FRMW.fovexDistModel
-    angx = atand(xOut);
-    angy = atand(yOut);
+if regs.FRMW.fovexLensDistFlag
+    radialDist = (r2.^[1,2,3])*regs.FRMW.fovexRadialK';
+    tangentialDist = regs.FRMW.fovexTangentP.*(r2+2*uvCentered.^2) + 2*fliplr(regs.FRMW.fovexTangentP).*prod(uvCentered,2);
+    uvDistorted = uv + uvCentered.*radialDist + tangentialDist;
 else
-    angx = xOut;
-    angy = yOut;
+    uvDistorted = uv;
 end
+
+% Back-conversion to 3D
+uvFactor = 1./sqrt(1+sum(uvDistorted.^2,2));
+outVec = [uvDistorted.*uvFactor, uvFactor];
+
+% Aligning with original representation
+outVec = outVec.*range;
+if transposed
+    outVec = outVec';
+end
+outVec(isnan(outVec)) = 0;

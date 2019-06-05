@@ -15,13 +15,11 @@ laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangle
 oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
 
 angyQ=angyQin(:);angxQ =angxQin(:); % [DSM units]
-angxPreExp = single(angxQ)*angXfactor; % [deg]
-angyPreExp = single(angyQ)*angYfactor; % [deg]
-% [angx, angy] = Calibration.aux.applyFOVex(angxPreExp, angyPreExp, regs);
-oXYZPreExp = oXYZfunc(angles2xyz(angxPreExp,angyPreExp));
-oXYZPreExp(1:2,:) = rotmat*oXYZPreExp(1:2,:);
-% oXYZ = Calibration.aux.applyFOVexOnOutVec(oXYZPreExp, regs);
-
-oXYZ = Calibration.aux.applyExpander(oXYZPreExp,fovExpander);
+angx = single(angxQ)*angXfactor; % [deg]
+angy = single(angyQ)*angYfactor; % [deg]
+oXYZ_PreExp = oXYZfunc(angles2xyz(angx,angy));
+oXYZ_PreExp(1:2,:) = rotmat*oXYZ_PreExp(1:2,:);
+% oXYZ = Calibration.aux.applyExpander(oXYZPreExp,fovExpander); % LUT implementation
+oXYZ = Calibration.aux.applyFOVex(oXYZ_PreExp, regs); % Model-based implementation (nominal FOVex + lens distortion)
 
 end

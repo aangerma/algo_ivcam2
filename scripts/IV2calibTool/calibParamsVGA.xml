@@ -6,6 +6,7 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
+       <configCalibDirName>releaseConfigCalibVGA</configCalibDirName>
        <!--<internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>-->
        <irInnerRange>[0,255]</irInnerRange>
@@ -221,14 +222,15 @@
         <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-0,0]</zenithxRange> 
         <zenithyRange>[-0,0]</zenithyRange> 
-        <polyVarRange>[-200,-200,-10;200,200,10]</polyVarRange>
+        <polyVarRange>[0,-200,0;0,200,0]</polyVarRange>
         <zenithNormW>0.00</zenithNormW>
         <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
-        <undistHorzRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistHorzRange>
-        <undistVertRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistVertRange>
-        <fovexRadialRange>[-100,-100,-100;100,100,100]</fovexRadialRange>
-        <fovexTangentRange>[-100,-100;100,100]</fovexTangentRange>
-        <fovexCenterRange>[-100,-100;100,100]</fovexCenterRange>
+        <undistHorzRange>[-100,-100,-100,-100;100,100,100,100]</undistHorzRange>
+        <undistVertRange>[-50,-50,-50,-50;50,50,50,50]</undistVertRange>
+        <fovexNominalRange>[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]</fovexNominalRange>
+        <fovexRadialRange>[-1,-1,-1;1,1,1]</fovexRadialRange>
+        <fovexTangentRange>[-1,-1;1,1]</fovexTangentRange>
+        <fovexCenterRange>[-5,-5;5,5]</fovexCenterRange>
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  

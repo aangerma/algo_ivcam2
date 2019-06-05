@@ -169,23 +169,24 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
 %     Calibration.DFZ.saveDFZInputImage(d,runParams);
     % dodluts=struct;
     %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
-    %%% TEMP: initialize new parameters that are not saved in old recordings
-    % regs.FRMW.undistAngHorz=zeros(1,5,'single'); regs.FRMW.undistAngVert=zeros(1,5,'single'); regs.FRMW.fovexRadialK=zeros(1,3,'single'); regs.FRMW.fovexTangentP=zeros(1,2,'single'); regs.FRMW.fovexCenter=zeros(1,2,'single'); regs.FRMW.fovexDistModel=logical(0);
-    % calibParams.dfz.polyVarRange=[-100;100]*[0,1,0]; calibParams.dfz.pitchFixFactorRange=[-100,100]; calibParams.dfz.undistHorzRange=[-100;100]*ones(1,5); calibParams.dfz.undistVertRange=[-100;100]*ones(1,5); calibParams.dfz.fovexRadialRange=[-100;100]*ones(1,3); calibParams.dfz.fovexTangentRange=[-100;100]*ones(1,2);, calibParams.dfz.fovexCenterRange=[-100;100]*ones(1,2);
-    % calibParams.dfz.fovxRange=[40,80]; calibParams.dfz.fovyRange=[35,65]; calibParams.dfz.undistHorzRange(:,1) = [-400;400]; calibParams.dfz.undistVertRange(:,1) = [-400;400];
-    % fprintff=@fprintf;
-    % runParams.outputFolder='D:\Data\Ivcam2\FOVex\temp';
-    %%%
+    if 0 % TEMP: initialize new parameters that are not saved in old recordings
+        regs.FRMW.undistAngHorz=zeros(1,4,'single'); regs.FRMW.undistAngVert=zeros(1,4,'single'); regs.FRMW.fovexNominal=single([0.080740546190841,0.003021202017618,-0.000127636017763,0.000003583535017]); regs.FRMW.fovexExistenceFlag=true; regs.FRMW.fovexLensDistFlag=true; regs.FRMW.fovexRadialK=zeros(1,3,'single'); regs.FRMW.fovexTangentP=zeros(1,2,'single'); regs.FRMW.fovexCenter=zeros(1,2,'single');
+        %calibParams.dfz.fovxRange=[40,80]; calibParams.dfz.fovyRange=[35,65]; calibParams.dfz.zenithxRange=[0,0]; calibParams.dfz.zenithyRange=[0,0]; calibParams.dfz.polyVarRange=[-200;200]*[0,1,0]; calibParams.dfz.pitchFixFactorRange=[-150,150]; calibParams.dfz.undistHorzRange=[-100;100]*ones(1,4); calibParams.dfz.undistVertRange=[-100;100]*ones(1,4); calibParams.dfz.fovexNominalRange=[-1;1]*ones(1,4); calibParams.dfz.fovexRadialRange=[-100;100]*ones(1,3); calibParams.dfz.fovexTangentRange=[-100;100]*ones(1,2); calibParams.dfz.fovexCenterRange=[-100;100]*ones(1,2);
+        calibParams.dfz.delayRange=[5000,5500]; calibParams.dfz.fovxRange=[60,75]; calibParams.dfz.fovyRange=[55,65]; calibParams.dfz.zenithxRange=[0,0]; calibParams.dfz.zenithyRange=[0,0]; calibParams.dfz.polyVarRange=[0;200]*[0,1,0]; calibParams.dfz.pitchFixFactorRange=[-100,0]; calibParams.dfz.undistHorzRange=[-100;100]*ones(1,4); calibParams.dfz.undistVertRange=[-50;50]*ones(1,4); calibParams.dfz.fovexNominalRange=[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]; calibParams.dfz.fovexRadialRange=[-1;1]*ones(1,3); calibParams.dfz.fovexTangentRange=[-1;1]*ones(1,2); calibParams.dfz.fovexCenterRange=[-5;5]*ones(1,2);
+        regs.DEST.txFRQpd=single([1 1 1]*5250); regs.FRMW.xfov=single(67.5)*ones(1,5,'single'); regs.FRMW.yfov=single(60)*ones(1,5,'single'); regs.FRMW.polyVars=single([0,100,0]); regs.FRMW.pitchFixFactor=single(-50);
+        fprintff=@fprintf;
+        runParams.outputFolder='D:\Data\Ivcam2\FOVex\temp';
+    end
     [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
 %         calibParams.dfz.pitchFixFactorRange = [0,0];
     results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
     fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
 %         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
     
-    x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV, ...
-        dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert, ...
-        dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]); 
-
+    x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV,...
+        dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert,...
+        dfzRegs.FRMW.fovexNominal, dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]);
+    
     if ~isempty(d(testImages))
         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,x0,runParams);
         fprintff('geom error on test set =%.2g\n',results.extraImagesGeomErr);

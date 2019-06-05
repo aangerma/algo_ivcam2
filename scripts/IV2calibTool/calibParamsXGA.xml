@@ -194,6 +194,66 @@
             </capture>
             <capture>
                 <target>Iv2A1</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2A1</target>
                 <transformation>[0.6 0 0.1; 0 0.6 0; 0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
@@ -222,11 +282,12 @@
         <polyVarRange>[0,-200,0;0,200,0]</polyVarRange>
         <zenithNormW>0.00</zenithNormW>
         <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
-        <undistHorzRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistHorzRange>
-        <undistVertRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistVertRange>
-        <fovexRadialRange>[-100,-100,-100;100,100,100]</fovexRadialRange>
-        <fovexTangentRange>[-100,-100;100,100]</fovexTangentRange>
-        <fovexCenterRange>[-100,-100;100,100]</fovexCenterRange>
+        <undistHorzRange>[-100,-100,-100,-100;100,100,100,100]</undistHorzRange>
+        <undistVertRange>[-50,-50,-50,-50;50,50,50,50]</undistVertRange>
+        <fovexNominalRange>[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]</fovexNominalRange>
+        <fovexRadialRange>[-1,-1,-1;1,1,1]</fovexRadialRange>
+        <fovexTangentRange>[-1,-1;1,1]</fovexTangentRange>
+        <fovexCenterRange>[-5,-5;5,5]</fovexCenterRange>
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  

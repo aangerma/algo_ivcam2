@@ -24,7 +24,7 @@ function [ postUndistAngx, postUndistAngy ] = applyFineTuningUndist( angx, angy,
 assert(length(angx)==length(angy), 'applyFineTuningUndist: angx & angy must be of equal size')
 scaleFactor = 2047; % max value for 12-bit signed
 
-postUndistAngx = angx + (angx/scaleFactor).^[0,1,2,3,4]*(vec(regs.FRMW.undistAngHorz));
-postUndistAngy = angy + (angy/scaleFactor).^[0,1,2,3,4]*(vec(regs.FRMW.undistAngVert));
+postUndistAngx = angx + (angx/scaleFactor).^[1,2,3,4]*vec(regs.FRMW.undistAngHorz);
+postUndistAngy = angy + (angy/scaleFactor).^[1,2,3,4]*vec(regs.FRMW.undistAngVert);
 
 end
