@@ -6,8 +6,8 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       <internalImSize>[360,640]</internalImSize>
-       <externalImSize>[360,640]</externalImSize>
+       <!--<internalImSize>[360,640]</internalImSize>
+       <externalImSize>[360,640]</externalImSize>-->
        <irInnerRange>[0,255]</irInnerRange>
        <irOuterRange>[0,255]</irOuterRange>
        <!--<zNorm>4</zNorm>
@@ -168,11 +168,6 @@
             </capture>
             <capture>
                 <target>Iv2A1</target>
-                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
-                <type>shortRange</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
                 <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
@@ -191,8 +186,6 @@
                 <transformation>[0.6 0 -0.1; 0 0.6 0; -0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
-            
-            
         </captures>
         <preResetCapture>
             <capture>
@@ -205,10 +198,10 @@
         
         <fovxRange>[17,27]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
-        <delayRange>[4000, 6000]</delayRange> 
+        <delayRange>[7000, 9000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 
         <zenithyRange>[-6,6]</zenithyRange> 
-        <polyVarRange>[-200,-200,-8;200,200,8]</polyVarRange>
+        <polyVarRange>[-200,-200,-200;200,200,200]</polyVarRange>
         <zenithNormW>0.05</zenithNormW>
         <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
     </dfz>
