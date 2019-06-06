@@ -316,7 +316,7 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),'releaseConfigCalibL520');
+    initFldr = fullfile(fileparts(mfilename('fullpath')),runParams.configurationFolder);
     initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets','+defaultValues');
     copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);

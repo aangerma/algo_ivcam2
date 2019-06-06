@@ -108,6 +108,8 @@ function app=createComponents()
         toolDir = fileparts(mfilename('fullpath'));
     end
     app.toolName = runParams.toolName;
+    app.configurationFolder = runParams.configurationFolder;
+
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
     app.defaultsFilename= fullfile(toolDir,'IV2calibTool.xml');
@@ -359,6 +361,7 @@ function statrtButton_callback(varargin)
             runparams.outputFolder=app.outputdirectorty.String;
             
         end
+        runparams.configurationFolder = app.configurationFolder;
         mkdirSafe(runparams.outputFolder);
         infoFn = fullfile(runparams.outputFolder,'unit_info.txt');
         fid = fopen(infoFn,'wt');
