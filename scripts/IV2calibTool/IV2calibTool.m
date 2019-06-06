@@ -288,6 +288,8 @@ function saveDefaults(varargin)
     s=structfun(@(x) x.Value,app.cb,'uni',0);
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
+    s.configurationFolder = app.configurationFolder;
+    s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
     if(isempty(s.outputdirectorty))
