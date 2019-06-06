@@ -25,5 +25,5 @@
    <configurationFolder>releaseConfigCalibL520</configurationFolder>
    <calibParamsFile>calibParamsL520.xml</calibParamsFile>
    <disableAdvancedOptions>0</disableAdvancedOptions>
-   <toolName>IV2 Calibration Tool</toolName>
+   <toolName>IV2 Calibration Tool L520</toolName>
 </struct>

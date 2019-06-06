@@ -1,5 +1,8 @@
-function IV2calibTool
-    app=createComponents();
+function IV2calibTool(runParamsFile)
+    if ~exist('runParamsFile','var')
+        runParamsFile = 'IV2calibTool.xml';
+    end
+    app=createComponents(runParamsFile);
     loadDefaults(app);
     outputFolderChange_callback(app.figH);
 end
@@ -91,8 +94,8 @@ function ll=fprintff(app,varargin)
     drawnow;
 end
 
-function app=createComponents()
-    runParams = xml2structWrapper('IV2calibTool.xml');
+function app=createComponents(runParamsFile)
+    runParams = xml2structWrapper(runParamsFile);
     
     
     sz=[640 700];
@@ -112,7 +115,7 @@ function app=createComponents()
     app.calibParamsFile = runParams.calibParamsFile;
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
-    app.defaultsFilename= fullfile(toolDir,'IV2calibTool.xml');
+    app.defaultsFilename= fullfile(toolDir,runParamsFile);
     centerfig(app.figH );
     
     tg = uitabgroup('Parent',app.figH);
