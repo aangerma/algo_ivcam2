@@ -78,7 +78,7 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
 %% load images
     im.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I');
     im.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
-    save(fullfile(runParams.outputFolder,'postResetValCbFrame.mat'),'im');
+    save(fullfile(runParams.outputFolder,'mat_files','postResetValCbFrame.mat'),'im');
     for i =1:1:size(im.i,3)
         frames(i).i = im.i(:,:,i);
         frames(i).z = im.z(:,:,i);
