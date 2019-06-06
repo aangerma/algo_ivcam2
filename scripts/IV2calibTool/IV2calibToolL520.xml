@@ -22,7 +22,8 @@
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
-   <configurationFolder>releaseConfigCalib</configurationFolder>
+   <configurationFolder>releaseConfigCalibL520</configurationFolder>
+   <calibParamsFile>calibParamsL520.xml</calibParamsFile>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Calibration Tool</toolName>
 </struct>

@@ -109,7 +109,7 @@ function app=createComponents()
     end
     app.toolName = runParams.toolName;
     app.configurationFolder = runParams.configurationFolder;
-
+    app.calibParamsFile = runParams.calibParamsFile;
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
     app.defaultsFilename= fullfile(toolDir,'IV2calibTool.xml');
@@ -322,8 +322,7 @@ function statrtButton_callback(varargin)
         else
             toolDir = fileparts(mfilename('fullpath'));
         end
-        calibfn =  fullfile(toolDir,'calibParams.xml');
-        calibParams = xml2structWrapper(calibfn);
+
         %temporary until we have valid log file
         app.m_logfid = 1;
         fprintffS=@(varargin) fprintff(app,varargin{:});
@@ -362,6 +361,10 @@ function statrtButton_callback(varargin)
             
         end
         runparams.configurationFolder = app.configurationFolder;
+        
+        calibfn =  fullfile(toolDir,app.calibParamsFile);
+        calibParams = xml2structWrapper(calibfn);
+        
         mkdirSafe(runparams.outputFolder);
         infoFn = fullfile(runparams.outputFolder,'unit_info.txt');
         fid = fopen(infoFn,'wt');
