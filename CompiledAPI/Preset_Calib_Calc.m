@@ -148,7 +148,7 @@ function [frames] = GetMinRangeImages(InputPath,width,height)
     
     global g_output_dir g_save_input_flag; 
     if g_save_input_flag % save 
-            fn = fullfile(g_output_dir, 'MinRange_im.mat');
+            fn = fullfile(g_output_dir,'mat_files' , 'MinRange_im.mat');
             save(fn,'frames');
     end
 end
