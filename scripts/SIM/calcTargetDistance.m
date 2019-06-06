@@ -7,8 +7,8 @@ function [targtDist] = calcTargetDistance(depth, sim_data, verbose)
 % % Output: 
 % targtDist - target distance calculated after fine correlation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-[cma] = prepareCma4Sim(depth, sim_data.laser.codeLength, sim_data.Comparator.frequency);
+sim_data.laser.codeLength =  length(sim_data.laser.txSequence);
+[cma] = prepareCma4Sim(depth,length(sim_data.laser.txSequence), sim_data.Comparator.frequency);
 
 [regs,luts] = prepareRegsLuts4sim(fullfile('D:\worksapce\ivcam2\algo_ivcam2','+Calibration','initScript'), sim_data.laser.codeLength, 1, sim_data);
 
