@@ -4,7 +4,8 @@ FRMWlaserangleH      f0
 FRMWlaserangleV      f0       
 FRMWcbufConstLUT     b1       
 DIGGundistBypass     b0       
-DIGGspare_000        h0101    
+DIGGspare_000        h0101
+DESThbaseline        b0  
 DESTbaseline         f-10.0    
 DESTtxFRQpd_000      f7700    
 DESTtxFRQpd_001      f7700    
@@ -16,9 +17,6 @@ EXTLdsmXscale        f170
 EXTLdsmYscale        f86
 EXTLdsmXoffset       f15.3
 EXTLdsmYoffset       f23.6
-FRMWcalImgHsize      d152
-FRMWcalImgVsize      d232
 GNRLimgHsize         d152     
 GNRLimgVsize         d232   
-FRMWexternalHsize    d152
-FRMWexternalVsize    d232
+JFILinvMinMax        hffff0320

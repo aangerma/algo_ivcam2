@@ -1,6 +1,7 @@
 GNRLzMaxSubMMExp     h00000002
 FRMWcoarseSampleRate h00000002
 DIGGnotchBypass      b1       
+EXTLconLocOutVDelay  h16b90
 RASTbiltAdapt        h00000000
 RASTbiltSharpnessR   h00000002
 RASTbiltSharpnessS   h00000000
