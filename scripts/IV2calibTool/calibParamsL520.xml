@@ -141,7 +141,8 @@
    </coarseDSM>
    <dsm>
      <nSamples>101</nSamples>  
-     <margin>100</margin>  
+     <margin>100</margin>
+     <useCenterOfProjection>1</useCenterOfProjection>
    </dsm>
     <dfz>
         <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
