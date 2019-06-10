@@ -1,5 +1,6 @@
 GNRLzMaxSubMMExp     h00000002
 FRMWcoarseSampleRate h00000002
+FRMWpllClock         f0.996
 DIGGnotchBypass      b1       
 EXTLconLocOutVDelay  h16b90
 RASTbiltAdapt        h00000000
