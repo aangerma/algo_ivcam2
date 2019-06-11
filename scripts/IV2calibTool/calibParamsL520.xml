@@ -134,6 +134,7 @@
       <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
+      <calibrateFast>0</calibrateFast>
    </dataDelay>
    <coarseDSM>
       <nSamples>200</nSamples>  
