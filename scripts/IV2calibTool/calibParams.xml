@@ -205,7 +205,7 @@
         </preResetCapture>
         
         
-        <fovxRange>[17,27]</fovxRange> 
+        <fovxRange>[40,70]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 
