@@ -1,4 +1,4 @@
-function  setPath_ivcam20(commonRoot,projID)
+function  setPath_ivcam20(commonRootIn,projID)
     % add algo_ivcam2 path
     restoredefaultpath;
     addpath(cd);
@@ -8,14 +8,14 @@ function  setPath_ivcam20(commonRoot,projID)
     
     % add algo_common to path
     ivcamRoot = fileparts(which(mfilename));
-    if ~exist('commonRoot','var')
-        commonRoot = fullfile(ivcamRoot,'..\algo_common');
+    if ~exist('commonRootIn','var') || isempty(commonRootIn)
+        commonRootIn = fullfile(ivcamRoot,'..\algo_common');
     end
     
-    if ~exist(commonRoot,'dir')
-        error('Common Root was not found in %s',commonRoot);
+    if ~exist(commonRootIn,'dir')
+        error('Common Root was not found in %s',commonRootIn);
     end
-    cd(commonRoot);
+    cd(commonRootIn);
     setPathCommon()
     
     cd (ivcamRoot);
