@@ -1,11 +1,11 @@
-function  setPath_ivcam20(commonRoot)
+function  setPath_ivcam20(commonRoot,projID)
     % add algo_ivcam2 path
     restoredefaultpath;
     addpath(cd);
     p=strsplit(genpath(fullfile(cd,filesep,'common')),';');
     ishidden=cellfun(@(x) ~isempty(regexp(x,'\\\.[^\.]', 'once')),p);
     addpath(strjoin(p(~ishidden),';'));
-
+    
     % add algo_common to path
     ivcamRoot = fileparts(which(mfilename));
     if ~exist('commonRoot','var')
@@ -28,6 +28,13 @@ function  setPath_ivcam20(commonRoot)
     X = matlab.desktop.editor.getAll;
     X={X(cellfun(@(x) ~startsWith(x,cd),{X.Filename})).Filename};
     for x=X(:)'
-       matlab.desktop.editor.findOpenDocument(x{1}).close();
+        matlab.desktop.editor.findOpenDocument(x{1}).close();
+    end
+    
+    global gProjID;
+    if ~exist('projID','var')
+        gProjID = iv2Proj.L515;
+    else
+        gProjID = iv2Proj(projID);
     end
 end

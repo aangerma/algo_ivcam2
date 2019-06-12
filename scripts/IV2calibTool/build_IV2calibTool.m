@@ -4,14 +4,24 @@ Steps for resleasing a new calibration gui:
 2. Run the section below.
 3. Look for differences in outputFiles in respect to previous version and verify only things that was supposed to change actually did.
 %}
+global gProjID;
+if isempty(gProjID)
+    gProjID = iv2Proj.L515;
+end
+
+if  gProjID == iv2Proj.L520
+    toolConfigFile = 'IV2calibToolL520.xml';
+else
+    toolConfigFile = 'IV2calibTool.xml';
+end
 
 if isempty(strfind(version, 'R2017a')) %#ok
     error('build_IV2calibTool() must be ran with Matlab R2017a!');
 end
-
+toolConfig = xml2structWrapper(toolConfigFile);
 %%
 [ver,sub] = calibToolVersion();
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2calibTool\\%1.2f.%1.0f\\',ver,sub);
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2calibTool%s\\%1.2f.%1.0f\\',gProjID,ver,sub);
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2calibTool.m ' ...
@@ -19,18 +29,18 @@ cmd = sprintf([
     '-a ..\\..\\+Pipe\\tables\\* '...
     '-a ..\\..\\+Calibration\\+presets\\+defaultValues\\* '...
     '-a ..\\..\\+Calibration\\targets\\* '...
-    '-a ..\\..\\+Calibration\\releaseConfigCalib\\* '...
+    '-a ..\\..\\+Calibration\\%s\\* '...
     '-a ..\\..\\@HWinterface\\presetScripts\\* '...
     '-a ..\\..\\@HWinterface\\IVCam20Device\\* '...
     '-a .\\@Spark\\* '...
-    ],outputFolder);
+    ],outputFolder,toolConfig.configurationFolder);
 eval(cmd);
 
 
 
-copyfile('calibParams.xml',outputFolder);
-copyfile('IV2calibTool.xml',outputFolder);
-fw = Pipe.loadFirmware('../../+Calibration/releaseConfigCalib');
+copyfile(toolConfig.calibParamsFile,outputFolder);
+copyfile(toolConfigFile,fullfile(outputFolder, 'IV2calibTool.xml'));
+fw = Pipe.loadFirmware(sprintf('../../+Calibration/%s',toolConfig.configurationFolder));
 
 verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion) 0 0]),'uint32');
 vreg= [verReg 0 0 0 0 verReg 0 0 ];

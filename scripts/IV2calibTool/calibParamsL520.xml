@@ -125,7 +125,7 @@
        <tslope>0.45</tslope>
    </thermal>
    <scanDir>
-      <stickerLocationIsLeft>1</stickerLocationIsLeft>
+      <stickerLocationIsLeft>0</stickerLocationIsLeft>
       <stickerLocationIsTop>0</stickerLocationIsTop>
    </scanDir>
    <dataDelay>
