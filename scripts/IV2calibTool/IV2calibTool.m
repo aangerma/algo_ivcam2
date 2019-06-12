@@ -407,7 +407,7 @@ function statrtButton_callback(varargin)
         %%
         %=======================================================RUN CALIBRATION=======================================================
         
-        calibfn =  fullfile(toolDir,'calibParams.xml');
+        %calibfn =  fullfile(toolDir,'calibParams.xml');
         [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0

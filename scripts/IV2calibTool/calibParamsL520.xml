@@ -30,7 +30,7 @@
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
       <geomErr>[0.01 1.6]</geomErr>
       <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
-      <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
+      <shortRangeImagesGeomErr>[0 1.6]</shortRangeImagesGeomErr>
       <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
       <eGeomSphericalDis>[0.01 3]</eGeomSphericalDis>
@@ -47,8 +47,8 @@
       <stdIrCoverageSpDis>[0 4]</stdIrCoverageSpDis>
       <horizEdge>[0 inf]</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
-      <projFovx>[55 65]</projFovx>
-      <projFovy>[37 45]</projFovy>
+      <projFovx>[0 inf]</projFovx>
+      <projFovy>[0 inf]</projFovy>
       <ambVal>[0,255]</ambVal>
       <losMaxP2p>[0 1.5]</losMaxP2p>
       <losMeanStdX>[0 0.3] </losMeanStdX>
@@ -125,8 +125,8 @@
        <tslope>0.45</tslope>
    </thermal>
    <scanDir>
-      <stickerLocationIsLeft>0</stickerLocationIsLeft>
-      <stickerLocationIsTop>1</stickerLocationIsTop>
+      <stickerLocationIsLeft>1</stickerLocationIsLeft>
+      <stickerLocationIsTop>0</stickerLocationIsTop>
    </scanDir>
    <dataDelay>
       <fastDelayInitVal>98488</fastDelayInitVal> 
@@ -199,7 +199,7 @@
         </preResetCapture>
         
         
-        <fovxRange>[17,27]</fovxRange> 
+        <fovxRange>[17,37]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
         <delayRange>[7000, 9000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 

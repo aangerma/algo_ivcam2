@@ -52,7 +52,12 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
         save(fn,'InputPath', 'regs' , 'DFZ_regs' , 'calibParams');
     end
     [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(InputPath, output_dir, calibParams, fprintff, regs);
-    
+    if ~isfield(results,'rtdDiffBetweenPresets')
+            results.rtdDiffBetweenPresets = 0;
+    end
+    if ~isfield(results,'shortRangeImagesGeomErr')
+            results.shortRangeImagesGeomErr = 0;
+    end
     dfzRegs.FRMW.dfzCalTmp          = DFZ_regs.FRMWdfzCalTmp;
     dfzRegs.FRMW.dfzApdCalTmp       = DFZ_regs.FRMWdfzApdCalTmp;
     dfzRegs.FRMW.dfzVbias           = DFZ_regs.FRMWdfzVbias;
@@ -237,13 +242,10 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, OutputDir
 end
 
 function [im] = GetDFZImages(nof_secne,InputPath,width,hight)
+    pose_list = dirFolders(InputPath,'Pose*',1);% list arranged alphabetically
     for i=1:nof_secne
-        pose_list = {'Pose1','Pose1_SR','Pose3','Pose3','Pose4','Pose5'};
-        %        i_path = fullfile(InputPath,sprintf('%d',i),'I');
-        %        z_path = fullfile(InputPath,sprintf('%d',i),'Z');
-        path = fullfile(InputPath,pose_list{i});
-        im(i).i = Calibration.aux.GetFramesFromDir(path,width, hight);
-        im(i).z = Calibration.aux.GetFramesFromDir(path,width, hight,'Z');
+        im(i).i = Calibration.aux.GetFramesFromDir(pose_list{i},width, hight);
+        im(i).z = Calibration.aux.GetFramesFromDir(pose_list{i},width, hight,'Z');
         im(i).i = Calibration.aux.average_images(im(i).i);
         im(i).z = Calibration.aux.average_images(im(i).z);
     end

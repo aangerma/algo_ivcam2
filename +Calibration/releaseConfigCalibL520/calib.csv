@@ -11,7 +11,7 @@ DESTtxFRQpd_000      f7700
 DESTtxFRQpd_001      f7700    
 DESTtxFRQpd_002      f7700    
 EXTLconLocDelaySlow  h80000010
-EXTLconLocDelayFastC h006FF8  
+EXTLconLocDelayFastC h0180f8  
 EXTLconLocDelayFastF d0
 EXTLdsmXscale        f170
 EXTLdsmYscale        f86
@@ -19,4 +19,8 @@ EXTLdsmXoffset       f15.3
 EXTLdsmYoffset       f23.6
 GNRLimgHsize         d152     
 GNRLimgVsize         d232   
+FRMWexternalHsize    d152
+FRMWexternalVsize    d232
+FRMWcalImgHsize      d152
+FRMWcalImgVsize      d232
 JFILinvMinMax        hffff0320
