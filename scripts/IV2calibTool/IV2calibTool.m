@@ -1,5 +1,8 @@
-function IV2calibTool
-    app=createComponents();
+function IV2calibTool(runParamsFile)
+    if ~exist('runParamsFile','var')
+        runParamsFile = 'IV2calibTool.xml';
+    end
+    app=createComponents(runParamsFile);
     loadDefaults(app);
     outputFolderChange_callback(app.figH);
 end
@@ -91,8 +94,8 @@ function ll=fprintff(app,varargin)
     drawnow;
 end
 
-function app=createComponents()
-    runParams = xml2structWrapper('IV2calibTool.xml');
+function app=createComponents(runParamsFile)
+    runParams = xml2structWrapper(runParamsFile);
     
     
     sz=[640 700];
@@ -108,9 +111,11 @@ function app=createComponents()
         toolDir = fileparts(mfilename('fullpath'));
     end
     app.toolName = runParams.toolName;
+    app.configurationFolder = runParams.configurationFolder;
+    app.calibParamsFile = runParams.calibParamsFile;
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
-    app.defaultsFilename= fullfile(toolDir,'IV2calibTool.xml');
+    app.defaultsFilename= fullfile(toolDir,runParamsFile);
     centerfig(app.figH );
     
     tg = uitabgroup('Parent',app.figH);
@@ -283,6 +288,8 @@ function saveDefaults(varargin)
     s=structfun(@(x) x.Value,app.cb,'uni',0);
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
+    s.configurationFolder = app.configurationFolder;
+    s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
     if(isempty(s.outputdirectorty))
@@ -320,8 +327,7 @@ function statrtButton_callback(varargin)
         else
             toolDir = fileparts(mfilename('fullpath'));
         end
-        calibfn =  fullfile(toolDir,'calibParams.xml');
-        calibParams = xml2structWrapper(calibfn);
+
         %temporary until we have valid log file
         app.m_logfid = 1;
         fprintffS=@(varargin) fprintff(app,varargin{:});
@@ -359,6 +365,11 @@ function statrtButton_callback(varargin)
             runparams.outputFolder=app.outputdirectorty.String;
             
         end
+        runparams.configurationFolder = app.configurationFolder;
+        
+        calibfn =  fullfile(toolDir,app.calibParamsFile);
+        calibParams = xml2structWrapper(calibfn);
+        
         mkdirSafe(runparams.outputFolder);
         infoFn = fullfile(runparams.outputFolder,'unit_info.txt');
         fid = fopen(infoFn,'wt');
@@ -396,7 +407,7 @@ function statrtButton_callback(varargin)
         %%
         %=======================================================RUN CALIBRATION=======================================================
         
-        calibfn =  fullfile(toolDir,'calibParams.xml');
+        %calibfn =  fullfile(toolDir,'calibParams.xml');
         [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0

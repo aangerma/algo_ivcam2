@@ -28,9 +28,9 @@
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 inf]</geomErr>
-      <extraImagesGeomErr>[0.01 inf]</extraImagesGeomErr>
-      <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
+      <geomErr>[0.01 1.6]</geomErr>
+      <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
+      <shortRangeImagesGeomErr>[0 1.6]</shortRangeImagesGeomErr>
       <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
       <eGeomSphericalDis>[0.01 3]</eGeomSphericalDis>
@@ -47,8 +47,8 @@
       <stdIrCoverageSpDis>[0 4]</stdIrCoverageSpDis>
       <horizEdge>[0 inf]</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
-      <projFovx>[55 65]</projFovx>
-      <projFovy>[37 45]</projFovy>
+      <projFovx>[0 inf]</projFovx>
+      <projFovy>[0 inf]</projFovy>
       <ambVal>[0,255]</ambVal>
       <losMaxP2p>[0 1.5]</losMaxP2p>
       <losMeanStdX>[0 0.3] </losMeanStdX>
@@ -126,7 +126,7 @@
    </thermal>
    <scanDir>
       <stickerLocationIsLeft>0</stickerLocationIsLeft>
-      <stickerLocationIsTop>1</stickerLocationIsTop>
+      <stickerLocationIsTop>0</stickerLocationIsTop>
    </scanDir>
    <dataDelay>
       <fastDelayInitVal>98488</fastDelayInitVal> 
@@ -134,7 +134,7 @@
       <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
-      <calibrateFast>1</calibrateFast>
+      <calibrateFast>0</calibrateFast>
    </dataDelay>
    <coarseDSM>
       <nSamples>200</nSamples>  
@@ -143,11 +143,11 @@
    <dsm>
      <nSamples>101</nSamples>  
      <margin>100</margin>
-     <useCenterOfProjection>0</useCenterOfProjection>
+     <useCenterOfProjection>1</useCenterOfProjection>
    </dsm>
     <dfz>
         <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
-        <cropRatio>[0.2 0.1]</cropRatio>
+        <cropRatio>[0 0]</cropRatio>
         <captures>
              <!--<capture>
                 <target>Iv2L50</target>
@@ -171,11 +171,6 @@
             </capture>
             <capture>
                 <target>Iv2A1</target>
-                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
-                <type>shortRange</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
                 <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
@@ -194,8 +189,6 @@
                 <transformation>[0.6 0 -0.1; 0 0.6 0; -0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
-            
-            
         </captures>
         <preResetCapture>
             <capture>
@@ -206,12 +199,12 @@
         </preResetCapture>
         
         
-        <fovxRange>[40,70]</fovxRange> 
+        <fovxRange>[17,37]</fovxRange> 
         <fovyRange>[35,55]</fovyRange> 
-        <delayRange>[4000, 6000]</delayRange> 
+        <delayRange>[7000, 9000]</delayRange> 
         <zenithxRange>[-6,6]</zenithxRange> 
         <zenithyRange>[-6,6]</zenithyRange> 
-        <polyVarRange>[-200,-200,-8;200,200,8]</polyVarRange>
+        <polyVarRange>[-200,-200,-200;200,200,200]</polyVarRange>
         <zenithNormW>0.05</zenithNormW>
         <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
     </dfz>

@@ -1,14 +1,22 @@
 clear;
 %
-inputRange = 4200;
+inputRange = 1500;
 
 
-p = xml2structWrapper('\\invcam322\ohad\data\lidar\simulatorParams\params_860SKU1_indoor.xml');
+p = xml2structWrapper('940Outdoor.xml');
+%p = xml2structWrapper('params_860SKU1_indoor.xml');
+
 p.laser.txSequence = Codes.propCode(32,1);
 % 
 p.laser.frequency = 1;
 p.Comparator.frequency = 16;
 p.HDRsampler.frequency=0.25;
+p.HDRsampler.riseTime=0.35;
+p.HDRsampler.filterOrder=1;
+p.HDRsampler.maxVal=255;
+p.HDRsampler.minVal=10;
+p.HDRsampler.nBits=8;
+
 
 % p.laser.frequency = 1;
 % p.Comparator.frequency = 16;
@@ -58,7 +66,17 @@ end
 
 %
 rng(1);
-[chA,chB,prprts,mes] = Simulator.runSim(model,p);
+[depth,chB,prprts,mes] = Simulator.runSim(model,p);
+
+codeLength = length(p.laser.txSequence);
+code_reps = ceil(length(depth)/(codeLength*p.Comparator.frequency));
+depth = depth(codeLength*p.Comparator.frequency+1:code_reps*codeLength*p.Comparator.frequency);% The first code length is not used
+depth = reshape(depth,codeLength*p.Comparator.frequency,[]);
+template = vec(repmat(p.laser.txSequence,1,p.Comparator.frequency)');
+
+corr = Utils.correlator(depth, double(template));
+corrLoc = maxind(corr);
+plot(corrLoc)
 % disp(mes);
 %
 % subplot(212);
