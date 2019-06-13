@@ -178,9 +178,9 @@ classdef HWinterface <handle
               Irgb(:,:,2)=G;
               Irgb(:,:,3)=R;
               Irgb = uint8(Irgb);
-               %}
+            %}
         end
-
+        
     end
     
     
@@ -207,6 +207,13 @@ classdef HWinterface <handle
             obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
             obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
             obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+            if(~boolean(obj.read('JFILupscalexyBypass')))
+                if(boolean(obj.read('JFILupscalex1y0')))
+                    obj.usefullRegs.GNRL.imgHsize=2*obj.usefullRegs.GNRL.imgHsize;
+                else
+                    obj.usefullRegs.GNRL.imgVsize=2*obj.usefullRegs.GNRL.imgVsize;
+                end
+            end
             obj.usefullRegs.GNRL.zNorm = obj.z2mm;
         end
         function [res,val] = cmd(obj,str)
@@ -219,7 +226,7 @@ classdef HWinterface <handle
         startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR);
         function stopStream(obj)
             if(obj.m_dotnetcam.Stream.IsDepthPlaying)
-%                 obj.runScript(obj.getPresetScript('stopStream'));
+                %                 obj.runScript(obj.getPresetScript('stopStream'));
                 obj.m_dotnetcam.Close();
                 obj.m_streamWithcolor = false;
             end
@@ -412,10 +419,10 @@ classdef HWinterface <handle
             gvdTargetLine = gvdstr(linenum:end);
             fwVersionLine = strsplit(gvdTargetLine);
             fwVersion = fwVersionLine{2};
-
+            
         end
         
-       function frames = getColorFrameRAW(obj,n,rgbFR)
+        function frames = getColorFrameRAW(obj,n,rgbFR)
             colorRes = [1920 1080];
             if(~exist('rgbFR','var'))
                 rgbFR=30;
@@ -438,7 +445,7 @@ classdef HWinterface <handle
                 frames(i).color = frame;    %obj.privReadColorStream(frame, colorRes);
             end
         end
-
+        
         
         function frames = getColorFrame(obj,n,rgbFR)
             colorRes = [1920 1080];
@@ -482,7 +489,7 @@ classdef HWinterface <handle
                     stream(i) = obj.privGetSingleFrame();%#ok
                 end
             else
-               stream = obj.privGetSeveralFrames(n);%capture atleast 1    
+                stream = obj.privGetSeveralFrames(n);%capture atleast 1
             end
             
             if(length(stream)>1) && postproc
@@ -657,7 +664,7 @@ classdef HWinterface <handle
             mcTmptr = mean(getTmptr(:,2));
             maTmptr = mean(getTmptr(:,3));
             apdTmptr = mean(getTmptr(:,4));
-
+            
         end
         function factor = z2mm(obj)
             % Divide z image by this value to get depth in mm
@@ -723,10 +730,10 @@ classdef HWinterface <handle
         function shutDownLaser(obj)
             obj.cmd('iwb e2 06 01 00'); % Remove bias
             obj.cmd('iwb e2 08 01 0'); % modulation amp is 0
-            obj.cmd('iwb e2 03 01 10');% internal modulation (from register)         
+            obj.cmd('iwb e2 03 01 10');% internal modulation (from register)
         end
         
-        function openLaser(obj)         
+        function openLaser(obj)
             obj.cmd('iwb e2 03 01 9a');% internal modulation (from register)
             obj.cmd('iwb e2 08 01 0'); % modulation amp is 0
             obj.cmd('iwb e2 06 01 70'); % Add bias

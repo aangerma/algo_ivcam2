@@ -26,7 +26,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     RegStateSetOutDir(runParams.outputFolder);
 
     %% Calibration file names
-    [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams);
+    [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams);
     
     fprintff('Starting calibration:\n');
     fprintff('%-15s %s\n','stated at',datestr(now));
@@ -310,13 +310,13 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     calibParams = xml2structWrapper(calibParamsFn);
     
 end
-function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams)
+function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams)
     runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
     mkdirSafe(runParams.outputFolder);
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),runParams.configurationFolder);
+    initFldr = fullfile(fileparts(mfilename('fullpath')),calibParams.gnrl.releaseConfigCalibPath);
     initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets','+defaultValues');
     copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);

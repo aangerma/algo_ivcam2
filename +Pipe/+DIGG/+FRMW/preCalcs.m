@@ -59,7 +59,15 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %=======================================DIGG - undist=======================================
 % calculate block rectangle of pincushion
-[BlockRecRegs] = Pipe.DIGG.FRMW.calculateAng2xyBlockRec(regs); 
+tmpRegs=regs; 
+tmpRegs.GNRL.imgHsize=regs.FRMW.calImgHsize; 
+tmpRegs.GNRL.imgVsize=regs.FRMW.calImgVsize; 
+tmpRegs.FRMW.marginL=regs.FRMW.calMarginL; 
+tmpRegs.FRMW.marginR=regs.FRMW.calMarginR; 
+tmpRegs.FRMW.marginT=regs.FRMW.calMarginT; 
+tmpRegs.FRMW.marginB=regs.FRMW.calMarginB; 
+
+[BlockRecRegs] = Pipe.DIGG.FRMW.calculateAng2xyBlockRec(tmpRegs); 
 autogenRegs = Firmware.mergeRegs(autogenRegs,BlockRecRegs);
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
