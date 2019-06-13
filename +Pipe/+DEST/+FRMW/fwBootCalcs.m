@@ -101,7 +101,9 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 end 
 function [regs,autogenRegs] = calculateAmbiguityRTD(regs,autogenRegs,speedOfLightMMnsec)
-autogenRegs.DEST.ambiguityRTD = single([1 2 4]*double(regs.GNRL.tmplLength)*double(regs.GNRL.sampleRate));
+autogenRegs.DEST.ambiguityRTD = single(double(regs.GNRL.tmplLength)*double(regs.DEST.sampleDist));
+%autogenRegs.DEST.ambiguityRTD = single([1 2 4]*double(regs.GNRL.codeLength)*speedOfLightMMnsec);
+
 autogenRegs.DEST.ambiguityRTD = autogenRegs.DEST.ambiguityRTD-single(1e-5);%????
 
 
