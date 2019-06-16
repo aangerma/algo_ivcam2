@@ -68,7 +68,13 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif  strfind(enabledMetrics{i},'longRangePreset')
                 hw.setPresetControlState(1);
             elseif  strfind(enabledMetrics{i},'shortRangePreset')
-                hw.setPresetControlState(1);
+                hw.setPresetControlState(2);
+           elseif  strfind(enabledMetrics{i},'presetsCompare')
+                presetCompareConfig = calibParams.validationConfig.(enabledMetrics{i});
+                [presetCompareRes,frames] = Calibration.validation.validatePresets( hw, presetCompareConfig,runParams, fprintff);
+                valResults = Validation.aux.mergeResultStruct(valResults, presetCompareRes);
+                saveValidationData([],frames,enabledMetrics{i},outFolder,debugMode);
+                allResults.Validation.(enabledMetrics{i}) = presetCompareRes;
            elseif  strfind(enabledMetrics{i},'HVM_Val')
                 [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,spark,app,valResults);
                 [valResults ,allCovRes] = HVM_val_Coverage(hw,runParams,calibParams,fprintff,spark,app,valResults);

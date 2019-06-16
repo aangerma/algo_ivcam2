@@ -85,6 +85,9 @@
       <sharpness>
           <numOfFrames>30</numOfFrames>
 	  </sharpness>
+      <presetsCompare>
+          <numOfFrames>30</numOfFrames>
+      </presetsCompare>
       <temporalNoise>
           <numOfFrames>30</numOfFrames>
           <roi>0.5</roi>
