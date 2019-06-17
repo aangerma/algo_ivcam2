@@ -15,7 +15,7 @@ if ~any(r)
     hw.cmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame');
     pause(1);
 end
-
+hw.startStream();
 hw.getFrame(10);
 LRframe=hw.getFrame(calibParams.numOfFrames);
 hw.stopStream();
