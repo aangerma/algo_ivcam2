@@ -35,7 +35,7 @@ function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irI
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath' , 'calibParams' ,'Kdepth' , 'z2mm' );
+        save(fn,'InputPath' , 'calibParams' ,'Kdepth' , 'z2mm','irImSize' );
     end
     [rgbPassed,rgbTable,results,im,rgbs] = Calibration.rgb.cal_rgb(InputPath,calibParams,irImSize,Kdepth,z2mm,fprintff);
     % save images

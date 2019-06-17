@@ -14,7 +14,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     %   results - geomErr:  and extraImagesGeomErr:
     %   calibPassed - pass fail
     %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff; % g_regs g_luts;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_calib_dir; % g_regs g_luts;
     fprintff = g_fprintff;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
@@ -41,6 +41,12 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
         output_dir = g_output_dir;
     end
     
+    if(~isempty(g_calib_dir))
+        calib_dir = g_calib_dir;
+    else
+        warning('calib_dir missing in cal_init');
+    end
+    
     if(isempty(fprintff))
         fprintff = @(varargin) fprintf(varargin{:});
     end
@@ -51,7 +57,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath', 'regs' , 'DFZ_regs' , 'calibParams');
     end
-    [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(InputPath, output_dir, calibParams, fprintff, regs);
+    [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(InputPath, calib_dir, output_dir, calibParams, fprintff, regs);       
     if ~isfield(results,'rtdDiffBetweenPresets')
             results.rtdDiffBetweenPresets = 0;
     end
@@ -71,7 +77,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     
 end
 
-function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, OutputDir, calibParams, fprintff, regs)
+function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir, OutputDir, calibParams, fprintff, regs)
     calibPassed = 0;
     captures = {calibParams.dfz.captures.capture(:).type};
     shortRangeImages = strcmp('shortRange',captures);
@@ -109,34 +115,10 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, OutputDir
     croppedBbox(4) = (1-2*cropRatioY)*croppedBbox(4);
     %croppedBbox = int32(croppedBbox);
     
-    %{
-    % remove later for debug bit exect against org DFZ
-    
-%        a = load('C:\temp\unitCalib\F8200120\PC106\org_DFZ_im.mat');
-%        a = load('C:\temp\unitCalib\F9090305\PC42\DFZ_im.mat');
-        a = load('C:\temp\unitCalib\F9090305\PC62\im_org.mat');
-        b = a.im;
-        im = b;
-    end
-    %}
     for i = 1:nof_secne
         cap = calibParams.dfz.captures.capture(i);
         targetInfo = targetInfoGenerator(cap.target);
-        
-        %}
-        %{
-   for i = 1:numel(captures)
-        cap = calibParams.dfz.captures.capture(i);
-        targetInfo = targetInfoGenerator(cap.target);
-        targetInfo.cornersX = 20;
-        targetInfo.cornersY = 28;
-        i_path = fullfile(InputPath,sprintf('%d',i),'I');
-        z_path = fullfile(InputPath,sprintf('%d',i),'Z');
-        im(i).i = Calibration.dataDelay.GetFramesFromDir(i_path,width, hight);
-        im(i).z = Calibration.dataDelay.GetFramesFromDir(z_path,width, hight);
-        im(i).i = Calibration.dataDelay.average_images(im(i).i);
-        im(i).z = Calibration.dataDelay.average_images(im(i).z);
-        %}
+
         d(i).i = im(i).i;
         d(i).z = im(i).z;
         
@@ -225,7 +207,8 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, OutputDir
         fprintff('Rtd diff between presets =%.2g\n',results.rtdDiffBetweenPresets);
         
         % Write results to CSV and burn 2 device
-        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
+%        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
+        shortRangePresetFn = fullfile(calib_dir,'shortRangePreset.csv');
         shortRangePreset=readtable(shortRangePresetFn);
         modRefInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset'));
         shortRangePreset.value(modRefInd) = results.rtdDiffBetweenPresets;
@@ -242,10 +225,14 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, OutputDir
 end
 
 function [im] = GetDFZImages(nof_secne,InputPath,width,hight)
-    pose_list = dirFolders(InputPath,'Pose*',1);% list arranged alphabetically
+    if nof_secne == 5
+        pose_list = {'Pose1','Pose2','Pose3','Pose4','Pose5'};
+    else
+        pose_list = {'Pose1','Pose1_SR','Pose2','Pose3','Pose4','Pose5'};
+    end
     for i=1:nof_secne
-        im(i).i = Calibration.aux.GetFramesFromDir(pose_list{i},width, hight);
-        im(i).z = Calibration.aux.GetFramesFromDir(pose_list{i},width, hight,'Z');
+        im(i).i = Calibration.aux.GetFramesFromDir(fullfile(InputPath,pose_list{i}),width, hight);
+        im(i).z = Calibration.aux.GetFramesFromDir(fullfile(InputPath,pose_list{i}),width, hight,'Z');
         im(i).i = Calibration.aux.average_images(im(i).i);
         im(i).z = Calibration.aux.average_images(im(i).z);
     end

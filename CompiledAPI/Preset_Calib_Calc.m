@@ -107,11 +107,19 @@ if(maxMod_dec<ParbMaxX)
 else
     ModRefDec=round(ParbMaxX);
 end
-minRangeScaleModRef=ModRefDec/maxMod_dec; 
+minRangeScaleModRef=ModRefDec/maxMod_dec;
+
 %% prepare output script
 shortRangePresetFn = fullfile(PresetFolder,'shortRangePreset.csv');
 shortRangePreset=readtable(shortRangePresetFn);
 modRefInd=find(strcmp(shortRangePreset.name,'modulation_ref_factor')); 
+if (p(1)> 0)
+    warning('MinRange preset calibration failed: first parabola coefficient is possitive\n');
+    warning('min modRef already saturated'); 
+    minRangeScaleModRef = 0;
+    ModRefDec = 0;
+end 
+%assert(p(1)<0 ,'MinRange preset calibration failed: first parabola coefficient is possitive');     
 shortRangePreset.value(modRefInd) = minRangeScaleModRef;
 writetable(shortRangePreset,shortRangePresetFn);
 %% debug    
@@ -123,14 +131,8 @@ if ~isempty(runParams)
     plot(lp,fittedline);plot(LaserPoints,DR); title('DR: Wmax-Bmin');xlabel('laser modulation [dec]');grid minor
     subplot(1,3,3);
     plot(LaserPoints,double(Wmax)-Wmean); title(' Wmax-Wmean white patch');xlabel('laser modulation [dec]');grid minor;
-
-    subplot(1,3,2);scatter(ModRefDec,fittedline(lp==ModRefDec)); 
-
-    Calibration.aux.saveFigureAsImage(ff,runParams,'SRpresetLaerCalib','PresetDir');
+    subplot(1,3,2);scatter(ModRefDec,p(1)*ModRefDec.^2+p(2)*ModRefDec+p(3));
 end
-
-assert(p(1)<0 ,'MinRange preset calibration failed: first parabola coefficient is possitive');     
-
 
 end
 

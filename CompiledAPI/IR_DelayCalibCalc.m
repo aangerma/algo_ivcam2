@@ -113,11 +113,11 @@ function [res , delayIR, im ,pixVar ,phase] = IR_DelayCalibCalc_int(imU,imD, Cur
 % check convergence
     if (abs(delayIR)<=dataDelayParams.iterFixThr)        % delay calibration converege 
         res = 1;                                       
-        clear IR_DelayCalibCalc;
+        clear IR_DelayCalibCalc_int;
     elseif (n>1 && abs(delayIR)-nsEps > abs(CurrentDelay))  
          res = -1;                                       % not converging delay calibration converege 
         warning('delay not converging!');
-        clear IR_DelayCalibCalc;
+        clear IR_DelayCalibCalc_int;
     end
     
     delayIR = CurrentDelay + delayIR;

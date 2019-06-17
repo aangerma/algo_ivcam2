@@ -3,6 +3,7 @@ function [cbCorners,cornersValid,params] = prepareData(im,rgbs,calibParams)
     %according to the calibParams for the calibration
     
     captures = {calibParams.dfz.captures.capture(:).type};
+    captures = captures(find(~strncmpi(captures,'shortRange',10))); % remove shortRange not relvent for RGB calibration 
     cbCorners = cell(length(captures),3);
     cornersValid = zeros(length(captures),1,'logical');
     for i = 1:numel(captures)
