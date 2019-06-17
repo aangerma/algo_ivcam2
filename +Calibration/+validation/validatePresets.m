@@ -2,7 +2,7 @@ function [presetCompareRes,frames] = validatePresets( hw, calibParams,runParams,
 presetCompareRes=[] ;
 
 %% read pckr spare
-hw.startStream();
+hw.getFrame();
 [r]=  readPckrSpare(hw);
 hw.stopStream();
 % set LR preset
@@ -12,9 +12,11 @@ if ~any(r)
     % set pckr spare
     v=single([1,1.5,1,1.5,1,1.5]);
     setPckrSpare(hw, v);
-    hw.cmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame');
+    hw.cmd('mwd a00d01f4 a00d01f8 00000fff // EXTLauxShadowUpdate');
     pause(1);
 end
+
+hw = HWinterface;
 hw.startStream();
 hw.getFrame(10);
 LRframe=hw.getFrame(calibParams.numOfFrames);
