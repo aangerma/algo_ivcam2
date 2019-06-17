@@ -1,73 +1,60 @@
 function [presetCompareRes,frames] = validatePresets( hw, calibParams,runParams, fprintff)
 presetCompareRes=[] ;
 
-%% read pckr spare
-hw.getFrame();
-[r]=  readPckrSpare(hw);
-hw.stopStream();
 % set LR preset
 hw.setPresetControlState(1);
-
-if ~any(r)
-    % set pckr spare
-    v=single([1,1.5,1,1.5,1,1.5]);
-    setPckrSpare(hw, v);
-    hw.cmd('mwd a00d01f4 a00d01f8 00000fff // EXTLauxShadowUpdate');
-    pause(1);
-end
-
-hw = HWinterface;
-hw.startStream();
-hw.getFrame(10);
+pause(2);
 LRframe=hw.getFrame(calibParams.numOfFrames);
-hw.stopStream();
 % set SR preset
 hw.setPresetControlState(2);
-hw.getFrame(10);
+pause(2);
 SRframe=hw.getFrame(calibParams.numOfFrames);
+
+hw.setPresetControlState(1);
+
 %%
 frames=[]; 
 frames.LRframe=LRframe; 
 frames.SRframe=SRframe; 
 
+%% roi 
+
+imgSize = size(LRframe.z);
+
+params = Validation.aux.defaultMetricsParams();
+params.roi=calibParams.roi; params.isRoiRect=1; 
+mask = Validation.aux.getRoiMask(imgSize, params);
+
 %% diff image
-diffImage=LRframe.z-SRframe.z;
-presetCompareRes.meanDiff=nanmean(diffImage(:)); 
-presetCompareRes.stdDiff=nanstd(diffImage(:)); 
+z2mm=double(hw.z2mm); 
+ZLR=double(LRframe.z)./z2mm;
+ZSR=double(SRframe.z)./z2mm;
+ZLR(ZLR==0)=nan; ZSR(ZSR==0)=nan; 
+LRroi=nan(size(ZLR)); LRroi(mask)=ZLR(mask); 
+SRroi=nan(size(ZSR)); SRroi(mask)=ZSR(mask); 
+
+diffImage=LRroi-SRroi; 
+presetCompareRes.presetCompareMeanDiff=nanmean(diffImage(:)); 
+presetCompareRes.presetCompareStdDiff=nanstd(diffImage(:)); 
 
 ff = Calibration.aux.invisibleFigure();
 subplot(1,2,1); imagesc(SRframe.i);colorbar; title('SR ir'); subplot(1,2,2); imagesc(LRframe.i); colorbar; title('LR ir');
 Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','IR_PresetsComparison',1);
 
+ff = Calibration.aux.invisibleFigure();
+subplot(1,2,1); imagesc(ZSR);colorbar; title('SR z');caxis([prctile(ZSR(:),2),prctile(ZSR(:),98)]);
+subplot(1,2,2); imagesc(ZLR); colorbar; title('LR z');caxis([prctile(ZSR(:),2),prctile(ZSR(:),98)]);
+Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Z_PresetsComparison',1);
+
 
 ff = Calibration.aux.invisibleFigure();
-imagesc(diffImage);colormap jet;colorbar;
-title(sprintf(['presets comparison: LRframe.z-SRframe.z , mean diff [mm]= ' ,num2str(presetCompareRes.meanDiff)]  ));
+fullDiff=ZLR-ZSR;
+imagesc(fullDiff);colormap jet;colorbar;
+title(sprintf(['presets comparison: LRframe.z-SRframe.z , mean diff [mm] on roi ',num2str(calibParams.roi*100) ,' = ' ,num2str(presetCompareRes.presetCompareMeanDiff)]  ));
+caxis([prctile(fullDiff(:),2),prctile(fullDiff(:),98)]);
 Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','DiffZ_PresetsComparison',1);
 
 
 end
 %
 
-function [r]=  readPckrSpare(hw)
-startAddress='a00e1bd8';
-for i=1:6
-    endaddress=dec2hex(hex2dec( startAddress)+4);
-    s=hw.cmd(['mrd ',startAddress,' ',endaddress]);
-    s2=strsplit(s,'=> ');  s2=s2{2};
-    r(i)=hex2single(s2);
-    startAddress=endaddress;
-end
-
-end
-
-function []=  setPckrSpare(hw, v)
-startAddress='a00e1bd8';
-for i=1:length(v)
-    endaddress=dec2hex(hex2dec( startAddress)+4);
-    value=single2hex(v(i));
-    hw.cmd(['mwd ',startAddress,' ',endaddress ' ' value{1}]);
-    startAddress=endaddress;
-end
-
-end

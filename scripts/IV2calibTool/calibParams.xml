@@ -87,6 +87,7 @@
 	  </sharpness>
       <presetsCompare>
           <numOfFrames>30</numOfFrames>
+          <roi>0.4</roi>
       </presetsCompare>
       <temporalNoise>
           <numOfFrames>30</numOfFrames>
@@ -123,6 +124,8 @@
       <MirrorRestAngX>[-30 30]</MirrorRestAngX>
       <MirrorRestAngY>[-30 30]</MirrorRestAngY>
       <irCoverage>[80 100]</irCoverage>
+      <presetCompareMeanDiff>[0.2 5]</presetCompareMeanDiff>
+      <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
    </validationErrRange>   
    <thermal>
        <t0>32.8</t0>
