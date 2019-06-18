@@ -18,7 +18,9 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     
     %% call HVM_cal_init
     cal_output_dir = fileparts(fopen(app.m_logfid));
-    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
+	calib_dir = fileparts(calibParamsFn);
+%    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
+    [calibParams , ~] = HVM_Cal_init(calibParamsFn,calib_dir,fprintff,cal_output_dir);
     
     %% Load hw interface
     fprintff('Loading HW interface...');
@@ -106,7 +108,7 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     
 end
 
-function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
+function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
     if(~exist('output_dir','var'))
         output_dir = fullfile(tempdir,'\cal_tester\output');
     end
@@ -116,7 +118,8 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,fprintff,output_dir)
     save_output_flag    = 1;
     dummy_output_flag   = 0;
     ret = 1;
-    [calibParams ,~] = cal_init(output_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
+    [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
+
 
 

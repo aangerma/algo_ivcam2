@@ -82,23 +82,22 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     fw.setRegs(undistRegs,fnCalib);
     fw.setLut(undistLuts);
     fw.get();
-    temp_dir = fullfile(runParams.outputFolder,'AlgoInternal');
+    temp_dir = fullfile(output_dir,'AlgoInternal');
     mkdirSafe(temp_dir);
     fn = fullfile(temp_dir,'postUndistState.txt');
     fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',fn);
     %% prepare preset table
-    calibTempTableFn = fullfile(runParams.outputFolder,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',bitshift(verValue,-8),bitand(verValue,hex2dec('ff'))));
-    presetPath= fullfile(runParams.outputFolder,'AlgoInternal'); 
+    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',bitshift(verValue,-8),bitand(verValue,hex2dec('ff'))));
+    presetPath = path; 
     fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     %% Print image final fov
     [results,~] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
-    OUT_path = output_dir;
-    fnUndsitLut = fullfile(OUT_path,'FRMWundistModel.bin32');
+    fnUndsitLut = fullfile(output_dir,'FRMWundistModel.bin32');
     writeCalibRegsProps(fw,fnCalib);
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,undistLuts.FRMW.undistModel);
     oldFWVersion = false;
-    fw.writeFirmwareFiles(OUT_path,oldFWVersion);
+    fw.writeFirmwareFiles(output_dir,oldFWVersion);
 end
 
 function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
