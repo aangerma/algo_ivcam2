@@ -166,7 +166,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(i).rptCropped = rptCropped;
     end
     runParams.outputFolder = OutputDir;
-    Calibration.DFZ.saveDFZInputImage(d,runParams);
+%     Calibration.DFZ.saveDFZInputImage(d,runParams);
     % dodluts=struct;
     %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
     [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
