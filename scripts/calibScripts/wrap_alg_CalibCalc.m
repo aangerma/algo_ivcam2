@@ -29,13 +29,25 @@ InputPath = '\\ger\ec\proj\ha\RSG\SA_3DCam\tzachi\dror\hvm_6_6\AlgoInternalFailu
 %[roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs,results)
 
 
-% end warp
-calibParamsFn = 'D:\tbenshab\algo_203\algo_ivcam2\scripts\IV2calibTool\calibParams.xml';
-calibParams = xml2structWrapper(calibParamsFn);
-%load('\\ger\ec\proj\ha\RSG\SA_3DCam\tzachi\dror\hvm_6_5_compatable algo_203 - v2\FailuresFromATP\F9090577\ALGO HVM 1.7.0.0\Matlab\END_Calib_Calc_in.mat');
-load('C:\temp\unitCalib\F9090308\PC10\END_calib_Calc_in.mat');
-fnCalib = 'C:\temp\unitCalib\F9090308\PC10\AlgoInternal\calib.csv';
-[results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,1);
+%% end warp
+%% cal init function 
+output_dir = fullfile(tempdir,'unit_test','output_dir');
+mkdirSafe(output_dir);
+calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
+calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
+debug_log_f = false;
+verbose = true;
+save_input_flag = true;
+save_output_flag = true;
+dummy_output_flag = true;
+[calibParams , result] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
+%% 
+load('D:\temp\unitCalib\F9140938\green\PC28\mat_files\END_calib_Calc_in.mat');
+fnCalib = 'D:\temp\unitCalib\F9140938\green\PC28\AlgoInternal\calib.csv';
+[results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,1);
+
+
+
 
 % coverege warp
 calibParamsFn = 'D:\tbenshab\algo_203\algo_ivcam2\scripts\IV2calibTool\calibParams.xml';
