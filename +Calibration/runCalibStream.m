@@ -564,7 +564,7 @@ function [results] = calibratePresets(hw, results,runParams,calibParams, fprintf
 %     hw.setPresetControlState(1);   
 %     hw.startStream();
 %% calibrate max range
-    results = calibrateMaxRangePreset(hw, results,runParams,calibParams, fprintff);
+    results = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff);
 
 %% burn presets
 %    burnPresets(hw,runParams,calibParams, fprintff,fw);
@@ -572,24 +572,19 @@ function [results] = calibratePresets(hw, results,runParams,calibParams, fprintf
 end
 function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff)
     if runParams.minRangePreset
-        fprintff('[-] Calibrating min range laser power...\n');
+        fprintff('[-] Calibrating short range laser power...\n');
         hw.setPresetControlState(2);   
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Min Range Calibration - 20c"m');
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
         [results.minRangeScaleModRef,~] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
         hw.setPresetControlState(1);   
     end
 end
-function [results] = calibrateMaxRangePreset(hw, results,runParams,calibParams, fprintff)
+function [results] = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff)
     if runParams.maxRangePreset
-        fprintff('[-] Calibrating max range laser power...\n');
-       [results.maxRangeScaleModRef,results.maxModRefDec] = Calibration.presets.calibrateMaxRange(hw,calibParams,runParams,fprintff);
-  
-        % Update Presets csv in AlgoInternal 
-        longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
-        longRangePreset=readtable(longRangePresetFn);
-        modRefInd=find(strcmp(longRangePreset.name,'modulation_ref_factor')); 
-        longRangePreset.value(modRefInd) = results.maxRangeScaleModRef;
-        writetable(longRangePreset,longRangePresetFn);
+        fprintff('[-] Calibrating long range laser power...\n');
+        hw.setPresetControlState(1);
+       [results.maxRangeScaleModRef,results.maxModRefDec] = Calibration.presets.calibrateLongRange(hw,calibParams,runParams,fprintff);
+
         %% set to max range laser
         Calibration.aux.RegistersReader.setModRef(hw,results.maxModRefDec); 
     end
