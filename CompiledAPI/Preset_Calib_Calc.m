@@ -132,6 +132,8 @@ if ~isempty(runParams)
     subplot(1,3,3);
     plot(LaserPoints,double(Wmax)-Wmean); title(' Wmax-Wmean white patch');xlabel('laser modulation [dec]');grid minor;
     subplot(1,3,2);scatter(ModRefDec,p(1)*ModRefDec.^2+p(2)*ModRefDec+p(3));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'SRpresetLaserCalib','PresetDir');
+
 end
 
 end
