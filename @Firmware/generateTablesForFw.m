@@ -20,11 +20,30 @@ if(exist('outputFldr','var'))
     CBUFtableSize=EPROmaxTableSize;
     writeTableTobin(CBUFtableSize,0,struct2table(CbufXsections),strcat(outputFldr,'\CBUF_Calibration_Info.bin'));
 
-    obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info'  '.bin']),true);
+    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,'DIGG_Undist_Info_%d_CalibInfo.bin'),true);
+    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,'DIGG_Gamma_Info_CalibInfo.bin'));
+     %no room for undist3: concat it to gamma file
+    data = [readbin(gammafn{1});readbin(undistfns{3})];
+    writebin(gammafn{1},data);
+    delete(undistfns{3}); 
+
+
     obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,['FRMW_tmpTrans_Info'  '.bin']),true);
 end
 end
 
+
+function d=readbin(fn)
+    fid = fopen(fn,'r');
+    d=uint8(fread(fid,'uint8'));
+    fclose(fid);
+end
+
+function d=writebin(fn,d)
+    fid = fopen(fn,'w');
+    fwrite(fid,d,'uint8');
+    fclose(fid);
+end
 function [tableSize]=calcTableSize(table)
 tableSize=0;
 for i=1:size(table,1)
