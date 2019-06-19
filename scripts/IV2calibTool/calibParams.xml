@@ -56,7 +56,10 @@
       <potentialPitchFixInDegrees>[-1.5,1.5]</potentialPitchFixInDegrees>
       <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
       <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
-      <minRangeScaleModRef>[0,1]</minRangeScaleModRef>
+      <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
+      <maxRangeScaleModRef>[0 1]</maxRangeScaleModRef>
+      <maxModRefDec>[0 inf]</maxModRefDec>
+      <estimateDist>[9.0 inf]</estimateDist>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -392,4 +395,20 @@
         <arePixelsSquare>0</arePixelsSquare>
         <imSize>[1920,1080]</imSize>
     </rgb>
+    <presets>
+        <long>
+            <updateCalibVal>0</updateCalibVal>
+            <minModprc>0</minModprc>
+            <laserDelta>2</laserDelta>
+            <framesNum>10</framesNum>
+            <fillRateTh>90</fillRateTh>
+            <calibTargetReflect>0.0124</calibTargetReflect>
+            <estDistTargetReflect>0.8</estDistTargetReflect>
+            <params>
+                <roi>0.1</roi>
+                <isRoiRect>0</isRoiRect>
+                <roiCropRect>0</roiCropRect>
+            </params>
+        </long>
+    </presets>
 </struct>

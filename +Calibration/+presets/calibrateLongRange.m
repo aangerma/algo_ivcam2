@@ -1,4 +1,4 @@
-function [maxRangeScaleModRef, maxMod_dec] = calibrateLongRange(hw,calibParams,runParams,fprintff)
+function [maxRangeScaleModRef, maxMod_dec, estimateDist] = calibrateLongRange(hw,calibParams,runParams,fprintff)
 %% Define parameters
 minModprc = calibParams.presets.long.minModprc;%0 ;
 laserDelta = calibParams.presets.long.laserDelta;%2; % decimal
@@ -67,11 +67,13 @@ end
 maxRangeScaleModRef = round(laserPoints(ix))/maxMod_dec;
 
 %% prepare output script
-longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
-longRangePreset=readtable(longRangePresetFn);
-modRefInd=find(strcmp(longRangePreset.name,'modulation_ref_factor'));
-longRangePreset.value(modRefInd) = results.maxRangeScaleModRef;
-writetable(longRangePreset,longRangePresetFn);
+if calibParams.presets.long.updateCalibVal
+    longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
+    longRangePreset=readtable(longRangePresetFn);
+    modRefInd=find(strcmp(longRangePreset.name,'modulation_ref_factor'));
+    longRangePreset.value(modRefInd) = results.maxRangeScaleModRef;
+    writetable(longRangePreset,longRangePresetFn);
+end
 end
 
 function [frames] = GetLongRangeImages(InputPath,width,height)
