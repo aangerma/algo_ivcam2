@@ -59,7 +59,8 @@
       <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
       <maxRangeScaleModRef>[0 1]</maxRangeScaleModRef>
       <maxModRefDec>[0 inf]</maxModRefDec>
-      <estimateDist>[9.0 inf]</estimateDist>
+      <fillRateAtTargetDist>[90 100]</fillRateAtTargetDist>
+      <targetDist>[8.95 9.05]</targetDist> <!--In [m]-->
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
