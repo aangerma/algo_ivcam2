@@ -96,6 +96,11 @@ end
 
 DR=double(Wmax-Bmin);
 diffDR=diff(DR);diffWmean=diff(Wmean);
+
+disp('*****DEBUG*****');
+disp(size(LaserPoints));
+disp(size(DR)); 
+
 p=polyfit(LaserPoints,DR,2);
 LaserDelta = LaserPoints(2)-LaserPoints(1);
 lp=[LaserPoints,LaserPoints(end)+LaserDelta:LaserDelta:2*LaserPoints(end)];
