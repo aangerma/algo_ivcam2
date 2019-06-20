@@ -135,7 +135,7 @@ if 1
         
         
 else
-        ROIregs.DIGG.sphericalOffset        = typecast(bitand(regs.DIGGsphericalOffset,hex2dec('00ff0fff')),'int16');
+        ROIregs.DIGG.sphericalOffset        = typecast(bitand(regs.DIGGsphericalOffset,hex2dec('0fff0fff')),'int16');
         ROIregs.DIGG.sphericalScale         = typecast(bitand(regs.DIGGsphericalScale ,hex2dec('0fff0fff')),'int16');
         ROIregs.GNRL.imgHsize               = uint16(regs.GNRL.imgHsize);
         ROIregs.GNRL.imgVsize               = uint16(regs.GNRL.imgVsize);

@@ -166,7 +166,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(i).rptCropped = rptCropped;
     end
     runParams.outputFolder = OutputDir;
-    Calibration.DFZ.saveDFZInputImage(d,runParams);
+%     Calibration.DFZ.saveDFZInputImage(d,runParams);
     % dodluts=struct;
     %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
     [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
@@ -255,7 +255,7 @@ function  DFZRegs = ConvertDFZReg(regs)
     DFZRegs.DEST.p2axb 				= typecast(regs.DESTp2axb,'single');
     DFZRegs.DEST.p2aya 				= typecast(regs.DESTp2aya,'single');
     DFZRegs.DEST.p2ayb 				= typecast(regs.DESTp2ayb,'single');
-    DFZRegs.DIGG.sphericalOffset	= typecast(bitand(regs.DIGGsphericalOffset,hex2dec('00ff0fff')),'int16');
+    DFZRegs.DIGG.sphericalOffset	= typecast(bitand(regs.DIGGsphericalOffset,hex2dec('0fff0fff')),'int16');
     DFZRegs.DIGG.sphericalScale 	= typecast(bitand(regs.DIGGsphericalScale ,hex2dec('0fff0fff')),'int16');
     DFZRegs.DEST.hbaseline          = logical(regs.DESThbaseline);
     DFZRegs.DEST.txFRQpd            = typecast(regs.DESTtxFRQpd,'single')'; %x3

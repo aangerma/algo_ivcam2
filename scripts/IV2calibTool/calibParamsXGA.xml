@@ -6,7 +6,7 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       <releaseConfigCalibPath>releaseConfigCalib</releaseConfigCalibPath>
+       <releaseConfigCalibPath>releaseConfigCalibXGA</releaseConfigCalibPath>
        <!--<internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>-->
        <irInnerRange>[0,255]</irInnerRange>
@@ -29,31 +29,31 @@
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 inf]</geomErr>
-      <extraImagesGeomErr>[0.01 inf]</extraImagesGeomErr>
-      <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
+      <geomErr>[0.01 4]</geomErr>
+      <extraImagesGeomErr>[0.01 4]</extraImagesGeomErr>
+      <shortRangeImagesGeomErr>[0.01 3]</shortRangeImagesGeomErr>
       <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
       <eGeomSphericalDis>[0.01 3]</eGeomSphericalDis>
       <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.0 10]</maxPixelDisplacement>
+      <maxPixelDisplacement>[0.0 20]</maxPixelDisplacement>
       <undistRms>[0.0 inf]</undistRms>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
-      <imFovX>[0 inf]</imFovX>
-      <imFovY>[0 inf] </imFovY>
-      <irCoverageSpEn>[88 100]</irCoverageSpEn>
-      <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
-      <irCoverageSpDis>[85 100]</irCoverageSpDis>
-      <stdIrCoverageSpDis>[0 4]</stdIrCoverageSpDis>
+      <imFovX>[50 inf]</imFovX>
+      <imFovY>[35 inf] </imFovY>
+      <irCoverageSpEn>[70 100]</irCoverageSpEn>
+      <stdIrCoverageSpEn>[0 8]</stdIrCoverageSpEn>
+      <irCoverageSpDis>[75 100]</irCoverageSpDis>
+      <stdIrCoverageSpDis>[0 8]</stdIrCoverageSpDis>
       <horizEdge>[0 inf]</horizEdge>
       <vertEdge>[0 inf]</vertEdge>
       <projFovx>[55 65]</projFovx>
       <projFovy>[37 45]</projFovy>
       <ambVal>[0,255]</ambVal>
-      <losMaxP2p>[0 1.5]</losMaxP2p>
-      <losMeanStdX>[0 0.3] </losMeanStdX>
-      <losMeanStdY>[0 0.2]</losMeanStdY>
+      <losMaxP2p>[0 3]</losMaxP2p>
+      <losMeanStdX>[0 0.6] </losMeanStdX>
+      <losMeanStdY>[0 0.4]</losMeanStdY>
       <potentialPitchFixInDegrees>[-1.5,1.5]</potentialPitchFixInDegrees>
       <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
       <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
@@ -72,11 +72,9 @@
           <timeoutSec>1</timeoutSec>
       </wait>
       <warmUp></warmUp>
-      <HVM_Val> 
-          <numOfFrames>100</numOfFrames>
-      </HVM_Val>
       <dfz>
           <numOfFrames>30</numOfFrames>
+          
       </dfz>
       <coverage>
           <numOfFrames>100</numOfFrames>
@@ -88,7 +86,7 @@
       <presetsCompare>
           <numOfFrames>30</numOfFrames>
           <roi>0.4</roi>
-      </presetsCompare>
+      </presetsCompare>      
       <temporalNoise>
           <numOfFrames>30</numOfFrames>
           <roi>0.5</roi>
@@ -141,7 +139,6 @@
       <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
-      <calibrateFast>1</calibrateFast>
    </dataDelay>
    <coarseDSM>
       <nSamples>200</nSamples>  
@@ -149,12 +146,10 @@
    </coarseDSM>
    <dsm>
      <nSamples>101</nSamples>  
-     <margin>100</margin>
-     <useCenterOfProjection>0</useCenterOfProjection>
+     <margin>100</margin>  
    </dsm>
     <dfz>
         <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
-        <cropRatio>[0.2 0.1]</cropRatio>
         <captures>
              <!--<capture>
                 <target>Iv2L50</target>

@@ -11,12 +11,18 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
     
     if runParams.post_calib_validation
         % open stream and capture image of the validation target
+        enabledMetrics = fieldnames(calibParams.validationConfig);
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.cmd('DIRTYBITBYPASS');
         if calibParams.gnrl.disableMetaData
             hw.cmd('METADATA_ENABLE_SET 0');
         end
+         if (any(contains(enabledMetrics,'presetsCompare')))
+             % change pckr value for preset comparison
+              newRegVal=single([1,1.5,1,1.5,1,1.5]);
+              Calibration.aux.adjustPCKRspareRegs(hw, newRegVal);             
+         end 
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         hw.getFrame;
         % Collecting hardware state
@@ -54,7 +60,6 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         
         
         %run all metrics
-        enabledMetrics = fieldnames(calibParams.validationConfig);
         for i=1:length(enabledMetrics)
             if strfind(enabledMetrics{i},'debugMode')
                  debugMode = flip(dec2bin(uint16(calibParams.validationConfig.(enabledMetrics{i})),2)=='1');
@@ -68,7 +73,13 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif  strfind(enabledMetrics{i},'longRangePreset')
                 hw.setPresetControlState(1);
             elseif  strfind(enabledMetrics{i},'shortRangePreset')
-                hw.setPresetControlState(1);
+                hw.setPresetControlState(2);
+           elseif  strfind(enabledMetrics{i},'presetsCompare')
+                presetCompareConfig = calibParams.validationConfig.(enabledMetrics{i});
+                [presetCompareRes,frames] = Calibration.validation.validatePresets( hw, presetCompareConfig,runParams, fprintff);
+                valResults = Validation.aux.mergeResultStruct(valResults, presetCompareRes);
+                saveValidationData([],frames,enabledMetrics{i},outFolder,debugMode);
+                allResults.Validation.(enabledMetrics{i}) = presetCompareRes;
            elseif  strfind(enabledMetrics{i},'HVM_Val')
                 [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,spark,app,valResults);
                 [valResults ,allCovRes] = HVM_val_Coverage(hw,runParams,calibParams,fprintff,spark,app,valResults);

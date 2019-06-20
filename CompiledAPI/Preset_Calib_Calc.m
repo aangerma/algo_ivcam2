@@ -96,6 +96,11 @@ end
 
 DR=double(Wmax-Bmin);
 diffDR=diff(DR);diffWmean=diff(Wmean);
+
+disp('*****DEBUG*****');
+disp(size(LaserPoints));
+disp(size(DR)); 
+
 p=polyfit(LaserPoints,DR,2);
 LaserDelta = LaserPoints(2)-LaserPoints(1);
 lp=[LaserPoints,LaserPoints(end)+LaserDelta:LaserDelta:2*LaserPoints(end)];
@@ -132,6 +137,8 @@ if ~isempty(runParams)
     subplot(1,3,3);
     plot(LaserPoints,double(Wmax)-Wmean); title(' Wmax-Wmean white patch');xlabel('laser modulation [dec]');grid minor;
     subplot(1,3,2);scatter(ModRefDec,p(1)*ModRefDec.^2+p(2)*ModRefDec+p(3));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'SRpresetLaserCalib','PresetDir');
+
 end
 
 end
