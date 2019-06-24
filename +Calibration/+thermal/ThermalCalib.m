@@ -49,7 +49,7 @@ plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degree
 sz = hw.streamSize();
 algo2path_temp = fullfile(ivcam2tempdir,'algo2');
 if(exist(algo2path_temp,'dir'))
-    rmdir(algo2path_temp);
+    rmdir(algo2path_temp,'s');
 end
 while ~finishedHeating
     i = i + 1;

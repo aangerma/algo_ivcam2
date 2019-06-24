@@ -21,7 +21,6 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
 	calib_dir = fileparts(calibParamsFn);
 %    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
     [calibParams , ~] = HVM_Cal_init(calibParamsFn,calib_dir,fprintff,cal_output_dir);
-    ivacm2t
     %% Load hw interface
     fprintff('Loading HW interface...');
     hw=HWinterface();

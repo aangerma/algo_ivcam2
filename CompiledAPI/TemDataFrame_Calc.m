@@ -220,6 +220,7 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     else
         [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
+            warning('checkerboard not detected. all target must be included in the image');
             ptsWithZ = [];
             return;
         end
