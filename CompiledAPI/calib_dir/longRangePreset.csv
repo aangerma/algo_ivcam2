@@ -22,13 +22,13 @@ lpfEn,uint8,1
 lpfGain,uint8,2
 lpfCutOff,uint8,2
 ampdet_RateSel,uint8,0
-DESTconfactIn,uint32,1069547520
-DESTconfactOt,uint32,983040
+DESTconfactIn,uint32,135399843
+DESTconfactOt,uint32,16776946
 DESTconfq,uint16,1
-DESTconfw1,uint32,505610241
+DESTconfw1,uint32,2131099648
 DESTconfw2,uint32,0
 DESTconfIRbitshift,uint8,6
-DESTconfv,uint32,8323072
+DESTconfv,uint32,0
 JFILinvConfThr,uint8,3
 JFILinvMinMax,uint32,4294902560
 VBROffset,single,9

@@ -93,8 +93,15 @@ function  [ROIregs] = ConvertROIReg(regs)
     ROIregs.FRMW.laserangleV 			= regs.FRMWlaserangleV;            % single   (0)
     ROIregs.FRMW.xres 					= regs.FRMWxres;                   % uint16   (640)
     ROIregs.FRMW.yres 					= regs.FRMWyres;                   % uint16   (360)
-    ROIregs.FRMW.polyVars 				= regs.FRMWpolyVars;               % single x3[0 0 0]      
+    ROIregs.FRMW.polyVars 				= regs.FRMWpolyVars;               % single x3[0 0 0]
     ROIregs.FRMW.pitchFixFactor 		= regs.FRMWpitchFixFactor;         % single (0)
+    
+    ROIregs.FRMW.undistAngHorz      = regs.FRMWundistAngHorz;
+    ROIregs.FRMW.undistAngVert      = regs.FRMWundistAngVert;
+    ROIregs.FRMW.fovexRadialK       = regs.FRMWfovexRadialK;
+    ROIregs.FRMW.fovexTangentP      = regs.FRMWfovexTangentP;
+    ROIregs.FRMW.fovexCenter        = regs.FRMWfovexCenter;
+%     ROIregs.FRMW.fovexDistModel     = regs.FRMWfovexDistModel;
 
 end
 

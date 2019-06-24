@@ -48,7 +48,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     hw.stopStream;
     
     
-    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1);
+    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     fprintff('Algo Calib Ldd Temp: %2.2fdeg\n',data.regs.FRMW.dfzCalTmp);
     fprintff('Algo Calib vBias: (%2.2f,%2.2f,%2.2f)\n',data.regs.FRMW.dfzVbias);
@@ -120,6 +120,5 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,ou
     ret = 1;
     [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
-
 
 

@@ -20,7 +20,7 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     fprintff('Reading unit calibration regs...');
     hw.getFrame;
     hw.stopStream;
-    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0);
+    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0,calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% Start stream to load the configuration

@@ -16,7 +16,7 @@ classdef HWinterfaceFile <handle
             end
             n=min(length(varargin{:}),length(obj.m_recData{1,2}));
             if(~isequal(obj.m_recData{1,2}(1:n),varargin{:}(1:n)))
-                if ~(contains(obj.m_recData{1,2}(1:n),'WrCalibInfo') && contains(varargin{:}(1:n),'WrCalibInfo'))
+                if ~(contains(obj.m_recData{1,2}(1:n),'WrCalibInfo') && contains(varargin{:}(1:n),'WrCalibInfo'))  
                     error('Recorded stream state is not aligned with func (input missmatch)');
                 end
             end
@@ -36,25 +36,25 @@ classdef HWinterfaceFile <handle
             
         end
         
-        function filterGetTemperatureReadings(obj)
-            if numel(obj.m_recData) > 0
-                while strcmp(obj.m_recData{1,2},'TEMPERATURES_GET')
-                    obj.m_recData = obj.m_recData(2:end,:);
-                end
-                
-            end
+         function filterGetTemperatureReadings(obj)
+           if numel(obj.m_recData) > 0
+              while strcmp(obj.m_recData{1,2},'TEMPERATURES_GET')
+                  obj.m_recData = obj.m_recData(2:end,:);
+              end
+               
+           end
             
-        end
+        end 
         
         function varargout=burn2device(obj,varargin)
-            
+        
         end
         
         function obj = HWinterfaceFile(recFile)
             obj.m_recData=load(recFile,'recData');
             obj.m_recData=obj.m_recData.recData;
-            obj.m_fw = obj.m_recData{1,2}{:};
-            obj.m_recData=obj.m_recData(2:end,:);
+           obj.m_fw = obj.m_recData{1,2}{:};
+           obj.m_recData=obj.m_recData(2:end,:);
         end
         
         
@@ -66,7 +66,7 @@ classdef HWinterfaceFile <handle
         end
         
         function varargout=writeAddr(obj,varargin)
-            
+        
         end
         
         function val=readAddr(obj,addr_)
@@ -109,24 +109,24 @@ classdef HWinterfaceFile <handle
             obj.setUsefullRegs();
         end
         function stopStream(obj,varargin)
-            %             obj.runScript(obj.getPresetScript('stopStream'));
+%             obj.runScript(obj.getPresetScript('stopStream'));
             
         end
         function setUsefullRegs(obj)
-            obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
-            obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
-            obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
-            if(~boolean(obj.read('JFILupscalexyBypass')))
-                if(boolean(obj.read('JFILupscalex1y0')))
-                    obj.usefullRegs.GNRL.imgHsize=2*obj.usefullRegs.GNRL.imgHsize;
-                else
-                    obj.usefullRegs.GNRL.imgVsize=2*obj.usefullRegs.GNRL.imgVsize;
-                end
-            end
-            obj.usefullRegs.GNRL.zNorm = obj.z2mm;
+           obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
+           obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
+           obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+	   % if(~boolean(obj.read('JFILupscalexyBypass')))
+           %     if(boolean(obj.read('JFILupscalex1y0')))
+           %         obj.usefullRegs.GNRL.imgHsize=2*obj.usefullRegs.GNRL.imgHsize;
+           %     else
+           %         obj.usefullRegs.GNRL.imgVsize=2*obj.usefullRegs.GNRL.imgVsize;
+           %     end
+           % end
+           obj.usefullRegs.GNRL.zNorm = obj.z2mm;
         end
         function sz = streamSize(obj)
-            sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
+           sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
         end
         function setReg(obj,varargin)
             
@@ -163,7 +163,7 @@ classdef HWinterfaceFile <handle
         
         
         function shadowUpdate(obj)
-            %             varargout=obj.privInOutRec('shadowUpdate',varargin);
+%             varargout=obj.privInOutRec('shadowUpdate',varargin);
         end
         
         function varargout = runPresetScript(obj,varargin)
@@ -171,7 +171,7 @@ classdef HWinterfaceFile <handle
         end
         
         function varargout = runScript(obj,varargin)
-            %             varargout=obj.privInOutRec('runScript',varargin);
+%             varargout=obj.privInOutRec('runScript',varargin);
         end
         function [shifts] = pzrShifts(obj)
             str = obj.cmd('mrd fffe18a8 fffe18ac');
@@ -215,9 +215,9 @@ classdef HWinterfaceFile <handle
             mcTmptr = mean(getTmptr(:,2));
             maTmptr = mean(getTmptr(:,3));
             apdTmptr = mean(getTmptr(:,4));
-            
+          
         end
-        
+
         
         function [info,serial,isId] = getInfo(obj)
             info = obj.cmd('gvd');
@@ -252,14 +252,14 @@ classdef HWinterfaceFile <handle
             
         end
         function [] = setPresetControlState(obj,value)
-            
+           
         end
         function state = getPresetControlState(obj)
             state = 1;
         end
         function factor = z2mm(obj)
             % Divide z image by this value to get depth in mm
-            factor = uint16(typecast(obj.read('GNRLzNorm'),'single'));
+           factor = uint16(typecast(obj.read('GNRLzNorm'),'single'));
         end
     end
 end

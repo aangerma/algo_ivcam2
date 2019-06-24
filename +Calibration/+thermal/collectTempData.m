@@ -11,6 +11,16 @@ timesForPlot = nan(1,pN);
 plotDataI = 1;
 
 Calibration.aux.startHwStream(hw,runParams);
+if calibParams.gnrl.sphericalMode
+    hw.setReg('DIGGsphericalEn',1);
+    hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))
+%     hw.setReg('DIGGsphericalScale',dec2hex(typecast(regs.DIGG.sphericalScale,'uint32')));
+    hw.setReg('DESTdepthAsRange',1);
+    hw.setReg('DESTbaseline$',single(0));
+    hw.setReg('DESTbaseline2',single(0));
+    hw.shadowUpdate;
+end
+
 prevTmp = hw.getLddTemperature();
 prevTime = 0;
 tempsForPlot(plotDataI) = prevTmp;
@@ -145,27 +155,52 @@ else
         return;
     end
 end
-zIm = single(frame.z)/single(regs.GNRL.zNorm);
-zPts = interp2(zIm,pts(:,1),pts(:,2));
-matKi=(regs.FRMW.kRaw)^-1;
-
-u = pts(:,1)-1;
-v = pts(:,2)-1;
-
-tt=zPts'.*[u';v';ones(1,numel(v))];
-verts=(matKi*tt)';
-
-%% Get r,angx,angy
-if regs.DEST.hbaseline
-    rxLocation = [regs.DEST.baseline,0,0]; 
+if ~regs.DIGG.sphericalEn
+    zIm = single(frame.z)/single(regs.GNRL.zNorm);
+    zPts = interp2(zIm,pts(:,1),pts(:,2));
+    matKi=(regs.FRMW.kRaw)^-1;
+    
+    u = pts(:,1)-1;
+    v = pts(:,2)-1;
+    
+    tt=zPts'.*[u';v';ones(1,numel(v))];
+    verts=(matKi*tt)';
+    
+    %% Get r,angx,angy
+    if regs.DEST.hbaseline
+        rxLocation = [regs.DEST.baseline,0,0];
+    else
+        rxLocation = [0,regs.DEST.baseline,0];
+    end
+    rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
+    [angx,angy] = Calibration.aux.vec2ang(normr(verts),regs,[]);
+    [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
+    ptsWithZ = [rtd,angx,angy,pts,verts];
+    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
+    
 else
-    rxLocation = [0,regs.DEST.baseline,0];
+    FE = [];
+    if calibParams.fovExpander.valid
+        FE = calibParams.fovExpander.table;
+    end
+    rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
+    rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
+    [angxPostUndist,angyPostUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),regs);
+    vUnit = Calibration.aux.ang2vec(angxPostUndist,angyPostUndist,regs,FE)';
+    %vUnit = reshape(vUnit',size(d.rpt));
+    %vUnit(:,:,1) = vUnit(:,:,1);
+    % Update scale to take margins into acount.
+    if regs.DEST.hbaseline
+        sing = vUnit(:,1);
+    else
+        sing = vUnit(:,2);
+    end
+    rtd_=rpt(:,1);
+    r = (0.5*(rtd_.^2 - 100))./(rtd_ - 10.*sing);
+    v = double(vUnit.*r);
+    ptsWithZ = [rpt,reshape(pts,[],2),v];
+    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end
-rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
-[angx,angy] = Calibration.aux.vec2ang(normr(verts),regs,[]);
-[angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
-ptsWithZ = [rtd,angx,angy,pts,verts];
-ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end
 
 function frameData = getFrameData(hw,regs,calibParams)

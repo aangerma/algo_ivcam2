@@ -68,13 +68,13 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     dfzRegs.FRMW.dfzApdCalTmp       = DFZ_regs.FRMWdfzApdCalTmp;
     dfzRegs.FRMW.dfzVbias           = DFZ_regs.FRMWdfzVbias;
     dfzRegs.FRMW.dfzIbias           = DFZ_regs.FRMWdfzIbias;
-    
+
     % save output
-    if g_save_output_flag && exist(output_dir,'dir')~=0
+    if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'dfzRegs', 'calibPassed','results');
     end
-    
+
 end
 
 function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir, OutputDir, calibParams, fprintff, regs)
@@ -83,15 +83,15 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
     shortRangeImages = strcmp('shortRange',captures);
     trainImages = strcmp('train',captures);
     testImages = strcmp('test',captures);
-    
+
     width = regs.GNRL.imgHsize;
     hight = regs.GNRL.imgVsize;
     %% find effective image "bounding box"
-    % read IR images
+       % read IR images
     path = fullfile(InputPath,'Pose1');
     im_IR = Calibration.aux.GetFramesFromDir(path,width, hight);
     IR_image = Calibration.aux.average_images(im_IR(:,:,(1:10)));
-    % find effective image "bounding box"
+       % find effective image "bounding box"
     bwIm = IR_image>0;
     bbox = [];
     bbox([1,3]) = minmax(find(bwIm(round(size(bwIm,1)/2),:)>0.9));
@@ -147,7 +147,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         %             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
         ptsCropped = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
         gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
-        %       [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+%       [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         gridCropped(end+1) = 1;
         %}
         
@@ -169,17 +169,29 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
 %     Calibration.DFZ.saveDFZInputImage(d,runParams);
     % dodluts=struct;
     %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
+    %%% TEMP: initialize new parameters that are not saved in old recordings
+    % regs.FRMW.undistAngHorz=zeros(1,5,'single'); regs.FRMW.undistAngVert=zeros(1,5,'single'); regs.FRMW.fovexRadialK=zeros(1,3,'single'); regs.FRMW.fovexTangentP=zeros(1,2,'single'); regs.FRMW.fovexCenter=zeros(1,2,'single'); regs.FRMW.fovexDistModel=logical(0);
+    % calibParams.dfz.polyVarRange=[-100;100]*[0,1,0]; calibParams.dfz.pitchFixFactorRange=[-100,100]; calibParams.dfz.undistHorzRange=[-100;100]*ones(1,5); calibParams.dfz.undistVertRange=[-100;100]*ones(1,5); calibParams.dfz.fovexRadialRange=[-100;100]*ones(1,3); calibParams.dfz.fovexTangentRange=[-100;100]*ones(1,2);, calibParams.dfz.fovexCenterRange=[-100;100]*ones(1,2);
+    % calibParams.dfz.fovxRange=[40,80]; calibParams.dfz.fovyRange=[35,65]; calibParams.dfz.undistHorzRange(:,1) = [-400;400]; calibParams.dfz.undistVertRange(:,1) = [-400;400];
+    % fprintff=@fprintf;
+    % runParams.outputFolder='D:\Data\Ivcam2\FOVex\temp';
+    %%%
     [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
-    %         calibParams.dfz.pitchFixFactorRange = [0,0];
+%         calibParams.dfz.pitchFixFactorRange = [0,0];
     results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
     fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
-    %         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
+%         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
     
-    x0 = double([dfzRegs.FRMW.xfov(1) dfzRegs.FRMW.yfov(1) dfzRegs.DEST.txFRQpd(1) dfzRegs.FRMW.laserangleH dfzRegs.FRMW.laserangleV dfzRegs.FRMW.polyVars dfzRegs.FRMW.pitchFixFactor]);
-    
+    x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV, ...
+        dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert, ...
+        dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]); 
+
     if ~isempty(d(testImages))
         [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,x0,runParams);
         fprintff('geom error on test set =%.2g\n',results.extraImagesGeomErr);
+    else
+        results.extraImagesGeomErr = 0;
+        fprintff('No test set.\n');
     end
     
     if ~isempty(d(shortRangeImages)) && sum(shortRangeImages) == 1
@@ -188,7 +200,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         if nanmean(vec(abs((d(srInd).pts(:,:,1)-d(lrInd).pts(:,:,1))))) > 1 % If average corner location is bigger than 1 pixel we probably have missmatched captures
             fprintff('Long and short range presets DFZ captures are not of the same scene! Short range preset calib failed \n')
             calibPassed = 0;
-            
+    
         end
         invalidCBPoints = isnan(d(lrInd).rpt(:,1).*d(srInd).rpt(:,1));
         d(lrInd).rpt = d(lrInd).rpt.*(~invalidCBPoints);
@@ -210,7 +222,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
 %        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
         shortRangePresetFn = fullfile(calib_dir,'shortRangePreset.csv');
         shortRangePreset=readtable(shortRangePresetFn);
-        modRefInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset'));
+        modRefInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset')); 
         shortRangePreset.value(modRefInd) = results.rtdDiffBetweenPresets;
         writetable(shortRangePreset,shortRangePresetFn);
     end
@@ -255,7 +267,7 @@ function  DFZRegs = ConvertDFZReg(regs)
     DFZRegs.DEST.p2axb 				= typecast(regs.DESTp2axb,'single');
     DFZRegs.DEST.p2aya 				= typecast(regs.DESTp2aya,'single');
     DFZRegs.DEST.p2ayb 				= typecast(regs.DESTp2ayb,'single');
-    DFZRegs.DIGG.sphericalOffset	= typecast(bitand(regs.DIGGsphericalOffset,hex2dec('0fff0fff')),'int16');
+    DFZRegs.DIGG.sphericalOffset	= typecast(bitand(regs.DIGGsphericalOffset,hex2dec('0fffffff')),'int16');
     DFZRegs.DIGG.sphericalScale 	= typecast(bitand(regs.DIGGsphericalScale ,hex2dec('0fff0fff')),'int16');
     DFZRegs.DEST.hbaseline          = logical(regs.DESThbaseline);
     DFZRegs.DEST.txFRQpd            = typecast(regs.DESTtxFRQpd,'single')'; %x3
@@ -278,15 +290,23 @@ function  DFZRegs = ConvertDFZReg(regs)
     DFZRegs.FRMW.marginT            = regs.FRMWmarginT;
     DFZRegs.FRMW.marginB            = regs.FRMWmarginB;
     DFZRegs.FRMW.yflip              = regs.FRMWyflip;
-    DFZRegs.FRMW.xR2L               = regs.FRMWxR2L;
+    DFZRegs.FRMW.xR2L               = regs.FRMWxR2L; 
     DFZRegs.FRMW.pitchFixFactor     = regs.FRMWpitchFixFactor;              % logical (bool) (0)
+   
+    DFZRegs.FRMW.undistAngHorz      = regs.FRMWundistAngHorz;
+    DFZRegs.FRMW.undistAngVert      = regs.FRMWundistAngVert;
+    DFZRegs.FRMW.fovexRadialK       = regs.FRMWfovexRadialK;
+    DFZRegs.FRMW.fovexTangentP      = regs.FRMWfovexTangentP;
+    DFZRegs.FRMW.fovexCenter        = regs.FRMWfovexCenter;
+    DFZRegs.FRMW.fovexDistModel     = regs.FRMWfovexDistModel;
     
+
     % update list
-    %     DFZRegs.FRMW.dfzCalTmp          = regs.FRMWdfzCalTmp;
-    %     DFZRegs.FRMW.dfzApdCalTmp       = regs.FRMWdfzApdCalTmp;
-    %     DFZRegs.FRMW.dfzVbias           = regs.FRMWdfzVbias;
-    %     DFZRegs.FRMW.dfzIbias           = regs.FRMWdfzIbias;
-    
-    
+%     DFZRegs.FRMW.dfzCalTmp          = regs.FRMWdfzCalTmp;
+%     DFZRegs.FRMW.dfzApdCalTmp       = regs.FRMWdfzApdCalTmp;
+%     DFZRegs.FRMW.dfzVbias           = regs.FRMWdfzVbias;
+%     DFZRegs.FRMW.dfzIbias           = regs.FRMWdfzIbias;
+
+
     DFZRegs.MTLB.fastApprox(1)          	= logical(regs.MTLBfastApprox(1));
 end

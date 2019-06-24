@@ -12,6 +12,17 @@ timesForPlot = nan(1,pN);
 plotDataI = 1;
 
 Calibration.aux.startHwStream(hw,runParams);
+if calibParams.gnrl.sphericalMode
+    hw.setReg('DIGGsphericalEn',1);
+    hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))
+%     hw.setReg('DIGGsphericalScale',dec2hex(typecast(regs.DIGG.sphericalScale,'uint32')));
+    hw.setReg('DESTdepthAsRange',1);
+    hw.setReg('DESTbaseline$',single(0));
+    hw.setReg('DESTbaseline2',single(0));
+    hw.shadowUpdate;
+end
+
+
 prevTmp = hw.getLddTemperature();
 prevTime = 0;
 tempsForPlot(plotDataI) = prevTmp;
@@ -43,6 +54,7 @@ while ~finishedHeating
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
     [result, tableResults]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
+    rmdir(path,'s');
     finishedHeating = (result~=0);
     
     if tempFig.isvalid

@@ -9,11 +9,11 @@ function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams,
             irImSize = hw.streamSize;
             captures = {calibParams.dfz.captures.capture(:).type};
             captures = captures(~strcmp(captures,'shortRange'));
-            calibParams.dfz.captures.capture = calibParams.dfz.captures.capture(~strcmp(captures,'shortRange'));
+            tmpcalibParams.dfz.captures.capture = calibParams.dfz.captures.capture(~strcmp(captures,'shortRange'));
             fprintff('Collecting images for RGB calibration: ');
             for i=1:length(captures)
                 fprintff('%s',num2str(i));
-                cap = calibParams.dfz.captures.capture(i);
+                cap = tmpcalibParams.dfz.captures.capture(i);
                 cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
                 cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
                 img = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('RGB to Depth - Image %d',i));

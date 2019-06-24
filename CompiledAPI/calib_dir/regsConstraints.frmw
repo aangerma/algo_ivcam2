@@ -203,17 +203,17 @@ sum([[JFILsort3dWeights]])<128
 
 
 %max fov (non spherical)
-[DIGGundistBypass] | [FRMWyfov_000]*[FRMWundistYfovFactor]<=89
-[DIGGundistBypass] | [FRMWxfov_000]*[FRMWundistXfovFactor]<=89
+%[DIGGundistBypass] | [FRMWyfov_000]*[FRMWundistYfovFactor]<=89
+%[DIGGundistBypass] | [FRMWxfov_000]*[FRMWundistXfovFactor]<=89
 
-[DIGGundistBypass] | [FRMWyfov_001]*[FRMWundistYfovFactor]<=89
-[DIGGundistBypass] | [FRMWxfov_001]*[FRMWundistXfovFactor]<=89
+%[DIGGundistBypass] | [FRMWyfov_001]*[FRMWundistYfovFactor]<=89
+%[DIGGundistBypass] | [FRMWxfov_001]*[FRMWundistXfovFactor]<=89
 
-[DIGGundistBypass] | [FRMWyfov_002]*[FRMWundistYfovFactor]<=89
-[DIGGundistBypass] | [FRMWxfov_002]*[FRMWundistXfovFactor]<=89
+%[DIGGundistBypass] | [FRMWyfov_002]*[FRMWundistYfovFactor]<=89
+%[DIGGundistBypass] | [FRMWxfov_002]*[FRMWundistXfovFactor]<=89
 
-[DIGGundistBypass] | [FRMWyfov_003]*[FRMWundistYfovFactor]<=89
-[DIGGundistBypass] | [FRMWxfov_003]*[FRMWundistXfovFactor]<=89
+%[DIGGundistBypass] | [FRMWyfov_003]*[FRMWundistYfovFactor]<=89
+%[DIGGundistBypass] | [FRMWxfov_003]*[FRMWundistXfovFactor]<=89
 
-[DIGGundistBypass] | [FRMWyfov_004]*[FRMWundistYfovFactor]<=89
-[DIGGundistBypass] | [FRMWxfov_004]*[FRMWundistXfovFactor]<=89
+%[DIGGundistBypass] | [FRMWyfov_004]*[FRMWundistYfovFactor]<=89
+%[DIGGundistBypass] | [FRMWxfov_004]*[FRMWundistXfovFactor]<=89

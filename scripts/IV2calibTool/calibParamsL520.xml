@@ -6,7 +6,6 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       <releaseConfigCalibPath>releaseConfigCalibL520</releaseConfigCalibPath>
        <!--<internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>-->
        <irInnerRange>[0,255]</irInnerRange>

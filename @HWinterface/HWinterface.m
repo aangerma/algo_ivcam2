@@ -207,13 +207,13 @@ classdef HWinterface <handle
             obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
             obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
             obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
-            if(~boolean(obj.read('JFILupscalexyBypass')))
-                if(boolean(obj.read('JFILupscalex1y0')))
-                    obj.usefullRegs.GNRL.imgHsize=2*obj.usefullRegs.GNRL.imgHsize;
-                else
-                    obj.usefullRegs.GNRL.imgVsize=2*obj.usefullRegs.GNRL.imgVsize;
-                end
-            end
+            %if(~boolean(obj.read('JFILupscalexyBypass')))
+            %    if(boolean(obj.read('JFILupscalex1y0')))
+            %        obj.usefullRegs.GNRL.imgHsize=2*obj.usefullRegs.GNRL.imgHsize;
+            %    else
+            %        obj.usefullRegs.GNRL.imgVsize=2*obj.usefullRegs.GNRL.imgVsize;
+            %    end
+            %end
             obj.usefullRegs.GNRL.zNorm = obj.z2mm;
         end
         function [res,val] = cmd(obj,str)

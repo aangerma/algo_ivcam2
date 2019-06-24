@@ -246,9 +246,23 @@ function app=createComponents(runParamsFile)
     app.advancedClearBtn.String = 'clear';
 %     set(handles.checkbox1,'Enable','off')  %disable checkbox1
 
+%     nextCol = 200;
+    % Create advancedSaveBtn
+%     calibResOptions = {'360p';'XGA';'VGA'};
+%     resI = find(strcmp(calibResOptions,runParams.calibRes));
+%     assert(~isempty(resI),sprintf('calibRes field in runParams is illegal: %s sn''t a legal option ',runParams.calibRes));
+%     app.chooseResBtn = uicontrol('style','listbox','parent',advancedTab);
+% %     app.chooseResBtn.Callback = @saveDefaults;
+%     app.chooseResBtn.Position = [cbSz(2)+nextCol cbSz(2)*(ny)-63 cbSz(1)-120 cbSz(2)+20];
+%     app.chooseResBtn.String = calibResOptions;
+%     app.chooseResBtn.Value = resI;
 
-
-
+    % Create resolution field label
+%     app.resolutionEditFieldLabel = uicontrol('style','text','parent',advancedTab);
+% %     app.resolutionEditFieldLabel.HorizontalAlignment = 'left';
+%     app.resolutionEditFieldLabel.Position = [cbSz(2)+nextCol-13 cbSz(2)*(ny)-13 cbSz(1)-120 cbSz(2)-10];
+%     app.resolutionEditFieldLabel.String = 'Resolution';
+   
 
     guidata(app.figH,app);
     
@@ -292,6 +306,7 @@ function saveDefaults(varargin)
     s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
+%    s.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
     end
@@ -320,6 +335,7 @@ function statrtButton_callback(varargin)
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
         [runparams.version,runparams.subVersion] = calibToolVersion(); 
+%        runparams.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
         runparams.outputFolder = [];
         runparams.replayFile = [];
         if isdeployed
@@ -405,9 +421,7 @@ function statrtButton_callback(varargin)
         app.AbortButton.Enable='on';
         app.AbortButton.UserData=1;
         %%
-        %=======================================================RUN CALIBRATION=======================================================
-        
-        %calibfn =  fullfile(toolDir,'calibParams.xml');
+        %=======================================================RUN CALIBRATION=======================================================        
         [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0

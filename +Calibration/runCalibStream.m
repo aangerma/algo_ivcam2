@@ -55,6 +55,10 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% Start stream to load the configuration
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
+    %% Init hw configuration
+    initConfiguration(hw,fw,runParams,fprintff,t);
+
+    
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
     if calibParams.gnrl.disableMetaData
@@ -68,9 +72,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
    [verValue,verValuefull] = getVersion(hw,runParams);  
-    %% Init hw configuration
-    initConfiguration(hw,fw,runParams,fprintff,t);
-
+    
     %% Set coarse DSM values 
     calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
     
@@ -305,7 +307,7 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
    
     if(~exist('calibParamsFn','var') || isempty(calibParamsFn))
         %% ::load default caliration configuration
-        calibParamsFn='calibParams.xml';
+        calibParamsFn='calibParams360p.xml';
     end
     calibParams = xml2structWrapper(calibParamsFn);
     
@@ -316,13 +318,15 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),calibParams.gnrl.releaseConfigCalibPath);
+    initFldr = fullfile(fileparts(mfilename('fullpath')),runParams.configurationFolder);
     initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets','+defaultValues');
     copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), runParams.internalFolder);
     copyfile(fullfile(runParams.internalFolder ,'*.frmw'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
     copyfile(fullfile(runParams.internalFolder ,'*.csv'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
+%     struct2xmlWrapper(calibParams,fullfile(runParams.outputFolder,'calibParams.xml'));
+
 end
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
@@ -422,17 +426,25 @@ end
 function initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
-        fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-        fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLvAPD|EXTLauxShadow.*$).*',fnAlgoInitMWD);
-        hw.runPresetScript('maReset');
-        pause(0.1);
-        hw.runScript(fnAlgoInitMWD);
-        pause(0.1);
-        hw.runPresetScript('maRestart');
-        pause(0.1);
-        hw.shadowUpdate();
-        hw.setUsefullRegs();
-        fprintff('Done(%ds)\n',round(toc(t)));
+%         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
+%         fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLvAPD|EXTLauxShadow.*$).*',fnAlgoInitMWD);
+%         hw.runPresetScript('maReset');
+%         pause(0.1);
+%         hw.runScript(fnAlgoInitMWD);
+%         pause(0.1);
+%         hw.runPresetScript('maRestart');
+%         pause(0.1);
+%         hw.shadowUpdate();
+%         hw.setUsefullRegs();
+%         fprintff('Done(%ds)\n',round(toc(t)));
+        % Create config calib files
+        fprintff('[-] Burning default config calib files...');
+        fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'),false);
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
+        hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'configFiles'));
+        hw.cmd('rst');
+        pause(10);
+        fprintff('Done\n');
     else
         fprintff('skipped\n');
         txDelay = typecast(hw.read('DESTtxFRQpd_000'),'single');

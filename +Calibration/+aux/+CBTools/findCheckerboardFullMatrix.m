@@ -1,4 +1,4 @@
-function [ gridPointsFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 ,isRgbImage)
+function [ gridPointsFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 ,isRgbImage,cornersDetectionThreshold)
 %FINDCHECKERBOARDFULLMATRIX detects the calibration chart with the black circle within the white square as an anchor.
 % Gets an IR image of the checkerboard
 % Returns a 20x28x2 matrix where the last 2 dimensions are the xy location
@@ -7,11 +7,13 @@ function [ gridPointsFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 ,
 
 if ~exist('imageRotatedBy180','var')
     imageRotatedBy180 = 0;
-end
-if exist('isRgbImage','var') && isRgbImage
-    cornersDetectionThreshold = 0.2; 
-else
-    cornersDetectionThreshold = 0.35;
+end 
+if ~exist('cornersDetectionThreshold','var') 
+    if exist('isRgbImage','var') && isRgbImage
+        cornersDetectionThreshold = 0.2; 
+    else
+        cornersDetectionThreshold = 0.25;
+    end
 end
 if imageRotatedBy180
     ir = rot90(ir,2);

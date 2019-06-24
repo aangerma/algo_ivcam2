@@ -14,13 +14,14 @@ angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(a
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
 oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
 
-angyQ=angyQin(:);angxQ =angxQin(:);
-angx = single(angxQ)*angXfactor;
-angy = single(angyQ)*angYfactor;
-oXYZPreExp = oXYZfunc(angles2xyz(angx,angy));
+angyQ=angyQin(:);angxQ =angxQin(:); % [DSM units]
+angxPreExp = single(angxQ)*angXfactor; % [deg]
+angyPreExp = single(angyQ)*angYfactor; % [deg]
+% [angx, angy] = Calibration.aux.applyFOVex(angxPreExp, angyPreExp, regs);
+oXYZPreExp = oXYZfunc(angles2xyz(angxPreExp,angyPreExp));
 oXYZPreExp(1:2,:) = rotmat*oXYZPreExp(1:2,:);
+% oXYZ = Calibration.aux.applyFOVexOnOutVec(oXYZPreExp, regs);
+
 oXYZ = Calibration.aux.applyExpander(oXYZPreExp,fovExpander);
-
-
 
 end
