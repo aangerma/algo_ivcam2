@@ -111,12 +111,16 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
     % add error checking;
     frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
     frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
+    frame.i = Calibration.aux.average_images(frame.i);
+    frame.z = Calibration.aux.average_images(frame.z);
 
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
 %    framesData(i) = FrameData;
     
     framesData = acc_FrameData(FrameData);
      if(Index == 0)
+         
+         
          prevTmp   = FrameData.temp.ldd;
          prevTime  = FrameData.time;    
      end
