@@ -212,7 +212,7 @@ function [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,
 %
 %% capturing
     nof_frames = calibParams.validationConfig.HVM_Val.numOfFrames;
-    InputPath = fullfile(tempdir,'HVM_V_1'); 
+    InputPath = fullfile(ivcam2tempdir,'HVM_V_1'); 
     mkdirSafe(InputPath);
     Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , InputPath);  % save images Z and I in sub dir 
 
@@ -238,7 +238,7 @@ function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fp
     r.set();
     pause(0.1);
 %% capturing
-    InputPath = fullfile(tempdir,'HVM_Coverage');
+    InputPath = fullfile(ivcam2tempdir,'HVM_Coverage');
     nof_frames = calibParams.validationConfig.coverage.numOfFrames;
     mkdirSafe(InputPath);
     Calibration.aux.SaveFramesWrapper(hw, 'I' , nof_frames , InputPath);  % save images Z and I in sub dir 

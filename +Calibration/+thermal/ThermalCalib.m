@@ -47,10 +47,13 @@ plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degree
 
 %framesData = zeros(1,1000000); % 
 sz = hw.streamSize();
-
+algo2path_temp = fullfile(ivcam2tempdir,'algo2');
+if(exist(algo2path_temp,'dir'))
+    rmdir(algo2path_temp);
+end
 while ~finishedHeating
     i = i + 1;
-    path = fullfile(tempdir,sprintf('thermal%d',i));
+    path = fullfile(algo2path_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
     [result, tableResults]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);

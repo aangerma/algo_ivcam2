@@ -87,7 +87,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     fn = fullfile(temp_dir,'postUndistState.txt');
     fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',fn);
     %% prepare preset table
-    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02d.bin',bitand(verValue,hex2dec('ff'))));
+    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',0,bitand(verValue,hex2dec('ff'))));    
     presetPath = path; 
     fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     %% Print image final fov

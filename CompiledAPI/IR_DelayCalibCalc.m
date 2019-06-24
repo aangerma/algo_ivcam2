@@ -23,11 +23,17 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc(path_up, path_down, sz 
 %               up / down scan images
 %   pixVar    - delay variance.
 %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff g_delay_cnt;
     fprintff = g_fprinff;
     unFiltered  = 0;
 
     % setting default global value in case not initial in the init function;
+    if isempty(g_delay_cnt)
+        g_delay_cnt = 0;
+    else
+        g_delay_cnt = g_delay_cnt+1; 
+    end
+
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
     end
@@ -56,31 +62,30 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc(path_up, path_down, sz 
     imU=getFilteredImage(imU_i,unFiltered);
     imD=getFilteredImage(imD_i,unFiltered);
 
-    [res, delayIR, im ,pixVar,phase] = IR_DelayCalibCalc_int(imU,imD, delay , calibParams.dataDelay, g_verbose); 
-    
-    % save Input
+        % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',phase)]);
+        fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_delay_cnt)]);
         save(fn,'imU', 'imD' , 'sz' , 'delay');
     end
+
+    [res, delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, delay , calibParams.dataDelay, g_verbose); 
+    
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir,  'mat_files' , [func_name sprintf('_out%d.mat',phase)]);
+        fn = fullfile(g_output_dir,  'mat_files' , [func_name sprintf('_out%d.mat',g_delay_cnt)]);
         save(fn,'res', 'delayIR', 'im' , 'pixVar');
+    end
+    if(res~=0)
+        g_delay_cnt = 0;
     end
 end
 
 
-function [res , delayIR, im ,pixVar ,phase] = IR_DelayCalibCalc_int(imU,imD, CurrentDelay, dataDelayParams ,verbose)
-    persistent n
-    nsEps       = 2;
-
-    if isempty(n)
-        n = 0;
-    end
-    n = n + 1;
-    phase = n;
+function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDelay, dataDelayParams ,verbose)
+    global g_delay_cnt;
+    n = g_delay_cnt;
     res = 0; %(WIP) not finish calibrate
+    nsEps       = 2;
     
     nomMirroFreq = 20e3;
 % debug image
@@ -113,13 +118,10 @@ function [res , delayIR, im ,pixVar ,phase] = IR_DelayCalibCalc_int(imU,imD, Cur
 % check convergence
     if (abs(delayIR)<=dataDelayParams.iterFixThr)        % delay calibration converege 
         res = 1;                                       
-        clear IR_DelayCalibCalc_int;
     elseif (n>1 && abs(delayIR)-nsEps > abs(CurrentDelay))  
-         res = -1;                                       % not converging delay calibration converege 
+        res = -1;                                       % not converging delay calibration converege 
         warning('delay not converging!');
-        clear IR_DelayCalibCalc_int;
     end
-    
     delayIR = CurrentDelay + delayIR;
 end 
 

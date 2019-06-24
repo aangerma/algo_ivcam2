@@ -5,7 +5,7 @@ delayZ=dataDelayParams.fastDelayInitVal;
 % delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;
 
 %imB=double(hw.getFrame(30).i)/255;
-path_both = fullfile(tempdir,'Z_Delay_both');
+path_both = fullfile(ivcam2tempdir,'Z_Delay_both');
 Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_both);             % get frame without post processing (averege) (SDK like)
 
 

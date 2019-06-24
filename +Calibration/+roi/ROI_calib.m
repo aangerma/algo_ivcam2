@@ -10,7 +10,7 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         NumberOfFrames = 30;
         [val1, val2] = Calibration.aux.GetGainValue(hw);        % save original gain value
         Calibration.aux.SetGainValue(hw,gainCalibValue, val2);  % Scan Direction up
-        InputPath = fullfile(tempdir,'ROI'); 
+        InputPath = fullfile(ivcam2tempdir,'ROI'); 
         path_up = fullfile(InputPath,'IR_up');
         Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_up);             % get frame without post processing (averege) (SDK like)
 

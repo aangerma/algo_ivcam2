@@ -1,5 +1,4 @@
 function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs,results)
-% function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
 % description: initiale set of the DSM scale and offset 
 %regs_reff
 % inputs:
@@ -39,7 +38,7 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIr
     func_name = dbstack;
     func_name = func_name(1).name;
     if(isempty(g_output_dir))
-        output_dir = fullfile(tempdir,'roi_temp');
+        output_dir = fullfile(ivcam2tempdir,'roi_temp');
     else
         output_dir = g_output_dir;
     end
@@ -50,7 +49,6 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIr
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath', 'calibParams' , 'ROIregs','regs');
     end
-%     [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(InputPath, g_output_dir, calibParams, fprintff, regs); 
     [roiRegs,results,fovData] = ROI_Calib_Calc_int(InputPath, calibParams, regs,runParams,results);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 

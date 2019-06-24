@@ -80,7 +80,7 @@ function [path_spherical, angxRawVec ,angyRawVec ,dsmregs, sz] = DSM_Calib_init(
     hw.shadowUpdate();
     pause(0.1);
     NumberOfFrames = calibParams.gnrl.Nof2avg; % should be 30
-    path_spherical = fullfile(tempdir,'DSM_spherical');
+    path_spherical = fullfile(ivcam2tempdir,'DSM_spherical');
     Calibration.aux.SaveFramesWrapper(hw ,'I',NumberOfFrames,path_spherical); % get frame without post processing (averege) (SDK like)
 %%  read DSM scale / offset 
     dsmregs.Xscale = typecast(hw.read('EXTLdsmXscale'),'single');

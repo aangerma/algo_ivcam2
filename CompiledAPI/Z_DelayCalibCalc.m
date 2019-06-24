@@ -24,10 +24,15 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
 %   pixVar    - delay variance.
 %
 
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff g_delay_cnt;
     fprinff = g_fprinff;
 
     unFiltered  = 0;
+     if isempty(g_delay_cnt)
+        g_delay_cnt = 0;
+    else
+        g_delay_cnt = g_delay_cnt+1; 
+    end
      % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -64,31 +69,29 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
     imB=getFilteredImage(imB_i,unFiltered);
 
     
-    [res, delayZ, im ,phase] = Z_DelayCalibCalc_int(imU,imD,imB ,delay , calibParams.dataDelay, g_verbose); 
     
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',phase)]);
+        fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_delay_cnt)]);
         save(fn,'imU', 'imD' , 'imB','sz' , 'delay');
     end
+    [res, delayZ, im ] = Z_DelayCalibCalc_int(imU,imD,imB ,delay , calibParams.dataDelay, g_verbose); 
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, 'mat_files' , [func_name sprintf('_out%d.mat',phase)]);
+        fn = fullfile(g_output_dir, 'mat_files' , [func_name sprintf('_out%d.mat',g_delay_cnt)]);
         save(fn,'res', 'delayZ', 'im');
     end
-
+    if(res~=0)
+        g_delay_cnt = 0;
+    end
 end
 
-function [res , delayZ, im ,phase] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams ,verbose)
-    persistent n
+function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams ,verbose)
+    global g_delay_cnt;
+    n = g_delay_cnt;
     nsEps       = 2;
     unFiltered  = 0;
 
-    if isempty(n)
-        n = 0;
-    end
-    n = n + 1;
-    phase = n;
     res = 0; %(WIP) not finish calibrate
     
 % debug image

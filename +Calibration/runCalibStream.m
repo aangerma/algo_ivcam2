@@ -11,7 +11,10 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     if(~exist('app','var'))
         app=[];
     end
-
+    % clear calib_temp
+    if(isfolder(ivcam2tempdir))
+        rmdir(ivcam2tempdir,'s');
+    end
     write2spark = ~isempty(spark);
     
     % runParams - Which calibration to perform.
