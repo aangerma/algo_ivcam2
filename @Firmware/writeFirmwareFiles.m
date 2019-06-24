@@ -1,4 +1,4 @@
-function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
+function writeFirmwareFiles(obj,outputFldr)
     % Write tables to output folder. For both EPROM and flash.
     % oldFWVersion = true indicates that we should use different
     % version representation for units with firmware lower than 1.1.3.77.
@@ -11,11 +11,9 @@ function writeFirmwareFiles(obj,outputFldr,oldFWVersion)
     v1=bitand(bitshift(regs.DIGG.spare(1),-16),uint32(255));
     v2=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(255));
     configpostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
-    if oldFWVersion
-        calibpostfix = sprintf('_Ver_%02d_%02d.',v2,v1);
-    else
-        calibpostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
-    end
+    
+    calibpostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
+    
     
     
     m=obj.getMeta();

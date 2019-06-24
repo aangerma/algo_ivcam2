@@ -172,7 +172,11 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
         Calibration.aux.logResults(data.results,runParams);
         %% merge all scores outputs
         calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
-        result = calibPassed;
+        if calibPassed
+            result = 1;
+        else
+            result = -1;
+        end
         
          %% Burn 2 device
         fprintff('Burning thermal calibration\n');
@@ -202,6 +206,8 @@ end
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
     if isempty(calibParams.gnrl.cbGridSz)
         pts = reshape(Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1),[],2);
+        gridSize = [size(pts,1),size(pts,2),1];
+        
     else
         [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
@@ -209,25 +215,63 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
             return;
         end
     end
-    zIm = single(frame.z)/single(regs.GNRL.zNorm);
-    zPts = interp2(zIm,pts(:,1),pts(:,2));
-    matKi=(regs.FRMW.kRaw)^-1;
+    if ~regs.DIGG.sphericalEn
+        zIm = single(frame.z)/single(regs.GNRL.zNorm);
+        zPts = interp2(zIm,pts(:,1),pts(:,2));
+        matKi=(regs.FRMW.kRaw)^-1;
 
-    u = pts(:,1)-1;
-    v = pts(:,2)-1;
+        u = pts(:,1)-1;
+        v = pts(:,2)-1;
 
-    tt=zPts'.*[u';v';ones(1,numel(v))];
-    verts=(matKi*tt)';
+        tt=zPts'.*[u';v';ones(1,numel(v))];
+        verts=(matKi*tt)';
 
-    %% Get r,angx,angy
-    if regs.DEST.hbaseline
-        rxLocation = [regs.DEST.baseline,0,0]; 
+        %% Get r,angx,angy
+        if regs.DEST.hbaseline
+            rxLocation = [regs.DEST.baseline,0,0]; 
+        else
+            rxLocation = [0,regs.DEST.baseline,0];
+        end
+        rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
+        [angx,angy] = Calibration.aux.vec2ang(normr(verts),regs,[]);
+        [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
+        ptsWithZ = [rtd,angx,angy,pts,verts];
+        ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
+        
     else
-        rxLocation = [0,regs.DEST.baseline,0];
+        FE = [];
+        if calibParams.fovExpander.valid
+            FE = calibParams.fovExpander.table;
+        end
+        rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
+        rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
+        [angxPostUndist,angyPostUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),regs);
+        vUnit = Calibration.aux.ang2vec(angxPostUndist,angyPostUndist,regs,FE)';
+        %vUnit = reshape(vUnit',size(d.rpt));
+        %vUnit(:,:,1) = vUnit(:,:,1);
+        % Update scale to take margins into acount.
+        if regs.DEST.hbaseline
+            sing = vUnit(:,1);
+        else
+            sing = vUnit(:,2);
+        end
+        rtd_=rpt(:,1);
+        r = (0.5*(rtd_.^2 - 100))./(rtd_ - 10.*sing);
+        v = double(vUnit.*r);
+        ptsWithZ = [rpt,reshape(pts,[],2),v];
+        ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
     end
-    rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
-    [angx,angy] = Calibration.aux.vec2ang(normr(verts),regs,[]);
-    [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
-    ptsWithZ = [rtd,angx,angy,pts,verts];
-    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
+    v = ptsWithZ(:,6:8);
+    if size(v,1) == 20*28
+        v = reshape(v,20,28,3);
+        rows = find(any(~isnan(v(:,:,1)),2));
+        cols = find(any(~isnan(v(:,:,1)),1));
+        grd = [numel(rows),numel(cols)];
+        v = reshape(v(rows,cols,:),[],3);
+    else
+        grd = [9,13];
+    end
+    [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
+    fprintf('eGeom - %2.2f\n',eGeom);
+    
 end

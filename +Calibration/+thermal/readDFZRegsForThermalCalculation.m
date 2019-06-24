@@ -1,4 +1,4 @@
-function currregs = readDFZRegsForThermalCalculation(hw,checkAssert)
+function currregs = readDFZRegsForThermalCalculation(hw,checkAssert,calibParams)
     
     currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
     currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
@@ -32,7 +32,8 @@ function currregs = readDFZRegsForThermalCalculation(hw,checkAssert)
     currregs.FRMW.kRaw(7) = single(currregs.GNRL.imgHsize) - 1 - currregs.FRMW.kRaw(7);
     currregs.FRMW.kRaw(8) = single(currregs.GNRL.imgVsize) - 1 - currregs.FRMW.kRaw(8);
     currregs.GNRL.zNorm = hw.z2mm;
-    
+    currregs.GNRL.zMaxSubMMExp = hw.read('GNRLzMaxSubMMExp');
+
     JFILspare = hw.read('JFILspare');
     currregs.JFIL.spare = JFILspare';
 
@@ -53,7 +54,26 @@ function currregs = readDFZRegsForThermalCalculation(hw,checkAssert)
     currregs.DEST.p2aya = hex2single(dec2hex(hw.read('DESTp2aya')));
     currregs.DEST.p2ayb = hex2single(dec2hex(hw.read('DESTp2ayb')));
     
-    PCKRspare = typecast(hw.read('PCKRspare'),'single');
-    currregs.PCKR.spare = PCKRspare';
+    JFILdnnWeights = hw.read('JFILdnnWeights');
+    currregs.FRMW.undistAngVert = typecast(JFILdnnWeights(1:5),'single')';
+    currregs.FRMW.undistAngHorz = typecast(JFILdnnWeights(6:10),'single')';
+
+    
+    currregs.DIGG.sphericalOffset	= typecast(hw.read('DIGGsphericalOffset'),'int16');
+    currregs.DIGG.sphericalScale 	= typecast(hw.read('DIGGsphericalScale'),'int16');
+
+    
+    if calibParams.gnrl.sphericalMode
+        currregs.DIGG.sphericalScale = int16(double(currregs.DIGG.sphericalScale).*calibParams.gnrl.sphericalScaleFactors);
+        currregs.DEST.depthAsRange = 1; 
+        currregs.DIGG.sphericalEn = 1;
+        currregs.DEST.baseline = single(0);
+        currregs.DEST.baseline2 = single(0);
+    end
+    
+    currregs.FRMW.mirrorMovmentMode = 1;
+    currregs.FRMW.projectionYshear = 0;
+    currregs.MTLB.fastApprox = ones(1,8,'logical');
+    
 end
 

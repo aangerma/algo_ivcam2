@@ -87,7 +87,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     fn = fullfile(temp_dir,'postUndistState.txt');
     fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',fn);
     %% prepare preset table
-    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',bitshift(verValue,-8),bitand(verValue,hex2dec('ff'))));
+    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02d.bin',bitand(verValue,hex2dec('ff'))));
     presetPath = path; 
     fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     %% Print image final fov
@@ -96,8 +96,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     writeCalibRegsProps(fw,fnCalib);
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,undistLuts.FRMW.undistModel);
-    oldFWVersion = false;
-    fw.writeFirmwareFiles(output_dir,oldFWVersion);
+    fw.writeFirmwareFiles(output_dir);
 end
 
 function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
@@ -109,8 +108,8 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
     intregs.DIGG.spare(6)=verValue; %config version
-    intregs.DIGG.spare(7)=uint32(regs.FRMW.calMarginL)*2^16 + uint32(regs.FRMW.calMarginR);
-    intregs.DIGG.spare(8)=uint32(regs.FRMW.calMarginT)*2^16 + uint32(regs.FRMW.calMarginB);
+    intregs.DIGG.spare(7)=uint32(typecast(regs.FRMW.calMarginL,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginR,'uint16'));
+    intregs.DIGG.spare(8)=uint32(typecast(regs.FRMW.calMarginT,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginB,'uint16'));
     intregs.JFIL.spare=zeros(1,8,'uint32');
     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
@@ -127,7 +126,17 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
     dcorSpares(6:8) = single(regs.FRMW.dfzIbias);
     intregs.DCOR.spare = dcorSpares;
     
+    % undistAngVert & undistAngHorz
+%     pckrSpares = zeros(1,8,'single');
+%     pckrSpares(7:8) = single(regs.FRMW.undistAngVert(1:2));
+%     intregs.PCKR.spare = pckrSpares;
+%     
+%     statSpares = single([regs.FRMW.undistAngVert(3:5),regs.FRMW.undistAngHorz]);
+%     intregs.STAT.spare = statSpares;
     
+    JFILdnnWeights = regs.JFIL.dnnWeights;
+    JFILdnnWeights(1:10) = typecast([regs.FRMW.undistAngVert,regs.FRMW.undistAngHorz],'uint32');
+    intregs.JFIL.dnnWeights = JFILdnnWeights;
     
     fw.setRegs(intregs,fnCalib);
     fw.get();
@@ -138,12 +147,12 @@ end
 function [results,udistRegs,udistlUT] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
     if(runParams.undist)
-        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement,results.undistRms] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
+        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams,runParams);
         udistRegs.DIGG.undistBypass = false;
         if(results.maxPixelDisplacement<calibParams.errRange.maxPixelDisplacement(2))
-            fprintff('[v] undist calib passed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,results.undistRms);
+            fprintff('[v] undist calib passed[e=%g]\n',results.maxPixelDisplacement);
         else
-            fprintff('[x] undist calib failed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,results.undistRms);
+            fprintff('[x] undist calib failed[e=%g]\n',results.maxPixelDisplacement);
             
         end
 %         ttt=[tempname '.txt'];

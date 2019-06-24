@@ -6,7 +6,7 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       <releaseConfigCalibPath>releaseConfigCalibXGA</releaseConfigCalibPath>
+       <configCalibDirName>releaseConfigCalibVGA</configCalibDirName>
        <!--<internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>-->
        <irInnerRange>[0,255]</irInnerRange>
@@ -72,9 +72,11 @@
           <timeoutSec>1</timeoutSec>
       </wait>
       <warmUp></warmUp>
+      <HVM_Val> 
+          <numOfFrames>100</numOfFrames>
+      </HVM_Val>
       <dfz>
           <numOfFrames>30</numOfFrames>
-          
       </dfz>
       <coverage>
           <numOfFrames>100</numOfFrames>
@@ -208,14 +210,19 @@
         </preResetCapture>
         
         
-        <fovxRange>[40,70]</fovxRange> 
-        <fovyRange>[35,55]</fovyRange> 
+        <fovxRange>[40,80]</fovxRange> 
+        <fovyRange>[35,65]</fovyRange> 
         <delayRange>[4000, 6000]</delayRange> 
-        <zenithxRange>[-6,6]</zenithxRange> 
-        <zenithyRange>[-6,6]</zenithyRange> 
-        <polyVarRange>[-200,-200,-8;200,200,8]</polyVarRange>
-        <zenithNormW>0.05</zenithNormW>
+        <zenithxRange>[-0,0]</zenithxRange> 
+        <zenithyRange>[-0,0]</zenithyRange> 
+        <polyVarRange>[0,-200,0;0,200,0]</polyVarRange>
+        <zenithNormW>0.00</zenithNormW>
         <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
+        <undistHorzRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistHorzRange>
+        <undistVertRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistVertRange>
+        <fovexRadialRange>[-100,-100,-100;100,100,100]</fovexRadialRange>
+        <fovexTangentRange>[-100,-100;100,100]</fovexTangentRange>
+        <fovexCenterRange>[-100,-100;100,100]</fovexCenterRange>
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  

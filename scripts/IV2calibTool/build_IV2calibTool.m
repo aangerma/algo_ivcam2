@@ -45,7 +45,7 @@ fw = Pipe.loadFirmware(sprintf('../../+Calibration/%s',toolConfig.configurationF
 verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion) 0 0]),'uint32');
 vreg= [verReg 0 0 0 0 verReg 0 0 ];
 fw.setRegs('DIGGspare',vreg);
-fw.writeFirmwareFiles(fullfile(outputFolder,'configFiles'),false);
+fw.writeFirmwareFiles(fullfile(outputFolder,'configFiles'));
 fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(calibToolVersion,1)*100)));
 
 %% Generate default algo thermal table

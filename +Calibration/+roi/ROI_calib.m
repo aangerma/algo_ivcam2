@@ -133,9 +133,15 @@ if 1
         ROIregs.FRMWpolyVars 				= DFZ_regs.FRMW.polyVars;               % single x3
         ROIregs.FRMWpitchFixFactor 			= DFZ_regs.FRMW.pitchFixFactor;         % single (0)
         
+        ROIregs.FRMWundistAngHorz      = DFZ_regs.FRMW.undistAngHorz;
+        ROIregs.FRMWundistAngVert      = DFZ_regs.FRMW.undistAngVert;
+        ROIregs.FRMWfovexRadialK       = DFZ_regs.FRMW.fovexRadialK;
+        ROIregs.FRMWfovexTangentP      = DFZ_regs.FRMW.fovexTangentP;
+        ROIregs.FRMWfovexCenter        = DFZ_regs.FRMW.fovexCenter;
+%         ROIregs.FRMWfovexDistModel     = DFZ_regs.FRMW.fovexDistModel;
         
 else
-        ROIregs.DIGG.sphericalOffset        = typecast(bitand(regs.DIGGsphericalOffset,hex2dec('0fff0fff')),'int16');
+        ROIregs.DIGG.sphericalOffset        = typecast(bitand(regs.DIGGsphericalOffset,hex2dec('00ff0fff')),'int16');
         ROIregs.DIGG.sphericalScale         = typecast(bitand(regs.DIGGsphericalScale ,hex2dec('0fff0fff')),'int16');
         ROIregs.GNRL.imgHsize               = uint16(regs.GNRL.imgHsize);
         ROIregs.GNRL.imgVsize               = uint16(regs.GNRL.imgVsize);
