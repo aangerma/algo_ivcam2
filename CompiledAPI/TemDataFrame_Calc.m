@@ -193,7 +193,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
 
         
         clear acc;
-%        clear g_temp_count;
+
         % clear persistent
     else
         result = 0;

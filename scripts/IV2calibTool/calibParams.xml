@@ -29,7 +29,7 @@
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
       <geomErr>[0.01 1.6]</geomErr>
-      <extraImagesGeomErr>[0 2]</extraImagesGeomErr>
+      <extraImagesGeomErr>[0.01 inf]</extraImagesGeomErr>
       <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
       <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
@@ -39,8 +39,8 @@
       <undistRms>[0.0 inf]</undistRms>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
-      <imFovX>[50 inf]</imFovX>
-      <imFovY>[35 inf] </imFovY>
+      <imFovX>[65 inf]</imFovX>
+      <imFovY>[48 inf] </imFovY>
       <irCoverageSpEn>[88 100]</irCoverageSpEn>
       <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
       <irCoverageSpDis>[85 100]</irCoverageSpDis>
