@@ -6,7 +6,7 @@ results = [];
 
 % DFZ Preset
 %% cal init function 
-output_dir = fullfile(tempdir,'unit_test','output_dir');
+output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
 mkdirSafe(output_dir);
 calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
 calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
@@ -31,7 +31,7 @@ InputPath = '\\ger\ec\proj\ha\RSG\SA_3DCam\tzachi\dror\hvm_6_6\AlgoInternalFailu
 
 %% end warp
 %% cal init function 
-output_dir = fullfile(tempdir,'unit_test','output_dir');
+output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
 mkdirSafe(output_dir);
 calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
 calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
@@ -61,7 +61,7 @@ mkdirSafe('C:\Users\tbenshab\AppData\Local\Temp\HVM_Val_Coverage_Calc\temp\mat_f
 
 %% RGB wrap
     %% cal init wrap
-    output_dir = fullfile(tempdir,'unit_test','output_dir');
+    output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
     mkdirSafe(output_dir);
     calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
     calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
@@ -81,11 +81,8 @@ irImSize = [360,640];
 [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
 
 
-
-
-
 function [calibParams , result] = wrap_cal_int()
-    output_dir = fullfile(tempdir,'unit_test','output_dir');
+    output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
     mkdirSafe(output_dir);
     calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
     calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');

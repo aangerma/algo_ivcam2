@@ -1,5 +1,4 @@
 function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprintff,app)
-       
     t=tic;
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
@@ -21,7 +20,6 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
 	calib_dir = fileparts(calibParamsFn);
 %    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
     [calibParams , ~] = HVM_Cal_init(calibParamsFn,calib_dir,fprintff,cal_output_dir);
-    
     %% Load hw interface
     fprintff('Loading HW interface...');
     hw=HWinterface();
@@ -110,7 +108,7 @@ end
 
 function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
     if(~exist('output_dir','var'))
-        output_dir = fullfile(tempdir,'\cal_tester\output');
+        output_dir = fullfile(ivcam2tempdir,'\cal_tester\output');
     end
     debug_log_f         = 0;
     verbose             = 0;

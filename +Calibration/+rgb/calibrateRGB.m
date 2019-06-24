@@ -18,8 +18,9 @@ function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams,
                 cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
                 img = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('RGB to Depth - Image %d',i));
 %                im(i) = rotFrame180(img);
+
                 % save images for RGB cal
-                InputPath = fullfile(tempdir,'RGB'); 
+                InputPath = fullfile(ivcam2tempdir,'RGB'); 
                 path = fullfile(InputPath,sprintf('Pose%d',i));
                 mkdirSafe(path);
                 Calibration.aux.SaveFramesWrapper(hw, 'IC' , 30 , path);  % save images Z and C in sub dir 

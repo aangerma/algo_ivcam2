@@ -36,7 +36,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     func_name = dbstack;
     func_name = func_name(1).name;
     if(isempty(g_output_dir))
-        output_dir = fullfile(tempdir, func_name,'temp');
+        output_dir = fullfile(ivcam2tempdir, func_name,'temp');
     else
         output_dir = g_output_dir;
     end

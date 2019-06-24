@@ -15,10 +15,15 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
 %        <0> - table not complitted keep calling the function with another samples point.
 %        <1> - table ready
 %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff; % g_regs g_luts;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count; % g_regs g_luts;
     fprintff = g_fprintff;
     
     % setting default global value in case not initial in the init function;
+    if isempty(g_temp_count)
+        g_temp_count = 0;
+    else
+        g_temp_count = g_temp_count + 1; 
+    end
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
     end
@@ -41,7 +46,7 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     func_name = func_name(1).name;
 
     if(isempty(g_output_dir))
-        output_dir = fullfile(tempdir, func_name);
+        output_dir = fullfile(ivcam2tempdir, func_name);
         mkdirSafe(output_dir);
         g_output_dir = output_dir;
     else
@@ -57,7 +62,7 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
 
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_in.mat']);
+        fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
         save(fn,'regs', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
     end
     height = sz(1);
@@ -66,8 +71,11 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     [result, tableResults] = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, [func_name '_out.mat']);
+        fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
         save(fn,'result', 'tableResults');
+    end
+    if (result~=0)
+        g_temp_count = 0;
     end
 end
 
@@ -94,8 +102,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
     persistent Index
     persistent prevTmp
     persistent prevTime
-
-    
+      
     if isempty(Index)
         Index     = 0;
         prevTmp   = 0;  %hw.getLddTemperature();
@@ -104,12 +111,16 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
     % add error checking;
     frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
     frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
+    frame.i = Calibration.aux.average_images(frame.i);
+    frame.z = Calibration.aux.average_images(frame.z);
 
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
 %    framesData(i) = FrameData;
     
     framesData = acc_FrameData(FrameData);
      if(Index == 0)
+         
+         
          prevTmp   = FrameData.temp.ldd;
          prevTime  = FrameData.time;    
      end
@@ -159,7 +170,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
         data.tableResults = tableResults;
         if isempty(table)
            result = 1; % calibPassed = 0;
-           save(fullfile(output_dir,'data.mat'),'data');
+           save(fullfile(output_dir,'mat_files' ,'data.mat'),'data');
            return;
         end
         dataFixed = Calibration.thermal.applyFix(data);
@@ -167,7 +178,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
         dataFixed = Calibration.thermal.addEGeomToData(dataFixed);
 
         [data] = Calibration.thermal.analyzeFramesOverTemperature(data,dataFixed,calibParams,runParams,fprintff,0);
-        save(fullfile(output_dir,'data_out.mat'),'data');
+        save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data');
 
         Calibration.aux.logResults(data.results,runParams);
         %% merge all scores outputs
@@ -185,7 +196,8 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
         fprintff('Thrmal calibration finished\n');
 
         
-        clear TemDataFrame_Calc;
+        clear acc;
+
         % clear persistent
     else
         result = 0;
@@ -196,7 +208,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
 end
 
 function [a] = acc_FrameData(a)
-    persistent acc;
+    global acc;
     acc = [acc; a] ;
     a = acc;
 end
@@ -211,6 +223,7 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     else
         [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
+            warning('checkerboard not detected. all target must be included in the image');
             ptsWithZ = [];
             return;
         end

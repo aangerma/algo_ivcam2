@@ -1,7 +1,7 @@
 function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
     fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     calibPassed = 1;
-    if(runParams.DFZ)
+    if(runParams.DFZ) 
         
         [r,DFZ_regs] = DFZ_calib_Init(hw,fw,runParams,calibParams);
 
@@ -65,7 +65,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
         DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart);
     end
 %            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
-    InputPath = fullfile(tempdir,'DFZ');
+    InputPath = fullfile(ivcam2tempdir,'DFZ');
     if strcmp(cap.type,'shortRange')
         path{i} = fullfile(InputPath,sprintf('Pose%d_SR',nx(i)));
     else

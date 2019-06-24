@@ -19,7 +19,6 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
 % output:
 %   results - incrmntal result 
 %   luts - undistort table.
-
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff; % g_regs g_luts;
     fprintff = g_fprintff;
     % setting default global value in case not initial in the init function;
@@ -87,7 +86,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     fn = fullfile(temp_dir,'postUndistState.txt');
     fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',fn);
     %% prepare preset table
-    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02d.bin',bitand(verValue,hex2dec('ff'))));
+    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',0,bitand(verValue,hex2dec('ff'))));    
     presetPath = path; 
     fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     %% Print image final fov
