@@ -1,4 +1,3 @@
-%function [ framesData, info ,table, result ] = collectTempData_new(hw,regs,calibParams,runParams,fprintff,maxTime2Wait,app)
 function [result] = ThermalCalib(hw,regs,calibParams,runParams,fprintff,maxTime2Wait,app)
 
 %tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;

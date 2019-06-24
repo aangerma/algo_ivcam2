@@ -23,6 +23,7 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc(path_up, path_down, sz 
 %               up / down scan images
 %   pixVar    - delay variance.
 %
+
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff g_delay_cnt;
     fprintff = g_fprinff;
     unFiltered  = 0;

@@ -1,5 +1,4 @@
 function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spark,app)
-       
     t=tic;
     results = struct;
     if(~exist('fprintff','var'))
@@ -12,7 +11,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         app=[];
     end
     % clear calib_temp
-    if(isfolder(ivcam2tempdir))
+    if(exist(ivcam2tempdir,'dir'))
         rmdir(ivcam2tempdir,'s');
     end
     write2spark = ~isempty(spark);

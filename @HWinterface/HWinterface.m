@@ -1,6 +1,7 @@
 %{
 iwb e2 01 06 // turn laser off
 %}
+
 % Concrete singleton implementation
 classdef HWinterface <handle
     

@@ -1,6 +1,5 @@
 % Concrete singleton implementation
 classdef HWinterfaceFile <handle
-    
     properties (Access=private)
         m_fw
         m_recData;

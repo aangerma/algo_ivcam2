@@ -10,7 +10,7 @@ function dsmregs = DSM_Calib_Output(hw,fprintff,DSM_data,angxZO,angyZO,runParams
     verbose = 1;
     sz = hw.streamSize();
 %% matlab only
-    d_pre       = hw.getFrame(30); %should be out of verbose so it will always happen (for log)
+    d_pre       = hw.getFrame(30); % should be out of verbose so it will always happen (for log)
 %% 
 % calibration structure 
     dsmregs.EXTL.dsmXscale  = DSM_data.dsmXscale;

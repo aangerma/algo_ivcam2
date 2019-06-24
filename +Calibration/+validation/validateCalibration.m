@@ -228,10 +228,8 @@ function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fp
 %           capturing 100 frames 
 % 		coverage (default configuration 'JFILBypass$' = true;
 % 			100 frames not average
-% 
 % 		ROI (default configuration)
 %       LOS (default configuration)
-%
 %% pre-capturing setting
     r = Calibration.RegState(hw);
     r.add('JFILBypass$',true);

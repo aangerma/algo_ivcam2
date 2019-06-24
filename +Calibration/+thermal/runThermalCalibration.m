@@ -1,5 +1,4 @@
 function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprintff,app)
-       
     t=tic;
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});

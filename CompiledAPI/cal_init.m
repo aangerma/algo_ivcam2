@@ -20,6 +20,7 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
 %    g_calib_params_fn       = calib_params_fn;
 
 
+
     clear delay_R_calib_calc;   % persistance variable in function.
     global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt;
     g_delay_cnt             = 0;

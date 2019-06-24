@@ -1,7 +1,7 @@
 function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
     fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     calibPassed = 1;
-    if(runParams.DFZ)
+    if(runParams.DFZ) 
         
         [r,DFZ_regs] = DFZ_calib_Init(hw,fw,runParams,calibParams);
 

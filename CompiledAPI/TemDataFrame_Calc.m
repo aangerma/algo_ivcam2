@@ -102,8 +102,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
     persistent Index
     persistent prevTmp
     persistent prevTime
-
-    
+      
     if isempty(Index)
         Index     = 0;
         prevTmp   = 0;  %hw.getLddTemperature();

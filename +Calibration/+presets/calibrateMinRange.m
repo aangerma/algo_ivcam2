@@ -1,4 +1,5 @@
 function [minRangeScaleModRef, ModRefDec] = calibrateMinRange(hw,calibParams,runParams,fprintff)
+
 %% capture frames
 minModprc=0 ;
 LaserDelta=2; % decimal

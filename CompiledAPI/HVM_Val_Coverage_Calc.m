@@ -14,6 +14,7 @@ function [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibPara
 %   allResults - 
 %   valResults - 
 %   
+
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff; % g_regs g_luts;
     fprintff = g_fprintff;
     % setting default global value in case not initial in the init function;

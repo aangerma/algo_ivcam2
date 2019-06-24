@@ -31,15 +31,6 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         r.reset();
         %% for matlab tool 
         % Ambient value - Mean of the center 21x21 (arbitrary) patch in the noise image.
-%{
-%%        will moved to after undist calc
-        fw.setRegs(roiRegs, fnCalib);
-        fw.get(); % run bootcalcs
-        fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
-        fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
-        hw.runScript(fnAlgoTmpMWD);
-        hw.shadowUpdate();
-%}
         fprintff('[v] Done(%ds)\n',round(toc(t)));
         results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
