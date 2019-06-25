@@ -194,66 +194,6 @@
             </capture>
             <capture>
                 <target>Iv2A1</target>
-                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
-                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
-                <type>train</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
                 <transformation>[0.6 0 0.1; 0 0.6 0; 0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
@@ -262,7 +202,6 @@
                 <transformation>[0.6 0 -0.1; 0 0.6 0; -0.2 0 1]</transformation>
                 <type>test</type>
             </capture>
-            
             
         </captures>
         <preResetCapture>
@@ -274,14 +213,14 @@
         </preResetCapture>
         
         
-        <fovxRange>[40,80]</fovxRange> 
-        <fovyRange>[35,65]</fovyRange> 
-        <delayRange>[4000, 6000]</delayRange> 
+        <fovxRange>[60,75]</fovxRange> 
+        <fovyRange>[55,65]</fovyRange> 
+        <delayRange>[5000, 5500]</delayRange> 
         <zenithxRange>[-0,0]</zenithxRange> 
         <zenithyRange>[-0,0]</zenithyRange> 
-        <polyVarRange>[0,-200,0;0,200,0]</polyVarRange>
+        <polyVarRange>[0,0,0;0,200,0]</polyVarRange>
         <zenithNormW>0.00</zenithNormW>
-        <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
+        <pitchFixFactorRange>[-100,0]</pitchFixFactorRange>
         <undistHorzRange>[-100,-100,-100,-100;100,100,100,100]</undistHorzRange>
         <undistVertRange>[-50,-50,-50,-50;50,50,50,50]</undistVertRange>
         <fovexNominalRange>[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]</fovexNominalRange>

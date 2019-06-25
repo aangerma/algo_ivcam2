@@ -61,15 +61,16 @@ optimizedParams = {'DFZ', 'coarseUndist'};
 
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
-outregs = x2regs(xbest,regs);
-[minerrPreUndist, ~] = errFunc(darr,outregs,xbest,FE,0);
+outregsPreUndist = x2regs(xbest,regs);
+[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,FE,0);
 
 %% Optimize fine undist correction & FOVex parameters
-x0 = double([outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,...
-    outregs.FRMW.polyVars, outregs.FRMW.pitchFixFactor, outregs.FRMW.undistAngHorz, outregs.FRMW.undistAngVert,...
-    outregs.FRMW.fovexNominal, outregs.FRMW.fovexRadialK, outregs.FRMW.fovexTangentP, outregs.FRMW.fovexCenter]);
-optimizedParams = {'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'};
-[xL, xH] = setLimitsPerParameterGroup(optimizedParams, outregs, par);
+x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outregsPreUndist.DEST.txFRQpd(1), outregsPreUndist.FRMW.laserangleH, outregsPreUndist.FRMW.laserangleV,...
+    outregsPreUndist.FRMW.polyVars, outregsPreUndist.FRMW.pitchFixFactor, outregsPreUndist.FRMW.undistAngHorz, outregsPreUndist.FRMW.undistAngVert,...
+    outregsPreUndist.FRMW.fovexNominal, outregsPreUndist.FRMW.fovexRadialK, outregsPreUndist.FRMW.fovexTangentP, outregsPreUndist.FRMW.fovexCenter]);
+% optimizedParams = {'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'};
+optimizedParams = {'undistCorrHorz', 'fovexLensDist'};
+[xL, xH] = setLimitsPerParameterGroup(optimizedParams, outregsPreUndist, par);
 
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
@@ -83,7 +84,7 @@ printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist
 printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, minerr, fprintff)
 
 printPlaneAng(darr,outregs_full,xbest,FE,fprintff,0,eAll);
-calcScaleError(darr,outregs_full,xbest,FE,fprintff,runParams);
+calcScaleError(darr,outregs_full,xbest,FE,fprintff,0,runParams);
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
@@ -353,5 +354,5 @@ for iParam = 1:length(optimizedParams)
                 regs.FRMW.fovexTangentP(1), regs.FRMW.fovexTangentP(2), regs.FRMW.fovexCenter(1), regs.FRMW.fovexCenter(2));
     end
 end
-fprintff('<< eGeom=%.2f >>\n', err)
+fprintff('--> eGeom=%.2f.\n', err)
 end

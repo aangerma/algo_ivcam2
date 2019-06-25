@@ -292,11 +292,12 @@ function  DFZRegs = ConvertDFZReg(regs)
    
     DFZRegs.FRMW.undistAngHorz      = regs.FRMWundistAngHorz;
     DFZRegs.FRMW.undistAngVert      = regs.FRMWundistAngVert;
+    DFZRegs.FRMW.fovexExistenceFlag = regs.FRMWfovexExistenceFlag;
+    DFZRegs.FRMW.fovexNominal       = regs.FRMWfovexNominal;
+    DFZRegs.FRMW.fovexLensDistFlag  = regs.FRMWfovexLensDistFlag;
     DFZRegs.FRMW.fovexRadialK       = regs.FRMWfovexRadialK;
     DFZRegs.FRMW.fovexTangentP      = regs.FRMWfovexTangentP;
     DFZRegs.FRMW.fovexCenter        = regs.FRMWfovexCenter;
-    DFZRegs.FRMW.fovexDistModel     = regs.FRMWfovexDistModel;
-    
 
     % update list
 %     DFZRegs.FRMW.dfzCalTmp          = regs.FRMWdfzCalTmp;

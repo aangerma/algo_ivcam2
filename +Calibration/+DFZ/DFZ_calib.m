@@ -169,13 +169,14 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams)
         DFZRegs.FRMWpitchFixFactor          = regs.FRMW.pitchFixFactor;              % logical (bool) (0)
         DFZRegs.MTLBfastApprox(1)           = regs.MTLB.fastApprox(1);     % logical (bool) (0)
         
-        
-        DFZRegs.FRMWundistAngHorz      = regs.FRMW.undistAngHorz;
-        DFZRegs.FRMWundistAngVert      = regs.FRMW.undistAngVert;
-        DFZRegs.FRMWfovexRadialK       = regs.FRMW.fovexRadialK;
-        DFZRegs.FRMWfovexTangentP      = regs.FRMW.fovexTangentP;
-        DFZRegs.FRMWfovexCenter        = regs.FRMW.fovexCenter;
-        DFZRegs.FRMWfovexDistModel     = regs.FRMW.fovexDistModel;
+        DFZRegs.FRMW.undistAngHorz          = regs.FRMWundistAngHorz;
+        DFZRegs.FRMW.undistAngVert          = regs.FRMWundistAngVert;
+        DFZRegs.FRMW.fovexExistenceFlag     = regs.FRMWfovexExistenceFlag;
+        DFZRegs.FRMW.fovexNominal           = regs.FRMWfovexNominal;
+        DFZRegs.FRMW.fovexLensDistFlag      = regs.FRMWfovexLensDistFlag;
+        DFZRegs.FRMW.fovexRadialK           = regs.FRMWfovexRadialK;
+        DFZRegs.FRMW.fovexTangentP          = regs.FRMWfovexTangentP;
+        DFZRegs.FRMW.fovexCenter            = regs.FRMWfovexCenter;
         
 end
 
