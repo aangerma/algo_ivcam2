@@ -49,7 +49,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     if strcmp(cap.type,'shortRange')
         hw.setPresetControlState(2);
         % SET the modRef from the short range calibration. 
-        modRefDec = getModRefDecValFromTable(runParams.outputFolder, 'shortRangePreset.csv');
+        modRefDec = getModRefDecValFromTable(hw,runParams.outputFolder, 'shortRangePreset.csv');
         Calibration.aux.RegistersReader.setModRef(hw,modRefDec);
         pause(2);
     else
@@ -75,20 +75,20 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
         hw.setPresetControlState(1);
         if calibParams.presets.long.updateCalibVal
             % SET the modRef from the long range calibration.
-            modRefDec = getModRefDecValFromTable(runParams.outputFolder, 'longRangePreset.csv');
+            modRefDec = getModRefDecValFromTable(hw,runParams.outputFolder, 'longRangePreset.csv');
             Calibration.aux.RegistersReader.setModRef(hw,modRefDec);
             pause(2);
         end
     end
 end
-function [modRefDec] = getModRefDecValFromTable(outFolder, presetCsvName)
-presetFn = fullfile(outFolder,'AlgoInternal',presetCsvName);
-presetTable=readtable(presetFn);
-modRefInd=find(strcmp(presetTable.name,'modulation_ref_factor'));
-s=hw.cmd('irb e2 09 01');
-max_hex = sscanf(s,'Address: %*s => %s');
-maxMod_dec = hex2dec(max_hex);
-modRefDec = presetTable.value(modRefInd)*maxMod_dec;
+function [modRefDec] = getModRefDecValFromTable(hw,outFolder, presetCsvName)
+    presetFn = fullfile(outFolder,'AlgoInternal',presetCsvName);
+    presetTable=readtable(presetFn);
+    modRefInd=find(strcmp(presetTable.name,'modulation_ref_factor'));
+    s=hw.cmd('irb e2 09 01');
+    max_hex = sscanf(s,'Address: %*s => %s');
+    maxMod_dec = hex2dec(max_hex);
+    modRefDec = presetTable.value(modRefInd)*maxMod_dec;
 end
 
 function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParams)
