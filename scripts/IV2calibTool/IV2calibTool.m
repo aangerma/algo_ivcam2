@@ -98,7 +98,7 @@ function app=createComponents(runParamsFile)
     runParams = xml2structWrapper(runParamsFile);
     
     
-    sz=[640 700];
+    sz=[640 720];
     % Create figH
     app.figH = figure('units','pixels',...
         'menubar','none',...
@@ -219,7 +219,7 @@ function app=createComponents(runParamsFile)
     app.skipWarmUpButton.Visible = 'off';
     Calibration.aux.globalSkip( 1,0 );
     %checkboxes
-    cbnames = {'replayMode','warm_up','init','DSM','gamma','dataDelay','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState'};
+    cbnames = {'replayMode','warm_up','init','DSM','gamma','dataDelay','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVex_installed'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;

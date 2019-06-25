@@ -21,6 +21,7 @@
    <cb_post_calib_validation>1</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
+   <cb_FOVex_installed>1</cb_FOVex_installed>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibVGA</configurationFolder>
    <calibParamsFile>calibParamsVGA.xml</calibParamsFile>
