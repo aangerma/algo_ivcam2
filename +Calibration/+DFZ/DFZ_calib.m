@@ -48,14 +48,9 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     
     if strcmp(cap.type,'shortRange')
         hw.setPresetControlState(2);
-% SET the modRef from the short range calibration. 
-        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
-        shortRangePreset=readtable(shortRangePresetFn);
-        modRefInd=find(strcmp(shortRangePreset.name,'modulation_ref_factor'));
-        s=hw.cmd('irb e2 09 01');
-        max_hex = sscanf(s,'Address: %*s => %s');
-        maxMod_dec = hex2dec(max_hex);
-        Calibration.aux.RegistersReader.setModRef(hw,shortRangePreset.value(modRefInd)*maxMod_dec);
+        % SET the modRef from the short range calibration. 
+        modRefDec = getModRefDecValFromTable(hw,runParams.outputFolder, 'shortRangePreset.csv');
+        Calibration.aux.RegistersReader.setModRef(hw,modRefDec);
         pause(2);
     else
         im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
@@ -78,8 +73,24 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     
     if strcmp(cap.type,'shortRange')
         hw.setPresetControlState(1);
+        if calibParams.presets.long.updateCalibVal
+            % SET the modRef from the long range calibration.
+            modRefDec = getModRefDecValFromTable(hw,runParams.outputFolder, 'longRangePreset.csv');
+            Calibration.aux.RegistersReader.setModRef(hw,modRefDec);
+            pause(2);
+        end
     end
 end
+function [modRefDec] = getModRefDecValFromTable(hw,outFolder, presetCsvName)
+    presetFn = fullfile(outFolder,'AlgoInternal',presetCsvName);
+    presetTable=readtable(presetFn);
+    modRefInd=find(strcmp(presetTable.name,'modulation_ref_factor'));
+    s=hw.cmd('irb e2 09 01');
+    max_hex = sscanf(s,'Address: %*s => %s');
+    maxMod_dec = hex2dec(max_hex);
+    modRefDec = presetTable.value(modRefInd)*maxMod_dec;
+end
+
 function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParams)
         r.reset();
 
@@ -91,7 +102,7 @@ function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParam
         hw.shadowUpdate;
       
         if hw.getPresetControlState ~= 1 % Move to long range preset
-           hw.setPresetControlState( 1 );
+            hw.setPresetControlState( 1 );
         end
             
         if(runParams.uniformProjectionDFZ)
