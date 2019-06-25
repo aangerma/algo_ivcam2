@@ -2,10 +2,7 @@
 import slash
 import io
 import sys
-import datetime
 import os.path as path
-import os
-import json
 import xml.etree.ElementTree as et
 
 sys.path.insert(0, r"Avv\tests")
@@ -13,16 +10,23 @@ import a_common
 
 
 def calibration(xmlPath):
-    # c=Calibration.runCalibStream('D:\temp\calib0033_3\AlgoInternal\calibrationInputParams.xml','D:\gitsource\algo_ivcam2\scripts\IV2calibTool\calibParams.xml');
-    calibFilePath = path.join(path.dirname(path.abspath(__file__)), '..\..\..\scripts\IV2calibTool\calibParams.xml')
     slash.logger.info("check calibrationInputParams.xml: {}".format(xmlPath),extra={"highlight": True})
-    slash.logger.info("check calibParams.xml: {}".format(calibFilePath),
-        extra={"highlight": True})
     if not path.exists(xmlPath):
         raise FileNotFoundError(xmlPath)
 
+    try:
+        xml = et.parse(xmlPath)
+        root = xml.getroot()
+        calibFileName = root.find('./calibParamsFile').text
+    except AttributeError:
+        slash.logger.error("can't find calibParamsFile in xml")
+        raise AttributeError
+
+    calibFilePath = path.join(path.dirname(path.abspath(__file__)), '..\..\..\scripts\IV2calibTool\{}'.format(calibFileName))
+    slash.logger.info("check calibParams.xml: {}".format(calibFilePath),extra={"highlight": True})
     if not path.exists(calibFilePath):
         raise FileNotFoundError(xmlPath)
+
     slash.logger.info("running calibration")
     eng = slash.g.mat
     out = io.StringIO()
@@ -39,7 +43,6 @@ def calibration(xmlPath):
 
     status = lambda x: 'pass' if x else 'failed'
     slash.logger.info("calibration : {}".format(status(calibPassed)), extra={"highlight": True})
-
 
     s = "calibration: out: {}".format(status(calibPassed))
     slash.logger.info(s, extra={"highlight": True})
