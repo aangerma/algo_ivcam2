@@ -237,14 +237,10 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
 end
 
 function [im] = GetDFZImages(nof_secne,InputPath,width,hight)
-    if nof_secne == 5
-        pose_list = {'Pose1','Pose2','Pose3','Pose4','Pose5'};
-    else
-        pose_list = {'Pose1','Pose1_SR','Pose2','Pose3','Pose4','Pose5'};
-    end
+    dirfiles = dir([InputPath,'\Pose*']);
     for i=1:nof_secne
-        im(i).i = Calibration.aux.GetFramesFromDir(fullfile(InputPath,pose_list{i}),width, hight);
-        im(i).z = Calibration.aux.GetFramesFromDir(fullfile(InputPath,pose_list{i}),width, hight,'Z');
+        im(i).i = Calibration.aux.GetFramesFromDir(fullfile(InputPath,dirfiles(i).name),width, hight);
+        im(i).z = Calibration.aux.GetFramesFromDir(fullfile(InputPath,dirfiles(i).name),width, hight,'Z');
         im(i).i = Calibration.aux.average_images(im(i).i);
         im(i).z = Calibration.aux.average_images(im(i).z);
     end

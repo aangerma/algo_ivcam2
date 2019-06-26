@@ -37,7 +37,7 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
         fid = fopen(fn,'w');
         cal_print = @(varargin) fprintf(fid,varargin{:});
     else
-        cal_print = @(varargin) dummy_print(varargin{:});
+        cal_print = @(varargin) varargin{:};
     end
     
     if(~exist('fprintff','var'))
@@ -74,7 +74,3 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
     return;
 end
 
-
-function dummy_print(varargin)
-    return;
-end
