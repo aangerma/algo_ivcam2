@@ -164,17 +164,17 @@ function xy = spherical2xy(sphericalPixels,regs,calibParams)
         angy = single(yy);
         
         [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
-        if calibParams.fovExpander.valid
-            FE = calibParams.fovExpander.table;
-            oXYZ = Calibration.aux.ang2vec(angx,angy,regs,FE)';
-            imaginaryRegs = regs;
-            imaginaryRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
-            imaginaryRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;    
-            [x,y] = vec2xy(oXYZ',imaginaryRegs);
-            x = x'; y = y';
-        else
+%         if calibParams.fovExpander.valid
+%             FE = calibParams.fovExpander.table;
+%             oXYZ = Calibration.aux.ang2vec(angx,angy,regs,FE)';
+%             imaginaryRegs = regs;
+%             imaginaryRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
+%             imaginaryRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;    
+%             [x,y] = vec2xy(oXYZ',imaginaryRegs);
+%             x = x'; y = y';
+%         else
             [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],1);
-        end
+%         end
         xy = [x,y];
 end
 function roiregs = margins2regs(margins,regs)
@@ -246,10 +246,11 @@ xyz2nrmxy= @(xyz) [xyz2nrmx(xyz)  ;  xyz2nrmy(xyz)];
 angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
 oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
-rangeR = xyz2nrmxy(oXYZfunc(angles2xyz( regs.FRMW.xfov(1)*0.25,                   0)));rangeR=rangeR(1);
-rangeL = xyz2nrmxy(oXYZfunc(angles2xyz(-regs.FRMW.xfov(1)*0.25,                   0)));rangeL=rangeL(1);
-rangeT = xyz2nrmxy(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov(1)*0.25)));rangeT =rangeT (2);
-rangeB = xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov(1)*0.25)));rangeB=rangeB(2);
+applyFOVex = @(v) Calibration.aux.applyFOVex(v, regs);
+rangeR = xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz( regs.FRMW.xfov(1)*0.25,                   0))));rangeR=rangeR(1);
+rangeL = xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz(-regs.FRMW.xfov(1)*0.25,                   0))));rangeL=rangeL(1);
+rangeT = xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov(1)*0.25))));rangeT =rangeT (2);
+rangeB = xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov(1)*0.25))));rangeB=rangeB(2);
 
 guardXinc = regs.FRMW.guardBandH*single(regs.FRMW.xres);
 guardYinc = regs.FRMW.guardBandV*single(regs.FRMW.yres);

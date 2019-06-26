@@ -33,7 +33,9 @@ xyz2nrmx = @(xyz) xyz(1,:)./xyz(3,:);
 xyz2nrmy = @(xyz) xyz(2,:)./xyz(3,:);
 xyz2nrmxy= @(xyz) [xyz2nrmx(xyz)  ;  xyz2nrmy(xyz)];
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
-oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
+if ~useFix
+    oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
+end
 rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( xfov*0.25,                   0)));rangeR=rangeR(1);
 rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-xfov*0.25,                   0)));rangeL=rangeL(1);
 rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , yfov*0.25)));rangeT =rangeT (2);
@@ -52,7 +54,8 @@ xy00 = [rangeL;rangeB];
 xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];% xys = [xresN-1;yresN-1]./[rangeR-rangeL;rangeT-rangeB];
 oXYZ = oXYZfunc(angles2xyz(angx,angy));
 if ~isempty(fovExpander)
-    oXYZ = Calibration.aux.applyExpander(oXYZ,fovExpander);
+%     oXYZ = Calibration.aux.applyExpander(oXYZ,fovExpander);
+    oXYZ = Calibration.aux.applyFOVex(oXYZ,regs);
 end
 xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;

@@ -10,19 +10,19 @@ function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,
 regs = fw.get();
 origregs = regs;
 
-FE = [];
-if calibParams.fovExpander.valid
-    FE = calibParams.fovExpander.table;
-end
-if ~isempty(FE)
-    udistRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
-    udistRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;
-    fw.setRegs(udistRegs,'');
-    regs = fw.get();
-else
-    udistRegs.FRMW.xfov = regs.FRMW.xfov;
-    udistRegs.FRMW.yfov = regs.FRMW.yfov;
-end
+% FE = [];
+% if calibParams.fovExpander.valid
+%     FE = calibParams.fovExpander.table;
+% end
+% if ~isempty(FE)
+%     udistRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
+%     udistRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;
+%     fw.setRegs(udistRegs,'');
+%     regs = fw.get();
+% else
+%     udistRegs.FRMW.xfov = regs.FRMW.xfov;
+%     udistRegs.FRMW.yfov = regs.FRMW.yfov;
+% end
 
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
@@ -75,12 +75,12 @@ nPoints = 50;
 % Perfect flow
 [angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,origregs);
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
-if ~isempty(FE)
-    v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,origregs,FE);
-    [xg,yg] = Calibration.aux.vec2xy(v,regs);
-else
+% if ~isempty(FE)
+%     v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,origregs,FE);
+%     [xg,yg] = Calibration.aux.vec2xy(v,regs);
+% else
     [xg,yg] = Calibration.aux.ang2xySF(angxPostPolyUndist,angyPostPolyUndist,origregs,[],true);
-end
+% end
 
 % Pipe flow
 [xbug,ybug] = Calibration.aux.ang2xySF(angx,angy,regs,[],false);
