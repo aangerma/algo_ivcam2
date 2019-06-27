@@ -52,7 +52,7 @@ else
     
     a=2047; 
     [angx,angy] = meshgrid(linspace(-a,a,100));
-    [x,y] = Calibration.aux.ang2xySF(angx,angy,regs,[],0);
+    [x,y] = Calibration.aux.ang2xySF(angx,angy,regs);
 
     x1 = min(x(:));
     x30 = max(x(:));

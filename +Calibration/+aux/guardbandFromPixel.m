@@ -41,10 +41,12 @@ xyz2nrmy = @(xyz) xyz(2,:)./xyz(3,:);
 xyz2nrmxy= @(xyz) [xyz2nrmx(xyz)  ;  xyz2nrmy(xyz)];
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
 oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
-rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( regs.FRMW.xfov*0.25,                   0)));rangeR=rangeR(1);
-rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-regs.FRMW.xfov*0.25,                   0)));rangeL=rangeL(1);
-rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov*0.25)));rangeT =rangeT (2);
-rangeB = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov*0.25)));rangeB=rangeB(2);
+applyFOVex = @(v) Calibration.aux.applyFOVex(v, regs); % Model-based implementation (nominal FOVex + lens distortion)
+
+rangeR = rotmat*rotmat*xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz( regs.FRMW.xfov*0.25,                   0))));rangeR=rangeR(1);
+rangeL = rotmat*rotmat*xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz(-regs.FRMW.xfov*0.25,                   0))));rangeL=rangeL(1);
+rangeT = rotmat*rotmat*xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz(0                   , regs.FRMW.yfov*0.25))));rangeT =rangeT (2);
+rangeB = rotmat*rotmat*xyz2nrmxy(applyFOVex(oXYZfunc(angles2xyz(0                   ,-regs.FRMW.yfov*0.25))));rangeB=rangeB(2);
 
 if axis == 'H'
     guardXinc = gbnd*single(regs.FRMW.xres);
@@ -63,7 +65,7 @@ angx = single(angx)*angXfactor;
 angy = single(angy)*angYfactor;
 xy00 = [rangeL;rangeB];
 xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];
-oXYZ = oXYZfunc(angles2xyz(angx,angy));
+oXYZ = applyFOVex(oXYZfunc(angles2xyz(angx,angy)));
 xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;
 xy = bsxfun(@minus,xynrm,xy00);

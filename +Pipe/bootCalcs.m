@@ -30,16 +30,5 @@ hfClk = regs.FRMW.pllClock/4;
 autogenRegs.FRMW.sampleDist =[1 2 4]./single(regs.GNRL.sampleRate)*speedOfLightMMnsec/hfClk;
 
 regs = FirmwareBase.mergeRegs(regs,autogenRegs);
-if regs.FRMW.fovExpanderValid
-    fovExpanderLut.FRMW.fovExpander = createFeLut();
-    autogenLuts = Firmware.mergeRegs(autogenLuts,fovExpanderLut);
-end
 end
 
-function fovExpanderLut = createFeLut()
-current_dir = mfilename('fullpath');
-ix = strfind(current_dir, '\');
-path = fullfile(current_dir(1:ix(end)-1), '..\scripts\IV2calibTool\calibParams.xml');
-calibParams = xml2structWrapper(path);
-fovExpanderLut = typecast(reshape(single(calibParams.fovExpander.table), length(calibParams.fovExpander.table)*2,1),'uint32');
-end

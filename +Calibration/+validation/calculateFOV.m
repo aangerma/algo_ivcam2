@@ -1,20 +1,20 @@
-function [ results ] = calculateFOV( imU,imD,imNoise,regs,FE,calibParams )
+function [ results ] = calculateFOV( imU,imD,imNoise,regs,calibParams )
 noiseThresh = max(imNoise(:));
 noiseThresh = noiseThresh*calibParams.roi.noiseMarginFactor;
 fullIm = imU > 0;
 notNoiseImU = calcLaserBounds(imU,noiseThresh);
 notNoiseImD = calcLaserBounds(imD,noiseThresh);
         
-results.mirror.minMaxAngX = minMaxAngle(imNoise,2,regs,FE);
-results.mirror.minMaxAngY = minMaxAngle(imNoise,1,regs,FE);
-results.laser.minMaxAngXup = minMaxAngle(notNoiseImU,2,regs,FE);
-results.laser.minMaxAngYup = minMaxAngle(notNoiseImU,1,regs,FE);
-results.laser.minMaxAngXdown = minMaxAngle(notNoiseImD,2,regs,FE);
-results.laser.minMaxAngYdown = minMaxAngle(notNoiseImD,1,regs,FE);
+results.mirror.minMaxAngX = minMaxAngle(imNoise,2,regs);
+results.mirror.minMaxAngY = minMaxAngle(imNoise,1,regs);
+results.laser.minMaxAngXup = minMaxAngle(notNoiseImU,2,regs);
+results.laser.minMaxAngYup = minMaxAngle(notNoiseImU,1,regs);
+results.laser.minMaxAngXdown = minMaxAngle(notNoiseImD,2,regs);
+results.laser.minMaxAngYdown = minMaxAngle(notNoiseImD,1,regs);
     
 
 end
-function angles = minMaxAngle(spBinIm,axis,regs,FE)
+function angles = minMaxAngle(spBinIm,axis,regs)
 if axis == 1 % Y angle
     xp = regs.GNRL.imgHsize/2;
     ymin = find(spBinIm(:,xp),1);
@@ -40,7 +40,7 @@ angx = single(xx);
 angy = single(yy);
 
 [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
-vUnit = Calibration.aux.ang2vec(angx,angy,regs,FE);
+vUnit = Calibration.aux.ang2vec(angx,angy,regs);
 if axis == 1 % y angle
     angles = atand(vUnit(2,:)./vUnit(3,:));
 else % x angles

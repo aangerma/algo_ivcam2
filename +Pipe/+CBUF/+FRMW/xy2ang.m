@@ -5,6 +5,9 @@ function [angx,angy] = xy2ang(x,y,regs)
 [~,~,xg_,yg_]=Pipe.DIGG.ang2xy(ax,ay,regs,Logger(),[]);
 subplot(121);imagesc(abs(xg_-xg));colorbar;axis image;subplot(122);imagesc(abs(yg_-yg));colorbar;axis image
 %}
+
+% This function is buggy in Steve's opinion. See line 52.
+
 mode=regs.FRMW.mirrorMovmentMode;
 xfov=regs.FRMW.xfov(mode);
 yfov=regs.FRMW.yfov(mode);
@@ -41,12 +44,14 @@ yresN = single(regs.FRMW.yres) + guardYinc*2;
 xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];
 xy00 = [rangeL;rangeB];
 
-
 xy = [x(:)+double(marginL+int16(guardXinc)) y(:)+double(marginB+int16(guardYinc))];
 xy = bsxfun(@rdivide,xy,xys');
 xy = bsxfun(@plus,xy,xy00');
 xynrm = invrotmat*xy';
 
+%%% WARNING: vec2ang transformation uses laser direction in strange, seemingly wrong way.
+%%% Luckily, this function is called only by guardbandFromPixel & getInputStream, which are not in use.
+%%% If this function is ever to be used - it must be fixed and include an inverse FOVex
 
 v = normr([xynrm' ones(size(xynrm,2),1)]);
 n = normr(v - repmat(laserIncidentDirection',size(v,1),1) );

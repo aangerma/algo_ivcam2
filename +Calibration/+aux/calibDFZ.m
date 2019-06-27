@@ -10,14 +10,10 @@ if ~regs.FRMW.fovexExistenceFlag % unit without FOVex
     par.fovexTangentRange = 0*par.fovexTangentRange;
     par.fovexCenterRange = 0*par.fovexCenterRange;
 end
-FE = [];
 mode=regs.FRMW.mirrorMovmentMode;
 xfov=regs.FRMW.xfov(mode);
 yfov=regs.FRMW.yfov(mode);
 
-if calibParams.fovExpander.valid
-    FE = calibParams.fovExpander.table;
-end
 if(~exist('iseval','var') || isempty(iseval))
     iseval=false;
 end
@@ -38,12 +34,12 @@ end
 
 regs = x2regs(x0,regs);
 if iseval
-    [minerr,~]=errFunc(darr,regs,x0,FE,0,runParams);
+    [minerr,~]=errFunc(darr,regs,x0,0,runParams);
     outregs = [];
     return
 end
 
-[e,eFit]=errFunc(darr,regs,x0,FE,1);
+[e,eFit]=errFunc(darr,regs,x0,1);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 %% Define optimization settings
@@ -53,7 +49,7 @@ opt.TolFun = 1e-6;
 opt.TolX = 1e-6;
 opt.Display ='none';
 
-optFunc = @(x) (errFunc(darr,regs,x,FE,0)); % zenithNorm is omitted, hence zenithNormW is irrelevant
+optFunc = @(x) (errFunc(darr,regs,x,0)); % zenithNorm is omitted, hence zenithNormW is irrelevant
 
 %% Optimize DFZ + coarse undist
 optimizedParams = {'DFZ', 'coarseUndist'};
@@ -62,7 +58,7 @@ optimizedParams = {'DFZ', 'coarseUndist'};
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregsPreUndist = x2regs(xbest,regs);
-[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,FE,0);
+[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,0);
 
 %% Optimize fine undist correction & FOVex parameters
 x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outregsPreUndist.DEST.txFRQpd(1), outregsPreUndist.FRMW.laserangleH, outregsPreUndist.FRMW.laserangleV,...
@@ -75,7 +71,7 @@ optimizedParams = {'undistCorrHorz', 'fovexLensDist'};
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregs = x2regs(xbest,regs);
-[minerr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,FE,0,runParams); % in debug mode, allVertices should be enabled inside errFunc
+[minerr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,0,runParams); % in debug mode, allVertices should be enabled inside errFunc
 
 printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
@@ -83,8 +79,8 @@ outregs = x2regs(xbest);
 printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist, fprintff)
 printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, minerr, fprintff)
 
-printPlaneAng(darr,outregs_full,xbest,FE,fprintff,0,eAll);
-calcScaleError(darr,outregs_full,xbest,FE,fprintff,0,runParams);
+printPlaneAng(darr,outregs_full,xbest,fprintff,0,eAll);
+calcScaleError(darr,outregs_full,xbest,fprintff,0,runParams);
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
@@ -101,7 +97,7 @@ calcScaleError(darr,outregs_full,xbest,FE,fprintff,0,runParams);
 end
 
 
-function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,FE,useCropped,runParams)
+function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams)
     %build registers array
     % X(3) = 4981;
     if ~exist('runParams','var')
@@ -118,7 +114,7 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,FE,useCropped,runParam
         else
             grid = d.grid;
         end
-        v = calcVerices(d,X,rtlRegs,FE,useCropped);
+        v = calcVerices(d,X,rtlRegs,useCropped);
         %allVertices{i} = v; % DEBUG: enable only in debugging mode
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
@@ -137,14 +133,14 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,FE,useCropped,runParam
 end
 
 
-function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped)
+function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped)
     if useCropped
         rpt = d.rptCropped;
     else
         rpt = d.rpt;
     end
     [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
-    vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs,FE)';
+    vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs)';
     %vUnit = reshape(vUnit',size(d.rpt));
     %vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.
@@ -165,7 +161,7 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped)
 end
 
 
-function [] = calcScaleError(darr,rtlRegs,X,FE,fprintff,useCropped,runParams)
+function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams)
     rtlRegs = x2regs(X,rtlRegs);
     for i = 1:numel(darr)
         d = darr(i);
@@ -176,7 +172,7 @@ function [] = calcScaleError(darr,rtlRegs,X,FE,fprintff,useCropped,runParams)
             grid = d.grid;
             pts = d.pts;
         end
-        v = calcVerices(d,X,rtlRegs,FE,useCropped);
+        v = calcVerices(d,X,rtlRegs,useCropped);
         v = reshape(v,[grid(1:2),3]);
         v = Calibration.aux.CBTools.slimNans(v);
         pts = Calibration.aux.CBTools.slimNans(pts);
@@ -209,7 +205,7 @@ function [] = calcScaleError(darr,rtlRegs,X,FE,fprintff,useCropped,runParams)
 end
 
 
-function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff,useCropped,eAll)
+function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll)
     rtlRegs = x2regs(X,rtlRegs);
     horizAng = zeros(1,numel(darr));
     verticalAngl = zeros(1,numel(darr));
@@ -222,7 +218,7 @@ function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff,useCropped,eAll)
         else
             grid = d.grid;
         end
-        [~,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped);
+        [~,x,y,z] = calcVerices(d,X,rtlRegs,useCropped);
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid=1:numPlanes

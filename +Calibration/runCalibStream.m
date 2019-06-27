@@ -933,11 +933,7 @@ function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib
 %         hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));
         
-        FE = [];
-        if calibParams.fovExpander.valid
-            FE = calibParams.fovExpander.table;
-        end
-        fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,regs,FE);
+        fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,regs);
         results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
@@ -953,7 +949,7 @@ end
 function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
     if(runParams.undist)
-        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement,results.undistRms] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
+        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement,results.undistRms] = Calibration.Undist.calibUndistAng2xyBugFix(fw);
         udistRegs.DIGG.undistBypass = false;
         fw.setRegs(udistRegs,fnCalib);
         fw.setLut(udistlUT);

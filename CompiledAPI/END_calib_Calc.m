@@ -146,7 +146,7 @@ end
 function [results,udistRegs,udistlUT] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
     if(runParams.undist)
-        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams,runParams);
+        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement] = Calibration.Undist.calibUndistAng2xyBugFix(fw,runParams);
         udistRegs.DIGG.undistBypass = false;
         if(results.maxPixelDisplacement<calibParams.errRange.maxPixelDisplacement(2))
             fprintff('[v] undist calib passed[e=%g]\n',results.maxPixelDisplacement);

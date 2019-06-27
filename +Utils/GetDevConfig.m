@@ -29,8 +29,7 @@ fw.setRegs(NewRegs,fn);
 fw.writeUpdated(fn);
 
 %{
-calibParams.fovExpander.valid = 0;
-[udistlUT.FRMW.undistModel,~,~] = Calibration.Undist.calibUndistAng2xyBugFix(fw,calibParams);
+[udistlUT.FRMW.undistModel,~,~] = Calibration.Undist.calibUndistAng2xyBugFix(fw);
 fw.setLut(udistlUT);
 [regs,luts]=fw.get();
 %}

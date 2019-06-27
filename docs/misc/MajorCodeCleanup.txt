@@ -1,0 +1,59 @@
+This document documents a major code cleanup performed during FOVex integration.
+The cleanup focuses on parts concerned with geometric transformations, and is aimed at simplifying code trackability and reduce probability of errors.
+
+1. Adding FOVex application after each time laser outbound direction is calculated using oXYZfunc, except for functions describing Pipe flow.
+   Changes were made in the following functions:
+    * Calibration.aux.ang2vec
+    * Calibration.aux.guardbandFromPixel
+    * Calibration.aux.vec2xy
+    * Calibration.aux.xy2vec
+    * Calibration.roi.calibROI.vec2xy
+    * Pipe.CBUF.FRMW.xy2ang
+    * DEST.FRMW.trigoCalcs
+   Changes were NOT made in the following functions:
+    * Calibration.aux.ang2xySF
+    * Calibration.aux.xy2angSF
+    * Pipe.DIGG.FRMW.getAng2xyCoeffs
+    * Pipe.DIGG.ang2xy
+   
+2. Replacing old applyExpander with new applyFOVex, and removing all references to expander LUT.
+   Changes were made in the following functions:
+    * Calibration.runCalibStream
+	* Calibration.aux.ang2vec
+	* Calibration.aux.ang2xySF
+	* Calibration.aux.calibDFZ
+	* Calibration.aux.vec2ang
+	* Calibration.aux.zoLoc
+	* Calibration.aux.CBTools.spherical2xySingle
+	* Calibration.roi.calibROI
+	* Calibration.roi.ROI_calib
+	* Calibration.thermal.collectTempData
+	* Calibration.Undist.calibPolinomialUndistParams
+	* Calibration.Undist.calibUndistAng2xyBugFix
+	* Calibration.Undist.generateUndistTablesFromGridPointsOnly
+	* Calibration.validation.calculateFOV
+	* Calibration.validation.validateFOV
+	* Pipe.bootCalcs
+	* Pipe.CBUF.FRMW.preCalcs
+	* Pipe.DEST.FRMW.preCalcs
+	* CompiledAPI/ROI_Calib_Calc
+	* CompiledAPI/TemDataFrame_Calc
+	* scripts/IV2calibTool/calibParams*
+	
+3. Removing multiplicity of geometric transformation functions (for Pipe use Pipe.DIGG.ang2xy or ang2xySF etc., otherwise use ang2vec+vec2xy etc.).
+   Changes were made in the following functions:
+   * Calibration.aux.CBTools.spherical2xySingle
+   * Calibration.aux.ang2xySF
+   * Calibration.aux.samplePointsRtd
+   * Calibration.aux.xy2angSF
+   * Calibration.aux.zoLoc
+   * Calibration.roi.calibROI
+   * Calibration.thermal.applyFix
+   * Pipe.CBUF.FRMW.preCalcs
+   * Pipe.DEST.FRMW.preCalcs
+   The following unused functions were deleted:
+   * Calibration.aux.applyFOVexOnOutVec
+   * Calibration.DFZ.errFunc
+
+4. Changes were made in autogen-related functions (Pipe.XXX.FRMW) - Hila to be informed
+

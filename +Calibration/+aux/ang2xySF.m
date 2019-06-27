@@ -1,12 +1,9 @@
-function [xF,yF] = ang2xySF(angxQin,angyQin,regs,fovExpander,useFix)
+function [xF,yF] = ang2xySF(angxQin,angyQin,regs)
 %{
 A Straight forward calculation of ang2xy.
 If useFix is False, it performs the transformation as in the version that's
 in the Pipe (bugged). Otherwise, it performs the calculation correctly.
 
-fovExpander either an [M,2] array with M
-input angle bins and the relevant expansion factor, or a single value for
-all angles.
 %}
 %% ----STAIGHT FORWARD------
 
@@ -20,11 +17,8 @@ angXfactor = single(xfov*0.25/(2^11-1));
 angYfactor = single(yfov*0.25/(2^11-1));
 mirang = atand(projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
-if ~useFix
-    angles2xyz = @(angx,angy) [             sind(angx) cosd(angx).*sind(angy) cosd(angy).*cosd(angx)]';
-else
-    angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
-end
+angles2xyz = @(angx,angy) [             sind(angx) cosd(angx).*sind(angy) cosd(angy).*cosd(angx)]';
+
 marginB = regs.FRMW.marginB;
 marginT = regs.FRMW.marginT;
 marginR = regs.FRMW.marginR;
@@ -33,9 +27,8 @@ xyz2nrmx = @(xyz) xyz(1,:)./xyz(3,:);
 xyz2nrmy = @(xyz) xyz(2,:)./xyz(3,:);
 xyz2nrmxy= @(xyz) [xyz2nrmx(xyz)  ;  xyz2nrmy(xyz)];
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
-if ~useFix
-    oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
-end
+oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
+
 rangeR = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz( xfov*0.25,                   0)));rangeR=rangeR(1);
 rangeL = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(-xfov*0.25,                   0)));rangeL=rangeL(1);
 rangeT = rotmat*rotmat*xyz2nrmxy(oXYZfunc(angles2xyz(0                   , yfov*0.25)));rangeT =rangeT (2);
@@ -53,10 +46,7 @@ angy = single(angyQ)*angYfactor;
 xy00 = [rangeL;rangeB];
 xys = [xresN;yresN]./[rangeR-rangeL;rangeT-rangeB];% xys = [xresN-1;yresN-1]./[rangeR-rangeL;rangeT-rangeB];
 oXYZ = oXYZfunc(angles2xyz(angx,angy));
-if ~isempty(fovExpander)
-%     oXYZ = Calibration.aux.applyExpander(oXYZ,fovExpander);
-    oXYZ = Calibration.aux.applyFOVex(oXYZ,regs);
-end
+
 xynrm = [xyz2nrmx(oXYZ);xyz2nrmy(oXYZ)];
 xynrm = rotmat*xynrm;
 xy = bsxfun(@minus,xynrm,xy00);

@@ -1,4 +1,4 @@
-function [udistLUT,undistx,undisty]=generateUndistTablesFromGridPointsOnly(regs,origRegs,FE)
+function [udistLUT,undistx,undisty]=generateUndistTablesFromGridPointsOnly(regs)
 
 wh=double([regs.GNRL.imgHsize,regs.GNRL.imgVsize]);
 shift = double(regs.DIGG.bitshift);
@@ -9,24 +9,14 @@ fx = single(regs.DIGG.undistFx)/(2^shift);
 fy = single(regs.DIGG.undistFy)/(2^shift);
 [ybug,xbug]=ndgrid(1/fy*(0:31)+y0,1/fx*(0:31)+x0);
 
-[angxg,angyg] = Calibration.aux.xy2angSF(xbug(:),ybug(:),regs,false);
+% transform grid of bugged XY to angles as would be reported by MC
+[angxg,angyg] = Calibration.aux.xy2angSF(xbug(:),ybug(:),regs);
+% transform angles as reported by MC to final XY (using correct transformations)
 [angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angxg,angyg,regs);
-% Transform the angx-angy into x-y. Using the bugged ang2xy:
-
-
-% if ~isempty(FE)
-% %     v = Calibration.aux.xy2vec(xg,yg,regs); % for each pixel, get the unit vector in space corresponding to it.
-% %     [angxg,angyg] = Calibration.aux.vec2ang(v,origregs,FE);
-%     
-    v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,origRegs,FE);
-    [xg,yg] = Calibration.aux.vec2xy(v,regs);
-% else
-%     [xg,yg] = Calibration.aux.ang2xySF(angxPostPolyUndist,angyPostPolyUndist,origRegs,[],true);
-% end
-
+v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,regs);
+[xg,yg] = Calibration.aux.vec2xy(v,regs);
 
 undist = [xg-xbug(:),yg-ybug(:)];
-
 undistx=reshape(undist(:,1),size(xbug));
 undisty=reshape(undist(:,2),size(ybug));
 % undistx = removeXscaling(undistx);

@@ -1,4 +1,4 @@
-function [oXYZ] = ang2vec(angxQin,angyQin,regs,fovExpander)
+function [oXYZ] = ang2vec(angxQin,angyQin,regs)
 
 %% ----STAIGHT FORWARD------
 mode=regs.FRMW.mirrorMovmentMode;

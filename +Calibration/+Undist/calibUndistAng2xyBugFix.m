@@ -1,4 +1,4 @@
-function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,calibParams,runParams)
+function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,runParams)
 
 % When fixing the ang2xy bug using the undististortion table the following
 % steps need to be taken:
@@ -8,26 +8,11 @@ function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,
 % 4. Find an undistortion table that moves the bugged x-y coordinates to
 %    their true location.
 regs = fw.get();
-origregs = regs;
-
-% FE = [];
-% if calibParams.fovExpander.valid
-%     FE = calibParams.fovExpander.table;
-% end
-% if ~isempty(FE)
-%     udistRegs.FRMW.xfov = interp1(FE(:,1),FE(:,2),regs.FRMW.xfov/2)*2;
-%     udistRegs.FRMW.yfov = interp1(FE(:,1),FE(:,2),regs.FRMW.yfov/2)*2;
-%     fw.setRegs(udistRegs,'');
-%     regs = fw.get();
-% else
-%     udistRegs.FRMW.xfov = regs.FRMW.xfov;
-%     udistRegs.FRMW.yfov = regs.FRMW.yfov;
-% end
 
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
 % y.
-[udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs,origregs,FE);
+[udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs);
 
 % % % 
 % % % % A grid of x-y coordinates in the image plane:
@@ -39,12 +24,8 @@ origregs = regs;
 % % % [xg,yg] = meshgrid(-margin:dpx:double(regs.GNRL.imgHsize+margin),-margin:dpy:double(regs.GNRL.imgVsize+margin)); 
 % % % 
 % % % % transform to angx-angy. Using the fixed xy2ang:
-% % % if ~isempty(FE)
 % % %     v = Calibration.aux.xy2vec(xg,yg,regs); % for each pixel, get the unit vector in space corresponding to it.
-% % %     [angxg,angyg] = Calibration.aux.vec2ang(v,origregs,FE);
-% % % else
-% % %     [angxg,angyg] = Calibration.aux.xy2angSF(xg+0.5,yg+0.5,origregs,true);
-% % % end
+% % %     [angxg,angyg] = Calibration.aux.vec2ang(v,origregs);
 % % % 
 % % % [angxPrePolyUndist,angyPrePolyUndist] = Calibration.Undist.inversePolyUndistAndPitchFix(angxg,angyg,regs);
 % % % 
@@ -73,17 +54,13 @@ nPoints = 50;
 [angx,angy] = meshgrid(linspace(-2047,2047,nPoints),linspace(-2047,2047,nPoints)); 
 
 % Perfect flow
-[angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,origregs);
+[angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
-% if ~isempty(FE)
-%     v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,origregs,FE);
-%     [xg,yg] = Calibration.aux.vec2xy(v,regs);
-% else
-    [xg,yg] = Calibration.aux.ang2xySF(angxPostPolyUndist,angyPostPolyUndist,origregs,[],true);
-% end
+v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,regs);
+[xg,yg] = Calibration.aux.vec2xy(v,regs);
 
 % Pipe flow
-[xbug,ybug] = Calibration.aux.ang2xySF(angx,angy,regs,[],false);
+[xbug,ybug] = Calibration.aux.ang2xySF(angx,angy,regs);
 % Apply the lut to the bugged x-y and calculate the displacement error:
 luts.FRMW.undistModel = udistLUT;
 [autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.buildLensLUT(regs,luts);
