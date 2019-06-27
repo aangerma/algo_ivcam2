@@ -60,8 +60,8 @@
       <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
       <maxRangeScaleModRef>[0 1]</maxRangeScaleModRef>
       <maxModRefDec>[0 inf]</maxModRefDec>
-      <fillRateAtTargetDist>[90 100]</fillRateAtTargetDist>
-      <targetDist>[8.95 9.05]</targetDist> <!--In [m]-->
+      <targetDist>[780 820]</targetDist> <!--In [mm]-->
+      <maxFillRate>[90 100]</maxFillRate>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -335,15 +335,18 @@
         <long>
             <updateCalibVal>0</updateCalibVal>
             <minModprc>0</minModprc>
-            <laserDelta>2</laserDelta>
+            <laserDelta>1</laserDelta>
             <framesNum>10</framesNum>
-            <fillRateTh>90</fillRateTh>
-            <calibTargetReflect>0.0124</calibTargetReflect>
-            <estDistTargetReflect>0.8</estDistTargetReflect>
+            <fillRateTh>97</fillRateTh>
+            <!--<calibTargetReflect>0.0128</calibTargetReflect>
+            <estDistTargetReflect>0.8</estDistTargetReflect>-->
+            <mask4userScale>2</mask4userScale>
+            <maxMask4userROI>0.2</maxMask4userROI>
             <params>
                 <roi>0.1</roi>
                 <isRoiRect>0</isRoiRect>
                 <roiCropRect>0</roiCropRect>
+                <maskCenterShift>[0,0]</maskCenterShift>
             </params>
         </long>
     </presets>
