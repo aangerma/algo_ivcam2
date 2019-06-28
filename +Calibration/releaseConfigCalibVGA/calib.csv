@@ -4,8 +4,8 @@ FRMWexternalHsize    d640
 FRMWexternalVsize    d480
 FRMWcalImgHsize      d640
 FRMWcalImgVsize      d480
-FRMWxfov_000         f65     
-FRMWyfov_000         f45      
+FRMWxfov_000         f67.5     
+FRMWyfov_000         f60      
 FRMWlaserangleH      f0       
 FRMWlaserangleV      f0       
 FRMWcbufConstLUT     b1       
@@ -13,9 +13,9 @@ DIGGundistBypass     b0
 DIGGspare_000        h0101  
 DESThbaseline        b0  
 DESTbaseline         f-10.0    
-DESTtxFRQpd_000      f5100    
-DESTtxFRQpd_001      f5100    
-DESTtxFRQpd_002      f5100    
+DESTtxFRQpd_000      f5250    
+DESTtxFRQpd_001      f5250    
+DESTtxFRQpd_002      f5250    
 EXTLconLocDelaySlow  h80000010
 EXTLconLocDelayFastC h0180f8
 EXTLconLocDelayFastF d0
@@ -24,3 +24,4 @@ EXTLdsmYscale        f86
 EXTLdsmXoffset       f30.3
 EXTLdsmYoffset       f23.6
 JFILinvMinMax        hffff0320
+FRMWfovExpanderValid b1

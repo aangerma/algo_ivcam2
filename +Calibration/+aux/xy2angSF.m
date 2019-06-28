@@ -1,4 +1,4 @@
-function [angx,angy] = xy2angSF(x,y,regs,useFix)
+function [angx,angy] = xy2angSF(x,y,regs)
 %{
 A Straight forward calculation of xy2ang.
 Performs an inverse to ang2xy function. If useFix is False, it invereses
@@ -16,11 +16,7 @@ angYfactor = single(yfov*0.25/(2^11-1));
 mirang = atand(projectionYshear);
 rotmat = [cosd(mirang) sind(mirang);-sind(mirang) cosd(mirang)];
 invrotmat = rotmat^-1;%[cosd(mirang) -sind(mirang);sind(mirang) cosd(mirang)];
-if ~useFix
-    angles2xyz = @(angx,angy) [             sind(angx) cosd(angx).*sind(angy) cosd(angy).*cosd(angx)]';
-else
-    angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(angy).*cosd(angx)]';
-end
+angles2xyz = @(angx,angy) [             sind(angx) cosd(angx).*sind(angy) cosd(angy).*cosd(angx)]';
 
 marginB = regs.FRMW.marginB;
 marginL = regs.FRMW.marginL;
@@ -53,13 +49,8 @@ xynrm = invrotmat*xy';
 v = normr([xynrm' ones(size(xynrm,2),1)]);
 n = normr(v - repmat(laserIncidentDirection',size(v,1),1) );
 
-if ~useFix
-    angxQ = asind(n(:,1));
-    angyQ = atand(n(:,2)./n(:,3));
-else
-    angyQ = asind(n(:,2));
-    angxQ = atand(n(:,1)./n(:,3));
-end
+angxQ = asind(n(:,1));
+angyQ = atand(n(:,2)./n(:,3));
 
 angy = reshape(single(angyQ)/angYfactor,size(y));
 angx=  reshape(single(angxQ)/angXfactor,size(y));

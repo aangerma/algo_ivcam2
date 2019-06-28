@@ -74,7 +74,7 @@ data.regs.FRMW.yres = uint16(int16(data.regs.GNRL.imgVsize)+data.regs.FRMW.margi
 data.regs.MTLB.fastApprox = 1;
 for i = 1:numel(fixedData.framesData)
     [fixedData.framesData(i).ptsWithZ(:,2) ,fixedData.framesData(i).ptsWithZ(:,3)] = Calibration.Undist.applyPolyUndistAndPitchFix(fixedData.framesData(i).ptsWithZ(:,2) ,fixedData.framesData(i).ptsWithZ(:,3),data.regs);
-    [fixedData.framesData(i).ptsWithZ(:,4) ,fixedData.framesData(i).ptsWithZ(:,5)] = Calibration.aux.ang2xySF(fixedData.framesData(i).ptsWithZ(:,2) ,fixedData.framesData(i).ptsWithZ(:,3),data.regs,[],1);
+    [fixedData.framesData(i).ptsWithZ(:,4) ,fixedData.framesData(i).ptsWithZ(:,5)] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(fixedData.framesData(i).ptsWithZ(:,2) ,fixedData.framesData(i).ptsWithZ(:,3),data.regs), data.regs);
     fixedData.framesData(i).ptsWithZ(:,4) = fixedData.framesData(i).ptsWithZ(:,4) + 0.5;
     fixedData.framesData(i).ptsWithZ(:,5) = fixedData.framesData(i).ptsWithZ(:,5) + 0.5;
     

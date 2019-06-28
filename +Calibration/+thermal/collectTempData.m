@@ -173,20 +173,16 @@ if ~regs.DIGG.sphericalEn
         rxLocation = [0,regs.DEST.baseline,0];
     end
     rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
-    [angx,angy] = Calibration.aux.vec2ang(normr(verts),regs,[]);
+    [angx,angy] = Calibration.aux.vec2ang(normr(verts),regs);
     [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
     ptsWithZ = [rtd,angx,angy,pts,verts];
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
     
 else
-    FE = [];
-    if calibParams.fovExpander.valid
-        FE = calibParams.fovExpander.table;
-    end
     rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
     rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
     [angxPostUndist,angyPostUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),regs);
-    vUnit = Calibration.aux.ang2vec(angxPostUndist,angyPostUndist,regs,FE)';
+    vUnit = Calibration.aux.ang2vec(angxPostUndist,angyPostUndist,regs)';
     %vUnit = reshape(vUnit',size(d.rpt));
     %vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.

@@ -52,11 +52,7 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc_ddd(InputPath, calibParams, 
     [imUbias,imDbias,imNoise] = GetROIImages(InputPath,width,hight);
      results.ambVal = mean(vec(imNoise(size(imNoise,1)/2-10:size(imNoise,1)/2+10, size(imNoise,2)/2-10:size(imNoise,2)/2+10)));
     [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,ROI_regs,calibParams,runParams);
-    FE = [];
-    if calibParams.fovExpander.valid
-        FE = calibParams.fovExpander.table;
-    end
-    fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,ROI_regs,FE);
+    fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,ROI_regs);
 
 end
 
@@ -124,12 +120,14 @@ if 1
         ROIregs.FRMWpolyVars 				= DFZ_regs.FRMW.polyVars;               % single x3
         ROIregs.FRMWpitchFixFactor 			= DFZ_regs.FRMW.pitchFixFactor;         % single (0)
         
-        ROIregs.FRMWundistAngHorz      = DFZ_regs.FRMW.undistAngHorz;
-        ROIregs.FRMWundistAngVert      = DFZ_regs.FRMW.undistAngVert;
-        ROIregs.FRMWfovexRadialK       = DFZ_regs.FRMW.fovexRadialK;
-        ROIregs.FRMWfovexTangentP      = DFZ_regs.FRMW.fovexTangentP;
-        ROIregs.FRMWfovexCenter        = DFZ_regs.FRMW.fovexCenter;
-%         ROIregs.FRMWfovexDistModel     = DFZ_regs.FRMW.fovexDistModel;
+        ROIregs.FRMWundistAngHorz           = DFZ_regs.FRMW.undistAngHorz;
+        ROIregs.FRMWundistAngVert           = DFZ_regs.FRMW.undistAngVert;
+        ROIregs.FRMWfovexExistenceFlag      = DFZ_regs.FRMW.fovexExistenceFlag;
+        ROIregs.FRMWfovexNominal            = DFZ_regs.FRMW.fovexNominal;
+        ROIregs.FRMWfovexLensDistFlag       = DFZ_regs.FRMW.fovexLensDistFlag;
+        ROIregs.FRMWfovexRadialK            = DFZ_regs.FRMW.fovexRadialK;
+        ROIregs.FRMWfovexTangentP           = DFZ_regs.FRMW.fovexTangentP;
+        ROIregs.FRMWfovexCenter             = DFZ_regs.FRMW.fovexCenter;
         
 else
         ROIregs.DIGG.sphericalOffset        = typecast(bitand(regs.DIGGsphericalOffset,hex2dec('00ff0fff')),'int16');

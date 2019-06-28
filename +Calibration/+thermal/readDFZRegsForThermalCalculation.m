@@ -55,9 +55,14 @@ function currregs = readDFZRegsForThermalCalculation(hw,checkAssert,calibParams)
     currregs.DEST.p2ayb = hex2single(dec2hex(hw.read('DESTp2ayb')));
     
     JFILdnnWeights = hw.read('JFILdnnWeights');
-    currregs.FRMW.undistAngVert = typecast(JFILdnnWeights(1:5),'single')';
-    currregs.FRMW.undistAngHorz = typecast(JFILdnnWeights(6:10),'single')';
-
+    currregs.FRMW.undistAngVert         = typecast(JFILdnnWeights(1:4),'single')';
+    currregs.FRMW.undistAngHorz         = typecast(JFILdnnWeights(5:8),'single')';
+    currregs.FRMW.fovexExistenceFlag    = typecast(JFILdnnWeights(9),'logical')';
+    currregs.FRMW.fovexNominal          = typecast(JFILdnnWeights(10:13),'single')';
+    currregs.FRMW.fovexLensDistFlag     = typecast(JFILdnnWeights(14),'logical')';
+    currregs.FRMW.fovexRadialK          = typecast(JFILdnnWeights(14:17),'single')';
+    currregs.FRMW.fovexTangentP         = typecast(JFILdnnWeights(18:19),'single')';
+    currregs.FRMW.fovexCenter           = typecast(JFILdnnWeights(20:21),'single')';
     
     currregs.DIGG.sphericalOffset	= typecast(hw.read('DIGGsphericalOffset'),'int16');
     currregs.DIGG.sphericalScale 	= typecast(hw.read('DIGGsphericalScale'),'int16');

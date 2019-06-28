@@ -64,11 +64,7 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc_int(InputPath, calibParams, 
     [imUbias,imDbias,imNoise] = GetROIImages(InputPath,width,hight);
      results.ambVal = mean(vec(imNoise(size(imNoise,1)/2-10:size(imNoise,1)/2+10, size(imNoise,2)/2-10:size(imNoise,2)/2+10)));
     [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,ROI_regs,calibParams,runParams);
-    FE = [];
-    if calibParams.fovExpander.valid
-        FE = calibParams.fovExpander.table;
-    end
-    fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,ROI_regs,FE,calibParams);
+    fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,ROI_regs,calibParams);
     results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
 end
 
@@ -97,10 +93,12 @@ function  [ROIregs] = ConvertROIReg(regs)
     
     ROIregs.FRMW.undistAngHorz      = regs.FRMWundistAngHorz;
     ROIregs.FRMW.undistAngVert      = regs.FRMWundistAngVert;
+    ROIregs.FRMW.fovexExistenceFlag = regs.FRMWfovexExistenceFlag;
+    ROIregs.FRMW.fovexNominal       = regs.FRMWfovexNominal;
+    ROIregs.FRMW.fovexLensDistFlag  = regs.FRMWfovexLensDistFlag;
     ROIregs.FRMW.fovexRadialK       = regs.FRMWfovexRadialK;
     ROIregs.FRMW.fovexTangentP      = regs.FRMWfovexTangentP;
     ROIregs.FRMW.fovexCenter        = regs.FRMWfovexCenter;
-%     ROIregs.FRMW.fovexDistModel     = regs.FRMWfovexDistModel;
 
 end
 

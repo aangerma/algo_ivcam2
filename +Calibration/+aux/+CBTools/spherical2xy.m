@@ -14,13 +14,8 @@ end
 
 end
 
-function [ cbCorners ] = spherical2xySingle( sp,regs,calibParams )
+function [ cbCorners ] = spherical2xySingle( sp,regs )
 %SPHERICAL2XY Applies to a single image.
-
-FE = [];
-if calibParams.fovExpander.valid
-    FE = calibParams.fovExpander.table;
-end
 
 [p,~] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(sp.i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
 p = p-1; % coordinates should start from 0.
@@ -35,7 +30,7 @@ yy = yy/double(regs.DIGG.sphericalScale(2));
 angx = single(xx);
 angy = single(yy);
 
-[x,y] = Calibration.aux.ang2xySF(angx,angy,regs,FE,1);
+[x,y] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(angx,angy,regs), regs);
 x = double(regs.GNRL.imgHsize) - reshape(x,9,13,1);
 y = double(regs.GNRL.imgVsize) - reshape(y,9,13,1);
 x = rot90(x,2); % Make sure the order is TopLeft - BottomRight

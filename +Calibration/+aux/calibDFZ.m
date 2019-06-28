@@ -2,15 +2,18 @@ function [outregs,minerr]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
 
+%% Initializations
 par = calibParams.dfz;
-FE = [];
+if ~regs.FRMW.fovexExistenceFlag % unit without FOVex
+    par.fovexNominalRange = 0*par.fovexNominalRange;
+    par.fovexRadialRange = 0*par.fovexRadialRange;
+    par.fovexTangentRange = 0*par.fovexTangentRange;
+    par.fovexCenterRange = 0*par.fovexCenterRange;
+end
 mode=regs.FRMW.mirrorMovmentMode;
 xfov=regs.FRMW.xfov(mode);
 yfov=regs.FRMW.yfov(mode);
 
-if calibParams.fovExpander.valid
-    FE = calibParams.fovExpander.table;
-end
 if(~exist('iseval','var') || isempty(iseval))
     iseval=false;
 end
@@ -26,71 +29,58 @@ end
 if(~exist('x0','var') || isempty(x0))% If x0 is not given, using the regs used i nthe recording
     x0 = double([xfov, yfov, regs.DEST.txFRQpd(1), regs.FRMW.laserangleH, regs.FRMW.laserangleV,...
         regs.FRMW.polyVars, regs.FRMW.pitchFixFactor, regs.FRMW.undistAngHorz, regs.FRMW.undistAngVert,...
-        regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter]);
+        regs.FRMW.fovexNominal, regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter]);
 end
 
-%%
-xL = [par.fovxRange(1), par.fovyRange(1), par.delayRange(1), par.zenithxRange(1), par.zenithyRange(1),...
-    par.polyVarRange(1,:), par.pitchFixFactorRange(1), 0*par.undistHorzRange(1,:), 0*par.undistVertRange(1,:),...
-    0*par.fovexRadialRange(1,:), 0*par.fovexTangentRange(1,:), 0*par.fovexCenterRange(1,:)];
-xH = [par.fovxRange(2), par.fovyRange(2), par.delayRange(2), par.zenithxRange(2), par.zenithyRange(2),...
-    par.polyVarRange(2,:), par.pitchFixFactorRange(2), 0*par.undistHorzRange(2,:), 0*par.undistVertRange(2,:),...
-    0*par.fovexRadialRange(2,:), 0*par.fovexTangentRange(2,:), 0*par.fovexCenterRange(2,:)];
 regs = x2regs(x0,regs);
 if iseval
-    [minerr,~]=errFunc(darr,regs,x0,FE,0,runParams);
+    [minerr,~]=errFunc(darr,regs,x0,0,runParams);
     outregs = [];
     return
 end
-[e,eFit]=errFunc(darr,regs,x0,FE,0);
+
+[e,eFit]=errFunc(darr,regs,x0,1);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
-% Define optimization settings
+%% Define optimization settings
 opt.maxIter = 10000;
 opt.OutputFcn = [];
 opt.TolFun = 1e-6;
 opt.TolX = 1e-6;
 opt.Display ='none';
 
-optFunc = @(x) (errFunc(darr,regs,x,FE,0)); % zenithNorm is omitted, hence zenithNormW is irrelevant
-xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
-% xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
-outregs = x2regs(xbest,regs);
-[minerrPreUndist, ~] = errFunc(darr,outregs,xbest,FE,0);
+optFunc = @(x) (errFunc(darr,regs,x,0)); % zenithNorm is omitted, hence zenithNormW is irrelevant
 
-% Optimize Undist poly params
-
-x0 = double([outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,...
-    outregs.FRMW.polyVars, outregs.FRMW.pitchFixFactor, outregs.FRMW.undistAngHorz, outregs.FRMW.undistAngVert,...
-    outregs.FRMW.fovexRadialK, outregs.FRMW.fovexTangentP, outregs.FRMW.fovexCenter]);
-xL = [outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,...
-    outregs.FRMW.polyVars, outregs.FRMW.pitchFixFactor, par.undistHorzRange(1,1:5), par.undistVertRange(1,1:5),...
-    0*par.fovexRadialRange(1,:), 0*par.fovexTangentRange(1,:), 0*par.fovexCenterRange(1,:)];
-xH = [outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,...
-    outregs.FRMW.polyVars, outregs.FRMW.pitchFixFactor, par.undistHorzRange(2,1:5), par.undistVertRange(2,1:5),...
-    0*par.fovexRadialRange(2,:), 0*par.fovexTangentRange(2,:), 0*par.fovexCenterRange(2,:)];
+%% Optimize DFZ + coarse undist
+optimizedParams = {'DFZ', 'coarseUndist'};
+[xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par);
 
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
+outregsPreUndist = x2regs(xbest,regs);
+[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,0);
+
+%% Optimize fine undist correction & FOVex parameters
+x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outregsPreUndist.DEST.txFRQpd(1), outregsPreUndist.FRMW.laserangleH, outregsPreUndist.FRMW.laserangleV,...
+    outregsPreUndist.FRMW.polyVars, outregsPreUndist.FRMW.pitchFixFactor, outregsPreUndist.FRMW.undistAngHorz, outregsPreUndist.FRMW.undistAngVert,...
+    outregsPreUndist.FRMW.fovexNominal, outregsPreUndist.FRMW.fovexRadialK, outregsPreUndist.FRMW.fovexTangentP, outregsPreUndist.FRMW.fovexCenter]);
+% optimizedParams = {'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'};
+optimizedParams = {'undistCorrHorz', 'fovexLensDist'};
+[xL, xH] = setLimitsPerParameterGroup(optimizedParams, outregsPreUndist, par);
+
+xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
+% xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregs = x2regs(xbest,regs);
-[minerr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,FE,0,runParams);
+[minerr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,0,runParams); % in debug mode, allVertices should be enabled inside errFunc
 
 printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
-outregs = x2regs(xbest);
-xCoef = outregs.FRMW.undistAngHorz;
-yCoef = outregs.FRMW.undistAngVert;
-fprintff('DFZ & undist (stage 1): fx=%.1f, fy=%.1f, dt=%4.0f, zx=%.2f, zy=%.2f, polyVar=%.2f, pitchFixFactor=%.2f, eGeom=%.2f, .\n',...
-    outregs.FRMW.xfov(1), outregs.FRMW.yfov(1), outregs.DEST.txFRQpd(1), outregs.FRMW.laserangleH, outregs.FRMW.laserangleV,...
-    outregs.FRMW.polyVars(2), outregs.FRMW.pitchFixFactor, minerrPreUndist);
-fprintff('Fine undist (stage 2): xCoef=[%.2f,%.2f,%.2f,%.2f,%.2f], yCoef=[%.2f,%.2f,%.2f,%.2f,%.2f], eGeom=%.2f.\n',...
-    xCoef(1), xCoef(2), xCoef(3), xCoef(4), xCoef(5), yCoef(1), yCoef(2), yCoef(3), yCoef(4), yCoef(5), minerr);
-fprintff('FOVex distort: kVec=[%.2f,%.2f,%.2f], pVec=[%.2f,%.2f], center=[%.2f,%.2f], eGeom=%.2f.\n',...
-    outregs.FRMW.fovexRadialK(1), outregs.FRMW.fovexRadialK(2), outregs.FRMW.fovexRadialK(3),...
-    outregs.FRMW.fovexTangentP(1), outregs.FRMW.fovexTangentP(2), outregs.FRMW.fovexCenter(1), outregs.FRMW.fovexCenter(2), minerr);
+outregs = x2regs(xbest, regs);
+printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist, fprintff)
+printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, minerr, fprintff)
 
-    printPlaneAng(darr,outregs_full,xbest,FE,fprintff,0,eAll);
-    calcScaleError(darr,outregs_full,xbest,FE,fprintff,0,runParams);
+printPlaneAng(darr,outregs_full,xbest,fprintff,0,eAll);
+calcScaleError(darr,outregs_full,xbest,fprintff,0,runParams);
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
@@ -106,7 +96,8 @@ fprintff('FOVex distort: kVec=[%.2f,%.2f,%.2f], pVec=[%.2f,%.2f], center=[%.2f,%
 
 end
 
-function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,FE,useCropped,runParams)
+
+function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams)
     %build registers array
     % X(3) = 4981;
     if ~exist('runParams','var')
@@ -123,8 +114,8 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,FE,useCropped,runParam
         else
             grid = d.grid;
         end
-        v = calcVerices(d,X,rtlRegs,FE,useCropped);
-        %allVertices{i} = v;
+        v = calcVerices(d,X,rtlRegs,useCropped);
+        %allVertices{i} = v; % DEBUG: enable only in debugging mode
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid = 1:numPlanes
@@ -141,14 +132,15 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,FE,useCropped,runParam
     e = mean(eAll);
 end
 
-function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped)
+
+function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped)
     if useCropped
         rpt = d.rptCropped;
     else
         rpt = d.rpt;
     end
     [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
-    vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs,FE)';
+    vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs)';
     %vUnit = reshape(vUnit',size(d.rpt));
     %vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.
@@ -167,7 +159,9 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped)
     end
     
 end
-function [] = calcScaleError(darr,rtlRegs,X,FE,fprintff,useCropped,runParams)
+
+
+function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams)
     rtlRegs = x2regs(X,rtlRegs);
     for i = 1:numel(darr)
         d = darr(i);
@@ -178,7 +172,7 @@ function [] = calcScaleError(darr,rtlRegs,X,FE,fprintff,useCropped,runParams)
             grid = d.grid;
             pts = d.pts;
         end
-        v = calcVerices(d,X,rtlRegs,FE,useCropped);
+        v = calcVerices(d,X,rtlRegs,useCropped);
         v = reshape(v,[grid(1:2),3]);
         v = Calibration.aux.CBTools.slimNans(v);
         pts = Calibration.aux.CBTools.slimNans(pts);
@@ -210,7 +204,8 @@ function [] = calcScaleError(darr,rtlRegs,X,FE,fprintff,useCropped,runParams)
 
 end
 
-function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff,useCropped,eAll)
+
+function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll)
     rtlRegs = x2regs(X,rtlRegs);
     horizAng = zeros(1,numel(darr));
     verticalAngl = zeros(1,numel(darr));
@@ -223,7 +218,7 @@ function [] = printPlaneAng(darr,rtlRegs,X,FE,fprintff,useCropped,eAll)
         else
             grid = d.grid;
         end
-        [~,x,y,z] = calcVerices(d,X,rtlRegs,FE,useCropped);
+        [~,x,y,z] = calcVerices(d,X,rtlRegs,useCropped);
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid=1:numPlanes
@@ -245,6 +240,7 @@ function [zNorm] = zenithNorm(regs,x)
     zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
 end
 
+
 function printErrAndX(X,e,eFit,preSTR,verbose)
 if verbose
     fprintf('%-8s',preSTR);
@@ -254,6 +250,8 @@ if verbose
     fprintf('\n');
 end
 end
+
+
 function rtlRegs = x2regs(x,rtlRegs)
 for(i=1:5)
     iterRegs.FRMW.xfov(i)=single(x(1));
@@ -266,11 +264,12 @@ iterRegs.FRMW.laserangleV=single(x(5));
 iterRegs.FRMW.polyVars =single([x(6),x(7),x(8)]);
 iterRegs.FRMW.polyVars =single([x(6),x(7),x(8)]);
 iterRegs.FRMW.pitchFixFactor =single(x(9));
-iterRegs.FRMW.undistAngHorz = single(x(10:14));
-iterRegs.FRMW.undistAngVert = single(x(15:19));
-iterRegs.FRMW.fovexRadialK = single(x(20:22));
-iterRegs.FRMW.fovexTangentP = single(x(23:24));
-iterRegs.FRMW.fovexCenter = single(x(25:26));
+iterRegs.FRMW.undistAngHorz = single(x(10:13));
+iterRegs.FRMW.undistAngVert = single(x(14:17));
+iterRegs.FRMW.fovexNominal = single(x(18:21));
+iterRegs.FRMW.fovexRadialK = single(x(22:24));
+iterRegs.FRMW.fovexTangentP = single(x(25:26));
+iterRegs.FRMW.fovexCenter = single(x(27:28));
 if(~exist('rtlRegs','var'))
     rtlRegs=iterRegs;
     return;
@@ -292,4 +291,64 @@ rtlRegs =Firmware.mergeRegs( rtlRegs ,trigoRegs);
 
 diggRegs = Pipe.DIGG.FRMW.getAng2xyCoeffs(rtlRegs);
 rtlRegs=Firmware.mergeRegs(rtlRegs,diggRegs);
+end
+
+
+function [xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par)
+% set degenerate limits for fixed parameters
+xL = single([regs.FRMW.xfov(1), regs.FRMW.yfov(1), regs.DEST.txFRQpd(1), regs.FRMW.laserangleH, regs.FRMW.laserangleV,...
+    regs.FRMW.polyVars, regs.FRMW.pitchFixFactor, regs.FRMW.undistAngHorz, regs.FRMW.undistAngVert,...
+    regs.FRMW.fovexNominal, regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter]);
+xH = xL;
+% set desired limits for optimized parameters
+for iParam = 1:length(optimizedParams)
+    switch optimizedParams{iParam}
+        case 'DFZ'
+            xL(1:5) = [par.fovxRange(1), par.fovyRange(1), par.delayRange(1), par.zenithxRange(1), par.zenithyRange(1)];
+            xH(1:5) = [par.fovxRange(2), par.fovyRange(2), par.delayRange(2), par.zenithxRange(2), par.zenithyRange(2)];
+        case 'coarseUndist'
+            xL(6:9) = [par.polyVarRange(1,:), par.pitchFixFactorRange(1)];
+            xH(6:9) = [par.polyVarRange(2,:), par.pitchFixFactorRange(2)];
+        case 'undistCorrHorz'
+            xL(10:13) = par.undistHorzRange(1,:);
+            xH(10:13) = par.undistHorzRange(2,:);
+        case 'undistCorrVert'
+            xL(14:17) = par.undistVertRange(1,:);
+            xH(14:17) = par.undistVertRange(2,:);
+        case 'fovexNominal'
+            xL(18:21) = par.fovexNominalRange(1,:);
+            xH(18:21) = par.fovexNominalRange(2,:);
+        case 'fovexLensDist'
+            xL(22:28) = [par.fovexRadialRange(1,:), par.fovexTangentRange(1,:), par.fovexCenterRange(1,:)];
+            xH(22:28) = [par.fovexRadialRange(2,:), par.fovexTangentRange(2,:), par.fovexCenterRange(2,:)];
+    end
+end
+end
+
+
+function printOptimResPerParameterGroup(optimizedParams, regs, err, fprintff)
+for iParam = 1:length(optimizedParams)
+    switch optimizedParams{iParam}
+        case 'DFZ'
+            fprintff('Delay/Fov/Zenith: fx=%.2f, fy=%.2f, dt=%.2f, zx=%.2f, zy=%.2f.\n',...
+                regs.FRMW.xfov(1), regs.FRMW.yfov(1), regs.DEST.txFRQpd(1), regs.FRMW.laserangleH, regs.FRMW.laserangleV)
+        case 'coarseUndist'
+            fprintff('Coarse undistort: polyVar=%.2f, pitchFixFactor=%.2f.\n',...
+                regs.FRMW.polyVars(2), regs.FRMW.pitchFixFactor);
+        case 'undistCorrHorz'
+            fprintff('Fine undist horz: xCoef=[%.2f,%.2f,%.2f,%.2f].\n',...
+                regs.FRMW.undistAngHorz(1), regs.FRMW.undistAngHorz(2), regs.FRMW.undistAngHorz(3), regs.FRMW.undistAngHorz(4));
+        case 'undistCorrVert'
+            fprintff('Fine undist vert: yCoef=[%.2f,%.2f,%.2f,%.2f].\n',...
+                regs.FRMW.undistAngVert(1), regs.FRMW.undistAngVert(2), regs.FRMW.undistAngVert(3), regs.FRMW.undistAngVert(4));
+        case 'fovexNominal'
+            fprintff('FOVex expansion : nominalCoef=[%.2f,%.2f,%.2f,%.2f].\n',...
+                regs.FRMW.fovexNominal(1), regs.FRMW.fovexNominal(2), regs.FRMW.fovexNominal(3), regs.FRMW.fovexNominal(4));
+        case 'fovexLensDist'
+            fprintff('FOVex distortion: kVec=[%.2f,%.2f,%.2f], pVec=[%.2f,%.2f], center=[%.2f,%.2f].\n',...
+                regs.FRMW.fovexRadialK(1), regs.FRMW.fovexRadialK(2), regs.FRMW.fovexRadialK(3),...
+                regs.FRMW.fovexTangentP(1), regs.FRMW.fovexTangentP(2), regs.FRMW.fovexCenter(1), regs.FRMW.fovexCenter(2));
+    end
+end
+fprintff('--> eGeom=%.2f.\n', err)
 end

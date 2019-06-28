@@ -1,4 +1,4 @@
-function [oXYZ] = ang2vec(angxQin,angyQin,regs,fovExpander)
+function [oXYZ] = ang2vec(angxQin,angyQin,regs)
 
 %% ----STAIGHT FORWARD------
 mode=regs.FRMW.mirrorMovmentMode;
@@ -13,15 +13,12 @@ angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(a
 
 laserIncidentDirection = angles2xyz( regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
 oXYZfunc = @(mirNormalXYZ_)  bsxfun(@plus,laserIncidentDirection,-bsxfun(@times,2*laserIncidentDirection'*mirNormalXYZ_,mirNormalXYZ_));
+applyFOVex = @(v) Calibration.aux.applyFOVex(v, regs); % Model-based implementation (nominal FOVex + lens distortion)
 
 angyQ=angyQin(:);angxQ =angxQin(:); % [DSM units]
-angxPreExp = single(angxQ)*angXfactor; % [deg]
-angyPreExp = single(angyQ)*angYfactor; % [deg]
-% [angx, angy] = Calibration.aux.applyFOVex(angxPreExp, angyPreExp, regs);
-oXYZPreExp = oXYZfunc(angles2xyz(angxPreExp,angyPreExp));
-oXYZPreExp(1:2,:) = rotmat*oXYZPreExp(1:2,:);
-% oXYZ = Calibration.aux.applyFOVexOnOutVec(oXYZPreExp, regs);
-
-oXYZ = Calibration.aux.applyExpander(oXYZPreExp,fovExpander);
+angx = single(angxQ)*angXfactor; % [deg]
+angy = single(angyQ)*angYfactor; % [deg]
+oXYZ = applyFOVex(oXYZfunc(angles2xyz(angx,angy)));
+oXYZ(1:2,:) = rotmat*oXYZ(1:2,:);
 
 end

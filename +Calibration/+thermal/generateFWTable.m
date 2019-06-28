@@ -272,11 +272,11 @@ end
 %     currFrame(:,1) = currFrame(:,1) + destTmprtOffset(i);
 %     currFrame(:,2) = currFrame(:,2)*angXscale(i) + angXoffset(i);
 %     currFrame(:,3) = currFrame(:,3)*angYscale(i) + angYoffset(i);
-%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.ang2xySF(currFrame(:,2),currFrame(:,3),regs,[],1); % Cheating here as I do not apply the undistort
+%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(currFrame(:,2),currFrame(:,3),regs), regs); % Cheating here as I do not apply the undistort
 %     
 %     [oXYZ] = ang2vec(currFrame(:,2),currFrame(:,3),regs,[]);
 %     
-%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.ang2xySF(currFrame(:,2),currFrame(:,3),regs,[],1);
+%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(currFrame(:,2),currFrame(:,3),regs), regs);
 %     
 % end
 % 

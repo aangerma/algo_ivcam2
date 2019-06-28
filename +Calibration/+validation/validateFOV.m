@@ -1,11 +1,8 @@
-function [ results ] = validateFOV( hw,regs,FE )
+function [ results ] = validateFOV( hw,regs )
 %VALIDATEFOV returns a struct that details the fov of the mirror
 %and that of the laser (smaller than that of the mirror). In addition, it
 %calculates the min and max angles of projection when scanning up and
 %scanning down.
-if ~exist('FE','var')
-   FE = []; 
-end
 
 r = Calibration.RegState(hw);
 r.add('DIGGsphericalEn'    ,true     );
@@ -16,5 +13,5 @@ Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Please Make Sure Borders
 r.reset();
 hw.cmd('iwb e2 06 01 70'); % Return bias
 
-results = Calibration.validation.calculateFOV(imU,imD,regs,FE);
+results = Calibration.validation.calculateFOV(imU,imD,regs);
 end

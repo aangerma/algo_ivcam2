@@ -25,7 +25,7 @@ dp = double(regs.FRMW.yres+2*margin)/round(double(regs.FRMW.yres+2*margin)/dp);%
 [angxg,angyg] = Calibration.aux.xy2angSF(xg,yg,regs,true);
 
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
-[xbug,ybug] = Calibration.aux.ang2xySF(angxg,angyg,regs,false);
+[xbug,ybug] = Calibration.aux.ang2xySF(angxg,angyg,regs);
 
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
