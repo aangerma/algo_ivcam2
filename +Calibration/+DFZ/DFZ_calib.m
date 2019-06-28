@@ -171,7 +171,10 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams)
         
         DFZRegs.FRMWundistAngHorz           = regs.FRMW.undistAngHorz;
         DFZRegs.FRMWundistAngVert           = regs.FRMW.undistAngVert;
-        DFZRegs.FRMWfovexExistenceFlag      = runParams.FOVex_installed;
+        if isfield(runParams, 'FOVex_installed')
+            regs.FRMW.fovexExistenceFlag    = runParams.FOVex_installed;
+        end
+        DFZRegs.FRMWfovexExistenceFlag      = regs.FRMW.fovexExistenceFlag;
         DFZRegs.FRMWfovexNominal            = regs.FRMW.fovexNominal;
         DFZRegs.FRMWfovexLensDistFlag       = regs.FRMW.fovexLensDistFlag;
         DFZRegs.FRMWfovexRadialK            = regs.FRMW.fovexRadialK;
