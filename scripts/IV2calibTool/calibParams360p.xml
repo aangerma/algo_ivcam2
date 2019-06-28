@@ -29,7 +29,7 @@
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 1.6]</geomErr>
+      <geomErr>[0.01 1.61]</geomErr>
       <extraImagesGeomErr>[0.01 2]</extraImagesGeomErr>
       <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
       <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
@@ -189,12 +189,12 @@
             <capture>
                 <target>Iv2A1</target>
                 <transformation>[0.6 0 0.1; 0 0.6 0; 0.2 0 1]</transformation>
-                <type>test</type>
+                <type>train</type>
             </capture>
             <capture>
                 <target>Iv2A1</target>
                 <transformation>[0.6 0 -0.1; 0 0.6 0; -0.2 0 1]</transformation>
-                <type>test</type>
+                <type>train</type>
             </capture>
                         
         </captures>

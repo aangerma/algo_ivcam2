@@ -9,6 +9,9 @@ function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,
 %    their true location.
 regs = fw.get();
 
+udistRegs.FRMW.xfov = regs.FRMW.xfov;
+udistRegs.FRMW.yfov = regs.FRMW.yfov;
+
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
 % y.

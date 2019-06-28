@@ -75,7 +75,7 @@ outregs = x2regs(xbest,regs);
 
 printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
-outregs = x2regs(xbest);
+outregs = x2regs(xbest, regs);
 printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist, fprintff)
 printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, minerr, fprintff)
 

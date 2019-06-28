@@ -195,12 +195,12 @@
             <capture>
                 <target>Iv2A1</target>
                 <transformation>[0.6 0 0.1; 0 0.6 0; 0.2 0 1]</transformation>
-                <type>test</type>
+                <type>train</type>
             </capture>
             <capture>
                 <target>Iv2A1</target>
                 <transformation>[0.6 0 -0.1; 0 0.6 0; -0.2 0 1]</transformation>
-                <type>test</type>
+                <type>train</type>
             </capture>
             
         </captures>

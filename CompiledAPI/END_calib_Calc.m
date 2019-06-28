@@ -134,7 +134,9 @@ function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,
 %     intregs.STAT.spare = statSpares;
     
     JFILdnnWeights = regs.JFIL.dnnWeights;
-    JFILdnnWeights(1:10) = typecast([regs.FRMW.undistAngVert,regs.FRMW.undistAngHorz],'uint32');
+    JFILdnnWeights(1:8) = typecast([regs.FRMW.undistAngVert,regs.FRMW.undistAngHorz],'uint32');
+    JFILdnnWeights(9:13) = typecast([regs.FRMW.fovexExistenceFlag,regs.FRMW.fovexNominal],'uint32');
+    JFILdnnWeights(14:21) = typecast([regs.FRMW.fovexLensDistFlag,regs.FRMW.fovexRadialK,regs.FRMW.fovexTangentP,regs.FRMW.fovexCenter],'uint32');
     intregs.JFIL.dnnWeights = JFILdnnWeights;
     
     fw.setRegs(intregs,fnCalib);
