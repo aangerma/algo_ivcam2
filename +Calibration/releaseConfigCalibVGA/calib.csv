@@ -24,3 +24,4 @@ EXTLdsmYscale        f86
 EXTLdsmXoffset       f30.3
 EXTLdsmYoffset       f23.6
 JFILinvMinMax        hffff0320
+FRMWfovExpanderValid b1
