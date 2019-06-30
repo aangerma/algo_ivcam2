@@ -18,7 +18,6 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIr
 %
 
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff;
-    fprintff = g_fprintff;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -38,11 +37,27 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIr
     
     func_name = dbstack;
     func_name = func_name(1).name;
+
     if(isempty(g_output_dir))
         output_dir = fullfile(ivcam2tempdir,'roi_temp');
     else
         output_dir = g_output_dir;
     end
+    
+    if(isempty(g_fprintff)) %% HVM log file
+        if(isempty(g_LogFn))
+            fn = fullfile(output_dir,[func_name '_log.txt']);
+        else
+            fn = g_LogFn;
+        end
+        mkdirSafe(output_dir);
+        fid = fopen(fn,'a');
+        fprintff = @(varargin) fprintf(fid,varargin{:});
+    else % algo_cal app_windows
+        fprintff = g_fprintff; 
+    end
+
+    
     runParams.outputFolder = output_dir;
     % save Input
     regs = ConvertROIReg(ROIregs);
@@ -55,6 +70,9 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIr
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'roiRegs', 'results','fovData');
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 

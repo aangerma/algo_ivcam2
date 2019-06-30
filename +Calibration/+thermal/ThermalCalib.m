@@ -56,7 +56,7 @@ while ~finishedHeating
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
     [result, tableResults]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    rmdir(path,'s');
+%    rmdir(path,'s');
     finishedHeating = (result~=0);
     
     if tempFig.isvalid

@@ -22,7 +22,7 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
 
 
     clear delay_R_calib_calc;   % persistance variable in function.
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt acc g_LogFn g_temp_count;
     g_delay_cnt             = 0;
     g_calib_dir             = calib_dir;
     g_output_dir            = output_dir;
@@ -31,21 +31,21 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
     g_save_input_flag       = save_input_flag;
     g_save_output_flag      = save_output_flag;
     g_dummy_output_flag     = dummy_output_flag;
+    acc                     = [];
+    g_temp_count            = 0;
     
-    if (g_debug_log_f)
-        fn = fullfile(g_output_dir,'cal_log.txt');
-        fid = fopen(fn,'w');
-        cal_print = @(varargin) fprintf(fid,varargin{:});
-    else
-        cal_print = @(varargin) varargin{:};
-    end
     
     if(~exist('fprintff','var'))
-        g_fprintff = cal_print;
+%         if (g_debug_log_f)
+        g_LogFn = fullfile(g_output_dir,'cal_log.txt');
+        fid = fopen(g_LogFn,'w');
+        fprintff = @(varargin) fprintf(fid,varargin{:});
+%         else
+%             fprintff = @(varargin) varargin{:};
+%         end
     else
         g_fprintff = fprintff;
     end
-    fprintff = g_fprintff; 
     
     mkdirSafe(output_dir);
     mkdirSafe(fullfile(output_dir,'mat_files'));

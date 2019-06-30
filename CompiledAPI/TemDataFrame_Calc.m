@@ -15,14 +15,11 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
 %        <0> - table not complitted keep calling the function with another samples point.
 %        <1> - table ready
 %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count; % g_regs g_luts;
-    fprintff = g_fprintff;
-    
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
+ 
     % setting default global value in case not initial in the init function;
     if isempty(g_temp_count)
         g_temp_count = 0;
-    else
-        g_temp_count = g_temp_count + 1; 
     end
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -52,11 +49,17 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     else
         output_dir = g_output_dir;
     end
-    
-    if (isempty(fprintff))
-        fn = fullfile(output_dir,'algo2_log.txt');
-        fid = fopen(fn,'w');
-        g_fprintff = @(varargin) fprintf(fid,varargin{:});
+    %% log output
+    if(isempty(g_fprintff)) %% HVM log file
+        if(isempty(g_LogFn))
+            fn = fullfile(output_dir,'algo2_log.txt');
+        else
+            fn = g_LogFn;
+        end
+        mkdirSafe(output_dir);
+        fid = fopen(fn,'a');
+        fprintff = @(varargin) fprintf(fid,varargin{:});
+    else % algo_cal app_windows
         fprintff = g_fprintff; 
     end
 
@@ -76,6 +79,11 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     end
     if (result~=0)
         g_temp_count = 0;
+    else
+        g_temp_count = g_temp_count + 1; 
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 
@@ -93,7 +101,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
 %       <-1> - error
 %        <0> - table not complitted keep calling the function with another samples point.
 %        <1> - table ready
-
+    global g_temp_count;
     tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
     tempTh = calibParams.warmUp.warmUpTh;
     maxTime2WaitSec = maxTime2Wait*60;
@@ -103,7 +111,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
     persistent prevTmp
     persistent prevTime
       
-    if isempty(Index)
+    if isempty(Index) || (g_temp_count == 0) 
         Index     = 0;
         prevTmp   = 0;  %hw.getLddTemperature();
         prevTime  = 0;
@@ -194,10 +202,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
         hw = []; % dummy HW no need real burn.
         Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,0,data);
         fprintff('Thrmal calibration finished\n');
-
-        
-        clear acc;
-
+ 
         % clear persistent
     else
         result = 0;

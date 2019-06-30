@@ -25,8 +25,7 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
 %
 
 
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff g_delay_cnt;
-    fprinff = g_fprinff;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt;
 
     unFiltered  = 0;
      if isempty(g_delay_cnt)
@@ -52,6 +51,19 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
     end
     func_name = dbstack;
     func_name = func_name(1).name;
+
+    if(isempty(g_fprintff)) %% HVM log file
+        if(isempty(g_LogFn))
+            fn = fullfile(g_output_dir,[func_name '_log.txt']);
+        else
+            fn = g_LogFn;
+        end
+        mkdirSafe(g_output_dir);
+        fid = fopen(fn,'a');
+        fprintff = @(varargin) fprintf(fid,varargin{:});
+    else % algo_cal app_windows
+        fprintff = g_fprintff; 
+    end
 
     
     width = sz(2);
