@@ -293,7 +293,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         if calibPassed
             fprintff('[v] DFZ pre reset validation passed[eReg=%.2g,eSp=%.2g]\n',results.eGeomSphericalDis,results.eGeomSphericalEn);
         else
-            fprintff('[x] DFZ pre reset validation failed[eReg=.2%g,eSp=.2%g]\n',results.eGeomSphericalDis,results.eGeomSphericalEn);
+            fprintff('[x] DFZ pre reset validation failed[eReg=%.2g,eSp=%.2g]\n',results.eGeomSphericalDis,results.eGeomSphericalEn);
         end
         
     end

@@ -21,7 +21,9 @@ nominalOutVec = zeros(size(inVec));
 angPreExp = acosd(inVec(:,3)); % angle w.r.t. Z-axis [deg]
 angPostExp = angPreExp + angPreExp.^[1,2,3,4]*vec(regs.FRMW.fovexNominal);
 nominalOutVec(:,3) = cosd(angPostExp);
-xyFactor = sqrt((1-nominalOutVec(:,3).^2)./(inVec(:,1).^2+inVec(:,2).^2));
+xyNorm = inVec(:,1).^2+inVec(:,2).^2;
+xyFactor = sqrt((1-nominalOutVec(:,3).^2)./xyNorm);
+xyFactor(xyNorm==0) = 0;
 nominalOutVec(:,1:2) = inVec(:,1:2).*xyFactor;
 
 % Converting to image plane
