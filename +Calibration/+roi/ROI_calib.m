@@ -4,7 +4,7 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         [r,regs] = ROI_calib_Init(hw,fw);
         %% capture frames
         fprintff('[-] Collecting up/down frames... ');
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Make sure image is bright',1);
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Put white cover and make sure image is bright',1);
         %% capture up down frames 
         gainCalibValue = '000ffff0';
         NumberOfFrames = 30;
