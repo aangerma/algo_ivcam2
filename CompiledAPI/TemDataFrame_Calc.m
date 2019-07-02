@@ -15,8 +15,9 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
 %        <0> - table not complitted keep calling the function with another samples point.
 %        <1> - table ready
 %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
- 
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
+    fprintff = g_fprintff;
+    
     % setting default global value in case not initial in the init function;
     if isempty(g_temp_count)
         g_temp_count = 0;
@@ -71,7 +72,7 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     height = sz(1);
     width  = sz(2);
 
-    [result, tableResults] = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff);       
+    [result, tableResults] = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
@@ -87,7 +88,7 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     end
 end
 
-function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff)
+function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -158,7 +159,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
 %        result = 1;
         % prepare table & validation 
         % Add eGeom to data
-        save(fullfile(output_dir,'data_in.mat'),'data');
+        save(fullfile(output_dir,'mat_files','data_in.mat'),'data');
         if reachedRequiredTempDiff
             reason = 'Stable temperature';
         elseif reachedTimeLimit
@@ -177,7 +178,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
         [table,tableResults] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
         data.tableResults = tableResults;
         if isempty(table)
-           result = 1; % calibPassed = 0;
+           result = -1; % calibPassed = 0;
            save(fullfile(output_dir,'mat_files' ,'data.mat'),'data');
            return;
         end
@@ -200,7 +201,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
          %% Burn 2 device
         fprintff('Burning thermal calibration\n');
         hw = []; % dummy HW no need real burn.
-        Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,0,data);
+        Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,calibPassed,data,calib_dir);
         fprintff('Thrmal calibration finished\n');
  
         % clear persistent

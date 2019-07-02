@@ -81,15 +81,28 @@ irImSize = [360,640];
 [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
 
 
-function [calibParams , result] = wrap_cal_int()
+    %% cal init wrap
     output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
     mkdirSafe(output_dir);
     calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
-    calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
+    calib_params_fn =  fullfile(ivcam2root,'scripts','IV2ThermalCalibTool','calibParams.xml');
     debug_log_f = false;
     verbose = true;
     save_input_flag = true;
     save_output_flag = true;
     dummy_output_flag = true;
-    [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
-end
+    [calibParams , ~] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
+    %% thermal calc phase 0
+    load('\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Matlab\mat_files\TemDataFrame_Calc_in0.mat');
+    InputPath = '\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Images\Thermal\Cycle10';
+    [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, 2);
+    %% algo2 create script
+    load('Z:\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.1\IC12\Matlab\mat_files\data_out.mat');
+    fprintff = @(varargin) fprintf(varargin{:});
+    runParams.outputFolder = tempdir;
+    [table,tableResults] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
+    hw = [];
+    calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
+    Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,calibPassed,data,calib_dir);
+    
+    
