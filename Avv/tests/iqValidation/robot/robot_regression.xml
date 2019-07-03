@@ -13,10 +13,6 @@
     </cameraConfig_beforeStartStream>
     <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
     <tests>
-        <test name="planeFit_far" metrics="planeFit" target="far" distance="100cm" threshold="[0:0.5]" extra=""/>\
-        <test name="fillRate_far" metrics="fillRate" target="far" distance="100cm" threshold="[95:100]" extra=""/>
-
-        <test name="planeFit_c50_50cm" metrics="planeFit" target="checkerboard_50" distance="50cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_60cm" metrics="planeFit" target="checkerboard_50" distance="60cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_70cm" metrics="planeFit" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_80cm" metrics="planeFit" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
@@ -57,6 +53,21 @@
         <test name="gridInterDist_c50_150cm" metrics="gridInterDist" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
         <test name="gridInterDist_c50_200cm" metrics="gridInterDist" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
         <test name="gridInterDist_c50_300cm" metrics="gridInterDist" target="checkerboard_50" distance="300cm" threshold="[0:5]" extra=''/>
+
+        <test name="measurement_c50_50cm" metrics="measurement" target="checkerboard_50" distance="50cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_60cm" metrics="measurement" target="checkerboard_50" distance="60cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_70cm" metrics="measurement" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_80cm" metrics="measurement" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_90cm" metrics="measurement" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_100cm" metrics="measurement" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra=''/>
+        <test name="measurement_c50_110cm" metrics="measurement" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_120cm" metrics="measurement" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_130cm" metrics="measurement" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_140cm" metrics="measurement" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_150cm" metrics="measurement" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_200cm" metrics="measurement" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_300cm" metrics="measurement" target="checkerboard_50" distance="300cm" threshold="[0:5]" extra=''/>
+
 
         <test name="fillRate_w10_60cm" metrics="fillRate" target="wall_10Reflectivity" distance="60cm" threshold="[90 : 100]" extra=""/>
         <test name="fillRate_w10_70cm" metrics="fillRate" target="wall_10Reflectivity" distance="70cm" threshold="[90 : 100]" extra=""/>
@@ -126,7 +137,5 @@
         <test name="zStd_w10_330cm" metrics="zStd" target="wall_10Reflectivity" distance="330cm" threshold="[0 : 50]" extra=""/>
         <test name="zStd_w10_340cm" metrics="zStd" target="wall_10Reflectivity" distance="340cm" threshold="[0 : 50]" extra=""/>
         <test name="zStd_w10_350cm" metrics="zStd" target="wall_10Reflectivity" distance="350cm" threshold="[0 : 50]" extra=""/>
-
-        <!--<test name="gridInterDist_150cm_Deg" metrics="gridInterDist" target="checkerboard_50" distance="150cm" angle_offset="-40:40" threshold="[0:3]" extra=''/>-->
     </tests>
 </root>
