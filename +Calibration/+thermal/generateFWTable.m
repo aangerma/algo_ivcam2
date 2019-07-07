@@ -1,5 +1,5 @@
-function [table,results] = generateFWTable(data,calibParams,runParams,fprintff)
-
+function [table,results,Invalid_Frames] = generateFWTable(data,calibParams,runParams,fprintff)
+Invalid_Frames = [];
 % Bin frames according to fw loop requirment.
 % Generate a linear fix for angles and an offset for rtd
 
@@ -15,7 +15,7 @@ regs = data.regs;
 invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ),1:numel(framesData));
 fprintff('Invalid frames: %.0f/%.0f\n',sum(invalidFrames),numel(invalidFrames));
 framesData = framesData(~invalidFrames);
-
+Invalid_Frames = sum(invalidFrames);
 
 nBins = 48;
 N = nBins+1;

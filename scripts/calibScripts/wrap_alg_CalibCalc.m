@@ -95,7 +95,7 @@ irImSize = [360,640];
     %% thermal calc phase 0
     load('\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Matlab\mat_files\TemDataFrame_Calc_in0.mat');
     InputPath = '\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Images\Thermal\Cycle10';
-    [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, 2);
+    [result, tableResults, metrics,invalid_frames]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, 2);
     %% algo2 create script
     load('Z:\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.1\IC12\Matlab\mat_files\data_out.mat');
     fprintff = @(varargin) fprintf(varargin{:});

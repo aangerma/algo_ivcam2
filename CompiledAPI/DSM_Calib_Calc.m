@@ -12,7 +12,7 @@ function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , 
     %       dsmYscale
     %       dsmYoffset
     %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn;
     
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
@@ -41,7 +41,7 @@ function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , 
         else
             fn = g_LogFn;
         end
-        mkdirSafe(output_dir);
+        mkdirSafe(g_output_dir);
         fid = fopen(fn,'a');
         fprintff = @(varargin) fprintf(fid,varargin{:});
     else % algo_cal app_windows

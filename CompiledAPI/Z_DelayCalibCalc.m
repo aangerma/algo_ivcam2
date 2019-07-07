@@ -25,7 +25,7 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both ,s
 %
 
 
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn;
 
     unFiltered  = 0;
      if isempty(g_delay_cnt)

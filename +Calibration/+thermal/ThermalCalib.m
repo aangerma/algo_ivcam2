@@ -55,7 +55,7 @@ while ~finishedHeating
     path = fullfile(algo2path_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    [result, tableResults]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
+    [result, tableResults,~,~]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
 %    rmdir(path,'s');
     finishedHeating = (result~=0);
     
