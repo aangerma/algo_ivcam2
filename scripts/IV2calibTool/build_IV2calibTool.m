@@ -42,7 +42,15 @@ copyfile(toolConfig.calibParamsFile,outputFolder);
 copyfile(toolConfigFile,fullfile(outputFolder, 'IV2calibTool.xml'));
 fw = Pipe.loadFirmware(sprintf('../../+Calibration/%s',toolConfig.configurationFolder));
 
-verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion) 0 0]),'uint32');
+
+if gProjID == iv2Proj.L520 %should actually be the same
+    [~,~,verReg] = calibToolVersion;
+    verReg = verReg([2,1,3,4]);
+    verReg = typecast(verReg,'uint32');
+else
+    verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion) 0 0]),'uint32');
+end
+
 vreg= [verReg 0 0 0 0 verReg 0 0 ];
 fw.setRegs('DIGGspare',vreg);
 fw.writeFirmwareFiles(fullfile(outputFolder,'configFiles'),false);
