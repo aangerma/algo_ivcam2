@@ -188,6 +188,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
         if isempty(table)
            result = -1; % calibPassed = 0;
            save(fullfile(output_dir,'mat_files' ,'data.mat'),'data');
+           fprintff('table is empty (no checkerboard where found)\n');
            return;
         end
         dataFixed = Calibration.thermal.applyFix(data);
