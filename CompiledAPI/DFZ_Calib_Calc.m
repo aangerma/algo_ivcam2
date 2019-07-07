@@ -14,8 +14,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     %   results - geomErr:  and extraImagesGeomErr:
     %   calibPassed - pass fail
     %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_calib_dir; % g_regs g_luts;
-    fprintff = g_fprintff;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_calib_dir g_LogFn; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -47,8 +46,17 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
         warning('calib_dir missing in cal_init');
     end
     
-    if(isempty(fprintff))
-        fprintff = @(varargin) fprintf(varargin{:});
+    if(isempty(g_fprintff)) %% HVM log file
+        if(isempty(g_LogFn))
+            fn = fullfile(output_dir,[func_name '_log.txt']);
+        else
+            fn = g_LogFn;
+        end
+        mkdirSafe(output_dir);
+        fid = fopen(fn,'a');
+        fprintff = @(varargin) fprintf(fid,varargin{:});
+    else % algo_cal app_windows
+        fprintff = g_fprintff; 
     end
     
     % save Input
@@ -74,7 +82,9 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'dfzRegs', 'calibPassed','results');
     end
-
+    if(exist('fid','var'))
+        fclose(fid);
+    end
 end
 
 function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir, OutputDir, calibParams, fprintff, regs)

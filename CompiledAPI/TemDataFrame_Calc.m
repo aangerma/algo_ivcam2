@@ -1,4 +1,4 @@
-function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
+function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -14,15 +14,18 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
 %       <-1> - error
 %        <0> - table not complitted keep calling the function with another samples point.
 %        <1> - table ready
+%   tableResults
+%   metrics - validation metrics relvent only on last phase when table
+%   ready
+%   invalid_Frames - number of invalid frames relvent only on last phase when table
+%   ready
 %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count; % g_regs g_luts;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
     fprintff = g_fprintff;
     
     % setting default global value in case not initial in the init function;
     if isempty(g_temp_count)
         g_temp_count = 0;
-    else
-        g_temp_count = g_temp_count + 1; 
     end
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -52,11 +55,17 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     else
         output_dir = g_output_dir;
     end
-    
-    if (isempty(fprintff))
-        fn = fullfile(output_dir,'algo2_log.txt');
-        fid = fopen(fn,'w');
-        g_fprintff = @(varargin) fprintf(fid,varargin{:});
+    %% log output
+    if(isempty(g_fprintff)) %% HVM log file
+        if(isempty(g_LogFn))
+            fn = fullfile(output_dir,'algo2_log.txt');
+        else
+            fn = g_LogFn;
+        end
+        mkdirSafe(output_dir);
+        fid = fopen(fn,'a');
+        fprintff = @(varargin) fprintf(fid,varargin{:});
+    else % algo_cal app_windows
         fprintff = g_fprintff; 
     end
 
@@ -68,7 +77,7 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     height = sz(1);
     width  = sz(2);
 
-    [result, tableResults] = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff);       
+    [result, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
@@ -76,10 +85,15 @@ function [result, tableResults]  = TemDataFrame_Calc(regs, FrameData, sz ,InputP
     end
     if (result~=0)
         g_temp_count = 0;
+    else
+        g_temp_count = g_temp_count + 1; 
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 
-function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff)
+function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -93,17 +107,20 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
 %       <-1> - error
 %        <0> - table not complitted keep calling the function with another samples point.
 %        <1> - table ready
-
+    global g_temp_count;
     tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
     tempTh = calibParams.warmUp.warmUpTh;
     maxTime2WaitSec = maxTime2Wait*60;
     runParams.outputFolder = output_dir;
     tableResults = [];
+    metrics = [];
+    Invalid_Frames = [];
+    
     persistent Index
     persistent prevTmp
     persistent prevTime
       
-    if isempty(Index)
+    if isempty(Index) || (g_temp_count == 0) 
         Index     = 0;
         prevTmp   = 0;  %hw.getLddTemperature();
         prevTime  = 0;
@@ -150,7 +167,7 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
 %        result = 1;
         % prepare table & validation 
         % Add eGeom to data
-        save(fullfile(output_dir,'data_in.mat'),'data');
+        save(fullfile(output_dir,'mat_files','data_in.mat'),'data');
         if reachedRequiredTempDiff
             reason = 'Stable temperature';
         elseif reachedTimeLimit
@@ -166,11 +183,12 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
         data.framesData = data.framesData(~invalidFrames);
         data = Calibration.thermal.addEGeomToData(data);
         data.dfzRefTmp = Calibration.thermal.recalcRefTempForBetterEGeom(data,calibParams,runParams,fprintff);
-        [table,tableResults] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
+        [table,tableResults, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
         data.tableResults = tableResults;
         if isempty(table)
-           result = 1; % calibPassed = 0;
+           result = -1; % calibPassed = 0;
            save(fullfile(output_dir,'mat_files' ,'data.mat'),'data');
+           fprintff('table is empty (no checkerboard where found)\n');
            return;
         end
         dataFixed = Calibration.thermal.applyFix(data);
@@ -182,22 +200,20 @@ function [result, tableResults]  = TempDataFrame_Calc_int(regs, FrameData,height
 
         Calibration.aux.logResults(data.results,runParams);
         %% merge all scores outputs
+        metrics = data.results;
         calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
         if calibPassed
             result = 1;
         else
-            result = -1;
+            result = 10;
         end
         
          %% Burn 2 device
         fprintff('Burning thermal calibration\n');
         hw = []; % dummy HW no need real burn.
-        Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,0,data);
+        Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,calibPassed,data,calib_dir);
         fprintff('Thrmal calibration finished\n');
-
-        
-        clear acc;
-
+ 
         % clear persistent
     else
         result = 0;

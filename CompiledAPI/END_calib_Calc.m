@@ -19,8 +19,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
 % output:
 %   results - incrmntal result 
 %   luts - undistort table.
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff; % g_regs g_luts;
-    fprintff = g_fprintff;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -40,6 +39,22 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     
     func_name = dbstack;
     func_name = func_name(1).name;
+    
+    
+    if(isempty(g_fprintff)) %% HVM log file
+        if(isempty(g_LogFn))
+            fn = fullfile(g_output_dir,[func_name '_log.txt']);
+        else
+            fn = g_LogFn;
+        end
+        mkdirSafe(g_output_dir);
+        fid = fopen(fn,'a');
+        fprintff = @(varargin) fprintf(fid,varargin{:});
+    else % algo_cal app_windows
+        fprintff = g_fprintff; 
+    end
+
+    
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
@@ -57,7 +72,9 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn,'results', 'luts');
     end
-
+    if(exist('fid','var'))
+        fclose(fid);
+    end
 end
 
 function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib, fprintff, calibParams,output_dir)
