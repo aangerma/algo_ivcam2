@@ -12,7 +12,7 @@ else
     inputIdx = 0;
 end
 filedir = fileparts(mfilename('fullpath'));
-fwpath = fullfile(filedir,'../+Calibration/releaseConfigCalib');
+fwpath = fullfile(filedir,'../+Calibration/releaseConfigCalibVGA');
 fw = Pipe.loadFirmware(fwpath); 
 if inputIdx > 0 % Set confidence configuration from 
     
