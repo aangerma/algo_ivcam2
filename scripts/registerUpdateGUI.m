@@ -16,10 +16,15 @@ function editFIeldUpdate(app,trgt)
     if(~isempty(v))
         switch(app.data(ri).type)
             case 'logical'
-                cc=get(trgt,'children');
-                set(cc,'BackgroundColor',bgcolor);
-                cc(1+v).Value=1;
-                
+                if app.data((ri)).arraySize > 1
+                    trgt.String=dec2hex(v);
+                    trgt.TooltipString=num2str(v);
+                    set(trgt,'BackgroundColor',bgcolor);
+                else
+                    cc=get(trgt,'children');
+                    set(cc,'BackgroundColor',bgcolor);
+                    cc(1+v).Value=1;
+                end
             case 'single'
                 trgt.String=sprintf('%f',typecast(v,'single'));
                 trgt.TooltipString=['0x' dec2hex(v)];
@@ -40,8 +45,13 @@ function valueWrite_callback(trgt)
     
     switch(app.data(ri).type)
         case 'logical'
-            cc=get(trgt,'children');
-            v=uint32(find([cc.Value]==1,1)-1);
+            if app.data((ri)).arraySize > 1
+                v=uint32(hex2dec(trgt.String));
+                trgt.TooltipString=num2str(v);
+            else
+                cc=get(trgt,'children');
+                v=uint32(find([cc.Value]==1,1)-1);
+            end
         case 'single'
             v=typecast(single(str2double(trgt.String)),'uint32');
             trgt.TooltipString=num2str(v);
@@ -147,11 +157,16 @@ function regNameEdit_callback(varargin)
         valueBxSz= [160 h-i*(H+M) w-170-H H];
         switch(app.data(r(i)).type)
             case 'logical'
-                b{i} = uibuttongroup('parent',app.innerPanel,'units','pixels','position',valueBxSz);
-                ra(1)=uicontrol('style','radiobutton','units','normalized','parent',b{i},'position',[0 0 .5 1],'string','on');
-                ra(2)=uicontrol('style','radiobutton','units','normalized','parent',b{i},'position',[0.5 0 .5 1],'string','off');
-                b{i}.SelectedObject=[];
-                b{i}.SelectionChangedFcn=@(s,e) valueWrite_callback(b{i});
+                if app.data(r(i)).arraySize > 1
+                    b{i}=uicontrol('style','edit','parent',app.innerPanel,'position',valueBxSz);
+                    b{i}.Callback=@(s,e) valueWrite_callback(b{i});
+                else
+                    b{i} = uibuttongroup('parent',app.innerPanel,'units','pixels','position',valueBxSz);
+                    ra(1)=uicontrol('style','radiobutton','units','normalized','parent',b{i},'position',[0 0 .5 1],'string','on');
+                    ra(2)=uicontrol('style','radiobutton','units','normalized','parent',b{i},'position',[0.5 0 .5 1],'string','off');
+                    b{i}.SelectedObject=[];
+                    b{i}.SelectionChangedFcn=@(s,e) valueWrite_callback(b{i});
+                end
                 
             otherwise
                 b{i}=uicontrol('style','edit','parent',app.innerPanel,'position',valueBxSz);
