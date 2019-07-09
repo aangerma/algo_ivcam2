@@ -618,6 +618,28 @@ elseif(ischar(inputData))
             patgenregs.EPTG.irImageType = uint8(3);
             patgenregs.EPTG.multiFocalROI=int32([-600 -400 1000 1000]);
             patgenregs.EPTG.frameRate=single(60);
+            
+        case 'outdoor_wall'
+            patgenregs.EPTG.zImageType = uint8(1);
+            patgenregs.EPTG.irImageType = uint8(1);
+            patgenregs.EPTG.irImageType = uint8(1);
+            patgenregs.EPTG.minZ = single(3000);
+            patgenregs.EPTG.maxZ = single(3000);
+            patgenregs.GNRL.imgHsize = uint16(152);
+            patgenregs.GNRL.imgVsize = uint16(232);
+            patgenregs.FRMW.guardBandH = single(0);
+            patgenregs.EPTG.frameRate = single(10);
+            patgenregs.EPTG.noiseLevel=single(0.3);
+            patgenregs.EPTG.sampleJitter=single(0.1);
+            patgenregs.EPTG.calibVariationsP=single(0);
+            patgenregs.DEST.hbaseline=false;
+            patgenregs.DEST.baseline=single(10);
+            patgenregs.FRMW.cbufConstLUT=true;
+            patgenregs.MTLB.txSymbolLength = single(4);
+            %patgenregs.DIGG.sphericalEn = true;
+            %patgenregs.EPTG.slowscanType = uint8(0);
+            [patgenregs.FRMW.txCode, patgenregs.GNRL.codeLength] = Utils.bin2uint32( Codes.propCode(26,1) );
+
         otherwise
             error('Unknonw patgen input');
             
