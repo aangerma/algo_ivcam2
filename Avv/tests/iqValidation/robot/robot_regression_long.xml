@@ -23,6 +23,7 @@
         <test name="planeFit_c50_140cm" metrics="planeFit" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_150cm" metrics="planeFit" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_200cm" metrics="planeFit" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test name="planeFit_c50_250cm" metrics="planeFit" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_300cm" metrics="planeFit" target="checkerboard_50" distance="300cm" threshold="[0:5]" extra=''/>
 
         <test name="zStd_c50_80cm" metrics="zStd" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
@@ -34,6 +35,7 @@
         <test name="zStd_c50_140cm" metrics="zStd" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
         <test name="zStd_c50_150cm" metrics="zStd" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
         <test name="zStd_c50_200cm" metrics="zStd" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test name="zStd_c50_250cm" metrics="zStd" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
         <test name="zStd_c50_300cm" metrics="zStd" target="checkerboard_50" distance="300cm" threshold="[0:5]" extra=''/>
 
         <test name="gridInterDist_c50_80cm" metrics="gridInterDist" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
@@ -45,6 +47,7 @@
         <test name="gridInterDist_c50_140cm" metrics="gridInterDist" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
         <test name="gridInterDist_c50_150cm" metrics="gridInterDist" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
         <test name="gridInterDist_c50_200cm" metrics="gridInterDist" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test name="gridInterDist_c50_250cm" metrics="gridInterDist" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
         <test name="gridInterDist_c50_300cm" metrics="gridInterDist" target="checkerboard_50" distance="300cm" threshold="[0:5]" extra=''/>
 
         <test name="measurement_c50_80cm" metrics="measurement" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
@@ -56,6 +59,7 @@
         <test name="measurement_c50_140cm" metrics="measurement" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
         <test name="measurement_c50_150cm" metrics="measurement" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
         <test name="measurement_c50_200cm" metrics="measurement" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test name="measurement_c50_250cm" metrics="measurement" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
         <test name="measurement_c50_300cm" metrics="measurement" target="checkerboard_50" distance="300cm" threshold="[0:5]" extra=''/>
 
 
