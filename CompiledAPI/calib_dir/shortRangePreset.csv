@@ -23,7 +23,7 @@ lpfGain,uint8,3
 lpfCutOff,uint8,2
 ampdet_RateSel,uint8,0
 DESTconfactIn,uint32,18811474
-DESTconfactOt,uint32,16776977
+DESTconfactOt,uint32,16776961
 DESTconfq,uint16,1
 DESTconfw1,uint32,2131755008
 DESTconfw2,uint32,0
@@ -34,3 +34,6 @@ JFILinvMinMax,uint32,4294901760
 VBROffset,single,18
 AlgoThermalLoopScale,single,0
 AlgoThermalLoopOffset,single,0
+JFILgammaScale,uint32,171115520
+JFILgammaShift,uint32,4286644224
+DCORcoarseMasking_002,uint32,4294967295

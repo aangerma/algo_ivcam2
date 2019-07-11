@@ -1,4 +1,4 @@
-function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
+function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs,eepromRegs,FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -72,12 +72,12 @@ function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(re
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-        save(fn,'regs', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
+        save(fn,'regs','eepromRegs', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
     end
     height = sz(1);
     width  = sz(2);
 
-    [result, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
+    [result, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
@@ -93,7 +93,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(re
     end
 end
 
-function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_int(regs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
+function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_int(regs, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -181,6 +181,9 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
      
         invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
         data.framesData = data.framesData(~invalidFrames);
+        
+        
+        
         data = Calibration.thermal.addEGeomToData(data);
         data.dfzRefTmp = Calibration.thermal.recalcRefTempForBetterEGeom(data,calibParams,runParams,fprintff);
         [table,tableResults, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
@@ -191,7 +194,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
            fprintff('table is empty (no checkerboard where found)\n');
            return;
         end
-        dataFixed = Calibration.thermal.applyFix(data);
+        dataFixed = Calibration.thermal.applyFix(data,calibParams);
         % Add eGeom to data
         dataFixed = Calibration.thermal.addEGeomToData(dataFixed);
 
@@ -211,7 +214,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
          %% Burn 2 device
         fprintff('Burning thermal calibration\n');
         hw = []; % dummy HW no need real burn.
-        Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,calibPassed,data,calib_dir);
+        Calibration.thermal.generateAndBurnTable(hw,eepromRegs, data.tableResults.table,calibParams,runParams,fprintff,0,data);
         fprintff('Thrmal calibration finished\n');
  
         % clear persistent

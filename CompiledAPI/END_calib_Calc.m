@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
+function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -62,6 +62,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     end
     runParams.outputFolder = g_output_dir;
     runParams.undist = undist_flag;
+    runParams.version=version;
     [~,~,versionBytes] = calibToolVersion();
     verValue           = uint32(versionBytes(1))*2^8 + uint32(versionBytes(2));%0x00000203
     verValueFull       = uint32(versionBytes(1))*2^16 +uint32(versionBytes(2))*2^8+uint32(versionBytes(3));%0x00020300 
@@ -88,79 +89,101 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
         fw = Pipe.loadFirmware(path); % use default path of table folder
     end
     %% set regs from all algo calib
+    vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(runParams.version)));
+    vregs.FRMW.configVersion = uint32(hex2dec(single2hex(runParams.version)));
+    atlregs.FRMW.atlMinVbias1 = single(1);
+    atlregs.FRMW.atlMaxVbias1 = single(3); 
+    atlregs.FRMW.atlMinVbias2 = single(1);
+    atlregs.FRMW.atlMaxVbias2 = single(3);
+    atlregs.FRMW.atlMinVbias3 = single(1);
+    atlregs.FRMW.atlMaxVbias3 = single(3);
+    fw.setRegs(vregs,fnCalib);
+    fw.setRegs(atlregs,fnCalib);
     fw.setRegs(dsmregs,  fnCalib); % DO NOT CHANGE THE ORDER OF THE CALLS TO setRegs
     fw.setRegs(delayRegs,fnCalib); 
     fw.setRegs(dfzRegs,  fnCalib);  
     fw.setRegs(roiRegs,  fnCalib);
     %% prepare spare register to store the fov. 
-    writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff);
+%     writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff);
+    
     [results,undistRegs,undistLuts] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t);
     fw.setRegs(undistRegs,fnCalib);
     fw.setLut(undistLuts);
-    fw.get();
+    regs = fw.get();
     temp_dir = fullfile(output_dir,'AlgoInternal');
     mkdirSafe(temp_dir);
     fn = fullfile(temp_dir,'postUndistState.txt');
-    fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',fn);
+    fw.genMWDcmd('DIGG|DEST|CBUF',fn);
     %% prepare preset table
-    calibTempTableFn = fullfile(output_dir,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',0,bitand(verValue,hex2dec('ff'))));    
     presetPath = path; 
-    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+    Calibration.presets.updatePresetsEndOfCalibration(calibParams,presetPath,regs,results);
+    
     %% Print image final fov
     [results,~] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
     fnUndsitLut = fullfile(output_dir,'FRMWundistModel.bin32');
     writeCalibRegsProps(fw,fnCalib);
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,undistLuts.FRMW.undistModel);
-    fw.writeFirmwareFiles(output_dir);
+    % write old firmware files to sub folder
+    oldFirmwareOutput=fullfile(output_dir,'oldCalibfiles'); 
+    mkdirSafe(oldFirmwareOutput);
+    fw.writeFirmwareFiles(oldFirmwareOutput);
+    % write new firmware files to another sub folder
+    calibOutput=fullfile(output_dir,'calibOutputFiles');
+    mkdirSafe(calibOutput);
+    fw.generateTablesForFw(calibOutput); 
+    calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(runParams.version),mod(runParams.version*100,100)));    
+    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+    
+        
 end
 
-function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
-    regs = fw.get();
-    intregs.DIGG.spare=zeros(1,8,'uint32');
-    intregs.DIGG.spare(1)=verValueFull;
-    intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov(1)),'uint32');
-    intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov(1)),'uint32');
-    intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
-    intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
-    intregs.DIGG.spare(6)=verValue; %config version
-    intregs.DIGG.spare(7)=uint32(typecast(regs.FRMW.calMarginL,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginR,'uint16'));
-    intregs.DIGG.spare(8)=uint32(typecast(regs.FRMW.calMarginT,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginB,'uint16'));
-    intregs.JFIL.spare=zeros(1,8,'uint32');
-    %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
-    intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
-    intregs.JFIL.spare(2)=typecast(regs.FRMW.dfzCalTmp,'uint32');
-    intregs.JFIL.spare(3)=typecast(single(regs.FRMW.pitchFixFactor),'uint32');
-    intregs.JFIL.spare(4)=typecast(single(regs.FRMW.polyVars(1)),'uint32');
-    intregs.JFIL.spare(5)=typecast(single(regs.FRMW.polyVars(2)),'uint32');
-    intregs.JFIL.spare(6)=typecast(single(regs.FRMW.polyVars(3)),'uint32');
-    intregs.JFIL.spare(7)=typecast(regs.FRMW.dfzApdCalTmp,'uint32');
-    
-    
-    dcorSpares = zeros(1,8,'single');
-    dcorSpares(3:5) = single(regs.FRMW.dfzVbias);
-    dcorSpares(6:8) = single(regs.FRMW.dfzIbias);
-    intregs.DCOR.spare = dcorSpares;
-    
-    % undistAngVert & undistAngHorz
-%     pckrSpares = zeros(1,8,'single');
-%     pckrSpares(7:8) = single(regs.FRMW.undistAngVert(1:2));
-%     intregs.PCKR.spare = pckrSpares;
+% function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
+%     regs = fw.get();
+%     intregs.DIGG.spare=zeros(1,8,'uint32');
+%     intregs.DIGG.spare(1)=verValueFull;
+%     intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov(1)),'uint32');
+%     intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov(1)),'uint32');
+%     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
+%     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
+%     intregs.DIGG.spare(6)=verValue; %config version
+%     intregs.DIGG.spare(7)=uint32(typecast(regs.FRMW.calMarginL,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginR,'uint16'));
+%     intregs.DIGG.spare(8)=uint32(typecast(regs.FRMW.calMarginT,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginB,'uint16'));
+%     intregs.JFIL.spare=zeros(1,8,'uint32');
+%     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
+%     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
+%     intregs.JFIL.spare(2)=typecast(regs.FRMW.dfzCalTmp,'uint32');
+%     intregs.JFIL.spare(3)=typecast(single(regs.FRMW.pitchFixFactor),'uint32');
+%     intregs.JFIL.spare(4)=typecast(single(regs.FRMW.polyVars(1)),'uint32');
+%     intregs.JFIL.spare(5)=typecast(single(regs.FRMW.polyVars(2)),'uint32');
+%     intregs.JFIL.spare(6)=typecast(single(regs.FRMW.polyVars(3)),'uint32');
+%     intregs.JFIL.spare(7)=typecast(regs.FRMW.dfzApdCalTmp,'uint32');
 %     
-%     statSpares = single([regs.FRMW.undistAngVert(3:5),regs.FRMW.undistAngHorz]);
-%     intregs.STAT.spare = statSpares;
-    
-    JFILdnnWeights = regs.JFIL.dnnWeights;
-    JFILdnnWeights(1:8) = typecast([regs.FRMW.undistAngVert,regs.FRMW.undistAngHorz],'uint32');
-    JFILdnnWeights(9:13) = typecast([regs.FRMW.fovexExistenceFlag,regs.FRMW.fovexNominal],'uint32');
-    JFILdnnWeights(14:21) = typecast([regs.FRMW.fovexLensDistFlag,regs.FRMW.fovexRadialK,regs.FRMW.fovexTangentP,regs.FRMW.fovexCenter],'uint32');
-    intregs.JFIL.dnnWeights = JFILdnnWeights;
-    
-    fw.setRegs(intregs,fnCalib);
-    fw.get();
-    
-    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow(1)),uint32(regs.FRMW.zoWorldCol(1)));
-end
+%     
+%     dcorSpares = zeros(1,8,'single');
+%     dcorSpares(3:5) = single(regs.FRMW.dfzVbias);
+%     dcorSpares(6:8) = single(regs.FRMW.dfzIbias);
+%     intregs.DCOR.spare = dcorSpares;
+%     
+%     % undistAngVert & undistAngHorz
+% %     pckrSpares = zeros(1,8,'single');
+% %     pckrSpares(7:8) = single(regs.FRMW.undistAngVert(1:2));
+% %     intregs.PCKR.spare = pckrSpares;
+% %     
+% %     statSpares = single([regs.FRMW.undistAngVert(3:5),regs.FRMW.undistAngHorz]);
+% %     intregs.STAT.spare = statSpares;
+%     
+%     JFILdnnWeights = regs.JFIL.dnnWeights;
+%     JFILdnnWeights(1:8) = typecast([regs.FRMW.undistAngVert,regs.FRMW.undistAngHorz],'uint32');
+%     JFILdnnWeights(9:13) = typecast([regs.FRMW.fovexExistenceFlag,regs.FRMW.fovexNominal],'uint32');
+%     JFILdnnWeights(14:21) = typecast([regs.FRMW.fovexLensDistFlag,regs.FRMW.fovexRadialK,regs.FRMW.fovexTangentP,regs.FRMW.fovexCenter],'uint32');
+%     intregs.JFIL.dnnWeights = JFILdnnWeights;
+%     
+%     fw.setRegs(intregs,fnCalib);
+%     fw.get();
+%     
+%     fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow(1)),uint32(regs.FRMW.zoWorldCol(1)));
+% end
 
 function [results,udistRegs,udistlUT] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');

@@ -32,7 +32,10 @@ name = [{'bias_factor'          }
     {'JFILinvMinMax'        }
     {'VBROffset'            }
     {'AlgoThermalLoopScale' }
-    {'AlgoThermalLoopOffset'}];
+    {'AlgoThermalLoopOffset'}
+    {'JFILgammaScale'}
+    {'JFILgammaShift'}
+    {'DCORcoarseMasking_002'}];
 %%
 type =[{'single'}
     {'single'}
@@ -68,7 +71,10 @@ type =[{'single'}
     {'uint32'   }
     {'single' }
     {'single'   }
-    {'single'   }];
+    {'single'   }
+    {'uint32'   }
+    {'uint32'   }
+    {'uint32'   }];
     %%
     value = uint32(zeros(size(name)));
     

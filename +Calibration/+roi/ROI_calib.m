@@ -120,6 +120,8 @@ if 1
         ROIregs.FRMWpolyVars 				= DFZ_regs.FRMW.polyVars;               % single x3
         ROIregs.FRMWpitchFixFactor 			= DFZ_regs.FRMW.pitchFixFactor;         % single (0)
         
+        ROIregs.FRMW.fovexExistenceFlag     = DFZ_regs.FRMW.fovexExistenceFlag;
+        
         ROIregs.FRMWundistAngHorz           = DFZ_regs.FRMW.undistAngHorz;
         ROIregs.FRMWundistAngVert           = DFZ_regs.FRMW.undistAngVert;
         ROIregs.FRMWfovexExistenceFlag      = DFZ_regs.FRMW.fovexExistenceFlag;

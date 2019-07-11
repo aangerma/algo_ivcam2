@@ -63,9 +63,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
-    if calibParams.gnrl.disableMetaData
-        hw.cmd('METADATA_ENABLE_SET 0');
-    end
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     
     fprintff('Opening stream...');
@@ -138,7 +135,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     %% Undist and table burn
 %    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version);
  
     
      
@@ -166,9 +163,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         end
         %% Validate DFZ before reset
         [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
-        if ~calibPassed
-           return 
-        end
+        
         
     catch e
         fprintff('[!] ERROR:%s\n',strtrim(e.message));
@@ -204,8 +199,9 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
 %     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
     %% rgb calibration
-    calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
-    
+    if calibPassed
+        calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
+    end
     clear hw;
 end
 function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t)
@@ -220,15 +216,13 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         fprintff('Done \n');
         hw.cmd('DIRTYBITBYPASS');
         hw.cmd('algo_thermloop_en 0');
-        if calibParams.gnrl.disableMetaData
-            hw.cmd('METADATA_ENABLE_SET 0');
-        end
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         %% set preset to min range: Gain control=2
         fprintff('Set preset to max range.\n');
         hw.setPresetControlState(1);  
         Calibration.aux.startHwStream(hw,runParams);
-        
+        hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+        hw.shadowUpdate;
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before rgb calibration:');
         [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fnCalib, fprintff, t);
         if rgbPassed
@@ -285,7 +279,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
         
         r.reset();
-        hw.setReg('DIGGsphericalScale',[640,360]);
+        hw.setReg('DIGGsphericalScale',[640,480]);
         hw.shadowUpdate;
         
         
@@ -322,13 +316,15 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
     initFldr = fullfile(fileparts(mfilename('fullpath')),runParams.configurationFolder);
     initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets','+defaultValues');
+    eepromStructureFn = fullfile(fileparts(mfilename('fullpath')),'eepromStructure');
     copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), runParams.internalFolder);
     copyfile(fullfile(runParams.internalFolder ,'*.frmw'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
     copyfile(fullfile(runParams.internalFolder ,'*.csv'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
 %     struct2xmlWrapper(calibParams,fullfile(runParams.outputFolder,'calibParams.xml'));
-
+    copyfile(fullfile(eepromStructureFn,'*.csv'),  runParams.internalFolder);
+    copyfile(fullfile(eepromStructureFn,'*.mat'),  runParams.internalFolder);
 end
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
@@ -441,9 +437,14 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
 %         fprintff('Done(%ds)\n',round(toc(t)));
         % Create config calib files
         fprintff('[-] Burning default config calib files...');
-        fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'),false);
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
-        hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'configFiles'));
+%         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
+%         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
+        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+        fw.setRegs(vregs,'');
+        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02.0f_%02.0f.bin',floor(calibToolVersion),mod(calibToolVersion,1)*100)));
+        hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
         fprintff('Done\n');
@@ -573,39 +574,26 @@ end
 function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff)
     if runParams.minRangePreset
         fprintff('[-] Calibrating short range laser power...\n');
-        hw.setPresetControlState(2);   
+        Calibration.aux.switchPresetAndUpdateModRef( hw,2,calibParams,results );
+        hw.setReg('JFILgammaScale',int16([hex2dec('400'),hex2dec('400')]));
+        hw.setReg('JFILgammaShift',uint32(0));
+        hw.shadowUpdate;
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
-        [results.minRangeScaleModRef,~] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
-        hw.setPresetControlState(1);   
+        [results.minRangeScaleModRef,results.maxModRefDec] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
+        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
     end
 end
 function [results] = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff)
     if runParams.maxRangePreset
         fprintff('[-] Calibrating long range laser power...\n');
-        hw.setPresetControlState(1);
+        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
         [results.maxRangeScaleModRef,results.maxModRefDec,results.maxFillRate,results.targetDist] = Calibration.presets.calibrateLongRange(hw,calibParams,runParams,fprintff);
 
         %% Set laser val
-        if calibParams.presets.long.updateCalibVal
-            Calibration.aux.RegistersReader.setModRef(hw,round(results.maxModRefDec*results.maxRangeScaleModRe)); 
-            pause(2);
-        end
+        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
     end
 end
-function [] = burnPresets(hw,runParams,calibParams, fprintff,fw)
-    if runParams.minRangePreset || runParams.maxRangePreset         
-        % After max range calibration
-        calibTempTableFn = fullfile(runParams.outputFolder,sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(runParams.version,1)*100));
-        presetPath= fullfile(runParams.outputFolder,'AlgoInternal'); 
-        fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
-        try
-            hw.cmd(sprintf('WrCalibInfo %s',calibTempTableFn));
-        catch
-            fprintff('Failed to burn presets table to EEPROM. skipping...\n'); 
-        end  
-        
-    end
-end
+
 function [results,calibPassed] = validateScanDirection(hw, results,runParams,calibParams, fprintff)
     calibPassed = 1;
     fprintff('[-] Validating scan direction...\n');
@@ -851,7 +839,7 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
         % dodluts=struct;
         %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
-%         calibParams.dfz.pitchFixFactorRange = [0,0];
+	%         calibParams.dfz.pitchFixFactorRange = [0,0];
         results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
         fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
 %         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
@@ -1045,9 +1033,15 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
         fprintff('skiped\n');
     end
     
-    fprintff('[!] burning...');
-    hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
-    fprintff('Done(%ds)\n',round(toc(t)));
+    
+%     hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
+     if doCalibBurn
+        fprintff('[!] burning...');
+        calibOutput=fullfile(runParams.outputFolder,'calibOutputFiles');
+        hw.burnCalibConfigFiles(calibOutput); 
+        fprintff('Done(%ds)\n',round(toc(t)));
+     end
+    
 end
 function res = noCalibrations(runParams)
     res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb);

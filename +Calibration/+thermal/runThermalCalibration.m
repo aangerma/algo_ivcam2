@@ -15,7 +15,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     fprintff('%-15s %s\n','stated at',datestr(now));
     fprintff('%-15s %5.2f.%1.0f\n','version',runParams.version,runParams.subVersion);
     
-    %% call HVM_cal_init
+    %% call HVM_cal_init - Sets all global variables
     cal_output_dir = fileparts(fopen(app.m_logfid));
 	calib_dir = fileparts(calibParamsFn);
 %    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
@@ -25,13 +25,8 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     hw=HWinterface();
     fprintff('Done(%ds)\n',round(toc(t)));
     
-    [~,serialNum,isGen1] = hw.getInfo(); 
+    [~,serialNum,~] = hw.getInfo(); 
     fprintff('%-15s %8s\n','serial',serialNum);
-    if isGen1
-        fprintff('Unit is gen1 ID    \n');
-    else
-        fprintff('Unit is demo board    \n');
-    end
     
     %% Get regs state
     fprintff('Reading unit calibration regs...');
@@ -45,8 +40,9 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     hw.getFrame;
     hw.stopStream;
     
-    
-    data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams);
+    %% load EPROM structure suitible for calib version tool 
+
+    [data.regs,eepromRegs] = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     fprintff('Algo Calib Ldd Temp: %2.2fdeg\n',data.regs.FRMW.dfzCalTmp);
     fprintff('Algo Calib vBias: (%2.2f,%2.2f,%2.2f)\n',data.regs.FRMW.dfzVbias);
@@ -63,7 +59,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     maxHeatTime = calibParams.warmUp.maxWarmUpTime;
     regs = data.regs;
     coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % call down
-    calibPassed = Calibration.thermal.ThermalCalib(hw,regs,calibParams,runParams,fprintff,maxHeatTime,app);
+    calibPassed = Calibration.thermal.ThermalCalib(hw,regs,eepromRegs,calibParams,runParams,fprintff,maxHeatTime,app);
 
         
     fprintff('[!] Calibration ended - ');
@@ -72,30 +68,32 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     else %% burn tables
         fprintff('PASSED.\n');
         fprintff('Burning algo thermal table...');
-        % tableName
         version = thermalCalibToolVersion;
         whole = floor(version);
-        frac = floor(mod(version,1)*100);
+        frac = mod(version*100,100);
 
         calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
 
         calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
         tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
-        reservedTableName = fullfile(runParams.outputFolder,filesep,['Reserved_512_Calibration_2_CalibData' calibpostfix '.txt']);
-        try 
+        
+        try
             cmdstr = sprintf('WrCalibInfo %s',tableName);
             hw.cmd(cmdstr);
             fprintff('Done\n');
         catch
             fprintf('Failed to write Algo_Thermal_Table to EPROM. You are probably using an unsupported fw version.\n');
+            calibPassed = 0;
         end
-        fprintff('Reburning Reserved_512_Calibration_2_CalibData...');
-        try 
-            cmdstr = sprintf('WrCalibData %s',reservedTableName);
+        fprintff('Burning algo calibration table...');
+        try
+            algoCalibInfoName = fullfile(runParams.outputFolder,['Algo_Calibration_Info_CalibInfo',calibpostfix,'.bin']);
+            cmdstr = sprintf('WrCalibInfo %s',algoCalibInfoName);
             hw.cmd(cmdstr);
             fprintff('Done\n');
         catch
-            fprintf('Failed to write Reserved_512_Calibration_2_CalibData to EPROM. You are probably using an unsupported fw version.\n');
+            fprintf('Failed to write Algo_Calibration_Info to EPROM. You are probably using an unsupported fw version.\n');
+            calibPassed = 0;
         end
     end
     clear hw;
@@ -107,6 +105,7 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
 end
 
 function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
+    % Sets all global variables
     if(~exist('output_dir','var'))
         output_dir = fullfile(ivcam2tempdir,'\cal_tester\output');
     end

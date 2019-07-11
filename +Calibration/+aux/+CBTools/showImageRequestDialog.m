@@ -16,6 +16,12 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figInTitle,nFrames,mask)
         else
             figImgs{3} = uint8(zeros([sz,3]));
         end
+    else
+        if exist('mask','var')
+            figImgs{3} = mask;
+        else
+            figImgs{3} = uint8(zeros([sz,3]));
+        end
     end
     f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@exitOnEnter,'WindowButtonDownFcn',@(varargin) set(varargin{1},'userdata',1));
     a=axes('parent',f);
@@ -43,7 +49,7 @@ function raw=showImageRequestDialog(hw,figNum,tformData,figInTitle,nFrames,mask)
         axis(a,'off');
         if exist('mask','var')
             maskLogic = ~logical(mask);
-            trgDist = mean(raw.z(maskLogic),'all')./4;
+            trgDist = mean(raw.z(maskLogic))./4;
             figTitle = [figInTitle '. ROI is at Distance: ' num2str(trgDist,'%4.1f') ' mm'];
         else
             figTitle = figInTitle;

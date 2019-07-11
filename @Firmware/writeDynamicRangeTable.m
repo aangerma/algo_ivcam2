@@ -13,8 +13,8 @@ longRangePreset=readtable(pathLR);
 shortRangePreset=readtable(pathSR);
 
 %definitions
-TableSize = 80*3;
-resrevedLength = 5;
+TableSize = 120*2;
+resrevedLength = 33;
 
 %%
 %initialize the stream

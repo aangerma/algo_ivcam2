@@ -76,7 +76,8 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     dfzRegs.FRMW.dfzApdCalTmp       = DFZ_regs.FRMWdfzApdCalTmp;
     dfzRegs.FRMW.dfzVbias           = DFZ_regs.FRMWdfzVbias;
     dfzRegs.FRMW.dfzIbias           = DFZ_regs.FRMWdfzIbias;
-
+    dfzRegs.FRMW.fovexExistenceFlag = regs.FRMW.fovexExistenceFlag;
+    dfzRegs.FRMW.fovexLensDistFlag = regs.FRMW.fovexLensDistFlag;
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
@@ -176,7 +177,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(i).rptCropped = rptCropped;
     end
     runParams.outputFolder = OutputDir;
-%     Calibration.DFZ.saveDFZInputImage(d,runParams);
+    Calibration.DFZ.saveDFZInputImage(d,runParams);
     % dodluts=struct;
     %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
     if 0 % TEMP: initialize new parameters that are not saved in old recordings
@@ -231,11 +232,11 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         
         % Write results to CSV and burn 2 device
 %        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
-        shortRangePresetFn = fullfile(calib_dir,'shortRangePreset.csv');
-        shortRangePreset=readtable(shortRangePresetFn);
-        modRefInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset')); 
-        shortRangePreset.value(modRefInd) = results.rtdDiffBetweenPresets;
-        writetable(shortRangePreset,shortRangePresetFn);
+%         shortRangePresetFn = fullfile(calib_dir,'shortRangePreset.csv');
+%         shortRangePreset=readtable(shortRangePresetFn);
+%         modRefInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset')); 
+%         shortRangePreset.value(modRefInd) = results.rtdDiffBetweenPresets;
+%         writetable(shortRangePreset,shortRangePresetFn);
     end
     
     

@@ -18,6 +18,8 @@ if calibParams.gnrl.sphericalMode
     hw.setReg('DESTdepthAsRange',1);
     hw.setReg('DESTbaseline$',single(0));
     hw.setReg('DESTbaseline2',single(0));
+    hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+    hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');    
     hw.shadowUpdate;
 end
 

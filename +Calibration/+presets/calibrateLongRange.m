@@ -6,6 +6,9 @@ framesNum = calibParams.presets.long.framesNum;%10;
 cameraInput.z2mm = hw.z2mm;
 cameraInput.imSize = double(hw.streamSize);
 outDir = fullfile(tempdir,'PresetLongRange');
+if exist(outDir,'dir') 
+    rmdir(outDir,'s');
+end
 maskParams = calibParams.presets.long.params;%params.roi = 0.1; params.isRoiRect = 0; params.roiCropRect = 0; params.maskCenterShift = [0,0];
 %% Create Mask
 maskParams4user = maskParams;
@@ -89,7 +92,7 @@ if calibParams.presets.long.updateCalibVal
     longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
     longRangePreset=readtable(longRangePresetFn);
     modRefInd=find(strcmp(longRangePreset.name,'modulation_ref_factor'));
-    longRangePreset.value(modRefInd) = results.maxRangeScaleModRef;
+    longRangePreset.value(modRefInd) = maxRangeScaleModRef;
     writetable(longRangePreset,longRangePresetFn);
 end
 end

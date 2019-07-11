@@ -3,15 +3,21 @@ presetCompareRes=[] ;
 
 % set LR preset
 hw.setPresetControlState(1);
-pause(2);
+hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+hw.shadowUpdate;
+        
+pause(5);
 LRframe=hw.getFrame(calibParams.numOfFrames);
 % set SR preset
 hw.setPresetControlState(2);
-pause(2);
+pause(5);
 SRframe=hw.getFrame(calibParams.numOfFrames);
 
 hw.setPresetControlState(1);
-
+hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+hw.shadowUpdate;
 %%
 frames=[]; 
 frames.LRframe=LRframe; 

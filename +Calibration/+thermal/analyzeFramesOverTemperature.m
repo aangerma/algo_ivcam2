@@ -10,6 +10,10 @@ end
 invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
 data.framesData = data.framesData(~invalidFrames);
 
+validFrames = arrayfun(@(j) Calibration.thermal.validFrame(data.framesData(j).ptsWithZ,calibParams),1:numel(data.framesData));
+data.framesData = data.framesData(validFrames);
+
+
 tempVec = [data.framesData.temp];
 tempVec = [tempVec.ldd];
 
@@ -21,14 +25,14 @@ tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1))
 
 framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,48,tmpBinIndices);
 if inValidationStage
-   calibrationDataFn = fullfile(runParams.outputFolder,'data.mat'); 
-   if exist(calibrationDataFn, 'file') == 2
-       calibData = load(calibrationDataFn);
-       calibData = calibData.data;
-       framesPerTemperature = cat(4,framesPerTemperature,calibData.processed.framesPerTemperature);
-       data.dfzRefTmp = calibData.dfzRefTmp;
-       refBinIndex = 1+floor((data.dfzRefTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
-   end
+%    calibrationDataFn = fullfile(runParams.outputFolder,'data.mat'); 
+%    if exist(calibrationDataFn, 'file') == 2
+%        calibData = load(calibrationDataFn);
+%        calibData = calibData.data;
+%        framesPerTemperature = cat(4,framesPerTemperature,calibData.processed.framesPerTemperature);
+%        data.dfzRefTmp = calibData.dfzRefTmp;
+%        refBinIndex = 1+floor((data.dfzRefTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
+%    end
    
 else
    framesPerTemperatureFixed = Calibration.thermal.medianFrameByTemp(dataFixed.framesData,data.tableResults.angx.nBins,tmpBinIndices);
