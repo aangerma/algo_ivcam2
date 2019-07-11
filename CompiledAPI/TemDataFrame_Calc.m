@@ -1,4 +1,4 @@
-function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs,eepromRegs,FrameData, sz ,InputPath,calibParams, maxTime2Wait)
+function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin,FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -72,11 +72,17 @@ function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(re
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-        save(fn,'regs','eepromRegs', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
+        save(fn,'regs','eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
     end
     height = sz(1);
     width  = sz(2);
-
+    fw = Firmware(fullfile(g_calib_dir,'regsDefinitions.frmw'));
+%     EPROMstructure = load(fullfile(g_calib_dir,'eepromStructure.mat'));
+%     EPROMstructure = EPROMstructure.updatedEpromTable;
+%     [eepromRegs_1] = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
+    if(isempty(eepromRegs))
+        eepromRegs = fw.readAlgoEpromData(eepromBin(17:end));
+    end
     [result, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 

@@ -135,10 +135,14 @@ end
 function [updatedEpromTable]= updateEEPROMstructure(obj,newEPROMtable)
 % read latest eeprom structure
 % read table (calibration. csv)
-current_dir = mfilename('fullpath');
-ix = strfind(current_dir, '\');
-folder=fullfile(current_dir(1:ix(end-1)-1), '\+Calibration\eepromStructure\');
-path =strcat(folder,'eepromStructure.csv');
+folder  = obj.gettableFolder();
+path    = fullfile(obj.gettableFolder(),'eepromStructure.csv');
+if ~exist(path,'file')
+    current_dir = mfilename('fullpath');
+    ix = strfind(current_dir, '\');
+    folder=fullfile(current_dir(1:ix(end-1)-1), '\+Calibration\eepromStructure\');
+    path =strcat(folder,'eepromStructure.csv');
+end
 updated=0;
 EpromLatestVersion=readtable(path);
 EpromLatestVersion.group=num2cell(EpromLatestVersion.group);

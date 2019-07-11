@@ -1,6 +1,6 @@
-function [regs,eepromRegs] = readDFZRegsForThermalCalculation(hw,checkAssert,calibParams)
+function [regs,eepromRegs,eepromBin] = readDFZRegsForThermalCalculation(hw,checkAssert,calibParams)
    
-    regs = hw.readAlgoEEPROMtable();
+    [regs,eepromBin] = hw.readAlgoEEPROMtable();
     eepromRegs = regs;
     regs.GNRL.imgHsize = hw.read('GNRLimgHsize');
     regs.GNRL.imgVsize = hw.read('GNRLimgVsize');

@@ -17,7 +17,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     
     %% call HVM_cal_init - Sets all global variables
     cal_output_dir = fileparts(fopen(app.m_logfid));
-	calib_dir = fileparts(calibParamsFn);
+	calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
 %    [calibParams , ~] = HVM_Cal_init(calibParamsFn,fprintff,cal_output_dir);
     [calibParams , ~] = HVM_Cal_init(calibParamsFn,calib_dir,fprintff,cal_output_dir);
     %% Load hw interface
@@ -42,7 +42,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     
     %% load EPROM structure suitible for calib version tool 
 
-    [data.regs,eepromRegs] = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams);
+    [data.regs,eepromRegs,eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     fprintff('Algo Calib Ldd Temp: %2.2fdeg\n',data.regs.FRMW.dfzCalTmp);
     fprintff('Algo Calib vBias: (%2.2f,%2.2f,%2.2f)\n',data.regs.FRMW.dfzVbias);
@@ -59,7 +59,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     maxHeatTime = calibParams.warmUp.maxWarmUpTime;
     regs = data.regs;
     coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % call down
-    calibPassed = Calibration.thermal.ThermalCalib(hw,regs,eepromRegs,calibParams,runParams,fprintff,maxHeatTime,app);
+    calibPassed = Calibration.thermal.ThermalCalib(hw,regs,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxHeatTime,app);
 
         
     fprintff('[!] Calibration ended - ');

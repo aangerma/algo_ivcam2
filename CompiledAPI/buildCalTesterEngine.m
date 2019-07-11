@@ -20,7 +20,8 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
             ,'TemDataFrame_Calc.m' ...      % algo2
             ,'HVM_Val_Calc.m' ...           % val (dfz ,sharpness ,temporalNoise ,roi ,los)
             ,'HVM_Val_Coverage_Calc.m' ...  % val (coverage)
-            ,'Preset_Calib_Calc.m' ...
+            ,'Preset_Short_Calib_Calc.m' ...
+            ,'Preset_Long_Calib_Calc.m' ...
             };
     
     Attachments = {'calibParams.xml'};
