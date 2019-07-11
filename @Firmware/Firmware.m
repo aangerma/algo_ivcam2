@@ -8,8 +8,10 @@ classdef Firmware < FirmwareBase
         writeFirmwareFiles(obj,outputFldr,oldVersion);
         writeAlgoThermalBin(obj,fname);
         writeDynamicRangeTable(obj,fname,presetsPath);
-        [EPROMtable,ConfigTable,CbufXsections,DiggGammaTable]  = generateTablesForFw(obj,outputFldr);
+        [EPROMtable,ConfigTable,CbufXsections,DiggGammaTable]  = generateTablesForFw(obj,outputFldr,only_Algo_Calibration_Info);
         fns=writeLUTbin(obj,d,fn,oneBaseCount); 
+        [regs]=readAlgoEpromData(obj,BinData,EPROMstructure)
+            
         
         function obj = Firmware(tablesFolder)
             if ~exist('tablesFolder','var')

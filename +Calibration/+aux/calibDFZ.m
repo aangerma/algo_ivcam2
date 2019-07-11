@@ -39,7 +39,7 @@ if iseval
     return
 end
 
-[e,eFit]=errFunc(darr,regs,x0,1);
+[e,eFit]=errFunc(darr,regs,x0,0);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 %% Define optimization settings
@@ -66,6 +66,7 @@ x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outre
     outregsPreUndist.FRMW.fovexNominal, outregsPreUndist.FRMW.fovexRadialK, outregsPreUndist.FRMW.fovexTangentP, outregsPreUndist.FRMW.fovexCenter]);
 % optimizedParams = {'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'};
 optimizedParams = {'undistCorrHorz', 'fovexLensDist'};
+% optimizedParams = {'undistCorrHorz'};
 [xL, xH] = setLimitsPerParameterGroup(optimizedParams, outregsPreUndist, par);
 
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
@@ -75,7 +76,7 @@ outregs = x2regs(xbest,regs);
 
 printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
-outregs = x2regs(xbest, regs);
+outregs = x2regs(xbest);
 printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist, fprintff)
 printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, minerr, fprintff)
 

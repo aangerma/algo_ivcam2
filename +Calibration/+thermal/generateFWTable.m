@@ -25,9 +25,13 @@ ldd = [tempData.ldd];
 timev = [framesData.time];
 
 %% Linear RTD fix
+validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
+validPerFrame = cell2mat(validPerFrame);
+validCB = all(validPerFrame,2);
+rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
 refTmp = data.dfzRefTmp;
 % a*ldd +b = rtdPerFrame;
-rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(:,1)),framesData);
+
 startI = round(numel(rtdPerFrame)/80);
 [a,b] = linearTrans(vec(ldd(startI:end)),vec(rtdPerFrame(startI:end)));
 
@@ -74,7 +78,7 @@ if all(all(isnan(framesPerVBias2(refBinIndex,:,:))))
     return;
 end
 
-[results.angy.scale,results.angy.offset] = linearTransformToRef(framesPerVBias2(:,:,3),refBinIndex);
+[results.angy.scale,results.angy.offset] = linearTransformToRef(framesPerVBias2(:,validCB,3),refBinIndex);
 results.angy.minval = mean(binEdges(1:2));
 results.angy.maxval = mean(binEdges(end-1:end));
 results.angy.nBins = nBins;
@@ -124,7 +128,7 @@ if all(all(isnan(framesPerVBias13(refBinIndex,:,:))))
 end
 
 
-[results.angx.scale,results.angx.offset] = linearTransformToRef(framesPerVBias13(:,:,2),refBinIndex);
+[results.angx.scale,results.angx.offset] = linearTransformToRef(framesPerVBias13(:,validCB,2),refBinIndex);
 results.angx.p0 = p0;
 results.angx.p1 = p1;
 results.angx.nBins = nBins;

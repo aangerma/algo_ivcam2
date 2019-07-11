@@ -6,7 +6,6 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
-       <configCalibDirName>releaseConfigCalibVGA</configCalibDirName>
        <!--<internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>-->
        <irInnerRange>[0,255]</irInnerRange>
@@ -29,8 +28,8 @@
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <geomErr>[0.01 1.61]</geomErr>
-      <extraImagesGeomErr>[0 2]</extraImagesGeomErr>
+      <geomErr>[0.01 1.6]</geomErr>
+      <extraImagesGeomErr>[0.01 inf]</extraImagesGeomErr>
       <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
       <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
@@ -40,8 +39,8 @@
       <undistRms>[0.0 inf]</undistRms>
       <upDownFovDiff>[0 0.5]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
-      <imFovX>[60 inf]</imFovX>
-      <imFovY>[50 inf] </imFovY>
+      <imFovX>[65 inf]</imFovX>
+      <imFovY>[48 inf] </imFovY>
       <irCoverageSpEn>[88 100]</irCoverageSpEn>
       <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
       <irCoverageSpDis>[85 100]</irCoverageSpDis>
@@ -60,9 +59,8 @@
       <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
       <maxRangeScaleModRef>[0 1]</maxRangeScaleModRef>
       <maxModRefDec>[0 inf]</maxModRefDec>
-      <!--<targetDist>[780 820]</targetDist>-->
-      <targetDist>[0 inf]</targetDist> <!--In [mm]-->
-      <maxFillRate>[90 100]</maxFillRate>
+      <fillRateAtTargetDist>[90 100]</fillRateAtTargetDist>
+      <targetDist>[8.95 9.05]</targetDist> <!--In [m]-->
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -129,7 +127,7 @@
       <MirrorRestAngX>[-30 30]</MirrorRestAngX>
       <MirrorRestAngY>[-30 30]</MirrorRestAngY>
       <irCoverage>[80 100]</irCoverage>
-      <presetCompareMeanDiff>[-1 1]</presetCompareMeanDiff>
+      <presetCompareMeanDiff>[-5 5]</presetCompareMeanDiff>
       <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
    </validationErrRange>   
    <thermal>
@@ -207,6 +205,7 @@
                 <type>train</type>
             </capture>
             
+            
         </captures>
         <preResetCapture>
             <capture>
@@ -217,20 +216,19 @@
         </preResetCapture>
         
         
-        <fovxRange>[50,75]</fovxRange> 
-        <fovyRange>[45,65]</fovyRange> 
-        <delayRange>[5000, 5500]</delayRange> 
+        <fovxRange>[40,80]</fovxRange> 
+        <fovyRange>[35,65]</fovyRange> 
+        <delayRange>[4000, 6000]</delayRange> 
         <zenithxRange>[-0,0]</zenithxRange> 
         <zenithyRange>[-0,0]</zenithyRange> 
-        <polyVarRange>[0,0,0;0,200,0]</polyVarRange>
+        <polyVarRange>[-200,-200,-10;200,200,10]</polyVarRange>
         <zenithNormW>0.00</zenithNormW>
-        <pitchFixFactorRange>[-200,100]</pitchFixFactorRange>
-        <undistHorzRange>[-100,-100,-100,-100;100,100,100,100]</undistHorzRange>
-        <undistVertRange>[-50,-50,-50,-50;50,50,50,50]</undistVertRange>
-        <fovexNominalRange>[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]</fovexNominalRange>
-        <fovexRadialRange>[-1,-1,-1;1,1,1]</fovexRadialRange>
-        <fovexTangentRange>[0,0;0,0]</fovexTangentRange>
-        <fovexCenterRange>[-5,-5;5,5]</fovexCenterRange>
+        <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
+        <undistHorzRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistHorzRange>
+        <undistVertRange>[-400,-100,-100,-100,-100;400,100,100,100,100]</undistVertRange>
+        <fovexRadialRange>[-100,-100,-100;100,100,100]</fovexRadialRange>
+        <fovexTangentRange>[-100,-100;100,100]</fovexTangentRange>
+        <fovexCenterRange>[-100,-100;100,100]</fovexCenterRange>
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
@@ -240,6 +238,155 @@
      <extraMarginB>4</extraMarginB>   
      <noiseMarginFactor>1.2</noiseMarginFactor>    
    </roi>
+    <fovExpander>
+        <valid>1</valid>  
+        <table>
+            [0	0
+            0.2659574	0.2928285
+            0.5319149	0.5856617
+            0.7978723	0.8785044
+            1.06383	1.171361
+            1.329787	1.464237
+            1.595745	1.757137
+            1.861702	2.050065
+            2.12766	2.343026
+            2.393617	2.636026
+            2.659574	2.929068
+            2.925532	3.222159
+            3.191489	3.515301
+            3.457447	3.808502
+            3.723404	4.101764
+            3.989362	4.395094
+            4.255319	4.688496
+            4.521277	4.981976
+            4.787234	5.275537
+            5.053191	5.569186
+            5.319149	5.862927
+            5.585106	6.156765
+            5.851064	6.450707
+            6.117021	6.744756
+            6.382979	7.038918
+            6.648936	7.333199
+            6.914894	7.627603
+            7.180851	7.922136
+            7.446809	8.216805
+            7.712766	8.511613
+            7.978723	8.806567
+            8.244681	9.101673
+            8.510638	9.396935
+            8.776596	9.692361
+            9.042553	9.987956
+            9.308511	10.28372
+            9.574468	10.57967
+            9.840426	10.87581
+            10.10638	11.17214
+            10.37234	11.46867
+            10.6383	11.76541
+            10.90426	12.06235
+            11.17021	12.35952
+            11.43617	12.65691
+            11.70213	12.95453
+            11.96809	13.2524
+            12.23404	13.55051
+            12.5	13.84887
+            12.76596	14.14749
+            13.03191	14.44638
+            13.29787	14.74555
+            13.56383	15.045
+            13.82979	15.34474
+            14.09574	15.64478
+            14.3617	15.94513
+            14.62766	16.24579
+            14.89362	16.54677
+            15.15957	16.84809
+            15.42553	17.14975
+            15.69149	17.45177
+            15.95745	17.75414
+            16.2234	18.05688
+            16.48936	18.36
+            16.75532	18.6635
+            17.02128	18.96741
+            17.28723	19.27173
+            17.55319	19.57646
+            17.81915	19.88163
+            18.08511	20.18724
+            18.35106	20.4933
+            18.61702	20.79983
+            18.88298	21.10683
+            19.14894	21.41433
+            19.41489	21.72232
+            19.68085	22.03083
+            19.94681	22.33987
+            20.21277	22.64945
+            20.47872	22.95959
+            20.74468	23.2703
+            21.01064	23.5816
+            21.2766	23.8935
+            21.54255	24.20602
+            21.80851	24.51917
+            22.07447	24.83297
+            22.34043	25.14744
+            22.60638	25.4626
+            22.87234	25.77846
+            23.1383	26.09505
+            23.40426	26.41238
+            23.67021	26.73048
+            23.93617	27.04937
+            24.20213	27.36906
+            24.46809	27.68959
+            24.73404	28.01098
+            25	28.33325
+            25.26596	28.65642
+            25.53191	28.98053
+            25.79787	29.3056
+            26.06383	29.63166
+            26.32979	29.95874
+            26.59574	30.28687
+            26.8617	30.61609
+            27.12766	30.94643
+            27.39362	31.27792
+            27.65957	31.61061
+            27.92553	31.94453
+            28.19149	32.27972
+            28.45745	32.61622
+            28.7234	32.95409
+            28.98936	33.29336
+            29.25532	33.6341
+            29.52128	33.97634
+            29.78723	34.32014
+            30.05319	34.66557
+            30.31915	35.01269
+            30.58511	35.36155
+            30.85106	35.71223
+            31.11702	36.0648
+            31.38298	36.41933
+            31.64894	36.77592
+            31.91489	37.13464
+            32.18085	37.49558
+            32.44681	37.85886
+            32.71277	38.22456
+            32.97872	38.59281
+            33.24468	38.96372
+            33.51064	39.33743
+            33.7766	39.71407
+            34.04255	40.0938
+            34.30851	40.47678
+            34.57447	40.86317
+            34.84043	41.25319
+            35.10638	41.64702
+            35.37234	42.04491
+            35.6383	42.44708
+            35.90426	42.85383
+            36.17021	43.26545
+            36.43617	43.68226
+            36.70213	44.10463
+            36.96809	44.53297
+            37.23404	44.96773
+            37.5	45.40942
+            50       60.5459
+            60      72.6540]
+        </table>
+    </fovExpander>
     <!--<dest>
         <hBaseline>-31</hBaseline>
         <vBaseline>-10</vBaseline>
@@ -251,30 +398,18 @@
     </rgb>
     <presets>
         <long>
-            <updateCalibVal>1</updateCalibVal>
+            <updateCalibVal>0</updateCalibVal>
             <minModprc>0</minModprc>
-            <laserDelta>1</laserDelta>
+            <laserDelta>2</laserDelta>
             <framesNum>10</framesNum>
-            <fillRateTh>97</fillRateTh>
-            <!--<calibTargetReflect>0.0128</calibTargetReflect>
-            <estDistTargetReflect>0.8</estDistTargetReflect>-->
-            <mask4userScale>2</mask4userScale>
-            <maxMask4userROI>0.2</maxMask4userROI>
+            <fillRateTh>90</fillRateTh>
+            <calibTargetReflect>0.0124</calibTargetReflect>
+            <estDistTargetReflect>0.8</estDistTargetReflect>
             <params>
-                <roi>0.09</roi>
+                <roi>0.1</roi>
                 <isRoiRect>0</isRoiRect>
                 <roiCropRect>0</roiCropRect>
-                <maskCenterShift>[0,0]</maskCenterShift>
             </params>
-            <JFILinvMinMax>4294904760</JFILinvMinMax> <!-- invalidate z below 750mm -->
-            <coarseMaskingRange>[0,40]</coarseMaskingRange>
-            <JFILgammaScale>67109888</JFILgammaScale>
-            <JFILgammaShift>0</JFILgammaShift>
         </long>
-        <short>
-            <coarseMaskingRange>[0,0]</coarseMaskingRange>
-            <JFILgammaScale>171115520</JFILgammaScale>
-            <JFILgammaShift>4286644224</JFILgammaShift>
-        </short>
     </presets>
 </struct>

@@ -30,7 +30,10 @@ DESTconfw2,uint32,0
 DESTconfIRbitshift,uint8,6
 DESTconfv,uint32,0
 JFILinvConfThr,uint8,3
-JFILinvMinMax,uint32,4294902560
+JFILinvMinMax,uint32,4294901760
 VBROffset,single,9
 AlgoThermalLoopScale,single,0
 AlgoThermalLoopOffset,single,0
+JFILgammaScale,uint32,67109888
+JFILgammaShift,uint32,0
+DCORcoarseMasking_002,uint32,4294967295

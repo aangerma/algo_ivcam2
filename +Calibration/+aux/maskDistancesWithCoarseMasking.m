@@ -49,6 +49,6 @@ cMask0 = reshape(cMask1',[],1)';
 DCORcoarseMasking = cMask0;
 hexVals = binaryVectorToHex(fliplr(reshape(DCORcoarseMasking,32,[])'));
 coarseMask_002 = hexVals{3};
-coarseMask_002 = hex2dec(coarseMask_002);
+coarseMask_002 = uint32(hex2dec(coarseMask_002));
 end
 

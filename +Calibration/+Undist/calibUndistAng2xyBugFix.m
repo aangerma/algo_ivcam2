@@ -76,16 +76,26 @@ xnew = xnew(:);
 ynew = ynew(:);
 
 
+validP = (xnew(:) >=0 & xnew(:) <= regs.GNRL.imgHsize) & (ynew(:) >=0 & ynew(:) <= regs.GNRL.imgVsize) | ...
+        (xg(:) >=0 & xg(:) <= regs.GNRL.imgHsize) & (yg(:) >=0 & yg(:) <= regs.GNRL.imgVsize);
+
 eMatPost = sqrt((xnew-xg).^2 + (ynew-yg).^2);
-maxPixelDisplacement = max(eMatPost(:));
-
-
+maxPixelDisplacement = max(eMatPost(validP));
 
 %%
 ff = Calibration.aux.invisibleFigure;
-quiver(xnew(:),ynew(:),xg(:)-xnew(:),yg(:)-ynew(:),'autoscale','off'); 
+quiver(xnew(:),ynew(:),xg(:)-xnew(:),yg(:)-ynew(:)); 
 title(sprintf('Displacement Vector Per Pixel - Post Fix\n max error %.2f',max(eMatPost(:))));
 Calibration.aux.saveFigureAsImage(ff,runParams,'Undist','DisplacementErrors');
+
+ff = Calibration.aux.invisibleFigure;
+plot(xbug,ybug,'r*')
+hold on
+plot(xnew,ynew,'g*')
+hold on
+rectangle('position',[0 0 regs.GNRL.imgHsize regs.GNRL.imgVsize]);
+title(sprintf('Before(r) & After(g) Undistort Block'));
+Calibration.aux.saveFigureAsImage(ff,runParams,'Undist','BeforeAfterUndist');
 
 if 0
     

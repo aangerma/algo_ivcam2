@@ -1,11 +1,11 @@
-function [fixedData] = applyFix(data)
+function [fixedData] = applyFix(data,calibParams)
 fixedData = data;
 fixes = data.tableResults;
 for i = 1:numel(data.framesData)
     fdata = fixedData.framesData(i);
     
     %% LDD
-    lddIndex = max(min(fdata.temp.ldd - 32,47),0)+1;
+    lddIndex = max(min(fdata.temp.ldd - calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2) - calibParams.fwTable.tempBinRange(1) ),0)+1;
     
     if lddIndex == round(lddIndex)
         fdata.ptsWithZ(:,1) = fdata.ptsWithZ(:,1) + fixes.rtd.tmptrOffsetValues(lddIndex);

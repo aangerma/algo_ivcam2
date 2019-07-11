@@ -1,4 +1,4 @@
-function [minRangeScaleModRef, ModRefDec] = calibrateMinRange(hw,calibParams,runParams,fprintff)
+function [minRangeScaleModRef, maxMod_dec] = calibrateMinRange(hw,calibParams,runParams,fprintff)
 
 %% capture frames
 minModprc=0 ;

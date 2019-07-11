@@ -3,7 +3,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
     calibPassed = 1;
     if(runParams.DFZ) 
         
-        [r,DFZ_regs] = DFZ_calib_Init(hw,fw,runParams,calibParams);
+        [r,DFZ_regs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results );
 
 %% save temprature of DFZ calibration: 
         [dfzCalTmpStart,~,~,dfzApdCalTmpStart] = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
@@ -16,7 +16,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         nof_frames = 45; %todo take it from calibparams
         path = cell(1,length(captures));
         for i=1:length(captures)
-            [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams);
+            [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams,results);
         end
         
         
@@ -27,13 +27,13 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         results.rtdDiffBetweenPresets = dfzresults.rtdDiffBetweenPresets;
         results.shortRangeImagesGeomErr = dfzresults.shortRangeImagesGeomErr;
         
-        DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParams);
+        DFZ_calib_Output(hw,fw,r,dfzRegs,results ,runParams,calibParams);
     else
         dfzRegs = struct;
         fprintff('[?] skipped\n');
     end
 end
-function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams)
+function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams,results)
     cap = calibParams.dfz.captures.capture(i);
     targetInfo = targetInfoGenerator(cap.target);
     cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
@@ -47,11 +47,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     end
     
     if strcmp(cap.type,'shortRange')
-        hw.setPresetControlState(2);
-        % SET the modRef from the short range calibration. 
-        modRefDec = getModRefDecValFromTable(hw,runParams.outputFolder, 'shortRangePreset.csv');
-        Calibration.aux.RegistersReader.setModRef(hw,modRefDec);
-        pause(2);
+        Calibration.aux.switchPresetAndUpdateModRef( hw,2,calibParams,results );
     else
         im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
     end
@@ -72,13 +68,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path{i});  % save images Z and I in sub dir 
     
     if strcmp(cap.type,'shortRange')
-        hw.setPresetControlState(1);
-        if calibParams.presets.long.updateCalibVal
-            % SET the modRef from the long range calibration.
-            modRefDec = getModRefDecValFromTable(hw,runParams.outputFolder, 'longRangePreset.csv');
-            Calibration.aux.RegistersReader.setModRef(hw,modRefDec);
-            pause(2);
-        end
+        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
     end
 end
 function [modRefDec] = getModRefDecValFromTable(hw,outFolder, presetCsvName)
@@ -91,18 +81,18 @@ function [modRefDec] = getModRefDecValFromTable(hw,outFolder, presetCsvName)
     modRefDec = presetTable.value(modRefInd)*maxMod_dec;
 end
 
-function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParams)
+function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,results ,runParams,calibParams)
         r.reset();
 
         fnCalib = ' ';
         fw.setRegs(dfzRegs,fnCalib);
         regs = fw.get();
         hw.setReg('DIGGsphericalScale',regs.DIGG.sphericalScale);
-        hw.setReg('DIGGsphericalScale',true);
+        hw.setReg('DIGGsphericalEn',0);
         hw.shadowUpdate;
       
         if hw.getPresetControlState ~= 1 % Move to long range preset
-            hw.setPresetControlState( 1 );
+            Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
         end
             
         if(runParams.uniformProjectionDFZ)
@@ -110,9 +100,9 @@ function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,calibPassed ,runParams,calibParam
         end
 end
 
-function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams)
+function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
 %function [r,DFZRegs,regs_reff] = DFZ_calib_Init(hw,fw,runParams,calibParams)
-        hw.setPresetControlState(1);
+        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
         if(runParams.uniformProjectionDFZ)
             Calibration.aux.setLaserProjectionUniformity(hw,true);
         end

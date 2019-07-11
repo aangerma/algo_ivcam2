@@ -30,6 +30,7 @@ cmd = sprintf([
     '-a ..\\..\\+Calibration\\+presets\\+defaultValues\\* '...
     '-a ..\\..\\+Calibration\\targets\\* '...
     '-a ..\\..\\+Calibration\\%s\\* '...
+    '-a ..\\..\\+Calibration\\eepromStructure\\* '...
     '-a ..\\..\\@HWinterface\\presetScripts\\* '...
     '-a ..\\..\\@HWinterface\\IVCam20Device\\* '...
     '-a .\\@Spark\\* '...
@@ -41,12 +42,15 @@ eval(cmd);
 copyfile(toolConfig.calibParamsFile,outputFolder);
 copyfile(toolConfigFile,fullfile(outputFolder, 'IV2calibTool.xml'));
 fw = Pipe.loadFirmware(sprintf('../../+Calibration/%s',toolConfig.configurationFolder));
-
-verReg = typecast(uint8([ mod(calibToolVersion,1)*100 floor(calibToolVersion) 0 0]),'uint32');
-vreg= [verReg 0 0 0 0 verReg 0 0 ];
-fw.setRegs('DIGGspare',vreg);
-fw.writeFirmwareFiles(fullfile(outputFolder,'configFiles'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(calibToolVersion,1)*100)));
+vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+fw.setRegs(vregs,'');
+% Generate tables for old firmware
+fw.writeFirmwareFiles(fullfile(outputFolder,'configFilesNoAlgoGen'));
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(calibToolVersion,1)*100)));
+% Generate tables for firmware with Algo Gen
+fw.generateTablesForFw(fullfile(outputFolder,'configFiles'));
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_03_%02.0f.bin',mod(calibToolVersion,1)*100)));
 
 %% Generate default algo thermal table
 

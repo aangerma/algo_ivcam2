@@ -81,7 +81,7 @@ irImSize = [360,640];
 [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
 
 
-    %% cal init wrap
+%% cal init wrap
     output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
     mkdirSafe(output_dir);
     calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');

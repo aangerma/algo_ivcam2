@@ -141,6 +141,14 @@ marginsTBLR(4) = single(regs.GNRL.imgHsize) - floor(min(edgesXY.R(innerIndices(e
 
 marginsTBLR(1:2) = marginsTBLR([2,1]); % marginT actually refers to the bottom of the image and vice versa (names should be swapped)
 end
+function plotEdges()
+    figure,
+    plot(edgesXY.T(:,1),edgesXY.T(:,2),'linewidth',2),hold on
+    plot(edgesXY.B(:,1),edgesXY.B(:,2),'linewidth',2),hold on
+    plot(edgesXY.L(:,1),edgesXY.L(:,2),'linewidth',2),hold on
+    plot(edgesXY.R(:,1),edgesXY.R(:,2),'linewidth',2),hold on
+    rectangle('Position',[0,0,640,480],'linewidth',2)
+end
 function ind = innerIndices(v,factor)
 % Return the indices of the inner factor percent of vector rows
 vlen = size(v,1);
