@@ -19,7 +19,7 @@ dummy_output_flag = true;
 %% 
 load('\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailMinRangematlab 1.14.0.0\IC2\Matlab\mat_files\Preset_Calib_Calc_in.mat');
 InputPath = ('\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailMinRangematlab 1.14.0.0\IC2\Images\MinRange');
-[minRangeScaleModRef, ModRefDec] = Preset_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams);
+[minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams);
 
 
 %% DFZ warp

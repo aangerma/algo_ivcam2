@@ -10,5 +10,5 @@ if exist(outDir,'dir')
 end
 [LaserPoints,maxMod_dec] = Calibration.presets.captureVsLaserMod(hw,minModprc,LaserDelta,FramesNum,outDir);
  sz = hw.streamSize;
-[minRangeScaleModRef, ModRefDec] = Preset_Calib_Calc(outDir,LaserPoints,maxMod_dec,sz,calibParams);
+[minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(outDir,LaserPoints,maxMod_dec,sz,calibParams);
 end

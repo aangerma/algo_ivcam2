@@ -757,13 +757,13 @@ classdef HWinterface <handle
             end
         end
         
-        function [regs] = readAlgoEEPROMtable(obj,EPROMstructure)
+        function [regs,bin] = readAlgoEEPROMtable(obj,EPROMstructure)
             % EPROMstructure: deafult or from mat file of specific calibration
             % read eprom from hardware
-            [~,d]=obj.cmd('erb 1200 200 ');
+            [~,bin]=obj.cmd('erb 1200 200 ');
             
             % remove header (16 bytes)
-            d=d(17:end);
+            d=bin(17:end);
             if exist('EPROMstructure','var')
                 regs=obj.m_fw.readAlgoEpromData(d,EPROMstructure);
             else

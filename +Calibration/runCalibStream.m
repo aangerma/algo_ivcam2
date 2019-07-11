@@ -325,6 +325,8 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
 %     struct2xmlWrapper(calibParams,fullfile(runParams.outputFolder,'calibParams.xml'));
     copyfile(fullfile(eepromStructureFn,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(eepromStructureFn,'*.mat'),  runParams.internalFolder);
+    copyfile(fullfile(eepromStructureFn,'*.mat'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
+    copyfile(fullfile(eepromStructureFn,'*.csv'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
 end
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
