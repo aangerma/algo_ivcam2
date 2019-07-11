@@ -1,4 +1,4 @@
-function generateAndBurnTable(hw,eepromRegs, table,calibParams,runParams,fprintff,calibPassed,data)
+function generateAndBurnTable(hw,eepromRegs, table,calibParams,runParams,fprintff,calibPassed,data,calib_dir)
 % Creates a binary table as requested
 
 tableShifted = int16(table * 2^8); % FW expected format
@@ -15,7 +15,13 @@ tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
 Calibration.thermal.saveThermalTable( tableShifted , tableName );
 fprintff('Generated algo thermal table full path:\n%s\n',tableName);
 initFldr = fullfile(fileparts(fileparts(mfilename('fullpath'))),'releaseConfigCalibVGA');
-fw = Pipe.loadFirmware(initFldr);
+%fw = Pipe.loadFirmware(initFldr);
+if(exist(fullfile(calib_dir , 'regsDefinitions.frmw'), 'file') == 2)
+    fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir); % incase of DLL assume table same folder as fnCalib
+else
+    fw = Pipe.loadFirmware(initFldr); % use default path of table folder
+end
+
 eepromRegs.FRMW.atlMinVbias1 = single(data.tableResults.angx.p0(1));
 eepromRegs.FRMW.atlMaxVbias1 = single(data.tableResults.angx.p1(1));
 eepromRegs.FRMW.atlMinVbias2 = single(data.tableResults.angy.minval);
@@ -27,28 +33,6 @@ fw.setRegs(eepromRegs,'');
 fw.get();
 fw.generateTablesForFw(runParams.outputFolder,1);
 
-%    path = calib_dir;
-%    if(exist(fullfile(path , 'regsDefinitions.frmw'), 'file') == 2)
-%        fw = Firmware(path);
-%    else
-%        fw = Firmware; 
-%    end
-%else
-%    fw = Firmware;
-%end
-if 0
-	regs.PCKR.spare = single([data.tableResults.angx.p0(1),data.tableResults.angx.p1(1),...
-	                                 data.tableResults.angy.minval,data.tableResults.angy.maxval,...
-	                                 data.tableResults.angx.p0(2),data.tableResults.angx.p1(2),0,0]);
-	% regs.JFIL.spare = data.regs.JFIL.spare;               
-	% regs.DIGG.spare = data.regs.DIGG.spare;               
-	fw.setRegs(regs,'');
-	m=fw.getMeta();    
-	calibR_regs2write=cell2str({m([m.group]=='R').regName},'|');
-	d=fw.getAddrData(calibR_regs2write);
-	reservedTableName = fullfile(runParams.outputFolder,filesep,['Reserved_512_Calibration_2_CalibData' calibpostfix '.txt']);
-	writeMWD(d,reservedTableName,1,62);
-end
 if calibPassed && ~isempty(hw)
     fprintff('Burning algo thermal table...');
     try 

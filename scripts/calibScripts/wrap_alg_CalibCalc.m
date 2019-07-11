@@ -105,4 +105,37 @@ irImSize = [360,640];
     calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
     Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,calibPassed,data,calib_dir);
     
-    
+%% full algo2 wrapper
+    output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
+    mkdirSafe(output_dir);
+    calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
+    calib_params_fn =  fullfile(ivcam2root,'scripts','IV2ThermalCalibTool','calibParams.xml');
+    debug_log_f = false;
+    verbose = true;
+    save_input_flag = true;
+    save_output_flag = true;
+    dummy_output_flag = true;
+    [calibParams , ~] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
+    %% thermal calc phase 0
+    base_path = '\\143.185.124.250\tester data\IDC Data\IVCAM\L515\Calibration\BIG PBS\HENG-2235\F9140332\cal2\2nd';
+    images_path = fullfile(base_path,'\Images\Thermal');
+    matlab_path = fullfile(base_path,'\Matlab\mat_files');
+    d = dir(images_path);
+    image_list = {d(:).name} ;
+    invalidFrames = arrayfun(@(n) strcmp(n,'.')||strcmp(n,'..'),image_list);
+    image_list = image_list(~invalidFrames);
+    numel(image_list);
+    for n = 1:1:numel(image_list)
+        mat_fn = fullfile(matlab_path,sprintf('TemDataFrame_Calc_in%d',n-1));
+        load(mat_fn);
+        InputPath = fullfile(images_path,sprintf('Cycle%d',n));
+        [result, tableResults, metrics,invalid_frames]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, 2);
+    end
+    %% algo2 create script
+    load('Z:\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.1\IC12\Matlab\mat_files\data_out.mat');
+    fprintff = @(varargin) fprintf(varargin{:});
+    runParams.outputFolder = tempdir;
+    [table,tableResults] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
+    hw = [];
+    calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
+    Calibration.thermal.generateAndBurnTable(hw,table,calibParams,runParams,fprintff,calibPassed,data,calib_dir);

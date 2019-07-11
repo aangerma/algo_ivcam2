@@ -214,7 +214,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
          %% Burn 2 device
         fprintff('Burning thermal calibration\n');
         hw = []; % dummy HW no need real burn.
-        Calibration.thermal.generateAndBurnTable(hw,eepromRegs, data.tableResults.table,calibParams,runParams,fprintff,0,data);
+        Calibration.thermal.generateAndBurnTable(hw,eepromRegs, data.tableResults.table,calibParams,runParams,fprintff,0,data,calib_dir);
         fprintff('Thrmal calibration finished\n');
  
         % clear persistent

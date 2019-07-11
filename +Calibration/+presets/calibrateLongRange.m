@@ -5,7 +5,7 @@ laserDelta = calibParams.presets.long.laserDelta;%1; % decimal
 framesNum = calibParams.presets.long.framesNum;%10;
 cameraInput.z2mm = hw.z2mm;
 cameraInput.imSize = double(hw.streamSize);
-outDir = fullfile(tempdir,'PresetLongRange');
+outDir = fullfile(ivcam2tempdir,'PresetLongRange');
 if exist(outDir,'dir') 
     rmdir(outDir,'s');
 end
