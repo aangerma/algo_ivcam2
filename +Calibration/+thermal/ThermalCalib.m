@@ -1,4 +1,4 @@
-function [result] = ThermalCalib(hw,regs,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxTime2Wait,app)
+function [calibPassed] = ThermalCalib(hw,regs,eepromRegs,calibParams,runParams,fprintff,maxTime2Wait,app)
 
 %tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
@@ -57,7 +57,7 @@ while ~finishedHeating
     path = fullfile(algo2path_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    [result, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs, eepromBin,framesData(i),sz, path,calibParams,maxTime2Wait);
+    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs, framesData(i),sz, path,calibParams,maxTime2Wait);
 %    rmdir(path,'s');
     finishedHeating = (result~=0);
     

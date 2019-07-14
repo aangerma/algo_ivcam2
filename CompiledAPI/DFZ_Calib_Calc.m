@@ -224,7 +224,12 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(srInd).pts = d(srInd).pts.*reshape(~invalidCBPoints,d(srInd).grid);
         d(srInd).pts(invalidCBPoints,:) = nan;
         
-        results.rtdDiffBetweenPresets = nanmean( d(lrInd).rpt(:,1) - d(srInd).rpt(:,1) );
+        params = Validation.aux.defaultMetricsParams();
+        params.roi = calibParams.dfz.shortRangeCompareROI ; params.isRoiRect=1; 
+        mask = Validation.aux.getRoiMask(size(d(lrInd).i), params);
+        results.rtdDiffBetweenPresets = mean(d(lrInd).z(mask)/4*2) - mean(d(srInd).z(mask)/4*2);
+%         
+%         results.rtdDiffBetweenPresets = nanmean( d(lrInd).rpt(:,1) - d(srInd).rpt(:,1) );
         d(srInd).rpt(:,1) = d(srInd).rpt(:,1) + results.rtdDiffBetweenPresets;
         [~,results.shortRangeImagesGeomErr] = Calibration.aux.calibDFZ(d(srInd),regs,calibParams,fprintff,0,1,x0,runParams);
         fprintff('geom error on short range image =%.2g\n',results.shortRangeImagesGeomErr);

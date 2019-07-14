@@ -37,3 +37,4 @@ AlgoThermalLoopOffset,single,0
 JFILgammaScale,uint32,171115520
 JFILgammaShift,uint32,4286644224
 DCORcoarseMasking_002,uint32,4294967295
+DESTrxPWRpdLUTfactor,uint32,1048816

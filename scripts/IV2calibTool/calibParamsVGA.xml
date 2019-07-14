@@ -38,7 +38,7 @@
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 10]</maxPixelDisplacement>
       <undistRms>[0.0 inf]</undistRms>
-      <upDownFovDiff>[0 0.5]</upDownFovDiff>
+      <upDownFovDiff>[0 1]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[60 inf]</imFovX>
       <imFovY>[50 inf] </imFovY>
@@ -158,6 +158,7 @@
      <useCenterOfProjection>0</useCenterOfProjection>
    </dsm>
     <dfz>
+        <shortRangeCompareROI>0.4</shortRangeCompareROI>
         <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
         <cropRatio>[0.2 0.1]</cropRatio>
         <captures>

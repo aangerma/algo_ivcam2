@@ -1,4 +1,4 @@
-function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin,FrameData, sz ,InputPath,calibParams, maxTime2Wait)
+function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin,FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -83,13 +83,13 @@ function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(re
     if(isempty(eepromRegs))
         eepromRegs = fw.readAlgoEpromData(eepromBin(17:end));
     end
-    [result, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
+    [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
-        save(fn,'result', 'tableResults');
+        save(fn,'finishedHeating','calibPassed', 'tableResults');
     end
-    if (result~=0)
+    if (finishedHeating~=0)
         g_temp_count = 0;
     else
         g_temp_count = g_temp_count + 1; 
@@ -99,7 +99,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(re
     end
 end
 
-function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_int(regs, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
+function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_int(regs, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -113,6 +113,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
 %       <-1> - error
 %        <0> - table not complitted keep calling the function with another samples point.
 %        <1> - table ready
+    calibPassed = 0;
     global g_temp_count;
     tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
     tempTh = calibParams.warmUp.warmUpTh;
@@ -195,7 +196,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
         [table,tableResults, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
         data.tableResults = tableResults;
         if isempty(table)
-           result = -1; % calibPassed = 0;
+           calibPassed = 0;
            save(fullfile(output_dir,'mat_files' ,'data.mat'),'data');
            fprintff('table is empty (no checkerboard where found)\n');
            return;
@@ -211,11 +212,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
         %% merge all scores outputs
         metrics = data.results;
         calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
-        if calibPassed
-            result = 1;
-        else
-            result = 10;
-        end
+        
         
          %% Burn 2 device
         fprintff('Burning thermal calibration\n');
@@ -224,8 +221,7 @@ function [result, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_i
         fprintff('Thrmal calibration finished\n');
  
         % clear persistent
-    else
-        result = 0;
+
     end
     
 % update ptsWithZ per frame
