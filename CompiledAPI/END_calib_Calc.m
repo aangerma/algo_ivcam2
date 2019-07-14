@@ -132,7 +132,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     calibOutput=fullfile(output_dir,'calibOutputFiles');
     mkdirSafe(calibOutput);
     fw.generateTablesForFw(calibOutput); 
-    calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(runParams.version),mod(runParams.version*100,100)));    
+    calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_04_%02d.bin',mod(runParams.version*100,100)));    
     fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     
         

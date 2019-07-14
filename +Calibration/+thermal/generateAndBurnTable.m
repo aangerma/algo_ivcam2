@@ -4,7 +4,7 @@ function generateAndBurnTable(hw,eepromRegs, table,calibParams,runParams,fprintf
 tableShifted = int16(table * 2^8); % FW expected format
 
 
-version = thermalCalibToolVersion;
+version = typecast(eepromRegs.FRMW.calibVersion,'single');
 whole = floor(version);
 frac = mod(version*100,100);
 

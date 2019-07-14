@@ -47,7 +47,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     
     %% Update init configuration
-    updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
+%     updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams);
     
     %% call HVM_cal_init
 	calib_dir = fileparts(fnCalib);
@@ -227,7 +227,7 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fnCalib, fprintff, t);
         if rgbPassed
             fnRgbTable = fullfile(runParams.outputFolder,...
-                sprintf('RGB_int_ext_Info_CalibInfo_Ver_%02d_%02d.bin',rgbTable.version));
+                sprintf('RGB_Calibration_Info_CalibInfo_Ver_%02d_%02d.bin',rgbTable.version));
             writeAllBytes(rgbTable.data,fnRgbTable);
             try
                 hw.cmd(sprintf('WrCalibInfo "%s"',fnRgbTable));
@@ -362,67 +362,67 @@ function [verValue,versionFull] = getVersion(hw,runParams)
     end
     versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
-function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
-    if ~runParams.DSM
-        currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
-        currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
-        currregs.EXTL.dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
-        currregs.EXTL.dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single'); 
-    end
-    if ~runParams.dataDelay
-        currregs.EXTL.conLocDelaySlow = hw.read('EXTLconLocDelaySlow');
-        currregs.EXTL.conLocDelayFastC = hw.read('EXTLconLocDelayFastC');
-        currregs.EXTL.conLocDelayFastF = hw.read('EXTLconLocDelayFastF');
-    end
-    if ~runParams.DFZ
-        DIGGspare = hw.read('DIGGspare');
-        currregs.FRMW.xfov = repmat(typecast(DIGGspare(2),'single'),1,5);
-        currregs.FRMW.yfov = repmat(typecast(DIGGspare(3),'single'),1,5);
-        currregs.FRMW.laserangleH = typecast(DIGGspare(4),'single');
-        currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
-        currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
-    
-        
-        JFILspare = hw.read('JFILspare');
-        currregs.FRMW.pitchFixFactor = typecast(JFILspare(3),'single');
-        currregs.FRMW.polyVars = typecast(JFILspare(4:6),'single');
-        currregs.FRMW.dfzCalTmp = typecast(JFILspare(2),'single');
-        currregs.FRMW.dfzApdCalTmp = typecast(JFILspare(7),'single');
-        DCORspare = hw.read('DCORspare');
-        currregs.FRMW.dfzVbias = typecast(DCORspare(3:5),'single');
-        currregs.FRMW.dfzIbias = typecast(DCORspare(6:8),'single');
-    end
-    if ~runParams.ROI
-        DIGGspare06 = hw.read('DIGGspare_006');
-        DIGGspare07 = hw.read('DIGGspare_007');
-        currregs.FRMW.calMarginL = typecast(uint16(bitshift(DIGGspare06,-16)),'int16');
-        currregs.FRMW.calMarginR = typecast(uint16(mod(DIGGspare06,2^16)),'int16');
-        currregs.FRMW.calMarginT = typecast(uint16(bitshift(DIGGspare07,-16)),'int16');
-        currregs.FRMW.calMarginB = typecast(uint16(mod(DIGGspare07,2^16)),'int16');
-    end
-%     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
-%     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
-%     currregs.FRMW.calImgHsize = currregs.GNRL.imgHsize;
-%     currregs.FRMW.calImgVsize = currregs.GNRL.imgVsize;
-%     currregs.FRMW.externalVsize = uint32(calibParams.gnrl.externalImSize(1));
-%     currregs.FRMW.externalHsize = uint32(calibParams.gnrl.externalImSize(2));
-% 
-%     [~,~,isId] = hw.getInfo();
-%     currregs.DEST.hbaseline = ~isId;
-%     if currregs.DEST.hbaseline
-%         currregs.DEST.baseline = single(calibParams.dest.hBaseline);
-%     else
-%         currregs.DEST.baseline = single(calibParams.dest.vBaseline);
+% function updateInitConfiguration(hw,fw,fnCalib,runParams,calibParams)
+%     if ~runParams.DSM
+%         currregs.EXTL.dsmXscale=typecast(hw.read('EXTLdsmXscale'),'single');
+%         currregs.EXTL.dsmYscale=typecast(hw.read('EXTLdsmYscale'),'single');
+%         currregs.EXTL.dsmXoffset=typecast(hw.read('EXTLdsmXoffset'),'single');
+%         currregs.EXTL.dsmYoffset=typecast(hw.read('EXTLdsmYoffset'),'single'); 
 %     end
-%     currregs.GNRL.zMaxSubMMExp = uint16(log(calibParams.gnrl.zNorm)/log(2));
-%     currregs.JFIL.invMinMax = uint16([calibParams.gnrl.minRange*calibParams.gnrl.zNorm,intmax('uint16')]);
-    if(exist('currregs','var'))
-        fw.setRegs(currregs,fnCalib);
-        fw.get();
-    end
-    
-    
-end
+%     if ~runParams.dataDelay
+%         currregs.EXTL.conLocDelaySlow = hw.read('EXTLconLocDelaySlow');
+%         currregs.EXTL.conLocDelayFastC = hw.read('EXTLconLocDelayFastC');
+%         currregs.EXTL.conLocDelayFastF = hw.read('EXTLconLocDelayFastF');
+%     end
+%     if ~runParams.DFZ
+%         DIGGspare = hw.read('DIGGspare');
+%         currregs.FRMW.xfov = repmat(typecast(DIGGspare(2),'single'),1,5);
+%         currregs.FRMW.yfov = repmat(typecast(DIGGspare(3),'single'),1,5);
+%         currregs.FRMW.laserangleH = typecast(DIGGspare(4),'single');
+%         currregs.FRMW.laserangleV = typecast(DIGGspare(5),'single');
+%         currregs.DEST.txFRQpd = typecast(hw.read('DESTtxFRQpd'),'single')';
+%     
+%         
+%         JFILspare = hw.read('JFILspare');
+%         currregs.FRMW.pitchFixFactor = typecast(JFILspare(3),'single');
+%         currregs.FRMW.polyVars = typecast(JFILspare(4:6),'single');
+%         currregs.FRMW.dfzCalTmp = typecast(JFILspare(2),'single');
+%         currregs.FRMW.dfzApdCalTmp = typecast(JFILspare(7),'single');
+%         DCORspare = hw.read('DCORspare');
+%         currregs.FRMW.dfzVbias = typecast(DCORspare(3:5),'single');
+%         currregs.FRMW.dfzIbias = typecast(DCORspare(6:8),'single');
+%     end
+%     if ~runParams.ROI
+%         DIGGspare06 = hw.read('DIGGspare_006');
+%         DIGGspare07 = hw.read('DIGGspare_007');
+%         currregs.FRMW.calMarginL = typecast(uint16(bitshift(DIGGspare06,-16)),'int16');
+%         currregs.FRMW.calMarginR = typecast(uint16(mod(DIGGspare06,2^16)),'int16');
+%         currregs.FRMW.calMarginT = typecast(uint16(bitshift(DIGGspare07,-16)),'int16');
+%         currregs.FRMW.calMarginB = typecast(uint16(mod(DIGGspare07,2^16)),'int16');
+%     end
+% %     currregs.GNRL.imgHsize = uint16(calibParams.gnrl.internalImSize(2));
+% %     currregs.GNRL.imgVsize = uint16(calibParams.gnrl.internalImSize(1));
+% %     currregs.FRMW.calImgHsize = currregs.GNRL.imgHsize;
+% %     currregs.FRMW.calImgVsize = currregs.GNRL.imgVsize;
+% %     currregs.FRMW.externalVsize = uint32(calibParams.gnrl.externalImSize(1));
+% %     currregs.FRMW.externalHsize = uint32(calibParams.gnrl.externalImSize(2));
+% % 
+% %     [~,~,isId] = hw.getInfo();
+% %     currregs.DEST.hbaseline = ~isId;
+% %     if currregs.DEST.hbaseline
+% %         currregs.DEST.baseline = single(calibParams.dest.hBaseline);
+% %     else
+% %         currregs.DEST.baseline = single(calibParams.dest.vBaseline);
+% %     end
+% %     currregs.GNRL.zMaxSubMMExp = uint16(log(calibParams.gnrl.zNorm)/log(2));
+% %     currregs.JFIL.invMinMax = uint16([calibParams.gnrl.minRange*calibParams.gnrl.zNorm,intmax('uint16')]);
+%     if(exist('currregs','var'))
+%         fw.setRegs(currregs,fnCalib);
+%         fw.get();
+%     end
+%     
+%     
+% end
 function initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
@@ -445,7 +445,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         fw.setRegs(vregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02.0f_%02.0f.bin',floor(calibToolVersion),mod(calibToolVersion,1)*100)));
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_04_%02.0f.bin',mod(calibToolVersion,1)*100)));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
