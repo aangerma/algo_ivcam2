@@ -1,4 +1,4 @@
-function [calibPassed] = ThermalCalib(hw,regs,eepromRegs,calibParams,runParams,fprintff,maxTime2Wait,app)
+function [calibPassed] = ThermalCalib(hw,regs,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxTime2Wait,app)
 
 %tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
