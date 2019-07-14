@@ -23,8 +23,8 @@
    <cb_saveRegState>0</cb_saveRegState>
    <cb_FOVex_installed>1</cb_FOVex_installed>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
-   <configurationFolder>releaseConfigCalibVGA</configurationFolder>
-   <calibParamsFile>calibParamsVGA.xml</calibParamsFile>
+   <configurationFolder>releaseConfigCalibXGA</configurationFolder>
+   <calibParamsFile>calibParamsXGA.xml</calibParamsFile>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Calibration Tool</toolName>
 </struct>

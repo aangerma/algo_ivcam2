@@ -279,7 +279,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
         
         r.reset();
-        hw.setReg('DIGGsphericalScale',[640,480]);
+%         hw.setReg('DIGGsphericalScale',[640,480]);
         hw.shadowUpdate;
         
         
