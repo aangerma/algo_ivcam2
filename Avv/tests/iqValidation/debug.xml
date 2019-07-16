@@ -3,19 +3,13 @@
     <db saveData="no">X:\Avv\dbValidation.txt</db>
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
-        <dataFolder>X:\Avv\sources\ivs\gen1\turn_in</dataFolder>
-        <dataSource>ivs</dataSource>
+        <dataFolder>X:\Data\robot\$</dataFolder>
+        <dataSource>robot</dataSource>
+        <stableTemp>false</stableTemp>
+        <tag>regression</tag>
+        <preset>short</preset>
     </params>
     <tests>
         <test name="fillRate_3m" metrics="fillRate" target="wall_80Reflectivity" distance="3m" threshold="[99.8 : 100]" extra="stdFillRate[0:1]" />
-        <test name="planeFit_1m" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:0.5]" extra="horizAngle[10:1],verticalAngle[20:1]" />
-        <test name="planeFit_3m" metrics="planeFit" target="wall_80Reflectivity" distance="3m" threshold="[0:1]" />
-        <test name="minDistance" metrics="fillRate" target="wall_80Reflectivity" distance="20cm" threshold="[99.8:100]" />
-        <test name="zStd_1m" metrics="zStd" target="checkerboard_30" distance="1m" threshold="[0:0.1]" />
-        <test name="zStd_4m" metrics="zStd" target="checkerboard_30" distance="4m" threshold="[0:0.1]" />
-        <test name="gridInterDist_40cm" metrics="gridInterDist" target="checkerboard_30" distance="40cm" threshold="[0:0.7]" />
-        <test name="gridInterDist_1m" metrics="gridInterDist" target="checkerboard_75" distance="1m" threshold="[0:2.3]" />
-        <test name="edgeSharpenes_1m" metrics="gridEdgeSharp" target="checkerboard_75" distance="1m" threshold="[0:1.6]" />
-        <test name="mos_30cm" metrics="mos" target="mos" distance="30cm" threshold="[0:7.55]" />
     </tests>
 </root>

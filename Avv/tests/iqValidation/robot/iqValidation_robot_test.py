@@ -7,8 +7,15 @@ import runIqValidation
 
 
 @slash.tag('robot')
-def test_validation_robot_regression():
-    filePath = r'Avv/tests/iqValidation/robot/robot_regression.xml'
+def test_validation_robot_regression_long():
+    filePath = r'Avv/tests/iqValidation/robot/robot_regression_long.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.validation_test(filePath)
+
+
+@slash.tag('robot')
+def test_validation_robot_regression_short():
+    filePath = r'Avv/tests/iqValidation/robot/robot_regression_short.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
@@ -16,20 +23,6 @@ def test_validation_robot_regression():
 @slash.tag('robot')
 def test_validation_robot_algonas():
     filePath = r'X:/Avv/sources/robot/robot.xml'
-    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
-
-
-@slash.tag('robot')
-def test_validation_robot_max_range():
-    filePath = r'Avv/tests/iqValidation/robot/robot_max_range.xml'
-    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
-
-
-@slash.tag('robot')
-def test_validation_robot_system():
-    filePath = r'Avv/tests/iqValidation/robot/robot_system.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
@@ -47,9 +40,8 @@ def test_validation_robot_time_drift():
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
-@slash.tag('robot')
-def test_validation_robot_warmup():
-    filePath = r'Avv/tests/iqValidation/robot/robot_warmup.xml'
+def test_validation_DEBUG():
+    filePath = r'Avv/tests/iqValidation/debug.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
