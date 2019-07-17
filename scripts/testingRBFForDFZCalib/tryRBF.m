@@ -2,7 +2,7 @@
 OutputDir = 'C:\temp\testingthingsa';
 load("X:\Data\IvCam2\FOVExRecords\F9140579_FE\PC05\calibDFZ_input_slim.mat");
 load('X:\Data\IvCam2\FOVExRecords\F9140579_FE\PC05\DFZ_im.mat');
-calibParams = xml2structWrapper('C:\source\algo_ivcam2\scripts\IV2calibTool\calibParamsVGA.xml');
+calibParams = xml2structWrapper('C:\source\algo_ivcam2\Tools\CalibTools\IV2calibTool\calibParamsVGA.xml');
 calibPassed = 0;
 captures = {calibParams.dfz.captures.capture(:).type};
 shortRangeImages = strcmp('shortRange',captures);

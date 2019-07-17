@@ -3,7 +3,7 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
     if ~exist('isCopyToPrebuild','var')
         isCopyToPrebuild = 1;
     end
-    source = fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
+    source = fullfile(ivcam2root,'Tools','CalibTools','IV2calibTool','calibParams.xml');
     target = fullfile(ivcam2root,'CompiledAPI','calibParams.xml');
     copyfile(source,target,'f');
     

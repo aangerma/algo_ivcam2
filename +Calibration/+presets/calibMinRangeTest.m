@@ -1,6 +1,6 @@
 runParams.outputFolder = 'C:\GIT\AlgoProjects\algo_ivcam2\+Calibration\+presets\testingDir';
 runParams.testingDir = 'testingDir\AlgoInternal';
-calibParams = xml2structWrapper('C:\GIT\AlgoProjects\algo_ivcam2\scripts\IV2calibTool\calibParams.xml');
+calibParams = xml2structWrapper('C:\GIT\AlgoProjects\algo_ivcam2\Tools\CalibTools\IV2calibTool\calibParams.xml');
 fprintff = @fprintf;
 
 % Show image request box

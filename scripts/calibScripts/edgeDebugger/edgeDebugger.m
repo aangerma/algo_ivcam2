@@ -60,7 +60,7 @@ r.reset();
 
 %% Look at different APD values
 frame = hw.getFrame(30); tabplot; imagesc(frame.i);
-calibParams = xml2structWrapper('C:\source\algo_ivcam2\scripts\IV2calibTool\calibParams.xml');
+calibParams = xml2structWrapper('C:\source\algo_ivcam2\Tools\CalibTools\IV2calibTool\calibParams.xml');
 for i = 0:500:3000
     newVal = dec2hex( ( round(hex2dec('1400')+i)/2)*2+1 );
     Calibration.dataDelay.setAbsDelay(hw,[],calibParams.dataDelay.slowDelayInitVal);
@@ -103,7 +103,7 @@ for i = fliplr(0:16:176)
     
 end
 %% Calibrate
-calibParams = xml2structWrapper('C:\source\algo_ivcam2\scripts\IV2calibTool\calibParams.xml');
+calibParams = xml2structWrapper('C:\source\algo_ivcam2\Tools\CalibTools\IV2calibTool\calibParams.xml');
 [delayRegs,okZ,okIR]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,1);
 results.delayS=(1-okIR);
 results.delayF=(1-okZ);
