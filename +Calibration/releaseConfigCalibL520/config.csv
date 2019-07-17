@@ -111,3 +111,4 @@ JFILsort3bypassMode  h00000000
 JFILsort1Edge01      b1       
 JFILsort1Edge03      b1       
 JFILirShadingBypass  b1       
+FRMWfovexExistenceFlag b0
