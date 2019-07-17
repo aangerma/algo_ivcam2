@@ -80,7 +80,7 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
 %     EPROMstructure = load(fullfile(g_calib_dir,'eepromStructure.mat'));
 %     EPROMstructure = EPROMstructure.updatedEpromTable;
 %     [eepromRegs_1] = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
-    if(isempty(eepromRegs))
+    if(isempty(eepromRegs) || ~isstruct(eepromRegs))
         eepromRegs = fw.readAlgoEpromData(eepromBin(17:end));
     end
     [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       

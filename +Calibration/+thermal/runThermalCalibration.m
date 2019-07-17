@@ -59,7 +59,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     maxCoolTime = inf;
     maxHeatTime = calibParams.warmUp.maxWarmUpTime;
     regs = data.regs;
-    coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % call down
+%    coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % call down
     calibPassed = Calibration.thermal.ThermalCalib(hw,regs,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxHeatTime,app);
 
         
