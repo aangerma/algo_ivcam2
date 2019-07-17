@@ -9,7 +9,7 @@ results = [];
 output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
 mkdirSafe(output_dir);
 calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
-calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
+calib_params_fn =  fullfile(ivcam2root,'Tools','CalibTools','IV2calibTool','calibParams.xml');
 debug_log_f = false;
 verbose = true;
 save_input_flag = true;
@@ -34,7 +34,7 @@ InputPath = '\\ger\ec\proj\ha\RSG\SA_3DCam\tzachi\dror\hvm_6_6\AlgoInternalFailu
 output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
 mkdirSafe(output_dir);
 calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
-calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
+calib_params_fn =  fullfile(ivcam2root,'Tools','CalibTools','IV2calibTool','calibParams.xml');
 debug_log_f = false;
 verbose = true;
 save_input_flag = true;
@@ -50,7 +50,7 @@ fnCalib = 'D:\temp\unitCalib\F9140938\green\PC28\AlgoInternal\calib.csv';
 
 
 % coverege warp
-calibParamsFn = 'D:\tbenshab\algo_203\algo_ivcam2\scripts\IV2calibTool\calibParams.xml';
+calibParamsFn = 'D:\tbenshab\algo_203\algo_ivcam2\Tools\CalibTools\IV2calibTool\calibParams.xml';
 calibParams = xml2structWrapper(calibParamsFn);
 load('D:\temp\unitCalib\F9140938\green\PC28\mat_files\HVM_Val_Coverage_Calc_in.mat');
 fnCalib = 'D:\temp\unitCalib\F9140938\green\PC28\AlgoInternal\calib.csv';
@@ -64,7 +64,7 @@ mkdirSafe('C:\Users\tbenshab\AppData\Local\Temp\HVM_Val_Coverage_Calc\temp\mat_f
     output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
     mkdirSafe(output_dir);
     calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
-    calib_params_fn =  fullfile(ivcam2root,'scripts','IV2calibTool','calibParams.xml');
+    calib_params_fn =  fullfile(ivcam2root,'Tools','CalibTools','IV2calibTool','calibParams.xml');
     debug_log_f = false;
     verbose = true;
     save_input_flag = true;
@@ -85,7 +85,7 @@ irImSize = [360,640];
     output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
     mkdirSafe(output_dir);
     calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
-    calib_params_fn =  fullfile(ivcam2root,'scripts','IV2ThermalCalibTool','calibParams.xml');
+    calib_params_fn =  fullfile(ivcam2root,'Tools','CalibTools','IV2ThermalCalibTool','calibParams.xml');
     debug_log_f = false;
     verbose = true;
     save_input_flag = true;
@@ -109,7 +109,7 @@ irImSize = [360,640];
     output_dir = fullfile(ivcam2tempdir,'unit_test','output_dir');
     mkdirSafe(output_dir);
     calib_dir = fullfile(ivcam2root,'CompiledAPI','calib_dir');
-    calib_params_fn =  fullfile(ivcam2root,'scripts','IV2ThermalCalibTool','calibParams.xml');
+    calib_params_fn =  fullfile(ivcam2root,'Tools','CalibTools','IV2ThermalCalibTool','calibParams.xml');
     debug_log_f = false;
     verbose = true;
     save_input_flag = true;

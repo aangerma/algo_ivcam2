@@ -21,8 +21,9 @@ function  setPath_ivcam20(commonRootIn,projID)
     cd (ivcamRoot);
     
     
-    addpath(genpath(fullfile(ivcamRoot,'scripts','IV2calibTool')));
-    addpath(genpath(fullfile(ivcamRoot,'scripts','IV2ThermalCalibTool')));
+    %addpath(genpath(fullfile(ivcamRoot,'scripts','IV2calibTool')));
+    %addpath(genpath(fullfile(ivcamRoot,'scripts','IV2ThermalCalibTool')));
+    addpath(genpath(fullfile(ivcamRoot,'Tools')));
     addpath(genpath(fullfile(ivcamRoot,'CompiledAPI'))); % added path for compiled API (HVM tester functions);
     %close open documents that are not part of the current path
     X = matlab.desktop.editor.getAll;

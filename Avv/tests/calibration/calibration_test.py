@@ -22,7 +22,7 @@ def calibration(xmlPath):
         slash.logger.error("can't find calibParamsFile in xml")
         raise AttributeError
 
-    calibFilePath = path.join(path.dirname(path.abspath(__file__)), '..\..\..\scripts\IV2calibTool\{}'.format(calibFileName))
+    calibFilePath = path.join(path.dirname(path.abspath(__file__)), '..\..\..\Tools\CalibTools\IV2calibTool\{}'.format(calibFileName))
     slash.logger.info("check calibParams.xml: {}".format(calibFilePath),extra={"highlight": True})
     if not path.exists(calibFilePath):
         raise FileNotFoundError(xmlPath)
