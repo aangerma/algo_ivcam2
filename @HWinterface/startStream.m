@@ -16,10 +16,11 @@ function startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR)
     if ~exist('colorResolution','var')
         colorResolution = [];
     end
+    obj.m_colorResolution = colorResolution;
     if ~exist('rgbFR','var')
         rgbFR = 30;
     end
-
+    obj.m_rgbFR = rgbFR;
  %   FrameGraberMode = true;
 
     
@@ -82,12 +83,12 @@ function startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR)
 	    scwList.Add(scwC)
         
          if ~isempty(colorResolution)
-             eImageResolutionColor = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir1920x1080;
+             %eImageResolutionColor = IVCam.Tools.CamerasSdk.Common.Configuration.eImageResolution.ir1920x1080;
             scwColor = IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfigurationWrapper(...
                 IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Color,...
                 IVCam.Tools.CamerasSdk.Cameras.Configuration.StreamConfiguration(...
                 IVCam.Tools.CamerasSdk.Common.Configuration.IVCam20.IVCam20ColorMode.YUY2.ToString(),...
-                eImageResolutionColor,...
+                colorResolution(1),colorResolution(2),...
                 rgbFR));
             scwList.Add(scwColor);
             obj.m_streamWithcolor = true;
