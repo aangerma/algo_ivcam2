@@ -13,7 +13,8 @@ classdef HWinterface <handle
         m_recfn                  char
         m_streamWithcolor        logical
         usefullRegs
-        
+        m_colorResolution
+        m_rgbFR
     end
     
     
@@ -146,13 +147,8 @@ classdef HWinterface <handle
             
         end
         
-        function [I] = privReadColorStream(obj,data, imSize)
-            
-            if ~exist('imSize','var') || isempty(imSize)
-                imSize = [1920 1080];
-            end
-            
-              data = reshape(data,imSize);
+        function [I] = privReadColorStream(obj,data)           
+              data = reshape(data,obj.m_colorResolution);
               Y = double(bitand(data,255));
               
               I = uint8(Y');
@@ -423,13 +419,10 @@ classdef HWinterface <handle
             
         end
         
-        function frames = getColorFrameRAW(obj,n,rgbFR)
-            colorRes = [1920 1080];
-            if(~exist('rgbFR','var'))
-                rgbFR=30;
-            end
+        function frames = getColorFrameRAW(obj,n)
+
             if ~obj.m_streamWithcolor
-                obj.startStream(false,[],colorRes,rgbFR);
+                obj.startStream(false,[],obj.m_colorResolution,obj.m_rgbFR);
             end
             if(~exist('n','var'))
                 n=1;
@@ -448,12 +441,11 @@ classdef HWinterface <handle
         end
         
         
-        function frames = getColorFrame(obj,n,rgbFR)
-            colorRes = [1920 1080];
-            if(~exist('rgbFR','var'))
-                rgbFR=30;
-            end
+        function frames = getColorFrame(obj,n)
+            
             if ~obj.m_streamWithcolor
+                colorRes=[1920 1080];
+                rgbFR=30;
                 obj.startStream(false,[],colorRes,rgbFR);
             end
             if(~exist('n','var'))
@@ -468,7 +460,7 @@ classdef HWinterface <handle
                 imageObj = currImage.Images;
                 dImByte = imageObj.Item(0).Item(0).Data;
                 frame = typecast(cast(dImByte,'uint8'),'uint16');
-                frames(i).color = obj.privReadColorStream(frame, colorRes);
+                frames(i).color = obj.privReadColorStream(frame);
             end
         end
         
