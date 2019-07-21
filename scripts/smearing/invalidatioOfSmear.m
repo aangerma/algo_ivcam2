@@ -1,15 +1,15 @@
 % load('D:\worksapce\ivcam2\algo_ivcam2\scripts\smearing\forPostProc.mat');
-load('X:\Users\mkiperwa\smearing\scenes\scene10.mat');
+load('X:\Users\mkiperwa\smearing\scenes\scene10.mat'); %8-15
 
 Iir = frames(10).i;
-params = struct('IR_grad_thresh', 100, 'ir_thresh', 170, 'neighborPix', 7, 'dz_around_edge_th', 30, 'dz_in_neighborPix_th', 100);
+params = struct('IR_grad_thresh', 190, 'ir_thresh', 190, 'neighborPix', 12, 'dz_around_edge_th', 45, 'dz_in_neighborPix_th', 100);
 % IR_grad_thresh = 100;
 % ir_thresh = 170;%130; %Condition #2
 % neighborPix = 7; %For condition #3 and #5
 % dz_around_edge_th = 30; %For condition #4
 % dz_in_neighborPixx_th = 100;
 
-verbose = true;
+verbose = false;
 
 %%
 % IR and Depth and their x,y gradients
@@ -28,9 +28,14 @@ end
 
 
 
-[IdepthCorrectedX,IconfCorrectedX] = ivalidateSmear('x',Iir,Gx_ir,Idepth,frames(10).c,params);
-[IdepthCorrectedY,IconfCorrectedY] = ivalidateSmear('y',Iir,Gy_ir,Idepth,frames(10).c,params);
+[IdepthCorrectedX,IconfCorrectedX] = ivalidateSmear('x',Iir,Gx_ir,Idepth,frames(10).c,params,verbose);
+[IdepthCorrectedY,IconfCorrectedY] = ivalidateSmear('y',Iir,Gy_ir,Idepth,frames(10).c,params,verbose);
 
+figure; 
+subplot(2,2,1); imagesc(Iir); title('IR'); impixelinfo;
+subplot(2,2,2); imagesc(frames(10).z./4); title('Depth'); impixelinfo;
+subplot(2,2,3); imagesc(IdepthCorrectedX); title('Corrected depth - x direction'); impixelinfo;linkaxes;
+subplot(2,2,4); imagesc(IdepthCorrectedY); title('Corrected depth - y direction'); impixelinfo;linkaxes;
 
 Icorrected = IdepthCorrectedX;
 Icorrected(IdepthCorrectedY==0) = 0;
@@ -46,7 +51,7 @@ Idepth_orig = single(frames(10).z./4);
 Idiff = Idepth_orig-single(Icorrected);
 figure; imagesc(Idiff); title(['Difference image Iorig-Icorrected. Number of different pixels  = ' num2str(sum(Idiff(:)>0))]);
 
-function [IdepthCorrected,IconfCorrected] = ivalidateSmear(CorrectDir,Iir,G_ir,Idepth,Iconf,params)
+function [IdepthCorrected,IconfCorrected] = ivalidateSmear(CorrectDir,Iir,G_ir,Idepth,Iconf,params,verbose)
 switch CorrectDir
     case 'x'
         cannyDir = 'horizontal';
@@ -59,11 +64,13 @@ switch CorrectDir
 end
 %%
 % Find edges of interest - condition #1
-ir_edge = edge(Iir,'Canny',cannyDir,[0.01,0.1]);
-figure;
-subplot(3,1,1); imagesc(Iir); title('IR'); impixelinfo;
-subplot(3,1,2); imagesc(G_ir); title(['IR - gradient in ' CorrectDir ' direction']); impixelinfo;
-subplot(3,1,3); imagesc(ir_edge); title(['IR - edges in ' CorrectDir ' direction']); impixelinfo;linkaxes;
+ir_edge = edge(Iir,'Canny',cannyDir,[0.2,0.7]);
+if verbose
+    figure;
+    subplot(3,1,1); imagesc(Iir); title('IR'); impixelinfo;
+    subplot(3,1,2); imagesc(G_ir); title(['IR - gradient in ' CorrectDir ' direction']); impixelinfo;
+    subplot(3,1,3); imagesc(ir_edge); title(['IR - edges in ' CorrectDir ' direction']); impixelinfo;linkaxes;
+end
 %%
 % Discard threshold where gradient is too low
 ir_edge(abs(G_ir.*ir_edge) < params.IR_grad_thresh) = 0;
@@ -73,13 +80,17 @@ subplot(2,1,2); imagesc(ir_edge); title('Edges higher than threshold'); impixeli
 % Condition #3
 pixs2CheckByNeighbor = findPixByNeighbor(ir_edge,params.neighborPix,CorrectDir);
 Idebug = Iir; Idebug(~pixs2CheckByNeighbor) = 0;
-figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
-subplot(2,1,2); imagesc(Idebug); title('Area to check by IR edge neighborhood'); impixelinfo;linkaxes;
+if verbose
+    figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
+    subplot(2,1,2); imagesc(Idebug); title('Area to check by IR edge neighborhood'); impixelinfo;linkaxes;
+end
 % Show IR on the edges I found
 IrOnEdges = Iir;
 IrOnEdges(~ir_edge) = 0;
-figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
-subplot(2,1,2); imagesc(IrOnEdges); title('IrOnEdges'); impixelinfo;linkaxes;
+if verbose
+    figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
+    subplot(2,1,2); imagesc(IrOnEdges); title('IrOnEdges'); impixelinfo;linkaxes;
+end
 %%
 %{
 % For debug - show IR max-min on different scenes
@@ -100,14 +111,12 @@ IdepthNan(IdepthNan == 0) = nan;
 
 pixs2Check = ~isnan(IdepthNan) & Iir<params.ir_thresh & pixs2CheckByNeighbor;
 Idebug = Iir; Idebug(~pixs2Check) = 0;
-figure; subplot(3,1,1); imagesc(Iir); title('IR'); impixelinfo;
-subplot(3,1,2); imagesc(Idebug); title('Ipixs2Check'); impixelinfo;
-subplot(3,1,3);imagesc(Idepth); title('Depth'); impixelinfo;linkaxes;
-
+if verbose
+    figure; subplot(3,1,1); imagesc(Iir); title('IR'); impixelinfo;
+    subplot(3,1,2); imagesc(Idebug); title('Ipixs2Check'); impixelinfo;
+    subplot(3,1,3);imagesc(Idepth); title('Depth'); impixelinfo;linkaxes;
+end
 %%
-ixEdges = find(ir_edge);
-ixPixs2Check = find(pixs2Check);
-Iir_single = single(Iir);
 IdepthCorrected = Idepth;
 IconfCorrected = Iconf;
 for ix_y = 1:size(ir_edge,1)
@@ -170,7 +179,7 @@ if strcmp(axisDir,'y')
     dx_from_edge = ix_y - closestEdgeIx;
     if dx_from_edge == 0
         depthFromEdge = abs(Idepth(ix_y:1:min(max(ix_y + neighborPix - abs(dx_from_edge),1),sizeOfAxisDir),ix_x)-Idepth(ix_y, ix_x));
-        depthFromEdge = max([depthFromEdge,abs(Idepth(ix_y:-1:min(max(ix_y - neighborPix - abs(dx_from_edge),1),sizeOfAxisDir), ix_x)-Idepth(ix_y, ix_x))]);
+        depthFromEdge = max([depthFromEdge;abs(Idepth(ix_y:-1:min(max(ix_y - neighborPix - abs(dx_from_edge),1),sizeOfAxisDir), ix_x)-Idepth(ix_y, ix_x))]);
     else
         depthFromEdge = abs(Idepth(ix_y:sign(dx_from_edge):min(max(ix_y + sign(dx_from_edge)*(neighborPix - abs(dx_from_edge)),1),sizeOfAxisDir), ix_x)-Idepth(ix_y, ix_x));
     end
