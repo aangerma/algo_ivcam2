@@ -233,7 +233,7 @@ classdef HWinterface <handle
         function saveRecData(obj)
             if(~isempty(obj.m_recfn))
                 recData = obj.m_recData;%#ok
-                save(obj.m_recfn,'recData');
+                save(obj.m_recfn,'recData','-v7.3');
             end
         end
         %destructor
@@ -465,8 +465,12 @@ classdef HWinterface <handle
         end
         
         
-        function frame = getFrame(obj,n,postproc,rot180)
-            obj.startStream();
+        function frame = getFrame(obj,n,postproc,rot180,resolution)
+            if ~exist('resolution','var') || isempty(resolution)
+                obj.startStream;
+            else
+                obj.startStream(0,resolution);
+            end
             if(~exist('n','var'))
                 n=1;
             end
@@ -759,7 +763,7 @@ classdef HWinterface <handle
             if exist('EPROMstructure','var')
                 regs=obj.m_fw.readAlgoEpromData(d,EPROMstructure);
             else
-                regs=obj.m_fw.readAlgoEpromData(d);               
+                regs=obj.m_fw.readAlgoEpromData(d);
             end
         end
     end

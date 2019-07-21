@@ -10,7 +10,9 @@ tempsForPlot = nan(1,pN);
 timesForPlot = nan(1,pN);
 plotDataI = 1;
 
-Calibration.aux.startHwStream(hw,runParams);
+tempRunParams=runParams; 
+tempRunParams.calibRes=calibParams.gnrl.calibRes; 
+Calibration.aux.startHwStream(hw,tempRunParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
     hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))
@@ -57,9 +59,8 @@ while ~finishedHeating
     path = fullfile(algo2path_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs, framesData(i),sz, path,calibParams,maxTime2Wait);
+    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait);
 %    rmdir(path,'s');
-    finishedHeating = (result~=0);
     
     if tempFig.isvalid
         tempsForPlot(plotDataI) = framesData(i).temp.ldd;

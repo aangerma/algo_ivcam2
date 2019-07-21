@@ -25,6 +25,7 @@
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibXGA</configurationFolder>
    <calibParamsFile>calibParamsXGA.xml</calibParamsFile>
+   <calibRes>[768,1024]</calibRes>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Calibration Tool</toolName>
 </struct>

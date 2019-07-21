@@ -110,3 +110,4 @@ JFILsort1Edge01      b1
 JFILsort1Edge03      b1       
 JFILirShadingBypass  b1       
 EXTLconLocOutVDelay  h16b90
+FRMWcbufMargin       ha

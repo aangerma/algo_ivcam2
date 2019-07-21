@@ -23,6 +23,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
          end 
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         fprintff('opening stream...');
+        hw.startStream(0,runParams.calibRes); 
         hw.getFrame;
         hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
         hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');

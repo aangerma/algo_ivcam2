@@ -10,10 +10,8 @@ name = [{'bias_factor'          }
     {'Amb_Dis'              }
     {'cmpratesel'           }
     {'cmppeak'              }
-    {'cmp0offp'             }
-    {'cmp0offn'             }
-    {'ampoffp'              }
-    {'ampoffn'              }
+    {'coarse_masking_min'   }
+    {'coarse_masking_max'   }
     {'bpfEn'                }
     {'bpfCutoff'            }
     {'bpfGain'              }
@@ -49,10 +47,8 @@ type =[{'single'}
     {'uint8'  }
     {'uint8'  }
     {'uint8'  }
-    {'uint8'  }
-    {'uint8'  }
-    {'uint8'  }
-    {'uint8'  }
+    {'uint16'  }
+    {'uint16'  }
     {'uint8'  }
     {'uint8'  }
     {'uint8'  }
