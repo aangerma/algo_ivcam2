@@ -5,17 +5,23 @@ function [  ] = updatePresetsEndOfCalibration( calibParams,presetPath,regs ,resu
     shortRangePreset=readtable(shortRangePresetFn);
     
     longRangePreset = updatePresetTableByFieldName(longRangePreset,'JFILinvMinMax',calibParams.presets.long.JFILinvMinMax);
+    shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'JFILinvMinMax',calibParams.presets.short.JFILinvMinMax);
+
     
-    systemDelay = regs.DEST.txFRQpd(1);
-    coarseMaskingValueLR = Calibration.aux.maskDistancesWithCoarseMasking(regs,systemDelay, calibParams.presets.long.coarseMaskingRange);
-    longRangePreset = updatePresetTableByFieldName(longRangePreset,'DCORcoarseMasking_002',coarseMaskingValueLR);
+    LRdistRange=calibParams.presets.long.coarseMaskingRange; 
+    LRminRange = LRdistRange(1);
+    LRmaxRange = LRdistRange(2);
+    longRangePreset = updatePresetTableByFieldName(longRangePreset,'coarse_masking_min',uint16(LRminRange));
+    longRangePreset = updatePresetTableByFieldName(longRangePreset,'coarse_masking_max',uint16(LRmaxRange));
+    
     if isfield(results,'rtdDiffBetweenPresets')
         shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'AlgoThermalLoopOffset',results.rtdDiffBetweenPresets);
-        systemDelay = systemDelay - results.rtdDiffBetweenPresets;
-        
     end
-    coarseMaskingValueSR = Calibration.aux.maskDistancesWithCoarseMasking(regs,systemDelay, calibParams.presets.short.coarseMaskingRange);
-    shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'DCORcoarseMasking_002',coarseMaskingValueSR);
+    SRdistRange=calibParams.presets.short.coarseMaskingRange; 
+    SRminRange = SRdistRange(1);
+    SRmaxRange = SRdistRange(2);
+    shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'coarse_masking_min',uint16(SRminRange));
+    shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'coarse_masking_max',uint16(SRmaxRange));
     
     
     longRangePreset = updatePresetTableByFieldName(longRangePreset,'JFILgammaScale',uint32(calibParams.presets.long.JFILgammaScale));
