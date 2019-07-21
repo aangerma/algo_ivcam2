@@ -1,4 +1,4 @@
-function [  ] = updatePresetsEndOfCalibration( calibParams,presetPath,regs ,results)
+function [  ] = updatePresetsEndOfCalibration( calibParams,presetPath ,results)
     longRangePresetFn = fullfile(presetPath,'longRangePreset.csv');
     longRangePreset=readtable(longRangePresetFn);
     shortRangePresetFn = fullfile(presetPath,'shortRangePreset.csv');

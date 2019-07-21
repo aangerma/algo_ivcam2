@@ -256,7 +256,7 @@
             <minModprc>0</minModprc>
             <laserDelta>1</laserDelta>
             <framesNum>10</framesNum>
-            <fillRateTh>97</fillRateTh>
+            <fillRateTh>80</fillRateTh>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
             <estDistTargetReflect>0.8</estDistTargetReflect>-->
             <mask4userScale>2</mask4userScale>
@@ -276,6 +276,7 @@
             <coarseMaskingRange>[0,0]</coarseMaskingRange>
             <JFILgammaScale>171115520</JFILgammaScale>
             <JFILgammaShift>4286644224</JFILgammaShift>
+            <JFILinvMinMax>4294902560</JFILinvMinMax> <!-- invalidate z below  -->
         </short>
     </presets>
 </struct>
