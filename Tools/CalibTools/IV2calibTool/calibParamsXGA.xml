@@ -268,7 +268,7 @@
                 <maskCenterShift>[0,0]</maskCenterShift>
             </params>
             <JFILinvMinMax>4294904760</JFILinvMinMax> <!-- invalidate z below 750mm -->
-            <coarseMaskingRange>[0,0]</coarseMaskingRange><!-- until supported between resolutions -->
+            <coarseMaskingRange>[0,40]</coarseMaskingRange><!-- until supported between resolutions -->
             <JFILgammaScale>67109888</JFILgammaScale>
             <JFILgammaShift>0</JFILgammaShift>
         </long>
