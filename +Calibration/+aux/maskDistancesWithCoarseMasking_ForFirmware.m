@@ -1,4 +1,4 @@
-function [ coarseMask_002,hexVals ] = maskDistancesWithCoarseMasking(regs,delays,distRange )
+function [ hexVals ] = maskDistancesWithCoarseMasking(regs,delays,distRange )
 %MASKDISTANCES receieved regs that describe the camera and a range of distances
 % it produces the value of the corase masking that will filter that
 % distances. Currently we only support the update of coarse masking 2.
@@ -27,18 +27,6 @@ indices = unique(indices);
 
 maskLength = regs.DCOR.coarseTmplLength;
 
-% What happens in the DCOR (cMask4 is the used mask):
-% cMask0 = regs.DCOR.coarseMasking;
-% cMask1 = reshape(cMask0,[],3).';
-% 
-% %cut to wanted size
-% cMask2 = cMask1(:,1:maskLength).';
-% 
-% % due to DCOR HW implementation the registers should be stored in
-% % decending order while the first (0) bin is in the last place
-% cMask3 = flipud(cMask2);
-% cMask4 = circshift(cMask3,[1 0]);
-% cMask4(:,1);
 
 cMask4 = ones(maskLength,3);
 cMask4(indices,:) = 0;
@@ -51,7 +39,6 @@ hexVals = binaryVectorToHex(fliplr(reshape(DCORcoarseMasking,32,[])'));
 % decVals = hex2dec(hexVals); 
 % uint32Vals=uint32(decVals);
 % write uint32Vals to DCORcoarseMasking
-coarseMask_002 = hexVals{3};
-coarseMask_002 = uint32(hex2dec(coarseMask_002));
+
 end
 

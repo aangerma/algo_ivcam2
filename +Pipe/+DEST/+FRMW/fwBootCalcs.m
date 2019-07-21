@@ -58,6 +58,10 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 
 [regs,autogenRegs] = calculateAmbiguityRTD(regs,autogenRegs,speedOfLightMMnsec); 
 
+%% update DCOR coarse masking
+[autogenRegs ] = Pipe.DEST.FRMW.maskDistancesWithCoarseMasking(regs,autogenRegs); 
+regs = Firmware.mergeRegs(regs,autogenRegs);
+
 end
 
 
@@ -69,7 +73,7 @@ else
     autogenRegs.DEST.txPWRpdLUTfactor = uint32((2^16-1)*2^16/(double(regs.GNRL.imgVsize)-1));
 end
 
-autogenRegs.DEST.rxPWRpdLUTfactor =uint32(2^16*(2^16-1)/(2^12-1));
+% autogenRegs.DEST.rxPWRpdLUTfactor =uint32(2^16*(2^16-1)/(2^12-1));
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
 end
