@@ -1,8 +1,12 @@
 % load('D:\worksapce\ivcam2\algo_ivcam2\scripts\smearing\forPostProc.mat');
-load('X:\Users\mkiperwa\smearing\scenes\scene10.mat'); %8-15
+path = 'X:\Users\mkiperwa\smearing';
+scene = 'scene9'; %8-15
+savePath = [path '\results\' scene];
+
+load([path '\scenes\' scene '.mat']);
 
 Iir = frames(10).i;
-params = struct('IR_grad_thresh', 190, 'ir_thresh', 190, 'neighborPix', 12, 'dz_around_edge_th', 45, 'dz_in_neighborPix_th', 100);
+params = struct('IR_grad_thresh', 180, 'ir_thresh', 190, 'neighborPix', 8, 'dz_around_edge_th', 45, 'dz_in_neighborPix_th', 100);
 % IR_grad_thresh = 100;
 % ir_thresh = 170;%130; %Condition #2
 % neighborPix = 7; %For condition #3 and #5
@@ -36,6 +40,7 @@ subplot(2,2,1); imagesc(Iir); title('IR'); impixelinfo;
 subplot(2,2,2); imagesc(frames(10).z./4); title('Depth'); impixelinfo;
 subplot(2,2,3); imagesc(IdepthCorrectedX); title('Corrected depth - x direction'); impixelinfo;linkaxes;
 subplot(2,2,4); imagesc(IdepthCorrectedY); title('Corrected depth - y direction'); impixelinfo;linkaxes;
+saveas(gcf,[savePath '_eachAxis.png']);
 
 Icorrected = IdepthCorrectedX;
 Icorrected(IdepthCorrectedY==0) = 0;
@@ -44,12 +49,15 @@ figure;
 subplot(3,1,1); imagesc(Iir); title('IR'); impixelinfo;
 subplot(3,1,2); imagesc(frames(10).z./4); title('Depth'); impixelinfo;
 subplot(3,1,3); imagesc(Icorrected); title('Corrected depth'); impixelinfo;linkaxes;
+saveas(gcf,[savePath '_results.png']);
+
 % figure;cdfplot(frames(10).z(:)./4);
 % subplot(4,1,4); imagesc(ir_edge_x); title('Edges higher than threshold'); impixelinfo;linkaxes;
 Idepth_orig = single(frames(10).z./4);
 
 Idiff = Idepth_orig-single(Icorrected);
 figure; imagesc(Idiff); title(['Difference image Iorig-Icorrected. Number of different pixels  = ' num2str(sum(Idiff(:)>0))]);
+saveas(gcf,[savePath '_diff.png']);
 
 function [IdepthCorrected,IconfCorrected] = ivalidateSmear(CorrectDir,Iir,G_ir,Idepth,Iconf,params,verbose)
 switch CorrectDir
@@ -64,7 +72,7 @@ switch CorrectDir
 end
 %%
 % Find edges of interest - condition #1
-ir_edge = edge(Iir,'Canny',cannyDir,[0.2,0.7]);
+ir_edge = edge(Iir,'Canny',cannyDir,[0.2,0.5]);
 if verbose
     figure;
     subplot(3,1,1); imagesc(Iir); title('IR'); impixelinfo;
@@ -73,9 +81,12 @@ if verbose
 end
 %%
 % Discard threshold where gradient is too low
+% ir_edge(abs(G_ir.*ir_edge) < max(G_ir(:))*params.IR_grad_thresh) = 0;
 ir_edge(abs(G_ir.*ir_edge) < params.IR_grad_thresh) = 0;
-figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
-subplot(2,1,2); imagesc(ir_edge); title('Edges higher than threshold'); impixelinfo;linkaxes;
+if verbose
+    figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
+    subplot(2,1,2); imagesc(ir_edge); title('Edges higher than threshold'); impixelinfo;linkaxes;
+end
 % We are intrested only in pixels that are whithin the IR edge neighborhood
 % Condition #3
 pixs2CheckByNeighbor = findPixByNeighbor(ir_edge,params.neighborPix,CorrectDir);
@@ -128,10 +139,15 @@ for ix_y = 1:size(ir_edge,1)
         if dz_around_edge > params.dz_around_edge_th % Condition #4
             continue;
         end
-        [depthFromEdge] = calcDepthFromEdge(IdepthNan,ix_x,ix_y,closestEdgeIx,sizeOfAxisDir,CorrectDir,params.neighborPix);
-        if any(isnan(depthFromEdge) | depthFromEdge>params.dz_in_neighborPix_th)
+        [depthFromEdge,maxDepthFromEdge,maxDepthepthInd] = calcDepthFromEdge(IdepthNan,Iir,ix_x,ix_y,closestEdgeIx,sizeOfAxisDir,CorrectDir,params.neighborPix);
+        if any(isnan(depthFromEdge))
             IdepthCorrected(ix_y,ix_x) = 0;
             IconfCorrected(ix_y,ix_x) = 0;
+            continue;
+        end
+        if maxDepthFromEdge>params.dz_in_neighborPix_th && Iir(ix_y,ix_x) < Iir(maxDepthepthInd(1),maxDepthepthInd(2))
+           IdepthCorrected(ix_y,ix_x) = 0;
+           IconfCorrected(ix_y,ix_x) = 0;
         end
     end
 end
@@ -174,22 +190,38 @@ else
 end
 end
 
-function [depthFromEdge] = calcDepthFromEdge(Idepth,ix_x,ix_y,closestEdgeIx,sizeOfAxisDir,axisDir,neighborPix)
+function [depthFromEdge,maxDepthFromEdge,maxDepthepthInd] = calcDepthFromEdge(Idepth,Iir,ix_x,ix_y,closestEdgeIx,sizeOfAxisDir,axisDir,neighborPix)
 if strcmp(axisDir,'y')
     dx_from_edge = ix_y - closestEdgeIx;
     if dx_from_edge == 0
-        depthFromEdge = abs(Idepth(ix_y:1:min(max(ix_y + neighborPix - abs(dx_from_edge),1),sizeOfAxisDir),ix_x)-Idepth(ix_y, ix_x));
-        depthFromEdge = max([depthFromEdge;abs(Idepth(ix_y:-1:min(max(ix_y - neighborPix - abs(dx_from_edge),1),sizeOfAxisDir), ix_x)-Idepth(ix_y, ix_x))]);
+        if Iir(min(ix_y+2,sizeOfAxisDir), ix_x) > Iir(max(ix_y-2,1), ix_x)
+            dirSign = -1;
+        else
+            dirSign = 1;
+        end
     else
-        depthFromEdge = abs(Idepth(ix_y:sign(dx_from_edge):min(max(ix_y + sign(dx_from_edge)*(neighborPix - abs(dx_from_edge)),1),sizeOfAxisDir), ix_x)-Idepth(ix_y, ix_x));
+        dirSign = sign(dx_from_edge);
     end
+    ind = ix_y:dirSign:min(max(ix_y + dirSign*(neighborPix - abs(dx_from_edge)),1),sizeOfAxisDir);
+    depthFromEdge = abs(Idepth(ind, ix_x)-Idepth(ix_y, ix_x));
 else
     dx_from_edge = ix_x - closestEdgeIx;
     if dx_from_edge == 0
-        depthFromEdge = abs(Idepth(ix_y, ix_x:1:min(max(ix_x + neighborPix - abs(dx_from_edge),1),sizeOfAxisDir))-Idepth(ix_y, ix_x));
-        depthFromEdge = max([depthFromEdge,abs(Idepth(ix_y, ix_x:-1:min(max(ix_x - neighborPix - abs(dx_from_edge),1),sizeOfAxisDir))-Idepth(ix_y, ix_x))]);
+        if Iir(ix_y,min(ix_x+2,sizeOfAxisDir)) > Iir(ix_y,max(ix_x-2,1))
+            dirSign = -1;
+        else
+            dirSign = 1;
+        end
     else
-        depthFromEdge = abs(Idepth(ix_y, ix_x:sign(dx_from_edge):min(max(ix_x + sign(dx_from_edge)*(neighborPix - abs(dx_from_edge)),1),sizeOfAxisDir))-Idepth(ix_y, ix_x));
+        dirSign = sign(dx_from_edge);
     end
+    ind = ix_x:dirSign:min(max(ix_x + dirSign*(neighborPix - abs(dx_from_edge)),1),sizeOfAxisDir);
+    depthFromEdge = (abs(Idepth(ix_y, ind)-Idepth(ix_y, ix_x)));
+end
+[maxDepthFromEdge, iMax] = nanmax(depthFromEdge);
+if strcmp(axisDir,'y')
+    maxDepthepthInd = [ind(iMax), ix_x];
+else
+    maxDepthepthInd = [ix_y,ind(iMax)];
 end
 end
