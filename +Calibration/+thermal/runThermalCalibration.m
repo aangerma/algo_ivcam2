@@ -69,7 +69,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     else %% burn tables
         fprintff('PASSED.\n');
         fprintff('Burning algo thermal table...');
-        version = typecast(data.eepromRegs.FRMW.calibVersion,'single');
+        version = typecast(eepromRegs.FRMW.calibVersion,'single');
         whole = floor(version);
         frac = mod(version*100,100);
 
