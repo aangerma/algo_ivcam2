@@ -1,6 +1,7 @@
 general.py
 plain_fit.py
 calibration\calibration_test.py
+calibration\max_modulation.py
 registers_input.py
 iqValidation\from_data\validation_test.py
 iqValidation\robot\iqValidation_robot_test.py
