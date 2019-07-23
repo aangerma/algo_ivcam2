@@ -233,7 +233,7 @@ classdef HWinterface <handle
         function saveRecData(obj)
             if(~isempty(obj.m_recfn))
                 recData = obj.m_recData;%#ok
-                save(obj.m_recfn,'recData');
+                save(obj.m_recfn,'recData','-v7.3');
             end
         end
         %destructor
