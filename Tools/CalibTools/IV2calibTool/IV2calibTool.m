@@ -224,6 +224,7 @@ function app=createComponents(runParamsFile)
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
     app.disableAdvancedOptions = runParams.disableAdvancedOptions;
+    app.calibRes=runParams.calibRes; 
     if runParams.disableAdvancedOptions checkBoxesMode = 'inactive'; else checkBoxesMode = 'on'; end
     for i=1:length(cbnames)
         f=cbnames{i};
@@ -306,6 +307,7 @@ function saveDefaults(varargin)
     s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
+    s.calibRes=app.calibRes; 
 %    s.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
@@ -383,6 +385,7 @@ function statrtButton_callback(varargin)
         end
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
+        runparams.calibRes=app.calibRes; 
         
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);

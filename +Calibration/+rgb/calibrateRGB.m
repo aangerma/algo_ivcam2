@@ -7,6 +7,7 @@ function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams,
             Kdepth = hw.getIntrinsics;
             z2mm = hw.z2mm;
             irImSize = hw.streamSize;
+            hw.startStream(0,runParams.calibRes); 
             captures = {calibParams.dfz.captures.capture(:).type};
             captures = captures(~strcmp(captures,'shortRange'));
             tmpcalibParams.dfz.captures.capture = calibParams.dfz.captures.capture(~strcmp(captures,'shortRange'));

@@ -102,9 +102,7 @@ classdef HWinterfaceFile <handle
             
             
         end
-        function startStream(obj,varargin)
-            imgVsize = obj.read('GNRLimgVsize');
-            imgHsize=obj.read('GNRLimgHsize'); 
+        function startStream(obj,varargin) 
             obj.setUsefullRegs();
         end
         function stopStream(obj,varargin)

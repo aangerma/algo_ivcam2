@@ -116,7 +116,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     fw.genMWDcmd('DIGG|DEST|CBUF',fn);
     %% prepare preset table
     presetPath = path; 
-    Calibration.presets.updatePresetsEndOfCalibration(calibParams,presetPath,regs,results);
+    Calibration.presets.updatePresetsEndOfCalibration(calibParams,presetPath,results);
     
     %% Print image final fov
     [results,~] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);

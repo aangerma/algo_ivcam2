@@ -10,17 +10,25 @@ end
 function [sectionVec] = calcCbufSection(regs,luts)
 NUM_SECTIONS = single(124);
 ANG_STEP = 8;
+tmpRegs=regs; 
+tmpRegs.GNRL.imgHsize=regs.FRMW.calImgHsize; 
+tmpRegs.GNRL.imgVsize=regs.FRMW.calImgVsize; 
+tmpRegs.FRMW.marginL=regs.FRMW.calMarginL; 
+tmpRegs.FRMW.marginR=regs.FRMW.calMarginR; 
+tmpRegs.FRMW.marginT=regs.FRMW.calMarginT; 
+tmpRegs.FRMW.marginB=regs.FRMW.calMarginB; 
+
 
 dXpix = single(regs.FRMW.calImgHsize)/NUM_SECTIONS; % Delta pixel between sections on x axis 
 xPix = 1:dXpix:single(regs.FRMW.calImgHsize);
 num_of_samples = length(xPix); % Sampled x pixels that are transformed to the angle domain
 
-v = Calibration.aux.xy2vec(xPix,ones(num_of_samples,1)*single(regs.FRMW.calImgVsize)*0.5,regs); % for each pixel, get the unit vector in space corresponding to it.
-[angX,angY] = Calibration.aux.vec2ang(v,regs);
-angxPrePolyUndist = Calibration.Undist.inversePolyUndistAndPitchFix(angX,angY,regs);
+v = Calibration.aux.xy2vec(xPix,ones(num_of_samples,1)*single(regs.FRMW.calImgVsize)*0.5,tmpRegs); % for each pixel, get the unit vector in space corresponding to it.
+[angX,angY] = Calibration.aux.vec2ang(v,tmpRegs);
+angxPrePolyUndist = Calibration.Undist.inversePolyUndistAndPitchFix(angX,angY,tmpRegs);
 [angYgrid,angXgrid] = ndgrid(single(-2^11-1:ANG_STEP:2^11-1),angxPrePolyUndist); % Creating a grid in the angle domain along the scan lines
-[angxPostPolyUndist, angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angXgrid,angYgrid,regs);
-[xF,yF] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,regs), regs); % Return to the image domain to look for maximal scan line width in each of the NUM_SECTIONS sections 
+[angxPostPolyUndist, angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angXgrid,angYgrid,tmpRegs);
+[xF,yF] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,tmpRegs), tmpRegs); % Return to the image domain to look for maximal scan line width in each of the NUM_SECTIONS sections 
 xF = reshape(xF,size(angXgrid));
 yF = reshape(yF,size(angYgrid));
 

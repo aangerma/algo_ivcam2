@@ -11,10 +11,8 @@ SigPath_LFC,uint8,0
 Amb_Dis,uint8,0
 cmpratesel,uint8,0
 cmppeak,uint8,3
-cmp0offp,uint8,0
-cmp0offn,uint8,0
-ampoffp,uint8,0
-ampoffn,uint8,0
+coarse_masking_min,uint16,0
+coarse_masking_max,uint16,0
 bpfEn,uint8,0
 bpfCutoff,uint8,0
 bpfGain,uint8,0
@@ -36,5 +34,4 @@ AlgoThermalLoopScale,single,0
 AlgoThermalLoopOffset,single,0
 JFILgammaScale,uint32,67109888
 JFILgammaShift,uint32,0
-DCORcoarseMasking_002,uint32,4294967295
 DESTrxPWRpdLUTfactor,uint32,1048816

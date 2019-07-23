@@ -111,7 +111,7 @@ function RestartMirror(hw,runParams)
     hw.runPresetScript('resetRestAngle');
     % hw.runPresetScript('maRestart');
     % hw.runPresetScript('systemConfig');
-    hw.startStream;
+    hw.startStream(0,runParams.calibRes);
 end
 
 function [binIm1stat,stat] = maxAreaStat(binaryIm,sz)

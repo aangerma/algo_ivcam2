@@ -14,7 +14,7 @@ shortRangePreset=readtable(pathSR);
 
 %definitions
 TableSize = 120*2;
-resrevedLength = 29;
+resrevedLength = 33;
 
 %%
 %initialize the stream

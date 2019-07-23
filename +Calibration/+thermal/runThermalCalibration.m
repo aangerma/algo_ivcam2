@@ -37,6 +37,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     hw.cmd('algo_thermloop_en 0');
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     hw.setPresetControlState(calibParams.gnrl.presetMode);
+    hw.startStream(0,calibParams.gnrl.calibRes);
     hw.getFrame;
     hw.stopStream;
     
@@ -68,7 +69,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     else %% burn tables
         fprintff('PASSED.\n');
         fprintff('Burning algo thermal table...');
-        version = typecast(data.eepromRegs.FRMW.calibVersion,'single');
+        version = typecast(eepromRegs.FRMW.calibVersion,'single');
         whole = floor(version);
         frac = mod(version*100,100);
 

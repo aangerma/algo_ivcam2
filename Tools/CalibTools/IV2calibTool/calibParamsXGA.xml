@@ -30,7 +30,7 @@
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
       <geomErr>[0.01 4]</geomErr>
-      <extraImagesGeomErr>[0.01 4]</extraImagesGeomErr>
+      <extraImagesGeomErr>[0 4]</extraImagesGeomErr>
       <shortRangeImagesGeomErr>[0.01 3]</shortRangeImagesGeomErr>
       <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
       <eGeomSphericalEn>[0.01 3]</eGeomSphericalEn>
@@ -38,7 +38,7 @@
       <gammaErr>[0 inf]</gammaErr>
       <maxPixelDisplacement>[0.0 20]</maxPixelDisplacement>
       <undistRms>[0.0 inf]</undistRms>
-      <upDownFovDiff>[0 0.5]</upDownFovDiff>
+      <upDownFovDiff>[0 0.75]</upDownFovDiff>
       <scanLineFillRate>[100 75]</scanLineFillRate>
       <imFovX>[50 inf]</imFovX>
       <imFovY>[35 inf] </imFovY>
@@ -60,8 +60,9 @@
       <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
       <maxRangeScaleModRef>[0 1]</maxRangeScaleModRef>
       <maxModRefDec>[0 inf]</maxModRefDec>
-      <targetDist>[780 820]</targetDist> <!--In [mm]-->
-      <maxFillRate>[90 100]</maxFillRate>
+      <!--<targetDist>[780 820]</targetDist>-->
+      <targetDist>[0 inf]</targetDist> <!--In [mm]-->
+      <maxFillRate>[73 100]</maxFillRate>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -110,8 +111,8 @@
       
    </validationConfig>
    <validationErrRange>
-      <horizontalSharpness>[1 3]</horizontalSharpness>
-      <verticalSharpness>[1 3]</verticalSharpness>
+      <horizontalSharpness>[1 4.8]</horizontalSharpness>
+      <verticalSharpness>[1 4.8]</verticalSharpness>
       <temporalNoise>[0.2 10]</temporalNoise>
       <DelaySlowOffest>[0 inf]</DelaySlowOffest>
       <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
@@ -122,13 +123,13 @@
       <irDistanceDrift>[-5 5]</irDistanceDrift>
       <roiHorizontalLoss>[0 10]</roiHorizontalLoss>
       <roiVerticalLoss>[0 4]</roiVerticalLoss>
-      <losMaxP2p>[0 2]</losMaxP2p>
-      <losMeanStdX>[0 0.3] </losMeanStdX>
-      <losMeanStdY>[0 0.2]</losMeanStdY>
+      <losMaxP2p>[0 3.2]</losMaxP2p>
+      <losMeanStdX>[0 0.48] </losMeanStdX>
+      <losMeanStdY>[0 0.32]</losMeanStdY>
       <MirrorRestAngX>[-30 30]</MirrorRestAngX>
       <MirrorRestAngY>[-30 30]</MirrorRestAngY>
       <irCoverage>[80 100]</irCoverage>
-      <presetCompareMeanDiff>[0.2 5]</presetCompareMeanDiff>
+      <presetCompareMeanDiff>[-1 1]</presetCompareMeanDiff>
       <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
    </validationErrRange>   
    <thermal>
@@ -145,6 +146,7 @@
       <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
+      <calibrateFast>1</calibrateFast>
    </dataDelay>
    <coarseDSM>
       <nSamples>200</nSamples>  
@@ -152,10 +154,13 @@
    </coarseDSM>
    <dsm>
      <nSamples>101</nSamples>  
-     <margin>100</margin>  
+     <margin>100</margin>
+     <useCenterOfProjection>0</useCenterOfProjection>
    </dsm>
     <dfz>
+        <shortRangeCompareROI>0.4</shortRangeCompareROI>
         <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
+        <cropRatio>[0.2 0.1]</cropRatio>
         <captures>
              <!--<capture>
                 <target>Iv2L50</target>
@@ -213,8 +218,8 @@
         </preResetCapture>
         
         
-        <fovxRange>[60,75]</fovxRange> 
-        <fovyRange>[55,65]</fovyRange> 
+        <fovxRange>[50,75]</fovxRange> 
+        <fovyRange>[45,65]</fovyRange> 
         <delayRange>[5000, 5500]</delayRange> 
         <zenithxRange>[-0,0]</zenithxRange> 
         <zenithyRange>[-0,0]</zenithyRange> 
@@ -225,7 +230,7 @@
         <undistVertRange>[-50,-50,-50,-50;50,50,50,50]</undistVertRange>
         <fovexNominalRange>[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]</fovexNominalRange>
         <fovexRadialRange>[-1,-1,-1;1,1,1]</fovexRadialRange>
-        <fovexTangentRange>[-1,-1;1,1]</fovexTangentRange>
+        <fovexTangentRange>[0,0;0,0]</fovexTangentRange>
         <fovexCenterRange>[-5,-5;5,5]</fovexCenterRange>
     </dfz>
     <roi>
@@ -247,21 +252,31 @@
     </rgb>
     <presets>
         <long>
-            <updateCalibVal>0</updateCalibVal>
+            <updateCalibVal>1</updateCalibVal>
             <minModprc>0</minModprc>
             <laserDelta>1</laserDelta>
             <framesNum>10</framesNum>
-            <fillRateTh>97</fillRateTh>
+            <fillRateTh>85</fillRateTh>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
             <estDistTargetReflect>0.8</estDistTargetReflect>-->
             <mask4userScale>2</mask4userScale>
             <maxMask4userROI>0.2</maxMask4userROI>
             <params>
-                <roi>0.1</roi>
+                <roi>0.09</roi>
                 <isRoiRect>0</isRoiRect>
                 <roiCropRect>0</roiCropRect>
                 <maskCenterShift>[0,0]</maskCenterShift>
             </params>
+            <JFILinvMinMax>4294904760</JFILinvMinMax> <!-- invalidate z below 750mm -->
+            <coarseMaskingRange>[0,40]</coarseMaskingRange><!-- until supported between resolutions -->
+            <JFILgammaScale>67109888</JFILgammaScale>
+            <JFILgammaShift>0</JFILgammaShift>
         </long>
+        <short>
+            <coarseMaskingRange>[0,0]</coarseMaskingRange>
+            <JFILgammaScale>171115520</JFILgammaScale>
+            <JFILgammaShift>4286644224</JFILgammaShift>
+            <JFILinvMinMax>4294902560</JFILinvMinMax> <!-- invalidate z below  -->
+        </short>
     </presets>
 </struct>

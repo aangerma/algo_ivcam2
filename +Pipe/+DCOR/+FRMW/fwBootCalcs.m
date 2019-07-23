@@ -35,18 +35,17 @@ autogenRegs.DCOR.coarseTmplLength = uint16(double(regs.GNRL.codeLength)*double(r
 
 
 %% coarse masking
-pdSampleOffsetFine = (regs.DEST.txFRQpd./regs.FRMW.sampleDist); %ofsset caused by pd [mm]/ offset caused by pd [mm/sample] -> [sample]
-pdSampleOffsetCoarse = uint8(floor(pdSampleOffsetFine/(downSamplingR)+0.5));
-
-maskLength = double(regs.GNRL.tmplLength)/downSamplingR;
-
-coarseMasking = repmat(regs.FRMW.coarseMasking,3,1).';
-for i=1:3
-    coarseMasking(1:maskLength,i) = circshift(coarseMasking(1:maskLength,i),pdSampleOffsetCoarse(i));
-    coarseMasking(1:maskLength,i) = circshift(coarseMasking(1:maskLength,i),-1);%due to HW implementation
-end
-autogenRegs.DCOR.coarseMasking = coarseMasking(:).';
-
+% pdSampleOffsetFine = (regs.DEST.txFRQpd./regs.FRMW.sampleDist); %ofsset caused by pd [mm]/ offset caused by pd [mm/sample] -> [sample]
+% pdSampleOffsetCoarse = uint8(floor(pdSampleOffsetFine/(downSamplingR)+0.5));
+% 
+% maskLength = double(regs.GNRL.tmplLength)/downSamplingR;
+% 
+% coarseMasking = repmat(regs.FRMW.coarseMasking,3,1).';
+% for i=1:3
+%     coarseMasking(1:maskLength,i) = circshift(coarseMasking(1:maskLength,i),pdSampleOffsetCoarse(i));
+%     coarseMasking(1:maskLength,i) = circshift(coarseMasking(1:maskLength,i),-1);%due to HW implementation
+% end
+% autogenRegs.DCOR.coarseMasking = coarseMasking(:).';
 %% prepare templates
 codevec = vec(fliplr(dec2bin(regs.FRMW.txCode(:),32))')=='1';
 codevec = codevec(1:regs.GNRL.codeLength);
