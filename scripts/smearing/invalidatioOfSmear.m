@@ -7,20 +7,14 @@ load([path '\scenes\' scene '.mat']);
 
 Iir = frames(10).i;
 params = struct('IR_grad_thresh', 180, 'ir_thresh', 190, 'neighborPix', 8, 'dz_around_edge_th', 45, 'dz_in_neighborPix_th', 100);
-% IR_grad_thresh = 100;
-% ir_thresh = 170;%130; %Condition #2
-% neighborPix = 7; %For condition #3 and #5
-% dz_around_edge_th = 30; %For condition #4
-% dz_in_neighborPixx_th = 100;
-
-verbose = false;
+verbose = true;
 
 %%
 % IR and Depth and their x,y gradients
-[Gx_ir,Gy_ir] = imgradientxy(Iir);
+[Gx_ir,Gy_ir] = imgradientxy(Iir); % Using Sobel 3x3 filter: [1 2 1;0 0 0;-1 -2 -1] for horizontal edges (Gy), [1 0 -1;2 0 -2;1 0 -1] for vertical edges (Gx)
 Idepth = double(frames(10).z./4);
-[Gx_z,Gy_z] = imgradientxy(Idepth);
 if verbose
+    [Gx_z,Gy_z] = imgradientxy(Idepth);
     figure;
     subplot(2,3,1); imagesc(Iir); title('IR'); impixelinfo;
     subplot(2,3,2); imagesc(Gx_ir); title('IR - gradient in x direction'); impixelinfo;
@@ -81,48 +75,37 @@ if verbose
 end
 %%
 % Discard threshold where gradient is too low
-% ir_edge(abs(G_ir.*ir_edge) < max(G_ir(:))*params.IR_grad_thresh) = 0;
 ir_edge(abs(G_ir.*ir_edge) < params.IR_grad_thresh) = 0;
 if verbose
     figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
     subplot(2,1,2); imagesc(ir_edge); title('Edges higher than threshold'); impixelinfo;linkaxes;
 end
-% We are intrested only in pixels that are whithin the IR edge neighborhood
+% We are intrested only in pixels that are within the IR edge neighborhood
 % Condition #3
 pixs2CheckByNeighbor = findPixByNeighbor(ir_edge,params.neighborPix,CorrectDir);
-Idebug = Iir; Idebug(~pixs2CheckByNeighbor) = 0;
 if verbose
+    Idebug = Iir; Idebug(~pixs2CheckByNeighbor) = 0;
     figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
     subplot(2,1,2); imagesc(Idebug); title('Area to check by IR edge neighborhood'); impixelinfo;linkaxes;
 end
-% Show IR on the edges I found
-IrOnEdges = Iir;
-IrOnEdges(~ir_edge) = 0;
+
 if verbose
+    % Show IR on the edges I found
+    IrOnEdges = Iir;
+    IrOnEdges(~ir_edge) = 0;
     figure; subplot(2,1,1); imagesc(Iir); title('IR'); impixelinfo;
     subplot(2,1,2); imagesc(IrOnEdges); title('IrOnEdges'); impixelinfo;linkaxes;
 end
 %%
-%{
-% For debug - show IR max-min on different scenes
-load('X:\Users\mkiperwa\smearing\IR_differentDists\far1.mat');
-load('X:\Users\mkiperwa\smearing\IR_differentDists\far2.mat');
-load('X:\Users\mkiperwa\smearing\IR_differentDists\close1.mat');
-load('X:\Users\mkiperwa\smearing\IR_differentDists\close2.mat');
-
-figure; subplot(2,2,1); imagesc(framesClose1(10).i); title(['IR - close 1. Median = ' num2str(median(framesClose1(10).i(:))) '. Max(IR)-Min(IR) = ' num2str(max(framesClose1(10).i(:))-min(framesClose1(10).i(:)))]); impixelinfo;
-subplot(2,2,2); imagesc(framesClose2(10).i); title(['IR - close 2. Median = ' num2str(median(framesClose2(10).i(:))) '. Max(IR)-Min(IR) = ' num2str(max(framesClose2(10).i(:))-min(framesClose2(10).i(:)))]); impixelinfo;
-subplot(2,2,3); imagesc(framesFar1(10).i); title(['IR - far 1. Median = ' num2str(median(framesFar1(10).i(:))) '. Max(IR)-Min(IR) = ' num2str(max(framesFar1(10).i(:))-min(framesFar1(10).i(:)))]); impixelinfo;
-subplot(2,2,4); imagesc(framesFar2(10).i); title(['IR - far 2. Median = ' num2str(median(framesFar2(10).i(:))) '. Max(IR)-Min(IR) = ' num2str(max(framesFar2(10).i(:))-min(framesFar2(10).i(:)))]); impixelinfo;
-%}
-%%
-% Adding condition #5 and condition #2
+% Adding condition #5 and condition #2:
+% Check pixels that are not already invalidated, that are 'black' enough by
+% IR and that are in the neighborhood of an edge
 IdepthNan = Idepth;
 IdepthNan(IdepthNan == 0) = nan;
 
-pixs2Check = ~isnan(IdepthNan) & Iir<params.ir_thresh & pixs2CheckByNeighbor;
-Idebug = Iir; Idebug(~pixs2Check) = 0;
+pixs2Check = ~isnan(IdepthNan) & Iir<params.ir_thresh & pixs2CheckByNeighbor; 
 if verbose
+    Idebug = Iir; Idebug(~pixs2Check) = 0;
     figure; subplot(3,1,1); imagesc(Iir); title('IR'); impixelinfo;
     subplot(3,1,2); imagesc(Idebug); title('Ipixs2Check'); impixelinfo;
     subplot(3,1,3);imagesc(Idepth); title('Depth'); impixelinfo;linkaxes;
@@ -136,7 +119,7 @@ for ix_y = 1:size(ir_edge,1)
             continue;
         end
         [dz_around_edge,closestEdgeIx] = calcDzAroundClosestEdge(IdepthNan,ix_x,ix_y,ir_edge,CorrectDir);
-        if dz_around_edge > params.dz_around_edge_th % Condition #4
+        if dz_around_edge > params.dz_around_edge_th % Condition #4 - if the depth is consistent with IR, no need to invalidate
             continue;
         end
         [depthFromEdge,maxDepthFromEdge,maxDepthepthInd] = calcDepthFromEdge(IdepthNan,Iir,ix_x,ix_y,closestEdgeIx,sizeOfAxisDir,CorrectDir,params.neighborPix);
