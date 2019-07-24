@@ -69,19 +69,19 @@ def maxModulation(xmlPath, debug):
     for test in tests:
         slash.logger.info('starting test {}'.format(test['name']), extra={"highlight": True})
 
-        camera = libRealSense.LibRealSense(xRes=test.get('xRes', None), yRes=test.get('yRes', None),
-                                           frameRate=test.get('frameRate', None))
         if not debug:
             robot.safe_move('wall_10Reflectivity', test['range'])
         stableTemp = params.get('stableTemp', 'false').lower()
         if stableTemp == 'true':
+            camera = libRealSense.LibRealSense(xRes=test.get('xRes', None), yRes=test.get('yRes', None),
+                                               frameRate=test.get('frameRate', None))
             if not camera.get_to_stable_temp():
                 raise common.TestFail("Test failed On stable temperature")
-        camera.close_stream()
+            camera.close_stream()
 
-        dirName = '{}\{}'.format(params['dataFolder'], test['name'])
+        dirName = '{}\{}\{}\{}'.format(params['dataFolder'], test['name'],test['preset'], test['range'])
 
-        slash.logger.info("running max modulation")
+        slash.logger.info("data: {}".format(dirName))
         out = io.StringIO()
         err = io.StringIO()
 
@@ -91,9 +91,19 @@ def maxModulation(xmlPath, debug):
                       'roiCropRect': params.get('roiCropRect', 0), 'centerShiftX': params.get('centerShiftX', 0),
                       'centerShiftY': params.get('centerShiftY', 0)}
         fillRateTh = params.get('fillRateTh', 97)
+
+        mTest = dict()
+        for k,v in test.items():
+            if v is not None:
+                mTest[k] = v
         try:
+            slash.logger.debug('send to matlab: reggresionParams: {}'.format(reggresionParams))
+            slash.logger.debug('send to matlab: maskParams: {}'.format(maskParams))
+            slash.logger.debug('send to matlab: fillRateTh: {}'.format(fillRateTh))
+            slash.logger.debug('send to matlab: dirName: {}'.format(dirName))
+            slash.logger.debug('send to matlab: test: {}'.format(mTest))
             maxRangeScaleModRef, maxFillRate, targetDist = eng.s.maxModulation(reggresionParams, maskParams, fillRateTh,
-                                                                               dirName, test, stdout=out, stderr=err,
+                                                                               dirName, mTest, stdout=out, stderr=err,
                                                                                nargout=3)
             slash.logger.info('test: {}, maxRangeScaleModRef {}, maxFillRate: {}, targetDist: {}'.format(test['name'],
                                                                                                          maxRangeScaleModRef,
@@ -114,5 +124,5 @@ def maxModulation(xmlPath, debug):
 @slash.tag('turn_in')
 def test_maxModulation():
     filePath = r"X:\Avv\sources\robot\maxModulation.xml"
-    debug = True
+    debug = False
     maxModulation(filePath, debug)

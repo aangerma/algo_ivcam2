@@ -20,10 +20,23 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
     
     
     hw = HWinterface();
-    runCmd(hw, test.preStreamCmd);
-    hw.startStream();
-    runCmd(hw, test.postStreamCmd);
     
+    if isfield(test, 'preStreamCmd')
+        runCmd(hw, test.preStreamCmd);
+    end
+    if isfield(test, 'preset')
+        setPreset(hw, test.preset)
+    end
+    
+    if isfield(test,'xRes') && isfield(test,'yRes')
+        hw.startStream(0, [test.xRes test.yRes]);
+    else
+        hw.startStream();
+    end
+    
+    if isfield(test, 'postStreamCmd')
+        runCmd(hw, test.postStreamCmd);
+    end
     
     dataDir = fullfile(output_folder, 'data');
     mkdirSafe(dataDir);
@@ -43,6 +56,18 @@ function s = converToDouble(s)
     end
 end
 
+function setPreset(hw, preset)
+    if strcmpi(preset, 'long')
+        val = 1;
+    elseif strcmpi(preset, 'short')
+        val = 2;
+    else
+        error('cant recognize preset: %s', preset) 
+    end
+    
+    hw.setPresetControlState(val)
+end
+
 function runCmd(hw, cmd)
     commands = split(cmd,',');
     for i = 1:length(commands)
@@ -51,5 +76,4 @@ function runCmd(hw, cmd)
             error('failed running command: %s', commands{i});
         end
     end
-    
 end
