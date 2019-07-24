@@ -121,7 +121,7 @@ def maxModulation(xmlPath, debug):
             extra={"highlight": True})
 
 
-@slash.tag('turn_in')
+@slash.tag('robot')
 def test_maxModulation():
     filePath = r"X:\Avv\sources\robot\maxModulation.xml"
     debug = False

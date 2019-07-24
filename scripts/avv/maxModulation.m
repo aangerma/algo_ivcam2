@@ -7,7 +7,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
     calibParams.presets.long.params.roi = maskParams.roi;
     calibParams.presets.long.params.isRoiRect = maskParams.isRoiRect;
     calibParams.presets.long.params.roiCropRect = maskParams.roiCropRect; 
-    calibParams.presets.long.params.maskCenterShift = [maskParams.centerShiftX maskParams.centerShiftY];
+    calibParams.presets.long.params.maskCenterShift = [maskParams.centerShiftY maskParams.centerShiftX];
     
     calibParams.presets.long.fillRateTh = str2double(fillRateTh);
     calibParams.presets.long.updateCalibVal = 0;
