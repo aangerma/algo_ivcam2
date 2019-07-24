@@ -32,7 +32,7 @@ rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
 refTmp = data.dfzRefTmp;
 % a*ldd +b = rtdPerFrame;
 
-startI = round(numel(rtdPerFrame)/80);
+startI = calibParams.fwTable.nFramesToIgnore+1;
 [a,b] = linearTrans(vec(ldd(startI:end)),vec(rtdPerFrame(startI:end)));
 
 if ~isempty(runParams)

@@ -10,11 +10,10 @@
        <apdTKill>65</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
-       <cbGridSz>[9,13]</cbGridSz>
+       <cbGridSz>[]</cbGridSz>
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
        <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
-       <calibRes>[768,1024]</calibRes>
    </gnrl>
    <warmUp>
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
@@ -24,6 +23,16 @@
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
    </warmUp>
    <errRange>
+      <conLocDelaySlow>[0 100000]</conLocDelaySlow>
+      <conLocDelayFastC>[0 100000]</conLocDelayFastC>
+      <conLocDelayFastF>[0 100000]</conLocDelayFastF>
+      <delayF>[0 0.9]</delayF>
+      <delayS>[0 0.9]</delayS>
+      <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
+      <dsmXscale>[0.5 2]</dsmXscale>
+      <dsmYscale>[0.5 2]</dsmYscale>
+      <dsmXshift>[25 35]</dsmXshift>
+      <dsmYshift>[25 35]</dsmYshift>
       <stdRtd>[0 inf]</stdRtd>
       <stdXim>[0 1.5]</stdXim>
       <stdYim>[0 0.5]</stdYim>
@@ -36,14 +45,21 @@
       <p2pXmm>[0 inf]</p2pXmm>
       <p2pYmm>[0 inf]</p2pYmm>
       <p2pZmm>[0 inf]</p2pZmm>
-      <meanEGeom>[0 2.5]</meanEGeom>
-      <minEGeom>[0 1.2]</minEGeom>
-      <maxEGeom>[0 20]</maxEGeom>
       <xScale>[0 0.01]</xScale>
       <yScale>[0 0.008]</yScale>
       <xShift>[0 1.11]</xShift>
       <yShift>[0 0.8]</yShift>
       <rtdShit>[0 inf]</rtdShit>
+      <thermalRtdRefTemp>[32 79]</thermalRtdRefTemp>
+      <thermalRtdSlope>[0.5 2]</thermalRtdSlope>
+      <thermalAngyMaxScale>[0.5 2]</thermalAngyMaxScale>
+      <thermalAngyMaxOffset>[0 1000]</thermalAngyMaxOffset>
+      <thermalAngyMinVal>[0 5]</thermalAngyMinVal>
+      <thermalAngyMaxVal>[0 5]</thermalAngyMaxVal>
+      <thermalAngxMaxScale>[0.5 2]</thermalAngxMaxScale>
+      <thermalAngxMaxOffset>[0 1000]</thermalAngxMaxOffset>
+      <thermalAngxP0>[0 5]</thermalAngxP0>
+      <thermalAngxP1>[0 5]</thermalAngxP1>
    </errRange>
    <validation>
        <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>
@@ -61,15 +77,29 @@
       <p2pXmm>[0 inf]</p2pXmm>
       <p2pYmm>[0 inf]</p2pYmm>
       <p2pZmm>[0 inf]</p2pZmm>
-      <meanEGeom>[0 inf]</meanEGeom>
-      <minEGeom>[0 inf]</minEGeom>
-      <maxEGeom>[0 inf]</maxEGeom>
       <xScale>[0 inf]</xScale>
       <yScale>[0 inf]</yScale>
       <xShift>[0 inf]</xShift>
       <yShift>[0 inf]</yShift>
       <rtdShit>[0 inf]</rtdShit>
    </validationErrRange>
+   <dataDelay>
+      <fastDelayInitVal>98488</fastDelayInitVal> 
+      <slowDelayInitVal>98488</slowDelayInitVal> 
+      <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
+	  <iterFixThr>1</iterFixThr>
+      <nAttempts>20</nAttempts>
+      <calibrateFast>1</calibrateFast>
+   </dataDelay>
+   <coarseDSM>
+      <nSamples>200</nSamples>  
+      <margin>150</margin>  
+   </coarseDSM>
+   <dsm>
+     <nSamples>101</nSamples>  
+     <margin>100</margin>
+     <useCenterOfProjection>0</useCenterOfProjection>
+   </dsm>
    <fwTable>
       <nFramesToIgnore>15</nFramesToIgnore>
       <tempBinRange>[32 79]</tempBinRange> 
