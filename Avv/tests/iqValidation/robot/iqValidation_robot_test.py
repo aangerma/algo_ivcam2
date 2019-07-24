@@ -7,18 +7,30 @@ import runIqValidation
 
 
 @slash.tag('robot')
-def test_validation_robot_regression_long():
-    filePath = r'Avv/tests/iqValidation/robot/robot_regression_long.xml'
+def test_validation_robot_regression_vga_long():
+    filePath = r'Avv/tests/iqValidation/robot/robot_regression_vga_long.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
 
 @slash.tag('robot')
-def test_validation_robot_regression_short():
-    filePath = r'Avv/tests/iqValidation/robot/robot_regression_short.xml'
+def test_validation_robot_regression_vga_short():
+    filePath = r'Avv/tests/iqValidation/robot/robot_regression_vga_short.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
 
+@slash.tag('robot')
+def test_validation_robot_regression_xga_long():
+    filePath = r'Avv/tests/iqValidation/robot/robot_regression_xga_long.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.validation_test(filePath)
+
+
+@slash.tag('robot')
+def test_validation_robot_regression_xga_short():
+    filePath = r'Avv/tests/iqValidation/robot/robot_regression_xga_short.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.validation_test(filePath)
 
 @slash.tag('robot')
 def test_validation_robot_algonas():
@@ -46,4 +58,5 @@ def test_validation_DEBUG():
     runIqValidation.validation_test(filePath)
 
 if __name__ == "__main__":
-    test_validation_robot_regression()
+    pass
+    # test_validation_robot_regression()
