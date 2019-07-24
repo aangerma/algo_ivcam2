@@ -8,6 +8,9 @@
         <stableTemp>false</stableTemp>
         <tag>regression</tag>
         <preset>long</preset>
+        <xRes>1024</xRes>
+        <yRes>768</yRes>
+        <frameRate>30</frameRate>
     </params>
     <cameraConfig_beforeStartStream>
         <cmd>DIRTYBITGET</cmd>
