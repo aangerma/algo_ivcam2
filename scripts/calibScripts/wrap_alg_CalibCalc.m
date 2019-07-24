@@ -93,9 +93,14 @@ irImSize = [360,640];
     dummy_output_flag = true;
     [calibParams , ~] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag);
     %% thermal calc phase 0
-    load('\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Matlab\mat_files\TemDataFrame_Calc_in0.mat');
-    InputPath = '\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Images\Thermal\Cycle10';
-    [result, tableResults, metrics,invalid_frames]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, 2);
+%    load('\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Matlab\mat_files\TemDataFrame_Calc_in0.mat');
+   load('\\ger\ec\proj\ha\RSG\SA_3DCam\tzachi\dror\HVM_1928_v4\Failures\IC35\Matlab\mat_files\TemDataFrame_Calc_in0.mat');
+%    load('C:\temp\unitCalib\F9240097\TC01\mat_files\TemDataFrame_Calc_in0.mat');
+%    InputPath = '\\143.185.124.250\Public\Users\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.0\IC5\Images\Thermal\Cycle10';
+    InputPath = '\\ger\ec\proj\ha\RSG\SA_3DCam\tzachi\dror\HVM_1928_v3\Failures\IC32\Images\Thermal\Cycle1';
+%    [result, tableResults, metrics,invalid_frames]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, 2);
+    [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames] = TemDataFrame_Calc(regs,eepromRegs,eepromBin,FrameData, sz ,InputPath,calibParams, maxTime2Wait);
+
     %% algo2 create script
     load('Z:\Dror\IVCAM2 CAL\FailThermalmatlab 1.15.0.1\IC12\Matlab\mat_files\data_out.mat');
     fprintff = @(varargin) fprintf(varargin{:});

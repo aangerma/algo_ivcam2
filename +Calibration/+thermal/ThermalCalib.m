@@ -59,8 +59,9 @@ while ~finishedHeating
     path = fullfile(algo2path_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait);
+    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin,framesData(i),sz, path,calibParams,maxTime2Wait);
 %    rmdir(path,'s');
+%    finishedHeating = (result~=0);
     
     if tempFig.isvalid
         tempsForPlot(plotDataI) = framesData(i).temp.ldd;
