@@ -59,7 +59,7 @@ while ~finishedHeating
     i = i + 1;
     path = fullfile(ATCpath_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
-    [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, framesData(i),sz, path,calibParams,maxTime2Wait);
+    [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait);
     
     if tempFig.isvalid
         tempsForPlot(plotDataI) = framesData(i).temp.ldd;

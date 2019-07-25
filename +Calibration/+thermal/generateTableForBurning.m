@@ -32,8 +32,6 @@ eepromRegs.FRMW.atlMaxVbias3        = single(data.tableResults.angx.p1(2));
 eepromRegs.EXTL.conLocDelaySlow     = uint32(data.regs.EXTL.conLocDelaySlow);
 eepromRegs.EXTL.conLocDelayFastC    = uint32(data.regs.EXTL.conLocDelayFastC);
 eepromRegs.EXTL.conLocDelayFastF    = uint32(data.regs.EXTL.conLocDelayFastF);
-%TODO: why is VDelay not treated properly in AnaSync calibration?
-%eepromRegs.EXTL.conLocOutVDelay     = uint32(data.regs.EXTL.conLocOutVDelay);
 % DSM regs were updated in AlgoThermalCalib
 eepromRegs.EXTL.dsmXscale           = single(data.regs.EXTL.dsmXscale);
 eepromRegs.EXTL.dsmXoffset          = single(data.regs.EXTL.dsmXoffset);

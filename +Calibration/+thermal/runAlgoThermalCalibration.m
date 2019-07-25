@@ -60,13 +60,14 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     hw.cmd('DIRTYBITBYPASS');
     hw.cmd('algo_thermloop_en 0');
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
+    hw.setPresetControlState(calibParams.gnrl.presetMode);
     
     fprintff('Opening stream...');
 %     Calibration.aux.startHwStream(hw,runParams);
     hw.startStream(0,calibParams.gnrl.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
-   [verValue,verValuefull] = getVersion(hw,runParams);  
+    [verValue,verValuefull] = getVersion(hw,runParams);  
     
     %% Set coarse DSM values 
     calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
@@ -91,7 +92,6 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     regs.EXTL.conLocDelaySlow   = delayRegs.EXTL.conLocDelaySlow;
     regs.EXTL.conLocDelayFastC  = delayRegs.EXTL.conLocDelayFastC;
     regs.EXTL.conLocDelayFastF  = delayRegs.EXTL.conLocDelayFastF;
-    %regs.EXTL.conLocOutVDelay   = delayRegs.EXTL.conLocOutVDelay;
     
     if typecast(hw.read('DESTtmptrOffset'),'single') ~= 0
         error('Algo thermal loop was active. Please disconnect and reconnect the unit before running.');

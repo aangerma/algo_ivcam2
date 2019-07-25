@@ -74,16 +74,12 @@ metrics.meanEGeom = nanmean(eGeomOverTemp);
 metrics.maxEGeom = max(eGeomOverTemp);
 metrics.minEGeom = min(eGeomOverTemp);
 
-
-
-
-
-
 if inValidationStage % Compare calibration to theoretical Fix
     legends = {'Post Fix (val)'};
 else
     legends = {'Pre Fix (val)'};
 end
+
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     plot(tmpBinEdges,eGeomOverTemp)

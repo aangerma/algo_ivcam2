@@ -188,7 +188,6 @@ else % steady-state stage
     
     invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
     data.framesData = data.framesData(~invalidFrames);
-    %TODO: avoid recalcing, add eGeom only once and maybe skip fix application
     data = Calibration.thermal.addEGeomToData(data);
     data.dfzRefTmp = Calibration.thermal.recalcRefTempForBetterEGeom(data,calibParams,runParams,fprintff);
     data.dfzRefTmp = regs.FRMW.dfzCalTmp;
@@ -200,11 +199,11 @@ else % steady-state stage
         fprintff('table is empty (no checkerboard where found)\n');
         return;
     end
-    dataFixed = Calibration.thermal.applyFix(data,calibParams);
-    % Add eGeom to data
-    dataFixed = Calibration.thermal.addEGeomToData(dataFixed);
+%     dataFixed = Calibration.thermal.applyFix(data,calibParams);
+%     % Add eGeom to data
+%     dataFixed = Calibration.thermal.addEGeomToData(dataFixed);
     
-    [data] = Calibration.thermal.analyzeFramesOverTemperature(data,dataFixed,calibParams,runParams,fprintff,0);
+    [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
     save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data');
     
     Calibration.aux.logResults(data.results,runParams);

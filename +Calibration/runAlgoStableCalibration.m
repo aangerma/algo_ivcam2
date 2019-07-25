@@ -124,7 +124,6 @@ function  [calibPassed] = runAlgoStableCalibration(runParamsFn,calibParamsFn, fp
     delayRegs.EXTL.conLocDelaySlow = hw.read('EXTLconLocDelaySlow');
     delayRegs.EXTL.conLocDelayFastC = hw.read('EXTLconLocDelayFastC');
     delayRegs.EXTL.conLocDelayFastF = hw.read('EXTLconLocDelayFastF');
-    delayRegs.EXTL.conLocOutVDelay = hw.read('EXTLconLocOutVDelay');
     dsmregs.EXTL.dsmXscale  = hw.read('EXTLdsmXscale');
     dsmregs.EXTL.dsmXoffset = hw.read('EXTLdsmXoffset');
     dsmregs.EXTL.dsmYscale  = hw.read('EXTLdsmYscale');
@@ -391,50 +390,6 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
 
     end
 end
-function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff)
-    calibPassed = 1;
-    fprintff('[-] Depth and IR delay calibration...\n');
-    if(runParams.dataDelay)
-        Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
-        Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
-        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
-        
-        fw.setRegs(delayRegs,fnCalib);
-        
-        results.delayS = (1- delayCalibResults.slowDelayCalibSuccess);
-        results.delaySlowPixelVar = delayCalibResults.delaySlowPixelVar;
-        results.delayF = (1-delayCalibResults.fastDelayCalibSuccess);
-        
-        if delayCalibResults.slowDelayCalibSuccess 
-            fprintff('[v] ir delay calib passed [e=%g]\n',results.delayS);
-        else
-            fprintff('[x] ir delay calib failed [e=%g]\n',results.delayS);
-            calibPassed = 0;
-        end
-        
-        pixVarRange = calibParams.errRange.delaySlowPixelVar;
-        if  results.delaySlowPixelVar >= pixVarRange(1) &&...
-                results.delaySlowPixelVar <= pixVarRange(2)
-            fprintff('[v] ir vertical pixel alignment variance [e=%g]\n',results.delaySlowPixelVar);
-        else
-            fprintff('[x] ir vertical pixel alignment variance [e=%g]\n',results.delaySlowPixelVar);
-            calibPassed = 0;
-        end
-        
-        if delayCalibResults.fastDelayCalibSuccess
-            fprintff('[v] depth delay calib passed [e=%g]\n',results.delayF);
-        else
-            fprintff('[x] depth delay calib failed [e=%g]\n',results.delayF);
-            calibPassed = 0;
-        end
-        
-    else
-        delayRegs = struct;
-        fprintff('skipped\n');
-    end
-    
-end
 
 function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
     % Sets all global variables
@@ -448,19 +403,6 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,ou
     dummy_output_flag   = 0;
     ret = 1;
     [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
-end
-
-
-function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
-    % Set a DSM value that makes the valid area of the image in spherical
-    % mode to be above a certain threshold.
-    fprintff('[-] Coarse DSM calibration...\n');
-    if(runParams.DSM)
-        Calibration.DSM.DSM_CoarseCalib(hw,calibParams,runParams);
-        fprintff('[v] Done(%d)\n',round(toc(t)));
-    else
-        fprintff('[?] skipped\n');
-    end
 end
 
 function [results,calibPassed] = validateLos(hw, runParams, calibParams, results, fprintff)
@@ -596,19 +538,6 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         end
     end
 end
-function [dsmregs] = calibrateDSM(hw,fw, runParams, calibParams,results, fnCalib, fprintff, t)
-
-    fprintff('[-] DSM calibration...\n');
-    if(runParams.DSM)
-        dsmregs = Calibration.DSM.DSM_Calib(hw,fprintff,calibParams,runParams);
-        fw.setRegs(dsmregs,fnCalib);
-        fprintff('[v] Done(%d)\n',round(toc(t)));
-    else
-        dsmregs = struct;
-        fprintff('[?] skipped\n');
-    end
-    
-end
 
 function calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff)
     fprintff('[-] Jfil gamma...\n');
@@ -651,167 +580,7 @@ function [results,calibPassed,dfzRegs,dfzTmpRegs] = calibrateDFZ(hw, runParams, 
         [results,calibPassed,dfzRegs,dfzTmpRegs] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
 %        [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
 end
-function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
-    calibPassed = 1;
-    fprintff('[-] FOV, System Delay and Zenith calibration...\n');
-    if(runParams.DFZ)
-        calibPassed = 0;
-        if(runParams.uniformProjectionDFZ)
-            Calibration.aux.setLaserProjectionUniformity(hw,true);
-        end
-        [regs,luts]=fw.get();
-        
-        regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
-        regs.DIGG.sphericalScale = int16(double(regs.DIGG.sphericalScale).*calibParams.dfz.sphericalScaleFactors);
-    
-        r=Calibration.RegState(hw);
-        
-        r.add('JFILinvBypass',true);
-        r.add('DESTdepthAsRange',true);
-        r.add('DIGGsphericalEn',true);
-        r.add('DIGGsphericalScale',regs.DIGG.sphericalScale);
 
-        r.set();
-        
-        
-        frame = hw.getFrame(10);
-        bwIm = frame.i>0;
-        %{
-        imNoise = collectNoiseIm(hw);
-        noiseLevel = prctile_(imNoise(imNoise(:)~=0),99)*255;
-        props = regionprops(bwIm,'BoundingBox','Area');
-        largest = maxind([props.Area]);
-        bbox = round(props(largest).BoundingBox);
-        %}
-        
-        %find effective image "bounding box"
-        bbox = [];
-        bbox([1,3]) = minmax(find(bwIm(round(size(bwIm,1)/2),:)>0.9));
-        lcoords = minmax(find(bwIm(:,bbox(1)+10)>0.9)');
-        mcoords = minmax(find(bwIm(:,round(size(bwIm,2)/2))>0.9)');
-        rcoords = minmax(find(bwIm(:,bbox(3)-10)>0.9)');
-        bbox(2) = max([lcoords(1),mcoords(1),rcoords(1)]);
-        bbox(4) = min([lcoords(2),mcoords(2),rcoords(2)])-bbox(2);
-
-        
-        [dfzCalTmpStart,~,~,dfzApdCalTmpStart] = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
-        for j = 1:3
-            [pzrsIBiasStart(j),pzrsVBiasStart(j)] = hw.pzrPowerGet(j,5);
-        end
-        captures = {calibParams.dfz.captures.capture(:).type};
-        trainImages = strcmp('train',captures);
-        testImages = ~trainImages;
-        for i=1:length(captures)
-            cap = calibParams.dfz.captures.capture(i);
-            targetInfo = targetInfoGenerator(cap.target);
-            cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
-            cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
-            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i));
-            if ~strcmp('train',cap.type)
-                [dfzCalTmpEnd,~,~,dfzApdCalTmpEnd] = hw.getLddTemperature();
-                for j = 1:3
-                    [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrPowerGet(j,5);
-                end
-            end
-        end
-        if all(trainImages)
-            [dfzCalTmpEnd,~,~,dfzApdCalTmpEnd] = hw.getLddTemperature();
-            for j = 1:3
-                [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrPowerGet(j,5);
-            end
-        end
-        dfzTmpRegs.FRMW.dfzCalTmp = single(dfzApdCalTmpStart+dfzApdCalTmpEnd)/2;
-        dfzTmpRegs.FRMW.dfzApdCalTmp = single(dfzCalTmpStart+dfzCalTmpEnd)/2;
-        dfzTmpRegs.FRMW.dfzVbias = single(pzrsVBiasStart+pzrsVBiasEnd)/2;
-        dfzTmpRegs.FRMW.dfzIbias = single(pzrsIBiasStart+pzrsIBiasEnd)/2;
-        for i = 1:numel(captures)
-            cap = calibParams.dfz.captures.capture(i);
-            targetInfo = targetInfoGenerator(cap.target);
-            
-            
-            pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 1);
-            grid = [size(pts,1),size(pts,2),1];  
-%             [pts,grid] = Validation.aux.findCheckerboard(im(i).i,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-%             grid(end+1) = 1;
-             
-            targetInfo.cornersX = grid(1);
-            targetInfo.cornersY = grid(2);
-            d(i).i = im(i).i;
-            d(i).c = im(i).c;
-            d(i).z = im(i).z;
-            d(i).pts = pts;
-            d(i).grid = grid;
-            d(i).pts3d = create3DCorners(targetInfo)';
-            d(i).rpt = Calibration.aux.samplePointsRtd(im(i).z,pts,regs);
-            
-            
-            croppedBbox = bbox;
-            cropRatioX = 0.2;
-            cropRatioY = 0.1;
-            croppedBbox(1) = croppedBbox(1) + cropRatioX*croppedBbox(3);
-            croppedBbox(3) = (1-2*cropRatioX)*croppedBbox(3);
-            croppedBbox(2) = croppedBbox(2) + cropRatioY*croppedBbox(4);
-            croppedBbox(4) = (1-2*cropRatioY)*croppedBbox(4);
-            croppedBbox = int32(croppedBbox);
-            imCropped = zeros(size(im(i).i));
-            imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
-                im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
-%             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
-            ptsCropped = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
-            gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
-%             [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-            gridCropped(end+1) = 1;
-            
-            
-            d(i).ptsCropped = ptsCropped;
-            d(i).gridCropped = gridCropped;
-            d(i).rptCropped = Calibration.aux.samplePointsRtd(im(i).z,ptsCropped,regs);
-            
-        end
-        Calibration.DFZ.saveDFZInputImage(d,runParams);
-        % dodluts=struct;
-        %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
-        [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
-	%         calibParams.dfz.pitchFixFactorRange = [0,0];
-        results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
-        fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
-%         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
-        r.reset();
-        
-        fw.setRegs(dfzRegs,fnCalib);
-        fw.setRegs(dfzTmpRegs,fnCalib);
-        regs = fw.get(); 
-        hw.setReg('DIGGsphericalScale',regs.DIGG.sphericalScale);
-        hw.shadowUpdate;
-        
-        
-        if ~isempty(d(testImages))
-            [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,[],runParams);
-            fprintff('geom error on test set =%.2g\n',results.extraImagesGeomErr);
-        end
-        
-        
-
-        if(results.geomErr<calibParams.errRange.geomErr(2))
-            fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);
-%             fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoValidCalib.txt');
-%             [regs,luts]=fw.get();%run autogen
-%             fw.genMWDcmd('DEST|DIGG|EXTLdsm',fnAlgoTmpMWD);
-%             hw.runScript(fnAlgoTmpMWD);
-%             hw.shadowUpdate();
-            calibPassed = 1;
-        else
-            fprintff('[x] geom calib failed[e=%g]\n',results.geomErr);
-        end
-        if(runParams.uniformProjectionDFZ)
-            Calibration.aux.setLaserProjectionUniformity(hw,false);
-        end
-        
-        
-    else
-        fprintff('[?] skipped\n');
-    end
-end
 function imNoise = collectNoiseIm(hw)
         hw.cmd('iwb e2 06 01 00'); % Remove bias
         hw.cmd('iwb e2 08 01 0'); % modulation amp is 0
@@ -820,125 +589,6 @@ function imNoise = collectNoiseIm(hw)
         imNoise = hw.getFrame(10).i;
         hw.cmd('iwb e2 03 01 90');% 
         hw.cmd('iwb e2 06 01 70'); % Return bias
-end
-function [results] = calibrateROI(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
-    fprintff('[-] Calibrating ROI... \n');
-    if (runParams.ROI)
-%         d = hw.getFrame(10);
-%         roiRegs = Calibration.roi.runROICalib(d,calibParams);
-        regs = fw.get(); % run bootcalcs
-        %% Get spherical of both directions:
-        r = Calibration.RegState(hw);
-        r.add('DIGGsphericalEn'    ,true     );
-        r.set();
-        fprintff('[-] Collecting up/down frames... ');
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Make sure image is bright',1);
-        [imUbias,imDbias]=Calibration.dataDelay.getScanDirImgs(hw,1);
-        pause(0.1);
-        fprintff('Done.\n');
-        % Remove modulation as well to get a noise image
-        
-        imNoise = collectNoiseIm(hw);
-
-        % Ambient value - Mean of the center 21x21 (arbitrary) patch in the noise image.
-        results.ambVal = mean(vec(imNoise(size(imNoise,1)/2-10:size(imNoise,1)/2+10, size(imNoise,2)/2-10:size(imNoise,2)/2+10)));
-        r.reset();
-        
-        
-        [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,regs,calibParams,runParams);
-        fw.setRegs(roiRegs, fnCalib);
-        fw.get(); % run bootcalcs
-%         fnAlgoTmpMWD =  fullfile(runParams.internalFolder,filesep,'algoROICalib.txt');
-%         fw.genMWDcmd('DEST|DIGG',fnAlgoTmpMWD);
-%         hw.runScript(fnAlgoTmpMWD);
-%         hw.shadowUpdate();
-        fprintff('[v] Done(%ds)\n',round(toc(t)));
-        
-        fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,regs);
-        results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
-        fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
-        fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
-        fprintff('Laser opening angles slow (up):           [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
-        fprintff('Laser opening angles slow (down):         [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
-        fprintff('Laser opening angles fast (up):           [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYup);
-        fprintff('Laser opening angles fast (down):         [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
-        fprintff('Laser up/down fov diff:  %2.3g degrees.\n',results.upDownFovDiff);
-    else
-        fprintff('[?] skipped\n');
-    end
-end
-function [results,luts] = fixAng2XYBugWithUndist(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t)
-    fprintff('[-] Fixing ang2xy using undist table...\n');
-    if(runParams.undist)
-        [udistlUT.FRMW.undistModel,udistRegs,results.maxPixelDisplacement,results.undistRms] = Calibration.Undist.calibUndistAng2xyBugFix(fw);
-        udistRegs.DIGG.undistBypass = false;
-        fw.setRegs(udistRegs,fnCalib);
-        fw.setLut(udistlUT);
-        [~,luts]=fw.get();
-        if(results.maxPixelDisplacement<calibParams.errRange.maxPixelDisplacement(2))
-            fprintff('[v] undist calib passed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,results.undistRms);
-        else
-            fprintff('[x] undist calib failed[e=%g] [undistRms=%2.2f]\n',results.maxPixelDisplacement,results.undistRms);
-            
-        end
-        ttt=[tempname '.txt'];
-        fw.genMWDcmd('DIGGundist_|DIGG|DEST|CBUF',ttt);
-        hw.runPresetScript('maReset');
-        pause(0.1);
-        hw.runScript(ttt);
-        pause(0.1);
-        hw.runPresetScript('maRestart');
-        pause(0.1);
-        hw.shadowUpdate();
-
-    else
-        [~,luts]=fw.get();
-        fprintff('[?] skipped\n');
-    end
-end
-function writeVersionAndIntrinsics(hw,verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
-    regs = fw.get();
-    intregs.DIGG.spare=zeros(1,8,'uint32');
-    intregs.DIGG.spare(1)=verValueFull;
-    intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov(1)),'uint32');
-    intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov(1)),'uint32');
-    intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
-    intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
-    intregs.DIGG.spare(6)=verValue; %config version
-    intregs.DIGG.spare(7) = uint32(typecast(int16(regs.FRMW.calMarginL),'uint16'))*2^16 + uint32(typecast(int16(regs.FRMW.calMarginR),'uint16'));
-    intregs.DIGG.spare(8) = uint32(typecast(int16(regs.FRMW.calMarginT),'uint16'))*2^16 + uint32(typecast(int16(regs.FRMW.calMarginB),'uint16'));
-    intregs.JFIL.spare=zeros(1,8,'uint32');
-    %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
-    intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
-    intregs.JFIL.spare(2)=typecast(regs.FRMW.dfzCalTmp,'uint32');
-    intregs.JFIL.spare(3)=typecast(single(regs.FRMW.pitchFixFactor),'uint32');
-    intregs.JFIL.spare(4)=typecast(single(regs.FRMW.polyVars(1)),'uint32');
-    intregs.JFIL.spare(5)=typecast(single(regs.FRMW.polyVars(2)),'uint32');
-    intregs.JFIL.spare(6)=typecast(single(regs.FRMW.polyVars(3)),'uint32');
-    intregs.JFIL.spare(7)=typecast(regs.FRMW.dfzApdCalTmp,'uint32');
-    
-    
-    dcorSpares = typecast(hw.read('DCORspare')','single');
-    dcorSpares(3:5) = single(regs.FRMW.dfzVbias);
-    dcorSpares(6:8) = single(regs.FRMW.dfzIbias);
-    intregs.DCOR.spare = dcorSpares;
-    
-    
-    
-    fw.setRegs(intregs,fnCalib);
-%     fw.get();
-    
-    fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow(1)),uint32(regs.FRMW.zoWorldCol(1)));
-end
-
-function writeCalibRegsProps(fw,fnCalib)
-    regs = fw.get();
-    intregs.FRMW.calImgHsize=regs.GNRL.imgHsize;
-    intregs.FRMW.calImgVsize=regs.GNRL.imgVsize;
-
-    fw.setRegs(intregs,fnCalib);
-    fw.get();
-    
 end
 
 function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
