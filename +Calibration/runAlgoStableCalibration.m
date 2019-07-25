@@ -63,7 +63,7 @@ function  [calibPassed] = runAlgoStableCalibration(runParamsFn,calibParamsFn, fp
     
     fprintff('Opening stream...');
 %     Calibration.aux.startHwStream(hw,runParams);
-    hw.startStream;
+    hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
    [verValue,verValuefull] = getVersion(hw,runParams);  
@@ -269,7 +269,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
         
         r.reset();
-        hw.setReg('DIGGsphericalScale',[640,480]);
+%         hw.setReg('DIGGsphericalScale',[640,480]);
         hw.shadowUpdate;
         
         
@@ -496,7 +496,7 @@ function [results] = calibratePresets(hw, results,runParams,calibParams, fprintf
 %     fprintff('Switch to long range preset\n');
 %     % set preset to max range: Gain control=1
 %     hw.setPresetControlState(1);   
-%     hw.startStream();
+%     hw.startStream(0,runParams.calibRes);
 %% calibrate max range
     results = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff);
 

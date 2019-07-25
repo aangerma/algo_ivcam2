@@ -76,13 +76,15 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     end
     height = sz(1);
     width  = sz(2);
-    fw = Firmware(fullfile(g_calib_dir,'regsDefinitions.frmw'));
-%     EPROMstructure = load(fullfile(g_calib_dir,'eepromStructure.mat'));
-%     EPROMstructure = EPROMstructure.updatedEpromTable;
-%     [eepromRegs_1] = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
-    if(isempty(eepromRegs))
-        eepromRegs = fw.readAlgoEpromData(eepromBin(17:end));
+    fw = Firmware(g_calib_dir);
+
+    if(isempty(eepromRegs) || ~isstruct(eepromRegs))
+        EPROMstructure = load(fullfile(g_calib_dir,'eepromStructure.mat'));
+        EPROMstructure = EPROMstructure.updatedEpromTable;
+        eepromBin = uint8(eepromBin);
+        eepromRegs = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
     end
+    [regs] = struct_merge(regs , eepromRegs);
     [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, InputPath, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
@@ -297,4 +299,14 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
     fprintf('eGeom - %2.2f\n',eGeom);
     
+end
+
+function [merged] = struct_merge(merged , new )
+    f = fieldnames(new);
+    for i = 1:length(f)
+        fn = fieldnames(new.(f{i}));
+        for n = 1:length(fn)
+            merged.(f{i}).(fn{n}) = new.(f{i}).(fn{n});
+        end
+    end
 end

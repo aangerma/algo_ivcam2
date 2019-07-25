@@ -256,6 +256,7 @@
             <coarseMaskingRange>[0,0]</coarseMaskingRange>
             <JFILgammaScale>171115520</JFILgammaScale>
             <JFILgammaShift>4286644224</JFILgammaShift>
+            <JFILinvMinMax>4294902560</JFILinvMinMax> <!-- invalidate z below  -->
         </short>
     </presets>
 </struct>

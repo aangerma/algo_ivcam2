@@ -10,7 +10,9 @@ tempsForPlot = nan(1,pN);
 timesForPlot = nan(1,pN);
 plotDataI = 1;
 
-Calibration.aux.startHwStream(hw,runParams);
+tempRunParams=runParams; 
+tempRunParams.calibRes=calibParams.gnrl.calibRes; 
+Calibration.aux.startHwStream(hw,tempRunParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
     hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))

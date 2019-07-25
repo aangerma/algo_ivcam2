@@ -63,7 +63,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     
     fprintff('Opening stream...');
 %     Calibration.aux.startHwStream(hw,runParams);
-    hw.startStream;
+    hw.startStream(0,calibParams.gnrl.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
    [verValue,verValuefull] = getVersion(hw,runParams);  

@@ -25,6 +25,7 @@
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibVGA</configurationFolder>
    <calibParamsFile>calibParamsVGA.xml</calibParamsFile>
+   <calibRes>[480,640]</calibRes>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Algo Stable Calibration Tool</toolName>
 </struct>

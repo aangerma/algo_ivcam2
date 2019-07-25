@@ -226,6 +226,7 @@ function app=createComponents(runParamsFile)
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
     app.disableAdvancedOptions = runParams.disableAdvancedOptions;
+    app.calibRes=runParams.calibRes;
     if runParams.disableAdvancedOptions checkBoxesMode = 'inactive'; else checkBoxesMode = 'on'; end
     for i=1:length(cbnames)
         f=cbnames{i};
@@ -246,8 +247,24 @@ function app=createComponents(runParamsFile)
     app.advancedClearBtn.Callback = @clearCB;
     app.advancedClearBtn.Position = [30 10 50 22];
     app.advancedClearBtn.String = 'clear';
+%     set(handles.checkbox1,'Enable','off')  %disable checkbox1
 
-   
+%     nextCol = 200;
+    % Create advancedSaveBtn
+%     calibResOptions = {'360p';'XGA';'VGA'};
+%     resI = find(strcmp(calibResOptions,runParams.calibRes));
+%     assert(~isempty(resI),sprintf('calibRes field in runParams is illegal: %s sn''t a legal option ',runParams.calibRes));
+%     app.chooseResBtn = uicontrol('style','listbox','parent',advancedTab);
+% %     app.chooseResBtn.Callback = @saveDefaults;
+%     app.chooseResBtn.Position = [cbSz(2)+nextCol cbSz(2)*(ny)-63 cbSz(1)-120 cbSz(2)+20];
+%     app.chooseResBtn.String = calibResOptions;
+%     app.chooseResBtn.Value = resI;
+
+    % Create resolution field label
+%     app.resolutionEditFieldLabel = uicontrol('style','text','parent',advancedTab);
+% %     app.resolutionEditFieldLabel.HorizontalAlignment = 'left';
+%     app.resolutionEditFieldLabel.Position = [cbSz(2)+nextCol-13 cbSz(2)*(ny)-13 cbSz(1)-120 cbSz(2)-10];
+%     app.resolutionEditFieldLabel.String = 'Resolution';
 
     guidata(app.figH,app);
     
@@ -291,6 +308,7 @@ function saveDefaults(varargin)
     s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
+    s.calibRes=app.calibRes;
 %    s.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
@@ -320,6 +338,7 @@ function statrtButton_callback(varargin)
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
         [runparams.version,runparams.subVersion] = AlgoStableCalibToolVersion(); 
+%        runparams.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
         runparams.outputFolder = [];
         runparams.replayFile = [];
         if isdeployed
@@ -367,6 +386,7 @@ function statrtButton_callback(varargin)
         end
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
+        runparams.calibRes=app.calibRes; 
         
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);
