@@ -8,7 +8,7 @@ regs = obj.get();
 m=obj.getMeta();
 ver = typecast(regs.FRMW.calibVersion,'single');
 v1= floor(ver);
-v2= mod(ver*100,100);
+v2= floor(mod(ver*100,100));
 postfix = sprintf('_Ver_%02d_%02d.',v1,v2);
 if(v1==0)
    warning('version is set to default value 0');  
