@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.1" encoding="utf-8"?>
 <!-- CmdInterface:
 		1. I2cOnly
 		2. UvcOnly
@@ -194,13 +194,6 @@
     <Parameter2 Name="phase id" />
     <Data />
   </Command>
-  <Command Name="GETINTCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x15" IsReadCommand="true" CmdPermission="Public" Description="Get Internal sub calibration table">
-    <Parameter1 Name="Table ID SerialNumber = 3, Coefficients = 19, Depth =  1f, RGB =  20, FishEye = 21, IMU = 22, LaserShading = 23, Projector = 24, ViewPoint = 25" />
-  </Command>
-  <Command Name="SETINTCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x16" CmdPermission="Public" Description="Set Internal sub calibration table">
-    <Parameter1 Name="Table ID" />
-    <Data />
-  </Command>
   <Command Name="ERB" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x17" CmdPermission="Public" IsReadCommand="true" ReadFormat="Bytes" Description="Read from eeprom">
     <Parameter1 Name="StartIndex">
     </Parameter1>
@@ -214,127 +207,13 @@
     </Parameter2>
     <Data />
   </Command>
-  <Command Name="GPWM" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x19" IsReadCommand="true" CmdPermission="Public" Description="Get PWM Laser range">
-    <ReadData>
-      <Section Name="MinValue" Title="MinValue" Offset="0" Size="2" FormatType="HexNumberTwoBytes" />
-      <Section Name="MaxValue" Title="MaxValue" Offset="2" Size="2" FormatType="HexNumberTwoBytes" />
-      <Section Name="NoOfSteps" Title="NoOfSteps" Offset="4" Size="2" FormatType="HexNumberTwoBytes" />
-    </ReadData>
-  </Command>
-  <Command Name="SPWM" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1A" CmdPermission="Public" Description="Set PWM Laser enable count">
-    <Parameter1 Name="Power Laser, 0 - disable 1 - enable" />
-  </Command>
-  <Command Name="INITCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1C" CmdPermission="Public" Description="Copy calibration tables from EEPROM to Flash">
-  </Command>
-  <Command Name="LOADINTCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1D" IsReadCommand="true" CmdPermission="Public" Description="Get Internal sub calibration table">
-    <Parameter1 Name="Table ID" />
-    <Parameter2 Name="0 - Flash 1 - EEPROM" />
-  </Command>
   <Command Name="DFU" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1E" CmdPermission="Public" Description="Go to DFU">
     <Parameter1 Name="Reset Type" />
   </Command>
-  <Command Name="GETCALIBINPUTPARAMS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1f" IsReadCommand="true" CmdPermission="Public" Description="Get Calibration handler input parameters">
-  </Command>
   <Command Name="RST" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x20" CmdPermission="Public" Description="HW Reset">
-  </Command>
-  <Command Name="GETFWRECCOEFF" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x21" IsReadCommand="true" CmdPermission="Public" Description="Get FW Rectification coefficients">
-    <Parameter1 Name="phase id" />
-  </Command>
-  <Command Name="RFBI" CmdInterface="UvcOnly" Opcode="0x22" CmdPermission="Public" Description="Burn a complete RealTek flash image">
-  </Command>
-  <Command Name="GLP" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x23" IsReadCommand="true" CmdPermission="Public" Description="Get Current Laser Optical Power">
-    <ReadData>
-      <Section Name="Laser Power" Title="Laser Power" Offset="0" Size="2" FormatType="HexNumberTwoBytes" />
-    </ReadData>
-  </Command>
-  <Command Name="GLEC" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x24" IsReadCommand="true" CmdPermission="Public" Description="Get PWM laser enable count">
-  </Command>
-  <Command Name="WTI" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x25" CmdPermission="Public" Description="Wait Time in ms">
-    <Parameter1 Name="delay_ms" />
-  </Command>
-  <Command Name="SETDISPSHIFT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x26" CmdPermission="Public" Description="Set disparity shift value">
-    <Parameter1 Name="disparity shift value" />
-  </Command>
-  <Command Name="SETMINMAXZ" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x27" CmdPermission="Public" Description="Set minimal and maximal Z value">
-    <Parameter1 Name="MinZ" />
-    <Parameter2 Name="MaxZ" />
-  </Command>
-  <Command Name="OBR" Opcode="0x28" IsReadCommand="true" Description="OVT Bypass Read">
-    <Parameter1 Name="Register address">
-    </Parameter1>
-  </Command>
-  <Command Name="OBW" Opcode="0x29" IsReadCommand="false" Description="OVT Bypass Write">
-    <Parameter1 Name="Register address">
-    </Parameter1>
-    <Parameter2 Name="Value to write">
-    </Parameter2>
-  </Command>
-  <Command Name="GTEMP" Opcode="0x2A" IsReadCommand="true" Description="Reads temperature from Stereo Module">
-  </Command>
-  <Command Name="AMCSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2B" CmdPermission="Public" Description="AMC_SET">
-    <Parameter1 Name="opcode" />
-    <Data IsReverseBytes="false" FormatLength="8" />
-  </Command>
-  <Command Name="AMCGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2C" IsReadCommand="true" CmdPermission="Public" Description="AMC_GET">
-    <Parameter1 Name="opcode" />
-    <Parameter2 Name="dataType" />
-  </Command>
-  <Command Name="TS_HEADER" Opcode="0x2E" Description="Set header timestamp">
-    <Parameter1 Name="STC start count" />
-  </Command>
-  <Command Name="TS_UNITS" Opcode="0x2F" Description="Set timestamp unit">
-    <Parameter1 Name="sclk units number ( must be &gt; 0 )" />
-  </Command>
-  <Command Name="SETDEMOSAIC" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x31" CmdPermission="Public" Description="Update demosaic mode">
-    <Parameter1 Name="0 - Demosaic off, 1 - Demosaic on" />
-  </Command>
-  <Command Name="GETAESPT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x32" IsReadCommand="true" CmdPermission="Public" ReadFormat="Doubles" Description="Get AE setpoint">
-  </Command>
-  <Command Name="SETAESPT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x33" CmdPermission="Public" Description="Set AE setpoint">
-    <Parameter1 Name="Setpoint" />
-  </Command>
-  <Command Name="GETAEDRK" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x34" IsReadCommand="true" CmdPermission="Public" ReadFormat="Doubles" Description="Get AE dark threshold">
-  </Command>
-  <Command Name="SETAEDRK" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x35" CmdPermission="Public" Description="Set AE dark threshold">
-    <Parameter1 Name="Dark Threshold" />
-  </Command>
-  <Command Name="GETAEBRT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x36" IsReadCommand="true" CmdPermission="Public" ReadFormat="Doubles" Description="Get AE bright threshold">
-  </Command>
-  <Command Name="SETAEBRT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x37" CmdPermission="Public" Description="Set AE bright threshold">
-    <Parameter1 Name="Bright Threshold" />
-  </Command>
-  <Command Name="SETCOLCORR" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x38" CmdPermission="Public" Description="Set Color Correction Matrix">
-    <Parameter1 Name="0 - Matrix0, 1 - Matrix1, 2 - Matrix2" />
-  </Command>
-  <Command Name="MMRB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x39" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Read from MM i2c ( 8x8 )">
-    <Parameter1 Name="Offset" />
-    <Parameter2 Name="Size" />
-  </Command>
-  <Command Name="MMWB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x3A" CmdPermission="Private" Description="Write to MM i2c ( 8x8 )">
-    <Parameter1 Name="Offset" />
-    <Parameter2 Name="Size" />
-    <Data FormatLength="2" />
   </Command>
   <Command Name="PFD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3B" CmdPermission="Public" Description="Disable power features">
     <Parameter1 Name="0 - Disable, 1 - Enable" />
-  </Command>
-  <Command Name="PTENABLEMODE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3C" CmdPermission="Public" Description="Set projector tester enable mode">
-    <Parameter1 Name="Mode 0 - Dis, 1 - En, Wait for values, 2 - En, Load&Test EEPROM" />
-  </Command>
-  <Command Name="PTEYESAFETYVAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3D" CmdPermission="Public" Description="Set Projector tester eye safety values">
-    <Parameter1 Name="Count Max" />
-	<Parameter2 Name="Max Ratio" />
-	<Parameter3 Name="Invert Output" />
-  </Command>
-  <Command Name="PTWINDOWCNT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3E" CmdPermission="Public" Description="Set Projector tester windows count value" >
-    <Parameter1 Name="Window Count" />
-  </Command>
-  <Command Name="PTPWMSTART" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x3F" CmdPermission="Public" Description="Start/Stop laser">
-    <Parameter1 Name="0 - Start 1 - Stop" />
-  </Command>
-    <Command Name="PTENABLEDISABLECNT" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x40" CmdPermission="Public" Description="Start/Stop lase">
-    <Parameter1 Name="Enable count" />
-	<Parameter2 Name="Disable count" />
   </Command>
   <Command Name="READ_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x43" CmdPermission="Public" IsReadCommand="true" Description="Read table">
     <Parameter1 Name="TableId" />
@@ -510,7 +389,7 @@
   <Command Name="APD_FLYBACK_EX_TRIGGER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x77" CmdPermission="Public" Description="Apd flyback loop external trigger">
     <Parameter1 Name="1 - start, 0 - stop" />
   </Command>  
-  <Command Name="APD_FLYBACK_VALUES_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x78" IsReadCommand="true" CmdPermission="Public" Description="FB values. States:0-NotInit,1-Initialized,2-Started,3-Running,4-Stopped,5-Err,6-Bypassed">
+  <Command Name="APD_FLYBACK_VALUES_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x78" IsReadCommand="true" CmdPermission="Public" Description="FB values. States:0-NotInit,1-Idle,2-Converging,3-Running,4-Error,5-Bypassed">
     <ReadData>
 	      <Section Name="state" Title="state" Offset="0" Size="1" FormatType="DecByte" />
 	      <Section Name="isDataValid" Title="isDataValid" Offset="1" Size="1" FormatType="DecByte" />
@@ -561,47 +440,47 @@
      <ReadData> 
       <Section Name="hScan" Title="hScan" Offset="0" Size="1" FormatType="DecByte" />
       <Section Name="vScan" Title="vScan" Offset="1" Size="1" FormatType="DecByte" />
-      <Section Name="reserved16" Title="reserved16" Offset="2" Size="2" FormatType="HexNumber" />
-      <Section Name="reserved32" Title="reserved32" Offset="4" Size="4" FormatType="HexNumber" />
-      <Section Name="depthOffset" Title="depthOffset" Offset="8" Size="4" FormatType="HexNumber" />
+      <Section Name="reserved16" Title="reserved16" Offset="2" Size="2" FormatType="Unsigned" />
+      <Section Name="reserved32" Title="reserved32" Offset="4" Size="4" FormatType="Unsigned" />
+      <Section Name="depthOffset" Title="depthOffset" Offset="8" Size="4" FormatType="Float" />
       
-      <Section Name="reserved16" Title="reserved16" Offset="12" Size="2" FormatType="HexNumber" />
-      <Section Name="reserved8" Title="reserved8" Offset="14" Size="1" FormatType="DecByte" />
+      <Section Name="reserved16" Title="reserved16" Offset="12" Size="2" FormatType="Unsigned" />
+      <Section Name="reserved8" Title="reserved8" Offset="14" Size="1" FormatType="Unsigned" />
       <Section Name="numOfResolutions" Title="numOfResolutions" Offset="15" Size="1" FormatType="DecByte" />
  
       <Section Name="-----------Raw---------------" Title="raw" Offset="16" Size="1" FormatType="DecByte" />
 
-      <Section Name="width" Title="width" Offset="16" Size="4" FormatType="HexNumber" />
-      <Section Name="height" Title="height" Offset="20" Size="4" FormatType="HexNumber" />
-      <Section Name="focalLengthX" Title="Focal Length X" Offset="24" Size="4" FormatType="HexNumber" />
-      <Section Name="focalLengthY" Title="Focal Length Y" Offset="28" Size="4" FormatType="HexNumber" />
-      <Section Name="principalPointX" Title="Principal Point X" Offset="32" Size="4" FormatType="HexNumber" />
-      <Section Name="principalPointY" Title="Principal Point Y" Offset="36" Size="4" FormatType="HexNumber" />
-      <Section Name="radialK1" Title="radialK1" Offset="40" Size="4" FormatType="HexNumber" />
-      <Section Name="radialK2" Title="radialK2" Offset="44" Size="4" FormatType="HexNumber" />
-      <Section Name="tangentialP1" Title="tangentialP1" Offset="48" Size="4" FormatType="HexNumber" />
-      <Section Name="tangentialP2" Title="tangentialP2" Offset="52" Size="4" FormatType="HexNumber" />
-      <Section Name="radialK3" Title="radialK3" Offset="56" Size="4" FormatType="HexNumber" />
-      <Section Name="zoX" Title="zoX" Offset="60" Size="4" FormatType="HexNumber" />
-      <Section Name="zoY" Title="zoY" Offset="64" Size="4" FormatType="HexNumber" />
-      <Section Name="zNorm" Title="zNorm" Offset="68" Size="4" FormatType="HexNumber" />
+      <Section Name="width" Title="width" Offset="16" Size="4" FormatType="Unsigned" />
+      <Section Name="height" Title="height" Offset="20" Size="4" FormatType="Unsigned" />
+      <Section Name="focalLengthX" Title="Focal Length X" Offset="24" Size="4" FormatType="Float" />
+      <Section Name="focalLengthY" Title="Focal Length Y" Offset="28" Size="4" FormatType="Float" />
+      <Section Name="principalPointX" Title="Principal Point X" Offset="32" Size="4" FormatType="Float" />
+      <Section Name="principalPointY" Title="Principal Point Y" Offset="36" Size="4" FormatType="Float" />
+      <Section Name="radialK1" Title="radialK1" Offset="40" Size="4" FormatType="Float" />
+      <Section Name="radialK2" Title="radialK2" Offset="44" Size="4" FormatType="Float" />
+      <Section Name="tangentialP1" Title="tangentialP1" Offset="48" Size="4" FormatType="Float" />
+      <Section Name="tangentialP2" Title="tangentialP2" Offset="52" Size="4" FormatType="Float" />
+      <Section Name="radialK3" Title="radialK3" Offset="56" Size="4" FormatType="Float" />
+      <Section Name="zoX" Title="zoX" Offset="60" Size="4" FormatType="Float" />
+      <Section Name="zoY" Title="zoY" Offset="64" Size="4" FormatType="Float" />
+      <Section Name="zNorm" Title="zNorm" Offset="68" Size="4" FormatType="Float" />
 
       <Section Name="-----------World-------------" Title="world" Offset="72" Size="1" FormatType="DecByte" />
 
-      <Section Name="width" Title="width" Offset="72" Size="4" FormatType="HexNumber" />
-      <Section Name="height" Title="height" Offset="76" Size="4" FormatType="HexNumber" />
-      <Section Name="focalLengthX" Title="Focal Length X" Offset="80" Size="4" FormatType="HexNumber" />
-      <Section Name="focalLengthY" Title="Focal Length Y" Offset="84" Size="4" FormatType="HexNumber" />
-      <Section Name="principalPointX" Title="Principal Point X" Offset="88" Size="4" FormatType="HexNumber" />
-      <Section Name="principalPointY" Title="Principal Point Y" Offset="92" Size="4" FormatType="HexNumber" />
-      <Section Name="radialK1" Title="radialK1" Offset="96" Size="4" FormatType="HexNumber" />
-      <Section Name="radialK2" Title="radialK2" Offset="100" Size="4" FormatType="HexNumber" />
-      <Section Name="tangentialP1" Title="tangentialP1" Offset="104" Size="4" FormatType="HexNumber" />
-      <Section Name="tangentialP2" Title="tangentialP2" Offset="108" Size="4" FormatType="HexNumber" />
-      <Section Name="radialK3" Title="radialK3" Offset="112" Size="4" FormatType="HexNumber" />
-      <Section Name="zoX" Title="zoX" Offset="116" Size="4" FormatType="HexNumber" />
-      <Section Name="zoX" Title="zoX" Offset="120" Size="4" FormatType="HexNumber" />
-      <Section Name="zNorm" Title="zNorm" Offset="124" Size="4" FormatType="HexNumber" />
+      <Section Name="width" Title="width" Offset="72" Size="4" FormatType="Unsigned" />
+      <Section Name="height" Title="height" Offset="76" Size="4" FormatType="Unsigned" />
+      <Section Name="focalLengthX" Title="Focal Length X" Offset="80" Size="4" FormatType="Float" />
+      <Section Name="focalLengthY" Title="Focal Length Y" Offset="84" Size="4" FormatType="Float" />
+      <Section Name="principalPointX" Title="Principal Point X" Offset="88" Size="4" FormatType="Float" />
+      <Section Name="principalPointY" Title="Principal Point Y" Offset="92" Size="4" FormatType="Float" />
+      <Section Name="radialK1" Title="radialK1" Offset="96" Size="4" FormatType="Float" />
+      <Section Name="radialK2" Title="radialK2" Offset="100" Size="4" FormatType="Float" />
+      <Section Name="tangentialP1" Title="tangentialP1" Offset="104" Size="4" FormatType="Float" />
+      <Section Name="tangentialP2" Title="tangentialP2" Offset="108" Size="4" FormatType="Float" />
+      <Section Name="radialK3" Title="radialK3" Offset="112" Size="4" FormatType="Float" />
+      <Section Name="zoX" Title="zoX" Offset="116" Size="4" FormatType="Float" />
+      <Section Name="zoY" Title="zoY" Offset="120" Size="4" FormatType="Float" />
+      <Section Name="zNorm" Title="zNorm" Offset="124" Size="4" FormatType="Float" />
     </ReadData>
   </Command>  
   <Command Name="TESTER_MODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x80" CmdPermission="Public" Description="Set tester mode">
@@ -699,12 +578,45 @@
       <Section Name="translation_z" Title="translation_z" Offset="44" Size="4" FormatType="Float" />
     </ReadData>
   </Command>  
-  <Command Name="METADATA_ENABLE_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x83" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Metadata enable get">
+  <Command Name="PZR_POWER_AVG_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x83" IsReadCommand="true" CmdPermission="Public" Description="Get Average PZR vBias and iBias">
+    <Parameter1 Name="PZR" />  
+    <Parameter2 Name="SampleCount (1...100)" />
+    <Parameter3 Name="SampleTime (in ms 1...100)" />
+    <ReadData>
+      <Section Name="vBias" Title="vBias" Offset="0" Size="8" FormatType="Double" />
+      <Section Name="iBias" Title="iBias" Offset="8" Size="8" FormatType="Double" />
+    </ReadData>
   </Command>
-  <Command Name="METADATA_ENABLE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x84" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Metadata enable set (0-disable, 1-enable)">
-    <Parameter1 Name="enable" />
+  <Command Name="HUMIDITY_RESET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x84" IsReadCommand="true" CmdPermission="Public" Description="Reset Humidity Sensor">
   </Command>
-  
+  <Command Name="HUMIDITY_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x85" IsReadCommand="true" CmdPermission="Public" Description="Readout Humidity Sensor measurement results">
+    <ReadData>
+      <Section Name="Humidity" Title="Humidity" Offset="0" Size="8" FormatType="Double" />
+      <Section Name="Temp" Title="Temp" Offset="8" Size="8" FormatType="Double" />
+    </ReadData>
+  </Command>
+  <Command Name="Algo_Gen_Inputs_Address_Get" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x86" IsReadCommand="true" CmdPermission="Public"  Description="Get algo gen inputs address">
+    <ReadData>
+      <Section Name="algo gen regs address" Title="algoGenRegsAddress" Offset="0" Size="4" FormatType="HexNumber" />
+	  <Section Name="algo gen luts address" Title="algoGenLutsAddress" Offset="0" Size="4" FormatType="HexNumber" />
+    </ReadData>
+  </Command>
+ <Command Name="Algo_Gen_Run" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x87" IsReadCommand="true" CmdPermission="Public"  Description="Algo gen run">
+	<Parameter1 Name="Block ID: 0-all 1-GNRL, 2-DIGG, 3-RAST, 4-DCOR, 5-DEST, 6-CBUF, 7-JFIL, 8-PCKR, 9-STAT, A-INF" />
+  </Command>
+  <Command Name="LOW_TEMP_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x89"  CmdPermission="Public" Description="Set Low Temp thresholds: LDD">
+    <Parameter1 Name="LDD" />
+  </Command>      
+  <Command Name="THERMAL_MANAGER_STATUS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8A" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get thermal manager status">
+     <ReadData> 
+      <Section Name="CT_KILL_THRESHOLD_LD" Title="CT_KILL_THRESHOLD_LD" Offset="0" Size="1" FormatType="Unsigned" />
+      <Section Name="CT_KILL_THRESHOLD_MC" Title="CT_KILL_THRESHOLD_MC" Offset="1" Size="1" FormatType="Unsigned" />
+      <Section Name="CT_KILL_THRESHOLD_MA" Title="CT_KILL_THRESHOLD_MA" Offset="2" Size="1" FormatType="Unsigned" />
+      <Section Name="CT_KILL_THRESHOLD_APD" Title="CT_KILL_THRESHOLD_APD" Offset="3" Size="1" FormatType="Unsigned" />
+      <Section Name="LOW_TEMP_THRESHOLD_LD" Title="LOW_TEMP_THRESHOLD_LD" Offset="4" Size="1" FormatType="Unsigned" />
+      <Section Name="LOW_TEMP_STATUS_LD" Title="LOW_TEMP_STATUS_LD" Offset="5" Size="1" FormatType="Unsigned" />
+    </ReadData>
+  </Command>  
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
   </Command>
   <Command Name="MCSTOP" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA2" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTOP">
@@ -748,4 +660,8 @@
   <Command Name="MCREGISTERBATCH" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA8" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCREGISTERBATCH">
     <Data IsReverseBytes="false" FormatLength="8" />
   </Command>
+    <Command Name="PRESET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x88" CmdPermission="Public" Description="Preset">
+    <Parameter1 Name="Reset Type" />
+  </Command>
+  
 </Commands>

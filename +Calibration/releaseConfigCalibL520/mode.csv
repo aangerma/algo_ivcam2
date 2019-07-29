@@ -3,5 +3,5 @@ FRMWtxCode_001 h00000000
 FRMWtxCode_002 h00000000
 FRMWtxCode_003 h00000000
 FRMWcoarseSampleRate  d4
-GNRLcodeLength d00000032
+GNRLcodeLength h00000020
 GNRLsampleRate h00000010
