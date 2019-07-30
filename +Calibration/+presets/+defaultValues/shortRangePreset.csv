@@ -32,6 +32,6 @@ JFILinvMinMax,uint32,4294901760
 VBROffset,single,18
 AlgoThermalLoopScale,single,0
 AlgoThermalLoopOffset,single,0
-JFILgammaScale,uint32,171115520
-JFILgammaShift,uint32,4286644224
+JFILgammaScale,uint32,67109888
+JFILgammaShift,uint32,0
 DESTrxPWRpdLUTfactor,uint32,1048816
