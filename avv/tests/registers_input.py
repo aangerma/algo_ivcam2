@@ -199,377 +199,72 @@ def check_for_all_regs(selected_regs={}, regs=list()):
 
     return True
 
-
-def check_constraint(selected_regs={}, constraint=None):
+def check_constraint(regs={}, constraint=None, regs_def={}):
     constr = constraint.get_constraint()
-    if constr == "[EPTGframeRate]==0 |  1e9/([GNRLimgHsize]*[GNRLimgVsize])*(1/[EPTGframeRate]-[EPTGreturnTime]/1000)>27":
-        return selected_regs["EPTGframeRate"] == 0 or 1 * 10 ** 9 / (
-                selected_regs["GNRLimgHsize"] * selected_regs["GNRLimgVsize"]) * (
-                       1 / selected_regs["EPTGframeRate"] - selected_regs["EPTGreturnTime"] / 1000) > 27
-    elif constr == "mod([GNRLcodeLength],2)==0":
-        return modulo(selected_regs["GNRLcodeLength"], 2) == 0
-    elif constr == "([GNRLcodeLength]*[GNRLsampleRate]<=1024 & [GNRLcodeLength]*[GNRLsampleRate]>=128) | ([GNRLrangeFinder]==1 & [GNRLcodeLength]*[GNRLsampleRate]==2048)":
-        return (selected_regs["GNRLcodeLength"] * selected_regs["GNRLsampleRate"] <= 1024 and selected_regs[
-            "GNRLcodeLength"] * selected_regs["GNRLsampleRate"] >= 128) or (
-                       selected_regs["GNRLrangeFinder"] == 1 & selected_regs["GNRLcodeLength"] * selected_regs[
-                   "GNRLsampleRate"] == 2048)
-    elif constr == "~([GNRLrangeFinder] & [RASToutIRvar] )":
-        return not (selected_regs["GNRLrangeFinder"] and selected_regs["RASToutIRvar"])
-    elif constr == "~([DIGGnestBypass] & [DCORoutIRnest])":
-        return not (selected_regs["DIGGnestBypass"] and selected_regs["DCORoutIRnest"])
-    elif constr == "~[DCORoutIRnest] |  ~[DCORbypass]":
-        return not selected_regs["DCORoutIRnest"] or not selected_regs["DCORbypass"]
-    elif constr == "([DCORoutIRnest] + [DCORoutIRcma] + [DESTaltIrEn] +  [RASToutIRvar]) <= 1":
-        return (selected_regs["DCORoutIRnest"] + selected_regs["DCORoutIRcma"] + selected_regs["DESTaltIrEn"] +
-                selected_regs["RASToutIRvar"]) <= 1
-    elif constr == "[GNRLrangeFinder]==0 | ( [RASTbiltBypass] & [CBUFbypass] )":
-        return selected_regs["GNRLrangeFinder"] == 0 or (
-                selected_regs["RASTbiltBypass"] and selected_regs["CBUFbypass"])
-    elif constr == "~([DCORoutIRnest] | [DCORoutIRcma] ) | [JFILbypass]":
-        return not (selected_regs["DCORoutIRnest"] or selected_regs["DCORoutIRcma"]) or selected_regs["JFILbypass"]
-    elif constr == "[JFILedge1maxTh] < [JFILedge1detectTh]":
-        return selected_regs["JFILedge1maxTh"] < selected_regs["JFILedge1detectTh"]
-    elif constr == "[JFILedge4maxTh] < [JFILedge4detectTh]":
-        return selected_regs["JFILedge4maxTh"] < selected_regs["JFILedge4detectTh"]
-    elif constr == "[JFILedge3maxTh] < [JFILedge3detectTh]":
-        return selected_regs["JFILedge3maxTh"] < selected_regs["JFILedge3detectTh"]
-    elif constr == "[JFILgrad1thrAveDiag]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrAveDiag"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrAveDx"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrAveDy"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrMaxDiag"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrMaxDx"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrMaxDy"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrMinDiag"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrMinDx"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrMinDy"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrMode"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrAveDiag]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrAveDiag"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrAveDx"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrAveDy"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrMaxDiag"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrMaxDx"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrMaxDy"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrMinDiag"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrMinDx"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrMinDy"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrMode"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad2thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad2thrSpike"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "[JFILgrad1thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));":
-        return selected_regs["JFILgrad1thrSpike"] < (2 ** (16 - selected_regs["GNRLzMaxSubMMExp"]))
-    elif constr == "at([JFILinvMinMax],1)>at([JFILinvMinMax],0)":
-        s = format(selected_regs["JFILinvMinMax"], "032b")
-        return int(s[int(len(s) / 2):len(s)], 2) < int(s[0:int(len(s) / 2)], 2)
-    elif constr == "[JFILsort1fixedConfValue] > 0":
-        return selected_regs["JFILsort1fixedConfValue"] > 0
-    elif constr == "sum([[JFILsort1iWeights]])<128":
-        s = format(selected_regs["JFILsort1iWeights"], "032b")
-        return int(s[0:8], 2) + int(s[8:16], 2) + int(s[16:24], 2) + int(s[24:32], 2) < 128
-    elif constr == "sum([[JFILsort1dWeights]])<128":
-        s = format(selected_regs["JFILsort1dWeights"], "032b")
-        return int(s[0:8], 2) + int(s[8:16], 2) + int(s[16:24], 2) + int(s[24:32], 2) < 128
-    elif constr == "sum([[JFILsort2dWeights]])<128":
-        s = format(selected_regs["JFILsort2dWeights"], "032b")
-        return int(s[0:8], 2) + int(s[8:16], 2) + int(s[16:24], 2) + int(s[24:32], 2) < 128
-    elif constr == "[JFILsort2fixedConfValue] > 0":
-        return selected_regs["JFILsort2fixedConfValue"] > 0
-    elif constr == "sum([[JFILsort2iWeights]])<128":
-        s = format(selected_regs["JFILsort2iWeights"], "032b")
-        return int(s[0:8], 2) + int(s[8:16], 2) + int(s[16:24], 2) + int(s[24:32], 2) < 128
-    elif constr == "sum([[JFILsort3dWeights]])<128":
-        s = format(selected_regs["JFILsort3dWeights"], "032b")
-        return int(s[0:8], 2) + int(s[8:16], 2) + int(s[16:24], 2) + int(s[24:32], 2) < 128
-    elif constr == "[JFILsort3fixedConfValue] > 0":
-        return selected_regs["JFILsort3fixedConfValue"] > 0
-    elif constr == "sum([[JFILsort3iWeights]])<128":
-        s = format(selected_regs["JFILsort3iWeights"], "032b")
-        return int(s[0:8], 2) + int(s[8:16], 2) + int(s[16:24], 2) + int(s[24:32], 2) < 128
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1lowThrPxlNum] < [STATstt1cellHsize]*[STATstt1cellVsize])":
-        return selected_regs["STATstt1Bypass"] == 1 or (
-                selected_regs["STATstt1src"] <= 1 or selected_regs["STATstt1lowThrPxlNum"] < selected_regs[
-            "STATstt1cellHsize"] * selected_regs["STATstt1cellVsize"])
-    elif constr == "[STATstt1lowerThr] < [STATstt1upperThr]":
-        return selected_regs["STATstt1lowerThr"] < selected_regs["STATstt1upperThr"]
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2lowThrPxlNum] <= [STATstt2cellHsize]*[STATstt2cellVsize])":
-        return selected_regs["STATstt2Bypass"] == 1 or (
-                selected_regs["STATstt2src"] <= 1 or selected_regs["STATstt2lowThrPxlNum"] <= selected_regs[
-            "STATstt2cellHsize"] * selected_regs["STATstt2cellVsize"])
-    elif constr == "[STATstt2lowerThr] < [STATstt2upperThr]":
-        return selected_regs["STATstt2lowerThr"] < selected_regs["STATstt2upperThr"]
-    elif constr == "sum([[GNRLrangeFinder] [DIGGsphericalEn] [MTLBxyRasterInput]])<=1":
-        return (selected_regs["GNRLrangeFinder"] + selected_regs["DIGGsphericalEn"] + selected_regs[
-            "MTLBxyRasterInput"]) <= 1
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] >  1 |  mod([STATstt1skipVsize],[MTLBtCamVsize]) == 0)":
-        return selected_regs["STATstt1Bypass"] == 1 or (selected_regs["STATstt1src"] > 1 or
-                                                        modulo(selected_regs["STATstt1skipVsize"],
-                                                               selected_regs["MTLBtCamVsize"]) == 0)
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] >  1 |  mod([STATstt2skipVsize],[MTLBtCamVsize]) == 0)":
-        return selected_regs["STATstt2Bypass"] == 1 or (selected_regs["STATstt2src"] > 1 or (modulo(
-            selected_regs["STATstt2skipVsize"], selected_regs["MTLBtCamVsize"])) == 0)
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] > 1 | [STATstt1skipHsize] < [MTLBtCamHsize])":
-        return selected_regs["STATstt1Bypass"] == 1 or (
-                selected_regs["STATstt1src"] > 1 or selected_regs["STATstt1skipHsize"] < selected_regs[
-            "MTLBtCamHsize"])
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] > 1 | ([STATstt1skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])":
-        return selected_regs["STATstt1Bypass"] == 1 or (selected_regs["STATstt1src"] > 1 or (
-                selected_regs["STATstt1skipVsize"] / selected_regs["MTLBtCamHsize"]) < selected_regs[
-                                                            "MTLBtCamVsize"])
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] > 1 | [STATstt2skipHsize] < [MTLBtCamHsize])":
-        return selected_regs["STATstt2Bypass"] == 1 or (
-                selected_regs["STATstt2src"] > 1 or selected_regs["STATstt2skipHsize"] < selected_regs[
-            "MTLBtCamHsize"])
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] > 1 | ([STATstt2skipVsize] / [MTLBtCamHsize]) < [MTLBtCamVsize])":
-        return selected_regs["STATstt2Bypass"] == 1 or (selected_regs["STATstt2src"] > 1 or (
-                selected_regs["STATstt2skipVsize"] / selected_regs["MTLBtCamHsize"]) < selected_regs[
-                                                            "MTLBtCamVsize"])
-    elif constr == "any(single([GNRLsampleRate])/[MTLBtxSymbolLength]==[4 8 16])":
-        return selected_regs["GNRLsampleRate"] / selected_regs["MTLBtxSymbolLength"] == 4.0 or selected_regs[
-            "GNRLsampleRate"] / selected_regs["MTLBtxSymbolLength"] == 8.0 or selected_regs["GNRLsampleRate"] / \
-               selected_regs["MTLBtxSymbolLength"] == 16.0
-    elif constr == "[EPTGminZ] <=[EPTGmaxZ]":
-        return selected_regs["EPTGminZ"] <= selected_regs["EPTGmaxZ"]
-    elif constr == "[EPTGnMaxSamples] == floor([EPTGnMaxSamples])":
-        return selected_regs["EPTGnMaxSamples"] == int(selected_regs["EPTGnMaxSamples"])
-    elif constr == "[EPTGreturnTime]*1e-3<1/[EPTGframeRate]":
-        return selected_regs["EPTGreturnTime"] * 1 * 10 ** -3 < 1 / selected_regs["EPTGframeRate"]
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 |  mod([STATstt2skipVsize],[MTLBtCamVsize])) == 0)":
-        return selected_regs["STATstt2Bypass"] == 1 or (selected_regs["STATstt2src"] <= 1 or (
-            modulo(selected_regs["STATstt2skipVsize"], selected_regs["MTLBtCamVsize"])) == 0)
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipVsize] / [GNRLimgHsize] < [GNRLimgVsize])":
-        return selected_regs["STATstt1Bypass"] == 1 or (
-                selected_regs["STATstt1src"] <= 1 or selected_regs["STATstt1skipVsize"] / selected_regs[
-            "GNRLimgHsize"] < selected_regs["GNRLimgVsize"])
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipVsize] < [GNRLimgVsize])":
-        return selected_regs["STATstt2Bypass"] == 1 or (
-                selected_regs["STATstt2src"] <= 1 or selected_regs["STATstt2skipVsize"] < selected_regs[
-            "GNRLimgVsize"])
-    elif constr == "[GNRLcodeLength]*[FRMWcoarseSampleRate]<=256":
-        return selected_regs["GNRLcodeLength"] * selected_regs["FRMWcoarseSampleRate"] <= 256
-    elif constr == "sum([GNRLsampleRate]/[FRMWcoarseSampleRate]==[2 4 8])==1":
-        return selected_regs["GNRLsampleRate"] / selected_regs["FRMWcoarseSampleRate"] == 2 or selected_regs[
-            "GNRLsampleRate"] / selected_regs["FRMWcoarseSampleRate"] == 4 or selected_regs["GNRLsampleRate"] / \
-               selected_regs["FRMWcoarseSampleRate"] == 8
-    elif constr == "~([FRMWtxCode_000]==0 & [FRMWtxCode_001]==0 & [FRMWtxCode_002]==0 & [FRMWtxCode_003]==0)":
-        return not (selected_regs["FRMWtxCode_000"] == 0 and selected_regs["FRMWtxCode_001"] == 0 and selected_regs[
-            "FRMWtxCode_002"] == 0 and selected_regs["FRMWtxCode_003"] == 0)
-    elif constr == "[DIGGundistBypass] | [FRMWxfov_000]*[FRMWundistXfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_000"] * selected_regs[
-            "FRMWundistXfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWyfov_000]*[FRMWundistYfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_000"] * selected_regs[
-            "FRMWundistYfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWxfov_001]*[FRMWundistXfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_001"] * selected_regs[
-            "FRMWundistXfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWyfov_001]*[FRMWundistYfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_001"] * selected_regs[
-            "FRMWundistYfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWxfov_002]*[FRMWundistXfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_002"] * selected_regs[
-            "FRMWundistXfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWyfov_002]*[FRMWundistYfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_002"] * selected_regs[
-            "FRMWundistYfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWxfov_003]*[FRMWundistXfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_003"] * selected_regs[
-            "FRMWundistXfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWyfov_003]*[FRMWundistYfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_003"] * selected_regs[
-            "FRMWundistYfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWxfov_004]*[FRMWundistXfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWxfov_004"] * selected_regs[
-            "FRMWundistXfovFactor"] <= 89
-    elif constr == "[DIGGundistBypass] | [FRMWyfov_004]*[FRMWundistYfovFactor]<=89":
-        return selected_regs["DIGGundistBypass"] or selected_regs["FRMWyfov_004"] * selected_regs[
-            "FRMWundistYfovFactor"] <= 89
-    elif constr == "at([JFILbiltGauss_000],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_000"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_001],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_001"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_003],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_003"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_004],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_004"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_006],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_006"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_007],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_007"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_009],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_009"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_010],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_010"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_012],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_012"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_013],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_013"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_015],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_015"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_016],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_016"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_018],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_018"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_019],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_019"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_021],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_021"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_022],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_022"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_024],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_024"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_025],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_025"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_027],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_027"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_028],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_028"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_030],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_030"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_031],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_031"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_033],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_033"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_034],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_034"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_036],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_036"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_037],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_037"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_039],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_039"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_040],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_040"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_042],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_042"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_043],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_043"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "at([JFILbiltGauss_045],0)~=0":
-        s = format(selected_regs["JFILbiltGauss_045"], "032b")
-        return int(s[24:32], 2) != 0
-    elif constr == "at([JFILbiltGauss_046],2)~=0":
-        s = format(selected_regs["JFILbiltGauss_046"], "032b")
-        return int(s[8:16], 2) != 0
-    elif constr == "[GNRLrangeFinder] | ([GNRLimgHsize]>=64 & [GNRLimgVsize]>=60)":
-        return selected_regs["GNRLrangeFinder"] or (
-                selected_regs["GNRLimgHsize"] >= 64 and selected_regs["GNRLimgVsize"] >= 60)
-    elif constr == "[GNRLrangeFinder]==1 | ( mod([GNRLimgHsize],2)==0 & mod([GNRLimgVsize],2)==0 )":
-        return selected_regs["GNRLrangeFinder"] == 1 or (
-                modulo(selected_regs["GNRLimgHsize"], 2) == 0 and modulo(selected_regs["GNRLimgVsize"], 2) == 0)
-    elif constr == "[GNRLimgHsize]>0":
-        return selected_regs["GNRLimgHsize"] > 0
-    elif constr == "[GNRLimgVsize]>0":
-        return selected_regs["GNRLimgVsize"] > 0
-    elif constr == "[GNRLrangeFinder]==0 | ( [GNRLimgHsize]==2 & [GNRLimgVsize]==1 )":
-        return selected_regs["GNRLrangeFinder"] == 0 or (
-                selected_regs["GNRLimgHsize"] == 2 and selected_regs["GNRLimgVsize"] == 1)
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 |  mod([STATstt1skipVsize],[GNRLimgHsize]) == 0)":
-        return selected_regs["STATstt1Bypass"] == 1 or (
-                selected_regs["STATstt1src"] <= 1 or modulo(selected_regs["STATstt1skipVsize"],
-                                                            selected_regs["GNRLimgHsize"]) == 0)
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 |  mod([STATstt2skipVsize],[GNRLimgHsize]) == 0)":
-        return selected_regs["STATstt2Bypass"] == 1 or (
-                selected_regs["STATstt2src"] <= 1 or modulo(selected_regs["STATstt2skipVsize"],
-                                                            selected_regs["GNRLimgHsize"]) == 0)
-    elif constr == "mod([GNRLimgHsize],2)==0":
-        return modulo(selected_regs["GNRLimgHsize"], 2) == 0
-    elif constr == "mod([GNRLimgVsize],2)==0":
-        return modulo(selected_regs["GNRLimgVsize"], 2) == 0
+    if constr[0] == '%':
+        return True
+    constr = re.sub("(?<=[0-9])\s(?=[0-9])", " , ", constr)   #convert [num1 num2 ...] to legal list form [num1,num2,...]
+    constr = re.sub("(?<=])\s(?=\[)", " , ", constr)    #convert list of regs to legal list form [reg1,reg2,...]
+    constr = re.sub("\[(?=[A-Z])" , "regs['", constr)   #convert [regname] to regs['regname']
+    constr = re.sub("(?<=_\d{3})]", "']", constr)   #some of regs name finish with '_{3 digits}'
+    constr = re.sub("(?<=[A-Z|a-z])]", "']", constr) #some of regs name finish with letters
+    constr = re.sub("~=", "!=", constr)     #python form of not equal
+    constr = re.sub("~", " not ", constr)   #python form of not
+    constr = re.sub("\|", " or ", constr)   #python form of or
+    constr = re.sub("&", " and ", constr)   #python form of and
+    constr = re.sub("1e", " 10**", constr)  #python form of power
+    constr = re.sub("any", "", constr)      #not needed
+    constr = re.sub("==(?=\[(?=[0-9]))", " in ", constr)   #convert "x==[num1,num2,...]" to x in [num1,num2,...]
+    constr = re.sub("mod", "modulo", constr)    #modulo function is defined
+    constr = re.sub("\^", " ** ", constr)   #power
+    constr = re.sub("floor", "math.floor", constr) #python's form of floor function
+    constr = re.sub(";", "", constr)    # ; not needed
 
-    elif constr == "[EPTGframeRate]==0 | 1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi>64/[GNRLsampleRate]":
-        return selected_regs["EPTGframeRate"] == 0 or 1 * 10 ** 9 / (2 * selected_regs["EPTGmirrorFastFreq"] * (
-                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"]) * (
-                                                                             1 + 2 * selected_regs[
-                                                                         "FRMWguardBandV"])) * 2 / math.pi > 64 / \
-               selected_regs["GNRLsampleRate"]
-    elif constr == "4*16/[GNRLsampleRate]*1e9/(2*[EPTGmirrorFastFreq]*([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])*(1+2*[FRMWguardBandV]))*2/pi > [GNRLcodeLength]":
-        return 4 * 16 / selected_regs["GNRLsampleRate"] * 1 * 10 ** 9 / (2 * selected_regs["EPTGmirrorFastFreq"] * (
-                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"]) * (
-                                                                                 1 + 2 * selected_regs[
-                                                                             "FRMWguardBandV"])) * 2 / math.pi > \
-               selected_regs["GNRLcodeLength"]
-    elif constr == "[FRMWmarginT]<([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
-        return selected_regs["FRMWmarginT"] < (
-                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
-    elif constr == "[FRMWmarginL]<([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
-        return selected_regs["FRMWmarginL"] < (
-                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
-    elif constr == "abs([FRMWmarginB]-[FRMWmarginT]) < ([GNRLimgVsize] + [FRMWmarginT] + [FRMWmarginB])":
-        return abs(selected_regs["FRMWmarginB"] - selected_regs["FRMWmarginT"]) < (
-                selected_regs["GNRLimgVsize"] + selected_regs["FRMWmarginT"] + selected_regs["FRMWmarginB"])
-    elif constr == "abs([FRMWmarginL]-[FRMWmarginR]) < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR])":
-        return abs(selected_regs["FRMWmarginL"] - selected_regs["FRMWmarginR"]) < (
-                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"])
-    elif constr == "[STATstt1Bypass] == 1 | ([STATstt1src] <=  1 | [STATstt1skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
-        return selected_regs["STATstt1Bypass"] == 1 or (
-                selected_regs["STATstt1src"] <= 1 or selected_regs["STATstt1skipHsize"] < (
-                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
-    elif constr == "[STATstt2Bypass] == 1 | ([STATstt2src] <=  1 | [STATstt2skipHsize] < ([GNRLimgHsize] + [FRMWmarginL] + [FRMWmarginR]))":
-        return selected_regs["STATstt2Bypass"] == 1 or (
-                selected_regs["STATstt2src"] <= 1 or selected_regs["STATstt2skipHsize"] < (
-                selected_regs["GNRLimgHsize"] + selected_regs["FRMWmarginL"] + selected_regs["FRMWmarginR"]))
+    if re.search("at\(",constr) != None :       #at function
+        constr = re.sub("at\(", "int(format(", constr)  #convert number into 32binary
+        constr = re.sub(",", ", '032b')#", constr)
+        num = re.findall("(?<=\#)\d", constr)       #index
+        temp = re.findall("(?<=\[')[A-Z]\w+", constr)   #name of reg
+        regstype = regs_def[temp[0]]['type']        #type of reg
+        x = re.findall("(?<=int)\d+",regstype)  #uint{x}- x=4/8/16...
+        mul = int(x[0])
+        for i in range(len(num)):   #take to right piece in 32 bits number
+            start = 32-mul*(eval(num[i])+1)
+            end = 32-mul*eval(num[i])
+            string = "["+str(start)+":"+str(end)+"],2)"
+            constr = re.sub("#[0-9]\)", string, constr,1)
 
-    else:
-        slash.logger.warning("constraint not recognized: {}".format(constr))
+    constr = re.sub("single", "float", constr) #convert 'single' to python's form 'float'
+
+    if re.search("sum",constr) != None :    #sum function
+        temp = re.findall("(?<=\[')[A-Z]\w+", constr)   #find reg name
+        regsave = re.findall("regs\['\w+']", constr)    #reg name in form - "regs['regname']"-get list
+        s = regsave[0]  #"regs['regname']" as string
+        regstype = regs_def[temp[0]]['type']    #type of reg
+        x = re.findall("(?<=int)\d+",regstype)  #uint{x}- x=4/8/16...
+        x = int(x[0])   #number bits partition x=4/8/16...
+        l = int(32/x)
+        string =""
+        for i in range(l):  #generates string to correct way: sum[reg[0:x],reg[x+1,y],...]
+            string = string + "int(format("+s+",\"032b\")["+str(i*x)+":"+str((i+1)*x-1)+"], 2),"
+        string = string[:-1]    #remove last ','
+        constr = constr.replace(s, string)  #replace regname to its partition
+
+    try:
+        return eval(constr)
+    except:
+        slash.logger.debug(format(constr))
+        slash.logger.warning("constraint not recognized:{}".format(constr))
         return True
 
-
-def check_for_restriction(reg_name="", selected_regs={}, constraints=list()):
+def check_for_restriction(reg_name="", selected_regs={}, constraints=list(), regs_def={}):
     for constraint in constraints:
         regs = constraint.get_regs()
         if reg_name in regs:
             if not check_for_all_regs(selected_regs, regs):
                 continue
             else:
-                if not check_constraint(selected_regs, constraint):
+                if not check_constraint(selected_regs, constraint, regs_def):
                     return False, constraint.get_constraint()
         else:
             continue
@@ -745,8 +440,7 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
         while not reg_added:
             value = get_random_value(reg, selected_regs)
             selected_regs[reg_name] = value
-
-            reg_added, constraint = check_for_restriction(reg_name, selected_regs, constraints)
+            reg_added, constraint = check_for_restriction(reg_name, selected_regs, constraints, regs_def)
             if not reg_added:
                 constraint_fail_index += 1
                 if constraint_fail_index >= 10:
@@ -786,8 +480,7 @@ def generate_regs(regs_def, constraints, reg_order):
 def get_regs_order(regs_def):
     slash.logger.info("setting regs generation order")
     reg_order = list()
-    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "GNRLimgHsize", "FRMWmarginT",
-                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "FRMWyfov_000", "FRMWyfov_001",
+    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "GNRLimgHsize", "GNRLimgVsize", "FRMWyfov_000", "FRMWyfov_001",
                       "FRMWyfov_002", "FRMWyfov_003", "FRMWyfov_004", "FRMWguardBandV", "GNRLsampleRate",
                       "EPTGmirrorFastFreq",
                       "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov_000", "FRMWxfov_001",
@@ -1056,6 +749,9 @@ def random_registers(iterations=1):
 @a_common.ivcam2
 def test_random_registers_autogen_100():
     random_registers(iterations=100)
+
+def test_random_registers_autogen_DEBUG():
+    random_registers(iterations=1000)
 
 
 @slash.tag('turn_in')
