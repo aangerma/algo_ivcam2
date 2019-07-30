@@ -1,8 +1,8 @@
 name,type,value
 bias_factor,single,1
 bias_offset,single,0
-modulation_ref_factor,single,1
-modulation_ref_offset,single,0
+modulation_ref_factor_1,single,1
+modulation_ref_factor_2,single,1
 pulse_width_ctrl,uint8,18
 snubber_cap_control,uint8,26
 snubber_res_control,uint8,11

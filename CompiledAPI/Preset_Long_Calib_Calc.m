@@ -10,12 +10,12 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
 %   LaserPoints - 
 %   maxMod_dec -
 %   sz
-%                                  
+%   LongRangestate - 'state1' for VGA, 'state2' for XGA.                               
 % output:
 %   minRangeScaleModRef - 
 %   ModRefDec           - 
 %   
-%
+
 
     global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
@@ -68,7 +68,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','LaserPoints','maxMod_dec', 'cameraInput','calibParams');
+        save(fn,'InputPath','LaserPoints','maxMod_dec', 'cameraInput','calibParams','LongRangestate');
     end
     [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,LongRangestate,InputPath,cameraInput,LaserPoints,maxMod_dec,fprintff);
     % save output
