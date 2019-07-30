@@ -128,6 +128,7 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams)
             
             
         end
+        % allVertices{i} = v;
     end
     eFit = mean(eFit);
     e = mean(eAll);

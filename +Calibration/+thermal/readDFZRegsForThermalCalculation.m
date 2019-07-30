@@ -8,6 +8,7 @@ function [regs,eepromRegs,eepromBin] = readDFZRegsForThermalCalculation(hw,check
     regs.MTLB.fastApprox = ones(1,8,'logical');
     regs.DEST.baseline2 = typecast(hw.read('DESTbaseline2'),'single');
     regs.DEST.hbaseline = hw.read('DESThbaseline');
+    regs.DIGG.sphericalEn	= logical(hw.read('DIGGsphericalEn'));
     regs.DIGG.sphericalOffset	= typecast(hw.read('DIGGsphericalOffset'),'int16');
     regs.DIGG.sphericalScale 	= typecast(hw.read('DIGGsphericalScale'),'int16');
     regs.DEST.p2axa = hex2single(dec2hex(hw.read('DESTp2axa')));

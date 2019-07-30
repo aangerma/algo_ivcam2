@@ -3,6 +3,7 @@ function [regs, results]=calibrate(hw,dataDelayParams,fprintff,runParams,calibPa
 results = struct('fastDelayCalibSuccess',[],'slowDelayCalibSuccess',[],'delaySlowPixelVar',[]);
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
+sphericalScale = typecast(hw.read('sphericalscale'),'int16');
 r=Calibration.RegState(hw);
 %% SET
 r.add('RASTbiltBypass'     ,true     );
@@ -28,6 +29,7 @@ r.add('JFILgammaBypass'    ,false    );
 r.add('DIGGsphericalEn'    ,true     );
 r.add('DIGGnotchBypass'    ,true     );
 r.add('DESTaltIrEn'        ,false    );
+r.add('DIGGsphericalScale',int16(double(sphericalScale).*calibParams.dataDelay.sphericalScaleFactors));
 r.set();
 
 % origBias = zeroBias(hw);

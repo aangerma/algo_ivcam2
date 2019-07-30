@@ -1,4 +1,4 @@
-function [data ] = analyzeFramesOverTemperature(data,dataFixed, calibParams,runParams,fprintff,inValidationStage)
+function [data ] = analyzeFramesOverTemperature(data, calibParams,runParams,fprintff,inValidationStage)
 % Calculate the following metrics:
 % ,minEGeom,maxeGeom,meaneGeom
 % stdX,stdY,p2pY,p2pX
@@ -24,20 +24,7 @@ tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1))
 
 
 framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,48,tmpBinIndices);
-if inValidationStage
-%    calibrationDataFn = fullfile(runParams.outputFolder,'data.mat'); 
-%    if exist(calibrationDataFn, 'file') == 2
-%        calibData = load(calibrationDataFn);
-%        calibData = calibData.data;
-%        framesPerTemperature = cat(4,framesPerTemperature,calibData.processed.framesPerTemperature);
-%        data.dfzRefTmp = calibData.dfzRefTmp;
-%        refBinIndex = 1+floor((data.dfzRefTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
-%    end
-   
-else
-   framesPerTemperatureFixed = Calibration.thermal.medianFrameByTemp(dataFixed.framesData,data.tableResults.angx.nBins,tmpBinIndices);
-   framesPerTemperature = cat(4,framesPerTemperature,framesPerTemperatureFixed);
-end
+
 data.processed.framesPerTemperature = framesPerTemperature;
 
 Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage);
@@ -92,29 +79,10 @@ metrics.minEGeom = min(eGeomOverTemp);
 
 
 
-if size(framesPerTemperature,4) == 2 % Compare calibration to theoretical Fix
-    legends = {'Pre Fix (cal)';'Theoretical Fix (cal)'};
-    validFramesCalData = framesPerTemperature(validTemps,:,:,2);
-    eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesCalData(i,validCBPoints(:),end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
-    eGeomOverTempCal = nan(1,numel(tmpBinEdges));
-    eGeomOverTempCal(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
-    eGeomOverTemp = [eGeomOverTemp;eGeomOverTempCal];
-    
-elseif size(framesPerTemperature,4) == 3 % Compare calibration to theoretical Fix
-    legends = {'Post Fix (val)';'Pre Fix (cal)';'Theoretical Fix (cal)'};
-    validFramesCalData = framesPerTemperature(validTemps,:,:,2);
-    eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesCalData(i,validCBPoints(:),end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
-    eGeomOverTempCal = nan(1,numel(tmpBinEdges));
-    eGeomOverTempCal(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
-    
-    validFramesCalDataTheory = framesPerTemperature(validTemps,:,:,3);
-    eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesCalDataTheory(i,validCBPoints(:),end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
-    eGeomOverTempCalTheory = nan(1,numel(tmpBinEdges));
-    eGeomOverTempCalTheory(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
-    
-    eGeomOverTemp = [eGeomOverTemp;eGeomOverTempCal;eGeomOverTempCalTheory];
-else
+if inValidationStage % Compare calibration to theoretical Fix
     legends = {'Post Fix (val)'};
+else
+    legends = {'Pre Fix (val)'};
 end
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;

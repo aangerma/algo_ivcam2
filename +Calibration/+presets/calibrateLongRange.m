@@ -1,12 +1,12 @@
-function [maxRangeScaleModRef, maxMod_dec, maxFillRate, targetDist] = calibrateLongRange(hw,calibParams,runParams,fprintff)
+function [maxRangeScaleModRef, maxMod_dec, maxFillRate, targetDist] = calibrateLongRange(hw,calibParams,stateName,runParams,fprintff)
 %% Define parameters
-minModprc = calibParams.presets.long.minModprc;%0 ;
-laserDelta = calibParams.presets.long.laserDelta;%1; % decimal
-framesNum = calibParams.presets.long.framesNum;%10;
+minModprc = calibParams.presets.long.(stateName).minModprc;%0 ;
+laserDelta = calibParams.presets.long.(stateName).laserDelta;%1; % decimal
+framesNum = calibParams.presets.long.(stateName).framesNum;%10;
 cameraInput.z2mm = hw.z2mm;
 cameraInput.imSize = double(hw.streamSize);
 outDir = fullfile(ivcam2tempdir,'PresetLongRange');
-if exist(outDir,'dir') 
+if exist(outDir,'dir')
     rmdir(outDir,'s');
 end
 maskParams = calibParams.presets.long.params;%params.roi = 0.1; params.isRoiRect = 0; params.roiCropRect = 0; params.maskCenterShift = [0,0];
@@ -23,17 +23,21 @@ Calibration.aux.CBTools.showImageRequestDialog(hw,3,diag([1 1 1]),'Long Range Ca
 
 %% Find laser scale
 %[maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,outDir,cameraInput,laserPoints,maxMod_dec,fprintff);
-[maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(outDir,cameraInput,laserPoints,maxMod_dec,calibParams);
+[maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(outDir,cameraInput,laserPoints,maxMod_dec,calibParams,stateName);
+
+
 end
+
+
 
 % function [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,inputPath,cameraInput,laserPoints,maxMod_dec,fprintff)
 % %% Define parameters
 % fillRateTh = calibParams.presets.long.fillRateTh; %97;
-% 
+%
 % %% Get frames and mask
 % totFrames = GetLongRangeImages(inputPath,cameraInput.imSize(2),cameraInput.imSize(1));
 % mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
-% 
+%
 % %% Calculate fill rate
 % scores = zeros(length(totFrames),1);
 % oneFrame = struct('i',zeros(cameraInput.imSize(1),cameraInput.imSize(2)),'z',zeros(cameraInput.imSize(1),cameraInput.imSize(2)));

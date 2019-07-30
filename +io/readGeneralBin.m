@@ -7,6 +7,6 @@ f = fopen(fname,'rb');
 buffer = fread(f,Inf,type);
 fclose(f);
 
-img = reshape(buffer,fliplr(imgSize))';
+img = reshape(buffer(1:prod(imgSize)),fliplr(imgSize))';
 end
 

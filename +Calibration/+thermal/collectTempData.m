@@ -10,7 +10,9 @@ tempsForPlot = nan(1,pN);
 timesForPlot = nan(1,pN);
 plotDataI = 1;
 
-Calibration.aux.startHwStream(hw,runParams);
+tempRunParams=runParams; 
+tempRunParams.calibRes=calibParams.gnrl.calibRes; 
+Calibration.aux.startHwStream(hw,tempRunParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
     hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))
@@ -18,10 +20,10 @@ if calibParams.gnrl.sphericalMode
     hw.setReg('DESTdepthAsRange',1);
     hw.setReg('DESTbaseline$',single(0));
     hw.setReg('DESTbaseline2',single(0));
-    hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
-    hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');    
-    hw.shadowUpdate;
 end
+hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');    
+hw.shadowUpdate;
 
 prevTmp = hw.getLddTemperature();
 prevTime = 0;
@@ -204,6 +206,7 @@ end
 function frameData = getFrameData(hw,regs,calibParams)
     frame = hw.getFrame();
     [frameData.temp.ldd,frameData.temp.mc,frameData.temp.ma,frameData.temp.apdTmptr] = hw.getLddTemperature;
+    frameData.temp.humidity = hw.getHumidityTemperature;
 %     frameData.pzrShifts = hw.pzrShifts;
     [frameData.iBias(1), frameData.vBias(1)] = hw.pzrPowerGet(1,5);
     [frameData.iBias(2), frameData.vBias(2)] = hw.pzrPowerGet(2,5);

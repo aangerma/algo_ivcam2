@@ -26,9 +26,6 @@ for i = 1:numel(m)
 %        fprintf('Skipped: %d %s\n',i,m(i).regName);
 %     end
     regname = m(i).regName;
-    if strcmp(regname,'RASTsharedDenom')
-       xxx = 1; 
-    end
     passedFilters = false;
     for f = 1:numel(filters)
         passedFilters = passedFilters || startsWith(regname,filters{f});

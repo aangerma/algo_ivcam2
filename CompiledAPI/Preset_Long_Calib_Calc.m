@@ -1,4 +1,4 @@
-function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(InputPath,cameraInput,LaserPoints,maxMod_dec,calibParams)
+function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(InputPath,cameraInput,LaserPoints,maxMod_dec,calibParams,LongRangestate)
 % function [dfzRegs,results,calibPassed] = Preset_Long_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
 % description: 
 %
@@ -70,7 +70,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath','LaserPoints','maxMod_dec', 'cameraInput','calibParams');
     end
-    [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,InputPath,cameraInput,LaserPoints,maxMod_dec,fprintff);
+    [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,LongRangestate,InputPath,cameraInput,LaserPoints,maxMod_dec,fprintff);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
@@ -82,9 +82,9 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
 end
 
 
-function [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,inputPath,cameraInput,laserPoints,maxMod_dec,fprintff)
+function [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,LongRangestate,inputPath,cameraInput,laserPoints,maxMod_dec,fprintff)
 %% Define parameters
-fillRateTh = calibParams.presets.long.fillRateTh; %97;
+fillRateTh = calibParams.presets.long.(LongRangestate).fillRateTh; %97;
 
 %% Get frames and mask
 totFrames = GetLongRangeImages(inputPath,cameraInput.imSize(2),cameraInput.imSize(1));
@@ -110,16 +110,16 @@ ff1 = Calibration.aux.invisibleFigure;
 plot(laserPoints,scores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
 hold on;
 plot(laserPoints, repelem(fillRateTh,length(laserPoints)), 'r'); grid minor; hold off;
-Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',[],1);
+Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
 ff1 = Calibration.aux.invisibleFigure;
 plot(laserPoints,scores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
 hold on;
 plot(laserPoints, repelem(fillRateTh,length(laserPoints)), 'r'); grid minor; hold off;
-Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',[],0);
+Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
 ff2 = Calibration.aux.invisibleFigure;
 subplot(2,1,1);imagesc(imfuse(totFrames(end).i(:,:,end),mask));title('IR image with ROI mask');
 subplot(2,1,2);imagesc(imfuse(totFrames(end).z(:,:,end),mask));title('Depth (not normalized) image with ROI mask');
-Calibration.aux.saveFigureAsImage(ff2,runParams,'Presets','Long_Range_Laser_Calib_mask');imagesc(imfuse(frames(1).z,mask));title('Depth (not normalized) image with ROI mask');
+Calibration.aux.saveFigureAsImage(ff2,runParams,'Presets','Long_Range_Laser_Calib_mask',1);imagesc(imfuse(frames(1).z,mask));title('Depth (not normalized) image with ROI mask');
 
 %% Find laser scale
 zIm = {frames.z};
@@ -128,9 +128,9 @@ zIm_mean = cellfun(@(x) x(x(:)~=0), zIm,'UniformOutput', false);
 zIm_mean = cellfun(@nanmean, zIm_mean,'UniformOutput', false);
 zIm_mean = nanmean(cell2mat(zIm_mean));
 targetDist = zIm_mean; %In mm units
-if (targetDist < calibParams.errRange.targetDist(1)) || (targetDist > calibParams.errRange.targetDist(2))
+if (targetDist < calibParams.errRange.(['targetDist_',LongRangestate])(1)) || (targetDist > calibParams.errRange.(['targetDist_',LongRangestate])(2))
     maxRangeScaleModRef = 1;
-    fprintff(['[-] Long range preset calibration: the target is placed in the wrong location. It should be at ' num2str(mean(calibParams.errRange.targetDist)) '[mm] but it is at ' num2str(targetDist) ' [mm]. Modulation ref will remain at max value\n']);  
+    fprintff(['[-] Long range preset calibration: the target is placed in the wrong location. It should be at ' num2str(mean(calibParams.errRange.(['targetDist_',LongRangestate]))) '[mm] but it is at ' num2str(targetDist) ' [mm]. Modulation ref will remain at max value\n']);  
     return;
 end
 ix = find(scores >= fillRateTh, 1);
@@ -148,7 +148,7 @@ maxRangeScaleModRef = round(laserPoints(bestIx(ix_min)))/maxMod_dec;
 if calibParams.presets.long.updateCalibVal
     longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
     longRangePreset=readtable(longRangePresetFn);
-    modRefInd=find(strcmp(longRangePreset.name,'modulation_ref_factor'));
+    modRefInd=find(strcmp(longRangePreset.name,calibParams.presets.long.(LongRangestate).ModRefPresetState));
     longRangePreset.value(modRefInd) = maxRangeScaleModRef;
     writetable(longRangePreset,longRangePresetFn);
 end

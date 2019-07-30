@@ -199,16 +199,16 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
         data.tableResults = tableResults;
         if isempty(table)
            calibPassed = 0;
-           save(fullfile(output_dir,'mat_files' ,'data.mat'),'data');
+           save(fullfile(output_dir,'mat_files' ,'data.mat'),'data','calibParams','runParams','eepromRegs');
            fprintff('table is empty (no checkerboard where found)\n');
            return;
         end
-        dataFixed = Calibration.thermal.applyFix(data,calibParams);
-        % Add eGeom to data
-        dataFixed = Calibration.thermal.addEGeomToData(dataFixed);
+%         dataFixed = Calibration.thermal.applyFix(data,calibParams);
+%         % Add eGeom to data
+%         dataFixed = Calibration.thermal.addEGeomToData(dataFixed);
 
-        [data] = Calibration.thermal.analyzeFramesOverTemperature(data,dataFixed,calibParams,runParams,fprintff,0);
-        save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data');
+        [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
+        save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data','calibParams','runParams','eepromRegs');
 
         Calibration.aux.logResults(data.results,runParams);
         %% merge all scores outputs
@@ -293,18 +293,18 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         ptsWithZ = [rpt,reshape(pts,[],2),v];
         ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
     end
-    v = ptsWithZ(:,6:8);
-    if size(v,1) == 20*28
-        v = reshape(v,20,28,3);
-        rows = find(any(~isnan(v(:,:,1)),2));
-        cols = find(any(~isnan(v(:,:,1)),1));
-        grd = [numel(rows),numel(cols)];
-        v = reshape(v(rows,cols,:),[],3);
-    else
-        grd = [9,13];
-    end
-    [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
-    fprintf('eGeom - %2.2f\n',eGeom);
+%     v = ptsWithZ(:,6:8);
+%     if size(v,1) == 20*28
+%         v = reshape(v,20,28,3);
+%         rows = find(any(~isnan(v(:,:,1)),2));
+%         cols = find(any(~isnan(v(:,:,1)),1));
+%         grd = [numel(rows),numel(cols)];
+%         v = reshape(v(rows,cols,:),[],3);
+%     else
+%         grd = [9,13];
+%     end
+%     [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
+%     fprintf('eGeom - %2.2f\n',eGeom);
     
 end
 

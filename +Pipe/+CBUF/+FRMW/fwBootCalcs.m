@@ -38,6 +38,7 @@ else
     end
     xSecPixLgth(num_sections) = min(max([xSections(xSecIxStart:end),0])+ single(regs.FRMW.cbufMargin), MAX_BUFFER_SIZE);
 end
+% xSections
 autogenRegs.CBUF.xRelease = uint16(zeros(1,getMaxNumSections));
 autogenRegs.CBUF.xRelease(1:numel(xSecPixLgth)) = uint16(round(xSecPixLgth));
 
@@ -128,7 +129,7 @@ else
     maxBufferSize = 120;
 end
 maxBufferSize = min(maxBufferSize,double(regs.GNRL.imgHsize-1));
-BUFFER_TOP_MARGIN = 10;
+BUFFER_TOP_MARGIN = 6;
 
 maxBufferSize = maxBufferSize - BUFFER_TOP_MARGIN;
 end
