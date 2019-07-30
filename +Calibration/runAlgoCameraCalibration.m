@@ -1,4 +1,4 @@
-function  [calibPassed] = runAlgoStableCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
+function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
     t=tic;
     results = struct;
     if(~exist('fprintff','var'))

@@ -1,6 +1,6 @@
-function IV2AlgoStableCalibTool(runParamsFile)
+function IV2AlgoCameraCalibTool(runParamsFile)
     if ~exist('runParamsFile','var')
-        runParamsFile = 'IV2AlgoStableCalibTool.xml';
+        runParamsFile = 'IV2AlgoCameraCalibTool.xml';
     end
     app=createComponents(runParamsFile);
     loadDefaults(app);
@@ -180,7 +180,7 @@ function app=createComponents(runParamsFile)
     app.VersionLabel = uicontrol('style','text','parent',configurationTab);
     app.VersionLabel.HorizontalAlignment = 'left';
     app.VersionLabel.Position = [5 sz(2)-154 94 15];
-    [ver,sub] = AlgoStableCalibToolVersion();
+    [ver,sub] = AlgoCameraCalibToolVersion();
     app.VersionLabel.String = sprintf('version: %5.2f.%1.0f',ver,sub);
     
     
@@ -337,7 +337,7 @@ function statrtButton_callback(varargin)
     try
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
-        [runparams.version,runparams.subVersion] = AlgoStableCalibToolVersion(); 
+        [runparams.version,runparams.subVersion] = AlgoCameraCalibToolVersion(); 
 %        runparams.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
         runparams.outputFolder = [];
         runparams.replayFile = [];
@@ -427,7 +427,7 @@ function statrtButton_callback(varargin)
         app.AbortButton.UserData=1;
         %%
         %=======================================================RUN CALIBRATION=======================================================        
-        calibPassed = Calibration.runAlgoStableCalibration(runparamsFn,calibfn,fprintffS,s,app);
+        calibPassed = Calibration.runAlgoCameraCalibration(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));

@@ -1,4 +1,4 @@
-function [vers,subVersion,versionBytes] = AlgoStableCalibToolVersion()
+function [vers,subVersion,versionBytes] = AlgoCameraCalibToolVersion()
     global gProjID;
     if ~isempty(gProjID) && gProjID == iv2Proj.L520
         vers = 16.04;

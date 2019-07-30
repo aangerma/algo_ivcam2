@@ -25,5 +25,5 @@
    <configurationFolder>releaseConfigCalibL520</configurationFolder>
    <calibParamsFile>calibParamsL520.xml</calibParamsFile>
    <disableAdvancedOptions>0</disableAdvancedOptions>
-   <toolName>IV2 Algo Stable Calibration Tool L520</toolName>
+   <toolName>IV2 Algo Camera Calibration Tool L520</toolName>
 </struct>

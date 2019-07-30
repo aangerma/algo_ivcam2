@@ -27,5 +27,5 @@
    <calibParamsFile>calibParamsXGA.xml</calibParamsFile>
    <calibRes>[768,1024]</calibRes>
    <disableAdvancedOptions>0</disableAdvancedOptions>
-   <toolName>IV2 Algo Stable Calibration Tool</toolName>
+   <toolName>IV2 Algo Camera Calibration Tool</toolName>
 </struct>
