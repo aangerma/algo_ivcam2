@@ -222,12 +222,12 @@ function app=createComponents(runParamsFile)
     
     
     %checkboxes
-    cbnames = {'init', 'DSM', 'dataDelay', 'burnCalibrationToDevice','burnConfigurationToDevice','debug','saveRegState','FOVex_installed','manualCaptures','performValidation'};
+    cbnames = {'replayMode', 'init', 'DSM', 'dataDelay', 'coolDown', 'burnCalibrationToDevice','burnConfigurationToDevice','debug','saveRegState','FOVex_installed','manualCaptures','performValidation'};
 
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
-    app.disableAdvancedOptions = runParams.disableAdvancedOptions;
-    if runParams.disableAdvancedOptions checkBoxesMode = 'inactive'; else checkBoxesMode = 'on'; end
+    app.calibRes=runParams.calibRes;
+    checkBoxesMode = 'on';
     for i=1:length(cbnames)
         f=cbnames{i};
         app.cb.(f) = uicontrol('style','checkbox','parent',advancedTab,'enable',checkBoxesMode);
@@ -290,8 +290,8 @@ function saveDefaults(varargin)
     s.outputdirectorty=app.outputdirectorty.String;
     s.configurationFolder = app.configurationFolder;
     s.calibParamsFile = app.calibParamsFile;
-    s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
+    s.calibRes = app.calibRes;
 %    s.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
@@ -368,6 +368,7 @@ function statrtButton_callback(varargin)
         end
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
+        runparams.calibRes = app.calibRes;
         
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);

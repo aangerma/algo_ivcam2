@@ -37,7 +37,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     hw.cmd('algo_thermloop_en 0');
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     hw.setPresetControlState(calibParams.gnrl.presetMode);
-    hw.startStream(0,calibParams.gnrl.calibRes);
+    hw.startStream(0,runParams.calibRes);
     hw.getFrame;
     hw.stopStream;
     

@@ -14,7 +14,6 @@
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
        <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
-       <calibRes>[768,1024]</calibRes>
    </gnrl>
    <warmUp>
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->

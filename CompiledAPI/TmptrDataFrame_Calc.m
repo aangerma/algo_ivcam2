@@ -89,7 +89,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
-        save(fn,'finishedHeating','calibPassed', 'tableResults');
+        save(fn,'finishedHeating','calibPassed', 'results');
     end
     if (finishedHeating~=0)
         g_temp_count = 0;
@@ -189,7 +189,6 @@ else % steady-state stage
     invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
     data.framesData = data.framesData(~invalidFrames);
     data = Calibration.thermal.addEGeomToData(data);
-    data.dfzRefTmp = Calibration.thermal.recalcRefTempForBetterEGeom(data,calibParams,runParams,fprintff);
     data.dfzRefTmp = regs.FRMW.dfzCalTmp;
     [table,results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
     data.tableResults = results;
@@ -301,11 +300,29 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
 end
 
 function [merged] = struct_merge(merged , new )
+    % regs to keep (and not override by new)
+    backupRegs.EXTL.dsmXscale       = merged.EXTL.dsmXscale;
+    backupRegs.EXTL.dsmXoffset      = merged.EXTL.dsmXoffset;
+    backupRegs.EXTL.dsmYscale       = merged.EXTL.dsmYscale;
+    backupRegs.EXTL.dsmYoffset      = merged.EXTL.dsmYoffset;
+    backupRegs.FRMW.dfzCalTmp       = merged.FRMW.dfzCalTmp;
+    backupRegs.FRMW.dfzApdCalTmp    = merged.FRMW.dfzApdCalTmp;
+    backupRegs.FRMW.dfzVbias        = merged.FRMW.dfzVbias;
+    backupRegs.FRMW.dfzIbias        = merged.FRMW.dfzIbias;
+    % overriding merged with new
     f = fieldnames(new);
     for i = 1:length(f)
         fn = fieldnames(new.(f{i}));
         for n = 1:length(fn)
             merged.(f{i}).(fn{n}) = new.(f{i}).(fn{n});
+        end
+    end
+    % undoing override for backupRegs
+    f = fieldnames(backupRegs);
+    for i = 1:length(f)
+        fn = fieldnames(backupRegs.(f{i}));
+        for n = 1:length(fn)
+            merged.(f{i}).(fn{n}) = backupRegs.(f{i}).(fn{n});
         end
     end
 end

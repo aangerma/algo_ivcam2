@@ -36,7 +36,7 @@ validFramesData = framesPerTemperature(validTemps,:,:,1);
 % validFramesData = validFramesData(:,validCBPoints,:);
 stdVals = nanmean(nanstd(validFramesData));
 
-metrics = Calibration.thermal.calcThermalScores(data,calibParams.fwTable.tempBinRange,calibParams.gnrl.calibRes);
+metrics = Calibration.thermal.calcThermalScores(data,calibParams.fwTable.tempBinRange,runParams.calibRes);
 
 metrics.stdRtd = stdVals(1);
 metrics.stdXim = stdVals(4);

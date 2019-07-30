@@ -64,7 +64,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     
     fprintff('Opening stream...');
 %     Calibration.aux.startHwStream(hw,runParams);
-    hw.startStream(0,calibParams.gnrl.calibRes);
+    hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
     %% Verify unit's configuration version
     [verValue,verValuefull] = getVersion(hw,runParams);  
@@ -86,7 +86,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     hw.stopStream;
     
     %% load EPROM structure suitible for calib version tool 
-    [regs,eepromRegs,eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams);
+    [regs, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     
     regs.EXTL.conLocDelaySlow   = delayRegs.EXTL.conLocDelaySlow;
@@ -99,7 +99,9 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     % thermal calibration 
     maxCoolTime = inf;
     maxHeatTime = calibParams.warmUp.maxWarmUpTime;
-    coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % cool down
+    if runParams.coolDown
+        coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % cool down
+    end
     [calibPassed, results] = Calibration.thermal.AlgoThermalCalib(hw, regs, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxHeatTime, app);
     
     results = UpdateResultsStruct(results);
@@ -153,9 +155,9 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     mkdirSafe(runParams.internalFolder);
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')),runParams.configurationFolder);
-    initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets','+defaultValues');
-    eepromStructureFn = fullfile(fileparts(mfilename('fullpath')),'eepromStructure');
+    initFldr = fullfile(fileparts(mfilename('fullpath')), '../', runParams.configurationFolder);
+    initPresetsFolder = fullfile(fileparts(mfilename('fullpath')), '../','+presets','+defaultValues');
+    eepromStructureFn = fullfile(fileparts(mfilename('fullpath')), '../','eepromStructure');
     copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), runParams.internalFolder);
@@ -330,4 +332,8 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP0 = results.angx.p0;
     results.thermalAngxP1 = results.angx.p1;
     results = rmfield(results, {'rtd', 'angy', 'angx', 'table'});
+end
+function RegStateSetOutDir(Outdir)
+    global g_reg_state_dir;
+    g_reg_state_dir = Outdir;
 end

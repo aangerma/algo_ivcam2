@@ -308,7 +308,7 @@ function saveDefaults(varargin)
     s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
-    s.calibRes=app.calibRes;
+    s.calibRes = app.calibRes;
 %    s.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
     if(isempty(s.outputdirectorty))
         s.outputdirectorty=' ';%structxml bug
@@ -386,7 +386,7 @@ function statrtButton_callback(varargin)
         end
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
-        runparams.calibRes=app.calibRes; 
+        runparams.calibRes = app.calibRes; 
         
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);
