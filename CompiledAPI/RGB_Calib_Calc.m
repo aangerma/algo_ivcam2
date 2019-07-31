@@ -42,14 +42,14 @@ function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irI
         fprintff = @(varargin) fprintf(fid,varargin{:});
     else % algo_cal app_windows
         fprintff = g_fprintff; 
-    end
-
+   end
+    runParams.outputFolder = g_output_dir;
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'InputPath' , 'calibParams' ,'Kdepth' , 'z2mm','irImSize' );
     end
-    [rgbPassed,rgbTable,results,im,rgbs] = Calibration.rgb.cal_rgb(InputPath,calibParams,irImSize,Kdepth,z2mm,fprintff);
+    [rgbPassed,rgbTable,results,im,rgbs] = Calibration.rgb.cal_rgb(InputPath,calibParams,irImSize,Kdepth,z2mm,fprintff,runParams);
     % save images
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_img.mat']);

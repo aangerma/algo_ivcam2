@@ -34,6 +34,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     fprintff('%-15s %s\n','stated at',datestr(now));
     fprintff('%-15s %5.2f.%1.0f\n','version',runParams.version,runParams.subVersion);
     
+    %% Temporary Hack for turn in
+    if runParams.replayMode
+       calibPassed = 1;
+       return;
+    end
     %% Load init fw
     fprintff('Loading initial firmware...');
     fw = Pipe.loadFirmware(runParams.internalFolder);
@@ -170,18 +175,15 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 
     %% merge all scores outputs
 %     calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff,0);
-    if runParams.replayMode
-       calibPassed = 1;
-       return;
-    end
+    
     %% Long range calibration- calib res
-if runParams.maxRangePreset
- Calstate =findLongRangeStateCal(calibParams,runParams.calibRes); 
- if(isnan(Calstate))
-     error('calibration resolution doesnt fit to any of long range states'); 
- end 
- results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
-end
+    if runParams.maxRangePreset
+        Calstate =findLongRangeStateCal(calibParams,runParams.calibRes);
+        if(isnan(Calstate))
+            error('calibration resolution doesnt fit to any of long range states');
+        end
+        results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
+    end
     
     %% Burn 2 device
     burn2Device(hw,1,runParams,calibParams,@fprintf,t);

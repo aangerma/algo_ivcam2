@@ -1,4 +1,4 @@
-function [rgbPassed,rgbTable,results,im,rgbs] = cal_rgb(imagePath,calibParams,IrImSize,Kdepth,z2mm,fprintff)
+function [rgbPassed,rgbTable,results,im,rgbs] = cal_rgb(imagePath,calibParams,IrImSize,Kdepth,z2mm,fprintff,runParams)
     results = struct;
     rgbTable = [];
     rgbPassed = 0;
@@ -14,6 +14,9 @@ function [rgbPassed,rgbTable,results,im,rgbs] = cal_rgb(imagePath,calibParams,Ir
         img = typecast(readAllBytes(filesRGB{1}),'uint16');
         rgbs{i} = reshape(double(bitand(img,255)),calibParams.rgb.imSize)';
     end
+    
+    fn = fullfile(runParams.outputFolder, 'mat_files' , 'RGB_frames.mat');
+    save(fn,'im' , 'rgbs' ,'calibParams' );
     
     [cbCorners,cornersValid,params] = Calibration.rgb.prepareData(im,rgbs,calibParams);
     

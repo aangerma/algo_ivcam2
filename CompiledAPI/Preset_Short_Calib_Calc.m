@@ -87,7 +87,8 @@ width = sz(2);
 height = sz(1);
 Frames = GetMinRangeImages(InputPath,width,height);
 runParams.outputFolder = output_dir; % need update
-
+fn = fullfile(output_dir, 'mat_files' , 'Preset_Short_Calib_Frames.mat');
+save(fn,'Frames');
 %% Detecting ROI on low laser image
 [whiteCenter,blackCenter,ROI_Coffset]=detectROI(Frames(1).i,runParams);
 %% analyzing white and black patch
