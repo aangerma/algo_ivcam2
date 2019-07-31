@@ -172,6 +172,8 @@ function xy = spherical2xy(sphericalPixels,regs)
         
         [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
         [x,y] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(angx,angy,regs), regs);
+        % (To add) 2D Undist - 
+        % v = Calibration.Undist.undistByTPSModel( v,[],runParams );
         xy = [x,y];
 end
 function roiregs = margins2regs(margins,regs)

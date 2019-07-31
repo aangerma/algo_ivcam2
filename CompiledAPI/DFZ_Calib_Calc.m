@@ -189,7 +189,11 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         runParams.outputFolder='D:\Data\Ivcam2\FOVex\temp';
     end
     [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
-%         calibParams.dfz.pitchFixFactorRange = [0,0];
+    % (To add) 2D Undist - 
+    % tpsModel = createTpsModelFromFrames(...)
+    % evaluateNewModel. Add an argument to calibDFZ so it will use it
+    
+    %         calibParams.dfz.pitchFixFactorRange = [0,0];
     results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
     fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
 %         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);

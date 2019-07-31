@@ -67,8 +67,6 @@ regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
 
 %% SET OLD VALUES
 r.reset();
-hw.setReg('DIGGsphericalScale',int16(double(sphericalScale)),1);
-hw.shadowUpdate;
 % setBias(hw,origBias);
 hw.cmd('mwd a005006c a0050070 00000000');  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 end

@@ -1,8 +1,8 @@
-function [ st ] = undistortWithTPS( points1,points2,runParams )
+function [ tpsUndistModel ] = createTpsUndistModel( points1,points2,runParams )
 %{ 
 his function recieves:
 points1 - a 2xN points array. First col should represent a data point 
-y - a 2xN values arrae
+points2 - a 2xN values array - the correct values for the data
 
 %}
 % Test code
@@ -16,12 +16,12 @@ if ~exist('runParams','var')
     runParams = [];
 end
 fprintf('Calculating Undist TPS model, be patience (should take around 2 minutes) ... ');
-st = tpaps(points1,points2);
+tpsUndistModel = tpaps(points1,points2);
 fprintf('Done\n');
 % avals = fnval(st,points1);
 
 if ~isempty(runParams)
-    save(fullfile(runParams.outputFolder,'mat_files','tpsUndistModel.mat'),'st');
+    save(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'),'tpsUndistModel');
 end
 % quiver(points1(1,:),points1(2,:),points2(1,:)-points1(1,:),points2(2,:)-points1(2,:))
 % quiver(points1(1,:),points1(2,:),points2(1,:)-avals(1,:),points2(2,:)-avals(2,:))

@@ -16,6 +16,7 @@ udistRegs.FRMW.yfov = regs.FRMW.yfov;
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
 % y.
 [udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs);
+% [udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs,runParams); 
 
 % % % 
 % % % % A grid of x-y coordinates in the image plane:
@@ -60,6 +61,8 @@ nPoints = 50;
 [angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
 v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,regs);
+% (To add) 2D Undist - 
+% v = Calibration.Undist.undistByTPSModel( v,[],runParams );
 [xg,yg] = Calibration.aux.vec2xy(v,regs);
 
 % Pipe flow
