@@ -5,7 +5,7 @@ function [vers,subVersion,versionBytes] = calibToolVersion()
         subVersion = 0;
     else
         vers = 3.05;
-        subVersion = 0;
+        subVersion = 1;
     end
     
     versionBytes = uint8([floor(vers), rem(vers,1)*100,subVersion,0]);

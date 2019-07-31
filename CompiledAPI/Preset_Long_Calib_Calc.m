@@ -67,13 +67,13 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
     maskParams = calibParams.presets.long.params;
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name, LongRangestate, '_in.mat']);
         save(fn,'InputPath','LaserPoints','maxMod_dec', 'cameraInput','calibParams','LongRangestate');
     end
     [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,LongRangestate,InputPath,cameraInput,LaserPoints,maxMod_dec,fprintff);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name, LongRangestate, '_out.mat']);
         save(fn,'maxRangeScaleModRef','maxFillRate','targetDist');
     end
     if(exist('fid','var'))
@@ -83,12 +83,14 @@ end
 
 
 function [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,LongRangestate,inputPath,cameraInput,laserPoints,maxMod_dec,fprintff)
-%% Define parameters
-fillRateTh = calibParams.presets.long.(LongRangestate).fillRateTh; %97;
 
 %% Get frames and mask
 totFrames = GetLongRangeImages(inputPath,cameraInput.imSize(2),cameraInput.imSize(1));
+fn = fullfile(runParams.outputFolder, 'mat_files' , ['LongRange_',LongRangestate,'_frames.mat']);
+save(fn,'totFrames');
 mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
+%% Define parameters
+fillRateTh = calibParams.presets.long.(LongRangestate).fillRateTh; %97;
 
 %% Calculate fill rate
 scores = zeros(length(totFrames),1);

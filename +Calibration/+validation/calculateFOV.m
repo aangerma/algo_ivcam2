@@ -41,6 +41,8 @@ angy = single(yy);
 
 [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
 vUnit = Calibration.aux.ang2vec(angx,angy,regs);
+% (To add) 2D Undist - 
+% v = Calibration.Undist.undistByTPSModel( v',[],runParams )';
 if axis == 1 % y angle
     angles = atand(vUnit(2,:)./vUnit(3,:));
 else % x angles
