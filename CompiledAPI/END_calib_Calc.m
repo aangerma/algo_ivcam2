@@ -132,12 +132,17 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     calibOutput=fullfile(output_dir,'calibOutputFiles');
     mkdirSafe(calibOutput);
     fw.generateTablesForFw(calibOutput); 
-    calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_04_%02d.bin',mod(runParams.version*100,100)));    
-    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+%     calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));    
+%      fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     
-        
+    results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs);
 end
-
+function results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs)
+    results.EXTLconLocDelaySlow = (delayRegs.EXTL.conLocDelaySlow);
+    results.EXTLconLocDelayFastC = (delayRegs.EXTL.conLocDelayFastC);
+    results.EXTLconLocDelayFastF = (delayRegs.EXTL.conLocDelayFastF);
+    results.DESTtxFRQpd = (dfzRegs.DEST.txFRQpd(1));
+end
 % function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
 %     regs = fw.get();
 %     intregs.DIGG.spare=zeros(1,8,'uint32');

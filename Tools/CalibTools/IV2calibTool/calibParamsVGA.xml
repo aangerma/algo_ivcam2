@@ -58,11 +58,15 @@
       <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
       <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
       <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
-      <maxRangeScaleModRef>[0 1]</maxRangeScaleModRef>
+     
       <maxModRefDec>[0 inf]</maxModRefDec>
-      <!--<targetDist>[780 820]</targetDist>-->
-      <targetDist>[0 inf]</targetDist> <!--In [mm]-->
-      <maxFillRate>[90 100]</maxFillRate>
+      <maxRangeScaleModRef_state1>[0 1]</maxRangeScaleModRef_state1>
+    
+      <targetDist_state1>[0 inf]</targetDist_state1> <!--In [mm]-->
+      <maxFillRate_state1>[90 100]</maxFillRate_state1>
+      <maxRangeScaleModRef_state2>[0 1]</maxRangeScaleModRef_state2>
+      <targetDist_state2>[0 inf]</targetDist_state2> <!--In [mm]-->
+      <maxFillRate_state2>[80 100]</maxFillRate_state2>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -253,10 +257,22 @@
     <presets>
         <long>
             <updateCalibVal>1</updateCalibVal>
-            <minModprc>0</minModprc>
-            <laserDelta>1</laserDelta>
-            <framesNum>10</framesNum>
-            <fillRateTh>97</fillRateTh>
+            <state1>
+                <ModRefPresetState>modulation_ref_factor_1</ModRefPresetState>
+                <resolution>[480,640]</resolution>
+                <minModprc>0</minModprc>
+                <laserDelta>1</laserDelta>
+                <framesNum>10</framesNum>
+                <fillRateTh>97</fillRateTh>                      
+            </state1>
+            <state2>
+                <ModRefPresetState>modulation_ref_factor_2</ModRefPresetState>
+                <resolution>[768,1024]</resolution>
+                <minModprc>0</minModprc>
+                <laserDelta>1</laserDelta>
+                <framesNum>10</framesNum>
+                <fillRateTh>85</fillRateTh>                        
+            </state2>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
             <estDistTargetReflect>0.8</estDistTargetReflect>-->
             <mask4userScale>2</mask4userScale>

@@ -119,7 +119,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 	results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t);
 	calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff);
 
-    %% Calibrate min and max range preset
+    %% Calibrate min range preset
     [results] = calibratePresets(hw, results,runParams,calibParams, fprintff,fw);
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
@@ -132,13 +132,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 
     %% ::ROI::
     [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
-    
+
     %% Undist and table burn
 %    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
     results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version);
- 
-    
-     
+
    
     
 %     %% Print image final fov
@@ -170,29 +168,84 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         fprintff('CoverageValidation or preResetDFZValidation failed. Skipping...\n');
     end
 
-    Calibration.aux.logResults(results,runParams);
-    Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
     %% merge all scores outputs
-    calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff);
-    
-    fprintff('[!] calibration ended - ');
-    if(calibPassed==0)
-        fprintff('FAILED.\n');
-    else
-        fprintff('PASSED.\n');
+%     calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff,0);
+    if runParams.replayMode
+       calibPassed = 1;
+       return;
     end
+    %% Long range calibration- calib res
+if runParams.maxRangePreset
+ Calstate =findLongRangeStateCal(calibParams,runParams.calibRes); 
+ if(isnan(Calstate))
+     error('calibration resolution doesnt fit to any of long range states'); 
+ end 
+ results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
+end
+    
     %% Burn 2 device
-    burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t);
+    burn2Device(hw,1,runParams,calibParams,@fprintf,t);
 
+
+ 
     %% Collecting hardware state
     if runParams.saveRegState
         fprintff('Collecting registers state...');
         hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
         fprintff('Done\n');
     end
+    %% Long range calibration- calib res 2 if needed
+    if runParams.maxRangePreset
+        if(strcmp(Calstate,'state1'))
+            stateTotest='state2';
+        else
+            stateTotest='state1';
+        end
+        secondRes=calibParams.presets.long.(stateTotest).resolution;
+        if(~isempty(secondRes))
+            hw.stopStream;
+            hw.cmd('rst');
+            pause(10);
+            clear hw;
+            pause(1);
+            hw = HWinterface;
+            hw.cmd('DIRTYBITBYPASS');
+            fprintff('Test second state for long range preset, starting stream.\n');
+            hw.startStream(0,secondRes);
+            results = calibrateLongRangePreset(hw,secondRes,stateTotest,results,runParams,calibParams, fprintff);
+            
+        end
+    end
+    presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
+    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));
+    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     
+    fprintff('[-] Burning preset table...');
+    try
+        hw = HWinterface;
+        hw.cmd(['WrCalibInfo ',calibTempTableFn]);
+        fprintff('Done\n');
+    catch
+        fprintff('failed to burn preset table\n');
+    end
+
+%%
+    Calibration.aux.logResults(results,runParams);
+    Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
+    calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff,0);
     
-    
+    fprintff('[!] calibration ended - ');
+    if(calibPassed==0)
+        fprintff('FAILED.\n');
+        fprintff('Reburning initial tables...');
+        fw = Pipe.loadFirmware(fullfile(fileparts(mfilename('fullpath')),runParams.configurationFolder));
+        fw.get();%run autogen
+         %% Init hw configuration
+        runParams.init = 1;
+        initConfiguration(hw,fw,runParams,fprintff,t);
+    else
+        fprintff('PASSED.\n');
+    end
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
     %% Validation
@@ -204,6 +257,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     end
     clear hw;
 end
+ 
 function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t)
     if runParams.rgb && ~runParams.replayMode
         fprintff('[-] Reseting before RGB calibration... '); 
@@ -445,7 +499,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         fw.setRegs(vregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_04_%02.0f.bin',mod(calibToolVersion,1)*100)));
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -500,7 +554,11 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         end
         
     else
-        delayRegs = struct;
+        eepromregs = hw.readAlgoEEPROMtable();
+        currregs.EXTL.conLocDelaySlow = eepromregs.EXTL.conLocDelaySlow;
+        currregs.EXTL.conLocDelayFastC = eepromregs.EXTL.conLocDelayFastC;
+        currregs.EXTL.conLocDelayFastF = eepromregs.EXTL.conLocDelayFastF;
+        delayRegs = currregs;
         fprintff('skipped\n');
     end
     
@@ -568,7 +626,7 @@ function [results] = calibratePresets(hw, results,runParams,calibParams, fprintf
 %     hw.startStream(0,runParams.calibRes);
 
 %% calibrate max range
-    results = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff);
+%     results = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff);
 
 %% burn presets
 %    burnPresets(hw,runParams,calibParams, fprintff,fw);
@@ -586,14 +644,31 @@ function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, 
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
     end
 end
-function [results] = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff)
+function state =findLongRangeStateCal(calibParams,resolution)
+        state1Res=calibParams.presets.long.state1.resolution;
+        state2Res=calibParams.presets.long.state2.resolution; 
+        switch mat2str(resolution)
+            case mat2str(state1Res)
+                state='state1';
+            case mat2str(state2Res)
+                state='state2'; 
+            otherwise 
+                state=nan; 
+        end 
+end 
+function [results] = calibrateLongRangePreset(hw,resolution,state,results,runParams,calibParams, fprintff)
     if runParams.maxRangePreset
-        fprintff('[-] Calibrating long range laser power...\n');
+        fprintff(['[-] Calibrating long range laser power on ',mat2str(resolution),' resolution ...\n']);
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
-        [results.maxRangeScaleModRef,results.maxModRefDec,results.maxFillRate,results.targetDist] = Calibration.presets.calibrateLongRange(hw,calibParams,runParams,fprintff);
+        % run on calib Res
+        [results.(['maxRangeScaleModRef_',state]),maxModRefDec,results.(['maxFillRate_',state]),...
+         results.(['targetDist_',state])] = Calibration.presets.calibrateLongRange(hw,calibParams,state,runParams,fprintff);
 
+        
         %% Set laser val
-        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
+        tmpres.maxRangeScaleModRef=results.(['maxRangeScaleModRef_',state]); 
+        tmpres.maxModRefDec=maxModRefDec;
+        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,tmpres );
     end
 end
 
@@ -1047,7 +1122,7 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     
 end
 function res = noCalibrations(runParams)
-    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb);
+    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb || runParams.minRangePreset || runParams.maxRangePreset || runParams.init );
 end
 function res = onlyRGBCalib(runParams)
     res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist) && runParams.rgb;

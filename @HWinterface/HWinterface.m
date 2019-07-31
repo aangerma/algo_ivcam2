@@ -233,7 +233,7 @@ classdef HWinterface <handle
         function saveRecData(obj)
             if(~isempty(obj.m_recfn))
                 recData = obj.m_recData;%#ok
-                save(obj.m_recfn,'recData','-v7.3');
+%                 save(obj.m_recfn,'recData','-v7.3');
             end
         end
         %destructor
@@ -636,14 +636,32 @@ classdef HWinterface <handle
             ibias = mean(ibias);
             vbias = mean(vbias);
         end
+        function [tempr,humidity]=getHumidityTemperature(obj,N)
+            if ~exist('N','var')
+                N = 5;
+            end
+            data = zeros(N,2);
+            for i = 1:N
+                strtmp = obj.cmd('HUMIDITY_GET');
+                lines = strsplit(strtmp,newline);
+                for k = 1:numel(lines)
+                    line = strsplit(lines{k},{':',' '});
+                    if numel(line) > 1
+                        data(i,k) = str2num(line{2});
+                    end
+                end
+                pause(0.005);
+            end
+            humidity = mean(data(:,1));
+            tempr = mean(data(:,2));
+        end
         function [lddTmptr,mcTmptr,maTmptr,apdTmptr ]=getLddTemperature(obj,N)
             if ~exist('N','var')
                 N = 10;
             end
             getTmptr = zeros(N,3);
             
-            tSense = zeros(N,1);
-            vSense = zeros(N,1);
+            
             for i = 1:N
                 strtmp = obj.cmd('TEMPERATURES_GET');
                 lines = strsplit(strtmp,newline);
@@ -655,8 +673,7 @@ classdef HWinterface <handle
                 end
                 pause(0.005);
             end
-            tSense = mean(tSense);
-            vSense = mean(vSense);
+           
             lddTmptr = mean(getTmptr(:,1));
             mcTmptr = mean(getTmptr(:,2));
             maTmptr = mean(getTmptr(:,3));

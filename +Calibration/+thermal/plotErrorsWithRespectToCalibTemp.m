@@ -32,9 +32,9 @@ sq = @squeeze;
 if ~isempty(runParams)
     % RTD error
     if ~inValidationStage
-        legends = {'Pre Fix (cal)';'Theoretical Fix (val)'};
+        legends = {'Pre Fix (cal)'};
     else
-        legends = {'Post Fix (val)';'Pre Fix (cal)';'Theoretical Fix (val)'};
+        legends = {'Post Fix (val)'};
     end
     if nCollection > 1
         legends = legends(1:nCollection);

@@ -10,7 +10,7 @@
        <apdTKill>65</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
-       <cbGridSz>[]</cbGridSz>
+       <cbGridSz>[9,13]</cbGridSz>
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
        <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->

@@ -20,6 +20,7 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     fprintff('Reading unit calibration regs...');
     hw.getFrame;
     hw.stopStream;
+    calibParams.gnrl.sphericalMode = 0;
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0,calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     
@@ -28,13 +29,13 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     
     runParams.manualCaptures = 0;
     data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,calibParams.validation.maximalCoolingAndHeatingTimes,app);
-    save(fullfile(runParams.outputFolder,'validationData.mat'),'data');
+    save(fullfile(runParams.outputFolder,'validationData.mat'),'data','calibParams','runParams');
  
-    [data] = Calibration.thermal.analyzeFramesOverTemperature(data,[],calibParams,runParams,fprintff,1);
+    [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,1);
     
     % Option two - partial validation, let it cool down to N degrees below calibration temperature and then compare to calibration temperature 
     
-    save(fullfile(runParams.outputFolder,'validationData.mat'),'data');
+    save(fullfile(runParams.outputFolder,'validationData.mat'),'data','calibParams','runParams');
 
     
    

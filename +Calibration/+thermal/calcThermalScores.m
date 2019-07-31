@@ -19,7 +19,7 @@ tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1))
 framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,48,tmpBinIndices);
     
 [Xscale,Xoffset] = linearTransformToRef(framesPerTemperature(:,:,4)-(Hres-1)/2,refBinIndex);
-[Yscale,Yoffset] = linearTransformToRef(framesPerTemperature(:,:,5)-(Vres/2-1)/2,refBinIndex);
+[Yscale,Yoffset] = linearTransformToRef(framesPerTemperature(:,:,5)-(Vres-1)/2,refBinIndex);
 [destTmprtOffset] = constantTransformToRef(framesPerTemperature(:,:,1),refBinIndex);
 
 Xscale = fillInnerNans(Xscale');
