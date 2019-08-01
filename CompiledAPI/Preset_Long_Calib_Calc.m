@@ -87,6 +87,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(ma
 %% Get frames and mask
 totFrames = GetLongRangeImages(inputPath,cameraInput.imSize(2),cameraInput.imSize(1));
 fn = fullfile(runParams.outputFolder, 'mat_files' , ['LongRange_',LongRangestate,'_frames.mat']);
+mkdirSafe(fileparts(fn));
 save(fn,'totFrames');
 mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
 %% Define parameters
