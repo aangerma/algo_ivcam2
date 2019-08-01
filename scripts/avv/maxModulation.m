@@ -27,6 +27,9 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
     if isfield(test, 'preset')
         setPreset(hw, test.preset)
     end
+	if ~isfield(test, 'state')
+        test.state='state2'
+    end
     
     if isfield(test,'xRes') && isfield(test,'yRes')
         hw.startStream(0, [test.yRes test.xRes]);
@@ -43,7 +46,8 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
     [laserPoints,maxMod_dec] = Calibration.presets.captureVsLaserMod(hw,testParams.minModprc,testParams.laserDelta,testParams.framesNum,dataDir);
     cameraInput.z2mm = hw.z2mm;
     cameraInput.imSize = double(hw.streamSize);
-    [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(dataDir,cameraInput,laserPoints,maxMod_dec,calibParams);
+    [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(dataDir,cameraInput,laserPoints,maxMod_dec,calibParams,test.state);
+	
 
 end
 
