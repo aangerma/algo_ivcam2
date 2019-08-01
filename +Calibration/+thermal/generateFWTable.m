@@ -33,7 +33,7 @@ refTmp = data.dfzRefTmp;
 % a*ldd +b = rtdPerFrame;
 
 startI = calibParams.fwTable.nFramesToIgnore+1;
-assert(startI < 0.5*length(ldd), sprintf('Too few frames left for thermal calibration (%d taken, %d ignored)', length(ldd), startI-1))
+verifyThermalSweepValidity(ldd, startI, calibParams.warmUp)
 [a,b] = linearTrans(vec(ldd(startI:end)),vec(rtdPerFrame(startI:end)));
 
 if ~isempty(runParams)
@@ -50,9 +50,6 @@ results.rtd.refTemp = refTmp;
 results.rtd.slope = a;
 fwBinCenters = calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRange(2);
 results.rtd.tmptrOffsetValues = -((fwBinCenters-refTmp)*results.rtd.slope)';
-
-
-tmpBinEdges = fwBinCenters - 0.5;
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -286,3 +283,14 @@ end
 % end
 % 
 % end
+
+function verifyThermalSweepValidity(ldd, startI, warmUpParams)
+if (startI >= 0.5*length(ldd))
+    error('Too few frames left for thermal calibration (%d taken, %d ignored)', length(ldd), startI-1)
+end
+if (diff(warmUpParams.requiredTmptrRange)>0) % valid obligatory range
+    if (min(ldd)>warmUpParams.requiredTmptrRange(1)) || (max(ldd)<warmUpParams.requiredTmptrRange(2))
+        error('Thermal sweep %.1f-%.1f missed obligatory range [%d,%d]', min(ldd), max(ldd), warmUpParams.requiredTmptrRange(1), warmUpParams.requiredTmptrRange(2))
+    end
+end
+end
