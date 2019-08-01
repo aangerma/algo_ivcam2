@@ -72,7 +72,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-        save(fn,'regs','eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
+        save(fn,'finishedHeating','regs','eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
     end
     height = sz(1);
     width  = sz(2);
@@ -85,13 +85,14 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
         eepromRegs = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
     end
     [regs] = struct_merge(regs , eepromRegs);
+    origFinishedHeating = finishedHeating;
     [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, InputPath, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
         save(fn,'finishedHeating','calibPassed', 'results');
     end
-    if (finishedHeating~=0)
+    if (origFinishedHeating~=0)
         g_temp_count = 0;
     else
         g_temp_count = g_temp_count + 1; 
@@ -121,6 +122,7 @@ tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
 maxTime2WaitSec = maxTime2Wait*60;
 runParams.outputFolder = output_dir;
+runParams.calibRes = double([height, width]); %TODO: find a more elegant solution to passing calibRes to analyzeFramesOverTemperature
 results = [];
 metrics = [];
 Invalid_Frames = [];
@@ -135,35 +137,30 @@ if isempty(Index) || (g_temp_count == 0)
     prevTime  = 0;
 end
 % add error checking;
-frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
-frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
-frame.i = Calibration.aux.average_images(frame.i);
-frame.z = Calibration.aux.average_images(frame.z);
-
-FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
-%    framesData(i) = FrameData;
-
-framesData = acc_FrameData(FrameData);
-if(Index == 0)
-    
-    
-    prevTmp   = FrameData.temp.ldd;
-    prevTime  = FrameData.time;
-end
-Index = Index+1;
-i = Index;
 
 if ~finishedHeating % heating stage
+    frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
+    frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
+    frame.i = Calibration.aux.average_images(frame.i);
+    frame.z = Calibration.aux.average_images(frame.z);
+    FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
+    framesData = acc_FrameData(FrameData);
+    
+    if(Index == 0)
+        prevTmp   = FrameData.temp.ldd;
+        prevTime  = FrameData.time;
+    end
+    Index = Index+1;
+    i = Index;
+
     if ((framesData(i).time - prevTime) >= tempSamplePeriod)
         reachedRequiredTempDiff = ((framesData(i).temp.ldd - prevTmp) < tempTh);
         reachedTimeLimit = (framesData(i).time > maxTime2WaitSec);
         reachedCloseToTKill = (framesData(i).temp.ldd > calibParams.gnrl.lddTKill-1);
-        raisedFarAboveCalibTemp = (framesData(i).temp.ldd > regs.FRMW.dfzCalTmp+calibParams.warmUp.teminationTempdiffFromCalibTemp);
         
         finishedHeating = reachedRequiredTempDiff || ...
             reachedTimeLimit || ...
-            reachedCloseToTKill || ...
-            raisedFarAboveCalibTemp; % will come into effect in next function call
+            reachedCloseToTKill; % will come into effect in next function call
         
         prevTmp = framesData(i).temp.ldd;
         prevTime = framesData(i).time;
@@ -176,12 +173,11 @@ if ~finishedHeating % heating stage
             reason = 'Passed time limit';
         elseif reachedCloseToTKill
             reason = 'Reached close to TKILL';
-        elseif raisedFarAboveCalibTemp
-            reason = 'Raised far above calib temperature';
         end
         fprintff('Finished heating reason: %s\n',reason);
     end
 else % steady-state stage
+    framesData = acc_FrameData([]); % avoid using last frame, captured after fine DSM calibration
     data.framesData = framesData;
     data.regs = regs;
     save(fullfile(output_dir,'mat_files','data_in.mat'),'data');
@@ -192,6 +188,7 @@ else % steady-state stage
     data.dfzRefTmp = regs.FRMW.dfzCalTmp;
     [table,results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
     data.tableResults = results;
+    results = UpdateResultsStruct(results); % output single layer results struct
     if isempty(table)
         calibPassed = 0;
         save(fullfile(output_dir,'mat_files' ,'data.mat'),'data');
@@ -325,4 +322,18 @@ function [merged] = struct_merge(merged , new )
             merged.(f{i}).(fn{n}) = backupRegs.(f{i}).(fn{n});
         end
     end
+end
+
+function results = UpdateResultsStruct(results)
+    results.thermalRtdRefTemp = results.rtd.refTemp;
+    results.thermalRtdSlope = results.rtd.slope;
+    results.thermalAngyMaxScale = max(abs(results.angy.scale));
+    results.thermalAngyMaxOffset = max(abs(results.angy.offset));
+    results.thermalAngyMinVal = results.angy.minval;
+    results.thermalAngyMaxVal = results.angy.maxval;
+    results.thermalAngxMaxScale = max(abs(results.angx.scale));
+    results.thermalAngxMaxOffset = max(abs(results.angx.offset));
+    results.thermalAngxP0 = results.angx.p0;
+    results.thermalAngxP1 = results.angx.p1;
+    results = rmfield(results, {'rtd', 'angy', 'angx', 'table'});
 end

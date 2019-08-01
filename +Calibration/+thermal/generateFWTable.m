@@ -33,6 +33,7 @@ refTmp = data.dfzRefTmp;
 % a*ldd +b = rtdPerFrame;
 
 startI = calibParams.fwTable.nFramesToIgnore+1;
+assert(startI < 0.5*length(ldd), sprintf('Too few frames left for thermal calibration (%d taken, %d ignored)', length(ldd), startI-1))
 [a,b] = linearTrans(vec(ldd(startI:end)),vec(rtdPerFrame(startI:end)));
 
 if ~isempty(runParams)

@@ -104,7 +104,6 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     end
     [calibPassed, results] = Calibration.thermal.AlgoThermalCalib(hw, regs, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxHeatTime, app);
     
-    results = UpdateResultsStruct(results);
     Calibration.aux.logResults(results,runParams);
     Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
     
@@ -253,6 +252,9 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         
         fw.setRegs(delayRegs,fnCalib);
         
+        results.delayIR = delayCalibResults.delayIR;
+        results.delayZ = delayCalibResults.delayZ;
+        
         results.conLocDelaySlow = delayRegs.EXTL.conLocDelaySlow;
         results.conLocDelayFastC = delayRegs.EXTL.conLocDelayFastC;
         results.conLocDelayFastF = delayRegs.EXTL.conLocDelayFastF;
@@ -319,19 +321,6 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
 end
 function res = noCalibrations(runParams)
     res = ~(runParams.DSM || runParams.dataDelay);
-end
-function results = UpdateResultsStruct(results)
-    results.thermalRtdRefTemp = results.rtd.refTemp;
-    results.thermalRtdSlope = results.rtd.slope;
-    results.thermalAngyMaxScale = max(abs(results.angy.scale));
-    results.thermalAngyMaxOffset = max(abs(results.angy.offset));
-    results.thermalAngyMinVal = results.angy.minval;
-    results.thermalAngyMaxVal = results.angy.maxval;
-    results.thermalAngxMaxScale = max(abs(results.angx.scale));
-    results.thermalAngxMaxOffset = max(abs(results.angx.offset));
-    results.thermalAngxP0 = results.angx.p0;
-    results.thermalAngxP1 = results.angx.p1;
-    results = rmfield(results, {'rtd', 'angy', 'angx', 'table'});
 end
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;

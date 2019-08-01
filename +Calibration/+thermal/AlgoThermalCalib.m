@@ -45,7 +45,7 @@ fprintff('Ldd temperatures: %2.2f',prevTmp);
 
 i = 0;
 tempFig = figure(190789);
-plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));
+plot(timesForPlot,tempsForPlot); grid on, xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));
 
 %framesData = zeros(1,1000000); % 
 sz = hw.streamSize();
@@ -63,7 +63,7 @@ while ~finishedHeating
     if tempFig.isvalid
         tempsForPlot(plotDataI) = framesData(i).temp.ldd;
         timesForPlot(plotDataI) = framesData(i).time/60;
-        figure(190789);plot(timesForPlot([plotDataI+1:pN,1:plotDataI]),tempsForPlot([plotDataI+1:pN,1:plotDataI])); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));drawnow;
+        figure(190789);plot(timesForPlot([plotDataI+1:pN,1:plotDataI]),tempsForPlot([plotDataI+1:pN,1:plotDataI])); grid on, xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));drawnow;
         plotDataI = mod(plotDataI,pN)+1;
     end
     pause(timeBetweenFrames);
@@ -81,6 +81,10 @@ if finishedHeating % always true at this point
     regs.EXTL.dsmXoffset    = dsmregs.EXTL.dsmXoffset;
     regs.EXTL.dsmYscale     = dsmregs.EXTL.dsmYscale;
     regs.EXTL.dsmYoffset    = dsmregs.EXTL.dsmYoffset;
+    results.dsmXscale       = regs.EXTL.dsmXscale;
+    results.dsmXshift       = regs.EXTL.dsmXoffset;
+    results.dsmYscale       = regs.EXTL.dsmYscale;
+    results.dsmYshift       = regs.EXTL.dsmYoffset;
     % noting reference state for thermal calibration (referred to as "DFZ state" for backward compatibility)
     regs.FRMW.dfzCalTmp     = framesData(i).temp.ldd;
     regs.FRMW.dfzApdCalTmp  = framesData(i).temp.apdTmptr;
@@ -93,13 +97,12 @@ if finishedHeating % always true at this point
     i = i + 1;
     path = fullfile(ATCpath_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);
-    [~,calibPassed, results,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait); 
-    results.dsmXscale = dsmregs.EXTL.dsmXscale;
-    results.dsmXshift = dsmregs.EXTL.dsmXoffset;
-    results.dsmYSscale = dsmregs.EXTL.dsmYscale;
-    results.dsmYshift = dsmregs.EXTL.dsmYoffset;  
+    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait); 
+    fnames = fieldnames(resultsThermal);
+    for iField = 1:length(fnames)
+        results.(fnames{iField}) = resultsThermal.(fnames{iField});
+    end
 end
-
 
 
 if i >=4 && sceneFig.isvalid

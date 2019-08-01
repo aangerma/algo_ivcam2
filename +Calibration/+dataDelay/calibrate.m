@@ -37,6 +37,7 @@ hw.cmd('mwd a005006c a0050070 00000100');  % // Gain Treshold = 1, Gain < Tresho
 
 %% CALIBRATE IR
 [delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw,dataDelayParams,runParams,calibParams);
+results.delayIR = delayIR;
 results.slowDelayCalibSuccess = delayIRsuccess;
 results.delaySlowPixelVar = pixelVar;
 
@@ -60,7 +61,8 @@ else
     delayZsuccess = true;
     delayZ = delayIR;
 end
-results.fastDelayCalibSuccess = delayZsuccess;
+results.delayZ = delayZ;
+results.fastDelayCalibSuccess = delayZsuccess; %TODO: add delayZ and delayIR to results
 
 %% SET REGISTERS
 regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);

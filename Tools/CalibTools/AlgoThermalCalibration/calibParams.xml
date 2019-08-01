@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-    <sparkParams>
+   <sparkParams>
+        <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
+        <azureFolder>E:\SPARK\iv2-cal-01 (azure.spark@intel.com)</azureFolder>
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
@@ -18,15 +20,17 @@
    </gnrl>
    <warmUp>
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
-       <warmUpSP>0.1</warmUpSP><!-- Time between samples in minutes-->
+       <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
        <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
    </warmUp>
    <errRange>
-      <conLocDelaySlow>[0 100000]</conLocDelaySlow>
-      <conLocDelayFastC>[0 100000]</conLocDelayFastC>
-      <conLocDelayFastF>[0 100000]</conLocDelayFastF>
+      <delayIR>[0 100000]</delayIR>
+      <delayZ>[0 100000]</delayZ>
+      <conLocDelaySlow>[0 2147483648]</conLocDelaySlow>
+      <conLocDelayFastC>[0 2147483648]</conLocDelayFastC>
+      <conLocDelayFastF>[0 2147483648]</conLocDelayFastF>
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
@@ -46,6 +50,9 @@
       <p2pXmm>[0 inf]</p2pXmm>
       <p2pYmm>[0 inf]</p2pYmm>
       <p2pZmm>[0 inf]</p2pZmm>
+      <meanEGeom>[0 20]</meanEGeom>
+      <minEGeom>[0 15]</minEGeom>
+      <maxEGeom>[0 50]</maxEGeom>
       <xScale>[0 0.01]</xScale>
       <yScale>[0 0.008]</yScale>
       <xShift>[0 1.11]</xShift>
@@ -102,7 +109,7 @@
      <useCenterOfProjection>0</useCenterOfProjection>
    </dsm>
    <fwTable>
-      <nFramesToIgnore>15</nFramesToIgnore>
+      <nFramesToIgnore>5</nFramesToIgnore>
       <tempBinRange>[32 79]</tempBinRange> 
       <!-- [35 66] -->
       <name>Algo_Thermal_Loop_CalibInfo</name> 

@@ -377,9 +377,9 @@ function statrtButton_callback(varargin)
                 errordlg(e.message);
                 return;
             end
-            revisionList = dirFolders(fullfile(app.outputdirectorty.String,serialStr),'PC*');
-            revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'PC(?<rev>\d+)','names'));
-            currRev = sprintf('PC%02d',round(max([0;revInt(:)])+1));
+            revisionList = dirFolders(fullfile(app.outputdirectorty.String,serialStr),'ACC*');
+            revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'ACC(?<rev>\d+)','names'));
+            currRev = sprintf('ACC%02d',round(max([0;revInt(:)])+1));
             app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
             runparams.outputFolder=app.outputdirectorty.String;
             

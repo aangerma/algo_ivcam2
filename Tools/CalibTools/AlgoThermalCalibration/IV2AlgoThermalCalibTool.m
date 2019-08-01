@@ -359,9 +359,9 @@ function statrtButton_callback(varargin)
                 errordlg(e.message);
                 return;
             end
-            revisionList = dirFolders(fullfile(app.outputdirectorty.String,serialStr),'TC*');
-            revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'TC(?<rev>\d+)','names'));
-            currRev = sprintf('TC%02d',round(max([0;revInt(:)])+1));
+            revisionList = dirFolders(fullfile(app.outputdirectorty.String,serialStr),'ATC*');
+            revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'ATC(?<rev>\d+)','names'));
+            currRev = sprintf('ATC%02d',round(max([0;revInt(:)])+1));
             app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
             runparams.outputFolder=app.outputdirectorty.String;
             
@@ -426,8 +426,6 @@ function statrtButton_callback(varargin)
         elseif calibPassed == 0
             app.logarea.BackgroundColor = [0.8 0 0]; % Color red
         end
-        
-        
         
     catch e
         calibPassed = 0;
