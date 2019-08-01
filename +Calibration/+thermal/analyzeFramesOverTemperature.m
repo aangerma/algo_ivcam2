@@ -36,7 +36,7 @@ validFramesData = framesPerTemperature(validTemps,:,:,1);
 % validFramesData = validFramesData(:,validCBPoints,:);
 stdVals = nanmean(nanstd(validFramesData));
 
-metrics = Calibration.thermal.calcThermalScores(data,calibParams.fwTable.tempBinRange,calibParams.gnrl.calibRes);
+metrics = Calibration.thermal.calcThermalScores(data,calibParams.fwTable.tempBinRange,runParams.calibRes);
 
 metrics.stdRtd = stdVals(1);
 metrics.stdXim = stdVals(4);
@@ -74,16 +74,12 @@ metrics.meanEGeom = nanmean(eGeomOverTemp);
 metrics.maxEGeom = max(eGeomOverTemp);
 metrics.minEGeom = min(eGeomOverTemp);
 
-
-
-
-
-
 if inValidationStage % Compare calibration to theoretical Fix
     legends = {'Post Fix (val)'};
 else
     legends = {'Pre Fix (val)'};
 end
+
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     plot(tmpBinEdges,eGeomOverTemp)

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+   <cb_replayMode>0</cb_replayMode>
+   <cb_init>1</cb_init>
+   <cb_DSM>1</cb_DSM>
+   <cb_dataDelay>1</cb_dataDelay>
+   <cb_coolDown>1</cb_coolDown>
+   <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
+   <cb_burnConfigurationToDevice>0</cb_burnConfigurationToDevice>
+   <cb_debug>0</cb_debug>
+   <cb_saveRegState>0</cb_saveRegState>
+   <cb_FOVex_installed>1</cb_FOVex_installed>
+   <cb_manualCaptures>0</cb_manualCaptures>
+   <cb_performValidation>0</cb_performValidation>
+   <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
+   <configurationFolder>releaseConfigCalibVGA</configurationFolder>
+   <calibParamsFile>calibParams.xml</calibParamsFile>
+   <calibRes>[480,640]</calibRes>
+   <toolName>IV2 Algo Thermal Calibration Tool</toolName>
+</struct>

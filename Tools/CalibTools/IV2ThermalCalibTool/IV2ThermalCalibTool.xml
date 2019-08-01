@@ -4,5 +4,6 @@
    <cb_performValidation>0</cb_performValidation>
    <cb_manualCaptures>0</cb_manualCaptures>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
+   <calibRes>[768,1024]</calibRes>
    <toolName>IV2 Thermal Calibration Tool</toolName>
 </struct>

@@ -1,4 +1,4 @@
-function [calibPassed] = ThermalCalib(hw,regs,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxTime2Wait,app)
+function [calibPassed, results] = AlgoThermalCalib(hw, regs, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxTime2Wait, app)
 
 %tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
@@ -33,7 +33,7 @@ plotDataI = mod(plotDataI,pN)+1;
 
 startTime = tic;
 %% Collect data until temperature doesn't raise any more
-finishedHeating = 0; % A unit finished heating when LDD temperature doesn't raise by more than 0.2 degrees between 1 minute and the next
+finishedHeating = false; % A unit finished heating when LDD temperature doesn't raise by more than 0.2 degrees between 1 minute and the next
 manualCaptures = isfield(runParams,'manualCaptures') && runParams.manualCaptures;
 if manualCaptures
     app.stopWarmUpButton.Visible = 'on';
@@ -45,39 +45,64 @@ fprintff('Ldd temperatures: %2.2f',prevTmp);
 
 i = 0;
 tempFig = figure(190789);
-plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));
+plot(timesForPlot,tempsForPlot); grid on, xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));
 
 %framesData = zeros(1,1000000); % 
 sz = hw.streamSize();
-algo2path_temp = fullfile(ivcam2tempdir,'algo2');
-if(exist(algo2path_temp,'dir'))
-    rmdir(algo2path_temp,'s');
+ATCpath_temp = fullfile(ivcam2tempdir,'ATC');
+if(exist(ATCpath_temp,'dir'))
+    rmdir(ATCpath_temp,'s');
 end
 while ~finishedHeating
+    % collect data without performing any calibration
     i = i + 1;
-    path = fullfile(algo2path_temp,sprintf('thermal%d',i));
+    path = fullfile(ATCpath_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
-%    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin,framesData(i),sz, path,calibParams,maxTime2Wait);
-%    rmdir(path,'s');
-%    finishedHeating = (result~=0);
+    [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait);
     
     if tempFig.isvalid
         tempsForPlot(plotDataI) = framesData(i).temp.ldd;
         timesForPlot(plotDataI) = framesData(i).time/60;
-        figure(190789);plot(timesForPlot([plotDataI+1:pN,1:plotDataI]),tempsForPlot([plotDataI+1:pN,1:plotDataI])); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));drawnow;
+        figure(190789);plot(timesForPlot([plotDataI+1:pN,1:plotDataI]),tempsForPlot([plotDataI+1:pN,1:plotDataI])); grid on, xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));drawnow;
         plotDataI = mod(plotDataI,pN)+1;
     end
     pause(timeBetweenFrames);
-    
     if i == 4
         sceneFig = figure(190790);
         imshow(rot90(hw.getFrame().i,2));
         title('Scene Image');
     end
 end
-
-
+if finishedHeating % always true at this point
+    t = tic;
+    % operate fine DSM calibration at stable (reference) state
+    dsmregs = calibrateDSM(hw, fw, runParams, calibParams,fnCalib, fprintff,t);
+    regs.EXTL.dsmXscale     = dsmregs.EXTL.dsmXscale;
+    regs.EXTL.dsmXoffset    = dsmregs.EXTL.dsmXoffset;
+    regs.EXTL.dsmYscale     = dsmregs.EXTL.dsmYscale;
+    regs.EXTL.dsmYoffset    = dsmregs.EXTL.dsmYoffset;
+    results.dsmXscale       = regs.EXTL.dsmXscale;
+    results.dsmXshift       = regs.EXTL.dsmXoffset;
+    results.dsmYscale       = regs.EXTL.dsmYscale;
+    results.dsmYshift       = regs.EXTL.dsmYoffset;
+    % noting reference state for thermal calibration (referred to as "DFZ state" for backward compatibility)
+    regs.FRMW.dfzCalTmp     = framesData(i).temp.ldd;
+    regs.FRMW.dfzApdCalTmp  = framesData(i).temp.apdTmptr;
+    regs.FRMW.dfzVbias      = framesData(i).vBias;
+    regs.FRMW.dfzIbias      = framesData(i).iBias;
+    fprintff('Algo Calib reference Ldd Temp: %2.2fdeg\n',regs.FRMW.dfzCalTmp);
+    fprintff('Algo Calib reference vBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzVbias);
+    fprintff('Algo Calib reference iBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzIbias);
+    % perform algo thermal calibration
+    i = i + 1;
+    path = fullfile(ATCpath_temp,sprintf('thermal%d',i));
+    framesData(i) = prepareFrameData(hw,startTime,calibParams,path);
+    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait); 
+    fnames = fieldnames(resultsThermal);
+    for iField = 1:length(fnames)
+        results.(fnames{iField}) = resultsThermal.(fnames{iField});
+    end
+end
 
 
 if i >=4 && sceneFig.isvalid
@@ -156,3 +181,16 @@ function frameData = prepareFrameData(hw,startTime,calibParams,path)
 %    frameData.ptsWithZ = cornersData(frame,regs,calibParams);
 end
 
+function [dsmregs] = calibrateDSM(hw,fw, runParams, calibParams, fnCalib, fprintff, t)
+
+    fprintff('[-] DSM calibration...\n');
+    if(runParams.DSM)
+        dsmregs = Calibration.DSM.DSM_Calib(hw,fprintff,calibParams,runParams);
+        fw.setRegs(dsmregs,fnCalib);
+        fprintff('[v] Done(%d)\n',round(toc(t)));
+    else
+        dsmregs = struct;
+        fprintff('[?] skipped\n');
+    end
+    
+end
