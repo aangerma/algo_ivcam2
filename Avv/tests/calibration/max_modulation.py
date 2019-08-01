@@ -68,12 +68,23 @@ def maxModulation(xmlPath, debug):
 
     for test in tests:
         slash.logger.info('starting test {}'.format(test['name']), extra={"highlight": True})
+        xRes=test.get('xRes', None)
+        yRes=test.get('yRes', None)
+
+        state = 'state2'
+        if xRes=='480' and yRes=='640':
+            state = 'state1'
+
+        test['state']=state
+
 
         if not debug:
             robot.safe_move('wall_10Reflectivity', test['range'])
         stableTemp = params.get('stableTemp', 'false').lower()
+
+
         if stableTemp == 'true':
-            camera = libRealSense.LibRealSense(xRes=test.get('xRes', None), yRes=test.get('yRes', None),
+            camera = libRealSense.LibRealSense(xRes=xRes, yRes=yRes,
                                                frameRate=test.get('frameRate', None))
             if not camera.get_to_stable_temp():
                 raise common.TestFail("Test failed On stable temperature")
