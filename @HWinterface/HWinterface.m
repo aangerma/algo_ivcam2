@@ -764,7 +764,7 @@ classdef HWinterface <handle
         
         function [] = setPresetControlState(obj,value)
             try
-                obj.m_dotnetcam.PropertyProvider.SetProperty(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 'Gain', value);
+                obj.m_dotnetcam.PropertyProvider.SetProperty(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 'Preset', value);
             catch e
                 error(e.message);
             end
