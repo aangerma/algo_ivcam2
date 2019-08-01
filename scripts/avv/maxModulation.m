@@ -29,7 +29,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
     end
     
     if isfield(test,'xRes') && isfield(test,'yRes')
-        hw.startStream(0, [test.xRes test.yRes]);
+        hw.startStream(0, [test.yRes test.xRes]);
     else
         hw.startStream();
     end
