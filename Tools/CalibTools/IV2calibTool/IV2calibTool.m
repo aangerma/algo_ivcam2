@@ -38,7 +38,7 @@ function loadDefaults(app)
         if(isempty(s.(fld_{1})))
             return;
         end
-        fld=strrep(fld_{1},'_','.');
+        fld=replaceFirst(fld_{1},'_','.');
         try
             if(strcmp(eval(sprintf('app.%s.Style',fld)),'edit'))
                 eval(sprintf('app.%s.String=s.(fld_{1});',fld));
@@ -50,6 +50,14 @@ function loadDefaults(app)
         
     end
     
+end
+
+function strOut = replaceFirst(str,exp,replace)
+    strOut = str;
+    idx = strfind(str,exp);
+    if idx>0
+        strOut = [str( 1:idx-1 ) replace str(idx+length(exp):end)];
+    end
 end
 
 function setFolder(varargin)
