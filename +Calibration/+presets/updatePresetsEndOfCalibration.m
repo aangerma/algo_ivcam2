@@ -1,4 +1,4 @@
-function [  ] = updatePresetsEndOfCalibration( calibParams,presetPath ,results)
+function [  ] = updatePresetsEndOfCalibration( runParams,calibParams,presetPath ,results)
     longRangePresetFn = fullfile(presetPath,'longRangePreset.csv');
     longRangePreset=readtable(longRangePresetFn);
     shortRangePresetFn = fullfile(presetPath,'shortRangePreset.csv');
@@ -29,6 +29,16 @@ function [  ] = updatePresetsEndOfCalibration( calibParams,presetPath ,results)
     shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'JFILgammaScale',uint32(calibParams.presets.short.JFILgammaScale));
     shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'JFILgammaShift',uint32(calibParams.presets.short.JFILgammaShift));
     
+    
+    %% for L520 change modRef scale to 1 at end of calibration 
+    if(strcmp(runParams.configurationFolder,'releaseConfigCalibL520'))
+       longRangePreset = updatePresetTableByFieldName(longRangePreset,'modulation_ref_factor_1',single(1));
+       longRangePreset = updatePresetTableByFieldName(longRangePreset,'modulation_ref_factor_2',single(1));
+       shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'modulation_ref_factor_1',single(1));
+       shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'modulation_ref_factor_2',single(1));
+    end 
+    
+    %%
     writetable(longRangePreset,longRangePresetFn);
     writetable(shortRangePreset,shortRangePresetFn);
 

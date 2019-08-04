@@ -756,7 +756,7 @@ classdef HWinterface <handle
         
         function [result] = getPresetControlState(obj)
             try
-                result = obj.m_dotnetcam.PropertyProvider.QueryProperty(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 'Gain');
+                result = obj.m_dotnetcam.PropertyProvider.QueryProperty(IVCam.Tools.CamerasSdk.Common.Devices.CompositeDeviceType.Depth, 'Preset');
             catch e
                 error(e.message);
             end

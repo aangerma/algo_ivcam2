@@ -112,6 +112,7 @@ function app=createComponents(runParamsFile)
     end
     app.toolName = runParams.toolName;
     app.configurationFolder = runParams.configurationFolder;
+    app.presetsDefFolder = runParams.presetsDefFolder;
     app.calibParamsFile = runParams.calibParamsFile;
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
@@ -304,6 +305,7 @@ function saveDefaults(varargin)
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
     s.configurationFolder = app.configurationFolder;
+    s.presetsDefFolder= app.presetsDefFolder; 
     s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
@@ -386,7 +388,7 @@ function statrtButton_callback(varargin)
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
         runparams.calibRes=app.calibRes; 
-        
+        runparams.presetsDefFolder=app.presetsDefFolder; 
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);
         
