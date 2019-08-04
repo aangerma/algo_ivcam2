@@ -222,7 +222,7 @@ function app=createComponents(runParamsFile)
     
     
     %checkboxes
-    cbnames = {'replayMode', 'init', 'DSM', 'dataDelay', 'coolDown', 'burnCalibrationToDevice','burnConfigurationToDevice','debug','saveRegState','FOVex_installed','manualCaptures','performValidation'};
+    cbnames = {'replayMode', 'init', 'DSM', 'dataDelay', 'thermalLoop', 'coolDown', 'burnCalibrationToDevice','burnConfigurationToDevice','debug','saveRegState','FOVex_installed','manualCaptures','performValidation'};
 
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;

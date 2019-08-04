@@ -30,6 +30,7 @@ data.processed.framesPerTemperature = framesPerTemperature;
 Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage);
 
 validTemps = ~all(any(isnan(framesPerTemperature(:,:,:,1)),3),2);
+assert(sum(validTemps)>1, 'Thermal sweep occupies less than 2 bins - this is incompatible with code later on')
 
 validFramesData = framesPerTemperature(validTemps,:,:,1);
 % validCBPoints = all(all(~isnan(validFramesData),3),1);

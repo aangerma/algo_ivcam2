@@ -297,15 +297,18 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
 end
 
 function [merged] = struct_merge(merged , new )
-    % regs to keep (and not override by new)
-    backupRegs.EXTL.dsmXscale       = merged.EXTL.dsmXscale;
-    backupRegs.EXTL.dsmXoffset      = merged.EXTL.dsmXoffset;
-    backupRegs.EXTL.dsmYscale       = merged.EXTL.dsmYscale;
-    backupRegs.EXTL.dsmYoffset      = merged.EXTL.dsmYoffset;
-    backupRegs.FRMW.dfzCalTmp       = merged.FRMW.dfzCalTmp;
-    backupRegs.FRMW.dfzApdCalTmp    = merged.FRMW.dfzApdCalTmp;
-    backupRegs.FRMW.dfzVbias        = merged.FRMW.dfzVbias;
-    backupRegs.FRMW.dfzIbias        = merged.FRMW.dfzIbias;
+    % regs to keep (and not override by new), namely regs calibrated in ATC
+    backupRegs.EXTL.conLocDelaySlow     = merged.EXTL.conLocDelaySlow;
+    backupRegs.EXTL.conLocDelayFastC    = merged.EXTL.conLocDelayFastC;
+    backupRegs.EXTL.conLocDelayFastF    = merged.EXTL.conLocDelayFastF;
+    backupRegs.EXTL.dsmXscale           = merged.EXTL.dsmXscale;
+    backupRegs.EXTL.dsmXoffset          = merged.EXTL.dsmXoffset;
+    backupRegs.EXTL.dsmYscale           = merged.EXTL.dsmYscale;
+    backupRegs.EXTL.dsmYoffset          = merged.EXTL.dsmYoffset;
+    backupRegs.FRMW.dfzCalTmp           = merged.FRMW.dfzCalTmp;
+    backupRegs.FRMW.dfzApdCalTmp        = merged.FRMW.dfzApdCalTmp;
+    backupRegs.FRMW.dfzVbias            = merged.FRMW.dfzVbias;
+    backupRegs.FRMW.dfzIbias            = merged.FRMW.dfzIbias;
     % overriding merged with new
     f = fieldnames(new);
     for i = 1:length(f)
@@ -327,13 +330,19 @@ end
 function results = UpdateResultsStruct(results)
     results.thermalRtdRefTemp = results.rtd.refTemp;
     results.thermalRtdSlope = results.rtd.slope;
-    results.thermalAngyMaxScale = max(abs(results.angy.scale));
-    results.thermalAngyMaxOffset = max(abs(results.angy.offset));
+    results.thermalAngyMinAbsScale = min(abs(results.angy.scale));
+    results.thermalAngyMaxAbsScale = max(abs(results.angy.scale));
+    results.thermalAngyMinAbsOffset = min(abs(results.angy.offset));
+    results.thermalAngyMaxAbsOffset = max(abs(results.angy.offset));
     results.thermalAngyMinVal = results.angy.minval;
     results.thermalAngyMaxVal = results.angy.maxval;
-    results.thermalAngxMaxScale = max(abs(results.angx.scale));
-    results.thermalAngxMaxOffset = max(abs(results.angx.offset));
-    results.thermalAngxP0 = results.angx.p0;
-    results.thermalAngxP1 = results.angx.p1;
+    results.thermalAngxMinAbsScale = min(abs(results.angx.scale));
+    results.thermalAngxMaxAbsScale = max(abs(results.angx.scale));
+    results.thermalAngxMinAbsOffset = min(abs(results.angx.offset));
+    results.thermalAngxMaxAbsOffset = max(abs(results.angx.offset));
+    results.thermalAngxP0x = results.angx.p0(1);
+    results.thermalAngxP0y = results.angx.p0(2);
+    results.thermalAngxP1x = results.angx.p1(1);
+    results.thermalAngxP1y = results.angx.p1(2);
     results = rmfield(results, {'rtd', 'angy', 'angx', 'table'});
 end

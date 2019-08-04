@@ -84,25 +84,29 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     end
     % start cooling procedure
     hw.stopStream;
-    
-    %% load EPROM structure suitible for calib version tool 
-    [regs, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     
-    regs.EXTL.conLocDelaySlow   = delayRegs.EXTL.conLocDelaySlow;
-    regs.EXTL.conLocDelayFastC  = delayRegs.EXTL.conLocDelayFastC;
-    regs.EXTL.conLocDelayFastF  = delayRegs.EXTL.conLocDelayFastF;
-    
-    if typecast(hw.read('DESTtmptrOffset'),'single') ~= 0
-        error('Algo thermal loop was active. Please disconnect and reconnect the unit before running.');
+    fprintff('[-] Thermal loop calibration...\n');
+    if runParams.thermalLoop
+        %% load EPROM structure suitible for calib version tool
+        [regs, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams);
+        regs.EXTL.conLocDelaySlow   = delayRegs.EXTL.conLocDelaySlow;
+        regs.EXTL.conLocDelayFastC  = delayRegs.EXTL.conLocDelayFastC;
+        regs.EXTL.conLocDelayFastF  = delayRegs.EXTL.conLocDelayFastF;
+        
+        if typecast(hw.read('DESTtmptrOffset'),'single') ~= 0
+            error('Algo thermal loop was active. Please disconnect and reconnect the unit before running.');
+        end
+        % thermal calibration
+        maxCoolTime = inf;
+        maxHeatTime = calibParams.warmUp.maxWarmUpTime;
+        if runParams.coolDown
+            coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % cool down
+        end
+        [calibPassed, results] = Calibration.thermal.AlgoThermalCalib(hw, regs, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxHeatTime, app);
+    else
+        fprintff('skipped\n');
     end
-    % thermal calibration 
-    maxCoolTime = inf;
-    maxHeatTime = calibParams.warmUp.maxWarmUpTime;
-    if runParams.coolDown
-        coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % cool down
-    end
-    [calibPassed, results] = Calibration.thermal.AlgoThermalCalib(hw, regs, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxHeatTime, app);
     
     Calibration.aux.logResults(results,runParams);
     Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
@@ -113,32 +117,36 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     else %% burn tables
         fprintff('PASSED.\n');
         fprintff('Burning algo thermal table...');
-        version = typecast(eepromRegs.FRMW.calibVersion,'single');
-        whole = floor(version);
-        frac = mod(version*100,100);
-
-        calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
-
-        calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
-        tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
-
-        try
-            cmdstr = sprintf('WrCalibInfo %s',tableName);
-            hw.cmd(cmdstr);
-            fprintff('Done\n');
-        catch
-            fprintf('Failed to write Algo_Thermal_Table to EPROM. You are probably using an unsupported fw version.\n');
-            calibPassed = 0;
-        end
-        fprintff('Burning algo calibration table...');
-        try
-            algoCalibInfoName = fullfile(runParams.outputFolder,['Algo_Calibration_Info_CalibInfo',calibpostfix,'.bin']);
-            cmdstr = sprintf('WrCalibInfo %s',algoCalibInfoName);
-            hw.cmd(cmdstr);
-            fprintff('Done\n');
-        catch
-            fprintf('Failed to write Algo_Calibration_Info to EPROM. You are probably using an unsupported fw version.\n');
-            calibPassed = 0;
+        if runParams.burnCalibrationToDevice
+            version = typecast(eepromRegs.FRMW.calibVersion,'single');
+            whole = floor(version);
+            frac = mod(version*100,100);
+            
+            calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
+            
+            calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
+            tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
+            
+            try
+                cmdstr = sprintf('WrCalibInfo %s',tableName);
+                hw.cmd(cmdstr);
+                fprintff('Done\n');
+            catch
+                fprintf('Failed to write Algo_Thermal_Table to EPROM. You are probably using an unsupported fw version.\n');
+                calibPassed = 0;
+            end
+            fprintff('Burning algo calibration table...');
+            try
+                algoCalibInfoName = fullfile(runParams.outputFolder,['Algo_Calibration_Info_CalibInfo',calibpostfix,'.bin']);
+                cmdstr = sprintf('WrCalibInfo %s',algoCalibInfoName);
+                hw.cmd(cmdstr);
+                fprintff('Done\n');
+            catch
+                fprintf('Failed to write Algo_Calibration_Info to EPROM. You are probably using an unsupported fw version.\n');
+                calibPassed = 0;
+            end
+        else
+            fprintff('skipped\n')
         end
     end
     clear hw;
@@ -320,7 +328,7 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     end
 end
 function res = noCalibrations(runParams)
-    res = ~(runParams.DSM || runParams.dataDelay);
+    res = ~(runParams.DSM || runParams.dataDelay || runParams.init);
 end
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;
