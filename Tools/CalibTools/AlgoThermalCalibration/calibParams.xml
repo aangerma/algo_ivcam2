@@ -13,7 +13,7 @@
        <apdTKill>65</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
-       <cbGridSz>[9,13]</cbGridSz>
+       <cbGridSz>[]</cbGridSz>
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
        <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
@@ -61,14 +61,20 @@
       <rtdShit>[0 inf]</rtdShit>
       <thermalRtdRefTemp>[32 79]</thermalRtdRefTemp>
       <thermalRtdSlope>[0.5 2]</thermalRtdSlope>
-      <thermalAngyMaxScale>[0.5 2]</thermalAngyMaxScale>
-      <thermalAngyMaxOffset>[0 1000]</thermalAngyMaxOffset>
+      <thermalAngyMinAbsScale>[0.5 2]</thermalAngyMinAbsScale>
+      <thermalAngyMaxAbsScale>[0.5 2]</thermalAngyMaxAbsScale>
+      <thermalAngyMinAbsOffset>[0 1000]</thermalAngyMinAbsOffset>
+      <thermalAngyMaxAbsOffset>[0 1000]</thermalAngyMaxAbsOffset>
       <thermalAngyMinVal>[0 5]</thermalAngyMinVal>
       <thermalAngyMaxVal>[0 5]</thermalAngyMaxVal>
-      <thermalAngxMaxScale>[0.5 2]</thermalAngxMaxScale>
-      <thermalAngxMaxOffset>[0 1000]</thermalAngxMaxOffset>
-      <thermalAngxP0>[0 5]</thermalAngxP0>
-      <thermalAngxP1>[0 5]</thermalAngxP1>
+      <thermalAngxMinAbsScale>[0.5 2]</thermalAngxMinAbsScale>
+      <thermalAngxMaxAbsScale>[0.5 2]</thermalAngxMaxAbsScale>
+      <thermalAngxMinAbsOffset>[0 1000]</thermalAngxMinAbsOffset>
+      <thermalAngxMaxAbsOffset>[0 1000]</thermalAngxMaxAbsOffset>
+      <thermalAngxP0x>[0 5]</thermalAngxP0x>
+      <thermalAngxP0y>[0 5]</thermalAngxP0y>
+      <thermalAngxP1x>[0 5]</thermalAngxP1x>
+      <thermalAngxP1y>[0 5]</thermalAngxP1y>
    </errRange>
    <validation>
        <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>
@@ -93,12 +99,15 @@
       <rtdShit>[0 inf]</rtdShit>
    </validationErrRange>
    <dataDelay>
-      <fastDelayInitVal>98488</fastDelayInitVal> 
-      <slowDelayInitVal>98488</slowDelayInitVal> 
+      <!--<fastDelayInitVal>98488</fastDelayInitVal> -->
+      <!--<slowDelayInitVal>98488</slowDelayInitVal> -->
+      <fastDelayInitVal>98690</fastDelayInitVal> 
+      <slowDelayInitVal>98583</slowDelayInitVal> 
       <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
       <calibrateFast>1</calibrateFast>
+      <sphericalScaleFactors>[1 1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
    </dataDelay>
    <coarseDSM>
       <nSamples>200</nSamples>  
