@@ -1,8 +1,8 @@
 name,type,value,
 bias_factor,single,1,No change from default
 bias_offset,single,0,No change from default
-modulation_ref_factor,single,1,No change from default
-modulation_ref_offset,single,0,No change from default
+modulation_ref_factor_1,single,0,No change from default (start with 0 for calibration)
+modulation_ref_factor_2,single,0,No change from default (start with 0 for calibration)
 pulse_width_ctrl,uint8,0,Change for L520
 snubber_cap_control,uint8,31,Change for L520
 snubber_res_control,uint8,31,Change for L520

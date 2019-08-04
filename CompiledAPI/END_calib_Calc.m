@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version)
+function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version,configurationFolder)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -63,6 +63,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     runParams.outputFolder = g_output_dir;
     runParams.undist = undist_flag;
     runParams.version=version;
+    runParams.configurationFolder=configurationFolder; 
     [~,~,versionBytes] = calibToolVersion();
     verValue           = uint32(versionBytes(1))*2^8 + uint32(versionBytes(2));%0x00000203
     verValueFull       = uint32(versionBytes(1))*2^16 +uint32(versionBytes(2))*2^8+uint32(versionBytes(3));%0x00020300 
@@ -116,7 +117,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     fw.genMWDcmd('DIGG|DEST|CBUF',fn);
     %% prepare preset table
     presetPath = path; 
-    Calibration.presets.updatePresetsEndOfCalibration(calibParams,presetPath,results);
+    Calibration.presets.updatePresetsEndOfCalibration(runParams,calibParams,presetPath,results);
     
     %% Print image final fov
     [results,~] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);

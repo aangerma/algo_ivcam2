@@ -21,9 +21,12 @@
    <cb_post_calib_validation>0</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
+   <cb_FOVex_installed>0</cb_FOVex_installed>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibL520</configurationFolder>
+   <presetsDefFolder>defaultValuesL520</presetsDefFolder>
    <calibParamsFile>calibParamsL520.xml</calibParamsFile>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Calibration Tool L520</toolName>
+   <calibRes>[232 152]</calibRes>
 </struct>
