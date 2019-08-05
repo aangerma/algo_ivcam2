@@ -15,8 +15,8 @@ else
     toolConfigFile = 'IV2calibTool.xml';
 end
 
-if isempty(strfind(version, 'R2017a')) %#ok
-    error('build_IV2calibTool() must be ran with Matlab R2017a!');
+if isempty(strfind(version, 'R2018b')) %#ok
+    error('build_IV2calibTool() must be ran with Matlab R2018b!');
 end
 toolConfig = xml2structWrapper(toolConfigFile);
 %%
@@ -50,7 +50,7 @@ fw.writeFirmwareFiles(fullfile(outputFolder,'configFilesNoAlgoGen'));
 fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(calibToolVersion,1)*100)));
 % Generate tables for firmware with Algo Gen
 fw.generateTablesForFw(fullfile(outputFolder,'configFiles'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
 
 %% Generate default algo thermal table
 
