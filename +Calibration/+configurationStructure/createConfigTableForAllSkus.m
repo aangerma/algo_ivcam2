@@ -102,21 +102,21 @@ while(i<=Lorig || i<=Lnew)
     i=i+1;
 end
 
-TableIsUpdated=1; 
+TableIsUpdated=1;
 if updatedStructure % update major version
     version=LatestVersion+1;
 else
-    % check if value has changed
+    % check if any value has changed
     if (sum(~strcmp(ConfigLatestVersion.VGAvalue,newConfigTable.VGAvalue))~=0 ...
             || sum(~strcmp(ConfigLatestVersion.XGAvalue,newConfigTable.XGAvalue))~=0 ...
             || sum(~strcmp(ConfigLatestVersion.L520value,newConfigTable.L520value))~=0)
         updatedValues=1;
         version=LatestVersion+0.01;
-        writetable(newConfigTable,path);
+    else
+        warning('Configuration table is identical to previous version');
+        version=LatestVersion;
+        TableIsUpdated=0;
     end
-    warning('Configuration table is identical to previous version');
-    version=LatestVersion; 
-    TableIsUpdated=0; 
 end
 
 if (updatedValues || updatedStructure)
