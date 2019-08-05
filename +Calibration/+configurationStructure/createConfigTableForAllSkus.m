@@ -30,10 +30,21 @@ L520value={ConfigTableL520.value}';
 %% full table
 mergedTable=table(regName,type,arraySize,VGAbase,VGAvalue,XGAbase,XGAvalue,L520base,L520value);
 ConfigPath=fullfile(current_dir(1:ix(end-1)), '\+configurationStructure');
-[updatedConfigTable,version,TableIsUpdated]= updateConfigTable(ConfigPath,mergedTable);
-%% diff table
-inds=find(~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.XGAvalue) | ~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.L520value));
-diffTable=mergedTable(inds,:);
+[updatedConfigTable,diffTable,Version,TableIsUpdated]= updateConfigTable(ConfigPath,mergedTable);
+
+
+%% release notes
+if(TableIsUpdated)
+    prompt = {['Table Is Updated. plese Enter release notes: version ',num2str(Version)]};
+    dlgtitle = 'Input';
+    dims = [1 35];
+    definput = {''};
+    Notes = inputdlg(prompt,dlgtitle,dims,definput);
+    t1=readtable([ConfigPath,'\configVersions\releaseNotes.csv'],'Delimiter',',');
+    t2=table(Version,Notes); 
+    t=[t1 ; t2]; 
+    writetable(t,[ConfigPath,'\configVersions\releaseNotes.csv']);
+end
 end
 
 function [ConfigTable] = GetConfigTable(ConfigPath)
@@ -43,7 +54,7 @@ m=fw.getMeta();
 ConfigTable=m([m.TransferToFW]=='2');
 end
 
-function [updatedConfigTable,version,TableIsUpdated]= updateConfigTable(ConfigPath,newConfigTable)
+function [updatedConfigTable,diffTable,version,TableIsUpdated]= updateConfigTable(ConfigPath,newConfigTable)
 %% read latest config structure
 path= fullfile(ConfigPath,'configVersions');
 files=dir([path,'\config*.csv']); filesNames=sort({files.name});
@@ -122,9 +133,15 @@ end
 if (updatedValues || updatedStructure)
     txtVer=num2str(version);
     txtVer=strrep(txtVer,'.','_');
-    writetable(newConfigTable,[path,'configVer',txtVer,'.csv']);
+    writetable(newConfigTable,[path,'\configVer',txtVer,'.csv']);
 end
 updatedConfigTable=newConfigTable;
+%% diff table
+inds=find(~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.XGAvalue) | ~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.L520value));
+diffTable=updatedConfigTable(inds,:);
+if TableIsUpdated
+   writetable(diffTable,[path,'\diffTableVer',txtVer,'.csv']);
+end
 
 end
 
