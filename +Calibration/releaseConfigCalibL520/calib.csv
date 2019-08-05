@@ -2,7 +2,7 @@ FRMWxfov_000         f27
 FRMWyfov_000         f45      
 FRMWlaserangleH      f0       
 FRMWlaserangleV      f0       
-FRMWcbufConstLUT     b1       
+FRMWcbufConstLUT     b0       
 DIGGundistBypass     b0       
 DIGGspare_000        h0101
 DESThbaseline        b0  

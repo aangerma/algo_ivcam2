@@ -1,59 +1,59 @@
-function [] = createConfigTableForAllSkus()
+function [updatedConfigTable,diffTable] = createConfigTableForAllSkus()
 %%
 current_dir = mfilename('fullpath');
 ix = strfind(current_dir, '\');
 
 %% L515 vga
 pathVga=fullfile(current_dir(1:ix(end-1)), '\releaseConfigCalibVGA');
-[ConfigTableVga] = GetConfigTable(pathVga); 
+[ConfigTableVga] = GetConfigTable(pathVga);
 
-regName={ConfigTableVga.regName}'; 
-type={ConfigTableVga.type}'; 
+regName={ConfigTableVga.regName}';
+type={ConfigTableVga.type}';
 arraySize={ConfigTableVga.arraySize}';
 
-VGAbase={ConfigTableVga.base}'; 
-VGAvalue={ConfigTableVga.value}'; 
-%% L515 xga 
+VGAbase={ConfigTableVga.base}';
+VGAvalue={ConfigTableVga.value}';
+%% L515 xga
 pathXGA=fullfile(current_dir(1:ix(end-1)), '\releaseConfigCalibXGA');
-[ConfigTableXga] = GetConfigTable(pathXGA); 
+[ConfigTableXga] = GetConfigTable(pathXGA);
 
-XGAbase={ConfigTableXga.base}'; 
-XGAvalue={ConfigTableXga.value}'; 
+XGAbase={ConfigTableXga.base}';
+XGAvalue={ConfigTableXga.value}';
 
 %% L520
 pathL520=fullfile(current_dir(1:ix(end-1)), '\releaseConfigCalibL520');
-[ConfigTableL520] = GetConfigTable(pathL520); 
+[ConfigTableL520] = GetConfigTable(pathL520);
 
-L520base={ConfigTableL520.base}'; 
-L520value={ConfigTableL520.value}'; 
+L520base={ConfigTableL520.base}';
+L520value={ConfigTableL520.value}';
 
 %% full table
-mergedTable=table(regName,type,arraySize,VGAbase,VGAvalue,XGAbase,XGAvalue,L520base,L520value); 
+mergedTable=table(regName,type,arraySize,VGAbase,VGAvalue,XGAbase,XGAvalue,L520base,L520value);
 ConfigPath=fullfile(current_dir(1:ix(end-1)), '\+configurationStructure');
-[updatedConfigTable]= updateConfigTable(ConfigPath,mergedTable); 
+[updatedConfigTable,version,TableIsUpdated]= updateConfigTable(ConfigPath,mergedTable);
 %% diff table
-inds=find(~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.XGAvalue) | ~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.L520value)); 
+inds=find(~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.XGAvalue) | ~strcmp(updatedConfigTable.VGAvalue,updatedConfigTable.L520value));
 diffTable=mergedTable(inds,:);
 end
 
 function [ConfigTable] = GetConfigTable(ConfigPath)
 fw=Pipe.loadFirmware(ConfigPath);
-fw.get(); 
+fw.get();
 m=fw.getMeta();
 ConfigTable=m([m.TransferToFW]=='2');
-end 
+end
 
-function [updatedConfigTable]= updateConfigTable(ConfigPath,newConfigTable)
+function [updatedConfigTable,version,TableIsUpdated]= updateConfigTable(ConfigPath,newConfigTable)
 %% read latest config structure
 path= fullfile(ConfigPath,'configVersions');
 files=dir([path,'\config*.csv']); filesNames=sort({files.name});
-LatestVersion=strsplit(filesNames{end},'Ver'); LatestVersion=LatestVersion{2}; LatestVersion=strsplit(LatestVersion,'.'); LatestVersion=LatestVersion{1};  
-LatestVersion=strrep(LatestVersion,'_','.'); LatestVersion=str2double(LatestVersion); 
+[LatestVersion]= getFileVersion(filesNames{end});
 
-updatedStructure=0;
+updatedStructure=0; updatedValues=0;
+
 ConfigLatestVersion=readtable([path,'\',filesNames{end}]);
 
-%%
+%% check for structure change and update
 originNameVec=ConfigLatestVersion.regName;
 newNameVec=newConfigTable.regName;
 i=1;
@@ -102,24 +102,34 @@ while(i<=Lorig || i<=Lnew)
     i=i+1;
 end
 
-vi=find(strcmp(ConfigLatestVersion.algoName,'eepromVersion'));
-
-if updatedStructure % update major version 
+TableIsUpdated=1; 
+if updatedStructure % update major version
     version=LatestVersion+1;
-    newConfigTable(vi,:).base={'h'};
-    newConfigTable(vi,:).value=single2hex(version);
-    writetable(newConfigTable,path);
 else
     % check if value has changed
     if (sum(~strcmp(ConfigLatestVersion.VGAvalue,newConfigTable.VGAvalue))~=0 ...
             || sum(~strcmp(ConfigLatestVersion.XGAvalue,newConfigTable.XGAvalue))~=0 ...
             || sum(~strcmp(ConfigLatestVersion.L520value,newConfigTable.L520value))~=0)
-            version=LatestVersion+0.01;
-            writetable(newConfigTable,path);
-    end 
-    warning('Configuration table is identical to previous version');    
+        updatedValues=1;
+        version=LatestVersion+0.01;
+        writetable(newConfigTable,path);
+    end
+    warning('Configuration table is identical to previous version');
+    version=LatestVersion; 
+    TableIsUpdated=0; 
 end
 
+if (updatedValues || updatedStructure)
+    txtVer=num2str(version);
+    txtVer=strrep(txtVer,'.','_');
+    writetable(newConfigTable,[path,'configVer',txtVer,'.csv']);
+end
 updatedConfigTable=newConfigTable;
 
+end
+
+
+function [ver]= getFileVersion(fileName)
+ver=strsplit(fileName,'Ver'); ver=ver{2}; ver=strsplit(ver,'.'); ver=ver{1};
+ver=strrep(ver,'_','.'); ver=str2double(ver);
 end
