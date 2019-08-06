@@ -9,14 +9,13 @@ if runParams.replayMode
     return; 
 end
 
-if runParams.warm_up
+fprintff('[-] Ldd warm up...\n');
+if runParams.warmUp
     app.skipWarmUpButton.Visible = 'on';
     app.skipWarmUpButton.Enable='on';
     lastLddTmptr = hw.getLddTemperature();
 
-    fprintff('[-] Ldd warm up...\n');
-
-    fprintff('Ldd temperatures: %2.2f',lastLddTmptr);
+    fprintff('\nLdd temperatures: %2.2f',lastLddTmptr);
 
     tic;
     lastCurrTime = 0;
@@ -47,5 +46,7 @@ if runParams.warm_up
     app.skipWarmUpButton.Visible = 'off';
     app.skipWarmUpButton.Enable='off';
     Calibration.aux.globalSkip(1,0);
+else
+    fprintff(' skipped..\n');
 end
 end

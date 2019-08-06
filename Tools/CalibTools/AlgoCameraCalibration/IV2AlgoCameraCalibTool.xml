@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
    <cb_replayMode>0</cb_replayMode>
-   <cb_warm_up>1</cb_warm_up>
-   <cb_init>1</cb_init>
+   <cb_warmUp>0</cb_warmUp>
+   <cb_init>0</cb_init>
    <cb_DSM>1</cb_DSM>
    <cb_gamma>0</cb_gamma>
    <cb_dataDelay>1</cb_dataDelay>
@@ -21,9 +21,10 @@
    <cb_post_calib_validation>1</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
-   <cb_FOVex_installed>1</cb_FOVex_installed>
+   <cb_FOVexInstalled>1</cb_FOVexInstalled>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibXGA</configurationFolder>
+   <presetsDefFolder>defaultValues</presetsDefFolder>
    <calibParamsFile>calibParamsXGA.xml</calibParamsFile>
    <calibRes>[768,1024]</calibRes>
    <disableAdvancedOptions>0</disableAdvancedOptions>

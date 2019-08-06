@@ -124,11 +124,11 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     delayRegs.EXTL.conLocDelaySlow = hw.read('EXTLconLocDelaySlow');
     delayRegs.EXTL.conLocDelayFastC = hw.read('EXTLconLocDelayFastC');
     delayRegs.EXTL.conLocDelayFastF = hw.read('EXTLconLocDelayFastF');
-    dsmregs.EXTL.dsmXscale  = hw.read('EXTLdsmXscale');
-    dsmregs.EXTL.dsmXoffset = hw.read('EXTLdsmXoffset');
-    dsmregs.EXTL.dsmYscale  = hw.read('EXTLdsmYscale');
-    dsmregs.EXTL.dsmYoffset = hw.read('EXTLdsmYoffset');
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version);
+    dsmregs.EXTL.dsmXscale  = typecast(hw.read('EXTLdsmXscale'), 'single');
+    dsmregs.EXTL.dsmXoffset = typecast(hw.read('EXTLdsmXoffset'), 'single');
+    dsmregs.EXTL.dsmYscale  = typecast(hw.read('EXTLdsmYscale'), 'single');
+    dsmregs.EXTL.dsmYoffset = typecast(hw.read('EXTLdsmYoffset'), 'single');
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder);
     
 %     %% Print image final fov
 %     [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
@@ -355,7 +355,7 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
     fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
     initFldr = fullfile(fileparts(mfilename('fullpath')),runParams.configurationFolder);
-    initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets','+defaultValues');
+    initPresetsFolder = fullfile(fileparts(mfilename('fullpath')),'+presets',['+',runParams.presetsDefFolder]);
     eepromStructureFn = fullfile(fileparts(mfilename('fullpath')),'eepromStructure');
     copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
     copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);
@@ -425,7 +425,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         fw.setRegs(vregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)),runParams.internalFolder);
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -695,10 +695,10 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     
 end
 function res = noCalibrations(runParams)
-    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb || runParams.minRangePreset || runParams.maxRangePreset || runParams.init );
+    res = ~(runParams.gamma || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb || runParams.minRangePreset || runParams.maxRangePreset || runParams.init );
 end
 function res = onlyRGBCalib(runParams)
-    res = ~(runParams.DSM || runParams.gamma || runParams.dataDelay || runParams.ROI || runParams.DFZ || runParams.undist) && runParams.rgb;
+    res = ~(runParams.gamma || runParams.ROI || runParams.DFZ || runParams.undist) && runParams.rgb;
 end
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;

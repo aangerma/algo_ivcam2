@@ -228,7 +228,7 @@ function app=createComponents(runParamsFile)
     app.skipWarmUpButton.Visible = 'off';
     Calibration.aux.globalSkip( 1,0 );
     %checkboxes
-    cbnames = {'replayMode','warm_up','init','DSM','gamma','dataDelay','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVex_installed'};
+    cbnames = {'replayMode','warmUp','init','DSM','gamma','dataDelay','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVexInstalled'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -396,7 +396,7 @@ function statrtButton_callback(varargin)
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
         runparams.calibRes=app.calibRes; 
-        runparams.presetsDefFolder=app.presetsDefFolder; 
+        runparams.presetsDefFolder = app.presetsDefFolder; 
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);
         

@@ -253,3 +253,6 @@ temp*.m
 !+Calibration/eepromStructure/eepromStructure.mat
 scripts/maxRange/Results.xlsx
 .vscode/settings.json
+scripts/delaysCalib/IRvsTime.avi
+scripts/delaysCalib/EDGESvsTime.avi
+scripts/delaysCalib/DIFFvsTime.avi

@@ -38,7 +38,7 @@ function loadDefaults(app)
         if(isempty(s.(fld_{1})))
             return;
         end
-        fld=strrep(fld_{1},'_','.');
+        fld=replaceFirst(fld_{1},'_','.');
         try
             if(strcmp(eval(sprintf('app.%s.Style',fld)),'edit'))
                 eval(sprintf('app.%s.String=s.(fld_{1});',fld));
@@ -50,6 +50,14 @@ function loadDefaults(app)
         
     end
     
+end
+
+function strOut = replaceFirst(str,exp,replace)
+    strOut = str;
+    idx = strfind(str,exp);
+    if idx>0
+        strOut = [str( 1:idx-1 ) replace str(idx+length(exp):end)];
+    end
 end
 
 function setFolder(varargin)
@@ -112,6 +120,7 @@ function app=createComponents(runParamsFile)
     end
     app.toolName = runParams.toolName;
     app.configurationFolder = runParams.configurationFolder;
+    app.presetsDefFolder = runParams.presetsDefFolder;
     app.calibParamsFile = runParams.calibParamsFile;
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
@@ -221,9 +230,9 @@ function app=createComponents(runParamsFile)
     
     
     %checkboxes
-    cbnames = {'replayMode','warm_up','init','DSM','gamma','dataDelay','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVex_installed'};
+    cbnames = {'replayMode','warmUp','init','gamma','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVexInstalled'};
     
-    cbSz=[200 30];
+    cbSz=[200 25];
     ny = floor(sz(2)/cbSz(2))-1;
     app.disableAdvancedOptions = runParams.disableAdvancedOptions;
     app.calibRes=runParams.calibRes;
@@ -305,6 +314,7 @@ function saveDefaults(varargin)
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
     s.configurationFolder = app.configurationFolder;
+    s.presetsDefFolder= app.presetsDefFolder; 
     s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
@@ -387,7 +397,7 @@ function statrtButton_callback(varargin)
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
         runparams.calibRes = app.calibRes; 
-        
+        runparams.presetsDefFolder = app.presetsDefFolder; 
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);
         
