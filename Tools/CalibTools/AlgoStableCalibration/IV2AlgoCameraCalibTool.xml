@@ -24,6 +24,7 @@
    <cb_FOVexInstalled>1</cb_FOVexInstalled>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibXGA</configurationFolder>
+   <presetsDefFolder>defaultValues</presetsDefFolder>
    <calibParamsFile>calibParamsXGA.xml</calibParamsFile>
    <calibRes>[768,1024]</calibRes>
    <disableAdvancedOptions>0</disableAdvancedOptions>

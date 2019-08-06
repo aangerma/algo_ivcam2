@@ -38,7 +38,7 @@ function loadDefaults(app)
         if(isempty(s.(fld_{1})))
             return;
         end
-        fld=strrep(fld_{1},'_','.');
+        fld=replaceFirst(fld_{1},'_','.');
         try
             if(strcmp(eval(sprintf('app.%s.Style',fld)),'edit'))
                 eval(sprintf('app.%s.String=s.(fld_{1});',fld));
@@ -50,6 +50,14 @@ function loadDefaults(app)
         
     end
     
+end
+
+function strOut = replaceFirst(str,exp,replace)
+    strOut = str;
+    idx = strfind(str,exp);
+    if idx>0
+        strOut = [str( 1:idx-1 ) replace str(idx+length(exp):end)];
+    end
 end
 
 function setFolder(varargin)
@@ -112,6 +120,7 @@ function app=createComponents(runParamsFile)
     end
     app.toolName = runParams.toolName;
     app.configurationFolder = runParams.configurationFolder;
+    app.presetsDefFolder = runParams.presetsDefFolder;
     app.calibParamsFile = runParams.calibParamsFile;
     app.figH.Position(3) = sz(1);
     app.figH.Position(4) = sz(2);
@@ -305,6 +314,7 @@ function saveDefaults(varargin)
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
     s.outputdirectorty=app.outputdirectorty.String;
     s.configurationFolder = app.configurationFolder;
+    s.presetsDefFolder= app.presetsDefFolder; 
     s.calibParamsFile = app.calibParamsFile;
     s.disableAdvancedOptions = app.disableAdvancedOptions;
     s.toolName = app.toolName;
@@ -334,7 +344,7 @@ function skip_button_callback(varargin)
 end
 function statrtButton_callback(varargin)
     app=guidata(varargin{1});
-%     try
+    try
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
         [runparams.version,runparams.subVersion] = AlgoCameraCalibToolVersion(); 
@@ -387,7 +397,7 @@ function statrtButton_callback(varargin)
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
         runparams.calibRes = app.calibRes; 
-        
+        runparams.presetsDefFolder = app.presetsDefFolder; 
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);
         
@@ -449,22 +459,22 @@ function statrtButton_callback(varargin)
         
         
         
-%     catch e
-%         calibPassed = 0;
-%         fprintf('%s',getReport(e));
-%         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
-%         fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
-%         
-%         fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
-%         if(fid~=-1)
-%             fprintf(fid,strrep(getReport(e),'\','\\'));
-%             fclose(fid);
-%         end
-%         if app.cb.replayMode.Value == 0
-%             s.endDUTsession([], true);
-%         end
-%         
-%     end
+    catch e
+        calibPassed = 0;
+        fprintf('%s',getReport(e));
+        fprintffS('[!] ERROR:%s\n',strtrim(e.message));
+        fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
+        
+        fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
+        if(fid~=-1)
+            fprintf(fid,strrep(getReport(e),'\','\\'));
+            fclose(fid);
+        end
+        if app.cb.replayMode.Value == 0
+            s.endDUTsession([], true);
+        end
+        
+    end
     
     %restore original folder
     app.outputdirectorty.String = origOutputFolder;

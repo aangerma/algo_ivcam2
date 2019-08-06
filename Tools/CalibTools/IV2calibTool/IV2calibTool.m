@@ -396,7 +396,7 @@ function statrtButton_callback(varargin)
         runparams.configurationFolder = app.configurationFolder;
         runparams.calibParamsFile = app.calibParamsFile;
         runparams.calibRes=app.calibRes; 
-        runparams.presetsDefFolder=app.presetsDefFolder; 
+        runparams.presetsDefFolder = app.presetsDefFolder; 
         calibfn =  fullfile(toolDir,app.calibParamsFile);
         calibParams = xml2structWrapper(calibfn);
         
