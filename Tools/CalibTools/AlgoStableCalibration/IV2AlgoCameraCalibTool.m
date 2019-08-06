@@ -221,9 +221,9 @@ function app=createComponents(runParamsFile)
     
     
     %checkboxes
-    cbnames = {'replayMode','warm_up','init','DSM','gamma','dataDelay','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVex_installed'};
+    cbnames = {'replayMode','warmUp','init','gamma','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVexInstalled'};
     
-    cbSz=[200 30];
+    cbSz=[200 25];
     ny = floor(sz(2)/cbSz(2))-1;
     app.disableAdvancedOptions = runParams.disableAdvancedOptions;
     app.calibRes=runParams.calibRes;
@@ -334,7 +334,7 @@ function skip_button_callback(varargin)
 end
 function statrtButton_callback(varargin)
     app=guidata(varargin{1});
-    try
+%     try
         
         runparams=structfun(@(x) x.Value,app.cb,'uni',0);
         [runparams.version,runparams.subVersion] = AlgoCameraCalibToolVersion(); 
@@ -449,22 +449,22 @@ function statrtButton_callback(varargin)
         
         
         
-    catch e
-        calibPassed = 0;
-        fprintf('%s',getReport(e));
-        fprintffS('[!] ERROR:%s\n',strtrim(e.message));
-        fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
-        
-        fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
-        if(fid~=-1)
-            fprintf(fid,strrep(getReport(e),'\','\\'));
-            fclose(fid);
-        end
-        if app.cb.replayMode.Value == 0
-            s.endDUTsession([], true);
-        end
-        
-    end
+%     catch e
+%         calibPassed = 0;
+%         fprintf('%s',getReport(e));
+%         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
+%         fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
+%         
+%         fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
+%         if(fid~=-1)
+%             fprintf(fid,strrep(getReport(e),'\','\\'));
+%             fclose(fid);
+%         end
+%         if app.cb.replayMode.Value == 0
+%             s.endDUTsession([], true);
+%         end
+%         
+%     end
     
     %restore original folder
     app.outputdirectorty.String = origOutputFolder;

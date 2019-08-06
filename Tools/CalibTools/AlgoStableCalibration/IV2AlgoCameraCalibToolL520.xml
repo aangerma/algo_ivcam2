@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
    <cb_replayMode>0</cb_replayMode>
-   <cb_warm_up>0</cb_warm_up>
+   <cb_warmUp>0</cb_warmUp>
    <cb_init>1</cb_init>
    <cb_DSM>1</cb_DSM>
    <cb_gamma>0</cb_gamma>

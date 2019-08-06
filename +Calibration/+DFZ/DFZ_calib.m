@@ -161,8 +161,8 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         
         DFZRegs.FRMWundistAngHorz           = regs.FRMW.undistAngHorz;
         DFZRegs.FRMWundistAngVert           = regs.FRMW.undistAngVert;
-        if isfield(runParams, 'FOVex_installed')
-            regs.FRMW.fovexExistenceFlag    = runParams.FOVex_installed;
+        if isfield(runParams, 'FOVexInstalled')
+            regs.FRMW.fovexExistenceFlag    = runParams.FOVexInstalled;
         end
         DFZRegs.FRMWfovexExistenceFlag      = regs.FRMW.fovexExistenceFlag;
         DFZRegs.FRMWfovexNominal            = regs.FRMW.fovexNominal;

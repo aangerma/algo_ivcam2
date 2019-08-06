@@ -41,13 +41,13 @@
       <dsmYshift>[25 35]</dsmYshift>
       <stdRtd>[0 inf]</stdRtd>
       <stdXim>[0 1.5]</stdXim>
-      <stdYim>[0 0.5]</stdYim>
+      <stdYim>[0 1]</stdYim>
       <stdXmm>[0 inf]</stdXmm>
       <stdYmm>[0 inf]</stdYmm>
       <stdZmm>[0 inf]</stdZmm>
       <p2pRtd>[0 inf]</p2pRtd>
       <p2pXim>[0 16]</p2pXim>
-      <p2pYim>[0 4]</p2pYim>
+      <p2pYim>[0 8]</p2pYim>
       <p2pXmm>[0 inf]</p2pXmm>
       <p2pYmm>[0 inf]</p2pYmm>
       <p2pZmm>[0 inf]</p2pZmm>
@@ -56,7 +56,7 @@
       <maxEGeom>[0 50]</maxEGeom>
       <xScale>[0 0.01]</xScale>
       <yScale>[0 0.008]</yScale>
-      <xShift>[0 1.11]</xShift>
+      <xShift>[0 1.5]</xShift>
       <yShift>[0 0.8]</yShift>
       <rtdShit>[0 inf]</rtdShit>
       <thermalRtdRefTemp>[32 79]</thermalRtdRefTemp>

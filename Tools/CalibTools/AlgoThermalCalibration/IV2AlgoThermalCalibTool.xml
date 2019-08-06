@@ -10,12 +10,12 @@
    <cb_burnConfigurationToDevice>0</cb_burnConfigurationToDevice>
    <cb_debug>0</cb_debug>
    <cb_saveRegState>0</cb_saveRegState>
-   <cb_FOVex_installed>1</cb_FOVex_installed>
+   <cb_FOVexInstalled>1</cb_FOVexInstalled>
    <cb_manualCaptures>0</cb_manualCaptures>
    <cb_performValidation>0</cb_performValidation>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
-   <configurationFolder>releaseConfigCalibVGA</configurationFolder>
+   <configurationFolder>releaseConfigCalibXGA</configurationFolder>
    <calibParamsFile>calibParams.xml</calibParamsFile>
-   <calibRes>[480,640]</calibRes>
+   <calibRes>[768,1024]</calibRes>
    <toolName>IV2 Algo Thermal Calibration Tool</toolName>
 </struct>
