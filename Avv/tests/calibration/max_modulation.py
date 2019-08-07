@@ -66,6 +66,7 @@ def maxModulation(xmlPath, debug):
     if not debug:
         robot = Robot.Robot()
 
+    status = 0
     for test in tests:
         slash.logger.info('starting test {}'.format(test['name']), extra={"highlight": True})
         xRes=test.get('xRes', None)
@@ -82,7 +83,9 @@ def maxModulation(xmlPath, debug):
             robot.safe_move('wall_10Reflectivity', test['range'])
         stableTemp = params.get('stableTemp', 'false').lower()
 
-
+        camera = libRealSense.LibRealSense()
+        cameraInfo = camera.get_system_info()
+        slash.logger.info('camera info: {}'.format(cameraInfo))
         if stableTemp == 'true':
             camera = libRealSense.LibRealSense(xRes=xRes, yRes=yRes,
                                                frameRate=test.get('frameRate', None))
@@ -123,13 +126,19 @@ def maxModulation(xmlPath, debug):
                               extra={"highlight": True})
         except Exception as e:
             slash.logger.debug('matlab out: {}'.format(out.getvalue()))
+            slash.logger.error('test: {} failed'.format(test['name']))
             slash.logger.error('matlab error: {}'.format(err.getvalue()))
-            raise e
+            status = 1
 
-        slash.logger.debug('matlab out: {}'.format(out.getvalue()))
+        # slash.logger.debug('matlab out: {}'.format(out.getvalue()))
         slash.logger.info(
             'test: {}, distance: {}, maxRangeScaleModRef: {}'.format(test['name'], test['range'], maxRangeScaleModRef),
             extra={"highlight": True})
+
+    if status:
+        slash.logger.error('test failed - review log')
+    else:
+        slash.logger.info('test passed', extra={"highlight": True})
 
 
 @slash.tag('robot')
