@@ -18,9 +18,8 @@ calibParams.dataDelay.calibrateFast = 1;
 calibParams.dataDelay.sphericalScaleFactors = [1 1];
 
 % run parameters
-outputFolderBasic = 'D:\temp\delayPerTemp\';
-res = [480,640];
-% res = [768,1024];
+% res = [480,640]; outputFolderBasic = 'D:\temp\delayPerTempVGA\';
+res = [768,1024]; outputFolderBasic = 'D:\temp\delayPerTempXGA\';
 
 %% Initializations
 
@@ -32,9 +31,12 @@ ind = strfind(unitInfo, 'OpticalHeadModuleSN:          ');
 serialNum = unitInfo(ind+30:ind+37);
 hw.startStream(0,res)
 hw.setReg('DIGGsphericalEn',1);
+hw.write('DIGGsphericalScale',uint32(56886272))
 hw.shadowUpdate();
 Calibration.dataDelay.setAbsDelay(hw, calibParams.dataDelay.fastDelayInitVal, calibParams.dataDelay.slowDelayInitVal);
 nFrames = 1;
+x = hw.getFrame(nFrames);
+figure(1), imagesc(x.i), pause(2), close(1)
 
 % control parameters
 t0 = tic;

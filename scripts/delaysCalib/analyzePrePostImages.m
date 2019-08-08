@@ -3,11 +3,18 @@ clc
 
 %%
 
-load('F9240063.mat')
+res = 'XGA';
 
-% inputFolder = 'D:\temp\delayPerTemp\';
-inputFolder = 'X:\Users\syaeli\Work\Code\algo_ivcam2\scripts\delaysCalib\Recordings\';
-nEpochs = 10;
+if strcmp(res,'VGA')
+    load('F9240063_VGA.mat')
+    inputFolder = 'D:\temp\delayPerTempVGA\';
+    nEpochs = 9;
+elseif strcmp(res,'XGA')
+    load('F9240063_XGA.mat')
+    inputFolder = 'D:\temp\delayPerTempXGA\';
+    nEpochs = 8;
+end
+
 for k = 1:nEpochs
     load([inputFolder, sprintf('epoch_%d_pre.mat',k)]);
     preImages(:,:,k) = x.i;
@@ -15,69 +22,11 @@ for k = 1:nEpochs
     postImages(:,:,k) = x.i;
 end
 
-%% IR
+%% AVIs
 
-clear F
-figure
-for k = 1:nEpochs
-    if (k==1)
-        h = imagesc(preImages(:,:,k));
-        set(gca,'xdir','reverse')
-        set(gca,'ydir','normal')
-        colormap gray
-        set(gca,'clim',[-20,20])
-    else
-        set(h, 'CData', preImages(:,:,k))
-    end
-    title(sprintf('IR image (T = %.2f[deg])', temps(k)))
-    F(k) = getframe(gcf);
-    pause(1)
-end
-writerObj = VideoWriter('AVIs\IR.avi');
-writerObj.FrameRate = 2;
-open(writerObj)
-for k = 1:nEpochs
-    writeVideo(writerObj, F(k));
-end
-close(writerObj)
-
-%% VDER
-
-clear F
-figure
-for k = 1:nEpochs
-    if (k==1)
-        h = imagesc(diff(single(preImages(:,:,k)),[],1));
-        set(gca,'xdir','reverse')
-        set(gca,'ydir','normal')
-        set(gca,'clim',[-20,20])
-    else
-        set(h, 'CData', diff(single(preImages(:,:,k)),[],1))
-    end
-    title(sprintf('IR vertical derivative (T = %.2f[deg])', temps(k)))
-    F(k) = getframe(gcf);
-    pause(1)
-end
-writerObj = VideoWriter('AVIs\vder.avi');
-writerObj.FrameRate = 2;
-open(writerObj)
-for k = 1:nEpochs
-    writeVideo(writerObj, F(k));
-end
-close(writerObj)
-
-%%
-
-figure
-for k = 1:nEpochs
-    if (k==1)
-        h = imagesc(postImages(:,:,k));
-        set(gca,'xdir','reverse')
-        set(gca,'ydir','normal')
-        colormap grayfig
-    else
-        set(h, 'CData', postImages(:,:,k))
-    end
-    title(sprintf('T = %.2f[deg]', temps(k)))
-    pause(1)
-end
+CreateVideoFromImages(preImages,  @(x) x,                    [],       'gray', 'IR image',               ['AVIs', res, '\IRpre.avi'],    10, temps)
+CreateVideoFromImages(postImages, @(x) x,                    [],       'gray', 'IR image',               ['AVIs', res, '\IRpost.avi'],   10, temps)
+CreateVideoFromImages(preImages,  @(x) diff(single(x),[],1), [-20,20], 'jet',  'IR vertical derivative', ['AVIs', res, '\VDERpre.avi'],  10, temps)
+CreateVideoFromImages(postImages, @(x) diff(single(x),[],1), [-20,20], 'jet',  'IR vertical derivative', ['AVIs', res, '\VDERpost.avi'], 10, temps)
+CreateVideoFromImages(preImages,  @(x) GetHTrans(x),         [2,5], 'jet',  'IR vertical edges',      ['AVIs', res, '\EDGEpre.avi'],  10, temps)
+CreateVideoFromImages(postImages, @(x) GetHTrans(x),         [2,5], 'jet',  'IR vertical edges',      ['AVIs', res, '\EDGEpost.avi'], 10, temps)
