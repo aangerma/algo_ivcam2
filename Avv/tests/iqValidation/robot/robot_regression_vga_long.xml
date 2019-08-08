@@ -17,6 +17,8 @@
     </cameraConfig_beforeStartStream>
     <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
     <tests>
+        <test name="planeFit_far" metrics="planeFit" target="far" distance="120cm" threshold="[0:2]" extra="" />
+
         <test name="planeFit_c50_80cm" metrics="planeFit" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_90cm" metrics="planeFit" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_100cm" metrics="planeFit" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra=''/>
