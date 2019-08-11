@@ -141,6 +141,6 @@ camConfig = IVCam.Tools.CamerasSdk.Cameras.Configuration.CameraConfiguration(scw
 obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
 %% set regs configurations that affect image capturing
 pause(timeout);
-obj.setSize();
+%obj.setSize();
 end
 
