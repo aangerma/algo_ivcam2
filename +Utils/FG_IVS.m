@@ -1,5 +1,4 @@
-function [ result ] = FG_IVS( output_dir,num_frames,res,p)
-    result = true;
+function [ ivs_arr ] = FG_IVS( output_dir,num_frames,res,p)
 %    output_dir = 'C:\Users\tbenshab\Desktop\FG_recording1';
     if ~exist('res','var')
         res = [720 1280];
@@ -21,7 +20,7 @@ function [ result ] = FG_IVS( output_dir,num_frames,res,p)
     ivs_arr = io.FG.USBreadFrames(output_dir,'numFrames',num_frames);
     
     for i=1:1:size(ivs_arr,1)
-        fn = strcat(base_name,int2str(i),'.ivs')
+        fn = strcat(base_name,int2str(i),'.ivs');
         full_fn = fullfile(output_dir, fn );
         io.writeIVS(full_fn, ivs_arr(i));
     end
