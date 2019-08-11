@@ -6,24 +6,26 @@ import random
 import matlab
 import io
 import sys
-import re
-import math
 
 sys.path.insert(0, r"..\algo_automation\infra")
 import regs_files
+import regsConstraints
+import testsRegs
 
 sys.path.insert(0, r"Avv\tests")
 import a_common
 
 try:
     from aux_functions import log
-except:
+except ImportError:
+    log = None
     pass
 
 try:
     import matlab_eng
 except Exception:
     pass
+
 
 def run_randomize(eng, file_path):
     slash.logger.debug("running matlab randomize")
@@ -120,206 +122,18 @@ def clean_regs_list_to_generate(regs):
     return regs_to_generate
 
 
-def get_reg_range(reg):
-    reg_range = str(reg["range"]).strip().replace("{", "").replace("}", "").replace("[", "").replace("]", "")
-    ranges = reg_range.split(";")
-    reg_ranges = list()
-    reg_ranges_weight = list()
-    selected_range = None
-    for this_range in ranges:
-        if ":/" in this_range:
-            this_range = this_range.split(":/")
-            reg_ranges.append(this_range[0])
-            reg_ranges_weight.append(regs_files.convert_to_number(this_range[1]))
-        else:
-            reg_ranges.append(this_range)
-    if len(reg_ranges_weight) > 0:
-        selected_range = reg_ranges[random.choices(range(len(reg_ranges)), reg_ranges_weight, k=1)[0]]
-    if len(reg_ranges_weight) == 0:
-        selected_range = random.choice(reg_ranges)
-
-    # logging.debug(
-    # "reg name: {}, reg range: {}, selected range: {}".format(reg["regName"], reg["range"], selected_range))
-    return selected_range
-
-
-def get_constraints_list(file_path):
-    constraints_list = list()
-    slash.logger.info("reading file: {}".format(file_path))
-    with open(file_path, "r") as dataFile:
-        for line in dataFile:
-            if len(line) <= 3:
-                continue
-            else:
-                if line[0] == "%":
-                    continue
-                constraints_list.append(line)
-
-    num_of_constraints = len(constraints_list)
-    constraints_list.append("mod([GNRLimgHsize],2)==0")
-    constraints_list.append("mod([GNRLimgVsize],2)==0")
-
-    slash.logger.info("file number of constraints: {}, added: {}, total: ".format(num_of_constraints, len(
-        constraints_list) - num_of_constraints, len(constraints_list)))
-    return constraints_list
-
-
-class Constraint:
-    def __init__(self, constraint, regs):
-        self._constraint = constraint
-        self._regs = regs
-
-    def __str__(self):
-        return "constraint: {}, regs: {}".format(self._constraint, self._regs)
-
-    def get_constraint(self):
-        return self._constraint
-
-    def get_regs(self):
-        return self._regs
-
-
-def create_constrains_table(constraints_list=list()):
-    constraints = list()
-    for constraint in constraints_list:
-        constraint = constraint.replace("\n", "").strip()
-        regs = list()
-        regs_list = (re.findall(r"\[\w+\]", constraint))
-        for reg in regs_list:
-            regs.append(reg.replace("[", "").replace("]", "").strip())
-
-        constraints.append(Constraint(constraint, regs))
-    return constraints
-
-
-def check_for_all_regs(selected_regs={}, regs=list()):
-    for reg in regs:
-        if reg not in selected_regs:
-            return False
-
-    return True
-
-def check_constraint(regs={}, constraint=None, regs_def={}):
-    constr = constraint.get_constraint()
-    if constr[0] == '%':
-        return True
-    constr = re.sub(r"(?<=[0-9])\s(?=[0-9])", " , ", constr)   #convert [num1 num2 ...] to legal list form [num1,num2,...]
-    constr = re.sub(r"(?<=])\s(?=\[)", " , ", constr)    #convert list of regs to legal list form [reg1,reg2,...]
-    constr = re.sub(r"\[(?=[A-Z])" , "regs['", constr)   #convert [regname] to regs['regname']
-    constr = re.sub(r"(?<=_\d{3})]", "']", constr)   #some of regs name finish with '_{3 digits}'
-    constr = re.sub(r"(?<=[A-Z|a-z])]", "']", constr) #some of regs name finish with letters
-    constr = re.sub(r"~=", "!=", constr)     #python form of not equal
-    constr = re.sub(r"~", " not ", constr)   #python form of not
-    constr = re.sub(r"\|", " or ", constr)   #python form of or
-    constr = re.sub(r"&", " and ", constr)   #python form of and
-    constr = re.sub(r"1e", " 10**", constr)  #python form of power
-    constr = re.sub(r"any", "", constr)      #not needed
-    constr = re.sub(r"==(?=\[(?=[0-9]))", " in ", constr)   #convert "x==[num1,num2,...]" to x in [num1,num2,...]
-    constr = re.sub(r"mod", "modulo", constr)    #modulo function is defined
-    constr = re.sub(r"\^", " ** ", constr)   #power
-    constr = re.sub(r"floor", "math.floor", constr) #python's form of floor function
-    constr = re.sub(r";", "", constr)    # ; not needed
-
-    if re.search(r"at\(",constr) != None :       #at function
-        constr = re.sub(r"at\(", "int(format(", constr)  #convert number into 32binary
-        constr = re.sub(r",", ", '032b')#", constr)
-        num = re.findall(r"(?<=\#)\d", constr)       #index
-        temp = re.findall(r"(?<=\[')[A-Z]\w+", constr)   #name of reg
-        regstype = regs_def[temp[0]]['type']        #type of reg
-        x = re.findall(r"(?<=int)\d+",regstype)  #uint{x}- x=4/8/16...
-        mul = int(x[0])
-        for i in range(len(num)):   #take to right piece in 32 bits number
-            start = 32-mul*(eval(num[i])+1)
-            end = 32-mul*eval(num[i])
-            string = "["+str(start)+":"+str(end)+"],2)"
-            constr = re.sub(r"#[0-9]\)", string, constr,1)
-
-    constr = re.sub("single", "float", constr) #convert 'single' to python's form 'float'
-
-    if re.search("sum",constr) != None :    #sum function
-        temp = re.findall(r"(?<=\[')[A-Z]\w+", constr)   #find reg name
-        regsave = re.findall(r"regs\['\w+']", constr)    #reg name in form - "regs['regname']"-get list
-        s = regsave[0]  #"regs['regname']" as string
-        regstype = regs_def[temp[0]]['type']    #type of reg
-        x = re.findall(r"(?<=int)\d+",regstype)  #uint{x}- x=4/8/16...
-        x = int(x[0])   #number bits partition x=4/8/16...
-        l = int(32/x)
-        string =""
-        for i in range(l):  #generates string to correct way: sum[reg[0:x],reg[x+1,y],...]
-            string = string + "int(format("+s+",\"032b\")["+str(i*x)+":"+str((i+1)*x-1)+"], 2),"
-        string = string[:-1]    #remove last ','
-        constr = constr.replace(s, string)  #replace regname to its partition
-
-    try:
-        return eval(constr)
-    except:
-        slash.logger.debug(format(constr))
-        slash.logger.warning("constraint not recognized:{}".format(constr))
-        return True
-
-
-def check_for_restriction(reg_name="", selected_regs={}, constraints=list()):
-    for constraint in constraints:
-        regs = constraint.get_regs()
-        if reg_name in regs:
-            if not check_for_all_regs(selected_regs, regs):
-                continue
-            else:
-                if not check_constraint(selected_regs, constraint):
-                    return False, constraint.get_constraint()
-        else:
-            continue
-    return True, None
-
-
-def modulo(a, b):
-    if b == 0:
-        return a
-
-    return a % b
-
-
-def concatenate_ints(nums, type):
-    if "single" in type or "logical" in type:
-        return nums[0]
-    if len(nums) == 1:
-        return nums[0]
-
-    s = ""
-    size = 0
-    if "int2" in type:
-        size = 2
-    elif "int4" in type:
-        size = 4
-    elif "int8" in type:
-        size = 8
-    elif "int12" in type:
-        size = 12
-    elif "int16" in type:
-        size = 16
-    elif "int32" in type:
-        size = 32
-    elif "logical" in type:
-        size = 1
-
-    for i in range(len(nums)):
-        s = s + format(nums[i] & ((2 ** size) - 1), '0{}b'.format(size))
-
-    return int(s, 2)
-
-
 def get_random_value(reg, selected_regs):
     reg_name = reg["regName"]
     array_size = int(reg["arraySize"])
     reg_type = reg["type"]
 
     if "logical" in reg_type:
-        array_size == 1
+        array_size = 1
 
     num = list()
 
     for i in range(array_size):
-        selected_range = get_reg_range(reg)
+        selected_range = testsRegs.get_reg_range(reg)
 
         if ":" not in selected_range:
             num.append(regs_files.convert_to_number(selected_range))
@@ -357,7 +171,7 @@ def get_random_value(reg, selected_regs):
                 if num[len(num) - 1] % 2 != 0:
                     num[len(num) - 1] += 1
     # logging.debug("reg: {}, nums: {}".format(reg_name,num))
-    return concatenate_ints(num, reg_type)
+    return testsRegs.concatenate_ints(num, reg_type)
 
 
 def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, constraints):
@@ -442,7 +256,7 @@ def generate_regs_recursive(i, rec_depth, regs_def, reg_order, selected_regs, co
             value = get_random_value(reg, selected_regs)
             selected_regs[reg_name] = value
 
-            reg_added, constraint = check_for_restriction(reg_name, selected_regs, constraints)
+            reg_added, constraint = regsConstraints.check_for_restriction(reg_name, selected_regs, constraints, regs_def)
             if not reg_added:
                 constraint_fail_index += 1
                 if constraint_fail_index >= 10:
@@ -482,8 +296,7 @@ def generate_regs(regs_def, constraints, reg_order):
 def get_regs_order(regs_def):
     slash.logger.info("setting regs generation order")
     reg_order = list()
-    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "GNRLimgHsize", "FRMWmarginT",
-                      "FRMWmarginB", "GNRLimgVsize", "FRMWmarginR", "FRMWmarginL", "FRMWyfov_000", "FRMWyfov_001",
+    reg_order.extend(("GNRLrangeFinder", "EPTGframeRate", "GNRLimgHsize", "GNRLimgVsize", "FRMWyfov_000", "FRMWyfov_001",
                       "FRMWyfov_002", "FRMWyfov_003", "FRMWyfov_004", "FRMWguardBandV", "GNRLsampleRate",
                       "EPTGmirrorFastFreq",
                       "GNRLcodeLength", "MTLBtxSymbolLength", "FRMWcoarseSampleRate", "FRMWxfov_000", "FRMWxfov_001",
@@ -502,41 +315,26 @@ def get_regs_order(regs_def):
     return reg_order
 
 
-def get_constrains_map():
-    regs_def_path = r"../../+Pipe/tables/regsDefinitions.frmw"
-    regs_def = regs_files.read_regs_file(regs_def_path)
-    regs_def = clean_regs_list_to_generate(regs_def)
-
-    constraints_def_path = r"../../+Pipe/tables/regsConstraints.frmw"
-    constraints_list = get_constraints_list(constraints_def_path)
-    constraints = create_constrains_table(constraints_list)
-    con = {}
-    for reg in regs_def.keys():
-        l = list()
-        for cons in constraints:
-            if reg in cons.get_regs():
-                for r in cons.get_regs():
-                    if r != reg:
-                        l.append(r)
-        con[reg] = l
-    for k, v in con.items():
-        print(k, v)
-
-
-def create_regs_def(regs):
-    regs_def = {}
-    for reg, value in regs.items():
-        if type(value) is not int:
-            regs_def[reg] = {"type": "single"}
-        else:
-            regs_def[reg] = {"type": "int"}
-
-    return regs_def
-
-
-def print_regs(selected_regs):
-    slash.logger.debug("regs list: {}".format(selected_regs))
-
+# def get_constrains_map(regs_def_path, constraints_def_path):
+#     regs_def_path = r"../../+Pipe/tables/regsDefinitions.frmw"
+#     regs_def = regs_files.read_regs_file(regs_def_path)
+#     regs_def = clean_regs_list_to_generate(regs_def)
+#
+#     constraints_def_path = r"../../+Pipe/tables/regsConstraints.frmw"
+#     constraints_list = regsConstraints.get_constraints_list(constraints_def_path)
+#     constraints = regsConstraints.create_constrains_table(constraints_list)
+#     con = {}
+#     for reg in regs_def.keys():
+#         l = list()
+#         for cons in constraints:
+#             if reg in cons.get_regs():
+#                 for r in cons.get_regs():
+#                     if r != reg:
+#                         l.append(r)
+#         con[reg] = l
+#     for k, v in con.items():
+#         print(k, v)
+#
 
 def debug_test():
     log.create_logger(log_path="logs\\", log_name="debug")
@@ -582,8 +380,8 @@ def debug_test():
         logging.info("clear matlab memory")
         # eng.clear_memory(stdout=out, stderr=err, nargout=0)
 
-        print_regs(regs)
-        regs_def = create_regs_def(regs)
+        regs_files.print_regs(regs)
+        regs_def = testsRegs.create_regs_def(regs)
         regs_files.write_regs_file(file_path, regs, regs_def)
 
         status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
@@ -625,17 +423,9 @@ if __name__ == "__main__":
     # get_constrains_map()
 
 
-def get_data_path():
-    data_path = os.path.join(os.path.dirname(os.path.realpath("__file__")), "Avv", "test_data", "regs_random")
-    file_name = "regs_info"
-    file_ext = ".csv"
-    file_path = os.path.join(data_path, file_name + file_ext)
-    slash.logger.info("regs file path: {}".format(file_path))
-    return data_path, file_path
-
-
 @a_common.ivcam2
 def test_random_registers_randomize_100():
+    # Random from matlab function
     test_status = {"pass": 0, "fail": 0, "pattern_generator_constraint": 0, "pattern_generator_crash": 0,
                    "Randomize_failed": 0}
     eng = slash.g.mat
@@ -691,8 +481,8 @@ def random_registers(iterations=1):
     data_path, file_path = get_data_path()
 
     constraints_def_path = r"+Pipe/tables/regsConstraints.frmw"
-    constraints_list = get_constraints_list(constraints_def_path)
-    constraints = create_constrains_table(constraints_list)
+    constraints_list = regsConstraints.get_constraints_list(constraints_def_path)
+    constraints = regsConstraints.create_constrains_table(constraints_list)
 
     regs_def_path = r"+Pipe/tables/regsDefinitions.frmw"
     regs_def = regs_files.read_regs_file(regs_def_path)
@@ -721,7 +511,7 @@ def random_registers(iterations=1):
             slash.logger.info("test {} failed - generate randomize failed".format(iteration), extra={"highlight": True})
             continue
 
-        print_regs(selected_regs)
+        regs_files.print_regs(selected_regs)
         regs_files.write_regs_file(file_path, selected_regs, regs_def)
 
         status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)
@@ -780,7 +570,7 @@ def test_regs_mode_table():
         slash.logger.debug("clear matlab memory")
         eng.s.clear_memory(stdout=out, stderr=err, nargout=0)
 
-        print_regs(modeTest.get_regs())
+        regs_files.print_regs(modeTest.get_regs())
         regs_files.write_regs_file(file_path, modeTest.get_regs(), regs_def)
 
         status, ivs_file_name = run_pattern_generator(eng, file_path, data_path)

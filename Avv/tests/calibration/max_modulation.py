@@ -93,7 +93,7 @@ def maxModulation(xmlPath, debug):
                 raise common.TestFail("Test failed On stable temperature")
             camera.close_stream()
 
-        dirName = '{}\{}\{}\{}'.format(params['dataFolder'], test['name'],test['preset'], test['range'])
+        dirName = r'{}\{}\{}\{}'.format(params['dataFolder'], test['name'],test['preset'], test['range'])
 
         slash.logger.info("data: {}".format(dirName))
         out = io.StringIO()

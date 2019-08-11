@@ -122,7 +122,7 @@ any(single([GNRLsampleRate])/[MTLBtxSymbolLength]==[4 8 16])
 [JFILsort1fixedConfValue] > 0
 [JFILsort2fixedConfValue] > 0
 [JFILsort3fixedConfValue] > 0
-sum([GNRLsampleRate]/[FRMWcoarseSampleRate]==[2 4 8])==1
+any([GNRLsampleRate]/[FRMWcoarseSampleRate]==[2 4 8])
 
 %max coarse template size
 %[GNRLrangeFinder]==0 & [GNRLtmplLength]/2^[DESTdecRatio]<=128 | [GNRLrangeFinder]==1 & [GNRLtmplLength]/2^[DESTdecRatio]<=256
