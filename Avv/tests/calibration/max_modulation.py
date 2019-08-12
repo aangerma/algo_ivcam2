@@ -80,7 +80,7 @@ def maxModulation(xmlPath, debug):
 
 
         if not debug:
-            robot.safe_move('wall_10Reflectivity', test['range'])
+            robot.safe_move('wall_10Reflectivity', test['range'], 10)
         stableTemp = params.get('stableTemp', 'false').lower()
 
         camera = libRealSense.LibRealSense()
