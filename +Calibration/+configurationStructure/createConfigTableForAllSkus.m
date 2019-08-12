@@ -35,7 +35,7 @@ ConfigPath=fullfile(current_dir(1:ix(end-1)), '\+configurationStructure');
 
 %% release notes
 if(TableIsUpdated)
-    prompt = {['Table Is Updated. plese Enter release notes: version ',num2str(Version)]};
+    prompt = {['Table Is Updated. Please Enter release notes: version ',num2str(Version)]};
     dlgtitle = 'Input';
     dims = [1 35];
     definput = {''};
