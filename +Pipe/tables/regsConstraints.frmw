@@ -162,30 +162,30 @@ sum([[JFILsort3dWeights]])<128
 
 
 
-% jfil grad constraints
-[JFILgrad1thrAveDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad1thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));
+% jfil grad constraints - For gen2 parse to mm !!!
+%[JFILgrad1thrAveDiag]  < (2^(16)- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad1thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));
 
-[JFILgrad2thrAveDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));
-[JFILgrad2thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrAveDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrAveDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrAveDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrMaxDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrMaxDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrMaxDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrMinDiag]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrMinDx]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrMinDy]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrMode]  < (2^(16- [GNRLzMaxSubMMExp]));
+%[JFILgrad2thrSpike]  < (2^(16- [GNRLzMaxSubMMExp]));
 
 
 % outIR constraints

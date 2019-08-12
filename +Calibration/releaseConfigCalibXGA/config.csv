@@ -97,7 +97,7 @@ JFILedge3bypassMode  d0
 JFILgeomBadConf      h1       
 JFILgeomBypass       b0       
 JFILgrad1ConfUpdVal  h1       
-JFILgrad1bypass      b1       
+JFILgrad1bypass      b0       
 JFILgrad2ConfUpdVal  h1       
 JFILgrad2bypass      b0       
 JFILinnBypass        b1       
