@@ -7,6 +7,14 @@ function [udistLUT,udistRegs,maxPixelDisplacement] = calibUndistAng2xyBugFix(fw,
 % 3. Transform the angx-angy into x-y. Using the bugged ang2xy.
 % 4. Find an undistortion table that moves the bugged x-y coordinates to
 %    their true location.
+if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
+    load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
+else
+    tpsUndistModel = [];
+end
+
+
+
 regs = fw.get();
 
 udistRegs.FRMW.xfov = regs.FRMW.xfov;
@@ -15,7 +23,7 @@ udistRegs.FRMW.yfov = regs.FRMW.yfov;
 % For the current regs, the image plane should be made from the values at
 % the locations xbug/ybug. We need to translate xbug to xg and the same for
 % y.
-[udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs);
+[udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs,tpsUndistModel);
 % [udistLUT,~,~] = Calibration.Undist.generateUndistTablesFromGridPointsOnly(regs,runParams); 
 
 % % % 
@@ -61,8 +69,9 @@ nPoints = 50;
 [angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
 % Transform the angx-angy into x-y. Using the bugged ang2xy:
 v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,regs);
-% (To add) 2D Undist - 
-% v = Calibration.Undist.undistByTPSModel( v,[],runParams );
+if ~isempty(tpsUndistModel)% 2D Undist - 
+    v = Calibration.Undist.undistByTPSModel( v',tpsUndistModel)';
+end
 [xg,yg] = Calibration.aux.vec2xy(v,regs);
 
 % Pipe flow
@@ -100,10 +109,6 @@ rectangle('position',[0 0 regs.GNRL.imgHsize regs.GNRL.imgVsize]);
 title(sprintf('Before(r) & After(g) Undistort Block'));
 Calibration.aux.saveFigureAsImage(ff,runParams,'Undist','BeforeAfterUndist');
 
-if 0
-    
-    
-end
 
 
 

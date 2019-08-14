@@ -4,25 +4,25 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         [r,regs] = ROI_calib_Init(hw,fw);
         %% capture frames
         fprintff('[-] Collecting up/down frames... ');
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Put white cover and make sure image is bright',1);
+        Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Take Image From ~20cm - Board should cover the entire fov',1);
         %% capture up down frames 
-        gainCalibValue = '000ffff0';
+%         gainCalibValue = '000ffff0';
         NumberOfFrames = 30;
-        [val1, val2] = Calibration.aux.GetGainValue(hw);        % save original gain value
-        Calibration.aux.SetGainValue(hw,gainCalibValue, val2);  % Scan Direction up
+%         [val1, val2] = Calibration.aux.GetGainValue(hw);        % save original gain value
+%         Calibration.aux.SetGainValue(hw,gainCalibValue, val2);  % Scan Direction up
         InputPath = fullfile(ivcam2tempdir,'ROI'); 
-        path_up = fullfile(InputPath,'IR_up');
-        Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_up);             % get frame without post processing (averege) (SDK like)
+        path_up = fullfile(InputPath,'ZIR_up');
+        Calibration.aux.SaveFramesWrapper(hw , 'ZI' , NumberOfFrames, path_up);             % get frame without post processing (averege) (SDK like)
 
-        Calibration.aux.SetGainValue(hw,val1, gainCalibValue);  % Scan Direction down
-        path_down = fullfile(InputPath,'IR_down');
-        Calibration.aux.SaveFramesWrapper(hw, 'I' , NumberOfFrames, path_down);             % get frame without post processing (averege) (SDK like)
-        Calibration.aux.SetGainValue(hw,val1, val2);            % resore gain inital values
+%         Calibration.aux.SetGainValue(hw,val1, gainCalibValue);  % Scan Direction down
+        path_down = fullfile(InputPath,'ZIR_down');
+        Calibration.aux.SaveFramesWrapper(hw, 'ZI' , NumberOfFrames, path_down);             % get frame without post processing (averege) (SDK like)
+%         Calibration.aux.SetGainValue(hw,val1, val2);            % resore gain inital values
         pause(0.1);
         fprintff('Done.\n');
         % Remove modulation as well to get a noise image
         %% capture noise frames
-        collectNoiseIm(hw,InputPath);
+%         collectNoiseIm(hw,InputPath);
         %% prepare register set for ROI
         [ROIregs] = prepare_ROI_reg(hw,regs,dfzRegs);
         %% ROI algo    
@@ -61,6 +61,7 @@ function [r,regs] = ROI_calib_Init(hw,fw)
 %% Get spherical of both directions:
     r = Calibration.RegState(hw);
     r.add('DIGGsphericalEn'    ,true     );
+    r.add('JFILinvBypass'    ,true     );
     r.set();
 end
 

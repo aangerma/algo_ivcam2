@@ -1,6 +1,9 @@
-function [EPROMtable,ConfigTable,CbufXsections,DiggGammaTable] = generateTablesForFw(obj,outputFldr,only_Algo_Calibration_Info)
+function [EPROMtable,ConfigTable,CbufXsections,DiggGammaTable] = generateTablesForFw(obj,outputFldr,only_Algo_Calibration_Info,skip_algo_thermal_calib)
 if ~exist('only_Algo_Calibration_Info','var')
     only_Algo_Calibration_Info = 0;
+end
+if ~exist('skip_algo_thermal_calib','var')
+    skip_algo_thermal_calib = 0;
 end
 
 
@@ -50,8 +53,9 @@ if(exist('outputFldr','var'))
     
     
     obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,['FRMW_tmpTrans_Info'  '.bin']),true);
-    obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,['Algo_Thermal_Loop_CalibInfo' postfix 'bin']))
-    
+    if ~skip_algo_thermal_calib
+        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,['Algo_Thermal_Loop_CalibInfo' postfix 'bin']))
+    end
 end
 end
 

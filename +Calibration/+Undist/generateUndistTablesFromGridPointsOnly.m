@@ -1,4 +1,4 @@
-function [udistLUT,undistx,undisty]=generateUndistTablesFromGridPointsOnly(regs)
+function [udistLUT,undistx,undisty]=generateUndistTablesFromGridPointsOnly(regs,undistTpsModel)
 % (To add) 2D Undist - 
 % function [udistLUT,undistx,undisty]=generateUndistTablesFromGridPointsOnly(regs,runParams)
 wh=double([regs.GNRL.imgHsize,regs.GNRL.imgVsize]);
@@ -15,8 +15,8 @@ fy = single(regs.DIGG.undistFy)/(2^shift);
 % transform angles as reported by MC to final XY (using correct transformations)
 [angxPostPolyUndist,angyPostPolyUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(angxg,angyg,regs);
 v = Calibration.aux.ang2vec(angxPostPolyUndist,angyPostPolyUndist,regs);
-% (To add) 2D Undist - 
-% v = Calibration.Undist.undistByTPSModel( v,[],runParams );
+v = Calibration.Undist.undistByTPSModel( v',undistTpsModel)';% 2D Undist - 
+
 [xg,yg] = Calibration.aux.vec2xy(v,regs);
 
 undist = [xg-xbug(:),yg-ybug(:)];

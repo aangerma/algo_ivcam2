@@ -285,8 +285,9 @@
     <Parameter1 Name="PZR" />
 	<Parameter2 Name="Index" />
   </Command>
-  <Command Name="ALGO_THERMLOOP_EN" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x59" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Algo Thermal Loop enable">
-    <Parameter1 Name="Update Frequency (times per seconds, 0 for disable)" />
+  <Command Name="ALGO_THERMLOOP_MODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x59" CmdPermission="Public" ReadFormat="Bytes" Description="Algo Thermal Loop Mode Set">
+    <Parameter1 Name="Mode (0 for disable, 1 for dstOffsetOnly, 2 for enable)" />
+    <Parameter2 Name="Update Frequency (times per seconds, 0 for disable)" />
   </Command>
   <Command Name="DPT_INTRINSICS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x5A" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get Depth Intrinsics Coefs">
     <ReadData>

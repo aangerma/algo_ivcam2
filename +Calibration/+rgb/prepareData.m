@@ -6,6 +6,7 @@ function [cbCorners,cornersValid,params] = prepareData(im,rgbs,calibParams)
     captures = captures(find(~strncmpi(captures,'shortRange',10))); % remove shortRange not relvent for RGB calibration 
     cbCorners = cell(length(captures),3);
     cornersValid = zeros(length(captures),1,'logical');
+%     figure
     for i = 1:numel(captures)
         cap = calibParams.dfz.captures.capture(i);
         targetInfo = targetInfoGenerator(cap.target);
@@ -13,11 +14,13 @@ function [cbCorners,cornersValid,params] = prepareData(im,rgbs,calibParams)
         targetInfo.cornersY = 28;
         pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 0);
         cbCorners{i,1} = reshape(pts,[],2);
+%         tabplot; imagesc(im(i).i); hold on, plot(pts(:,:,1),pts(:,:,2),'r*');
         pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(rgbs{i}, 0,1);
         cbCorners{i,2} = reshape(pts,[],2);
         pt3D = create3DCorners(targetInfo)';
         cbCorners{i,3} = pt3D(:,[2 1 3]);
         cornersValid(i) = sum(~isnan(cbCorners{i,1}(:,1))) > 0 && sum(~isnan(cbCorners{i,2}(:,1))) > 0;
+%         tabplot; imagesc(rgbs{i}); hold on, plot(pts(:,:,1),pts(:,:,2),'r*');
     end
     
     params = [];

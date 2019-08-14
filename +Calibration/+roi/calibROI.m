@@ -1,6 +1,6 @@
 function [roiregs] = calibROI( imU,imD,imNoise,regs,calibParams,runParams)
 % Calibrate the margins of the image.
-% 1. Take a spherical mode image of up direction.
+% 1. Take a spherical mode icmage of up direction.
 % 2. Take a spherical mode image of down direction.
 % 3. Find the horizontal margins where we have no laser for both images.
 % 4. Find the top/bottom margin for both images, the might be slightly
@@ -15,9 +15,9 @@ noiseThresh = max(imNoise(:));
 noiseThresh = noiseThresh*calibParams.roi.noiseMarginFactor;
 %% Get margins for each image
 edgesU = calcBounds(imU,noiseThresh,runParams,regs,'imU');
-marginsU = calcMargins(edgesU,regs);
+marginsU = calcMargins(edgesU,regs,runParams);
 edgesD = calcBounds(imD,noiseThresh,runParams,regs,'imD');
-marginsD = calcMargins(edgesD,regs);
+marginsD = calcMargins(edgesD,regs,runParams);
 
 % As weird as it is, extra margins are consistent with FRMWmargin*.
 % Therefore Top is actually the bottom of the image (in hw.getFrame),
@@ -130,8 +130,14 @@ function xyClose = closest2pointL1(xy,p)
     [~,Imin] = min(sum(abs(double(xy)-double(p)),2));
     xyClose = xy(Imin,:);
 end
-function marginsTBLR = calcMargins(edges,regs)
-ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs); 
+function marginsTBLR = calcMargins(edges,regs,runParams)
+if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
+    load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
+else
+    tpsUndistModel = [];
+end
+
+ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs,tpsUndistModel); 
 edgesXY = structfun(ang2xy,edges,'UniformOutput',false); 
 factor = 0.80;
 marginsTBLR(1) = ceil(max(edgesXY.T(innerIndices(edgesXY.T,factor),2)));
@@ -155,7 +161,7 @@ vlen = size(v,1);
 allInd = 1:vlen;
 ind = allInd(uint16(vlen*(1-factor)/2) :uint16(vlen*(1+factor)/2));
 end
-function xy = spherical2xy(sphericalPixels,regs)
+function xy = spherical2xy(sphericalPixels,regs,tpsUndistModel)
 % angX/angY is translated to xyz using the regs
 % Then the xyz is translated to te cordinate in the image plane. If a fov
 % expander model is valid, 
@@ -171,7 +177,9 @@ function xy = spherical2xy(sphericalPixels,regs)
         angy = single(yy);
         
         [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
-        [x,y] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(angx,angy,regs), regs);
+        v = Calibration.aux.ang2vec(angx,angy,regs);
+        v = Calibration.Undist.undistByTPSModel( v',tpsUndistModel )';% 2D Undist
+        [x,y] = Calibration.aux.vec2xy(v, regs);
         % (To add) 2D Undist - 
         % v = Calibration.Undist.undistByTPSModel( v,[],runParams );
         xy = [x,y];

@@ -1,4 +1,4 @@
-function [outregs,minerr]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0,runParams)
+function [outregs,results,allVertices]=calibDFZ(darr,regs,calibParams,fprintff,verbose,iseval,x0,runParams,tpsUndistModel)
 % When eval == 1: Do not optimize, just evaluate. When it is not there,
 % train.
 
@@ -13,7 +13,9 @@ end
 mode=regs.FRMW.mirrorMovmentMode;
 xfov=regs.FRMW.xfov(mode);
 yfov=regs.FRMW.yfov(mode);
-
+if~exist('tpsUndistModel','var') 
+    tpsUndistModel=[];
+end
 if(~exist('iseval','var') || isempty(iseval))
     iseval=false;
 end
@@ -33,13 +35,17 @@ if(~exist('x0','var') || isempty(x0))% If x0 is not given, using the regs used i
 end
 
 regs = x2regs(x0,regs);
+doCrop = par.calibrateOnCropped;%calibrateOnCropped;
 if iseval
-    [minerr,~]=errFunc(darr,regs,x0,0,runParams);
+    [geomErr,~,allVertices]=errFunc(darr,regs,x0,doCrop,runParams,tpsUndistModel);
+%     [results] = calcLineDistortion(allVertices,par);
+    results.geomErr = geomErr;
+
     outregs = [];
     return
 end
 
-[e,eFit]=errFunc(darr,regs,x0,0);
+[e,eFit]=errFunc(darr,regs,x0,doCrop,[],tpsUndistModel);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 %% Define optimization settings
@@ -49,7 +55,7 @@ opt.TolFun = 1e-6;
 opt.TolX = 1e-6;
 opt.Display ='none';
 
-optFunc = @(x) (errFunc(darr,regs,x,0)); % zenithNorm is omitted, hence zenithNormW is irrelevant
+optFunc = @(x) (errFunc(darr,regs,x,doCrop,[],tpsUndistModel)); % zenithNorm is omitted, hence zenithNormW is irrelevant
 
 %% Optimize DFZ + coarse undist
 optimizedParams = {'DFZ', 'coarseUndist'};
@@ -58,7 +64,7 @@ optimizedParams = {'DFZ', 'coarseUndist'};
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregsPreUndist = x2regs(xbest,regs);
-[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,0);
+[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,doCrop,[],tpsUndistModel);
 
 %% Optimize fine undist correction & FOVex parameters
 x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outregsPreUndist.DEST.txFRQpd(1), outregsPreUndist.FRMW.laserangleH, outregsPreUndist.FRMW.laserangleV,...
@@ -72,16 +78,18 @@ optimizedParams = {'undistCorrHorz', 'fovexLensDist'};
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregs = x2regs(xbest,regs);
-[minerr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,0,runParams); % in debug mode, allVertices should be enabled inside errFunc
+[geomErr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,doCrop,runParams,tpsUndistModel); % in debug mode, allVertices should be enabled inside errFunc
+% [results] = calcLineDistortion(allVertices,par);
+results.geomErr = geomErr;
 
-printErrAndX(xbest,minerr,eFit,'Xfinal:',verbose)
+printErrAndX(xbest,results.geomErr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
 outregs = x2regs(xbest);
 printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist, fprintff)
-printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, minerr, fprintff)
+printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, results.geomErr, fprintff)
 
-printPlaneAng(darr,outregs_full,xbest,fprintff,0,eAll);
-calcScaleError(darr,outregs_full,xbest,fprintff,0,runParams);
+printPlaneAng(darr,outregs_full,xbest,fprintff,0,eAll,tpsUndistModel);
+% calcScaleError(darr,outregs_full,xbest,fprintff,0,runParams,tpsUndistModel);
 %% Do it for each in array
 % if nargout > 3
 %     darrNew = darr;
@@ -98,11 +106,14 @@ calcScaleError(darr,outregs_full,xbest,fprintff,0,runParams);
 end
 
 
-function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams)
+function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams,tpsUndistModel)
     %build registers array
     % X(3) = 4981;
     if ~exist('runParams','var')
         runParams = [];
+    end
+    if ~exist('tpsUndistModel','var')
+        tpsUndistModel = [];
     end
     rtlRegs = x2regs(X,rtlRegs);
     eAll = [];
@@ -115,8 +126,8 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams)
         else
             grid = d.grid;
         end
-        v = calcVerices(d,X,rtlRegs,useCropped);
-        %allVertices{i} = v; % DEBUG: enable only in debugging mode
+        v = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel);
+        allVertices{i} = v; % DEBUG: enable only in debugging mode
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid = 1:numPlanes
@@ -135,7 +146,7 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams)
 end
 
 
-function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped)
+function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel)
     if useCropped
         rpt = d.rptCropped;
     else
@@ -143,6 +154,8 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped)
     end
     [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
     vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs)';
+    vUnit = Calibration.Undist.undistByTPSModel( vUnit,tpsUndistModel);% 2D Undist - 
+
     %vUnit = reshape(vUnit',size(d.rpt));
     %vUnit(:,:,1) = vUnit(:,:,1);
     % Update scale to take margins into acount.
@@ -163,7 +176,7 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped)
 end
 
 
-function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams)
+function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams,tpsUndistModel)
     rtlRegs = x2regs(X,rtlRegs);
     for i = 1:numel(darr)
         d = darr(i);
@@ -174,7 +187,7 @@ function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams)
             grid = d.grid;
             pts = d.pts;
         end
-        v = calcVerices(d,X,rtlRegs,useCropped);
+        v = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel);
         v = reshape(v,[grid(1:2),3]);
         v = Calibration.aux.CBTools.slimNans(v);
         pts = Calibration.aux.CBTools.slimNans(pts);
@@ -186,11 +199,13 @@ function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams)
         imSize  = fliplr(size(d.i));
         [yg,xg]=ndgrid(0:imSize(2)-1,0:imSize(1)-1);
         
-        
-        
-        F = scatteredInterpolant(vec(ptx(1:end,1:end-1)),vec(pty(1:end,1:end-1)),vec(distX(1:end,:)), 'natural','none');
+        xyDistX = [vec(ptx(1:end,1:end-1)),vec(pty(1:end,1:end-1)),vec(distX(1:end,:))];
+        xyDistX = xyDistX(all(~isnan(xyDistX),2),:);
+        F = scatteredInterpolant(xyDistX(:,1), xyDistX(:,2), xyDistX(:,3), 'natural','none');
         scaleImX = F(xg, yg);
-        F = scatteredInterpolant(vec(ptx(1:end-1,1:end)),vec(pty(1:end-1,1:end)),vec(distY(1:end,:)), 'natural','none');
+        xyDistY = [vec(ptx(1:end-1,1:end)),vec(pty(1:end-1,1:end)),vec(distY(1:end,:))];
+        xyDistY = xyDistY(all(~isnan(xyDistY),2),:);
+        F = scatteredInterpolant(xyDistY(:,1), xyDistY(:,2), xyDistY(:,3), 'natural','none');
         scaleImY = F(xg, yg);
         
         ff = Calibration.aux.invisibleFigure();
@@ -207,7 +222,7 @@ function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams)
 end
 
 
-function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll)
+function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll,tpsUndistModel)
     rtlRegs = x2regs(X,rtlRegs);
     horizAng = zeros(1,numel(darr));
     verticalAngl = zeros(1,numel(darr));
@@ -220,7 +235,7 @@ function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll)
         else
             grid = d.grid;
         end
-        [~,x,y,z] = calcVerices(d,X,rtlRegs,useCropped);
+        [~,x,y,z] = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel);
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid=1:numPlanes
@@ -353,4 +368,70 @@ for iParam = 1:length(optimizedParams)
     end
 end
 fprintff('--> eGeom=%.2f.\n', err)
+end
+
+function [results] = calcLineDistortion(allVertices,DfzCalibParams)
+n = length(allVertices);
+lineFitMaxErrorTotal_h3D = NaN(n,1);
+lineFitRmsErrorTotal_h3D = NaN(n,1);
+lineFitMaxErrorTotal_v3D = NaN(n,1);
+lineFitRmsErrorTotal_v3D = NaN(n,1);
+
+lineFitMaxErrorTotal_h2D = NaN(n,1);
+lineFitRmsErrorTotal_h2D = NaN(n,1);
+lineFitMaxErrorTotal_v2D = NaN(n,1);
+lineFitRmsErrorTotal_v2D = NaN(n,1);
+for k = 1:n
+    v = allVertices{1,k};
+    v2d = reshape(v,20,28,3);
+    cols = any(~isnan(v2d(:,:,1)),1);
+    rows = any(~isnan(v2d(:,:,1)),2);
+    v2d = v2d(rows,cols,:);
+    if any(vec(isnan(v2d(:,:,1))))
+        sumNotNanInRow = sum(~isnan(v2d(:,:,1)),2);
+        [binCounts,~] = histcounts(sumNotNanInRow, max(sumNotNanInRow)-min(sumNotNanInRow)+1);
+        [ixRow, ~] = max(binCounts);
+        rows = sumNotNanInRow >= sumNotNanInRow(ixRow);
+        sumNotNanInCol = sum(~isnan(v2d(:,:,1)),1);
+        [binCounts,~] = histcounts(sumNotNanInCol, max(sumNotNanInCol)-min(sumNotNanInCol)+1);
+        [ixCol, ~] = max(binCounts);
+        cols = sumNotNanInCol >= sumNotNanInCol(ixCol);
+        v2d = v2d(rows,cols,:);
+    end
+    
+    px = v2d(:,:,1);
+    py = v2d(:,:,2);
+    pz = v2d(:,:,3);
+    pts = cat(3,px,py,pz);
+    
+    [lineFitResults3D] = Validation.metrics.get3DlineFitErrors(pts);
+    lineFitMaxErrorTotal_h3D(k) = lineFitResults3D.lineFitMaxErrorTotal_h;
+    lineFitRmsErrorTotal_h3D(k) = lineFitResults3D.lineFitRmsErrorTotal_h;
+    lineFitMaxErrorTotal_v3D(k) = lineFitResults3D.lineFitMaxErrorTotal_v;
+    lineFitRmsErrorTotal_v3D(k) = lineFitResults3D.lineFitRmsErrorTotal_v;
+    
+    pixs = DfzCalibParams.Kfor2dError*reshape(pts,[],3)';
+    pix_x = pixs(1,:)./pixs(3,:);
+    pix_y = pixs(2,:)./pixs(3,:);
+    pts = cat(3,reshape(pix_x,size(px)),reshape(pix_y,size(py)),zeros(size(px)));
+    
+    [lineFitResults2D] = Validation.metrics.get3DlineFitErrors(pts);
+    lineFitMaxErrorTotal_h2D(k) = lineFitResults2D.lineFitMaxErrorTotal_h;
+    lineFitRmsErrorTotal_h2D(k) = lineFitResults2D.lineFitRmsErrorTotal_h;
+    lineFitMaxErrorTotal_v2D(k) = lineFitResults2D.lineFitMaxErrorTotal_v;
+    lineFitRmsErrorTotal_v2D(k) = lineFitResults2D.lineFitRmsErrorTotal_v;
+end
+results.lineFitMeanRmsErrorTotalHoriz3D = nanmean(lineFitRmsErrorTotal_h3D);
+results.lineFitMeanRmsErrorTotalVertic3D = nanmean(lineFitRmsErrorTotal_v3D);
+results.lineFitMaxRmsErrorTotalHoriz3D = nanmax(lineFitRmsErrorTotal_h3D);
+results.lineFitMaxRmsErrorTotalVertic3D = nanmax(lineFitRmsErrorTotal_v3D);
+results.lineFitMaxErrorTotalHoriz3D = nanmax(lineFitMaxErrorTotal_h3D);
+results.lineFitMaxErrorTotalVertic3D = nanmax(lineFitMaxErrorTotal_v3D);
+
+results.lineFitMeanRmsErrorTotalHoriz2D = nanmean(lineFitRmsErrorTotal_h2D);
+results.lineFitMeanRmsErrorTotalVertic2D = nanmean(lineFitRmsErrorTotal_v2D);
+results.lineFitMaxRmsErrorTotalHoriz2D = nanmax(lineFitRmsErrorTotal_h2D);
+results.lineFitMaxRmsErrorTotalVertic2D = nanmax(lineFitRmsErrorTotal_v2D);
+results.lineFitMaxErrorTotalHoriz2D = nanmax(lineFitMaxErrorTotal_h2D);
+results.lineFitMaxErrorTotalVertic2D = nanmax(lineFitMaxErrorTotal_v2D);
 end

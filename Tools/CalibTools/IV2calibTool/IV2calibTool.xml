@@ -16,12 +16,12 @@
    <cb_rgb>1</cb_rgb>
    <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
    <cb_burnConfigurationToDevice>0</cb_burnConfigurationToDevice>
-   <cb_debug>0</cb_debug>
    <cb_pre_calib_validation>1</cb_pre_calib_validation>
    <cb_post_calib_validation>1</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
    <cb_FOVexInstalled>1</cb_FOVexInstalled>
+   <cb_afterAlgo2>0</cb_afterAlgo2>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibXGA</configurationFolder>
    <presetsDefFolder>defaultValues</presetsDefFolder>

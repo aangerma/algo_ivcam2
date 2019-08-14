@@ -34,7 +34,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     
     %% Start stream to load the configuration
     hw.cmd('DIRTYBITBYPASS');
-    hw.cmd('algo_thermloop_en 0');
+    hw.disableAlgoThermalLoop();
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     hw.setPresetControlState(calibParams.gnrl.presetMode);
     hw.startStream(0,runParams.calibRes);
@@ -43,7 +43,7 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     
     %% load EPROM structure suitible for calib version tool 
 
-    [data.regs,eepromRegs,eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams);
+    [data.regs,data.luts,eepromRegs,eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw,1,calibParams,runParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     fprintff('Algo Calib Ldd Temp: %2.2fdeg\n',data.regs.FRMW.dfzCalTmp);
     fprintff('Algo Calib vBias: (%2.2f,%2.2f,%2.2f)\n',data.regs.FRMW.dfzVbias);
@@ -59,8 +59,9 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     maxCoolTime = inf;
     maxHeatTime = calibParams.warmUp.maxWarmUpTime;
     regs = data.regs;
+    luts = data.luts;
     coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % call down
-    calibPassed = Calibration.thermal.ThermalCalib(hw,regs,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxHeatTime,app);
+    calibPassed = Calibration.thermal.ThermalCalib(hw,regs,luts,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxHeatTime,app);
 
         
     fprintff('[!] Calibration ended - ');

@@ -54,6 +54,19 @@ function [dfzRes,allRes,dbg] = DFZCalc(params,frames,runParams,fprintff)
     dfzRes.reprojRmsPix = geomRes.reprojRmsPix;
     dfzRes.reprojZRms = geomRes.reprojZRms;
     dfzRes.irDistanceDrift = geomRes.irDistanceDrift;
+    dfzRes.lineFitMeanRmsErrHoriz3D = allRes.lineFit.lineFitMeanRmsErrorTotalHoriz3D;
+    dfzRes.lineFitMeanRmsErrVertic3D = allRes.lineFit.lineFitMeanRmsErrorTotalVertic3D;
+    dfzRes.lineFitMaxRmsErrHoriz3D = allRes.lineFit.lineFitMaxRmsErrorTotalHoriz3D;
+    dfzRes.lineFitMaxRmsErrVertic3D = allRes.lineFit.lineFitMaxRmsErrorTotalVertic3D;
+    dfzRes.lineFitMaxErrHoriz3D = allRes.lineFit.lineFitMaxErrorTotalHoriz3D;
+    dfzRes.lineFitMaxErrVertic3D = allRes.lineFit.lineFitMaxErrorTotalVertic3D;
+    dfzRes.lineFitMeanRmsErrHoriz2D = allRes.lineFit.lineFitMeanRmsErrorTotalHoriz2D;
+    dfzRes.lineFitMeanRmsErrVertic2D = allRes.lineFit.lineFitMeanRmsErrorTotalVertic2D;
+    dfzRes.lineFitMaxRmsErrHoriz2D = allRes.lineFit.lineFitMaxRmsErrorTotalHoriz2D;
+    dfzRes.lineFitMaxRmsErrVertic2D = allRes.lineFit.lineFitMaxRmsErrorTotalVertic2D;
+    dfzRes.lineFitMaxErrHoriz2D = allRes.lineFit.lineFitMaxErrorTotalHoriz2D;
+    dfzRes.lineFitMaxErrVertic2D = allRes.lineFit.lineFitMaxErrorTotalVertic2D;
+    
     allRes = Validation.aux.mergeResultStruct(allRes,geomRes);
     fprintff('%s: %2.4g\n','eGeom',score);
 end

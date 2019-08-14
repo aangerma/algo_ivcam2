@@ -7,10 +7,10 @@ for i = 1:numel(frames)
    
     ff = Calibration.aux.invisibleFigure; 
     imagesc(frames(i).i); colormap gray;    
-    pCirc = Calibration.DFZ.getCBCircPoints(frames(i).pts,frames(i).grid);
-%     pCircCropped = Calibration.DFZ.getCBCircPoints(frames(i).ptsCropped,frames(i).gridCropped,1);
-    hold on;
-    plot(pCirc(:,1),pCirc(:,2),'r','linewidth',3)
+%     pCirc = Calibration.DFZ.getCBCircPoints(frames(i).pts,frames(i).grid);
+% %     pCircCropped = Calibration.DFZ.getCBCircPoints(frames(i).ptsCropped,frames(i).gridCropped,1);
+%     hold on;
+%     plot(pCirc(:,1),pCirc(:,2),'r','linewidth',3)
 %     hold on 
 %     plot(pCircCropped(:,1),pCircCropped(:,2),'og','linewidth',3)
     hold on

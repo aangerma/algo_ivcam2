@@ -133,7 +133,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(i).i = im(i).i;
         d(i).z = im(i).z;
         
-        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1);
+        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
         if all(isnan(pts(:)))
             error('Error! Checkerboard detection failed on image %d!',i);
         end
@@ -145,34 +145,37 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         
         
         %        d(i).c = im(i).c;
+        [d(i).rpt,pts,colors] = Calibration.aux.samplePointsRtdAdvanced(im(i).z,pts,regs,colors,0,calibParams.dfz.sampleRTDFromWhiteCheckers);
+        
         d(i).pts = pts;
         d(i).grid = grid;
         d(i).pts3d = create3DCorners(targetInfo)';
-        d(i).rpt = Calibration.aux.samplePointsRtd(im(i).z,pts,regs);
+%         d(i).rpt = Calibration.aux.samplePointsRtd(im(i).z,pts,regs);
         
         
-        %{
+        
         imCropped = zeros(size(im(i).i));
         imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
             im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
         %             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
-        ptsCropped = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
+        [ptsCropped,colorsCropped] = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
         gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
 %       [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-        gridCropped(end+1) = 1;
-        %}
+%         gridCropped(end+1) = 1;
         
-        outOfBoxIdxs = pts(:,:,1)< croppedBbox(1) | pts(:,:,1)>(croppedBbox(1)+croppedBbox(3)) | ...
-            pts(:,:,2)<croppedBbox(2) | pts(:,:,2)>(croppedBbox(2)+croppedBbox(4));
-        ptsCropped1 = d(i).pts(:,:,1);
-        ptsCropped2 = d(i).pts(:,:,2);
-        ptsCropped1(outOfBoxIdxs)= NaN;
-        ptsCropped2(outOfBoxIdxs)= NaN;
-        ptsCropped = cat(3,ptsCropped1,ptsCropped2);
+%         
+%         outOfBoxIdxs = pts(:,:,1)< croppedBbox(1) | pts(:,:,1)>(croppedBbox(1)+croppedBbox(3)) | ...
+%             pts(:,:,2)<croppedBbox(2) | pts(:,:,2)>(croppedBbox(2)+croppedBbox(4));
+%         ptsCropped1 = d(i).pts(:,:,1);
+%         ptsCropped2 = d(i).pts(:,:,2);
+%         ptsCropped1(outOfBoxIdxs)= NaN;
+%         ptsCropped2(outOfBoxIdxs)= NaN;
+%         ptsCropped = cat(3,ptsCropped1,ptsCropped2);
         
-        rptCropped  = Calibration.aux.samplePointsRtd(im(i).z,ptsCropped,regs);     
+        rptCropped  = Calibration.aux.samplePointsRtdAdvanced(im(i).z,ptsCropped,regs,colorsCropped,0,calibParams.dfz.sampleRTDFromWhiteCheckers);     
         
         d(i).ptsCropped = ptsCropped;
+        d(i).colorsCropped = colorsCropped;
         d(i).gridCropped = d(i).grid;
         d(i).rptCropped = rptCropped;
     end
@@ -180,20 +183,82 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
     Calibration.DFZ.saveDFZInputImage(d,runParams);
     % dodluts=struct;
     %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
-    if 0 % TEMP: initialize new parameters that are not saved in old recordings
-        regs.FRMW.undistAngHorz=zeros(1,4,'single'); regs.FRMW.undistAngVert=zeros(1,4,'single'); regs.FRMW.fovexNominal=single([0.080740546190841,0.003021202017618,-0.000127636017763,0.000003583535017]); regs.FRMW.fovexExistenceFlag=true; regs.FRMW.fovexLensDistFlag=true; regs.FRMW.fovexRadialK=zeros(1,3,'single'); regs.FRMW.fovexTangentP=zeros(1,2,'single'); regs.FRMW.fovexCenter=zeros(1,2,'single');
-        %calibParams.dfz.fovxRange=[40,80]; calibParams.dfz.fovyRange=[35,65]; calibParams.dfz.zenithxRange=[0,0]; calibParams.dfz.zenithyRange=[0,0]; calibParams.dfz.polyVarRange=[-200;200]*[0,1,0]; calibParams.dfz.pitchFixFactorRange=[-150,150]; calibParams.dfz.undistHorzRange=[-100;100]*ones(1,4); calibParams.dfz.undistVertRange=[-100;100]*ones(1,4); calibParams.dfz.fovexNominalRange=[-1;1]*ones(1,4); calibParams.dfz.fovexRadialRange=[-100;100]*ones(1,3); calibParams.dfz.fovexTangentRange=[-100;100]*ones(1,2); calibParams.dfz.fovexCenterRange=[-100;100]*ones(1,2);
-        calibParams.dfz.delayRange=[5000,5500]; calibParams.dfz.fovxRange=[60,75]; calibParams.dfz.fovyRange=[55,65]; calibParams.dfz.zenithxRange=[0,0]; calibParams.dfz.zenithyRange=[0,0]; calibParams.dfz.polyVarRange=[0;200]*[0,1,0]; calibParams.dfz.pitchFixFactorRange=[-200,100]; calibParams.dfz.undistHorzRange=[-100;100]*ones(1,4); calibParams.dfz.undistVertRange=[-50;50]*ones(1,4); calibParams.dfz.fovexNominalRange=[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]; calibParams.dfz.fovexRadialRange=[-1;1]*ones(1,3); calibParams.dfz.fovexTangentRange=[-1;1]*ones(1,2); calibParams.dfz.fovexCenterRange=[-5;5]*ones(1,2);
-        regs.DEST.txFRQpd=single([1 1 1]*5250); regs.FRMW.xfov=single(67.5)*ones(1,5,'single'); regs.FRMW.yfov=single(60)*ones(1,5,'single'); regs.FRMW.polyVars=single([0,100,0]); regs.FRMW.pitchFixFactor=single(-50);
-        fprintff=@fprintf;
-        runParams.outputFolder='D:\Data\Ivcam2\FOVex\temp';
-    end
-    [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
-    % (To add) 2D Undist - 
-    % tpsModel = createTpsModelFromFrames(...)
-    % evaluateNewModel. Add an argument to calibDFZ so it will use it
     
-    %         calibParams.dfz.pitchFixFactorRange = [0,0];
+    
+        
+    doEval = 0;
+    [dfzRegs,resultsOnCropped,allVerticesCropped] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,[],runParams);
+    x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV,...
+            dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert,...
+            dfzRegs.FRMW.fovexNominal, dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]);        
+    doEval = true; % eval is always on full so no need to calibParams.dfz.doCroppedAreaInCalibDFZ = 0;
+    calibParams.dfz.calibrateOnCropped = 1;
+    [~,resultsEvalOnFullAfterDfzWithCropped,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
+
+    doEval = 0;
+    calibParams.dfz.calibrateOnCropped = 0;
+    [dfzRegs,resultsOnFull,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
+    x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV,...
+            dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert,...
+            dfzRegs.FRMW.fovexNominal, dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]);        
+    calibParams.dfz.calibrateOnCropped = 1;
+    doEval = 1;
+    [~,~,allVerticesCropped] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
+    calibParams.dfz.calibrateOnCropped = 0;
+    
+    rotmatAll = zeros(length(allVerticesCropped),3,3);
+    shiftAll = zeros(length(allVerticesCropped),1,3);
+    meanValAll = zeros(length(allVerticesCropped),1,3);
+    pts1_vFullFromEval = cell(1,length(allVerticesCropped));
+    pts2_vFullFromEval = cell(1,length(allVerticesCropped));
+    for k = 1:length(allVerticesCropped)
+        % Get rid off NaNs
+        v = allVerticesCropped{1,k};
+        v = reshape(v,[d(i).grid,3]);
+        [vNoNanCropped,rows,cols] = Calibration.aux.CBTools.slimNans(v);
+        vNoNanCropped = reshape(vNoNanCropped,[],3);
+        vCheckerCropped = reshape(d(i).pts3d,[d(i).grid,3]);
+        vCheckerCropped = vCheckerCropped(rows,cols,:);
+        vCheckerCropped = reshape(vCheckerCropped,[],3);
+        % Calculate rotation and shift of rigid fit for cropped points
+        [~,~,rotmat,shiftVec, meanVal] = Calibration.aux.rigidFit(vNoNanCropped,vCheckerCropped);
+        rotmatAll(k,:,:) = rotmat;
+        shiftAll(k,:,:) = shiftVec;
+        meanValAll(k,:,:) = meanVal;
+        [pts1_vFullFromEval{k},pts2_vFullFromEval{k}] = Calibration.DFZ.createPtsForPtsModel(allVertices{1,k},d(k).pts3d,meanVal,rotmat,shiftVec,d(i).grid(1:2));
+
+    end
+    pts1_vFullFromEval = cell2mat(pts1_vFullFromEval);
+    pts2_vFullFromEval = cell2mat(pts2_vFullFromEval);
+
+    tpsUndistModel_vFullFromEval= Calibration.Undist.createTpsUndistModel(pts1_vFullFromEval,pts2_vFullFromEval,runParams);
+
+    
+
+    calibParams.dfz.fovxRange = [dfzRegs.FRMW.xfov(1),dfzRegs.FRMW.xfov(1)];
+    calibParams.dfz.fovyRange = [dfzRegs.FRMW.yfov(1),dfzRegs.FRMW.yfov(1)];
+    calibParams.dfz.fovexCenterRange = [dfzRegs.FRMW.fovexCenter;dfzRegs.FRMW.fovexCenter];
+    calibParams.dfz.fovexTangentRange = [dfzRegs.FRMW.fovexTangentP;dfzRegs.FRMW.fovexTangentP];
+    calibParams.dfz.fovexRadialRange = [dfzRegs.FRMW.fovexRadialK;dfzRegs.FRMW.fovexRadialK];
+    calibParams.dfz.fovexNominalRange = [dfzRegs.FRMW.fovexNominal;dfzRegs.FRMW.fovexNominal];
+    calibParams.dfz.undistVertRange = [dfzRegs.FRMW.undistAngVert;dfzRegs.FRMW.undistAngVert];
+    calibParams.dfz.undistHorzRange = [dfzRegs.FRMW.undistAngHorz;dfzRegs.FRMW.undistAngHorz];
+    calibParams.dfz.pitchFixFactorRange = [dfzRegs.FRMW.pitchFixFactor,dfzRegs.FRMW.pitchFixFactor];
+    calibParams.dfz.polyVarRange = [dfzRegs.FRMW.polyVars;dfzRegs.FRMW.polyVars];
+    calibParams.dfz.zenithxRange = [dfzRegs.FRMW.laserangleH,dfzRegs.FRMW.laserangleH];
+    calibParams.dfz.zenithyRange = [dfzRegs.FRMW.laserangleV,dfzRegs.FRMW.laserangleV];
+    
+    
+    doEval = true;
+    [~,resultsDFZcroppedDfzFullTps,~] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
+    doEval = false;
+    [dfzRegs,resultsDFZcroppedDfzFullTpsDfz,allVerticesFinal] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
+    fprintff('eGeom Cropped: %.2g, eGeom Full: %.2g, eGeomFull(DFZ): %.2g, eGeom Full After TPS: %.2g, eGeom Full After TPS and delay optimization: %.2g\n',...
+        resultsOnCropped.geomErr,resultsEvalOnFullAfterDfzWithCropped.geomErr,resultsOnFull.geomErr,resultsDFZcroppedDfzFullTps.geomErr,resultsDFZcroppedDfzFullTpsDfz.geomErr);
+
+    
+    
+    results.geomErr = resultsDFZcroppedDfzFullTpsDfz.geomErr;
     results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
     fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
 %         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
@@ -203,7 +268,8 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         dfzRegs.FRMW.fovexNominal, dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]);
     
     if ~isempty(d(testImages))
-        [~,results.extraImagesGeomErr] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,x0,runParams);
+        [~,dfzResults] = Calibration.aux.calibDFZ(d(testImages),regs,calibParams,fprintff,0,1,x0,runParams,tpsUndistModel_vFullFromEval);
+        results.extraImagesGeomErr = dfzResults.geomErr;
         fprintff('geom error on test set =%.2g\n',results.extraImagesGeomErr);
     else
         results.extraImagesGeomErr = 0;
@@ -235,7 +301,8 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
 %         
 %         results.rtdDiffBetweenPresets = nanmean( d(lrInd).rpt(:,1) - d(srInd).rpt(:,1) );
         d(srInd).rpt(:,1) = d(srInd).rpt(:,1) + results.rtdDiffBetweenPresets;
-        [~,results.shortRangeImagesGeomErr] = Calibration.aux.calibDFZ(d(srInd),regs,calibParams,fprintff,0,1,x0,runParams);
+        [~,dfzResults] = Calibration.aux.calibDFZ(d(srInd),regs,calibParams,fprintff,0,1,x0,runParams,tpsUndistModel_vFullFromEval);
+        results.shortRangeImagesGeomErr = dfzResults.geomErr;
         fprintff('geom error on short range image =%.2g\n',results.shortRangeImagesGeomErr);
         fprintff('Rtd diff between presets =%.2g\n',results.rtdDiffBetweenPresets);
         

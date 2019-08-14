@@ -1,4 +1,4 @@
-function [ pts ] = slimNans( pts )
+function [ pts,rows,cols ] = slimNans( pts )
 
 cols = find(any(~isnan(pts(:,:,1)),1));
 rows = find(any(~isnan(pts(:,:,1)),2));

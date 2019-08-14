@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version,configurationFolder)
+function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,atlregs,results,fnCalib,calibParams,undist_flag,afterAlgo2_flag,version,configurationFolder)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -62,6 +62,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     end
     runParams.outputFolder = g_output_dir;
     runParams.undist = undist_flag;
+    runParams.afterAlgo2 = afterAlgo2_flag;
     runParams.version=version;
     runParams.configurationFolder=configurationFolder; 
     [~,~,versionBytes] = calibToolVersion();
@@ -69,7 +70,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     verValueFull       = uint32(versionBytes(1))*2^16 +uint32(versionBytes(2))*2^8+uint32(versionBytes(3));%0x00020300 
 
     
-    [results ,luts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib, fprintff, calibParams,g_output_dir);    % save output
+    [results ,luts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,atlregs,results,fnCalib, fprintff, calibParams,g_output_dir);    % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn,'results', 'luts');
@@ -79,7 +80,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     end
 end
 
-function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib, fprintff, calibParams,output_dir)
+function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,atlregs,results,fnCalib, fprintff, calibParams,output_dir)
     t = tic;
     %% load inital FW.
 %    fw = Pipe.loadFirmware(internalFolder);
@@ -92,12 +93,14 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     %% set regs from all algo calib
     vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(runParams.version)));
     vregs.FRMW.configVersion = uint32(hex2dec(single2hex(runParams.version)));
-    atlregs.FRMW.atlMinVbias1 = single(1);
-    atlregs.FRMW.atlMaxVbias1 = single(3); 
-    atlregs.FRMW.atlMinVbias2 = single(1);
-    atlregs.FRMW.atlMaxVbias2 = single(3);
-    atlregs.FRMW.atlMinVbias3 = single(1);
-    atlregs.FRMW.atlMaxVbias3 = single(3);
+    if ~runParams.afterAlgo2
+        atlregs.FRMW.atlMinVbias1 = single(1);
+        atlregs.FRMW.atlMaxVbias1 = single(3); 
+        atlregs.FRMW.atlMinVbias2 = single(1);
+        atlregs.FRMW.atlMaxVbias2 = single(3);
+        atlregs.FRMW.atlMinVbias3 = single(1);
+        atlregs.FRMW.atlMaxVbias3 = single(3);
+    end
     fw.setRegs(vregs,fnCalib);
     fw.setRegs(atlregs,fnCalib);
     fw.setRegs(dsmregs,  fnCalib); % DO NOT CHANGE THE ORDER OF THE CALLS TO setRegs
@@ -132,7 +135,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     % write new firmware files to another sub folder
     calibOutput=fullfile(output_dir,'calibOutputFiles');
     mkdirSafe(calibOutput);
-    fw.generateTablesForFw(calibOutput); 
+    fw.generateTablesForFw(calibOutput,0,runParams.afterAlgo2); 
 %     calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));    
 %      fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     

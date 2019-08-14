@@ -18,7 +18,7 @@ end
 tileSize = min(sqrt(sum(diff(pts3d).^2,2)));
 
 %perform rigid fit and find distance from optimal grid
-[err,fitP] = rigidFit(p,pts3d);
+[err,fitP] = Calibration.aux.rigidFit(p,pts3d);
 fitErr = sqrt(sum((p-fitP).^2,2));
 
 % Remove outlier points when we are close to the right solution.
@@ -32,7 +32,7 @@ distMat = @(m) (triu(squareform(pdist(m))));
 emat=abs(distMat(p(valid,:))-distMat(pts3d(valid,:)));
 e = sum(emat(:))*2./numel(emat);
 ptsOut=[];
-[e_dist,fitP] = rigidFit(p(valid,:),pts3d(valid,:));
+[e_dist,fitP] = Calibration.aux.rigidFit(p(valid,:),pts3d(valid,:));
 
 if ~isempty(runParams)
 %     subplot(131);
@@ -103,16 +103,4 @@ return
 % e = sqrt((mean(errVec(in).^2)));
 % %  e=prctile(errVec,85);
 % ptsOut = reshape(ptsOptR'+mean(xyzmes(:,in),2)',size(p,1),size(p,2),3);
-end
-function [e_dist,fitP] = rigidFit(p1,p2)
-% finds optimal rot and translation. Returns the error.
-c = mean(p1,1);
-p1=p1-c;
-p2=p2-mean(p2);
-
-%shift to center, find rotation along PCA
-[u,~,vt]=svd(p1'*p2);
-rotmat=u*vt';
-e_dist = mean(vec(sqrt((sum((p1'-rotmat*p2').^2)))));
-fitP = p2*rotmat'+c; 
 end

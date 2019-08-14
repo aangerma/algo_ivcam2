@@ -10,9 +10,7 @@ tempsForPlot = nan(1,pN);
 timesForPlot = nan(1,pN);
 plotDataI = 1;
 
-tempRunParams=runParams; 
-tempRunParams.calibRes=calibParams.gnrl.calibRes; 
-Calibration.aux.startHwStream(hw,tempRunParams);
+Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
     hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))
@@ -151,7 +149,8 @@ end
 
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
 if isempty(calibParams.gnrl.cbGridSz)
-    pts = reshape(Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1),[],2);
+    [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1);
+    pts = reshape(pts,[],2);
 else
     [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
     if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
@@ -161,7 +160,12 @@ else
 end
 if ~regs.DIGG.sphericalEn
     zIm = single(frame.z)/single(regs.GNRL.zNorm);
-    zPts = interp2(zIm,pts(:,1),pts(:,2));
+    if calibParams.gnrl.sampleRTDFromWhiteCheckers && isempty(calibParams.gnrl.cbGridSz)
+        [zPts,~,~,pts,~] = Calibration.aux.CBTools.valuesFromWhitesNonSq(zIm,reshape(pts,20,28,2),colors,1/8);
+        pts = reshape(pts,[],2);
+    else
+        zPts = interp2(zIm,pts(:,1),pts(:,2));
+    end
     matKi=(regs.FRMW.kRaw)^-1;
     
     u = pts(:,1)-1;
