@@ -56,7 +56,3 @@ def test_validation_DEBUG():
     filePath = r'Avv/tests/iqValidation/debug.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
-
-if __name__ == "__main__":
-    pass
-    # test_validation_robot_regression()
