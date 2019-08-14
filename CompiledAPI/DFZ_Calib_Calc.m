@@ -190,7 +190,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         calibParams.dfz.calibrateOnCropped = 0;
         [dfzRegs,res,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,[],runParams);
         results.geomErr = res.geomErr;        
-
+        tpsUndistModel_vFullFromEval = [];
     else
         
 
