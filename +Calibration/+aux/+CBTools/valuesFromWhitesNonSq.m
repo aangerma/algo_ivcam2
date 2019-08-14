@@ -59,6 +59,16 @@ ptsFromWhite2 = r*(ptsFromWhite2-pts) + pts;
 ptsFromWhite1 = reshape(ptsFromWhite1,[],2);
 ptsFromWhite2 = reshape(ptsFromWhite2,[],2);
 
+ptsFromWhite2(ptsFromWhite2(:,1)<1,1) = 1;
+ptsFromWhite2(ptsFromWhite2(:,1)>size(rtd,2),1) = size(rtd,2);
+ptsFromWhite2(ptsFromWhite2(:,2)<1,1) = 1;
+ptsFromWhite2(ptsFromWhite2(:,2)>size(rtd,1),1) = size(rtd,1);
+
+ptsFromWhite1(ptsFromWhite1(:,1)<1,1) = 1;
+ptsFromWhite1(ptsFromWhite1(:,1)>size(rtd,2),1) = size(rtd,2);
+ptsFromWhite1(ptsFromWhite1(:,2)<1,1) = 1;
+ptsFromWhite1(ptsFromWhite1(:,2)>size(rtd,1),1) = size(rtd,1);
+
 rtdFromWhite = interp2(rtd,ptsFromWhite1(:,1),ptsFromWhite1(:,2))*0.5 + interp2(rtd,ptsFromWhite2(:,1),ptsFromWhite2(:,2))*0.5;
 if ~(sum(~isnan(pts(:))) ==  sum(~isnan(ptsFromWhite1(:)))) || ~(sum(~isnan(pts(:))) ==  sum(~isnan(ptsFromWhite2(:))))
     warning('Failed to get values from white squares. Input valid points ~= input valid points. Removing some corners.');

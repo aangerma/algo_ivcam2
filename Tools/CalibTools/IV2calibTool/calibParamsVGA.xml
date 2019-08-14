@@ -117,8 +117,10 @@
       <dsm></dsm>
       <readRegState>
       </readRegState>
-      
-      
+      <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
+      <validateOnCenter>1</validateOnCenter>
+      <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
+       
    </validationConfig>
    <validationErrRange>
 	<irFillRate>[100,100]</irFillRate>
