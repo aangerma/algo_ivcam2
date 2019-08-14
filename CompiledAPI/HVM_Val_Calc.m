@@ -101,6 +101,7 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
     Metrics = 'dfz';
     params.target.squareSize = calibParams.validationConfig.cbSquareSz;
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;
+    params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
     %average image 
     [dfzRes,allDfzRes,dbg] = Calibration.validation.DFZCalc(params,AvgIm,runParams,fprintff);
     valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);

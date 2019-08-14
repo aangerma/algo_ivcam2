@@ -1,4 +1,4 @@
-function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin,FrameData, sz ,InputPath,calibParams, maxTime2Wait)
+function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  = TemDataFrame_Calc(regs,luts,eepromRegs,eepromBin,FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -72,7 +72,7 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-        save(fn,'regs','eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
+        save(fn,'regs','luts','eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
     end
     height = sz(1);
     width  = sz(2);
@@ -85,7 +85,7 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
         eepromRegs = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
     end
     [regs] = struct_merge(regs , eepromRegs);
-    [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
+    [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,luts,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
@@ -100,8 +100,8 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
         fclose(fid);
     end
 end
-
-function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_int(regs, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
+   
+function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  = TempDataFrame_Calc_int(regs,luts, eepromRegs,FrameData, height,width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -121,6 +121,7 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
     tempTh = calibParams.warmUp.warmUpTh;
     maxTime2WaitSec = maxTime2Wait*60;
     runParams.outputFolder = output_dir;
+    runParams.calibRes = [height,width];
     tableResults = [];
     metrics = [];
     Invalid_Frames = [];
@@ -140,7 +141,7 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
     frame.i = Calibration.aux.average_images(frame.i);
     frame.z = Calibration.aux.average_images(frame.z);
 
-    FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
+    FrameData.ptsWithZ = cornersData(frame,regs,luts,calibParams);
 %    framesData(i) = FrameData;
     
     framesData = acc_FrameData(FrameData);
@@ -195,6 +196,7 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
         
         data = Calibration.thermal.addEGeomToData(data);
         data.dfzRefTmp = Calibration.thermal.recalcRefTempForBetterEGeom(data,calibParams,runParams,fprintff);
+%         data.dfzRefTmp = regs.FRMW.dfzCalTmp;
         [table,tableResults, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
         data.tableResults = tableResults;
         if isempty(table)
@@ -238,12 +240,19 @@ end
 
 
 
-function [ptsWithZ] = cornersData(frame,regs,calibParams)
+function [ptsWithZ] = cornersData(frame,regs,luts,calibParams)
+    sz = size(frame.i);
+    pixelCropWidth = sz.*calibParams.gnrl.cropFactors;
+    frame.i([1:pixelCropWidth(1),round(sz(1)-pixelCropWidth(1)):sz(1)],:) = 0;
+    frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
+    
     if isempty(calibParams.gnrl.cbGridSz)
-        pts = reshape(Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1),[],2);
+        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1);
+        pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
         
     else
+        colors = [];
         [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
             warning('checkerboard not detected. all target must be included in the image');
@@ -275,12 +284,23 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
         
     else
-        rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
+        if isempty(colors)
+            rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
+        else
+            rpt = Calibration.aux.samplePointsRtdAdvanced(frame.z,reshape(pts,20,28,2),regs,colors,0,calibParams.gnrl.sampleRTDFromWhiteCheckers);
+        end
         rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
-        [angxPostUndist,angyPostUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),regs);
-        vUnit = Calibration.aux.ang2vec(angxPostUndist,angyPostUndist,regs)';
-        %vUnit = reshape(vUnit',size(d.rpt));
-        %vUnit(:,:,1) = vUnit(:,:,1);
+        
+        angxQ = rpt(:,2);
+        angyQ = rpt(:,3);
+        [x_,y_] = Pipe.DIGG.ang2xy(angxQ,angyQ,regs,[],[]);
+
+        [x,y] = Pipe.DIGG.undist(x_,y_,regs,luts,[],[]);
+        x = single(x)/2^15; 
+        y = single(y)/2^15; 
+
+        xyIm = [[x,y]-0.5,ones(size(x,1),1)];
+        vUnit = normr(((regs.FRMW.kRaw)\(xyIm'))');
         % Update scale to take margins into acount.
         if regs.DEST.hbaseline
             sing = vUnit(:,1);
@@ -293,19 +313,21 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         ptsWithZ = [rpt,reshape(pts,[],2),v];
         ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
     end
-%     v = ptsWithZ(:,6:8);
-%     if size(v,1) == 20*28
-%         v = reshape(v,20,28,3);
-%         rows = find(any(~isnan(v(:,:,1)),2));
-%         cols = find(any(~isnan(v(:,:,1)),1));
-%         grd = [numel(rows),numel(cols)];
-%         v = reshape(v(rows,cols,:),[],3);
-%     else
-%         grd = [9,13];
+    v = ptsWithZ(:,6:8);
+    if size(v,1) == 20*28
+        v = reshape(v,20,28,3);
+        rows = find(any(~isnan(v(:,:,1)),2));
+        cols = find(any(~isnan(v(:,:,1)),1));
+        grd = [numel(rows),numel(cols)];
+        v = reshape(v(rows,cols,:),[],3);
+    else
+        grd = [9,13];
+    end
+    [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
+    fprintf('eGeom - %2.2f\n',eGeom);
+%     if isnan(eGeom)
+%        eGeom 
 %     end
-%     [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
-%     fprintf('eGeom - %2.2f\n',eGeom);
-    
 end
 
 function [merged] = struct_merge(merged , new )

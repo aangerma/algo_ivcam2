@@ -79,10 +79,11 @@ end
 function [roiRegs,results,fovData] = ROI_Calib_Calc_int(InputPath, calibParams, ROI_regs,runParams,results)
     width = ROI_regs.GNRL.imgHsize;
     hight = ROI_regs.GNRL.imgVsize;
-    [imUbias,imDbias,imNoise] = GetROIImages(InputPath,width,hight);
-     results.ambVal = mean(vec(imNoise(size(imNoise,1)/2-10:size(imNoise,1)/2+10, size(imNoise,2)/2-10:size(imNoise,2)/2+10)));
-    [roiRegs] = Calibration.roi.calibROI(imUbias,imDbias,imNoise,ROI_regs,calibParams,runParams);
-    fovData = Calibration.validation.calculateFOV(imUbias,imDbias,imNoise,ROI_regs,calibParams);
+    [imUbias,imDbias] = GetROIImages(InputPath,width,hight);
+    fn = fullfile(runParams.outputFolder, 'mat_files' , 'ROI_im.mat');
+        save(fn,'imUbias','imDbias','ROI_regs','calibParams','runParams');
+    [roiRegs] = Calibration.roi.calibROIFromZ(imUbias,imDbias,ROI_regs,calibParams,runParams);
+    fovData = Calibration.validation.calculateFOVFromZ(imUbias,imDbias,ROI_regs,calibParams,runParams);
     results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
 end
 
@@ -120,19 +121,17 @@ function  [ROIregs] = ConvertROIReg(regs)
 
 end
 
-function [imUbias,imDbias,imNoise] = GetROIImages(InputPath,width,hight)
-    path_up     = fullfile(InputPath,'IR_up');
-    path_down   = fullfile(InputPath,'IR_down');
-    path_noise  = fullfile(InputPath,'IR_Noise');
-    imUbias = Calibration.aux.GetFramesFromDir(path_up,width, hight,'I');
-    imDbias = Calibration.aux.GetFramesFromDir(path_down,width, hight,'I');
-    imNoise = Calibration.aux.GetFramesFromDir(path_noise,width, hight,'I');
-    imUbias = Calibration.aux.average_images(imUbias);
-    imDbias = Calibration.aux.average_images(imDbias);
-    imNoise = Calibration.aux.average_images(imNoise);
+function [imUbias,imDbias] = GetROIImages(InputPath,width,hight)
+    path_up     = fullfile(InputPath,'ZIR_up');
+    path_down   = fullfile(InputPath,'ZIR_down');
+    imUbias.i = Calibration.aux.GetFramesFromDir(path_up,width, hight,'I');
+    imUbias.z = Calibration.aux.GetFramesFromDir(path_up,width, hight,'Z');
+    imDbias.i = Calibration.aux.GetFramesFromDir(path_down,width, hight,'I');
+    imDbias.z = Calibration.aux.GetFramesFromDir(path_down,width, hight,'Z');
+        
     global g_output_dir g_save_input_flag; 
     if g_save_input_flag % save 
         fn = fullfile(g_output_dir, 'mat_files' , 'ROI_im.mat');
-        save(fn,'imUbias', 'imDbias','imNoise');
+        save(fn,'imUbias', 'imDbias');
     end
 end

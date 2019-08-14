@@ -1,20 +1,26 @@
-function [ results ] = calculateFOV( imU,imD,imNoise,regs,calibParams )
+function [ results ] = calculateFOV( imU,imD,imNoise,regs,calibParams,runParams )
 noiseThresh = max(imNoise(:));
 noiseThresh = noiseThresh*calibParams.roi.noiseMarginFactor;
 fullIm = imU > 0;
 notNoiseImU = calcLaserBounds(imU,noiseThresh);
 notNoiseImD = calcLaserBounds(imD,noiseThresh);
         
-results.mirror.minMaxAngX = minMaxAngle(imNoise,2,regs);
-results.mirror.minMaxAngY = minMaxAngle(imNoise,1,regs);
-results.laser.minMaxAngXup = minMaxAngle(notNoiseImU,2,regs);
-results.laser.minMaxAngYup = minMaxAngle(notNoiseImU,1,regs);
-results.laser.minMaxAngXdown = minMaxAngle(notNoiseImD,2,regs);
-results.laser.minMaxAngYdown = minMaxAngle(notNoiseImD,1,regs);
+if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
+    load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
+else
+    tpsUndistModel = [];
+end
+
+results.mirror.minMaxAngX = minMaxAngle(imNoise,2,regs,tpsUndistModel);
+results.mirror.minMaxAngY = minMaxAngle(imNoise,1,regs,tpsUndistModel);
+results.laser.minMaxAngXup = minMaxAngle(notNoiseImU,2,regs,tpsUndistModel);
+results.laser.minMaxAngYup = minMaxAngle(notNoiseImU,1,regs,tpsUndistModel);
+results.laser.minMaxAngXdown = minMaxAngle(notNoiseImD,2,regs,tpsUndistModel);
+results.laser.minMaxAngYdown = minMaxAngle(notNoiseImD,1,regs,tpsUndistModel);
     
 
 end
-function angles = minMaxAngle(spBinIm,axis,regs)
+function angles = minMaxAngle(spBinIm,axis,regs,tpsUndistModel)
 if axis == 1 % Y angle
     xp = regs.GNRL.imgHsize/2;
     ymin = find(spBinIm(:,xp),1);
@@ -41,8 +47,7 @@ angy = single(yy);
 
 [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
 vUnit = Calibration.aux.ang2vec(angx,angy,regs);
-% (To add) 2D Undist - 
-% v = Calibration.Undist.undistByTPSModel( v',[],runParams )';
+vUnit = Calibration.Undist.undistByTPSModel( vUnit',tpsUndistModel )';% 2D Undist, transpose because input is 3xN and function expects Nx3
 if axis == 1 % y angle
     angles = atand(vUnit(2,:)./vUnit(3,:));
 else % x angles

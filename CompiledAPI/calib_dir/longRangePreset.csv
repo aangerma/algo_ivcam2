@@ -1,37 +1,37 @@
-name,type,value,
-bias_factor,single,1,No change from default
-bias_offset,single,0,No change from default
-modulation_ref_factor_1,single,0,No change from default (start with 0 for calibration)
-modulation_ref_factor_2,single,0,No change from default (start with 0 for calibration)
-pulse_width_ctrl,uint8,0,Change for L520
-snubber_cap_control,uint8,31,Change for L520
-snubber_res_control,uint8,31,Change for L520
-Gain_Trim,uint8,0,Change from script
-SigPath_LFC,uint8,1,Change for L520
-Amb_Dis,uint8,0,No change from default
-cmpratesel,uint8,2,Change for L520
-cmppeak,uint8,0,Change for L520
+name,type,value
+bias_factor,single,1
+bias_offset,single,0
+modulation_ref_factor_1,single,1
+modulation_ref_factor_2,single,1
+pulse_width_ctrl,uint8,18
+snubber_cap_control,uint8,26
+snubber_res_control,uint8,11
+Gain_Trim,uint8,0
+SigPath_LFC,uint8,0
+Amb_Dis,uint8,0
+cmpratesel,uint8,0
+cmppeak,uint8,3
 coarse_masking_min,uint16,0
 coarse_masking_max,uint16,0
-bpfEn,uint8,0,No change from default
-bpfCutoff,uint8,0,No change from default
-bpfGain,uint8,0,No change from default
-lpfEn,uint8,1,No change from default
-lpfGain,uint8,2,FW to duplicate
-lpfCutOff,uint8,7,"Change for L520, FW to duplicate"
-ampdet_RateSel,uint8,2,Change for L520
-DESTconfactIn,uint32,135399843,"Algo, no change for L520"
-DESTconfactOt,uint32,16776946,"Algo, no change for L520"
-DESTconfq,uint16,1,"Algo, no change for L520"
-DESTconfw1,uint32,2131099648,"Algo, no change for L520"
-DESTconfw2,uint32,0,"Algo, no change for L520"
-DESTconfIRbitshift,uint8,6,"Algo, no change for L520"
-DESTconfv,uint32,0,"Algo, no change for L520"
-JFILinvConfThr,uint8,3,"Algo, no change for L520"
-JFILinvMinMax,uint32,4294902560,"Algo, no change for L520"
-VBROffset,single,18,Change for L520
-AlgoThermalLoopScale,single,0,"Algo, no change for L520"
-AlgoThermalLoopOffset,single,0,"Algo, no change for L520"
+bpfEn,uint8,0
+bpfCutoff,uint8,0
+bpfGain,uint8,0
+lpfEn,uint8,1
+lpfGain,uint8,2
+lpfCutOff,uint8,2
+ampdet_RateSel,uint8,0
+DESTconfactIn,uint32,135399843
+DESTconfactOt,uint32,16776946
+DESTconfq,uint16,1
+DESTconfw1,uint32,2131099648
+DESTconfw2,uint32,0
+DESTconfIRbitshift,uint8,6
+DESTconfv,uint32,0
+JFILinvConfThr,uint8,3
+JFILinvMinMax,uint32,4294901760
+VBROffset,single,9
+AlgoThermalLoopScale,single,0
+AlgoThermalLoopOffset,single,0
 JFILgammaScale,uint32,67109888
 JFILgammaShift,uint32,0
 DESTrxPWRpdLUTfactor,uint32,1048816

@@ -697,8 +697,8 @@ classdef HWinterface <handle
             split = strsplit(ma{1});
             StrapState = split{2};
             unitType = mod(hex2dec(StrapState(end-3)),4);
-            assert(any(unitType == [0,3]),sprintf('StrapState bits 13-12 should be either 10 or 11. Can not identify unit type. %s',StrapState));
-            isId = unitType == 3;
+            isId = 1;
+
         end
         function v=getSerial(obj)
             [~,v]=obj.cmd('ERB 210 8');
@@ -709,6 +709,21 @@ classdef HWinterface <handle
                 v = v(1:8);
             end
         end
+        function disableAlgoThermalLoop(obj)
+           obj.cmd('ALGO_THERMLOOP_MODE_SET 0 10');
+        end
+        function enableAlgoThermalLoop(obj,onlyRtd)
+           if ~exist('onlyRtd','var')
+                onlyRtd = 0;
+           end
+           if onlyRtd
+               obj.cmd('ALGO_THERMLOOP_MODE_SET 1 10');
+           else
+               obj.cmd('ALGO_THERMLOOP_MODE_SET 2 10');
+           end
+           
+        end
+
         function displayStream(obj)
             f=figure('numbertitle','off','menubar','none');
             t = timer;

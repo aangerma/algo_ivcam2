@@ -5,5 +5,6 @@
    <cb_manualCaptures>0</cb_manualCaptures>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <calibRes>[768,1024]</calibRes>
+   <configurationFolder>releaseConfigCalibXGA</configurationFolder>
    <toolName>IV2 Thermal Calibration Tool</toolName>
 </struct>

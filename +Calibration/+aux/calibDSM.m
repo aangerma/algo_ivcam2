@@ -45,7 +45,9 @@ function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
         pause(10);
 %         hw = HWinterface();
         hw.cmd('DIRTYBITBYPASS');
-        hw.cmd('ALGO_THERMLOOP_EN 0');
+        if ~runParams.afterAlgo2
+            hw.disableAlgoThermalLoop();
+        end
         pause(10);
         Calibration.aux.startHwStream(hw,runParams);
         d_pre = hw.getFrame(30); %should be out of verbose so it will always happen (for log)

@@ -1,4 +1,4 @@
-function [calibPassed] = ThermalCalib(hw,regs,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxTime2Wait,app)
+function [calibPassed] = ThermalCalib(hw,regs,luts,eepromRegs,eepromBin,calibParams,runParams,fprintff,maxTime2Wait,app)
 
 %tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
@@ -10,8 +10,7 @@ tempsForPlot = nan(1,pN);
 timesForPlot = nan(1,pN);
 plotDataI = 1;
 
-tempRunParams=runParams; 
-Calibration.aux.startHwStream(hw,tempRunParams);
+Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
     hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))
@@ -20,6 +19,7 @@ if calibParams.gnrl.sphericalMode
     hw.setReg('DESTbaseline$',single(0));
     hw.setReg('DESTbaseline2',single(0));
     hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+    hw.cmd('mwd a00e1890 a00e1894 00000001 // JFILinvBypass');
     hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');    
     hw.shadowUpdate;
 end
@@ -58,7 +58,7 @@ while ~finishedHeating
     path = fullfile(algo2path_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
 %    [result,fd ,table]  = TemDataFrame_Calc(regs, framesData(i),sz, path,calibParams,maxTime2Wait);
-    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,eepromRegs,eepromBin,framesData(i),sz, path,calibParams,maxTime2Wait);
+    [finishedHeating,calibPassed, tableResults,~,~]  = TemDataFrame_Calc(regs,luts,eepromRegs,eepromBin,framesData(i),sz, path,calibParams,maxTime2Wait);
 %    rmdir(path,'s');
 %    finishedHeating = (result~=0);
     

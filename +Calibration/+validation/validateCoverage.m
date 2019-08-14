@@ -1,9 +1,14 @@
-function [score, coverageRes, dbg, frames ] = validateCoverage( hw,isSphericalMode, nCaptures )
+function [score, coverageRes, dbg, frames ] = validateCoverage( hw,isSphericalMode, nCaptures,runParams )
     % validate the IR coverage of the HW
-    
+    if ~exist('runParams','var')
+        runParams = [];
+    end
     % handle missing inputs
     if ~exist('isSphericalMode','var') || isempty(isSphericalMode)
         isSphericalMode = true;
+    sphericalmode = 'spherical Enable';
+else
+    sphericalmode = 'spherical disable';
     end
     
     if ~exist('nCaptures','var')
@@ -26,12 +31,18 @@ function [score, coverageRes, dbg, frames ] = validateCoverage( hw,isSphericalMo
     [score, coverageRes,dbg] = Validation.metrics.irCoverage(frames);
     dbg.probIm;
     % Save image 
-%     
-%     set(0, 'CurrentFigure', figH)
-%     imagesc(dbg.probIm);
-%     title('Coverage Map');
-%     colormap jet;
-%     colorbar;
+    if ~isempty(runParams)
+		ff = Calibration.aux.invisibleFigure;
+		imagesc(dbg.probIm);
+
+		title(sprintf('Coverage Map %s',sphericalmode)); colormap jet;colorbar;
+		Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage Map %s',sphericalmode),1);
+        ff = Calibration.aux.invisibleFigure();
+        plot(dbg.probImV');
+        title(sprintf('Coverage %s per horizontal slice',sphericalmode));legend('1-H','2','3-C','4','5-L');xlim([0 size(frames(1).i,2)]);
+		Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage %s per horizontal slice',sphericalmode),1);
+    end
+    
     
     
     %clean up hw

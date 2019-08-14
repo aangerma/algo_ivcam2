@@ -16,6 +16,8 @@ function loadDefaults(app)
         return;
     end
     s=xml2structWrapper(app.defaultsFilename);
+    s.configurationFolder = app.configurationFolder;
+    s.calibRes = app.calibRes;
     if ~(exist(s.outputdirectorty,'dir'))
         s.outputdirectorty = 'C:\temp\unitCalib\';
     end
@@ -77,7 +79,8 @@ end
 
 function app=createComponents()
     runParams = xml2structWrapper('IV2ThermalCalibTool.xml');
-    
+    app.configurationFolder = runParams.configurationFolder;
+    app.calibRes = runParams.calibRes;
     
     sz=[640 700];
     % Create figH
@@ -305,6 +308,9 @@ function statrtButton_callback(varargin)
         app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
         runparams.outputFolder=app.outputdirectorty.String;
 
+        runparams.configurationFolder = app.configurationFolder;
+        runparams.calibRes=app.calibRes; 
+        
         
         mkdirSafe(runparams.outputFolder);
         infoFn = fullfile(runparams.outputFolder,'unit_info.txt');

@@ -16,7 +16,8 @@ hw.setReg('DIGGsphericalEn',true);
 hw.setReg('DESTdepthAsRange',true);
 hw.shadowUpdate();
 
-[outregs,geomErr,~]=calibDFZ(darr,regs,verbose);
+[outregs,results,~]=calibDFZ(darr,regs,verbose);
+geomErr = results.geomErr;
 
 % Return to origin
 hw.setReg('JFILinvBypass',regs.JFIL.invBypass);

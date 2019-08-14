@@ -1,6 +1,6 @@
 function [ tpsUndistModel ] = createTpsUndistModel( points1,points2,runParams )
 %{ 
-his function recieves:
+This function recieves:
 points1 - a 2xN points array. First col should represent a data point 
 points2 - a 2xN values array - the correct values for the data
 

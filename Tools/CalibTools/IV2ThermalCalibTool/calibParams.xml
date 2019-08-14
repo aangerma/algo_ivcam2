@@ -4,18 +4,23 @@
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>
+       <Nof2avg>30</Nof2avg>
+       
        <lddTKill>75</lddTKill>
        <mcTKill>[]</mcTKill>
        <maTKill>[]</maTKill>
        <apdTKill>65</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
-       <cbGridSz>[9,13]</cbGridSz>
+       <cbGridSz>[]</cbGridSz>
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
-       <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
+       <sphericalScaleFactors>[1,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
+       <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
+       <cropFactors>[0.15,0.15]</cropFactors>
    </gnrl>
    <warmUp>
+       <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
        <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->

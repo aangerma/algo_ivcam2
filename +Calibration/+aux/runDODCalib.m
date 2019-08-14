@@ -45,7 +45,8 @@ eProg = zeros(5,iter);
 
 if iter == 0
     
-    [outregs,geomErr,~,~]= Calibration.aux.calibDFZ(dProg{1},regsProg{1},verbose,true);
+    [outregs,results,~,~]= Calibration.aux.calibDFZ(dProg{1},regsProg{1},verbose,true);
+    geomErr = results.geomErr;
     undistModel = [];
     return
 end

@@ -154,7 +154,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 allResults.Validation.(enabledMetrics{i}) = dsmRes;
             elseif strfind(enabledMetrics{i},'coverage')
                 covConfig = calibParams.validationConfig.(enabledMetrics{i});
-                [covScore,allCovRes, dbg,frames] = Calibration.validation.validateCoverage(hw,covConfig.sphericalMode,covConfig.numOfFrames);
+                [covScore,allCovRes, dbg,frames] = Calibration.validation.validateCoverage(hw,covConfig.sphericalMode,covConfig.numOfFrames,runParams);
                 covRes.irCoverage = covScore;
                 fprintff('ir Coverage:  %2.2g\n',covScore);
                 valResults = Validation.aux.mergeResultStruct(valResults, covRes);

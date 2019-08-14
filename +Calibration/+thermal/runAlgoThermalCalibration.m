@@ -64,7 +64,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     end
     
     hw.cmd('DIRTYBITBYPASS');
-    hw.cmd('algo_thermloop_en 0');
+    hw.disableAlgoThermalLoop();
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     hw.setPresetControlState(calibParams.gnrl.presetMode);
     
