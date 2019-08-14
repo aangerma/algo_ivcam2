@@ -12,10 +12,10 @@
        <apdTKill>65</apdTKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
-       <cbGridSz>[9,13]</cbGridSz>
+       <cbGridSz>[]</cbGridSz>
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
-       <sphericalScaleFactors>[1,1.2]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
+       <sphericalScaleFactors>[1,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
        <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
        <cropFactors>[0.15,0.15]</cropFactors>
    </gnrl>

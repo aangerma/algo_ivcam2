@@ -187,14 +187,21 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
     
         
     doEval = 0;
+    calibParams.dfz.calibrateOnCropped = 1;
     [dfzRegs,resultsOnCropped,allVerticesCropped] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,[],runParams);
     x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV,...
             dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert,...
             dfzRegs.FRMW.fovexNominal, dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]);        
-    doEval = true; % eval is always on full so no need to calibParams.dfz.doCroppedAreaInCalibDFZ = 0;
-    calibParams.dfz.calibrateOnCropped = 1;
-    [~,resultsEvalOnFullAfterDfzWithCropped,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
-
+    
+    if calibParams.dfz.calibrateOnlyCropped
+        doEval = true;
+        calibParams.dfz.calibrateOnCropped = 0;
+        [~,resultsEvalOnFullAfterDfzWithCropped,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
+    else
+        doEval = true;
+        calibParams.dfz.calibrateOnCropped = 0;
+        [~,resultsEvalOnFullAfterDfzWithCropped,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
+    end
     doEval = 0;
     calibParams.dfz.calibrateOnCropped = 0;
     [dfzRegs,resultsOnFull,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
@@ -204,7 +211,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
     calibParams.dfz.calibrateOnCropped = 1;
     doEval = 1;
     [~,~,allVerticesCropped] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams);
-    calibParams.dfz.calibrateOnCropped = 0;
+    
     
     rotmatAll = zeros(length(allVerticesCropped),3,3);
     shiftAll = zeros(length(allVerticesCropped),1,3);
@@ -250,8 +257,10 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
     
     
     doEval = true;
+    calibParams.dfz.calibrateOnCropped = 0;
     [~,resultsDFZcroppedDfzFullTps,~] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
     doEval = false;
+    calibParams.dfz.calibrateOnCropped = 0;
     [dfzRegs,resultsDFZcroppedDfzFullTpsDfz,allVerticesFinal] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
     fprintff('eGeom Cropped: %.2g, eGeom Full: %.2g, eGeomFull(DFZ): %.2g, eGeom Full After TPS: %.2g, eGeom Full After TPS and delay optimization: %.2g\n',...
         resultsOnCropped.geomErr,resultsEvalOnFullAfterDfzWithCropped.geomErr,resultsOnFull.geomErr,resultsDFZcroppedDfzFullTps.geomErr,resultsDFZcroppedDfzFullTpsDfz.geomErr);

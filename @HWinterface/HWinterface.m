@@ -709,7 +709,7 @@ classdef HWinterface <handle
                 v = v(1:8);
             end
         end
-        function diableAlgoThermalLoop(obj)
+        function disableAlgoThermalLoop(obj)
            obj.cmd('ALGO_THERMLOOP_MODE_SET 0 10');
         end
         function enableAlgoThermalLoop(obj,onlyRtd)

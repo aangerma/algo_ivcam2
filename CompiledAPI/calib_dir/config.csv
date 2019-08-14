@@ -1,11 +1,11 @@
 GNRLzMaxSubMMExp     h00000002
-FRMWcoarseSampleRate h00000002
+FRMWcoarseSampleRate h00000001
 DIGGnotchBypass      b1       
 RASTbiltAdapt        h00000000
 RASTbiltSharpnessR   h00000002
 RASTbiltSharpnessS   h00000000
 DCORspare_000        f-0.9    
-DCORspare_001        f-30.0   
+DCORspare_001        f-30.0       
 DESTconfactIn        h3FC00000
 DESTconfactOt        h000F0000
 DESTconfq            h00000001
@@ -97,7 +97,7 @@ JFILedge3bypassMode  d0
 JFILgeomBadConf      h1       
 JFILgeomBypass       b0       
 JFILgrad1ConfUpdVal  h1       
-JFILgrad1bypass      b1       
+JFILgrad1bypass      b0       
 JFILgrad2ConfUpdVal  h1       
 JFILgrad2bypass      b0       
 JFILinnBypass        b1       
@@ -110,5 +110,4 @@ JFILsort1Edge01      b1
 JFILsort1Edge03      b1       
 JFILirShadingBypass  b1       
 EXTLconLocOutVDelay  h16b90
-FRMWfovexExistenceFlag b0
-FRMWpllClock         f0.996
+FRMWcbufMargin       ha

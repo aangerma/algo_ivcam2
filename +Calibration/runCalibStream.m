@@ -508,7 +508,6 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         if ~runParams.afterAlgo2
-            fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
             atlregs = struct;
         else
             atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
@@ -521,6 +520,9 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
         fw.setRegs(vregs,'');
         fw.setRegs(atlregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterAlgo2);
+        if ~runParams.afterAlgo2
+            fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
+        end
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
