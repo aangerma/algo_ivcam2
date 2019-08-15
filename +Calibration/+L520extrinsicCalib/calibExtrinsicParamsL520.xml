@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+    <sparkParams>
+        <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
+        <azureFolder>E:\SPARK\iv2-cal-01 (azure.spark@intel.com)</azureFolder>
+        <testMode>ATP</testMode>
+    </sparkParams>
+    <gnrl>
+        <Nof2avg>30</Nof2avg>
+        <originCamera>1</originCamera>
+    </gnrl>
+    <target>
+        <cbSquareSz>30</cbSquareSz>
+        <cbPtsSz>[]</cbPtsSz>
+        <markerSpace>5</markerSpace>
+        <blackMarkers>
+            <markersNum>4</markersNum>
+            <horizontalCBoffset>1</horizontalCBoffset>
+            <verticalCBoffset>12</verticalCBoffset>
+        </blackMarkers>
+        <whiteMarkers>
+            <markersNum>4</markersNum>
+            <horizontalCBoffset>20</horizontalCBoffset>
+            <verticalCBoffset>8</verticalCBoffset>
+        </whiteMarkers>        
+    </target>
+    <errRange>
+    </errRange>
+    
+    
+    
+</struct>
