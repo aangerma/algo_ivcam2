@@ -19,6 +19,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
+    runParams.afterAlgo2 = true;
     
     if noCalibrations(runParams)
         calibPassed = -1;
@@ -54,7 +55,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
     %% Init hw configuration
-    initConfiguration(hw,fw,runParams,fprintff,t);
+    atlregs = initConfiguration(hw,fw,runParams,fprintff,t);
 
     
     hw.cmd('DIRTYBITBYPASS');
@@ -128,7 +129,8 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     dsmregs.EXTL.dsmXoffset = typecast(hw.read('EXTLdsmXoffset'), 'single');
     dsmregs.EXTL.dsmYscale  = typecast(hw.read('EXTLdsmYscale'), 'single');
     dsmregs.EXTL.dsmYoffset = typecast(hw.read('EXTLdsmYoffset'), 'single');
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder);
+    %TODO: verify that END_calib_Calc has everything it needs
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,atlregs,results,fnCalib,calibParams,runParams.undist,runParams.afterAlgo2,runParams.version,runParams.configurationFolder);
     
 %     %% Print image final fov
 %     [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
@@ -286,6 +288,8 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
     % Compare the geometric error between spherical image and regular image
     calibPassed = 1;
     if runParams.pre_calib_validation
+        hw.setReg('JFILinvBypass',true);
+        hw.shadowUpdate;
         regs=fw.get();
         frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
         Calibration.aux.collectTempData(hw,runParams,fprintff,'DFZ validation before reset:');
@@ -309,15 +313,22 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         targetInfo = targetInfoGenerator('Iv2A1');
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
-        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
+        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
+%         [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1,0,0.2, 1);
         grid = [size(pts,1),size(pts,2),1];
         framesSpherical.pts = pts;
         framesSpherical.grid = grid;
         framesSpherical.pts3d = create3DCorners(targetInfo)';
         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs);
-        
-        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
-        
+%         framesSpherical.rpt = Calibration.aux.samplePointsRtdAdvanced(framesSpherical.z,pts,regs,colors,0,1);
+        if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
+            load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
+        else
+            tpsUndistModel = [];
+        end
+        calibParams.dfz.calibrateOnCropped = 0;
+        [~,dfzResults] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1,[],runParams,tpsUndistModel);
+        results.eGeomSphericalEn = dfzResults.geomErr;
         r.reset();
 %         hw.setReg('DIGGsphericalScale',[640,480]);
         hw.shadowUpdate;
@@ -403,29 +414,35 @@ function [verValue,versionFull] = getVersion(hw,runParams)
     versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
 
-function initConfiguration(hw,fw,runParams,fprintff,t)  
+function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
-%         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-%         fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLvAPD|EXTLauxShadow.*$).*',fnAlgoInitMWD);
-%         hw.runPresetScript('maReset');
-%         pause(0.1);
-%         hw.runScript(fnAlgoInitMWD);
-%         pause(0.1);
-%         hw.runPresetScript('maRestart');
-%         pause(0.1);
-%         hw.shadowUpdate();
-%         hw.setUsefullRegs();
-%         fprintff('Done(%ds)\n',round(toc(t)));
-        % Create config calib files
+        eRegs = hw.readAlgoEEPROMtable();
+        if ~runParams.dataDelay
+            vregs.EXTL.conLocDelaySlow = eRegs.EXTL.conLocDelaySlow;
+            vregs.EXTL.conLocDelayFastC = eRegs.EXTL.conLocDelayFastC;
+            vregs.EXTL.conLocDelayFastF = eRegs.EXTL.conLocDelayFastF;
+        end
         fprintff('[-] Burning default config calib files...');
 %         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
 %         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+        if ~runParams.afterAlgo2
+            atlregs = struct;
+        else
+            atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
+            atlregs.FRMW.atlMaxVbias1 = eRegs.FRMW.atlMaxVbias1;
+            atlregs.FRMW.atlMinVbias2 = eRegs.FRMW.atlMinVbias2;
+            atlregs.FRMW.atlMaxVbias2 = eRegs.FRMW.atlMaxVbias2;
+            atlregs.FRMW.atlMinVbias3 = eRegs.FRMW.atlMinVbias3;
+            atlregs.FRMW.atlMaxVbias3 = eRegs.FRMW.atlMaxVbias3;
+        end
         fw.setRegs(vregs,'');
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)),runParams.internalFolder);
+        fw.setRegs(atlregs,'');
+        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterAlgo2);
+	%TODO: verify that generateTablesForFw doesn't miss something because of afterAlgo2 flag
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -588,6 +605,12 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         title(sprintf('Coverage Map %s',sphericalmode)); colormap jet;colorbar;
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage Map %s',sphericalmode));
 
+        ff = Calibration.aux.invisibleFigure;
+        plot(dbg.probImV');
+        
+        title(sprintf('Coverage %s per horizontal slice',sphericalmode));legend('1-H','2','3-C','4','5-L');xlim([0 size(dbg.probIm,2)]);
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage %s per horizontal slice',sphericalmode));
+        
         calibPassed = covResults.irCoverage <= calibParams.errRange.(fname)(2) && ...
             covResults.irCoverage >= calibParams.errRange.(fname)(1);
         

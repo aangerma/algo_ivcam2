@@ -47,7 +47,6 @@
         <vertEdge>[0 inf]</vertEdge>
         <projFovx>[55 65]</projFovx>
         <projFovy>[37 45]</projFovy>
-        <ambVal>[0,255]</ambVal>
         <losMaxP2p>[0 3]</losMaxP2p>
         <losMeanStdX>[0 0.6] </losMeanStdX>
         <losMeanStdY>[0 0.4]</losMeanStdY>
@@ -63,7 +62,7 @@
         <maxRangeScaleModRef_state2>[0 1]</maxRangeScaleModRef_state2>
         <!--<targetDist>[780 820]</targetDist>-->
         <targetDist_state2>[0 inf]</targetDist_state2> <!--In [mm]-->
-        <maxFillRate_state2>[80 100]</maxFillRate_state2>
+        <maxFillRate_state2>[65 100]</maxFillRate_state2>
         <EXTLconLocDelaySlow>[-inf,inf]</EXTLconLocDelaySlow>
         <EXTLconLocDelayFastC>[-inf,inf]</EXTLconLocDelayFastC>
         <EXTLconLocDelayFastF>[-inf,inf]</EXTLconLocDelayFastF>
@@ -91,8 +90,8 @@
         <cbufUnderflow>
         </cbufUnderflow>
         <coverage>
-            <numOfFrames>100</numOfFrames>
-            <sphericalMode>1</sphericalMode>
+            <numOfFrames>50</numOfFrames>
+            <sphericalMode>0</sphericalMode>
         </coverage>
         <sharpness>
             <numOfFrames>30</numOfFrames>
@@ -114,11 +113,13 @@
         <dsm></dsm>
         <readRegState>
         </readRegState>
-        
+        <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
+        <validateOnCenter>1</validateOnCenter>
+        <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
         
     </validationConfig>
     <validationErrRange>
-        <irFillRate>[100,100]</irFillRate>
+        <irFillRate>[99.99,100]</irFillRate>
         <horizontalSharpness>[1 4.8]</horizontalSharpness>
         <verticalSharpness>[1 4.8]</verticalSharpness>
         <temporalNoise>[0.2 10]</temporalNoise>
@@ -139,6 +140,30 @@
         <irCoverage>[80 100]</irCoverage>
         <presetCompareMeanDiff>[-2 2]</presetCompareMeanDiff>
         <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
+        <lineFitMeanRmsErrHor3dReg>[0 inf]</lineFitMeanRmsErrHor3dReg>
+        <lineFitMeanRmsErrVer3dReg>[0 inf]</lineFitMeanRmsErrVer3dReg>
+        <lineFitMaxRmsErrHor3dReg>[0 inf]</lineFitMaxRmsErrHor3dReg>
+        <lineFitMaxRmsErrVer3dReg>[0 inf]</lineFitMaxRmsErrVer3dReg>
+        <lineFitMaxErrHor3dReg>[0 inf]</lineFitMaxErrHor3dReg>
+        <lineFitMaxErrVer3dReg>[0 inf]</lineFitMaxErrVer3dReg>
+        <lineFitMeanRmsErrHor2dReg>[0 inf]</lineFitMeanRmsErrHor2dReg>
+        <lineFitMeanRmsErrVer2dReg>[0 inf]</lineFitMeanRmsErrVer2dReg>
+        <lineFitMaxRmsErrHor2dReg>[0 inf]</lineFitMaxRmsErrHor2dReg>
+        <lineFitMaxRmsErrVer2dReg>[0 inf]</lineFitMaxRmsErrVer2dReg>
+        <lineFitMaxErrHor2dReg>[0 inf]</lineFitMaxErrHor2dReg>
+        <lineFitMaxErrVer2dReg>[0 inf]</lineFitMaxErrVer2dReg>
+        <lineFitMeanRmsErrHor3dWht>[0 inf]</lineFitMeanRmsErrHor3dWht>
+        <lineFitMeanRmsErrVer3dWht>[0 inf]</lineFitMeanRmsErrVer3dWht>
+        <lineFitMaxRmsErrHor3dWht>[0 inf]</lineFitMaxRmsErrHor3dWht>
+        <lineFitMaxRmsErrVer3dWht>[0 inf]</lineFitMaxRmsErrVer3dWht>
+        <lineFitMaxErrHor3dWht>[0 inf]</lineFitMaxErrHor3dWht>
+        <lineFitMaxErrVer3dWht>[0 inf]</lineFitMaxErrVer3dWht>
+        <lineFitMeanRmsErrHor2dWht>[0 inf]</lineFitMeanRmsErrHor2dWht>
+        <lineFitMeanRmsErrVer2dWht>[0 inf]</lineFitMeanRmsErrVer2dWht>
+        <lineFitMaxRmsErrHor2dWht>[0 inf]</lineFitMaxRmsErrHor2dWht>
+        <lineFitMaxRmsErrVer2dWht>[0 inf]</lineFitMaxRmsErrVer2dWht>
+        <lineFitMaxErrHor2dWht>[0 inf]</lineFitMaxErrHor2dWht>
+        <lineFitMaxErrVer2dWht>[0 inf]</lineFitMaxErrVer2dWht>
     </validationErrRange>   
     <thermal>
         <t0>32.8</t0>
@@ -149,9 +174,13 @@
         <stickerLocationIsTop>1</stickerLocationIsTop>
     </scanDir>
     <dfz>
+        <performRegularDFZWithoutTPS>0</performRegularDFZWithoutTPS>
         <shortRangeCompareROI>0.4</shortRangeCompareROI>
-        <sphericalScaleFactors>[1.1406,1.1944]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
-        <cropRatio>[0.2 0.1]</cropRatio>
+        <sphericalScaleFactors>[1.05,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
+        <cropRatio>[0.15 0.1]</cropRatio>
+        <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
+        <Kfor2dError>[439.7540 0 319.5; 0 450.4340 239.5; 0 0 1]</Kfor2dError>
+        <calibrateOnlyCropped>1</calibrateOnlyCropped>
         <captures>
             <!--<capture>
                 <target>Iv2L50</target>
@@ -222,7 +251,7 @@
         <fovexNominalRange>[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]</fovexNominalRange>
         <fovexRadialRange>[-1,-1,-1;1,1,1]</fovexRadialRange>
         <fovexTangentRange>[0,0;0,0]</fovexTangentRange>
-        <fovexCenterRange>[-5,-5;5,5]</fovexCenterRange>
+        <fovexCenterRange>[0,0;0,0]</fovexCenterRange>
     </dfz>
     <roi>
         <useExtraMargins>1</useExtraMargins>  
@@ -230,7 +259,8 @@
         <extraMarginR>7</extraMarginR>  
         <extraMarginT>2</extraMarginT>  
         <extraMarginB>4</extraMarginB>   
-        <noiseMarginFactor>1.2</noiseMarginFactor>    
+        <diskSz>30</diskSz>
+        <zSTDTh>50</zSTDTh>  
     </roi>
     <!--<dest>
         <hBaseline>-31</hBaseline>
@@ -250,7 +280,7 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>97</fillRateTh>                      
+                <fillRateTh>98</fillRateTh>                      
             </state1>
             <state2>
                 <ModRefPresetState>modulation_ref_factor_2</ModRefPresetState>
@@ -258,7 +288,7 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>85</fillRateTh>                        
+                <fillRateTh>70</fillRateTh>                        
             </state2>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
             <estDistTargetReflect>0.8</estDistTargetReflect>-->

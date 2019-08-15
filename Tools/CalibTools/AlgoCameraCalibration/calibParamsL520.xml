@@ -187,6 +187,13 @@
         <polyVarRange>[-200,-200,-200;200,200,200]</polyVarRange>
         <zenithNormW>0.05</zenithNormW>
         <pitchFixFactorRange>[-150,150]</pitchFixFactorRange>
+        <undistHorzRange>[-100,-100,-100,-100;100,100,100,100]</undistHorzRange>
+        <undistVertRange>[-50,-50,-50,-50;50,50,50,50]</undistVertRange>
+        <fovexNominalRange>[0,0,0,0;0,0,0,0]</fovexNominalRange>
+        <fovexRadialRange>[0,0,0;0,0,0]</fovexRadialRange>
+        <fovexTangentRange>[0,0;0,0]</fovexTangentRange>
+        <fovexCenterRange>[0,0;0,0]</fovexCenterRange>
+
     </dfz>
     <roi>
      <useExtraMargins>1</useExtraMargins>  
@@ -196,6 +203,21 @@
      <extraMarginB>4</extraMarginB>   
      <noiseMarginFactor>1.2</noiseMarginFactor>    
    </roi>
+   <presets>
+        <long>
+            <updateCalibVal>0</updateCalibVal>
+            <JFILinvMinMax>4294902560</JFILinvMinMax> <!-- invalidate z below 750mm -->
+            <coarseMaskingRange>[0,0]</coarseMaskingRange><!-- until supported between resolutions -->
+            <JFILgammaScale>67109888</JFILgammaScale>
+            <JFILgammaShift>0</JFILgammaShift>
+        </long>
+        <short>
+            <coarseMaskingRange>[0,0]</coarseMaskingRange>
+            <JFILgammaScale>67109888</JFILgammaScale>
+            <JFILgammaShift>0</JFILgammaShift>
+            <JFILinvMinMax>4294902560</JFILinvMinMax> <!-- invalidate z below  -->
+        </short>
+    </presets>
     <!--<dest>
         <hBaseline>-31</hBaseline>
         <vBaseline>-10</vBaseline>
