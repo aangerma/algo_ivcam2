@@ -1,0 +1,31 @@
+// FA On
+mwd fffe227c 00000000 // Set Fa AMpLoop SwPi Ki to 0
+mwd fffe2280 00000000 // Set Fa AMpLoop SwPi Ki to 0
+mwd fffe087c 101 // Reset FA & PD SwPi
+mwd fffe2508 3F800000 // Set Fa ClFlag in Summation to 1
+wait 1000000          // Wait 1s for Phase Loop to be fully locked
+// (In case FA Amp Loop is En)
+mwd fffe227c 00000000 // Set Fa AMpLoop SwPi Ki to 1
+mwd fffe2280 3FF00000 // Set Fa AMpLoop SwPi Ki to 1
+
+wait 5000000
+
+// SA On
+
+// Disable RegsPmgBlockEn0L.RegsPmgSaCtrlEnL
+mwd fffe1800 1FFF9
+
+// Reset SA SwPi	
+mwd fffe087c 10 
+
+// Wait 500ms
+wait 500000
+
+// Set Sa ClFlag in Summation to 1
+mwd fffe2504 3F800000
+
+// Enable RegsPmgBlockEn0L.RegsPmgSaCtrlEnL
+mwd fffe1800 1FFFD
+// system safe according to JIRA https://rsjira.intel.com/browse/RS5-2718
+wait 3000000
+mwd fffe0894 0
