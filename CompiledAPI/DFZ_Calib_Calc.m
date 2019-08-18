@@ -150,30 +150,19 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(i).pts = pts;
         d(i).grid = grid;
         d(i).pts3d = create3DCorners(targetInfo)';
-%         d(i).rpt = Calibration.aux.samplePointsRtd(im(i).z,pts,regs);
-        
-        
-        
-        imCropped = zeros(size(im(i).i));
-        imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
-            im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
-        %             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
-        [ptsCropped,colorsCropped] = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
-        gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
-%       [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-%         gridCropped(end+1) = 1;
-        
-%         
-%         outOfBoxIdxs = pts(:,:,1)< croppedBbox(1) | pts(:,:,1)>(croppedBbox(1)+croppedBbox(3)) | ...
-%             pts(:,:,2)<croppedBbox(2) | pts(:,:,2)>(croppedBbox(2)+croppedBbox(4));
-%         ptsCropped1 = d(i).pts(:,:,1);
-%         ptsCropped2 = d(i).pts(:,:,2);
-%         ptsCropped1(outOfBoxIdxs)= NaN;
-%         ptsCropped2(outOfBoxIdxs)= NaN;
-%         ptsCropped = cat(3,ptsCropped1,ptsCropped2);
-        
-        rptCropped  = Calibration.aux.samplePointsRtdAdvanced(im(i).z,ptsCropped,regs,colorsCropped,0,calibParams.dfz.sampleRTDFromWhiteCheckers);     
-        
+        outOfBoxIdxs = pts(:,:,1)< croppedBbox(1) | pts(:,:,1)>(croppedBbox(1)+croppedBbox(3)) | ...
+            pts(:,:,2)<croppedBbox(2) | pts(:,:,2)>(croppedBbox(2)+croppedBbox(4));
+        ptsCropped1 = d(i).pts(:,:,1);
+        ptsCropped2 = d(i).pts(:,:,2);
+        ptsCropped1(outOfBoxIdxs)= NaN;
+        ptsCropped2(outOfBoxIdxs)= NaN;
+        ptsCropped = cat(3,ptsCropped1,ptsCropped2);
+        colorsCropped = colors;
+        colorsCropped(outOfBoxIdxs)= NaN;
+        rptCropped = d(i).rpt;
+        rptCropped(outOfBoxIdxs(:),:) = NaN; 
+       
+
         d(i).ptsCropped = ptsCropped;
         d(i).colorsCropped = colorsCropped;
         d(i).gridCropped = d(i).grid;
@@ -232,11 +221,11 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         for k = 1:length(allVerticesCropped)
             % Get rid off NaNs
             v = allVerticesCropped{1,k};
-            v = reshape(v,[d(i).grid,3]);
-            [vNoNanCropped,rows,cols] = Calibration.aux.CBTools.slimNans(v);
-            vNoNanCropped = reshape(vNoNanCropped,[],3);
-            vCheckerCropped = reshape(d(i).pts3d,[d(i).grid,3]);
-            vCheckerCropped = vCheckerCropped(rows,cols,:);
+            notNans = ~isnan(v(:,1));
+            v = v(notNans,:);
+            vNoNanCropped = v;
+            vCheckerCropped = d(i).pts3d;
+            vCheckerCropped = vCheckerCropped(notNans,:);
             vCheckerCropped = reshape(vCheckerCropped,[],3);
             % Calculate rotation and shift of rigid fit for cropped points
             [~,~,rotmat,shiftVec, meanVal] = Calibration.aux.rigidFit(vNoNanCropped,vCheckerCropped);

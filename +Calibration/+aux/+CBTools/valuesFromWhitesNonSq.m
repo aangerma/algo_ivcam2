@@ -70,6 +70,7 @@ ptsFromWhite1(ptsFromWhite1(:,2)<1,1) = 1;
 ptsFromWhite1(ptsFromWhite1(:,2)>size(rtd,1),1) = size(rtd,1);
 
 rtdFromWhite = interp2(rtd,ptsFromWhite1(:,1),ptsFromWhite1(:,2))*0.5 + interp2(rtd,ptsFromWhite2(:,1),ptsFromWhite2(:,2))*0.5;
+colorMap(isnan(pts(:,:,1))) = NaN;
 if ~(sum(~isnan(pts(:))) ==  sum(~isnan(ptsFromWhite1(:)))) || ~(sum(~isnan(pts(:))) ==  sum(~isnan(ptsFromWhite2(:))))
     warning('Failed to get values from white squares. Input valid points ~= input valid points. Removing some corners.');
     doubleNans = (isnan(ptsFromWhite1(:,1)) & isnan(ptsFromWhite2(:,1)));
