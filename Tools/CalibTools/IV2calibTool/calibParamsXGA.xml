@@ -203,7 +203,7 @@
         <cropRatios>[0.15 0.15]</cropRatios>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
         <Kfor2dError>[439.7540 0 319.5; 0 450.4340 239.5; 0 0 1]</Kfor2dError>
-        <calibrateOnlyCropped>1</calibrateOnlyCropped>
+        <calibrateOnlyCropped>0</calibrateOnlyCropped>
         <captures>
             <!--<capture>
                 <target>Iv2L50</target>
