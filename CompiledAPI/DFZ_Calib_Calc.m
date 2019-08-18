@@ -117,13 +117,20 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
     % average image
     nof_secne = numel(captures);
     im = GetDFZImages(nof_secne,InputPath,width,hight);
-    cropRatioX = calibParams.dfz.cropRatio(1);
-    cropRatioY = calibParams.dfz.cropRatio(2);
-    croppedBbox = bbox;
-    croppedBbox(1) = croppedBbox(1) + cropRatioX*croppedBbox(3);
-    croppedBbox(3) = (1-2*cropRatioX)*croppedBbox(3);
-    croppedBbox(2) = croppedBbox(2) + cropRatioY*croppedBbox(4);
-    croppedBbox(4) = (1-2*cropRatioY)*croppedBbox(4);
+    
+    croppedBoxes = zeros(size(calibParams.dfz.cropRatios,1),4);
+    for cropR = 1:size(calibParams.dfz.cropRatios,1)
+        cropRatioX = calibParams.dfz.cropRatios(cropR,1);
+        cropRatioY = calibParams.dfz.cropRatios(cropR,2);
+
+        croppedBbox = bbox;
+        croppedBbox(1) = croppedBbox(1) + cropRatioX*croppedBbox(3);
+        croppedBbox(3) = (1-2*cropRatioX)*croppedBbox(3);
+        croppedBbox(2) = croppedBbox(2) + cropRatioY*croppedBbox(4);
+        croppedBbox(4) = (1-2*cropRatioY)*croppedBbox(4);
+        
+        croppedBoxes(cropR,:) = croppedBbox;
+    end
     %croppedBbox = int32(croppedBbox);
     
     for i = 1:nof_secne
@@ -150,8 +157,14 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(i).pts = pts;
         d(i).grid = grid;
         d(i).pts3d = create3DCorners(targetInfo)';
-        outOfBoxIdxs = pts(:,:,1)< croppedBbox(1) | pts(:,:,1)>(croppedBbox(1)+croppedBbox(3)) | ...
-            pts(:,:,2)<croppedBbox(2) | pts(:,:,2)>(croppedBbox(2)+croppedBbox(4));
+        
+        outOfBoxIdxs = ones(size(pts(:,:,1)));
+        for cropR = 1:size(croppedBoxes,1)
+            outOfCurrBoxIdxs = pts(:,:,1)< croppedBoxes(cropR,1) | pts(:,:,1)>(croppedBoxes(cropR,1)+croppedBoxes(cropR,3)) | ...
+                           pts(:,:,2)<croppedBoxes(cropR,2) | pts(:,:,2)>(croppedBoxes(cropR,2)+croppedBoxes(cropR,4)); 
+            outOfBoxIdxs = outOfBoxIdxs & outOfCurrBoxIdxs;
+        end
+        
         ptsCropped1 = d(i).pts(:,:,1);
         ptsCropped2 = d(i).pts(:,:,2);
         ptsCropped1(outOfBoxIdxs)= NaN;
@@ -167,6 +180,14 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         d(i).colorsCropped = colorsCropped;
         d(i).gridCropped = d(i).grid;
         d(i).rptCropped = rptCropped;
+        %{
+            figure,imagesc(im(i).i);
+            hold on,
+            plot(d(i).ptsCropped(:,:,1),d(i).ptsCropped(:,:,2),'r*');
+            for cropR = 1:size(croppedBoxes,1)
+                rectangle('position',croppedBoxes(cropR,:));
+            end
+        %}
     end
     runParams.outputFolder = OutputDir;
     Calibration.DFZ.saveDFZInputImage(d,runParams);
