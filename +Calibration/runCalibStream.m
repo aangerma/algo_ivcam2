@@ -327,8 +327,11 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         
         
         [dfzRes,~ ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
-        results.eGeomSphericalDis = dfzRes.GeometricError;
-        
+        if calibParams.dfz.sampleRTDFromWhiteCheckers
+            results.eGeomSphericalDis = dfzRes.GeometricErrorWht;
+        else
+            results.eGeomSphericalDis = dfzRes.GeometricErrorReg;
+        end
         targetInfo = targetInfoGenerator('Iv2A1');
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;

@@ -187,7 +187,7 @@
         <shortRangeCompareROI>0.4</shortRangeCompareROI>
         <sphericalScaleFactors>[1.05,1.2]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
         <cropRatio>[0.2 0.1]</cropRatio>
-	<calibrateOnCropped>1</calibrateOnCropped>
+        <calibrateOnCropped>1</calibrateOnCropped>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
         <Kfor2dError>[439.7540 0 319.5; 0 450.4340 239.5; 0 0 1]</Kfor2dError>
         <captures>
@@ -308,7 +308,7 @@
                 <roiCropRect>0</roiCropRect>
                 <maskCenterShift>[0,0]</maskCenterShift>
             </params>
-            <JFILinvMinMax>4294904760</JFILinvMinMax> <!-- invalidate z below 750mm -->
+            <JFILinvMinMax>4294903760</JFILinvMinMax> <!-- invalidate z below 750mm -->
             <coarseMaskingRange>[0,40]</coarseMaskingRange>
             <JFILgammaScale>67109888</JFILgammaScale>
             <JFILgammaShift>0</JFILgammaShift>
