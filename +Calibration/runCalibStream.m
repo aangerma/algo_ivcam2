@@ -29,7 +29,9 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 
     %% Calibration file names
     [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams);
-    runParams = updateRunParamsForCalibrationAfterAlgo2(runParams);
+    if runParams.afterAlgo2
+        runParams = updateRunParamsForCalibrationAfterAlgo2(runParams);
+    end
     fprintff('Starting calibration:\n');
     fprintff('%-15s %s\n','stated at',datestr(now));
     fprintff('%-15s %5.2f.%1.0f\n','version',runParams.version,runParams.subVersion);
