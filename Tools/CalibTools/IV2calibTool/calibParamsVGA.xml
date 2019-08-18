@@ -156,8 +156,10 @@
       <lineFitMaxRmsErrVertic2D>[0 inf]</lineFitMaxRmsErrVertic2D>
       <lineFitMaxErrHoriz2D>[0 inf]</lineFitMaxErrHoriz2D>
       <lineFitMaxErrVertic2D>[0 inf]</lineFitMaxErrVertic2D>
-      <planeFitMeanRmsErr>[0 inf]</planeFitMeanRmsErr>
-      <planeFitMaxErr>[0 inf]</planeFitMaxErr>
+      <planeFitMeanRmsErrWht>[0 inf]</planeFitMeanRmsErrWht>
+      <planeFitMaxErrWht>[0 inf]</planeFitMaxErrWht>
+      <planeFitMeanRmsErrBlck>[0 inf]</planeFitMeanRmsErrBlck>
+      <planeFitMaxErrBlck>[0 inf]</planeFitMaxErrBlck>
   </validationErrRange>   
    <thermal>
        <t0>32.8</t0>

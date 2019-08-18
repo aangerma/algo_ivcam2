@@ -57,13 +57,22 @@ end
 [allResReg] = addPostfixToStructField(allRes1, 'reg');
 [allResWht] = addPostfixToStructField(allRes2, 'Wht');
 
-[~, planeFitRes,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
-dfzRes.planeFitMeanRmsErr = planeFitRes.rmsPlaneFitDist;
-dfzRes.planeFitMaxErr = planeFitRes.maxPlaneFitDist;
+params.sampleZFromWhiteCheckers = 1;
+[~, planeFitResWht,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
+dfzRes.planeFitMeanRmsErrWht = planeFitResWht.rmsPlaneFitDist;
+dfzRes.planeFitMaxErrWht = planeFitResWht.maxPlaneFitDist;
+
+params.sampleZFromWhiteCheckers = 0;
+params.sampleZFromBlackCheckers = 1;
+[~, planeFitResBlck,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
+dfzRes.planeFitMeanRmsErrBlck = planeFitResBlck.rmsPlaneFitDist;
+dfzRes.planeFitMaxErrBlck = planeFitResBlck.maxPlaneFitDist;
+
 
 allRes = Validation.aux.mergeResultStruct(allResReg,allResWht);
 allRes = Validation.aux.mergeResultStruct(allRes,geomRes);
-allRes = Validation.aux.mergeResultStruct(allRes,planeFitRes);
+allRes = Validation.aux.mergeResultStruct(allRes,planeFitResWht);
+allRes = Validation.aux.mergeResultStruct(allRes,planeFitResBlck);
 
 fprintff('%s: %2.4g\n','eGeomReg',score1);
 end
