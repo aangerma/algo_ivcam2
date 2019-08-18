@@ -57,9 +57,15 @@ end
 [allResReg] = addPostfixToStructField(allRes1, 'reg');
 [allResWht] = addPostfixToStructField(allRes2, 'Wht');
 
+[~, planeFitRes,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
+dfzRes.planeFitMeanRmsErr = planeFitRes.rmsPlaneFitDist;
+dfzRes.planeFitMaxErr = planeFitRes.maxPlaneFitDist;
+
 allRes = Validation.aux.mergeResultStruct(allResReg,allResWht);
 allRes = Validation.aux.mergeResultStruct(allRes,geomRes);
-fprintff('%s: %2.4g\n','eGeom',score1);
+allRes = Validation.aux.mergeResultStruct(allRes,planeFitRes);
+
+fprintff('%s: %2.4g\n','eGeomReg',score1);
 end
 
 function rotFrame = rotFrame180(frame)
