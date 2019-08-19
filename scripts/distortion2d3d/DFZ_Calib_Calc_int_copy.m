@@ -99,12 +99,22 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
             end
         %}
     end
+    
+    %% patch for eval ROI
+    for iEvalRoi = 1:length(calibParams.dfz.cropRatiosForEval)
+        croppedBoxesForEval = CropBoxesForEval(bbox, calibParams.dfz.cropRatiosForEval{iEvalRoi});
+        dForEval{iEvalRoi} = CropDarrForEval(d, nof_secne, pts, croppedBoxesForEval, colors);
+    end
+    %%
+    
     %runParams.outputFolder = OutputDir;
     runParams = [];
     Calibration.DFZ.saveDFZInputImage(d,runParams);
     % dodluts=struct;
     %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
-    
+    metricParams.target.squareSize = 30;
+    metricParams.camera.K = calibParams.dfz.Kfor2dError;
+    metricParams.gridSize = [20,28];
     if calibParams.dfz.performRegularDFZWithoutTPS
         
         doEval = 0;
@@ -112,7 +122,21 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
         [dfzRegs,res,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,[],runParams);
         results.geomErr = res.geomErr;        
         results.lineFit = Calibration.aux.calcLineDistortion(allVertices,calibParams.dfz.Kfor2dError);
+        [results.planeFit, results.scaleErr] = CalcPlaneFitAndScaleError(metricParams, allVertices);
         tpsUndistModel_vFullFromEval = [];
+        
+        %% patch for eval ROI
+        x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV,...
+            dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert,...
+            dfzRegs.FRMW.fovexNominal, dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]);
+        doEval = true;
+        calibParams.dfz.calibrateOnCropped = 1;
+        for iEvalRoi = 1:length(dForEval)
+            [~,resForEval{iEvalRoi},allVerticesForEval{iEvalRoi}] = Calibration.aux.calibDFZ(dForEval{iEvalRoi}(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
+            results.geomErrForEval{iEvalRoi} = resForEval{iEvalRoi}.geomErr;
+            results.lineFitForEval{iEvalRoi} = Calibration.aux.calcLineDistortion(allVerticesForEval{iEvalRoi},calibParams.dfz.Kfor2dError);
+            [results.planeFitForEval{iEvalRoi}, results.scaleErrForEval{iEvalRoi}] = CalcPlaneFitAndScaleError(metricParams, allVerticesForEval{iEvalRoi});
+        end
     else
         
 
@@ -207,15 +231,29 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
         else
             calibParams.dfz.calibrateOnCropped = 0;
             [dfzRegs,resultsDFZcroppedDfzFullTpsDfz,allVerticesFinal] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
+            %% patch for eval ROI
+            x0 = double([dfzRegs.FRMW.xfov(1), dfzRegs.FRMW.yfov(1), dfzRegs.DEST.txFRQpd(1), dfzRegs.FRMW.laserangleH, dfzRegs.FRMW.laserangleV,...
+            dfzRegs.FRMW.polyVars, dfzRegs.FRMW.pitchFixFactor, dfzRegs.FRMW.undistAngHorz, dfzRegs.FRMW.undistAngVert,...
+            dfzRegs.FRMW.fovexNominal, dfzRegs.FRMW.fovexRadialK, dfzRegs.FRMW.fovexTangentP, dfzRegs.FRMW.fovexCenter]);
+            doEval = true;
+            calibParams.dfz.calibrateOnCropped = 1;
+            for iEvalRoi = 1:length(dForEval)
+                [~,resultsDFZcroppedDfzFullTpsDfzForEval{iEvalRoi},allVerticesFinalForEval{iEvalRoi}] = Calibration.aux.calibDFZ(dForEval{iEvalRoi}(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
+            end
+            %%
 
         end
          fprintff('eGeom Cropped: %.2g, eGeom Full: %.2g, eGeomFull(DFZ): %.2g, eGeom Full After TPS: %.2g, eGeom Full After TPS and delay optimization: %.2g\n',...
             resultsOnCropped.geomErr,resultsEvalOnFullAfterDfzWithCropped.geomErr,resultsOnFull.geomErr,resultsDFZcroppedDfzFullTps.geomErr,resultsDFZcroppedDfzFullTpsDfz.geomErr);
 
-
-
         results.geomErr = resultsDFZcroppedDfzFullTpsDfz.geomErr;
         results.lineFit = Calibration.aux.calcLineDistortion(allVerticesFinal,calibParams.dfz.Kfor2dError);
+        [results.planeFit, results.scaleErr] = CalcPlaneFitAndScaleError(metricParams, allVerticesFinal);
+        for iEvalRoi = 1:length(dForEval)
+            results.geomErrForEval{iEvalRoi} = resultsDFZcroppedDfzFullTpsDfzForEval{iEvalRoi}.geomErr;
+            results.lineFitForEval{iEvalRoi} = Calibration.aux.calcLineDistortion(allVerticesFinalForEval{iEvalRoi},calibParams.dfz.Kfor2dError);
+            [results.planeFitForEval{iEvalRoi}, results.scaleErrForEval{iEvalRoi}] = CalcPlaneFitAndScaleError(metricParams, allVerticesFinalForEval{iEvalRoi});
+        end
     end
     results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
     fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
@@ -352,4 +390,61 @@ function  DFZRegs = ConvertDFZReg(regs)
 
 
     DFZRegs.MTLB.fastApprox(1)          	= logical(regs.MTLBfastApprox(1));
+end
+
+function croppedBoxesForEval = CropBoxesForEval(bbox, cropRatiosForEval)
+    croppedBoxesForEval = zeros(size(cropRatiosForEval,1),4);
+    for cropR = 1:size(cropRatiosForEval,1)
+        cropRatioX = cropRatiosForEval(cropR,1);
+        cropRatioY = cropRatiosForEval(cropR,2);
+
+        croppedBbox = bbox;
+        croppedBbox(1) = croppedBbox(1) + cropRatioX*croppedBbox(3);
+        croppedBbox(3) = (1-2*cropRatioX)*croppedBbox(3);
+        croppedBbox(2) = croppedBbox(2) + cropRatioY*croppedBbox(4);
+        croppedBbox(4) = (1-2*cropRatioY)*croppedBbox(4);
+        
+        croppedBoxesForEval(cropR,:) = croppedBbox;
+    end
+end
+
+function dForEval = CropDarrForEval(d, nof_secne, pts, croppedBoxesForEval, colors)
+    dForEval = d;
+    for i = 1:nof_secne
+        outOfBoxIdxsForEval = ones(size(pts(:,:,1)));
+        for cropR = 1:size(croppedBoxesForEval,1)
+            outOfCurrBoxIdxs = pts(:,:,1)< croppedBoxesForEval(cropR,1) | pts(:,:,1)>(croppedBoxesForEval(cropR,1)+croppedBoxesForEval(cropR,3)) | ...
+                           pts(:,:,2)<croppedBoxesForEval(cropR,2) | pts(:,:,2)>(croppedBoxesForEval(cropR,2)+croppedBoxesForEval(cropR,4)); 
+            outOfBoxIdxsForEval = outOfBoxIdxsForEval & outOfCurrBoxIdxs;
+        end
+        
+        ptsCropped1 = dForEval(i).pts(:,:,1);
+        ptsCropped2 = dForEval(i).pts(:,:,2);
+        ptsCropped1(outOfBoxIdxsForEval)= NaN;
+        ptsCropped2(outOfBoxIdxsForEval)= NaN;
+        ptsCropped = cat(3,ptsCropped1,ptsCropped2);
+        colorsCropped = colors;
+        colorsCropped(outOfBoxIdxsForEval)= NaN;
+        rptCropped = dForEval(i).rpt;
+        rptCropped(outOfBoxIdxsForEval(:),:) = NaN; 
+       
+        dForEval(i).ptsCropped = ptsCropped;
+        dForEval(i).colorsCropped = colorsCropped;
+        dForEval(i).gridCropped = dForEval(i).grid;
+        dForEval(i).rptCropped = rptCropped;
+    end
+end
+
+function [resultsPlaneFitForEval, resultsScaleErrForEval] = CalcPlaneFitAndScaleError(metricParams, allVerticesFinalForEval)
+    n = length(allVerticesFinalForEval);
+    for iIm = 1:n
+        [~, planeFitForEval{iIm}, ~] = Validation.metrics.planeFitOnCorners([], metricParams, allVerticesFinalForEval{iIm});
+        [~, scaleErrForEval{iIm}, ~] = Validation.metrics.gridInterDist([], metricParams, allVerticesFinalForEval{iIm});
+    end
+    resultsPlaneFitForEval.rmsPlaneFitDist = nanmean(cellfun(@(x) x.rmsPlaneFitDist, planeFitForEval));
+    resultsPlaneFitForEval.maxPlaneFitDist = nanmean(cellfun(@(x) x.maxPlaneFitDist, planeFitForEval));
+    resultsScaleErrForEval.meanHorzScaleError = nanmean(cellfun(@(x) x.meanHorzScaleError, scaleErrForEval));
+    resultsScaleErrForEval.meanAbsHorzScaleError = nanmean(cellfun(@(x) x.meanAbsHorzScaleError, scaleErrForEval));
+    resultsScaleErrForEval.meanVertScaleError = nanmean(cellfun(@(x) x.meanVertScaleError, scaleErrForEval));
+    resultsScaleErrForEval.meanAbsVertScaleError = nanmean(cellfun(@(x) x.meanAbsVertScaleError, scaleErrForEval));
 end
