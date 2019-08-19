@@ -15,7 +15,6 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         fprintff('[-] Validation...\n');
         hw = HWinterface();
         hw.cmd('DIRTYBITBYPASS');
-
          if (any(contains(enabledMetrics,'presetsCompare')))
              % change pckr value for preset comparison
               newRegVal=single([1,1.5,1,1.5,1,1.5]);
@@ -25,6 +24,10 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         fprintff('opening stream...');
         hw.startStream(0,runParams.calibRes); 
         hw.getFrame;
+        if (strcmp(runParams.configurationFolder,'releaseConfigCalibL520'))
+            fprintff('\n L520 changing modRef to 0 \n');
+            Calibration.aux.RegistersReader.setModRef(hw,0); 
+        end 
         hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
         hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
         hw.shadowUpdate;
