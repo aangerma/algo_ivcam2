@@ -173,6 +173,14 @@
         <planeFitMaxErrWht>[0 inf]</planeFitMaxErrWht>
         <planeFitMeanRmsErrBlck>[0 inf]</planeFitMeanRmsErrBlck>
         <planeFitMaxErrBlck>[0 inf]</planeFitMaxErrBlck>
+        <meanHorzScaleErrorReg>[-inf inf]</meanHorzScaleErrorReg>
+        <meanAbsHorzScaleErrorReg>[0 inf]</meanAbsHorzScaleErrorReg>
+        <meanVertScaleErrorReg>[-inf inf]</meanVertScaleErrorReg>
+        <meanAbsVertScaleErrorReg>[0 inf]</meanAbsVertScaleErrorReg>
+        <meanHorzScaleErrorWht>[-inf inf]</meanHorzScaleErrorWht>
+        <meanAbsHorzScaleErrorWht>[0 inf]</meanAbsHorzScaleErrorWht>
+        <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
+        <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
     </validationErrRange>   
     <thermal>
         <t0>32.8</t0>

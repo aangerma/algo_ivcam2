@@ -39,6 +39,11 @@ dfzRes.lineFitMaxRmsErrHor2dReg = allRes1.lineFit.lineFitMaxRmsErrorTotalHoriz2D
 dfzRes.lineFitMaxRmsErrVer2dReg = allRes1.lineFit.lineFitMaxRmsErrorTotalVertic2D;
 dfzRes.lineFitMaxErrHor2dReg = allRes1.lineFit.lineFitMaxErrorTotalHoriz2D;
 dfzRes.lineFitMaxErrVer2dReg = allRes1.lineFit.lineFitMaxErrorTotalVertic2D;
+
+dfzRes.meanHorzScaleErrorReg = allRes1.meanHorzScaleError;
+dfzRes.meanAbsHorzScaleErrorReg = allRes1.meanAbsHorzScaleError;
+dfzRes.meanVertScaleErrorReg = allRes1.meanVertScaleError;
+dfzRes.meanAbsVertScaleErrorReg = allRes1.meanAbsVertScaleError;
 if params.sampleZFromWhiteCheckers
     dfzRes.GeometricErrorWht = score2;
     
@@ -54,6 +59,11 @@ if params.sampleZFromWhiteCheckers
     dfzRes.lineFitMaxRmsErrVer2dWht = allRes2.lineFit.lineFitMaxRmsErrorTotalVertic2D;
     dfzRes.lineFitMaxErrHor2dWht = allRes2.lineFit.lineFitMaxErrorTotalHoriz2D;
     dfzRes.lineFitMaxErrVer2dWht = allRes2.lineFit.lineFitMaxErrorTotalVertic2D;
+    
+    dfzRes.meanHorzScaleErrorWht = allRes2.meanHorzScaleError;
+    dfzRes.meanAbsHorzScaleErrorWht = allRes2.meanAbsHorzScaleError;
+    dfzRes.meanVertScaleErrorWht = allRes2.meanVertScaleError;
+    dfzRes.meanAbsVertScaleErrorWht = allRes2.meanAbsVertScaleError;
 end
 [allResReg] = addPostfixToStructField(allRes1, 'reg');
 [allResWht] = addPostfixToStructField(allRes2, 'Wht');
