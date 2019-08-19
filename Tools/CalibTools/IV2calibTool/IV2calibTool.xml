@@ -6,14 +6,14 @@
    <cb_DSM>1</cb_DSM>
    <cb_gamma>0</cb_gamma>
    <cb_dataDelay>0</cb_dataDelay>
-   <cb_scanDir>0</cb_scanDir>
+   <cb_scanDir>1</cb_scanDir>
    <cb_minRangePreset>1</cb_minRangePreset>
    <cb_maxRangePreset>1</cb_maxRangePreset>
-   <cb_validateLOS>0</cb_validateLOS>
+   <cb_validateLOS>1</cb_validateLOS>
    <cb_DFZ>1</cb_DFZ>
    <cb_ROI>1</cb_ROI>
    <cb_undist>1</cb_undist>
-   <cb_rgb>0</cb_rgb>
+   <cb_rgb>1</cb_rgb>
    <cb_burnCalibrationToDevice>1</cb_burnCalibrationToDevice>
    <cb_burnConfigurationToDevice>0</cb_burnConfigurationToDevice>
    <cb_pre_calib_validation>1</cb_pre_calib_validation>
