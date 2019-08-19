@@ -99,8 +99,6 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
     AvgIm.z = Calibration.aux.average_images(im.z);
 %% DFZ
     Metrics = 'dfz';
-    params.camera.K = getKMat(hw);
-    params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
     params.target.squareSize = calibParams.validationConfig.target.cbSquareSz;
     params.target.name = calibParams.validationConfig.target.name;
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;

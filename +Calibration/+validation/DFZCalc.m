@@ -99,9 +99,9 @@ end
 function [] = saveFigs(dbg,runParams,params,imSize,prefixStr)
 ff = Calibration.aux.invisibleFigure();
 imagesc(dbg.ir);
-pCirc = Calibration.DFZ.getCBCircPoints(dbg.gridPoints,dbg.gridSize);
+% pCirc = Calibration.DFZ.getCBCircPoints(dbg.gridPoints,dbg.gridSize);
 hold on;
-plot(pCirc(:,1),pCirc(:,2),'r','linewidth',2);
+% plot(pCirc(:,1),pCirc(:,2),'r','linewidth',2);
 hold off
 title(sprintf('Validation interDist image: Grid=[%d,%d] %s',dbg.gridSize(1),dbg.gridSize(2),prefixStr));
 Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',['GridInterdistImage' prefixStr],1);
