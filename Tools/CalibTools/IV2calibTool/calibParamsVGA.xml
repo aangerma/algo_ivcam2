@@ -78,7 +78,6 @@
       For running the same metric more then once add <metric_name>_n, for example:
       <roi_2></roi_2>
       -->
-      <cbSquareSz>30</cbSquareSz>
       <cbGridSz>[]</cbGridSz>
       <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
       <wait>
@@ -120,7 +119,10 @@
       <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
       <validateOnCenter>1</validateOnCenter>
       <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
-      <target>Iv2A1</target>
+      <target>
+            <name>Iv2A1</name>
+            <cbSquareSz>30</cbSquareSz>
+        </target>
       <gidMaskIsRoiRect>1</gidMaskIsRoiRect>
       <plainFitMaskIsRoiRect>1</plainFitMaskIsRoiRect>
    </validationConfig>

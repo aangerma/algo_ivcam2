@@ -99,9 +99,14 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
     AvgIm.z = Calibration.aux.average_images(im.z);
 %% DFZ
     Metrics = 'dfz';
-    params.target.squareSize = calibParams.validationConfig.cbSquareSz;
+    params.camera.K = getKMat(hw);
+    params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
+    params.target.squareSize = calibParams.validationConfig.target.cbSquareSz;
+    params.target.name = calibParams.validationConfig.target.name;
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;
     params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
+    params.plainFitMaskIsRoiRect = calibParams.validationConfig.plainFitMaskIsRoiRect;
+    params.gidMaskIsRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;
     %average image 
     [dfzRes,allDfzRes,dbg] = Calibration.validation.DFZCalc(params,AvgIm,runParams,fprintff);
     valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
