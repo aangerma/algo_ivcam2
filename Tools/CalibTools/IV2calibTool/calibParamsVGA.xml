@@ -120,7 +120,9 @@
       <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
       <validateOnCenter>1</validateOnCenter>
       <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
-       
+      <target>Iv2A1</target>
+      <gidMaskIsRoiRect>1</gidMaskIsRoiRect>
+      <plainFitMaskIsRoiRect>1</plainFitMaskIsRoiRect>
    </validationConfig>
    <validationErrRange>
 	<irFillRate>[100,100]</irFillRate>
@@ -193,7 +195,6 @@
         <cropRatio>[0.2 0.1]</cropRatio>
         <calibrateOnCropped>1</calibrateOnCropped>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
-        <Kfor2dError>[439.7540 0 319.5; 0 450.4340 239.5; 0 0 1]</Kfor2dError>
         <captures>
              <!--<capture>
                 <target>Iv2L50</target>

@@ -1,6 +1,7 @@
 function [dfzRes,allRes,dbg1] = DFZCalc(params,frames,runParams,fprintff)
 dfzRes = [];
 
+params.isRoiRect = params.gidMaskIsRoiRect;
 if params.sampleZFromWhiteCheckers
     params.sampleZFromWhiteCheckers = 0;
     [score1, allRes1,dbg1] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
@@ -58,6 +59,7 @@ end
 [allResWht] = addPostfixToStructField(allRes2, 'Wht');
 
 params.sampleZFromWhiteCheckers = 1;
+params.isRoiRect = params.plainFitMaskIsRoiRect;
 [~, planeFitResWht,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
 dfzRes.planeFitMeanRmsErrWht = planeFitResWht.rmsPlaneFitDist;
 dfzRes.planeFitMaxErrWht = planeFitResWht.maxPlaneFitDist;

@@ -6,6 +6,9 @@ function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff,calibParams,run
     params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
     params.validateOnCenter = calibParams.validationConfig.validateOnCenter;
     params.roi = calibParams.validationConfig.roi4ValidateOnCenter;
+    params.target = calibParams.validationConfig.target;
+    params.plainFitMaskIsRoiRect = calibParams.validationConfig.plainFitMaskIsRoiRect;
+    params.gidMaskIsRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;
     [dfzRes,allRes,dbg] = Calibration.validation.DFZCalc(params,frames,runParams,fprintff);
 end
 function K = getKMat(hw)

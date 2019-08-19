@@ -38,7 +38,6 @@ regs = x2regs(x0,regs);
 doCrop = par.calibrateOnCropped;%calibrateOnCropped;
 if iseval
     [geomErr,~,allVertices]=errFunc(darr,regs,x0,doCrop,runParams,tpsUndistModel);
-%     [results] = calcLineDistortion(allVertices,par);
     results.geomErr = geomErr;
 
     outregs = [];
@@ -79,7 +78,6 @@ xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregs = x2regs(xbest,regs);
 [geomErr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,doCrop,runParams,tpsUndistModel); % in debug mode, allVertices should be enabled inside errFunc
-% [results] = calcLineDistortion(allVertices,par);
 results.geomErr = geomErr;
 
 printErrAndX(xbest,results.geomErr,eFit,'Xfinal:',verbose)
@@ -368,70 +366,4 @@ for iParam = 1:length(optimizedParams)
     end
 end
 fprintff('--> eGeom=%.2f.\n', err)
-end
-
-function [results] = calcLineDistortion(allVertices,DfzCalibParams)
-n = length(allVertices);
-lineFitMaxErrorTotal_h3D = NaN(n,1);
-lineFitRmsErrorTotal_h3D = NaN(n,1);
-lineFitMaxErrorTotal_v3D = NaN(n,1);
-lineFitRmsErrorTotal_v3D = NaN(n,1);
-
-lineFitMaxErrorTotal_h2D = NaN(n,1);
-lineFitRmsErrorTotal_h2D = NaN(n,1);
-lineFitMaxErrorTotal_v2D = NaN(n,1);
-lineFitRmsErrorTotal_v2D = NaN(n,1);
-for k = 1:n
-    v = allVertices{1,k};
-    v2d = reshape(v,20,28,3);
-    cols = any(~isnan(v2d(:,:,1)),1);
-    rows = any(~isnan(v2d(:,:,1)),2);
-    v2d = v2d(rows,cols,:);
-    if any(vec(isnan(v2d(:,:,1))))
-        sumNotNanInRow = sum(~isnan(v2d(:,:,1)),2);
-        [binCounts,~] = histcounts(sumNotNanInRow, max(sumNotNanInRow)-min(sumNotNanInRow)+1);
-        [ixRow, ~] = max(binCounts);
-        rows = sumNotNanInRow >= sumNotNanInRow(ixRow);
-        sumNotNanInCol = sum(~isnan(v2d(:,:,1)),1);
-        [binCounts,~] = histcounts(sumNotNanInCol, max(sumNotNanInCol)-min(sumNotNanInCol)+1);
-        [ixCol, ~] = max(binCounts);
-        cols = sumNotNanInCol >= sumNotNanInCol(ixCol);
-        v2d = v2d(rows,cols,:);
-    end
-    
-    px = v2d(:,:,1);
-    py = v2d(:,:,2);
-    pz = v2d(:,:,3);
-    pts = cat(3,px,py,pz);
-    
-    [lineFitResults3D] = Validation.metrics.get3DlineFitErrors(pts);
-    lineFitMaxErrorTotal_h3D(k) = lineFitResults3D.lineFitMaxErrorTotal_h;
-    lineFitRmsErrorTotal_h3D(k) = lineFitResults3D.lineFitRmsErrorTotal_h;
-    lineFitMaxErrorTotal_v3D(k) = lineFitResults3D.lineFitMaxErrorTotal_v;
-    lineFitRmsErrorTotal_v3D(k) = lineFitResults3D.lineFitRmsErrorTotal_v;
-    
-    pixs = DfzCalibParams.Kfor2dError*reshape(pts,[],3)';
-    pix_x = pixs(1,:)./pixs(3,:);
-    pix_y = pixs(2,:)./pixs(3,:);
-    pts = cat(3,reshape(pix_x,size(px)),reshape(pix_y,size(py)),zeros(size(px)));
-    
-    [lineFitResults2D] = Validation.metrics.get3DlineFitErrors(pts);
-    lineFitMaxErrorTotal_h2D(k) = lineFitResults2D.lineFitMaxErrorTotal_h;
-    lineFitRmsErrorTotal_h2D(k) = lineFitResults2D.lineFitRmsErrorTotal_h;
-    lineFitMaxErrorTotal_v2D(k) = lineFitResults2D.lineFitMaxErrorTotal_v;
-    lineFitRmsErrorTotal_v2D(k) = lineFitResults2D.lineFitRmsErrorTotal_v;
-end
-results.lineFitMeanRmsErrorTotalHoriz3D = nanmean(lineFitRmsErrorTotal_h3D);
-results.lineFitMeanRmsErrorTotalVertic3D = nanmean(lineFitRmsErrorTotal_v3D);
-results.lineFitMaxRmsErrorTotalHoriz3D = nanmax(lineFitRmsErrorTotal_h3D);
-results.lineFitMaxRmsErrorTotalVertic3D = nanmax(lineFitRmsErrorTotal_v3D);
-results.lineFitMaxErrorTotalHoriz3D = nanmax(lineFitMaxErrorTotal_h3D);
-results.lineFitMaxErrorTotalVertic3D = nanmax(lineFitMaxErrorTotal_v3D);
-
-results.lineFitMeanRmsErrorTotalHoriz2D = nanmean(lineFitRmsErrorTotal_h2D);
-results.lineFitMeanRmsErrorTotalVertic2D = nanmean(lineFitRmsErrorTotal_v2D);
-results.lineFitMaxRmsErrorTotalHoriz2D = nanmax(lineFitRmsErrorTotal_h2D);
-results.lineFitMaxRmsErrorTotalVertic2D = nanmax(lineFitRmsErrorTotal_v2D);
-results.lineFitMaxErrorTotalHoriz2D = nanmax(lineFitMaxErrorTotal_h2D);
-results.lineFitMaxErrorTotalVertic2D = nanmax(lineFitMaxErrorTotal_v2D);
 end
