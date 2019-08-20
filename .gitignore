@@ -250,6 +250,7 @@ dbg.mat
 temp*.m
 *.gif
 *.mat
+!roi_exp_results.mat
 !+Calibration/eepromStructure/eepromStructure.mat
 scripts/maxRange/Results.xlsx
 .vscode/settings.json

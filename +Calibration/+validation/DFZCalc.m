@@ -1,6 +1,7 @@
 function [dfzRes,allRes,dbg1] = DFZCalc(params,frames,runParams,fprintff)
 dfzRes = [];
 
+params.isRoiRect = params.gidMaskIsRoiRect;
 if params.sampleZFromWhiteCheckers
     params.sampleZFromWhiteCheckers = 0;
     [score1, allRes1,dbg1] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
@@ -38,6 +39,11 @@ dfzRes.lineFitMaxRmsErrHor2dReg = allRes1.lineFit.lineFitMaxRmsErrorTotalHoriz2D
 dfzRes.lineFitMaxRmsErrVer2dReg = allRes1.lineFit.lineFitMaxRmsErrorTotalVertic2D;
 dfzRes.lineFitMaxErrHor2dReg = allRes1.lineFit.lineFitMaxErrorTotalHoriz2D;
 dfzRes.lineFitMaxErrVer2dReg = allRes1.lineFit.lineFitMaxErrorTotalVertic2D;
+
+dfzRes.meanHorzScaleErrorReg = allRes1.meanHorzScaleError;
+dfzRes.meanAbsHorzScaleErrorReg = allRes1.meanAbsHorzScaleError;
+dfzRes.meanVertScaleErrorReg = allRes1.meanVertScaleError;
+dfzRes.meanAbsVertScaleErrorReg = allRes1.meanAbsVertScaleError;
 if params.sampleZFromWhiteCheckers
     dfzRes.GeometricErrorWht = score2;
     
@@ -53,13 +59,34 @@ if params.sampleZFromWhiteCheckers
     dfzRes.lineFitMaxRmsErrVer2dWht = allRes2.lineFit.lineFitMaxRmsErrorTotalVertic2D;
     dfzRes.lineFitMaxErrHor2dWht = allRes2.lineFit.lineFitMaxErrorTotalHoriz2D;
     dfzRes.lineFitMaxErrVer2dWht = allRes2.lineFit.lineFitMaxErrorTotalVertic2D;
+    
+    dfzRes.meanHorzScaleErrorWht = allRes2.meanHorzScaleError;
+    dfzRes.meanAbsHorzScaleErrorWht = allRes2.meanAbsHorzScaleError;
+    dfzRes.meanVertScaleErrorWht = allRes2.meanVertScaleError;
+    dfzRes.meanAbsVertScaleErrorWht = allRes2.meanAbsVertScaleError;
 end
 [allResReg] = addPostfixToStructField(allRes1, 'reg');
 [allResWht] = addPostfixToStructField(allRes2, 'Wht');
 
+params.sampleZFromWhiteCheckers = 1;
+params.isRoiRect = params.plainFitMaskIsRoiRect;
+[~, planeFitResWht,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
+dfzRes.planeFitMeanRmsErrWht = planeFitResWht.rmsPlaneFitDist;
+dfzRes.planeFitMaxErrWht = planeFitResWht.maxPlaneFitDist;
+
+params.sampleZFromWhiteCheckers = 0;
+params.sampleZFromBlackCheckers = 1;
+[~, planeFitResBlck,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
+dfzRes.planeFitMeanRmsErrBlck = planeFitResBlck.rmsPlaneFitDist;
+dfzRes.planeFitMaxErrBlck = planeFitResBlck.maxPlaneFitDist;
+
+
 allRes = Validation.aux.mergeResultStruct(allResReg,allResWht);
 allRes = Validation.aux.mergeResultStruct(allRes,geomRes);
-fprintff('%s: %2.4g\n','eGeom',score1);
+allRes = Validation.aux.mergeResultStruct(allRes,planeFitResWht);
+allRes = Validation.aux.mergeResultStruct(allRes,planeFitResBlck);
+
+fprintff('%s: %2.4g\n','eGeomReg',score1);
 end
 
 function rotFrame = rotFrame180(frame)
@@ -72,9 +99,9 @@ end
 function [] = saveFigs(dbg,runParams,params,imSize,prefixStr)
 ff = Calibration.aux.invisibleFigure();
 imagesc(dbg.ir);
-pCirc = Calibration.DFZ.getCBCircPoints(dbg.gridPoints,dbg.gridSize);
+% pCirc = Calibration.DFZ.getCBCircPoints(dbg.gridPoints,dbg.gridSize);
 hold on;
-plot(pCirc(:,1),pCirc(:,2),'r','linewidth',2);
+% plot(pCirc(:,1),pCirc(:,2),'r','linewidth',2);
 hold off
 title(sprintf('Validation interDist image: Grid=[%d,%d] %s',dbg.gridSize(1),dbg.gridSize(2),prefixStr));
 Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',['GridInterdistImage' prefixStr],1);
