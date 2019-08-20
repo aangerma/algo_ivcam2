@@ -1,6 +1,6 @@
 function [targetOffset] = detectMarkersAndFindOffset(calibParams,IRimage,zImage,detectedGridPointsV,CamParam)
 %% find circels 
-markerCenter=[115,191]; 
+markerCenter=[129,79]; 
 markerCenterV=Validation.aux.pointsToVertices(markerCenter-1,zImage,CamParam);
 
 %% 
