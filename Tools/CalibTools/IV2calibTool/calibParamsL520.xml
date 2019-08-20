@@ -98,7 +98,6 @@
           <numOfFrames>100</numOfFrames>
           <sphericalMode>1</sphericalMode>
       </los>
-      <dsm></dsm>
       <readRegState>
       </readRegState>
       
