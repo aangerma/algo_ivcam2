@@ -158,7 +158,7 @@ valuesNames = {'VGAvalue';...
                'XGAupscaleYvalue';...
                'L520value'};
 comb = nchoosek(valuesNames,2);
-inds = zeros(size(updatedConfigTable.VGAvalue,1));
+inds = zeros(size(updatedConfigTable.VGAvalue,1),1);
 for i = 1:size(comb,1)
     inds = inds | ~strcmp(updatedConfigTable.(comb{i,1}),updatedConfigTable.(comb{i,2}));
 end
