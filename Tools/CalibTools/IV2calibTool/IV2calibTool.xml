@@ -5,7 +5,7 @@
    <cb_init>1</cb_init>
    <cb_DSM>1</cb_DSM>
    <cb_gamma>0</cb_gamma>
-   <cb_dataDelay>0</cb_dataDelay>
+   <cb_dataDelay>1</cb_dataDelay>
    <cb_scanDir>1</cb_scanDir>
    <cb_minRangePreset>1</cb_minRangePreset>
    <cb_maxRangePreset>1</cb_maxRangePreset>

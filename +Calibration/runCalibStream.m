@@ -180,16 +180,10 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% merge all scores outputs
 %     calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff,0);
     
-    %% Long range calibration- calib res
-    if runParams.maxRangePreset
-        Calstate =findLongRangeStateCal(calibParams,runParams.calibRes);
-        if(isnan(Calstate))
-            error('calibration resolution doesnt fit to any of long range states');
-        end
-        results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
-    end
+    
     
     %% Burn 2 device
+    hw.stopStream;
     burn2Device(hw,1,runParams,calibParams,@fprintf,t);
 
 
@@ -199,6 +193,22 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         fprintff('Collecting registers state...');
         hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
         fprintff('Done\n');
+    end
+    %% Long range calibration- calib res
+    if runParams.maxRangePreset
+        Calstate =findLongRangeStateCal(calibParams,runParams.calibRes);
+        if(isnan(Calstate))
+            error('calibration resolution doesnt fit to any of long range states');
+        end
+        hw.cmd('rst');
+        pause(10);
+        clear hw;
+        pause(1);
+        hw = HWinterface;
+        hw.cmd('DIRTYBITBYPASS');
+        fprintff('Calibrating long range preset, starting stream.\n');
+        hw.startStream(0,runParams.calibRes);
+        results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
     end
     %% Long range calibration- calib res 2 if needed
     if runParams.maxRangePreset
@@ -500,6 +510,7 @@ end
 % end
 function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
+    atlregs = struct;
     if(runParams.init)
         eRegs = hw.readAlgoEEPROMtable();
         if ~runParams.dataDelay
@@ -512,9 +523,7 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
 %         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
-        if ~runParams.afterAlgo2
-            atlregs = struct;
-        else
+        if runParams.afterAlgo2
             atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
             atlregs.FRMW.atlMaxVbias1 = eRegs.FRMW.atlMaxVbias1;
             atlregs.FRMW.atlMinVbias2 = eRegs.FRMW.atlMinVbias2;

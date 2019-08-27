@@ -28,10 +28,10 @@
     <errRange>
         <delayF>[0 0.9]</delayF>
         <delayS>[0 0.9]</delayS>
-        <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
+        <delaySlowPixelVar>[0.0001 0.8]</delaySlowPixelVar>
         <geomErr>[0.01 4]</geomErr>
         <extraImagesGeomErr>[0 4]</extraImagesGeomErr>
-        <shortRangeImagesGeomErr>[0.01 1.5]</shortRangeImagesGeomErr>
+        <shortRangeImagesGeomErr>[0.01 2]</shortRangeImagesGeomErr>
         <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
         <eGeomSphericalEn>[0.01 2]</eGeomSphericalEn>
         <eGeomSphericalDis>[0.01 2]</eGeomSphericalDis>
@@ -90,6 +90,7 @@
             <numOfFrames>30</numOfFrames>
         </dfz>
         <cbufUnderflow>
+            <nFrames>10</nFrames>
         </cbufUnderflow>
         <coverage>
             <numOfFrames>50</numOfFrames>

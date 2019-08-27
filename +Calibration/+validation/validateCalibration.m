@@ -120,9 +120,10 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 saveValidationData([],frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = delayRes;
             elseif strfind(enabledMetrics{i},'cbufUnderflow')
-                frames = hw.getFrame(1);
-                cbufRes.irFillRate = mean(frames.i(:)>0)*100;
-                fprintff('IR fill rate = %3.2f\n',cbufRes.irFillRate);
+              
+                frames = hw.getFrame(calibParams.validationConfig.cbufUnderflow.nFrames,0);
+                fRates = arrayfun(@(s) mean(s.i(:)>0)*100,frames);
+                cbufRes.irFillRate = mean(fRates);
                 if cbufRes.irFillRate < 100
                     fprintff('Unit suffers from CBUF underflow or bad ROI calibration\n');
                 end

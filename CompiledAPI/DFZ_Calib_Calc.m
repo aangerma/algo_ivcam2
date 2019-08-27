@@ -346,7 +346,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
 %         
 %         results.rtdDiffBetweenPresets = nanmean( d(lrInd).rpt(:,1) - d(srInd).rpt(:,1) );
         d(srInd).rpt(:,1) = d(srInd).rpt(:,1) + results.rtdDiffBetweenPresets;
-        [~,dfzResults] = Calibration.aux.calibDFZ(d(srInd),regs,calibParams,fprintff,0,1,x0,runParams,tpsUndistModel_vFullFromEval);
+        [~,dfzResults,verts] = Calibration.aux.calibDFZ(d(srInd),regs,calibParams,fprintff,0,1,x0,runParams,tpsUndistModel_vFullFromEval);
         results.shortRangeImagesGeomErr = dfzResults.geomErr;
         fprintff('geom error on short range image =%.2g\n',results.shortRangeImagesGeomErr);
         fprintff('Rtd diff between presets =%.2g\n',results.rtdDiffBetweenPresets);

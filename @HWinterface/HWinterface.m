@@ -580,7 +580,7 @@ classdef HWinterface <handle
         %         end
         
         function res = shadowUpdate(obj)
-            res = obj.privCmd('mwd a00d01f4 a00d01f8 00000fff'); % shadow update
+            res = obj.privCmd('mwd a00d01ec a00d01f0 00000001 // EXTLauxShadowUpdateFrame'); % shadow update
             pause(0.1);
         end
         
