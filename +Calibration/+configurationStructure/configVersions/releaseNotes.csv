@@ -1,4 +1,4 @@
 Version,Notes
 0,first version
 0.01,Updated regsDefinitions JFILgrad1 thresholds to default values in unit
-0.02,JFILgrad1bypass is disabled in XGA (i.e. the filter works)
+0.04,GradFiltersBypassCorrection

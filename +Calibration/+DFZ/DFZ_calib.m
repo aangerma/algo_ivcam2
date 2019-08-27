@@ -48,6 +48,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     
     if strcmp(cap.type,'shortRange')
         Calibration.aux.switchPresetAndUpdateModRef( hw,2,calibParams,results );
+        pause(5);
     else
         im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
     end
