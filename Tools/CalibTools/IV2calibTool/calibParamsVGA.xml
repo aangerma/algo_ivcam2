@@ -216,6 +216,7 @@
         <shortRangeCompareROI>0.4</shortRangeCompareROI>
         <sphericalScaleFactors>[1.05,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
         <cropRatios>[0.2 0.0005;0.0005 0.2]</cropRatios>
+	<calibrateOnCropped>1</calibrateOnCropped>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
         <captures>
              <!--<capture>

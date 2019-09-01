@@ -164,23 +164,33 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     %% merge all scores outputs
     calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff,0);
     
+    %% Burn 2 device
+    hw.stopStream;
+    burn2Device(hw,1,runParams,calibParams,@fprintf,t);
+
+
+ 
+    %% Collecting hardware state
+    if runParams.saveRegState
+        fprintff('Collecting registers state...');
+        hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
+        fprintff('Done\n');
+    end
     %% Long range calibration- calib res
     if runParams.maxRangePreset
         Calstate =findLongRangeStateCal(calibParams,runParams.calibRes);
         if(isnan(Calstate))
             error('calibration resolution doesnt fit to any of long range states');
         end
+        hw.cmd('rst');
+        pause(10);
+        clear hw;
+        pause(1);
+        hw = HWinterface;
+        hw.cmd('DIRTYBITBYPASS');
+        fprintff('Calibrating long range preset, starting stream.\n');
+        hw.startStream(0,runParams.calibRes);
         results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
-    end
-    
-    %% Burn 2 device
-    burn2Device(hw,calibPassed,runParams,calibParams,@fprintf,t);
-
-    %% Collecting hardware state
-    if runParams.saveRegState
-        fprintff('Collecting registers state...');
-        hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
-        fprintff('Done\n');
     end
     %% Long range calibration- calib res 2 if needed
     if runParams.maxRangePreset
@@ -249,7 +259,7 @@ end
 function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t)
     if runParams.rgb && ~runParams.replayMode
         fprintff('[-] Reseting before RGB calibration... '); 
-        hw.saveRecData();
+%         hw.saveRecData();
         hw.cmd('rst');
         pause(10);
         clear hw;
@@ -257,11 +267,10 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         hw = HWinterface;
         fprintff('Done \n');
         hw.cmd('DIRTYBITBYPASS');
-        hw.cmd('algo_thermloop_en 0');
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         %% set preset to min range: Gain control=2
-        fprintff('Set preset to max range.\n');
-        hw.setPresetControlState(1);  
+%         fprintff('Set preset to max range.\n');
+%         hw.setPresetControlState(1);  
         Calibration.aux.startHwStream(hw,runParams);
         hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
         hw.shadowUpdate;
@@ -308,8 +317,11 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         
         
         [dfzRes,~ ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
-        results.eGeomSphericalDis = dfzRes.GeometricError;
-        
+        if calibParams.dfz.sampleRTDFromWhiteCheckers
+            results.eGeomSphericalDis = dfzRes.GeometricErrorWht;
+        else
+            results.eGeomSphericalDis = dfzRes.GeometricErrorReg;
+        end
         targetInfo = targetInfoGenerator('Iv2A1');
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
@@ -428,16 +440,12 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
 %         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
-        if ~runParams.afterAlgo2
-            atlregs = struct;
-        else
-            atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
-            atlregs.FRMW.atlMaxVbias1 = eRegs.FRMW.atlMaxVbias1;
-            atlregs.FRMW.atlMinVbias2 = eRegs.FRMW.atlMinVbias2;
-            atlregs.FRMW.atlMaxVbias2 = eRegs.FRMW.atlMaxVbias2;
-            atlregs.FRMW.atlMinVbias3 = eRegs.FRMW.atlMinVbias3;
-            atlregs.FRMW.atlMaxVbias3 = eRegs.FRMW.atlMaxVbias3;
-        end
+        atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
+        atlregs.FRMW.atlMaxVbias1 = eRegs.FRMW.atlMaxVbias1;
+        atlregs.FRMW.atlMinVbias2 = eRegs.FRMW.atlMinVbias2;
+        atlregs.FRMW.atlMaxVbias2 = eRegs.FRMW.atlMaxVbias2;
+        atlregs.FRMW.atlMinVbias3 = eRegs.FRMW.atlMinVbias3;
+        atlregs.FRMW.atlMaxVbias3 = eRegs.FRMW.atlMaxVbias3;
         fw.setRegs(vregs,'');
         fw.setRegs(atlregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterAlgo2);

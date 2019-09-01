@@ -72,7 +72,6 @@
       For running the same metric more then once add <metric_name>_n, for example:
       <roi_2></roi_2>
       -->
-      <cbSquareSz>30</cbSquareSz>
       <cbGridSz>[]</cbGridSz>
       <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
       <wait>
@@ -114,7 +113,12 @@
       <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
       <validateOnCenter>1</validateOnCenter>
       <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
-       
+      <target>
+            <name>Iv2A1</name>
+            <cbSquareSz>30</cbSquareSz>
+        </target>
+      <gidMaskIsRoiRect>1</gidMaskIsRoiRect>
+      <plainFitMaskIsRoiRect>1</plainFitMaskIsRoiRect>
    </validationConfig>
    <validationErrRange>
 	<irFillRate>[100,100]</irFillRate>
@@ -150,6 +154,18 @@
       <lineFitMaxRmsErrVertic2D>[0 inf]</lineFitMaxRmsErrVertic2D>
       <lineFitMaxErrHoriz2D>[0 inf]</lineFitMaxErrHoriz2D>
       <lineFitMaxErrVertic2D>[0 inf]</lineFitMaxErrVertic2D>
+      <planeFitMeanRmsErrWht>[0 inf]</planeFitMeanRmsErrWht>
+      <planeFitMaxErrWht>[0 inf]</planeFitMaxErrWht>
+      <planeFitMeanRmsErrBlck>[0 inf]</planeFitMeanRmsErrBlck>
+      <planeFitMaxErrBlck>[0 inf]</planeFitMaxErrBlck>
+      <meanHorzScaleErrorReg>[-inf inf]</meanHorzScaleErrorReg>
+      <meanAbsHorzScaleErrorReg>[0 inf]</meanAbsHorzScaleErrorReg>
+      <meanVertScaleErrorReg>[-inf inf]</meanVertScaleErrorReg>
+      <meanAbsVertScaleErrorReg>[0 inf]</meanAbsVertScaleErrorReg>
+      <meanHorzScaleErrorWht>[-inf inf]</meanHorzScaleErrorWht>
+      <meanAbsHorzScaleErrorWht>[0 inf]</meanAbsHorzScaleErrorWht>
+      <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
+      <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
   </validationErrRange>   
    <thermal>
        <t0>32.8</t0>
@@ -165,7 +181,6 @@
         <cropRatios>[0.2 0.1]</cropRatios>
 	<calibrateOnCropped>1</calibrateOnCropped>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
-        <Kfor2dError>[439.7540 0 319.5; 0 450.4340 239.5; 0 0 1]</Kfor2dError>
         <captures>
              <!--<capture>
                 <target>Iv2L50</target>
@@ -284,7 +299,7 @@
                 <roiCropRect>0</roiCropRect>
                 <maskCenterShift>[0,0]</maskCenterShift>
             </params>
-            <JFILinvMinMax>4294904760</JFILinvMinMax> <!-- invalidate z below 750mm -->
+            <JFILinvMinMax>4294903760</JFILinvMinMax> <!-- invalidate z below 750mm -->
             <coarseMaskingRange>[0,40]</coarseMaskingRange>
             <JFILgammaScale>67109888</JFILgammaScale>
             <JFILgammaShift>0</JFILgammaShift>
