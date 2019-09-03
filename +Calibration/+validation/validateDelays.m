@@ -21,7 +21,6 @@ r.add('JFILinnBypass'      ,true     );
 r.add('JFILsort1bypassMode',uint8(1) );
 r.add('JFILsort2bypassMode',uint8(1) );
 r.add('JFILsort3bypassMode',uint8(1) );
-r.add('JFILupscalexyBypass',true     );
 r.add('JFILgammaBypass'    ,false    );
 r.add('DIGGsphericalEn'    ,true     );
 r.add('DIGGnotchBypass'    ,true     );

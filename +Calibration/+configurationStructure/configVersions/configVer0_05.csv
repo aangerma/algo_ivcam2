@@ -331,7 +331,7 @@ JFILgeomTemplateEnable_001,logical,32,b,11111111111111111111111111111111,b,11111
 JFILgrad1ConfLevel,uint4,1,h,2,h,2,h,2,h,2,h,2
 JFILgrad1ConfUpdVal,uint4,1,h,1,h,1,h,1,h,1,h,1
 JFILgrad1Mask,uint16,1,h,3ff,h,3ff,h,3ff,h,3ff,h,3ff
-JFILgrad1bypass,logical,1,b,0,b,0,b,0,b,0,b,1
+JFILgrad1bypass,logical,1,b,0,b,0,b,0,b,0,b,0
 JFILgrad1thrAveDiag,uint16,1,h,ffff,h,ffff,h,ffff,h,ffff,h,ffff
 JFILgrad1thrAveDx,uint16,1,h,ffff,h,ffff,h,ffff,h,ffff,h,ffff
 JFILgrad1thrAveDy,uint16,1,h,ffff,h,ffff,h,ffff,h,ffff,h,ffff
@@ -346,7 +346,7 @@ JFILgrad1thrSpike,uint16,1,h,ffff,h,ffff,h,ffff,h,ffff,h,ffff
 JFILgrad2ConfLevel,uint4,1,h,2,h,2,h,2,h,2,h,2
 JFILgrad2ConfUpdVal,uint4,1,h,1,h,1,h,1,h,1,h,1
 JFILgrad2Mask,uint16,1,h,3ff,h,3ff,h,3ff,h,3ff,h,3ff
-JFILgrad2bypass,logical,1,b,1,b,0,b,0,b,0,b,0
+JFILgrad2bypass,logical,1,b,1,b,0,b,0,b,0,b,1
 JFILgrad2thrAveDiag,uint16,1,h,0064,h,0064,h,0064,h,0064,h,0064
 JFILgrad2thrAveDx,uint16,1,h,0064,h,0064,h,0064,h,0064,h,0064
 JFILgrad2thrAveDy,uint16,1,h,0064,h,0064,h,0064,h,0064,h,0064

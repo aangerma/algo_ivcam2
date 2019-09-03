@@ -2,7 +2,7 @@ load('C:\temp\unitCalib\F9220005\PC26\mat_files\DFZ_Calib_Calc_in.mat');
 load('C:\temp\unitCalib\F9220005\PC26\mat_files\DFZ_im.mat');
 runParams.outputFolder = 'C:\temp\unitCalib\F9220005\PC_Test';
 calibParams = xml2structWrapper('C:\source\algo_ivcam2\Tools\CalibTools\IV2calibTool\calibParamsXGA.xml');% Prepare the strcut array d. With has the corners data for each CB
-calibParams.dfz.cropRatios = [0.2 0.05;0.05 0.2];
+calibParams.dfz.cropRatios = [0.2 0.0005;0.0005 0.2];
 captures = {'train'};
 captures(2:5) = captures(1);
 captures{6} = 'test';
@@ -128,7 +128,8 @@ if 0
     calibParams.dfz.fovexNominalRange = [DFZ_regs.FRMWfovexNominal;DFZ_regs.FRMWfovexNominal];
 end
 calibParams.dfz.fovexRadialRange = zeros(size(calibParams.dfz.fovexRadialRange));
-    
+calibParams.dfz.rtdOverTanYrange = [-50,-50,-50,-50,-50,-50; 50, 50, 50,50, 50, 50];
+regs.FRMW.rtdOverY = single([0,0,0,0,0,0]);
 %%%%
 
 gridSize =[20,28];
@@ -143,32 +144,33 @@ warning('off','SPLINES:TPAPS:longjob');
 tpsUndistModel = [];
 xbest = [];
 optionsCropped = defaultDfzOptions; optionsCropped.useCropped = 1;
-optDfzOnCropped = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsCropped);
+optDfzOnCropped = @(inputs,tpsModel,x0,runPar) calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsCropped);
 
 optionsFull = defaultDfzOptions;
-optDfzOnFull = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsFull);
+optDfzOnFull = @(inputs,tpsModel,x0,runPar) calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsFull);
 
 optionsCroppedRtdOnly = defaultDfzOptions; optionsCroppedRtdOnly.useCropped = 1; optionsCroppedRtdOnly.optimizedParamsStr = 'rtdOnly';
-optDfzOnCroppedRtdOnly = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsCroppedRtdOnly);
+optDfzOnCroppedRtdOnly = @(inputs,tpsModel,x0,runPar) calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsCroppedRtdOnly);
 
 optionsfullRtdOnly = defaultDfzOptions; optionsfullRtdOnly.optimizedParamsStr = 'rtdOnly';
-optDfzOnFullRtdOnly = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsfullRtdOnly);
+optDfzOnFullRtdOnly = @(inputs,tpsModel,x0,runPar) calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsfullRtdOnly);
 
 optionsCroppedEval = defaultDfzOptions; optionsCroppedEval.useCropped = 1; optionsCroppedEval.iseval = 1;
-evalDfzOnCropped = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsCroppedEval);
+evalDfzOnCropped = @(inputs,tpsModel,x0,runPar) calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsCroppedEval);
 
 optionsFullEval = defaultDfzOptions; optionsFullEval.iseval = 1;
-evalDfzOnFull = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsFullEval);
+evalDfzOnFull = @(inputs,tpsModel,x0,runPar) calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsFullEval);
 
 if calibParams.dfz.performRegularDFZWithoutTPS
     [dfzRegs,res,allVertices] = optDfzOnFull(framesData(trainImages),[],xbest,runParams);
     results.geomErr = res.geomErr;
 else
+    
     % Perform DFZ on cropped
     [~,resOnCropped,~,xbest] = optDfzOnCropped(framesData(trainImages),[],xbest,[]);
-    if calibParams.dfz.calibFullAfterCropped % Perform DFZ on all
-        [~,~,~,xbest] = optDfzOnFull(framesData(trainImages),[],xbest,[]);
-    end
+%     if calibParams.dfz.calibFullAfterCropped % Perform DFZ on all
+%         [~,~,~,xbest] = optDfzOnFull(framesData(trainImages),[],xbest,[]);
+%     end
     % Calc TPS model to minimize 2D distotion
     [~,resFullPreTPS,allVerticesPreTPS] = evalDfzOnFull(framesData(trainImages),[],xbest,[]);
     [~,resCroppedPreTPS,croppedVerticesPreTPS] = evalDfzOnCropped(framesData(trainImages),[],xbest,[]);

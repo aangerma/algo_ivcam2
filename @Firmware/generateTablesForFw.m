@@ -20,6 +20,7 @@ EPROMtable=m([m.TransferToFW]=='1');
 ConfigTable=m([m.TransferToFW]=='2');
 CbufXsections=m([m.TransferToFW]=='3');
 DiggGammaTable=m([m.TransferToFW]=='4');
+txPWRpdTable=m([m.TransferToFW]=='6');
 EPROmaxTableSize=496;
 % EEPROMVersion=EPROMtable(find(strcmp({EPROMtable.algoName},'eepromVersion'))).value;
 EPROMtable=updateEEPROMstructure(obj,struct2table(EPROMtable));
@@ -51,6 +52,7 @@ if(exist('outputFldr','var'))
     writebin(gammafn{1},data);
     delete(undistfns{3});
     
+    txPWRpdfn = obj.writeLUTbin(obj.getAddrData('DESTtxPWRpd_'),fullfile(outputFldr,filesep,['DEST_txPWRpd_Info_CalibInfo' postfix 'bin']));
     
     obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,['FRMW_tmpTrans_Info'  '.bin']),true);
     if ~skip_algo_thermal_calib

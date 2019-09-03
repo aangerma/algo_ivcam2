@@ -1,4 +1,7 @@
 Version,Notes
 0,first version
 0.01,Updated regsDefinitions JFILgrad1 thresholds to default values in unit
-0.04,GradFiltersBypassCorrection
+0.02,JFILgrad1bypass is disabled in XGA (i.e. the filter works)
+0.04,Correct grad bypass def
+0.05,Changed VGXA code to 52
+1.00,DESTtxPWR removed from config

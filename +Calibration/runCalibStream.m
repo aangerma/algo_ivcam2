@@ -162,12 +162,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     hw.shadowUpdate();
 
     try
-        
-        %% Coverage within ROI 
-        [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
-        if ~calibPassed
-           return 
-        end
         %% Validate DFZ before reset
         [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
         
@@ -194,51 +188,39 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
         fprintff('Done\n');
     end
-    %% Long range calibration- calib res
+    %% Long range calibrations
     if runParams.maxRangePreset
-        Calstate =findLongRangeStateCal(calibParams,runParams.calibRes);
-        if(isnan(Calstate))
-            error('calibration resolution doesnt fit to any of long range states');
-        end
-        hw.cmd('rst');
-        pause(10);
-        clear hw;
-        pause(1);
-        hw = HWinterface;
-        hw.cmd('DIRTYBITBYPASS');
-        fprintff('Calibrating long range preset, starting stream.\n');
-        hw.startStream(0,runParams.calibRes);
-        results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
-    end
-    %% Long range calibration- calib res 2 if needed
-    if runParams.maxRangePreset
-        if(strcmp(Calstate,'state1'))
-            stateTotest='state2';
-        else
-            stateTotest='state1';
-        end
-        secondRes=calibParams.presets.long.(stateTotest).resolution;
-        if(~isempty(secondRes))
-            hw.stopStream;
-            hw.cmd('rst');
-            pause(10);
-            clear hw;
-            pause(1);
-            hw = HWinterface;
-            hw.cmd('DIRTYBITBYPASS');
-            fprintff('Test second state for long range preset, starting stream.\n');
-            hw.startStream(0,secondRes);
-            results = calibrateLongRangePreset(hw,secondRes,stateTotest,results,runParams,calibParams, fprintff);
-            
+        resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
+        for i = 1:2
+            res = resolutions{i};
+            Calstate =findLongRangeStateCal(calibParams,res);
+            if(~isempty(res))
+                hw.stopStream;
+                hw.cmd('rst');
+                pause(10);
+                clear hw;
+                pause(1);
+                hw = HWinterface;
+                hw.cmd('DIRTYBITBYPASS');
+                fprintff('Test %s for long range preset, starting stream.\n',Calstate);
+                isXGA = all(res==[768,1024]);
+                if isXGA
+                    hw.cmd('ENABLE_XGA_UPSCALE 1')
+                end
+                hw.startStream(0,res);
+                results = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
+                
+            end
         end
     end
+    
     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
     calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));
-    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     
     fprintff('[-] Burning preset table...');
     if ~runParams.afterAlgo2
         try
+            fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
             hw = HWinterface;
             hw.cmd(['WrCalibInfo ',calibTempTableFn]);
             fprintff('Done\n');
@@ -268,9 +250,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     end
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
-    %% Validation
-    
-%     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
+
     %% rgb calibration
     if calibPassed
         calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
@@ -336,7 +316,8 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         pause(0.1);
         framesSpherical = hw.getFrame(45);
         
-        
+        fn = fullfile(runParams.outputFolder, 'mat_files' , 'preResetDFZValidation_in.mat');
+        save(fn,'frames','framesSpherical', 'regs' , 'calibParams' , 'runParams');    
         
         [dfzRes,~ ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
         if calibParams.dfz.sampleRTDFromWhiteCheckers
@@ -361,7 +342,8 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
             tpsUndistModel = [];
         end
         calibParams.dfz.calibrateOnCropped = 0;
-        [~,dfzResults] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1,[],runParams,tpsUndistModel);
+        calibParams.dfz.zenith.useEsTilt = 0;
+        [~,dfzResults] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,[],runParams,tpsUndistModel);
         results.eGeomSphericalEn = dfzResults.geomErr;
         r.reset();
 %         hw.setReg('DIGGsphericalScale',[640,480]);

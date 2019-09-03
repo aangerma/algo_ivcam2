@@ -134,7 +134,7 @@
       <Section Name="FunctionalPayloadVersion" Title="FunctionalPayloadVersion" Offset="12" Size="4" FormatType="ChangeSetVersion" />
       <Section Name="EyeSafetyPayloadVersion" Title="EyeSafety payload version" Offset="16" Size="4" FormatType="MajorMinorVersion" />
       <Section Name="DfuPayloadVersion" Title="DFU payload version" Offset="20" Size="4" FormatType="MajorMinorVersion" />
-      <Section Name="McPayloadVersion" Title="MC payload version" Offset="24" Size="4" FormatType="MajorMinorVersion" />
+      <Section Name="McPayloadVersion" Title="MC payload version" Offset="24" Size="4" FormatType="ChangeSetVersion" />
       <Section Name="SecCtrlPayloadVersion" Title="SECCTRL payload version" Offset="28" Size="4" FormatType="MajorMinorVersion" />
       
       <Section Name="FlashRoVersion" Title="Flash RO version" Offset="32" Size="1" FormatType="DecByte" />
@@ -169,15 +169,16 @@
       <Section Name="ProjectorType" Title="--&gt;Projector type" Offset="190" Size="1" FormatType="projectorType" />
       <Section Name="EepromVersion" Title="EEPROM version" Offset="194" Size="2" FormatType="MajorMinorVersion" />
       <Section Name="EepromModuleInfoVersion" Title="EEPROM module info version" Offset="196" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="AsicModuleInfoTableVersion" Title="Asic module info table version" Offset="194" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="CalibrationTableVersion" Title="Calibration table version" Offset="198" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="DepthVersion" Title="--&gt;Depth sub table  version" Offset="200" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="RgbVersion" Title="--&gt;RGB sub table  version" Offset="202" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="ImuVersion" Title="--&gt;IMU sub table version" Offset="204" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="LensShadingVersion" Title="--&gt;Lens Shading sub table  version" Offset="206" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="ProjectorVersion" Title="--&gt;Projector sub table version" Offset="208" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="SNVersion" Title="--&gt;SN sub table version" Offset="210" Size="2" FormatType="MajorMinorVersion" />
-      <Section Name="ThermalLoopTableVersion" Title="ThermalLoop table version" Offset="212" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="AsicModuleInfoTableVersion" Title="Asic module info table version" Offset="198" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="CalibrationTableVersion" Title="Calibration table version" Offset="200" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="DepthVersion" Title="--&gt;Depth sub table  version" Offset="204" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="RgbVersion" Title="--&gt;RGB sub table  version" Offset="206" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="ImuVersion" Title="--&gt;IMU sub table version" Offset="210" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="LensShadingVersion" Title="--&gt;Lens Shading sub table  version" Offset="212" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="ProjectorVersion" Title="--&gt;Projector sub table version" Offset="214" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="SNVersion" Title="--&gt;SN sub table version" Offset="216" Size="2" FormatType="MajorMinorVersion" />
+      <Section Name="ThermalLoopTableVersion" Title="ThermalLoop table version" Offset="218" Size="2" FormatType="MajorMinorVersion" />
+	  <section Name="AlgoConfingurationVersion" Title="Algo configuration version" Offset="220" Size="2" FormatType="MajorMinorVersion" />
     </ReadData>
   </Command>
   <Command Name="UPD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x11" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Public" Description="OTF update (shadow) ( 32bit )">
@@ -351,6 +352,7 @@
       <Section Name="MC_Temperature" Title="MC Temperature" Offset="8" Size="8" FormatType="Double" />
       <Section Name="MA_Temperature" Title="MA (PVT) Temperature" Offset="16" Size="8" FormatType="Double" />
       <Section Name="APD_Temperature" Title="APD Temperature" Offset="24" Size="8" FormatType="Double" />
+      <Section Name="HUM_Temperature" Title="HUM Temperature" Offset="32" Size="8" FormatType="Double" />
     </ReadData>
   </Command>
   <Command Name="PZR_POWER_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x6B" IsReadCommand="true" CmdPermission="Public" Description="Get PZR vBias and iBias">
@@ -449,7 +451,7 @@
       <Section Name="reserved8" Title="reserved8" Offset="14" Size="1" FormatType="Unsigned" />
       <Section Name="numOfResolutions" Title="numOfResolutions" Offset="15" Size="1" FormatType="DecByte" />
  
-      <Section Name="-----------Raw---------------" Title="raw" Offset="16" Size="1" FormatType="DecByte" />
+      <Section Name="-----------Raw-1-------------" Title="raw" Offset="16" Size="1" FormatType="DecByte" />
 
       <Section Name="width" Title="width" Offset="16" Size="4" FormatType="Unsigned" />
       <Section Name="height" Title="height" Offset="20" Size="4" FormatType="Unsigned" />
@@ -466,7 +468,7 @@
       <Section Name="zoY" Title="zoY" Offset="64" Size="4" FormatType="Float" />
       <Section Name="zNorm" Title="zNorm" Offset="68" Size="4" FormatType="Float" />
 
-      <Section Name="-----------World-------------" Title="world" Offset="72" Size="1" FormatType="DecByte" />
+      <Section Name="-----------World-1-----------" Title="world" Offset="72" Size="1" FormatType="DecByte" />
 
       <Section Name="width" Title="width" Offset="72" Size="4" FormatType="Unsigned" />
       <Section Name="height" Title="height" Offset="76" Size="4" FormatType="Unsigned" />
@@ -482,6 +484,41 @@
       <Section Name="zoX" Title="zoX" Offset="116" Size="4" FormatType="Float" />
       <Section Name="zoY" Title="zoY" Offset="120" Size="4" FormatType="Float" />
       <Section Name="zNorm" Title="zNorm" Offset="124" Size="4" FormatType="Float" />
+
+      <Section Name="-----------Raw-2-------------" Title="raw" Offset="16" Size="1" FormatType="DecByte" />
+
+      <Section Name="width" Title="width" Offset="128" Size="4" FormatType="Unsigned" />
+      <Section Name="height" Title="height" Offset="132" Size="4" FormatType="Unsigned" />
+      <Section Name="focalLengthX" Title="Focal Length X" Offset="136" Size="4" FormatType="Float" />
+      <Section Name="focalLengthY" Title="Focal Length Y" Offset="140" Size="4" FormatType="Float" />
+      <Section Name="principalPointX" Title="Principal Point X" Offset="144" Size="4" FormatType="Float" />
+      <Section Name="principalPointY" Title="Principal Point Y" Offset="148" Size="4" FormatType="Float" />
+      <Section Name="radialK1" Title="radialK1" Offset="152" Size="4" FormatType="Float" />
+      <Section Name="radialK2" Title="radialK2" Offset="156" Size="4" FormatType="Float" />
+      <Section Name="tangentialP1" Title="tangentialP1" Offset="160" Size="4" FormatType="Float" />
+      <Section Name="tangentialP2" Title="tangentialP2" Offset="164" Size="4" FormatType="Float" />
+      <Section Name="radialK3" Title="radialK3" Offset="168" Size="4" FormatType="Float" />
+      <Section Name="zoX" Title="zoX" Offset="172" Size="4" FormatType="Float" />
+      <Section Name="zoY" Title="zoY" Offset="176" Size="4" FormatType="Float" />
+      <Section Name="zNorm" Title="zNorm" Offset="180" Size="4" FormatType="Float" />
+
+      <Section Name="-----------World-2-----------" Title="world" Offset="72" Size="1" FormatType="DecByte" />
+
+      <Section Name="width" Title="width" Offset="184" Size="4" FormatType="Unsigned" />
+      <Section Name="height" Title="height" Offset="188" Size="4" FormatType="Unsigned" />
+      <Section Name="focalLengthX" Title="Focal Length X" Offset="192" Size="4" FormatType="Float" />
+      <Section Name="focalLengthY" Title="Focal Length Y" Offset="196" Size="4" FormatType="Float" />
+      <Section Name="principalPointX" Title="Principal Point X" Offset="200" Size="4" FormatType="Float" />
+      <Section Name="principalPointY" Title="Principal Point Y" Offset="204" Size="4" FormatType="Float" />
+      <Section Name="radialK1" Title="radialK1" Offset="208" Size="4" FormatType="Float" />
+      <Section Name="radialK2" Title="radialK2" Offset="212" Size="4" FormatType="Float" />
+      <Section Name="tangentialP1" Title="tangentialP1" Offset="216" Size="4" FormatType="Float" />
+      <Section Name="tangentialP2" Title="tangentialP2" Offset="220" Size="4" FormatType="Float" />
+      <Section Name="radialK3" Title="radialK3" Offset="224" Size="4" FormatType="Float" />
+      <Section Name="zoX" Title="zoX" Offset="228" Size="4" FormatType="Float" />
+      <Section Name="zoY" Title="zoY" Offset="232" Size="4" FormatType="Float" />
+      <Section Name="zNorm" Title="zNorm" Offset="236" Size="4" FormatType="Float" />      
+
     </ReadData>
   </Command>  
   <Command Name="TESTER_MODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x80" CmdPermission="Public" Description="Set tester mode">
@@ -606,8 +643,9 @@
 	<Parameter1 Name="Block ID: 0-all 1-GNRL, 2-DIGG, 3-RAST, 4-DCOR, 5-DEST, 6-CBUF, 7-JFIL, 8-PCKR, 9-STAT, A-INF" />
   </Command>
   <Command Name="LOW_TEMP_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x89"  CmdPermission="Public" Description="Set Low Temp thresholds: LDD">
-    <Parameter1 Name="LDD" />
-  </Command>      
+    <Parameter1 Name="LOWTH" />
+    <Parameter2 Name="LOWCRITICALTH" />
+  </Command>    
   <Command Name="THERMAL_MANAGER_STATUS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8A" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get thermal manager status">
      <ReadData> 
       <Section Name="CT_KILL_THRESHOLD_LD" Title="CT_KILL_THRESHOLD_LD" Offset="0" Size="1" FormatType="Unsigned" />
@@ -618,6 +656,19 @@
       <Section Name="LOW_TEMP_STATUS_LD" Title="LOW_TEMP_STATUS_LD" Offset="5" Size="1" FormatType="Unsigned" />
     </ReadData>
   </Command>  
+  <Command Name="ALGO_GNRL_CODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8D"  CmdPermission="Public" Description="Set algo gen general code length">
+    <Parameter1 Name="GNRLcodeLength" />
+    <Parameter2 Name="FRMWtxCode0" />
+    <Parameter3 Name="FRMWtxCode1" />
+    <Parameter4 Name="FRMWtxCode2" />
+    <Data Name="FRMWtxCode3" IsReverseBytes="false" FormatLength="32" />
+  </Command>  
+    <Command Name="LASER_GAIN_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8E"  CmdPermission="Public" Description="Set laser gain">
+    <Parameter1 Name="gain" />
+  </Command> 
+    <Command Name="SHOW_SHORT_RANGE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8F"  CmdPermission="Public" Description="Show short range">
+    <Parameter1 Name="min range (cm)" />
+  </Command>    
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
   </Command>
   <Command Name="MCSTOP" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA2" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTOP">
@@ -648,8 +699,9 @@
 	<Data IsReverseBytes="false" FormatLength="8" />
   </Command>
   <Command Name="MCGVD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA6" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCGVD">
-    <Section Name="FwVersion" Title="FW Version" Offset="0" Size="4" FormatType="HexNumber" />
-    <Section Name="AlgoVersion" Title="Algo Version" Offset="4" Size="4" FormatType="HexNumber" />
+    <ReadData>
+      <Section Name="FwVersion" Title="FW Version" Offset="0" Size="4" FormatType="ChangeSetVersion" />
+    </ReadData>
   </Command>
   <Command Name="MCLOG" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA7" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCLOG">
     <Parameter1 Name="groupNumber" />
@@ -664,5 +716,29 @@
     <Command Name="PRESET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x88" CmdPermission="Public" Description="Preset">
     <Parameter1 Name="Reset Type" />
   </Command>
-  
+    <Command Name="APD_LOW_TEMP_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8B" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="APD_LOW_TEMP_THRESHOLDS_SET in [C]">
+    <Parameter1 Name="start" />
+    <Parameter2 Name="stop" />
+    <ReadData> 
+      <Section Name="set validity (0-OK, else-Error code)" Title="SetValidity" Offset="0" Size="4" FormatType="Unsigned" IsDecimal="true" />
+      <Section Name="current tSenseStart (LE hex format)" Title="tSenseStart" Offset="4" Size="2" FormatType="HexNumber" IsDecimal="true" />
+      <Section Name="current tSenseStop  (LE hex format)" Title="tSenseStop" Offset="8" Size="2" FormatType="HexNumber" IsDecimal="true" />
+    </ReadData>
+  </Command>  
+    <Command Name="MIN_RANGE_INVALIDATION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8F" CmdPermission="Public" Description="AlgoGen:JFIL MIN range invalidation">
+    <Parameter1 Name="value" />
+  </Command>
+    <Command Name="PIXEL_INVALIDATION_BYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x90" CmdPermission="Public" Description="AlgoGen:JFILPIXEL invalidation bypass">
+    <Parameter1 Name="1 - enable, 0 - disable" />
+  </Command>
+    <Command Name="SPHERICAL_EN" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x91" CmdPermission="Public" Description="AlgoGen:DIGG Spherical enable">
+    <Parameter1 Name="1 - enable, 0 - disable" />
+  </Command>
+    <Command Name="SHADOW_UPDATE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x92" CmdPermission="Public" Description="ShadowUpdate">
+    <Parameter1 Name="Shadow Type" />
+    <Parameter2 Name="Mask" />
+  </Command> 
+    <Command Name="ENABLE_XGA_UPSCALE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x93" CmdPermission="Public" Description="ENABLE_XGA_UPSCALE">
+    <Parameter1 Name="Enable" />
+  </Command> 
 </Commands>

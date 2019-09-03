@@ -83,8 +83,8 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
         EPROMstructure = EPROMstructure.updatedEpromTable;
         eepromBin = uint8(eepromBin);
         eepromRegs = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
+        [regs] = struct_merge(regs , eepromRegs);
     end
-    [regs] = struct_merge(regs , eepromRegs);
     [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames] = TempDataFrame_Calc_int(regs,luts,eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 

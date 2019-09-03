@@ -22,7 +22,11 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
          end 
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         fprintff('opening stream...');
-        hw.startStream(0,runParams.calibRes); 
+        validateXGA = all(calibParams.validationConfig.validationRes==[768,1024]);
+        if validateXGA
+            hw.cmd('ENABLE_XGA_UPSCALE 1')
+        end
+        hw.startStream(0,calibParams.validationConfig.validationRes); 
         hw.getFrame;
         if (strcmp(runParams.configurationFolder,'releaseConfigCalibL520'))
             fprintff('\n L520 changing modRef to 0 \n');
@@ -120,14 +124,22 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 saveValidationData([],frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = delayRes;
             elseif strfind(enabledMetrics{i},'cbufUnderflow')
-              
-                frames = hw.getFrame(calibParams.validationConfig.cbufUnderflow.nFrames,0);
+%                 frames = hw.getFrame(1);
+%                 cbufRes.irFillRate = mean(frames.i(:)>0)*100;
+%                 fprintff('IR fill rate = %3.2f\n',cbufRes.irFillRate);
+%                 if cbufRes.irFillRate < 100
+%                     fprintff('Unit suffers from CBUF underflow or bad ROI calibration\n');
+%                 end
+%                 valResults = Validation.aux.mergeResultStruct(valResults, cbufRes);
+%                 
+                frames = hw.getFrame(calibParams.validationConfig.cbufUnderflow.numOfFrames,0);
                 fRates = arrayfun(@(s) mean(s.i(:)>0)*100,frames);
                 cbufRes.irFillRate = mean(fRates);
                 if cbufRes.irFillRate < 100
                     fprintff('Unit suffers from CBUF underflow or bad ROI calibration\n');
                 end
                 valResults = Validation.aux.mergeResultStruct(valResults, cbufRes);
+                
             elseif strfind(enabledMetrics{i},'dfz')
                 dfzConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(dfzConfig.numOfFrames);
@@ -156,14 +168,14 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 valResults = Validation.aux.mergeResultStruct(valResults, dsmRes);
                 saveValidationData(dbg,[],enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = dsmRes;
-            elseif strfind(enabledMetrics{i},'coverage')
-                covConfig = calibParams.validationConfig.(enabledMetrics{i});
-                [covScore,allCovRes, dbg,frames] = Calibration.validation.validateCoverage(hw,covConfig.sphericalMode,covConfig.numOfFrames,runParams);
-                covRes.irCoverage = covScore;
-                fprintff('ir Coverage:  %2.2g\n',covScore);
-                valResults = Validation.aux.mergeResultStruct(valResults, covRes);
-                saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
-                allResults.Validation.(enabledMetrics{i}) = allCovRes;
+%             elseif strfind(enabledMetrics{i},'coverage')
+%                 covConfig = calibParams.validationConfig.(enabledMetrics{i});
+%                 [covScore,allCovRes, dbg,frames] = Calibration.validation.validateCoverage(hw,covConfig.sphericalMode,covConfig.numOfFrames,runParams);
+%                 covRes.irCoverage = covScore;
+%                 fprintff('ir Coverage:  %2.2g\n',covScore);
+%                 valResults = Validation.aux.mergeResultStruct(valResults, covRes);
+%                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
+%                 allResults.Validation.(enabledMetrics{i}) = allCovRes;
             elseif strfind(enabledMetrics{i},'wait')
                  waitConfig = calibParams.validationConfig.(enabledMetrics{i});
                  fprintff('waiting for %d seconds...',waitConfig.timeoutSec);
@@ -251,7 +263,10 @@ function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fp
 %       LOS (default configuration)
 %% pre-capturing setting
     r = Calibration.RegState(hw);
-    r.add('JFILBypass$',true);
+    xgaRes = [768,1024];
+    if ~all(calibParams.validationConfig.validationRes == xgaRes)
+        r.add('JFILBypass$',true);
+    end
     r.set();
     pause(0.1);
 %% capturing

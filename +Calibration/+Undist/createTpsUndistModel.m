@@ -15,13 +15,15 @@ points2 - a 2xN values array - the correct values for the data
 if ~exist('runParams','var')
     runParams = [];
 end
-fprintf('Calculating Undist TPS model, be patience (should take around 2 minutes) ... ');
+% fprintf('Calculating Undist TPS model, be patience (should take around 2 minutes) ... ');
 tpsUndistModel = tpaps(points1,points2);
-fprintf('Done\n');
+% fprintf('Done\n');
 % avals = fnval(st,points1);
 
 if ~isempty(runParams)
-    save(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'),'tpsUndistModel');
+    dirname = fullfile(runParams.outputFolder,'AlgoInternal');
+    mkdirSafe(dirname)
+    save(fullfile(dirname,'tpsUndistModel.mat'),'tpsUndistModel');
 end
 % quiver(points1(1,:),points1(2,:),points2(1,:)-points1(1,:),points2(2,:)-points1(2,:))
 % quiver(points1(1,:),points1(2,:),points2(1,:)-avals(1,:),points2(2,:)-avals(2,:))

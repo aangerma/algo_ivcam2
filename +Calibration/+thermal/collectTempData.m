@@ -10,6 +10,11 @@ tempsForPlot = nan(1,pN);
 timesForPlot = nan(1,pN);
 plotDataI = 1;
 
+
+isXGA = all(runParams.calibRes==[768,1024]);
+if isXGA
+    hw.cmd('ENABLE_XGA_UPSCALE 1')
+end
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);

@@ -4,7 +4,7 @@ function [vers,subVersion,versionBytes] = calibToolVersion()
         vers = 3.01;
         subVersion = 0;
     else
-        vers = 3.08;
+        vers = 3.09;
         subVersion = 0;
     end
     
