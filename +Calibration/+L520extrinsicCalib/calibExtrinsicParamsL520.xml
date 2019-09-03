@@ -8,20 +8,24 @@
     <gnrl>
         <Nof2avg>30</Nof2avg>
         <originCamera>1</originCamera>
+        <verbose>1</verbose>
+        <outFolder>X:\Users\hila\L520\ExtrinsicCalib\newTarget\results\AnalyzeAve\data1-dis460</outFolder>
+        <originCamIndex>0</originCamIndex>
+        <calibRes>[152 232]</calibRes>
     </gnrl>
     <target>
         <cbSquareSz>30</cbSquareSz>
         <cbPtsSz>[]</cbPtsSz>
         <markerSpace>5</markerSpace>
+        <markersNumPerColor>4</markersNumPerColor>
+        <circleRad_mm>4.5</circleRad_mm>
         <blackMarkers>
-            <markersNum>4</markersNum>
-            <horizontalCBoffset>1</horizontalCBoffset>
-            <verticalCBoffset>12</verticalCBoffset>
+            <horizontalCBoffset>3</horizontalCBoffset>
+            <verticalCBoffset>11</verticalCBoffset>
         </blackMarkers>
         <whiteMarkers>
-            <markersNum>4</markersNum>
-            <horizontalCBoffset>20</horizontalCBoffset>
-            <verticalCBoffset>8</verticalCBoffset>
+            <horizontalCBoffset>3</horizontalCBoffset>
+            <verticalCBoffset>7</verticalCBoffset>
         </whiteMarkers>        
     </target>
     <errRange>
