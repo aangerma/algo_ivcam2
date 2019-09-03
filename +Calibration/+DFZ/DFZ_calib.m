@@ -27,6 +27,15 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         results.rtdDiffBetweenPresets = dfzresults.rtdDiffBetweenPresets;
         results.shortRangeImagesGeomErr = dfzresults.shortRangeImagesGeomErr;
         
+        
+        results.dfzScaleErrH = dfzresults.dfzScaleErrH;
+        results.dfzScaleErrV = dfzresults.dfzScaleErrV;
+        results.dfz3DErrH = dfzresults.dfz3DErrH;
+        results.dfz3DErrV = dfzresults.dfz3DErrV;
+        results.dfz2DErrH = dfzresults.dfz2DErrH;
+        results.dfz2DErrV = dfzresults.dfz2DErrV;
+        results.dfzPlaneFit = dfzresults.dfzPlaneFit;
+        
         DFZ_calib_Output(hw,fw,r,dfzRegs,results ,runParams,calibParams);
     else
         dfzRegs = struct;
@@ -48,7 +57,6 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     
     if strcmp(cap.type,'shortRange')
         Calibration.aux.switchPresetAndUpdateModRef( hw,2,calibParams,results );
-        pause(5);
     else
         im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
     end
@@ -139,7 +147,8 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         DFZRegs.DESTtxFRQpd         = hw.read('DESTtxFRQpd');
         DFZRegs.GNRLimgHsize        = hw.read('GNRLimgHsize');
         DFZRegs.GNRLimgVsize        = hw.read('GNRLimgVsize');
-
+        [saTilt, faTilt]        = Calibration.aux.readTiltsFromUnit(hw);
+        
         DFZRegs.FRMWmirrorMovmentMode       = regs.FRMW.mirrorMovmentMode; % uint16         (1)
         DFZRegs.FRMWxfov(mode)              = regs.FRMW.xfov(mode);        % single         (65)
         DFZRegs.FRMWyfov(mode)              = regs.FRMW.yfov(mode);        % single         (45)
@@ -171,7 +180,9 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         DFZRegs.FRMWfovexRadialK            = regs.FRMW.fovexRadialK;
         DFZRegs.FRMWfovexTangentP           = regs.FRMW.fovexTangentP;
         DFZRegs.FRMWfovexCenter             = regs.FRMW.fovexCenter;
-
+        DFZRegs.FRMWrtdOverY                = regs.FRMW.rtdOverY;
+        DFZRegs.FRMWsaTiltFromEs            = saTilt;
+        DFZRegs.FRMWfaTiltFromEs            = faTilt;
 end
 
 

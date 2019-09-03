@@ -200,10 +200,10 @@ classdef HWinterface <handle
         function sz = streamSize(obj)
             sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
         end
-        function setUsefullRegs(obj)
+        function setUsefullRegs(obj,res)
             obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
-            obj.usefullRegs.GNRL.imgVsize = obj.read('GNRLimgVsize');
-            obj.usefullRegs.GNRL.imgHsize = obj.read('GNRLimgHsize');
+            obj.usefullRegs.GNRL.imgVsize = res(1);
+            obj.usefullRegs.GNRL.imgHsize = res(2);
             %if(~logical(obj.read('JFILupscalexyBypass')))
             %    if(logical(obj.read('JFILupscalex1y0')))
             %        obj.usefullRegs.GNRL.imgHsize=2*obj.usefullRegs.GNRL.imgHsize;

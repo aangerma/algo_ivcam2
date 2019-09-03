@@ -1,4 +1,4 @@
-function [ avgRes ] = calcDfzMetrics( vertices,gridSize )
+function [ avgRes ,allRes] = calcDfzMetrics( vertices,gridSize )
 params.target.squareSize = 30;
 params.camera.zMaxSubMM = 4;
 params.camera.K = [730.1642         0  541.5000; 0  711.8812  386.0000 ; 0 0 1];% XGA K

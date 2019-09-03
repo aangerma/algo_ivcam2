@@ -30,7 +30,7 @@
    <errRange>
       <stdRtd>[0 inf]</stdRtd>
       <stdXim>[0 1.5]</stdXim>
-      <stdYim>[0 0.5]</stdYim>
+      <stdYim>[0 0.7]</stdYim>
       <stdXmm>[0 inf]</stdXmm>
       <stdYmm>[0 inf]</stdYmm>
       <stdZmm>[0 inf]</stdZmm>
@@ -40,7 +40,7 @@
       <p2pXmm>[0 inf]</p2pXmm>
       <p2pYmm>[0 inf]</p2pYmm>
       <p2pZmm>[0 inf]</p2pZmm>
-      <meanEGeom>[0 2.5]</meanEGeom>
+      <meanEGeom>[0 5]</meanEGeom>
       <minEGeom>[0 1.2]</minEGeom>
       <maxEGeom>[0 20]</maxEGeom>
       <xScale>[0 0.01]</xScale>

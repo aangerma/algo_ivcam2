@@ -3,8 +3,8 @@ GNRLcodeLength,uint8,1,d,00000064,d,00000052,d,00000052,d,00000052,h,00000020
 GNRLimgHsize,uint16,1,d,640,d,1024,d,1024,d,1024,d,152
 GNRLimgVsize,uint16,1,d,480,d,768,d,384,d,480,d,232
 GNRLsampleRate,uint8,1,h,00000008,h,00000008,h,00000008,h,00000008,h,00000010
-JFILgrad1bypass,logical,1,b,0,b,0,b,0,b,0,b,1
-JFILgrad2bypass,logical,1,b,1,b,0,b,0,b,0,b,0
+Reserved,single,1,h,0,h,0,h,00000000,h,00000000,h,0
+JFILgrad2bypass,logical,1,b,1,b,0,b,0,b,0,b,1
 JFILupscalex1y0,logical,1,b,1,b,1,b,0,b,1,b,1
 JFILupscalexyBypass,logical,1,b,1,b,1,b,0,b,1,b,1
 FRMWpllClock,single,1,f,3.984,f,3.984,f,3.984,f,3.984,f,0.996

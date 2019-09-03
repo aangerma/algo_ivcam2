@@ -12,6 +12,14 @@ function [regs,autogenRegs] = fwBootCalcs(regs,autogenRegs)
 KinvRaw=[regs.DEST.p2axa            0                   regs.DEST.p2axb;
     0                regs.DEST.p2aya               regs.DEST.p2ayb;
     0                0                   1    ];
+if ~regs.JFIL.upscalexyBypass
+    if regs.JFIL.upscalex1y0
+        KinvRaw(1,1) = KinvRaw(1,1)*single(regs.GNRL.imgHsize-1)/single(2*regs.GNRL.imgHsize-1);
+    else
+        KinvRaw(2,2) = KinvRaw(2,2)*single(regs.GNRL.imgVsize-1)/single(2*regs.GNRL.imgVsize-1);
+    end
+end
+
 KRaw=inv(KinvRaw);
 KRaw=abs(KRaw); % Make it so the K matrix is positive. This way the orientation of the cloud point is identical to DS.
 autogenRegs.FRMW.kRaw=typecast(KRaw([1 4 7 2 5 8 3 6]),'uint32');
@@ -21,8 +29,19 @@ autogenRegs.FRMW.kRaw=typecast(KRaw([1 4 7 2 5 8 3 6]),'uint32');
 % Calculate K matrix. Note - users image is rotated by 180 degrees in
 % respect to our internal representation.
 Kworld=KRaw;
-Kworld(1,3)=single(regs.GNRL.imgHsize)-1-KRaw(1,3);
-Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+if regs.JFIL.upscalexyBypass
+    Kworld(1,3)=single(regs.GNRL.imgHsize)-1-KRaw(1,3);
+    Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+else
+    if regs.JFIL.upscalex1y0
+        Kworld(1,3)=2*single(regs.GNRL.imgHsize)-1-KRaw(1,3);
+        Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+    else
+        Kworld(1,3)=single(regs.GNRL.imgHsize)-1-KRaw(1,3);
+        Kworld(2,3)=2*single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+    end
+end
+
 
 autogenRegs.CBUF.spare=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
 autogenRegs.FRMW.kWorld=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');

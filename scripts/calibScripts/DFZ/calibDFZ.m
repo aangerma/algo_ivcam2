@@ -37,12 +37,6 @@ if(~exist('x0','var') || isempty(x0))% If x0 is not given, using the regs used i
         regs.FRMW.polyVars, regs.FRMW.pitchFixFactor, regs.FRMW.undistAngHorz, regs.FRMW.undistAngVert,...
         regs.FRMW.fovexNominal, regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter,regs.FRMW.rtdOverY]);
 end
-if isfield(par,'zenith') && par.zenith.useEsTilt
-    [laserAngleH, laserAngleV] = getLaserAngleFromEsTilt(regs.FRMW.saTiltFromEs, regs.FRMW.faTiltFromEs, par.zenith);
-    x0(4:5) = [laserAngleH, laserAngleV]; % update guess
-    par.zenithxRange = laserAngleH*ones(1,2); % disable optimization
-    par.zenithyRange = laserAngleV*ones(1,2);
-end
 
 regs = x2regs(x0,regs);
 if iseval
@@ -187,8 +181,8 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel)
     end
     tanY = vUnit(:,2)./vUnit(:,3);
     rtd_=rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
-    rtd_=rtd_ + rtlRegs.FRMW.rtdOverY(1)*tanY.^2 + rtlRegs.FRMW.rtdOverY(2)*tanY.^4 + ...
-         + rtlRegs.FRMW.rtdOverY(3)*tanY.^6 ;
+    rtd_=rtd_ + rtlRegs.FRMW.rtdOverY(1)*tanY.^1 + rtlRegs.FRMW.rtdOverY(2)*tanY.^2 + rtlRegs.FRMW.rtdOverY(3)*tanY.^3 + ...
+         + rtlRegs.FRMW.rtdOverY(4)*tanY.^4 + rtlRegs.FRMW.rtdOverY(5)*tanY.^5 + rtlRegs.FRMW.rtdOverY(6)*tanY.^6;
     r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
     v = double(vUnit.*r);
     if nargout>1
@@ -311,7 +305,7 @@ iterRegs.FRMW.fovexNominal = single(x(18:21));
 iterRegs.FRMW.fovexRadialK = single(x(22:24));
 iterRegs.FRMW.fovexTangentP = single(x(25:26));
 iterRegs.FRMW.fovexCenter = single(x(27:28));
-iterRegs.FRMW.rtdOverY = single(x(29:31));
+iterRegs.FRMW.rtdOverY = single(x(29:34));
 if(~exist('rtlRegs','var'))
     rtlRegs=iterRegs;
     return;
@@ -364,8 +358,8 @@ for iParam = 1:length(optimizedParams)
             xL(22:28) = [par.fovexRadialRange(1,:), par.fovexTangentRange(1,:), par.fovexCenterRange(1,:)];
             xH(22:28) = [par.fovexRadialRange(2,:), par.fovexTangentRange(2,:), par.fovexCenterRange(2,:)];
         case 'rtdOnly'
-            xL([3,29:31]) = [par.delayRange(1),par.rtdOverTanYrange(1,:)];
-            xH([3,29:31]) = [par.delayRange(2),par.rtdOverTanYrange(2,:)];
+            xL([3,29:34]) = [par.delayRange(1),par.rtdOverTanYrange(1,:)];
+            xH([3,29:34]) = [par.delayRange(2),par.rtdOverTanYrange(2,:)];
     end
 end
 end
@@ -396,20 +390,4 @@ for iParam = 1:length(optimizedParams)
     end
 end
 fprintff('--> eGeom=%.2f.\n', err)
-end
-
-
-function [laserAngleH, laserAngleV] = getLaserAngleFromEsTilt(saTiltFromEs, faTiltFromEs, params)
-% fixing angles to spot
-if params.applyCorrection
-    saTiltFromEs = params.correctionCoefsHorz(1)*saTiltFromEs + params.correctionCoefsHorz(2);
-    faTiltFromEs = params.correctionCoefsVert(1)*faTiltFromEs + params.correctionCoefsVert(2);
-end
-% direction vector to spot
-z = 1/sqrt((tand(saTiltFromEs))^2 + (tand(faTiltFromEs))^2 + 1);
-x = z*tand(saTiltFromEs);
-y = z*tand(faTiltFromEs);
-% angles from mirror to impinging ray origin
-laserAngleH = -atand(x/z);
-laserAngleV = -asind(y);
 end

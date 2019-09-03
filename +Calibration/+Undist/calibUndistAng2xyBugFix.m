@@ -78,8 +78,7 @@ end
 [xbug,ybug] = Calibration.aux.ang2xySF(angx,angy,regs);
 % Apply the lut to the bugged x-y and calculate the displacement error:
 luts.FRMW.undistModel = udistLUT;
-[autogenRegs,autogenLuts] = Pipe.DIGG.FRMW.buildLensLUT(regs,luts);
-regs = Firmware.mergeRegs(regs,autogenRegs);
+[autogenLuts] = Pipe.DIGG.FRMW.BuildUndistLut(regs,luts);
 luts = Firmware.mergeRegs(luts,autogenLuts);
 [ xnew,ynew ] = Pipe.DIGG.undist( xbug*2^15,ybug*2^15,regs,luts,[],[] );
 xnew = single(xnew)/2^15;

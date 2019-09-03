@@ -104,7 +104,7 @@ else
     obj.m_dotnetcam.Stream.ConfigureAndPlay(camConfig);
     %% set regs configurations that affect image capturing
     pause(timeout);
-    obj.setUsefullRegs();
+    obj.setUsefullRegs(resolution);
 end
 end
 

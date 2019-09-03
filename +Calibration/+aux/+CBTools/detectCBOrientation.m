@@ -16,7 +16,6 @@ chosenI = indices(1);
 
 [i,j] = find(indOneColor);
 row = i(chosenI); col = j(chosenI);
-% col and row are the black circle centers
 targetRows = row + [-1;-1; 1; 1];
 targetCols = col + [-1; 1;-1; 1];
 
@@ -27,9 +26,8 @@ targetSquares = squeeze([pPerSq(targetRows(1),targetCols(1),:);
            pPerSq(targetRows(4),targetCols(4),:)]);
 cc = centerColor(IRFilt,targetSquares);
 [~,minI] = min(cc);
-% targetCols(minI), targetRows(minI) are the gray circle centers
-isLeft = targetCols(minI) < col; % true: gray is to the left of black
-isTop = targetRows(minI) < row; % true: gray is above black
+isLeft = targetCols(minI) < col;
+isTop = targetRows(minI) < row;
 
 ff = Calibration.aux.invisibleFigure;
 imagesc(IR);

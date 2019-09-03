@@ -1,9 +1,9 @@
 GNRLimgHsize            d1024     
-GNRLimgVsize            d768  
+GNRLimgVsize            d480  
 FRMWexternalHsize       d1024
-FRMWexternalVsize       d768
+FRMWexternalVsize       d480
 FRMWcalImgHsize         d1024     
-FRMWcalImgVsize         d768  
+FRMWcalImgVsize         d480
 FRMWxfov_000            f67.5     
 FRMWyfov_000            f60      
 FRMWlaserangleH         f0       
