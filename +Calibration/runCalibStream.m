@@ -727,9 +727,22 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
         else
            vDirStr = 'Bottom2Top'; 
         end
-        
+ 
         fprintff('Scan direction is: %s & %s\n',hDirStr,vDirStr);
-        calibPassed = (isLeft) && (~isTop);% Currenly the scan directoin makes it so the gray circle is below and to the left of the black circle.
+
+        % For L515, the scan direction makes it so the gray circle is *below* and to the left of the black circle
+        % For L520, the scan direction makes it so the gray circle is *above* and to the left of the black circle
+        if calibParams.scanDir.stickerLocationIsLeft
+            calibPassed = ~isLeft;
+        else
+            calibPassed = isLeft;
+        end    
+        if calibParams.scanDir.stickerLocationIsTop
+            calibPassed = calibPassed && ~isTop;
+        else
+            calibPassed = calibPassed && isTop;
+        end
+             
         if ~calibPassed
             fprintff('[x] Scan direction validation failed\n');
         end
