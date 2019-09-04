@@ -37,6 +37,6 @@ end
 [Extrinsic] = Calibration.L520extrinsicCalib.calibrateExtrinsic(camsData,calibParams);
 
 %% Validate extrinsic
-Calibration.L520extrinsicCalib.validateExtrinsic(Extrinsic,camsData)
+Calibration.L520extrinsicCalib.validateExtrinsic(Extrinsic,camsData,calibParams)
 end
 
