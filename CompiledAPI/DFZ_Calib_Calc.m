@@ -124,6 +124,9 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
     optionsFullEval = defaultDfzOptions; optionsFullEval.iseval = 1;
     evalDfzOnFull = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsFullEval);
 
+    optionsFullEvalWithPlanes = defaultDfzOptions; optionsFullEvalWithPlanes.iseval = 1;optionsFullEvalWithPlanes.verbose = 1;
+    evalDfzOnFullWithPlanes = @(inputs,tpsModel,x0,runPar) Calibration.aux.calibDFZ(inputs,regs,calibParams,fprintff,x0,runPar,tpsModel,optionsFullEvalWithPlanes);
+
     if calibParams.dfz.performRegularDFZWithoutTPS
         [dfzRegs,res,allVertices] = optDfzOnFull(framesData(trainImages),[],xbest,runParams);
         results.geomErr = res.geomErr;
@@ -140,7 +143,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(InputPath, calib_dir
         % Optimize System Delay again
         [dfzRegs,resOnCroppedPostRtdOpt,~,xbest] = optDfzOnCroppedRtdOnly(framesData(trainImages),tpsUndistModel,xbest,[]);
 
-        [~,resFullFinal,allVerticesFinal] = evalDfzOnFull(framesData(trainImages),tpsUndistModel,xbest,runParams);
+        [~,resFullFinal,allVerticesFinal] = evalDfzOnFullWithPlanes(framesData(trainImages),tpsUndistModel,xbest,runParams);
         [~,resCroppedFinal,croppedVerticesFinal] = evalDfzOnCropped(framesData(trainImages),tpsUndistModel,xbest,[]);
 
         gridSize = framesData(1).grid(1:2);
