@@ -46,10 +46,13 @@ end
 
 regs = x2regs(x0,regs);
 if iseval
-    [geomErr,~,allVertices]=errFunc(darr,regs,x0,useCropped,runParams,tpsUndistModel);
+    [geomErr,~,allVertices,eAll]=errFunc(darr,regs,x0,useCropped,runParams,tpsUndistModel);
     results.geomErr = geomErr;
     xbest = x0;
     outregs = [];
+    if verbose
+        printPlaneAng(darr,regs,xbest,fprintff,0,eAll,tpsUndistModel);
+    end
     return
 end
 
@@ -108,8 +111,9 @@ outregs_full = outregs;
 outregs = x2regs(xbest);
 printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist, fprintff)
 printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, results.geomErr, fprintff)
-
-printPlaneAng(darr,outregs_full,xbest,fprintff,0,eAll,tpsUndistModel);
+if verbose
+    printPlaneAng(darr,outregs_full,xbest,fprintff,0,eAll,tpsUndistModel);
+end
 % calcScaleError(darr,outregs_full,xbest,fprintff,0,runParams,tpsUndistModel);
 %% Do it for each in array
 % if nargout > 3
@@ -412,4 +416,5 @@ y = z*tand(faTiltFromEs);
 % angles from mirror to impinging ray origin
 laserAngleH = -atand(x/z);
 laserAngleV = -asind(y);
+
 end
