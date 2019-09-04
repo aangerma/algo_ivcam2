@@ -1,6 +1,5 @@
 function [Extrinsic,camsAnalysis] = calibrateExtrinsic(camsData,calibParams)
 Extrinsic=[];
-originIndex=calibParams.gnrl.originCamera;
 camsAnalysis=cell(size(camsData)) ; Extrinsic=cell(size(camsData));
 if(calibParams.gnrl.verbose)
     mkdirSafe(calibParams.gnrl.outFolder);

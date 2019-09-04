@@ -21,22 +21,22 @@ for i=1:camNum
     else 
         rot=0; 
     end        
-    AveIrframes = io.readBinsAndAverage(dataPath, 'I', 'bin',calibParams.gnrl.calibRes,8);
-    AveZframes = io.readBinsAndAverage(dataPath, 'Z', 'bin',calibParams.gnrl.calibRes,16);
+    AveIrframes = io.readBinsAndAverage(dataPath, 'I', 'bin',calibParams.camera.calibRes,8);
+    AveZframes = io.readBinsAndAverage(dataPath, 'Z', 'bin',calibParams.camera.calibRes,16);
     camsData{i}.Frames.i=rot90(AveIrframes,rot);
     camsData{i}.Frames.z=rot90(AveZframes,rot);
     loadK=load(strcat(dataPath,'\K.mat')); 
     K=loadK.K; 
 
     camsData{i}.params.K=K; 
-    camsData{i}.params.zMaxSubMM = 4;
+    camsData{i}.params.zMaxSubMM = calibParams.camera.zMaxSubMM;
 end
 % Rotate images- if needed acording to input
 
 %% cailbrate extrinsic
-[Extrinsic,camsAnalysis] = Calibration.L520extrinsicCalib.calibrateExtrinsic(camsData,calibParams);
+[Extrinsic] = Calibration.L520extrinsicCalib.calibrateExtrinsic(camsData,calibParams);
 
 %% Validate extrinsic
-Calibration.L520extrinsicCalib.validateExtrinsic(Extrinsic,camsAnalysis)
+Calibration.L520extrinsicCalib.validateExtrinsic(Extrinsic,camsData)
 end
 

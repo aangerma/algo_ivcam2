@@ -6,13 +6,14 @@
         <testMode>ATP</testMode>
     </sparkParams>
     <gnrl>
-        <Nof2avg>30</Nof2avg>
-        <originCamera>1</originCamera>
         <verbose>1</verbose>
-        <outFolder>X:\Users\hila\L520\ExtrinsicCalib\newTarget\results\AnalyzeAve\data1-dis460</outFolder>
+        <outFolder>X:\Users\hila\L520\ExtrinsicCalib\newTarget\results\temp</outFolder>
         <originCamIndex>0</originCamIndex>
-        <calibRes>[152 232]</calibRes>
     </gnrl>
+    <camera>
+        <calibRes>[152 232]</calibRes>
+        <zMaxSubMM>4</zMaxSubMM>       
+    </camera>
     <target>
         <cbSquareSz>30</cbSquareSz>
         <cbPtsSz>[]</cbPtsSz>
@@ -30,6 +31,9 @@
     </target>
     <errRange>
     </errRange>
+    <validation>
+        <roi>1</roi>
+    </validation>
     
     
     
