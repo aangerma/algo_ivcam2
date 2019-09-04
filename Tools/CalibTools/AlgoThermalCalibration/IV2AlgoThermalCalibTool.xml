@@ -14,8 +14,8 @@
    <cb_manualCaptures>0</cb_manualCaptures>
    <cb_performValidation>0</cb_performValidation>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
-   <configurationFolder>releaseConfigCalibXGA</configurationFolder>
+   <calibRes>[480,1024]</calibRes>
+   <configurationFolder>releaseConfigCalibVXGA</configurationFolder>
    <calibParamsFile>calibParams.xml</calibParamsFile>
-   <calibRes>[768,1024]</calibRes>
    <toolName>IV2 Algo Thermal Calibration Tool</toolName>
 </struct>

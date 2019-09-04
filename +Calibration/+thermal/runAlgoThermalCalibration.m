@@ -95,7 +95,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     fprintff('[-] Thermal loop calibration...\n');
     if runParams.thermalLoop
         %% load EPROM structure suitible for calib version tool
-        [regs, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams);
+        [regs, luts, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams);
         regs.EXTL.conLocDelaySlow   = delayRegs.EXTL.conLocDelaySlow;
         regs.EXTL.conLocDelayFastC  = delayRegs.EXTL.conLocDelayFastC;
         regs.EXTL.conLocDelayFastF  = delayRegs.EXTL.conLocDelayFastF;
@@ -109,7 +109,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
         if runParams.coolDown
             coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); % cool down
         end
-        [calibPassed, results] = Calibration.thermal.AlgoThermalCalib(hw, regs, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxHeatTime, app);
+        [calibPassed, results] = Calibration.thermal.AlgoThermalCalib(hw, regs, luts, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxHeatTime, app);
     else
         fprintff('skipped\n');
     end

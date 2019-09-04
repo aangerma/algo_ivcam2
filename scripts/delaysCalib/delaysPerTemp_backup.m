@@ -6,7 +6,7 @@ clc
 % thermal loop
 samplingTime = 20; % [sec] for checking status
 dTempThresh = 3; % [deg] for initiating calibration
-t_timeout = 30*60; % [sec] for termination
+t_timeout = 20*60; % [sec] for termination
 
 % calibration parameters
 calibParams.gnrl.Nof2avg = 30;
@@ -18,9 +18,9 @@ calibParams.dataDelay.calibrateFast = 1;
 calibParams.dataDelay.sphericalScaleFactors = [1 1];
 
 % run parameters
-outputFolderBasic = 'D:\temp\delayPerTemp\';
-res = [480,640];
-% res = [768,1024];
+res = [480,640]; outputFolderBasic = 'D:\temp\delayPerTempVGA\';
+% res = [768,1024]; outputFolderBasic = 'D:\temp\delayPerTempXGA\';
+sphericalScaleFactor = [1.2,1.1];
 
 %% Initializations
 
@@ -32,9 +32,12 @@ ind = strfind(unitInfo, 'OpticalHeadModuleSN:          ');
 serialNum = unitInfo(ind+30:ind+37);
 hw.startStream(0,res)
 hw.setReg('DIGGsphericalEn',1);
+hw.write('DIGGsphericalScale',typecast(uint16(flip(res.*sphericalScaleFactor)),'uint32'))
 hw.shadowUpdate();
 Calibration.dataDelay.setAbsDelay(hw, calibParams.dataDelay.fastDelayInitVal, calibParams.dataDelay.slowDelayInitVal);
 nFrames = 1;
+x = hw.getFrame(nFrames);
+figure(1), imagesc(x.i), pause(2), close(1)
 
 % control parameters
 t0 = tic;
@@ -47,12 +50,14 @@ thermalLdd = zeros(0,1);
 % results
 calibTimes = zeros(0,1); % [min]
 temps = zeros(0,1); % [deg]
+biases = zeros(0,1); % [V]
 delays = zeros(0,2); % [IR, Z]
 
 %% Thermal loop
 fprintf('Starting thermal loop...\n')
 while (curr_t < t_timeout)
     tempLdd = hw.getLddTemperature;
+    [~, vBias2] = hw.pzrPowerGet(2,5);
     % waiting for required temperature change
     while (tempLdd-prev_temp < dTempThresh) && (curr_t < t_timeout)
         pause(samplingTime)
@@ -75,6 +80,7 @@ while (curr_t < t_timeout)
     fprintf('IR delay = %d   ;   Z delay = %d\n', curDelays(1), curDelays(2))
     calibTimes = [calibTimes; curr_t/60];
     temps = [temps; tempLdd];
+    biases = [biases; vBias2];
     delays = [delays; curDelays];
     figure(9853), plot(calibTimes, temps, 'ro')
     % saving pre calibration & post calibration images (with first calibration serving as reference)
@@ -88,5 +94,5 @@ while (curr_t < t_timeout)
     save([outputFolderBasic, sprintf('epoch_%d_post.mat',epoch)], 'x')
 end
 fprintf('Reached timeout after %.1f[min]\n', curr_t/60)
-save(sprintf('%s.mat', serialNum), 'temps', 'delays')
+save(sprintf('%s.mat', serialNum), 'temps', 'biases', 'delays')
 hw.stopStream();

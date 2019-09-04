@@ -23,10 +23,10 @@
    <cb_saveRegState>0</cb_saveRegState>
    <cb_FOVexInstalled>1</cb_FOVexInstalled>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
-   <configurationFolder>releaseConfigCalibXGA</configurationFolder>
+   <configurationFolder>releaseConfigCalibVXGA</configurationFolder>
    <presetsDefFolder>defaultValues</presetsDefFolder>
-   <calibParamsFile>calibParamsXGA.xml</calibParamsFile>
-   <calibRes>[768,1024]</calibRes>
+   <calibParamsFile>calibParamsVXGA.xml</calibParamsFile>
    <disableAdvancedOptions>0</disableAdvancedOptions>
    <toolName>IV2 Algo Camera Calibration Tool</toolName>
+   <calibRes>[480,1024]</calibRes>
 </struct>

@@ -18,7 +18,7 @@
    <cb_burnConfigurationToDevice>1</cb_burnConfigurationToDevice>
    <cb_debug>0</cb_debug>
    <cb_pre_calib_validation>0</cb_pre_calib_validation>
-   <cb_post_calib_validation>0</cb_post_calib_validation>
+   <cb_post_calib_validation>1</cb_post_calib_validation>
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
    <cb_FOVexInstalled>0</cb_FOVexInstalled>

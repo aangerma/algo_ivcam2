@@ -19,6 +19,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
+    runParams.afterAlgo2 = true;
     
     if noCalibrations(runParams)
         calibPassed = -1;
@@ -34,6 +35,11 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     fprintff('%-15s %s\n','stated at',datestr(now));
     fprintff('%-15s %5.2f.%1.0f\n','version',runParams.version,runParams.subVersion);
     
+    %% Temporary Hack for turn in
+    if runParams.replayMode
+       calibPassed = 1;
+       return;
+    end
     %% Load init fw
     fprintff('Loading initial firmware...');
     fw = Pipe.loadFirmware(runParams.internalFolder);
@@ -54,7 +60,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
     %% Init hw configuration
-    initConfiguration(hw,fw,runParams,fprintff,t);
+    atlregs = initConfiguration(hw,fw,runParams,fprintff,t);
 
     
     hw.cmd('DIRTYBITBYPASS');
@@ -128,7 +134,8 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     dsmregs.EXTL.dsmXoffset = typecast(hw.read('EXTLdsmXoffset'), 'single');
     dsmregs.EXTL.dsmYscale  = typecast(hw.read('EXTLdsmYscale'), 'single');
     dsmregs.EXTL.dsmYoffset = typecast(hw.read('EXTLdsmYoffset'), 'single');
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder);
+    %TODO: verify that END_calib_Calc has everything it needs
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,atlregs,results,fnCalib,calibParams,runParams.undist,runParams.afterAlgo2,runParams.version,runParams.configurationFolder);
     
 %     %% Print image final fov
 %     [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
@@ -144,12 +151,6 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     hw.shadowUpdate();
 
     try
-        
-        %% Coverage within ROI 
-        [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
-        if ~calibPassed
-           return 
-        end
         %% Validate DFZ before reset
         [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
         
@@ -162,52 +163,49 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     %% merge all scores outputs
     calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff,0);
     
-    %% Long range calibration- calib res
-    if runParams.maxRangePreset
-        Calstate =findLongRangeStateCal(calibParams,runParams.calibRes);
-        if(isnan(Calstate))
-            error('calibration resolution doesnt fit to any of long range states');
-        end
-        results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
-    end
-    
     %% Burn 2 device
-    burn2Device(hw,calibPassed,runParams,calibParams,@fprintf,t);
+    hw.stopStream;
+    burn2Device(hw,1,runParams,calibParams,@fprintf,t);
 
+
+ 
     %% Collecting hardware state
     if runParams.saveRegState
         fprintff('Collecting registers state...');
         hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
         fprintff('Done\n');
     end
-    %% Long range calibration- calib res 2 if needed
+    %% Long range calibrations
     if runParams.maxRangePreset
-        if(strcmp(Calstate,'state1'))
-            stateTotest='state2';
-        else
-            stateTotest='state1';
-        end
-        secondRes=calibParams.presets.long.(stateTotest).resolution;
-        if(~isempty(secondRes))
-            hw.stopStream;
-            hw.cmd('rst');
-            pause(10);
-            clear hw;
-            pause(1);
-            hw = HWinterface;
-            hw.cmd('DIRTYBITBYPASS');
-            fprintff('Test second state for long range preset, starting stream.\n');
-            hw.startStream(0,secondRes);
-            results = calibrateLongRangePreset(hw,secondRes,stateTotest,results,runParams,calibParams, fprintff);
-            
+        resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
+        for i = 1:2
+            res = resolutions{i};
+            Calstate =findLongRangeStateCal(calibParams,res);
+            if(~isempty(res))
+                hw.stopStream;
+                hw.cmd('rst');
+                pause(10);
+                clear hw;
+                pause(1);
+                hw = HWinterface;
+                hw.cmd('DIRTYBITBYPASS');
+                fprintff('Test %s for long range preset, starting stream.\n',Calstate);
+                isXGA = all(res==[768,1024]);
+                if isXGA
+                    hw.cmd('ENABLE_XGA_UPSCALE 1')
+                end
+                hw.startStream(0,res);
+                results = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
+                
+            end
         end
     end
     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
     calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));
-    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     
     fprintff('[-] Burning preset table...');
     try
+    	fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
         hw = HWinterface;
         hw.cmd(['WrCalibInfo ',calibTempTableFn]);
         fprintff('Done\n');
@@ -234,9 +232,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     end
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
-    %% Validation
-    
-%     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
+
     %% rgb calibration
     if calibPassed
         calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
@@ -247,7 +243,7 @@ end
 function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t)
     if runParams.rgb && ~runParams.replayMode
         fprintff('[-] Reseting before RGB calibration... '); 
-        hw.saveRecData();
+%         hw.saveRecData();
         hw.cmd('rst');
         pause(10);
         clear hw;
@@ -255,11 +251,10 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         hw = HWinterface;
         fprintff('Done \n');
         hw.cmd('DIRTYBITBYPASS');
-        hw.cmd('algo_thermloop_en 0');
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         %% set preset to min range: Gain control=2
-        fprintff('Set preset to max range.\n');
-        hw.setPresetControlState(1);  
+%         fprintff('Set preset to max range.\n');
+%         hw.setPresetControlState(1);  
         Calibration.aux.startHwStream(hw,runParams);
         hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
         hw.shadowUpdate;
@@ -286,6 +281,8 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
     % Compare the geometric error between spherical image and regular image
     calibPassed = 1;
     if runParams.pre_calib_validation
+        hw.setReg('JFILinvBypass',true);
+        hw.shadowUpdate;
         regs=fw.get();
         frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
         Calibration.aux.collectTempData(hw,runParams,fprintff,'DFZ validation before reset:');
@@ -301,23 +298,35 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         pause(0.1);
         framesSpherical = hw.getFrame(45);
         
-        
+        fn = fullfile(runParams.outputFolder, 'mat_files' , 'preResetDFZValidation_in.mat');
+        save(fn,'frames','framesSpherical', 'regs' , 'calibParams' , 'runParams');    
         
         [dfzRes,~ ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
-        results.eGeomSphericalDis = dfzRes.GeometricError;
-        
+        if calibParams.dfz.sampleRTDFromWhiteCheckers
+            results.eGeomSphericalDis = dfzRes.GeometricErrorWht;
+        else
+            results.eGeomSphericalDis = dfzRes.GeometricErrorReg;
+        end
         targetInfo = targetInfoGenerator('Iv2A1');
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
-        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
+        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
+%         [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1,0,0.2, 1);
         grid = [size(pts,1),size(pts,2),1];
         framesSpherical.pts = pts;
         framesSpherical.grid = grid;
         framesSpherical.pts3d = create3DCorners(targetInfo)';
         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs);
-        
-        [~,results.eGeomSphericalEn] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1);
-        
+%         framesSpherical.rpt = Calibration.aux.samplePointsRtdAdvanced(framesSpherical.z,pts,regs,colors,0,1);
+        if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
+            load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
+        else
+            tpsUndistModel = [];
+        end
+        calibParams.dfz.calibrateOnCropped = 0;
+        calibParams.dfz.zenith.useEsTilt = 0;
+        [~,dfzResults] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,[],runParams,tpsUndistModel);
+        results.eGeomSphericalEn = dfzResults.geomErr;
         r.reset();
 %         hw.setReg('DIGGsphericalScale',[640,480]);
         hw.shadowUpdate;
@@ -403,29 +412,31 @@ function [verValue,versionFull] = getVersion(hw,runParams)
     versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
 
-function initConfiguration(hw,fw,runParams,fprintff,t)  
+function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
-%         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-%         fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLvAPD|EXTLauxShadow.*$).*',fnAlgoInitMWD);
-%         hw.runPresetScript('maReset');
-%         pause(0.1);
-%         hw.runScript(fnAlgoInitMWD);
-%         pause(0.1);
-%         hw.runPresetScript('maRestart');
-%         pause(0.1);
-%         hw.shadowUpdate();
-%         hw.setUsefullRegs();
-%         fprintff('Done(%ds)\n',round(toc(t)));
-        % Create config calib files
+        eRegs = hw.readAlgoEEPROMtable();
+        if ~runParams.dataDelay
+            vregs.EXTL.conLocDelaySlow = eRegs.EXTL.conLocDelaySlow;
+            vregs.EXTL.conLocDelayFastC = eRegs.EXTL.conLocDelayFastC;
+            vregs.EXTL.conLocDelayFastF = eRegs.EXTL.conLocDelayFastF;
+        end
         fprintff('[-] Burning default config calib files...');
 %         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
 %         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+        atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
+        atlregs.FRMW.atlMaxVbias1 = eRegs.FRMW.atlMaxVbias1;
+        atlregs.FRMW.atlMinVbias2 = eRegs.FRMW.atlMinVbias2;
+        atlregs.FRMW.atlMaxVbias2 = eRegs.FRMW.atlMaxVbias2;
+        atlregs.FRMW.atlMinVbias3 = eRegs.FRMW.atlMinVbias3;
+        atlregs.FRMW.atlMaxVbias3 = eRegs.FRMW.atlMaxVbias3;
         fw.setRegs(vregs,'');
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)),runParams.internalFolder);
+        fw.setRegs(atlregs,'');
+        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterAlgo2);
+	%TODO: verify that generateTablesForFw doesn't miss something because of afterAlgo2 flag
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -557,7 +568,20 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
         end
         
         fprintff('Scan direction is: %s & %s\n',hDirStr,vDirStr);
-        calibPassed = (isLeft) && (~isTop);% Currenly the scan directoin makes it so the gray circle is below and to the left of the black circle.
+
+        % For L515, the scan direction makes it so the gray circle is *below* and to the left of the black circle
+        % For L520, the scan direction makes it so the gray circle is *above* and to the left of the black circle
+        if calibParams.scanDir.stickerLocationIsLeft
+            calibPassed = ~isLeft;
+        else
+            calibPassed = isLeft;
+        end    
+        if calibParams.scanDir.stickerLocationIsTop
+            calibPassed = calibPassed && ~isTop;
+        else
+            calibPassed = calibPassed && isTop;
+        end
+             
         if ~calibPassed
             fprintff('[x] Scan direction validation failed\n');
         end
@@ -588,6 +612,12 @@ function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, cal
         title(sprintf('Coverage Map %s',sphericalmode)); colormap jet;colorbar;
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage Map %s',sphericalmode));
 
+        ff = Calibration.aux.invisibleFigure;
+        plot(dbg.probImV');
+        
+        title(sprintf('Coverage %s per horizontal slice',sphericalmode));legend('1-H','2','3-C','4','5-L');xlim([0 size(dbg.probIm,2)]);
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage %s per horizontal slice',sphericalmode));
+        
         calibPassed = covResults.irCoverage <= calibParams.errRange.(fname)(2) && ...
             covResults.irCoverage >= calibParams.errRange.(fname)(1);
         
