@@ -26,7 +26,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         if validateXGA
             hw.cmd('ENABLE_XGA_UPSCALE 1')
         end
-        hw.startStream(0,calibParams.validationConfig.validationRes); 
+        hw.startStream(0,calibParams.validationConfig.validationRes,calibParams.rgb.imSize); 
         hw.getFrame;
         if (strcmp(runParams.configurationFolder,'releaseConfigCalibL520'))
             fprintff('\n L520 changing modRef to 0 \n');
@@ -195,6 +195,11 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 fRates = arrayfun(@(s) mean(s.i(:)>0)*100,frames);
                 oldXGACbufRes.cbufUnderflowOldXGA = mean(fRates) < 100;
                 valResults = Validation.aux.mergeResultStruct(valResults, oldXGACbufRes);
+			elseif strfind(enabledMetrics{i},'RGB')
+                 [rgbRes,frames,dbg] = Calibration.validation.validateRGB(hw, calibParams,runParams, fprintff);
+                 valResults = Validation.aux.mergeResultStruct(valResults, rgbRes);
+                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
+                 allResults.Validation.(enabledMetrics{i}) = rgbRes;
             end
         end
         Calibration.aux.collectTempData(hw,runParams,fprintff,'End of validation:');

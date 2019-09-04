@@ -122,6 +122,9 @@
             <sphericalMode>0</sphericalMode>
         </los>
         <cbufUnderFlowOldXGA></cbufUnderFlowOldXGA>
+	 <rgb>
+             <numOfFrames>30</numOfFrames>
+        </rgb>
         <dsm></dsm>
         <readRegState>
         </readRegState>
