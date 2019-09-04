@@ -183,6 +183,18 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                  fprintff('Done.\n');
             elseif strfind(enabledMetrics{i},'warmUp')
                  Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
+            elseif strfind(enabledMetrics{i},'cbufUnderFlowOldXGA')
+                hw.stopStream;
+                hw.cmd('ENABLE_XGA_UPSCALE 0');
+                hw.startStream(0,[768,1024]);
+                hw.getFrame;
+                hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+                hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+                
+                frames = hw.getFrame(calibParams.validationConfig.cbufUnderflow.numOfFrames,0);
+                fRates = arrayfun(@(s) mean(s.i(:)>0)*100,frames);
+                oldXGACbufRes.cbufUnderflowOldXGA = mean(fRates) < 100;
+                valResults = Validation.aux.mergeResultStruct(valResults, oldXGACbufRes);
             end
         end
         Calibration.aux.collectTempData(hw,runParams,fprintff,'End of validation:');

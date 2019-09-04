@@ -119,9 +119,9 @@
         <roi></roi>
         <los>
             <numOfFrames>100</numOfFrames>
-            <sphericalMode>1</sphericalMode>
+            <sphericalMode>0</sphericalMode>
         </los>
-        
+        <cbufUnderFlowOldXGA></cbufUnderFlowOldXGA>
         <dsm></dsm>
         <readRegState>
         </readRegState>
@@ -138,7 +138,7 @@
     <validationErrRange>
         <irFillRate>[99.99,100]</irFillRate>
         <horizontalSharpness>[1 4.8]</horizontalSharpness>
-        <verticalSharpness>[1 3]</verticalSharpness>
+        <verticalSharpness>[1 4]</verticalSharpness>
         <temporalNoise>[0.2 10]</temporalNoise>
         <DelaySlowOffest>[0 inf]</DelaySlowOffest>
         <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
@@ -149,13 +149,13 @@
         <irDistanceDrift>[-5 5]</irDistanceDrift>
         <roiHorizontalLoss>[0 10]</roiHorizontalLoss>
         <roiVerticalLoss>[0 4]</roiVerticalLoss>
-        <losMaxP2p>[0 3.2]</losMaxP2p>
+        <losMaxP2p>[0 4]</losMaxP2p>
         <losMeanStdX>[0 0.48] </losMeanStdX>
-        <losMeanStdY>[0 0.2]</losMeanStdY>
+        <losMeanStdY>[0 0.25]</losMeanStdY>
         <MirrorRestAngX>[-30 30]</MirrorRestAngX>
         <MirrorRestAngY>[-30 30]</MirrorRestAngY>
         <irCoverage>[80 100]</irCoverage>
-        <presetCompareMeanDiff>[-2 2]</presetCompareMeanDiff>
+        <presetCompareMeanDiff>[-2.5 2.5]</presetCompareMeanDiff>
         <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
         <lineFitMeanRmsErrHor3dReg>[0 inf]</lineFitMeanRmsErrHor3dReg>
         <lineFitMeanRmsErrVer3dReg>[0 inf]</lineFitMeanRmsErrVer3dReg>
@@ -193,6 +193,7 @@
         <meanAbsHorzScaleErrorWht>[0 inf]</meanAbsHorzScaleErrorWht>
         <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
         <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
+        <cbufUnderflowOldXGA>[-inf inf]</cbufUnderflowOldXGA>
     </validationErrRange>   
     <thermal>
         <t0>32.8</t0>
