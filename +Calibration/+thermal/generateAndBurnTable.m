@@ -1,8 +1,11 @@
 function generateAndBurnTable(hw,eepromRegs, table,calibParams,runParams,fprintff,calibPassed,data,calib_dir)
 % Creates a binary table as requested
 
-tableShifted = int16(table * 2^8); % FW expected format
-
+dsmTable = table(:,1:4);
+rtdTable = table(:,5);
+dsmTable = uint16(dsmTable*2^8);
+rtdTable = typecast(int16(rtdTable*2^8),'uint16');
+tableShifted = [dsmTable,rtdTable]; % FW expected format
 
 version = typecast(eepromRegs.FRMW.calibVersion,'single');
 whole = floor(version);
