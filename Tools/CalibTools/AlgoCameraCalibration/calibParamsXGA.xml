@@ -67,6 +67,13 @@
         <EXTLconLocDelayFastC>[-inf,inf]</EXTLconLocDelayFastC>
         <EXTLconLocDelayFastF>[-inf,inf]</EXTLconLocDelayFastF>
         <DESTtxFRQpd>[-inf,inf]</DESTtxFRQpd>
+        <dfzScaleErrH>[0,inf]</dfzScaleErrH>
+        <dfzScaleErrV>[0,inf]</dfzScaleErrV>
+        <dfz3DErrH>[0,inf]</dfz3DErrH>
+        <dfz3DErrV>[0,inf]</dfz3DErrV>
+        <dfz2DErrH>[0,inf]</dfz2DErrH>
+        <dfz2DErrV>[0,inf]</dfz2DErrV>
+        <dfzPlaneFit>[0,inf]</dfzPlaneFit>
     </errRange>
     <validationConfig>
         <!-- in this section the test plan is listed.available metrics:
@@ -87,7 +94,6 @@
             <numOfFrames>30</numOfFrames>
         </dfz>
         <cbufUnderflow>
-            <nFrames>10</nFrames>
         </cbufUnderflow>
         <coverage>
             <numOfFrames>50</numOfFrames>
@@ -194,9 +200,8 @@
         <performRegularDFZWithoutTPS>0</performRegularDFZWithoutTPS>
         <shortRangeCompareROI>0.4</shortRangeCompareROI>
         <sphericalScaleFactors>[1.05,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
-        <cropRatios>[0.15 0.15]</cropRatios>
+        <cropRatios>[0.2 0.0005;0.0005 0.2]</cropRatios>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
-        <calibrateOnlyCropped>0</calibrateOnlyCropped>
         <captures>
             <!--<capture>
                 <target>Iv2L50</target>
@@ -265,7 +270,7 @@
         <undistHorzRange>[-100,-100,-100,-100;100,100,100,100]</undistHorzRange>
         <undistVertRange>[-50,-50,-50,-50;50,50,50,50]</undistVertRange>
         <fovexNominalRange>[-0.1,-0.01,-0.001,0.000003;0.1,0.01,0.001,0.000004]</fovexNominalRange>
-        <fovexRadialRange>[-1,-1,-1;1,1,1]</fovexRadialRange>
+        <fovexRadialRange>[0,0,0;0,0,0]</fovexRadialRange>
         <fovexTangentRange>[0,0;0,0]</fovexTangentRange>
         <fovexCenterRange>[0,0;0,0]</fovexCenterRange>
     </dfz>

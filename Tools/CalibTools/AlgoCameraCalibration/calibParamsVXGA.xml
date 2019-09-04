@@ -1,148 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
-   <sparkParams>
+    <sparkParams>
         <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
         <azureFolder>E:\SPARK\iv2-cal-01 (azure.spark@intel.com)</azureFolder>
         <testMode>ATP</testMode>
-   </sparkParams>
-   <gnrl>
-       <configCalibDirName>releaseConfigCalibVGA</configCalibDirName>
-       <!--<internalImSize>[360,640]</internalImSize>
+    </sparkParams>
+    <gnrl>
+        <configCalibDirName>releaseConfigCalibVXGA</configCalibDirName>
+        <!--<internalImSize>[360,640]</internalImSize>
        <externalImSize>[360,640]</externalImSize>-->
-       <irInnerRange>[0,255]</irInnerRange>
-       <irOuterRange>[0,255]</irOuterRange>
-       <!--<zNorm>4</zNorm>
+        <irInnerRange>[0,255]</irInnerRange>
+        <irOuterRange>[0,255]</irOuterRange>
+        <!--<zNorm>4</zNorm>
        <minRange>200</minRange>-->
-       <cbSquareSz>30</cbSquareSz>
-       <cbPtsSz>[]</cbPtsSz>
-       <Nof2avg>30</Nof2avg>
-       <lddTKill>75</lddTKill>
-       <mcTKill>[]</mcTKill>
-       <maTKill>[]</maTKill>
-       <apdTKill>65</apdTKill>
-       <disableMetaData>0</disableMetaData>
-   </gnrl>
-   <warmUp>
-       <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
-   </warmUp>
-   <errRange>
-      <geomErr>[0.01 1.61]</geomErr>
-      <extraImagesGeomErr>[0 2]</extraImagesGeomErr>
-      <shortRangeImagesGeomErr>[0.01 1.6]</shortRangeImagesGeomErr>
-      <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
-      <eGeomSphericalEn>[0.01 2]</eGeomSphericalEn>
-      <eGeomSphericalDis>[0.01 2]</eGeomSphericalDis>
-      <gammaErr>[0 inf]</gammaErr>
-      <maxPixelDisplacement>[0.0 2]</maxPixelDisplacement>
-      <undistRms>[0.0 inf]</undistRms>
-      <upDownFovDiff>[0 0.75]</upDownFovDiff>
-      <scanLineFillRate>[100 75]</scanLineFillRate>
-      <imFovX>[70 inf]</imFovX>
-      <imFovY>[50 inf] </imFovY>
-      <irCoverageSpEn>[88 100]</irCoverageSpEn>
-      <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
-      <irCoverageSpDis>[85 100]</irCoverageSpDis>
-      <stdIrCoverageSpDis>[0 4]</stdIrCoverageSpDis>
-      <horizEdge>[0 inf]</horizEdge>
-      <vertEdge>[0 inf]</vertEdge>
-      <projFovx>[55 65]</projFovx>
-      <projFovy>[37 45]</projFovy>
-      <ambVal>[0,255]</ambVal>
-      <losMaxP2p>[0 1.5]</losMaxP2p>
-      <losMeanStdX>[0 0.3] </losMeanStdX>
-      <losMeanStdY>[0 0.2]</losMeanStdY>
-      <potentialPitchFixInDegrees>[-1.5,1.5]</potentialPitchFixInDegrees>
-      <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
-      <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
-      <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
-     
-      <maxModRefDec>[0 inf]</maxModRefDec>
-      <maxRangeScaleModRef_state1>[0 1]</maxRangeScaleModRef_state1>
-    
-      <targetDist_state1>[0 inf]</targetDist_state1> <!--In [mm]-->
-      <maxFillRate_state1>[90 100]</maxFillRate_state1>
-      <maxRangeScaleModRef_state2>[0 1]</maxRangeScaleModRef_state2>
-      <targetDist_state2>[0 inf]</targetDist_state2> <!--In [mm]-->
-      <maxFillRate_state2>[65 100]</maxFillRate_state2>
-      <DESTtxFRQpd>[-inf,inf]</DESTtxFRQpd>
-   </errRange>
-   <validationConfig>
-      <!-- in this section the test plan is listed.available metrics:
+        <cbSquareSz>30</cbSquareSz>
+        <cbPtsSz>[]</cbPtsSz>
+        <Nof2avg>30</Nof2avg>
+        <lddTKill>75</lddTKill>
+        <mcTKill>[]</mcTKill>
+        <maTKill>[]</maTKill>
+        <apdTKill>65</apdTKill>
+        <disableMetaData>0</disableMetaData>
+    </gnrl>
+    <warmUp>
+        <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+    </warmUp>
+    <errRange>
+        <geomErr>[0.01 1.61]</geomErr>
+        <extraImagesGeomErr>[0 2]</extraImagesGeomErr>
+        <shortRangeImagesGeomErr>[0.01 2]</shortRangeImagesGeomErr>
+        <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
+        <eGeomSphericalEn>[0.01 2]</eGeomSphericalEn>
+        <eGeomSphericalDis>[0.01 2]</eGeomSphericalDis>
+        <gammaErr>[0 inf]</gammaErr>
+        <maxPixelDisplacement>[0.0 2]</maxPixelDisplacement>
+        <undistRms>[0.0 inf]</undistRms>
+        <upDownFovDiff>[0 0.75]</upDownFovDiff>
+        <scanLineFillRate>[100 75]</scanLineFillRate>
+        <imFovX>[70 inf]</imFovX>
+        <imFovY>[50 inf] </imFovY>
+        <irCoverageSpEn>[80 100]</irCoverageSpEn>
+        <stdIrCoverageSpEn>[0 4]</stdIrCoverageSpEn>
+        <irCoverageSpDis>[85 100]</irCoverageSpDis>
+        <stdIrCoverageSpDis>[0 4]</stdIrCoverageSpDis>
+        <horizEdge>[0 inf]</horizEdge>
+        <vertEdge>[0 inf]</vertEdge>
+        <projFovx>[55 65]</projFovx>
+        <projFovy>[37 45]</projFovy>
+        <losMaxP2p>[0 3]</losMaxP2p>
+        <losMeanStdX>[0 0.6] </losMeanStdX>
+        <losMeanStdY>[0 0.2]</losMeanStdY>
+        <potentialPitchFixInDegrees>[-1.5,1.5]</potentialPitchFixInDegrees>
+        <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
+        <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
+        <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
+        <maxModRefDec>[0 inf]</maxModRefDec>
+        <maxRangeScaleModRef_state1>[0 1]</maxRangeScaleModRef_state1>
+        <!--<targetDist>[780 820]</targetDist>-->
+        <targetDist_state1>[0 inf]</targetDist_state1> <!--In [mm]-->
+        <maxFillRate_state1>[90 100]</maxFillRate_state1>
+        <maxRangeScaleModRef_state2>[0 1]</maxRangeScaleModRef_state2>
+        <!--<targetDist>[780 820]</targetDist>-->
+        <targetDist_state2>[0 inf]</targetDist_state2> <!--In [mm]-->
+        <maxFillRate_state2>[65 100]</maxFillRate_state2>
+        <EXTLconLocDelaySlow>[-inf,inf]</EXTLconLocDelaySlow>
+        <EXTLconLocDelayFastC>[-inf,inf]</EXTLconLocDelayFastC>
+        <EXTLconLocDelayFastF>[-inf,inf]</EXTLconLocDelayFastF>
+        <DESTtxFRQpd>[-inf,inf]</DESTtxFRQpd>
+        <dfzScaleErrH>[0,inf]</dfzScaleErrH>
+        <dfzScaleErrV>[0,inf]</dfzScaleErrV>
+        <dfz3DErrH>[0,inf]</dfz3DErrH>
+        <dfz3DErrV>[0,inf]</dfz3DErrV>
+        <dfz2DErrH>[0,inf]</dfz2DErrH>
+        <dfz2DErrV>[0,inf]</dfz2DErrV>
+        <dfzPlaneFit>[0,inf]</dfzPlaneFit>
+    </errRange>
+    <validationConfig>
+        <!-- in this section the test plan is listed.available metrics:
       sharpness, temporalNoise, delays, dfz, roi, los, dsm, coverage, (wait, debugMode).
       For running the same metric more then once add <metric_name>_n, for example:
       <roi_2></roi_2>
       -->
-      <cbGridSz>[]</cbGridSz>
-      <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
-      <wait>
-          <timeoutSec>1</timeoutSec>
-      </wait>
-      <warmUp></warmUp>
-      <HVM_Val> 
-          <numOfFrames>100</numOfFrames>
-      </HVM_Val>
-      <presetsCompare>
-          <numOfFrames>30</numOfFrames>
-          <roi>0.4</roi>
-      </presetsCompare>
-      <dfz>
-          <numOfFrames>30</numOfFrames>
-      </dfz>
-	<cbufUnderflow>
+        <validationRes>[768,1024]</validationRes>
+        <cbGridSz>[]</cbGridSz>
+        <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
+        <wait>
+            <timeoutSec>1</timeoutSec>
+        </wait>
+        <warmUp></warmUp>
+        <HVM_Val> 
+            <numOfFrames>100</numOfFrames>
+        </HVM_Val>
+        <dfz>
+            <numOfFrames>30</numOfFrames>
+        </dfz>
+        <cbufUnderflow>
+            <numOfFrames>10</numOfFrames>
         </cbufUnderflow>
-      <coverage>
-          <numOfFrames>100</numOfFrames>
-          <sphericalMode>0</sphericalMode>
-      </coverage>
-      <sharpness>
-          <numOfFrames>30</numOfFrames>
-	  </sharpness>
-      <temporalNoise>
-          <numOfFrames>30</numOfFrames>
-          <roi>0.5</roi>
-      </temporalNoise>
-      <delays></delays>
-      <roi></roi>
-      <los>
-          <numOfFrames>100</numOfFrames>
-          <sphericalMode>1</sphericalMode>
-      </los>
-      <dsm></dsm>
-      <readRegState>
-      </readRegState>
-      <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
-      <validateOnCenter>1</validateOnCenter>
-      <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
-      <target>
+        <coverage>
+            <numOfFrames>50</numOfFrames>
+            <sphericalMode>0</sphericalMode>
+        </coverage>
+        <sharpness>
+            <numOfFrames>30</numOfFrames>
+        </sharpness>
+        <presetsCompare>
+            <numOfFrames>30</numOfFrames>
+            <roi>0.4</roi>
+        </presetsCompare>      
+        <temporalNoise>
+            <numOfFrames>30</numOfFrames>
+            <roi>0.5</roi>
+        </temporalNoise>
+        <delays></delays>
+        <roi></roi>
+        <los>
+            <numOfFrames>100</numOfFrames>
+            <sphericalMode>0</sphericalMode>
+        </los>
+        <cbufUnderFlowOldXGA></cbufUnderFlowOldXGA>
+        <dsm></dsm>
+        <readRegState>
+        </readRegState>
+        <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
+        <validateOnCenter>1</validateOnCenter>
+        <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
+        <target>
             <name>Iv2A1</name>
             <cbSquareSz>30</cbSquareSz>
         </target>
-      <gidMaskIsRoiRect>1</gidMaskIsRoiRect>
-      <plainFitMaskIsRoiRect>1</plainFitMaskIsRoiRect>
-   </validationConfig>
-   <validationErrRange>
-	<irFillRate>[99.99,100]</irFillRate>
-      <horizontalSharpness>[1 3]</horizontalSharpness>
-      <verticalSharpness>[1 3]</verticalSharpness>
-      <temporalNoise>[0.2 10]</temporalNoise>
-      <DelaySlowOffest>[0 inf]</DelaySlowOffest>
-      <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
-      <DelayFastOffest>[0 inf]</DelayFastOffest>
-      <GeometricError>[0 3]</GeometricError>
-      <reprojRmsPix>[0 10]</reprojRmsPix>
-      <reprojZRms>[0 10]</reprojZRms>
-      <irDistanceDrift>[-5 5]</irDistanceDrift>
-      <roiHorizontalLoss>[0 10]</roiHorizontalLoss>
-      <roiVerticalLoss>[0 4]</roiVerticalLoss>
-      <losMaxP2p>[0 2]</losMaxP2p>
-      <losMeanStdX>[0 0.3] </losMeanStdX>
-      <losMeanStdY>[0 0.2]</losMeanStdY>
-      <MirrorRestAngX>[-30 30]</MirrorRestAngX>
-      <MirrorRestAngY>[-30 30]</MirrorRestAngY>
-      <irCoverage>[80 100]</irCoverage>
-      <presetCompareMeanDiff>[-2 2]</presetCompareMeanDiff>
-      <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
-      <lineFitMeanRmsErrHor3dReg>[0 inf]</lineFitMeanRmsErrHor3dReg>
+        <gidMaskIsRoiRect>1</gidMaskIsRoiRect>
+        <plainFitMaskIsRoiRect>1</plainFitMaskIsRoiRect>
+    </validationConfig>
+    <validationErrRange>
+        <irFillRate>[99.99,100]</irFillRate>
+        <horizontalSharpness>[1 4.8]</horizontalSharpness>
+        <verticalSharpness>[1 4]</verticalSharpness>
+        <temporalNoise>[0.2 10]</temporalNoise>
+        <DelaySlowOffest>[0 inf]</DelaySlowOffest>
+        <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
+        <DelayFastOffest>[0 inf]</DelayFastOffest>
+        <GeometricError>[0 3]</GeometricError>
+        <reprojRmsPix>[0 10]</reprojRmsPix>
+        <reprojZRms>[0 10]</reprojZRms>
+        <irDistanceDrift>[-5 5]</irDistanceDrift>
+        <roiHorizontalLoss>[0 10]</roiHorizontalLoss>
+        <roiVerticalLoss>[0 4]</roiVerticalLoss>
+        <losMaxP2p>[0 4]</losMaxP2p>
+        <losMeanStdX>[0 0.48] </losMeanStdX>
+        <losMeanStdY>[0 0.25]</losMeanStdY>
+        <MirrorRestAngX>[-30 30]</MirrorRestAngX>
+        <MirrorRestAngY>[-30 30]</MirrorRestAngY>
+        <irCoverage>[80 100]</irCoverage>
+        <presetCompareMeanDiff>[-2.5 2.5]</presetCompareMeanDiff>
+        <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
+        <lineFitMeanRmsErrHor3dReg>[0 inf]</lineFitMeanRmsErrHor3dReg>
         <lineFitMeanRmsErrVer3dReg>[0 inf]</lineFitMeanRmsErrVer3dReg>
         <lineFitMaxRmsErrHor3dReg>[0 inf]</lineFitMaxRmsErrHor3dReg>
         <lineFitMaxRmsErrVer3dReg>[0 inf]</lineFitMaxRmsErrVer3dReg>
@@ -166,36 +178,36 @@
         <lineFitMaxRmsErrVer2dWht>[0 inf]</lineFitMaxRmsErrVer2dWht>
         <lineFitMaxErrHor2dWht>[0 inf]</lineFitMaxErrHor2dWht>
         <lineFitMaxErrVer2dWht>[0 inf]</lineFitMaxErrVer2dWht>
-      <planeFitMeanRmsErrWht>[0 inf]</planeFitMeanRmsErrWht>
-      <planeFitMaxErrWht>[0 inf]</planeFitMaxErrWht>
-      <planeFitMeanRmsErrBlck>[0 inf]</planeFitMeanRmsErrBlck>
-      <planeFitMaxErrBlck>[0 inf]</planeFitMaxErrBlck>
-      <meanHorzScaleErrorReg>[-inf inf]</meanHorzScaleErrorReg>
-      <meanAbsHorzScaleErrorReg>[0 inf]</meanAbsHorzScaleErrorReg>
-      <meanVertScaleErrorReg>[-inf inf]</meanVertScaleErrorReg>
-      <meanAbsVertScaleErrorReg>[0 inf]</meanAbsVertScaleErrorReg>
-      <meanHorzScaleErrorWht>[-inf inf]</meanHorzScaleErrorWht>
-      <meanAbsHorzScaleErrorWht>[0 inf]</meanAbsHorzScaleErrorWht>
-      <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
-      <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
-  </validationErrRange>   
-   <thermal>
-       <t0>32.8</t0>
-       <tslope>0.45</tslope>
-   </thermal>
-   <scanDir>
-      <stickerLocationIsLeft>0</stickerLocationIsLeft>
-      <stickerLocationIsTop>1</stickerLocationIsTop>
-   </scanDir>
+        <planeFitMeanRmsErrWht>[0 inf]</planeFitMeanRmsErrWht>
+        <planeFitMaxErrWht>[0 inf]</planeFitMaxErrWht>
+        <planeFitMeanRmsErrBlck>[0 inf]</planeFitMeanRmsErrBlck>
+        <planeFitMaxErrBlck>[0 inf]</planeFitMaxErrBlck>
+        <meanHorzScaleErrorReg>[-inf inf]</meanHorzScaleErrorReg>
+        <meanAbsHorzScaleErrorReg>[0 inf]</meanAbsHorzScaleErrorReg>
+        <meanVertScaleErrorReg>[-inf inf]</meanVertScaleErrorReg>
+        <meanAbsVertScaleErrorReg>[0 inf]</meanAbsVertScaleErrorReg>
+        <meanHorzScaleErrorWht>[-inf inf]</meanHorzScaleErrorWht>
+        <meanAbsHorzScaleErrorWht>[0 inf]</meanAbsHorzScaleErrorWht>
+        <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
+        <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
+        <cbufUnderflowOldXGA>[-inf inf]</cbufUnderflowOldXGA>
+    </validationErrRange>   
+    <thermal>
+        <t0>32.8</t0>
+        <tslope>0.45</tslope>
+    </thermal>
+    <scanDir>
+        <stickerLocationIsLeft>0</stickerLocationIsLeft>
+        <stickerLocationIsTop>1</stickerLocationIsTop>
+    </scanDir>
     <dfz>
         <performRegularDFZWithoutTPS>0</performRegularDFZWithoutTPS>
         <shortRangeCompareROI>0.4</shortRangeCompareROI>
         <sphericalScaleFactors>[1.05,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
         <cropRatios>[0.2 0.0005;0.0005 0.2]</cropRatios>
-	<calibrateOnCropped>1</calibrateOnCropped>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
         <captures>
-             <!--<capture>
+            <!--<capture>
                 <target>Iv2L50</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
                 <type>train</type>
@@ -265,6 +277,13 @@
         <fovexRadialRange>[0,0,0;0,0,0]</fovexRadialRange>
         <fovexTangentRange>[0,0;0,0]</fovexTangentRange>
         <fovexCenterRange>[0,0;0,0]</fovexCenterRange>
+        <rtdOverTanYrange>[-10,-10,-10;10,10,10]</rtdOverTanYrange>
+        <zenith>
+            <useEsTilt>1</useEsTilt>
+            <applyCorrection>1</applyCorrection>
+            <correctionCoefsHorz>[0.54,0.22]</correctionCoefsHorz>
+            <correctionCoefsVert>[0.68,-0.57]</correctionCoefsVert>
+        </zenith>
     </dfz>
     <roi>
         <useExtraMargins>1</useExtraMargins>  

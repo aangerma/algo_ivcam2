@@ -35,6 +35,11 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     fprintff('%-15s %s\n','stated at',datestr(now));
     fprintff('%-15s %5.2f.%1.0f\n','version',runParams.version,runParams.subVersion);
     
+    %% Temporary Hack for turn in
+    if runParams.replayMode
+       calibPassed = 1;
+       return;
+    end
     %% Load init fw
     fprintff('Loading initial firmware...');
     fw = Pipe.loadFirmware(runParams.internalFolder);
@@ -146,12 +151,6 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     hw.shadowUpdate();
 
     try
-        
-        %% Coverage within ROI 
-        [results,calibPassed] = validateCoverage(hw,0, runParams, calibParams,results, fprintff);
-        if ~calibPassed
-           return 
-        end
         %% Validate DFZ before reset
         [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
         
@@ -176,50 +175,37 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
         hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
         fprintff('Done\n');
     end
-    %% Long range calibration- calib res
+    %% Long range calibrations
     if runParams.maxRangePreset
-        Calstate =findLongRangeStateCal(calibParams,runParams.calibRes);
-        if(isnan(Calstate))
-            error('calibration resolution doesnt fit to any of long range states');
-        end
-        hw.cmd('rst');
-        pause(10);
-        clear hw;
-        pause(1);
-        hw = HWinterface;
-        hw.cmd('DIRTYBITBYPASS');
-        fprintff('Calibrating long range preset, starting stream.\n');
-        hw.startStream(0,runParams.calibRes);
-        results = calibrateLongRangePreset(hw,runParams.calibRes,Calstate,results,runParams,calibParams, fprintff);
-    end
-    %% Long range calibration- calib res 2 if needed
-    if runParams.maxRangePreset
-        if(strcmp(Calstate,'state1'))
-            stateTotest='state2';
-        else
-            stateTotest='state1';
-        end
-        secondRes=calibParams.presets.long.(stateTotest).resolution;
-        if(~isempty(secondRes))
-            hw.stopStream;
-            hw.cmd('rst');
-            pause(10);
-            clear hw;
-            pause(1);
-            hw = HWinterface;
-            hw.cmd('DIRTYBITBYPASS');
-            fprintff('Test second state for long range preset, starting stream.\n');
-            hw.startStream(0,secondRes);
-            results = calibrateLongRangePreset(hw,secondRes,stateTotest,results,runParams,calibParams, fprintff);
-            
+        resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
+        for i = 1:2
+            res = resolutions{i};
+            Calstate =findLongRangeStateCal(calibParams,res);
+            if(~isempty(res))
+                hw.stopStream;
+                hw.cmd('rst');
+                pause(10);
+                clear hw;
+                pause(1);
+                hw = HWinterface;
+                hw.cmd('DIRTYBITBYPASS');
+                fprintff('Test %s for long range preset, starting stream.\n',Calstate);
+                isXGA = all(res==[768,1024]);
+                if isXGA
+                    hw.cmd('ENABLE_XGA_UPSCALE 1')
+                end
+                hw.startStream(0,res);
+                results = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
+                
+            end
         end
     end
     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
     calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));
-    fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     
     fprintff('[-] Burning preset table...');
     try
+    	fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
         hw = HWinterface;
         hw.cmd(['WrCalibInfo ',calibTempTableFn]);
         fprintff('Done\n');
@@ -246,9 +232,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     end
     fprintff('Calibration finished(%d)\n',round(toc(t)));
     
-    %% Validation
-    
-%     Calibration.validation.validateCalibration(runParams,calibParams,fprintff);
+
     %% rgb calibration
     if calibPassed
         calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
@@ -314,7 +298,8 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         pause(0.1);
         framesSpherical = hw.getFrame(45);
         
-        
+        fn = fullfile(runParams.outputFolder, 'mat_files' , 'preResetDFZValidation_in.mat');
+        save(fn,'frames','framesSpherical', 'regs' , 'calibParams' , 'runParams');    
         
         [dfzRes,~ ] = Calibration.validation.validateDFZ( hw,frames,@sprintf,calibParams,runParams);
         if calibParams.dfz.sampleRTDFromWhiteCheckers
@@ -339,7 +324,8 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
             tpsUndistModel = [];
         end
         calibParams.dfz.calibrateOnCropped = 0;
-        [~,dfzResults] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,0,1,[],runParams,tpsUndistModel);
+        calibParams.dfz.zenith.useEsTilt = 0;
+        [~,dfzResults] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,fprintff,[],runParams,tpsUndistModel);
         results.eGeomSphericalEn = dfzResults.geomErr;
         r.reset();
 %         hw.setReg('DIGGsphericalScale',[640,480]);
@@ -582,7 +568,20 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
         end
         
         fprintff('Scan direction is: %s & %s\n',hDirStr,vDirStr);
-        calibPassed = (isLeft) && (~isTop);% Currenly the scan directoin makes it so the gray circle is below and to the left of the black circle.
+
+        % For L515, the scan direction makes it so the gray circle is *below* and to the left of the black circle
+        % For L520, the scan direction makes it so the gray circle is *above* and to the left of the black circle
+        if calibParams.scanDir.stickerLocationIsLeft
+            calibPassed = ~isLeft;
+        else
+            calibPassed = isLeft;
+        end    
+        if calibParams.scanDir.stickerLocationIsTop
+            calibPassed = calibPassed && ~isTop;
+        else
+            calibPassed = calibPassed && isTop;
+        end
+             
         if ~calibPassed
             fprintff('[x] Scan direction validation failed\n');
         end

@@ -54,6 +54,7 @@
       <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
       <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
       <minRangeScaleModRef>[0,1]</minRangeScaleModRef>
+      <DESTtxFRQpd>[-inf,inf]</DESTtxFRQpd>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
