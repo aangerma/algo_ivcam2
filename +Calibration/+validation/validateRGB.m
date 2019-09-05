@@ -1,4 +1,4 @@
-function [results,frames,dbg] = validateRGB( hw, calibParams,runParams, fprintff)
+function [results,frames,dbgWht] = validateRGB( hw, calibParams,runParams, fprintff)
 % set LR preset
 hw.setPresetControlState(1);
 hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
@@ -20,73 +20,81 @@ Krgb([1,5,7,8,4]) = intr([calibParams.startIxRgb:calibParams.startIxRgb+3,1]);%i
 extr = typecast(b,'single');
 Rrgb = reshape(extr(1:9),[3 3])';
 Trgb = extr(10:12)';
-
+%%
 params.rgbPmat = Krgb*[Rrgb Trgb];
 params.camera = struct('zMaxSubMM',hw.z2mm,'K',hw.getIntrinsics);
 params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
 params.validateOnCenter = calibParams.validationConfig.validateOnCenter;
 params.roi = calibParams.validationConfig.roi4ValidateOnCenter;
 params.isRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;
+%%
+if params.sampleZFromWhiteCheckers
+    [~, resultsUvMapWht,dbgWht] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame);
+    [resultsLineFitWht] = Calibration.aux.calcLineDistortion({dbgWht.vertices},double(Krgb),dbgWht.gridSize);
+    [resultsWht] = arrangResultStruct( resultsLineFitWht,resultsUvMapWht, 'Wht');
+    params.sampleZFromWhiteCheckers = 0;
+    
+    ff = Calibration.aux.invisibleFigure();
+    imagesc(rgbFrame);hold on;
+    scatter(dbgWht.sampledCornerRGB(:,1),dbgWht.sampledCornerRGB(:,2),'g');
+    plot(dbgWht.uvMap(:,1),dbgWht.uvMap(:,2),'xr');
+    title('Validation RGB UV mapping image: green is sampled and red is mapped points - for z sampled from white');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',['rgbUvMapImageFromWht' prefixStr],1);
+end
+[~, resultsUvMapReg,dbgReg] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame);
+[resultsLineFitReg] = Calibration.aux.calcLineDistortion({dbgReg.vertices},double(Krgb),dbgReg.gridSize);
+[resultsReg] = arrangResultStruct( resultsLineFitReg,resultsUvMapReg, 'Reg');
 
-[~, resultsUvMap,dbg] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame);
+ff = Calibration.aux.invisibleFigure();
+imagesc(rgbFrame);hold on;
+scatter(dbgReg.sampledCornerRGB(:,1),dbgReg.sampledCornerRGB(:,2),'g');
+plot(dbgReg.uvMap(:,1),dbgReg.uvMap(:,2),'xr');
+title('Validation RGB UV mapping image: green is sampled and red is mapped points - for z sampled from corners(reg)');
+Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',['rgbUvMapImageFromCorner' prefixStr],1);
 
-[resultsLineFit] = Calibration.aux.calcLineDistortion({dbg.vertices},double(Krgb),dbg.gridSize);
+if exist('resultsWht','var')
+    results = Validation.aux.mergeResultStruct(resultsReg,resultsWht);
+else
+    results = resultsReg;
+end
+frames = depthFrame;
+frames.color = rgbFrame;
+
+end
+
+
+function [newStr] = editStr( origStr,string2erase,string2add)
+    newStr = erase(origStr,string2erase);
+    newStr = strcat(newStr,string2add);
+end
+
+function [results] = arrangResultStruct( resultsLineFit,resultsUvMap, postFix)
 fields = fieldnames(resultsLineFit);
 for k = 1:length(fields)
     if contains(fields{k},'3D')
         resultsLineFit = rmfield(resultsLineFit,fields{k});
         continue;
     end
-    newName = strcat(fields{k},'_RGB');
-    results.(newName) = resultsLineFit.(fields{k});
+    string2erase = 'ErrorTotalHoriz2D';
+    if contains(fields{k},string2erase)
+        string2add = 'ErrHor2dRGB';
+        [newName] = editStr( fields{k},string2erase,string2add);
+        results.(strcat(newName,postFix)) = resultsLineFit.(fields{k});
+         continue;
+    end
+    string2erase = 'ErrorTotalVertic2D';
+    if contains(fields{k},string2erase)
+        string2add = 'ErrVer2dRGB';
+        [newName] = editStr( fields{k},string2erase,string2add);
+        results.(strcat(newName,postFix)) = resultsLineFit.(fields{k});
+        continue;
+    end
 end
 
-results.uvMapRmse = resultsUvMap.rmse;
-results.uvMapMaxErr = resultsUvMap.maxErr;
-results.uvMapMaxErr95 = resultsUvMap.maxErr95;
-results.uvMapMinErr = resultsUvMap.minErr;
-frames = depthFrame;
-frames.color = rgbFrame;
-%%
-% Erase at last - just debug
-%{
-% cornersIr = Validation.aux.findCheckerboard(rot90(frame.i,2));
-ir = rot90(depthFrame.i,2);
-z = rot90(depthFrame.z,2);
-[cornersIr,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(ir,[],[],[],calibParams.nonRectangleFlagRGB);
-%{
-figure; imagesc(ir);
-hold on;
- a = reshape(cornersIr,[],2);
-scatter(a(:,1),a(:,2),'r');
-%}
-gridPointsIr = reshape(cornersIr,[],2);
-verCorners = Validation.aux.pointsToVertices(gridPointsIr-1,z,camera);
-[cornersRGB,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(rgbFrame(1).color,[],[],[],calibParams.nonRectangleFlagRGB);
-%{
-figure; imagesc(rgbFrame(1).color);
-hold on;
- a = reshape(cornersRGB,[],2);
-scatter(a(:,1),a(:,2),'r');
-%}
-
-uv = rgbPmat * [verCorners ones(size(verCorners,1),1)]';
-u = (uv(1,:)./uv(3,:))';
-v = (uv(2,:)./uv(3,:))';
+results.(strcat('uvMapRmse',postFix)) = resultsUvMap.rmse;
+results.(strcat('uvMapMaxErr',postFix)) = resultsUvMap.maxErr;
+results.(strcat('uvMapMaxErr95',postFix)) = resultsUvMap.maxErr95;
+results.(strcat('uvMapMinErr',postFix)) = resultsUvMap.minErr;
 
 
-idx = ~isnan(reshape(cornersRGB,[],2)) & ~isnan(reshape(cornersIr,[],2));
-idx = idx(:,1);
-figure; imagesc(rgbFrame(1).color); hold on;
-sampledCornerRGB = reshape(cornersRGB,[],2);
-
-scatter(sampledCornerRGB(:,1),sampledCornerRGB(:,2),'g');
-plot(u,v, 'xr');
-uvMap = [u,v];
-uvMap = uvMap(idx,:);
-sampledCornerRGB = sampledCornerRGB(idx,:);
-errs = sampledCornerRGB - uvMap;
-rms = sqrt(mean(sum((errs').^2)));
-%}
 end
-
