@@ -1,4 +1,4 @@
-function [results,frames,dbgWht] = validateRGB( hw, calibParams,runParams, fprintff)
+function [results,frames,dbgReg] = validateRGB( hw, calibParams,runParams, fprintff)
 % set LR preset
 hw.setPresetControlState(1);
 hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
