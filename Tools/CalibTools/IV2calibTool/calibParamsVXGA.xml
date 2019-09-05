@@ -121,11 +121,13 @@
             <numOfFrames>100</numOfFrames>
             <sphericalMode>0</sphericalMode>
         </los>
-        <cbufUnderFlowOldXGA></cbufUnderFlowOldXGA>
-	 <rgb>
+        
+        <rgb>
              <numOfFrames>30</numOfFrames>
+             <startIxRgb>6</startIxRgb>
         </rgb>
         <dsm></dsm>
+        <cbufUnderFlowOldXGA></cbufUnderFlowOldXGA>
         <readRegState>
         </readRegState>
         <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>

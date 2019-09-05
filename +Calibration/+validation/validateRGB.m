@@ -6,7 +6,7 @@ hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
 hw.shadowUpdate;
 
 pause(5);
-% hw.startStream([],[],calibParams.colorRes);
+% hw.startStream([],[],calibParams.rgb.imSize);
 
 depthFrame = hw.getFrame(calibParams.validationConfig.rgb.numOfFrames);
 rgbFrame  = hw.getColorFrame();
@@ -15,7 +15,7 @@ rgbFrame  = hw.getColorFrame();
 intr = typecast(b,'single');
 Krgb = eye(3);
 % Verify the correct K for resolution used
-Krgb([1,5,7,8,4]) = intr([calibParams.startIxRgb:calibParams.startIxRgb+3,1]);%intr([6:9,1]);
+Krgb([1,5,7,8,4]) = intr([calibParams.validationConfig.rgb.startIxRgb:calibParams.validationConfig.rgb.startIxRgb+3,1]);%intr([6:9,1]);
 [ ~,b] = hw.cmd('RGB_EXTRINSICS_GET');
 extr = typecast(b,'single');
 Rrgb = reshape(extr(1:9),[3 3])';
@@ -29,28 +29,28 @@ params.roi = calibParams.validationConfig.roi4ValidateOnCenter;
 params.isRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;
 %%
 if params.sampleZFromWhiteCheckers
-    [~, resultsUvMapWht,dbgWht] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame);
+    [~, resultsUvMapWht,dbgWht] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame.color);
     [resultsLineFitWht] = Calibration.aux.calcLineDistortion({dbgWht.vertices},double(Krgb),dbgWht.gridSize);
     [resultsWht] = arrangResultStruct( resultsLineFitWht,resultsUvMapWht, 'Wht');
     params.sampleZFromWhiteCheckers = 0;
     
     ff = Calibration.aux.invisibleFigure();
-    imagesc(rgbFrame);hold on;
+    imagesc(rgbFrame.color);hold on;
     scatter(dbgWht.sampledCornerRGB(:,1),dbgWht.sampledCornerRGB(:,2),'g');
     plot(dbgWht.uvMap(:,1),dbgWht.uvMap(:,2),'xr');
     title('Validation RGB UV mapping image: green is sampled and red is mapped points - for z sampled from white');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',['rgbUvMapImageFromWht' prefixStr],1);
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','rgbUvMapImageFromWht',1);
 end
-[~, resultsUvMapReg,dbgReg] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame);
+[~, resultsUvMapReg,dbgReg] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame.color);
 [resultsLineFitReg] = Calibration.aux.calcLineDistortion({dbgReg.vertices},double(Krgb),dbgReg.gridSize);
 [resultsReg] = arrangResultStruct( resultsLineFitReg,resultsUvMapReg, 'Reg');
 
 ff = Calibration.aux.invisibleFigure();
-imagesc(rgbFrame);hold on;
+imagesc(rgbFrame.color);hold on;
 scatter(dbgReg.sampledCornerRGB(:,1),dbgReg.sampledCornerRGB(:,2),'g');
 plot(dbgReg.uvMap(:,1),dbgReg.uvMap(:,2),'xr');
 title('Validation RGB UV mapping image: green is sampled and red is mapped points - for z sampled from corners(reg)');
-Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',['rgbUvMapImageFromCorner' prefixStr],1);
+Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','rgbUvMapImageFromCorner',1);
 
 if exist('resultsWht','var')
     results = Validation.aux.mergeResultStruct(resultsReg,resultsWht);
@@ -58,7 +58,7 @@ else
     results = resultsReg;
 end
 frames = depthFrame;
-frames.color = rgbFrame;
+frames.color = rgbFrame.color;
 
 end
 

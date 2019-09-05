@@ -195,7 +195,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 fRates = arrayfun(@(s) mean(s.i(:)>0)*100,frames);
                 oldXGACbufRes.cbufUnderflowOldXGA = mean(fRates) < 100;
                 valResults = Validation.aux.mergeResultStruct(valResults, oldXGACbufRes);
-			elseif strfind(enabledMetrics{i},'RGB')
+			elseif strfind(enabledMetrics{i},'rgb')
                  [rgbRes,frames,dbg] = Calibration.validation.validateRGB(hw, calibParams,runParams, fprintff);
                  valResults = Validation.aux.mergeResultStruct(valResults, rgbRes);
                  saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
