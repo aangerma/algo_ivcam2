@@ -7,20 +7,17 @@ end
 %% analyze data
 for i=1:length(camsData)
     data=camsData{i};
-    data.outPath=strcat(calibParams.gnrl.outFolder,'\cam',num2str(i-1));
+    data.outPath=camsData{i}.outPath;
     if(calibParams.gnrl.verbose)
         mkdirSafe(data.outPath);
     end
     % detect checkres corners
     [camsAnalysis{i}.gridPoints,camsAnalysis{i}.gridSize] = Validation.aux.findCheckerboard(double(data.Frames(1).i), []);
+    vis(data.Frames(1).i,camsAnalysis{i}.gridPoints );
     % convert to point cloud
     camsAnalysis{i}.vert= (Validation.aux.pointsToVertices(camsAnalysis{i}.gridPoints-1, double(data.Frames(1).z), data.params))';
     % detect markers and find offset
-    detectedPointData=struct();
-    detectedPointData.detectedGridPointsV=camsAnalysis{i}.vert';
-    detectedPointData.CBorig=camsAnalysis{i}.gridPoints(1,:);
-    [detectedPointData.HrecRange,detectedPointData.VrecRange,detectedPointData.cbXmargin,detectedPointData.cbYmargin]= calculateCheckersRecRangeSizePix(camsAnalysis{i});
-    [camsAnalysis{i}.targetOffset] =  Calibration.L520extrinsicCalib.detectMarkersAndFindOffset(calibParams,data,detectedPointData);
+    [camsAnalysis{i}.targetOffset] =  Calibration.L520extrinsicCalib.detectMarkersAndFindOffset(calibParams,data,camsAnalysis{i});
     % build GT checkres
     [camsAnalysis{i}.gtV] =  Calibration.L520extrinsicCalib.buidGTcheckers(camsAnalysis{i}.gridSize,camsAnalysis{i}.targetOffset,calibParams.target.cbSquareSz);
     
@@ -33,7 +30,8 @@ for i=1:length(camsData)
 end
 
 %% project all data to origin cam axis
-i0=calibParams.gnrl.originCamIndex+1;
+% projecting per pose to the first camera in pose 
+i0=1;
 for i=1:length(camsAnalysis)
     if(i==i0)
         Extrinsic{i}.R=eye(3);
@@ -43,39 +41,60 @@ for i=1:length(camsAnalysis)
         Extrinsic{i}.T=-camsAnalysis{i}.camTranslation*Extrinsic{i}.R+...
             (camsAnalysis{i}.GTtranslation-camsAnalysis{i0}.GTtranslation)*camsAnalysis{i0}.rotmat+camsAnalysis{i0}.camTranslation;
     end
+        Extrinsic{i}.from=camsData{i}.camIndexName;
+        Extrinsic{i}.to=camsData{i0}.camIndexName; 
+
 end
 
 %% vis
+parts = strsplit(camsData{i}.outPath, '\');
+poseFolder = fullfile(parts{1:end-1});
 if(calibParams.gnrl.verbose)
-    h=figure(); hold all;
-    Leg=[];
+    h1=figure(); hold all;
+    h2=figure(); hold all;    
+    Leg1=[];     Leg2=[];    
     for i=1:length(Extrinsic)
+        figure(h1);
         origData=camsAnalysis{i}.vert';
         plot3(origData(:,1),origData(:,2),origData(:,3),'*');
-        Leg=[Leg,{strcat('origData-cam ',num2str(i-1))}];
-        fittedData=camsAnalysis{i}.vert'*Extrinsic{i}.R+Extrinsic{i}.T;
-        plot3(fittedData(:,1),fittedData(:,2),fittedData(:,3),'*')
-        Leg=[Leg,{strcat('FittedData-cam ',num2str(i-1))}];
-        camsAnalysis{i}.fittedData=fittedData;
+        Leg1=[Leg1,{strcat('origData-cam ',num2str(i-1))}];
+        
+        projectedData=camsAnalysis{i}.vert'*Extrinsic{i}.R+Extrinsic{i}.T;
+        plot3(projectedData(:,1),projectedData(:,2),projectedData(:,3),'*')
+        Leg1=[Leg1,{strcat('FittedData-cam ',num2str(i-1))}];
+        camsAnalysis{i}.fittedData=projectedData;
+        figure(h2);plot(camsAnalysis{i}.gtV(1,:),camsAnalysis{i}.gtV(2,:),'*');
+        Leg2=[Leg2,{strcat('GT-cb:cam ',num2str(i-1))}];
+        
     end
-    legend(Leg);
+    figure(h1);
+    
+    legend(Leg1);
     grid minor
     view(67,32);
-    title(strcat('projected data- on cam',num2str(i0-1),' axis'));
-    saveas(h,strcat(calibParams.gnrl.outFolder,'/projectedData'));
+    title(strcat('projected data- on cam',num2str(camsData{i0}.camIndexName),' axis'));
+    saveas(h1,strcat(poseFolder,'/projectedData'));    
+    save(strcat(poseFolder,'\Extrinsic'),'Extrinsic');
     
-    save(strcat(calibParams.gnrl.outFolder,'\Extrinsic'),'Extrinsic'); 
+    figure(h2);
+    axis ij
+    grid minor;
+    title('GT - cb');
+    legend(Leg2);
+    saveas(h2,strcat(poseFolder,'/GT_cb'));    
+
+    
 end
 end
 
 
-function[HrecRange,VrecRange,cbXmargin,cbYmargin]= calculateCheckersRecRangeSizePix(camsAnalysis)
-x=camsAnalysis.gridPoints(:,1); y=camsAnalysis.gridPoints(:,2);
-X=reshape(x,camsAnalysis.gridSize); Y=reshape(y,camsAnalysis.gridSize);
-dx=mean(diff(X'));
-HrecRange=[min(dx), max(dx)];
-dy=mean(diff(Y)');
-VrecRange=[min(dy), max(dy)];
-cbXmargin=[max(X(:,1)),min(X(:,end))]; 
-cbYmargin=[max(Y(1,:)),min(Y(end,:))]; 
+
+
+function []=vis(im,pt )
+pointsNum=length(pt);
+figure();
+imagesc(im); hold on;
+scatter(pt(:,1),pt(:,2),'+','MarkerEdgeColor','r','LineWidth',1.5);
+txt=split(mat2str(1:pointsNum));
+text(pt(:,1)+1,pt(:,2),txt);
 end
