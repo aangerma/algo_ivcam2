@@ -23,7 +23,7 @@ Calibration.aux.CBTools.showImageRequestDialog(hw,3,diag([1 1 1]),'Long Range Ca
 
 %% Find laser scale
 %[maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,outDir,cameraInput,laserPoints,maxMod_dec,fprintff);
-[maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(outDir,cameraInput,laserPoints,maxMod_dec,calibParams,stateName);
+[maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(outDir,cameraInput,laserPoints,maxMod_dec,calibParams);
 
 
 end

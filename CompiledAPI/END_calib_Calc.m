@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,atlregs,results,fnCalib,calibParams,undist_flag,afterAlgo2_flag,version,configurationFolder)
+function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version,configurationFolder,atlregs,afterAlgo2_flag)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -19,6 +19,12 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,atl
 % output:
 %   results - incrmntal result 
 %   luts - undistort table.
+    if ~exist('atlregs','var')
+        atlregs = struct;
+    end
+    if ~exist('afterAlgo2_flag','var')
+        afterAlgo2_flag = 0;
+    end
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
