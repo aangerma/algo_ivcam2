@@ -97,6 +97,7 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
     end
     AvgIm.i = Calibration.aux.average_images(im.i);
     AvgIm.z = Calibration.aux.average_images(im.z);
+    
 %% DFZ
     Metrics = 'dfz';
     params.target.squareSize = calibParams.validationConfig.target.cbSquareSz;

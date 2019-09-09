@@ -350,6 +350,7 @@
         <imSize>[1920,1080]</imSize>
     </rgb>
     <presets>
+        <tableVersion>5.09</tableVersion>
         <long>
             <updateCalibVal>1</updateCalibVal>
             <state1>

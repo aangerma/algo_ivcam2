@@ -1,4 +1,4 @@
-function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(InputPath,cameraInput,LaserPoints,maxMod_dec,calibParams,LongRangestate)
+function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(InputPath,cameraInput,LaserPoints,maxMod_dec,calibParams)
 % function [dfzRegs,results,calibPassed] = Preset_Long_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
 % description: 
 %
@@ -10,12 +10,10 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
 %   LaserPoints - 
 %   maxMod_dec -
 %   sz
-%   LongRangestate - 'state1' for VGA, 'state2' for XGA.                               
 % output:
 %   minRangeScaleModRef - 
 %   ModRefDec           - 
 %   
-
 
     global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
@@ -62,18 +60,18 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
     else % algo_cal app_windows
         fprintff = g_fprintff; 
     end
-    
+    longRangestate =  Calibration.presets.findLongRangeStateCal(calibParams,cameraInput.imSize);
     runParams.outputFolder = output_dir;
     maskParams = calibParams.presets.long.params;
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name, LongRangestate, '_in.mat']);
-        save(fn,'InputPath','LaserPoints','maxMod_dec', 'cameraInput','calibParams','LongRangestate');
+        fn = fullfile(output_dir, 'mat_files' , [func_name, longRangestate, '_in.mat']);
+        save(fn,'InputPath','LaserPoints','maxMod_dec', 'cameraInput','calibParams','longRangestate');
     end
-    [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,LongRangestate,InputPath,cameraInput,LaserPoints,maxMod_dec,fprintff);
+    [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,longRangestate,InputPath,cameraInput,LaserPoints,maxMod_dec,fprintff);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name, LongRangestate, '_out.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name, longRangestate, '_out.mat']);
         save(fn,'maxRangeScaleModRef','maxFillRate','targetDist');
     end
     if(exist('fid','var'))
@@ -155,6 +153,12 @@ if calibParams.presets.long.updateCalibVal
     longRangePreset.value(modRefInd) = maxRangeScaleModRef;
     writetable(longRangePreset,longRangePresetFn);
 end
+
+%% Create updated preset bin table
+presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
+calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(calibParams.presets.tableVersion),mod(calibParams.presets.tableVersion*100,100)));
+fw = Firmware;
+fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
 end
 
 

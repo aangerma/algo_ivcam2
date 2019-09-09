@@ -144,7 +144,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 
     %% Undist and table burn
 %    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,atlregs,results,fnCalib,calibParams,runParams.undist,runParams.afterAlgo2,runParams.version,runParams.configurationFolder);
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder,atlregs,runParams.afterAlgo2);
 
    
     
@@ -193,7 +193,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
         for i = 1:2
             res = resolutions{i};
-            Calstate =findLongRangeStateCal(calibParams,res);
+            Calstate = Calibration.presets.findLongRangeStateCal(calibParams,res);
             if(~isempty(res))
                 hw.stopStream;
                 hw.cmd('rst');
@@ -214,13 +214,13 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         end
     end
     
-    presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
-    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));
+%     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
+    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(calibParams.presets.tableVersion),mod(calibParams.presets.tableVersion*100,100)));
     
     fprintff('[-] Burning preset table...');
     if ~runParams.afterAlgo2
         try
-            fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+%             fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
             hw = HWinterface;
             hw.cmd(['WrCalibInfo ',calibTempTableFn]);
             fprintff('Done\n');
@@ -663,18 +663,7 @@ function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, 
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
     end
 end
-function state =findLongRangeStateCal(calibParams,resolution)
-        state1Res=calibParams.presets.long.state1.resolution;
-        state2Res=calibParams.presets.long.state2.resolution; 
-        switch mat2str(resolution)
-            case mat2str(state1Res)
-                state='state1';
-            case mat2str(state2Res)
-                state='state2'; 
-            otherwise 
-                state=nan; 
-        end 
-end 
+
 function [results] = calibrateLongRangePreset(hw,resolution,state,results,runParams,calibParams, fprintff)
     if runParams.maxRangePreset
         fprintff(['[-] Calibrating long range laser power on ',mat2str(resolution),' resolution ...\n']);
