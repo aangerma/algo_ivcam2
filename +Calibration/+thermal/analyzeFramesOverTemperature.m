@@ -3,10 +3,12 @@ function [data ] = analyzeFramesOverTemperature(data, calibParams,runParams,fpri
 % ,minEGeom,maxeGeom,meaneGeom
 % stdX,stdY,p2pY,p2pX
 
-if inValidationStage
-    data.dfzRefTmp = data.regs.FRMW.dfzCalTmp;
-end
 
+if inValidationStage
+    tmps = [data.framesData.temp];
+    ldds = [tmps.ldd];
+    data.dfzRefTmp = mean(minmax(ldds));
+end
 invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
 data.framesData = data.framesData(~invalidFrames);
 
