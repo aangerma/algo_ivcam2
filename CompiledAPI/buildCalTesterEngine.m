@@ -18,6 +18,7 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
             ,'END_calib_Calc.m' ...
             ,'RGB_Calib_Calc.m' ...
             ,'TemDataFrame_Calc.m' ...      % algo2
+            ,'TmptrDataFrame_Calc.m' ...      % algo2
             ,'HVM_Val_Calc.m' ...           % val (dfz ,sharpness ,temporalNoise ,roi ,los)
             ,'HVM_Val_Coverage_Calc.m' ...  % val (coverage)
             ,'Preset_Short_Calib_Calc.m' ...
@@ -42,11 +43,15 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
         rmdir(OutDir, 's');
     end
     
-    if isempty(strfind(version, 'R2018a')) %#ok
-        error('buildCalibrationEngine() must be ran with Matlab R2018a!');
+    if isempty(strfind(version, 'R2018b')) %#ok
+        error('buildCalibrationEngine() must be ran with Matlab R2018b!');
     end
     
     args = { '-W', Target, '-d', OutDir, '-T', 'link:lib', '-v', Files{:}, '-a', Attachments{:} }; %#ok
+%     tbToUse = {'curvefit', 'images', 'signal', 'stats', 'vision'}; % required toolboxes
+%     pToInclude = cellfun(@(x)(fullfile(matlabroot,'toolbox',x)),tbToUse,'uni',false);
+%     pToInclude = [repmat({'-p'},1,length(pToInclude)) ; pToInclude];
+%     args = { '-N', pToInclude{:}, '-W', Target, '-d', OutDir, '-T', 'link:lib', '-v', Files{:}, '-a', Attachments{:} }; %#ok
     fprintf('Running mcc with %s\n\n', strjoin(args, ' '));
     
     mkdir(OutDir);

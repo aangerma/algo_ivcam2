@@ -404,15 +404,18 @@ end
 
 
 function [laserAngleH, laserAngleV] = getLaserAngleFromEsTilt(saTiltFromEs, faTiltFromEs, params)
+% interpreting as int16 and converting from mdeg to deg
+saTilt = single( typecast(uint16(saTiltFromEs),'int16') )/1e3; % [deg]
+faTilt = single( typecast(uint16(faTiltFromEs),'int16') )/1e3; % [deg]
 % fixing angles to spot
 if params.applyCorrection
-    saTiltFromEs = params.correctionCoefsHorz(1)*saTiltFromEs + params.correctionCoefsHorz(2);
-    faTiltFromEs = params.correctionCoefsVert(1)*faTiltFromEs + params.correctionCoefsVert(2);
+    saTilt = params.correctionCoefsHorz(1)*saTilt + params.correctionCoefsHorz(2);
+    faTilt = params.correctionCoefsVert(1)*faTilt + params.correctionCoefsVert(2);
 end
 % direction vector to spot
-z = 1/sqrt((tand(saTiltFromEs))^2 + (tand(faTiltFromEs))^2 + 1);
-x = z*tand(saTiltFromEs);
-y = z*tand(faTiltFromEs);
+z = 1/sqrt((tand(saTilt))^2 + (tand(faTilt))^2 + 1);
+x = z*tand(saTilt);
+y = z*tand(faTilt);
 % angles from mirror to impinging ray origin
 laserAngleH = -atand(x/z);
 laserAngleV = -asind(y);

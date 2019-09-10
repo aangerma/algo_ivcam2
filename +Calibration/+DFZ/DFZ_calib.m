@@ -61,7 +61,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
         im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
     end
     
-    if i == find(trainImages,1,'last')
+    if ~runParams.afterAlgo2 && (i == find(trainImages,1,'last'))
         DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart);
     end
 %            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
@@ -147,7 +147,8 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         DFZRegs.DESTtxFRQpd         = hw.read('DESTtxFRQpd');
         DFZRegs.GNRLimgHsize        = hw.read('GNRLimgHsize');
         DFZRegs.GNRLimgVsize        = hw.read('GNRLimgVsize');
-        [saTilt, faTilt]        = Calibration.aux.readTiltsFromUnit(hw);
+        saTiltText                  = hw.cmd('ERB 0x4a0 2');
+        faTiltText                  = hw.cmd('ERB 0x49e 2');
         
         DFZRegs.FRMWmirrorMovmentMode       = regs.FRMW.mirrorMovmentMode; % uint16         (1)
         DFZRegs.FRMWxfov(mode)              = regs.FRMW.xfov(mode);        % single         (65)
@@ -181,8 +182,8 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         DFZRegs.FRMWfovexTangentP           = regs.FRMW.fovexTangentP;
         DFZRegs.FRMWfovexCenter             = regs.FRMW.fovexCenter;
         DFZRegs.FRMWrtdOverY                = regs.FRMW.rtdOverY;
-        DFZRegs.FRMWsaTiltFromEs            = saTilt;
-        DFZRegs.FRMWfaTiltFromEs            = faTilt;
+        DFZRegs.FRMWsaTiltFromEs            = hex2dec(saTiltText([end-1:end, end-4:end-3]));
+        DFZRegs.FRMWfaTiltFromEs            = hex2dec(faTiltText([end-1:end, end-4:end-3]));
 end
 
 
