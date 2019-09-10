@@ -48,6 +48,10 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
     end
     
     args = { '-W', Target, '-d', OutDir, '-T', 'link:lib', '-v', Files{:}, '-a', Attachments{:} }; %#ok
+%     tbToUse = {'curvefit', 'images', 'signal', 'stats', 'vision'}; % required toolboxes
+%     pToInclude = cellfun(@(x)(fullfile(matlabroot,'toolbox',x)),tbToUse,'uni',false);
+%     pToInclude = [repmat({'-p'},1,length(pToInclude)) ; pToInclude];
+%     args = { '-N', pToInclude{:}, '-W', Target, '-d', OutDir, '-T', 'link:lib', '-v', Files{:}, '-a', Attachments{:} }; %#ok
     fprintf('Running mcc with %s\n\n', strjoin(args, ' '));
     
     mkdir(OutDir);

@@ -109,7 +109,7 @@
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
       <calibrateFast>1</calibrateFast>
-      <sphericalScaleFactors>[1 1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
+      <sphericalScaleFactors>[0.7 1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
    </dataDelay>
    <coarseDSM>
       <nSamples>200</nSamples>  
