@@ -36,9 +36,10 @@ if params.sampleZFromWhiteCheckers
     
     ff = Calibration.aux.invisibleFigure();
     imagesc(rgbFrame.color);hold on;
-    scatter(dbgWht.sampledCornerRGB(:,1),dbgWht.sampledCornerRGB(:,2),'g');
-    plot(dbgWht.uvMap(:,1),dbgWht.uvMap(:,2),'xr');
-    title('Validation RGB UV mapping image: green is sampled and red is mapped points - for z sampled from white');
+    scatter(dbgWht.sampledCornerRGB(:,1),dbgWht.sampledCornerRGB(:,2),'w');
+    plot(dbgWht.uvMap(:,1),dbgWht.uvMap(:,2),'xk');
+    quiver(dbgWht.uvMap(:,1),dbgWht.uvMap(:,2), dbgWht.sampledCornerRGB(:,1)-dbgWht.uvMap(:,1),dbgWht.sampledCornerRGB(:,2)-dbgWht.uvMap(:,2), 'r');
+    title('Validation RGB UV mapping image: white is sampled and black is mapped points - for z sampled from white');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','rgbUvMapImageFromWht',1);
 end
 [~, resultsUvMapReg,dbgReg] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame.color);
@@ -47,9 +48,10 @@ end
 
 ff = Calibration.aux.invisibleFigure();
 imagesc(rgbFrame.color);hold on;
-scatter(dbgReg.sampledCornerRGB(:,1),dbgReg.sampledCornerRGB(:,2),'g');
-plot(dbgReg.uvMap(:,1),dbgReg.uvMap(:,2),'xr');
-title('Validation RGB UV mapping image: green is sampled and red is mapped points - for z sampled from corners(reg)');
+scatter(dbgReg.sampledCornerRGB(:,1),dbgReg.sampledCornerRGB(:,2),'w');
+plot(dbgReg.uvMap(:,1),dbgReg.uvMap(:,2),'xk');
+quiver(dbgReg.uvMap(:,1),dbgReg.uvMap(:,2), dbgReg.sampledCornerRGB(:,1)-dbgReg.uvMap(:,1),dbgReg.sampledCornerRGB(:,2)-dbgReg.uvMap(:,2), 'r');
+title('Validation RGB UV mapping image: white is sampled and black is mapped points - for z sampled from corners(reg)');
 Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','rgbUvMapImageFromCorner',1);
 
 if exist('resultsWht','var')
