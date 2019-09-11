@@ -56,7 +56,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
     [laserPoints,maxMod_dec] = Calibration.presets.captureVsLaserMod(hw,testParams.minModprc,testParams.laserDelta,testParams.framesNum,dataDir);
     cameraInput.z2mm = hw.z2mm;
     cameraInput.imSize = double(hw.streamSize);
-    [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(dataDir,cameraInput,laserPoints,maxMod_dec,calibParams,test.state);
+    [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(dataDir,cameraInput,laserPoints,maxMod_dec,calibParams);
 	
 
 end
