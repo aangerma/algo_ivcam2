@@ -199,20 +199,16 @@
         <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
         <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
 	<cbufUnderflowOldXGA>[-inf inf]</cbufUnderflowOldXGA>
-        <lineFitMeanRmsErrHor2dRGBReg>[0 inf]</lineFitMeanRmsErrHor2dRGBReg>
-        <lineFitMeanRmsErrVer2dRGBReg>[0 inf]</lineFitMeanRmsErrVer2dRGBReg>
-        <lineFitMaxRmsErrHor2dRGBReg>[0 inf]</lineFitMaxRmsErrHor2dRGBReg>
-        <lineFitMaxRmsErrVer2dRGBReg>[0 inf]</lineFitMaxRmsErrVer2dRGBReg>
+        <lineFitRmsErrHor2dRGBReg>[0 inf]</lineFitRmsErrHor2dRGBReg>
+        <lineFitRmsErrVer2dRGBReg>[0 inf]</lineFitRmsErrVer2dRGBReg>
         <lineFitMaxErrHor2dRGBReg>[0 inf]</lineFitMaxErrHor2dRGBReg>
         <lineFitMaxErrVer2dRGBReg>[0 inf]</lineFitMaxErrVer2dRGBReg>
         <uvMapRmseReg>[0 inf]</uvMapRmseReg>
         <uvMapMaxErrReg>[0 inf]</uvMapMaxErrReg>
         <uvMapMaxErr95Reg>[0 inf]</uvMapMaxErr95Reg>
         <uvMapMinErrReg>[0 inf]</uvMapMinErrReg>
-        <lineFitMeanRmsErrHor2dRGBWht>[0 inf]</lineFitMeanRmsErrHor2dRGBWht>
-        <lineFitMeanRmsErrVer2dRGBWht>[0 inf]</lineFitMeanRmsErrVer2dRGBWht>
-        <lineFitMaxRmsErrHor2dRGBWht>[0 inf]</lineFitMaxRmsErrHor2dRGBWht>
-        <lineFitMaxRmsErrVer2dRGBWht>[0 inf]</lineFitMaxRmsErrVer2dRGBWht>
+        <lineFitRmsErrHor2dRGBWht>[0 inf]</lineFitRmsErrHor2dRGBWht>
+        <lineFitRmsErrVer2dRGBWht>[0 inf]</lineFitRmsErrVer2dRGBWht>
         <lineFitMaxErrHor2dRGBWht>[0 inf]</lineFitMaxErrHor2dRGBWht>
         <lineFitMaxErrVer2dRGBWht>[0 inf]</lineFitMaxErrVer2dRGBWht>
         <uvMapRmseWht>[0 inf]</uvMapRmseWht>
@@ -345,7 +341,7 @@
         <vBaseline>-10</vBaseline>
     </dest>-->
     <rgb>
-        <rgbDistoration>0</rgbDistoration>
+        <rgbDistoration>1</rgbDistoration>
         <arePixelsSquare>0</arePixelsSquare>
         <imSize>[1920,1080]</imSize>
     </rgb>
