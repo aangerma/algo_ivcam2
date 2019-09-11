@@ -1,4 +1,4 @@
-function [calibPassed, results] = AlgoThermalCalib(hw, regs, luts, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxTime2Wait, app)
+function [calibPassed, results] = AlgoThermalCalib(hw, regs, eepromRegs, eepromBin, calibParams, runParams, fw, fnCalib, results, fprintff, maxTime2Wait, app)
 
 %tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
@@ -62,7 +62,7 @@ while ~finishedHeating
     i = i + 1;
     path = fullfile(ATCpath_temp,sprintf('thermal%d',i));
     framesData(i) = prepareFrameData(hw,startTime,calibParams,path);  %
-    [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs, luts, eepromRegs, eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait);
+    [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, framesData(i),sz, path,calibParams,maxTime2Wait);
     
     if tempFig.isvalid
         tempsForPlot(plotDataI) = framesData(i).temp.ldd;
@@ -182,7 +182,6 @@ function frameData = prepareFrameData(hw,startTime,calibParams,path)
     [frameData.iBias(3), frameData.vBias(3)] = hw.pzrPowerGet(3,5);
     Calibration.aux.SaveFramesWrapper(hw, 'ZI' , 1 , path); %after mareg with main remove local calls.
     frameData.time = toc(startTime);
-%    frameData.ptsWithZ = cornersData(frame,regs,calibParams);
 end
 
 function [dsmregs] = calibrateDSM(hw,fw, runParams, calibParams, fnCalib, fprintff, t)
