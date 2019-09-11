@@ -68,27 +68,29 @@ else
     cbGridSz = [numel(validRows),numel(validCols)];
     validFramesData = validFramesData(:,validCBPoints(:),:);
 end
-eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesData(i,:,end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
-eGeomOverTemp = nan(1,numel(tmpBinEdges));
-eGeomOverTemp(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
-
-
-metrics.meanEGeom = nanmean(eGeomOverTemp);
-metrics.maxEGeom = max(eGeomOverTemp);
-metrics.minEGeom = min(eGeomOverTemp);
-
-if inValidationStage % Compare calibration to theoretical Fix
-    legends = {'Post Fix (val)'};
-else
-    legends = {'Pre Fix (val)'};
+if (size(validFramesData,3)>=8) % hack for dealing with missing XYZ data in validFramesData (pointsWithZ(6:8)) in ATC
+    eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesData(i,:,end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
+    eGeomOverTemp = nan(1,numel(tmpBinEdges));
+    eGeomOverTemp(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
+    
+    
+    metrics.meanEGeom = nanmean(eGeomOverTemp);
+    metrics.maxEGeom = max(eGeomOverTemp);
+    metrics.minEGeom = min(eGeomOverTemp);
+    
+    if inValidationStage % Compare calibration to theoretical Fix
+        legends = {'Post Fix (val)'};
+    else
+        legends = {'Pre Fix (val)'};
+    end
+    
+    if ~isempty(runParams)
+        ff = Calibration.aux.invisibleFigure;
+        plot(tmpBinEdges,eGeomOverTemp)
+        title('Heating Stage EGeom'); grid on;xlabel('degrees');ylabel('eGeom [mm]');legend(legends);
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('EGeomOverTemp'),1);
+    end
+    data.results = metrics;
 end
-
-if ~isempty(runParams)
-    ff = Calibration.aux.invisibleFigure;
-    plot(tmpBinEdges,eGeomOverTemp)
-    title('Heating Stage EGeom'); grid on;xlabel('degrees');ylabel('eGeom [mm]');legend(legends);
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('EGeomOverTemp'),1);
-end
-data.results = metrics;
 end
 

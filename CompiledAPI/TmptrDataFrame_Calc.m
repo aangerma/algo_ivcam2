@@ -1,4 +1,4 @@
-function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, luts, eepromRegs, eepromBin, FrameData, sz ,InputPath, calibParams, maxTime2Wait)
+function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,InputPath, calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -72,7 +72,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-        save(fn,'finishedHeating','regs','luts','eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
+        save(fn,'finishedHeating','regs', 'eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
     end
     height = sz(1);
     width  = sz(2);
@@ -86,7 +86,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
         [regs] = struct_merge(regs , eepromRegs);
     end
     origFinishedHeating = finishedHeating;
-    [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, luts, eepromRegs, FrameData, height , width, InputPath, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
+    [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, InputPath, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
@@ -102,7 +102,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     end
 end
 
-function [finishedHeating,calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, luts, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
+function [finishedHeating,calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -143,7 +143,7 @@ if ~finishedHeating % heating stage
     frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
     frame.i = Calibration.aux.average_images(frame.i);
     frame.z = Calibration.aux.average_images(frame.z);
-    FrameData.ptsWithZ = cornersData(frame,regs,luts,calibParams);
+    FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
     framesData = acc_FrameData(FrameData);
     
     if(Index == 0)
@@ -184,7 +184,6 @@ else % steady-state stage
     
     invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
     data.framesData = data.framesData(~invalidFrames);
-    data = Calibration.thermal.addEGeomToData(data);
     data.dfzRefTmp = regs.FRMW.dfzCalTmp;
     [table,results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
     data.tableResults = results;
@@ -195,9 +194,6 @@ else % steady-state stage
         fprintff('table is empty (no checkerboard where found)\n');
         return;
     end
-%     dataFixed = Calibration.thermal.applyFix(data,calibParams);
-%     % Add eGeom to data
-%     dataFixed = Calibration.thermal.addEGeomToData(dataFixed);
     
     [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
     save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data','calibParams','runParams','eepromRegs');
@@ -226,7 +222,7 @@ end
 
 
 
-function [ptsWithZ] = cornersData(frame,regs,luts,calibParams)
+function [ptsWithZ] = cornersData(frame,regs,calibParams)
     sz = size(frame.i);
     pixelCropWidth = sz.*calibParams.gnrl.cropFactors;
     frame.i([1:pixelCropWidth(1),round(sz(1)-pixelCropWidth(1)):sz(1)],:) = 0;
@@ -246,74 +242,15 @@ function [ptsWithZ] = cornersData(frame,regs,luts,calibParams)
             return;
         end
     end
-    if ~regs.DIGG.sphericalEn
-        zIm = single(frame.z)/single(regs.GNRL.zNorm);
-        zPts = interp2(zIm,pts(:,1),pts(:,2));
-        matKi=(regs.FRMW.kRaw)^-1;
-
-        u = pts(:,1)-1;
-        v = pts(:,2)-1;
-
-        tt=zPts'.*[u';v';ones(1,numel(v))];
-        verts=(matKi*tt)';
-
-        %% Get r,angx,angy
-        if regs.DEST.hbaseline
-            rxLocation = [regs.DEST.baseline,0,0]; 
-        else
-            rxLocation = [0,regs.DEST.baseline,0];
-        end
-        rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
-        [angx,angy] = Calibration.aux.vec2ang(normr(verts),regs);
-        [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
-        ptsWithZ = [rtd,angx,angy,pts,verts];
-        ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
-        
+    assert(regs.DIGG.sphericalEn==1, 'Frames for ATC must be captured in spherical mode')
+    if isempty(colors)
+        rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
     else
-        if isempty(colors)
-            rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
-        else
-            rpt = Calibration.aux.samplePointsRtdAdvanced(frame.z,reshape(pts,20,28,2),regs,colors,0,calibParams.gnrl.sampleRTDFromWhiteCheckers);
-        end
-        rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
-        
-        angxQ = rpt(:,2);
-        angyQ = rpt(:,3);
-        [x_,y_] = Pipe.DIGG.ang2xy(angxQ,angyQ,regs,[],[]);
-
-        [x,y] = Pipe.DIGG.undist(x_,y_,regs,luts,[],[]);
-        x = single(x)/2^15; 
-        y = single(y)/2^15; 
-
-        xyIm = [[x,y]-0.5,ones(size(x,1),1)];
-        vUnit = normr(((regs.FRMW.kRaw)\(xyIm'))');
-        % Update scale to take margins into acount.
-        if regs.DEST.hbaseline
-            sing = vUnit(:,1);
-        else
-            sing = vUnit(:,2);
-        end
-        rtd_=rpt(:,1);
-        r = (0.5*(rtd_.^2 - 100))./(rtd_ - 10.*sing);
-        v = double(vUnit.*r);
-        ptsWithZ = [rpt,reshape(pts,[],2),v];
-        ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
+        rpt = Calibration.aux.samplePointsRtdAdvanced(frame.z,reshape(pts,20,28,2),regs,colors,0,calibParams.gnrl.sampleRTDFromWhiteCheckers);
     end
-    v = ptsWithZ(:,6:8);
-    if size(v,1) == 20*28
-        v = reshape(v,20,28,3);
-        rows = find(any(~isnan(v(:,:,1)),2));
-        cols = find(any(~isnan(v(:,:,1)),1));
-        grd = [numel(rows),numel(cols)];
-        v = reshape(v(rows,cols,:),[],3);
-    else
-        grd = [9,13];
-    end
-    [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
-    fprintf('eGeom - %2.2f\n',eGeom);
-%     if isnan(eGeom)
-%        eGeom 
-%     end
+    rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
+    ptsWithZ = [rpt,reshape(pts,[],2)]; % without XYZ which is not calibrated well at this stage
+    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end
 
 function [merged] = struct_merge(merged , new )
