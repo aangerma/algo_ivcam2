@@ -3,7 +3,7 @@ function logResults(results,runParams,fname)
         fname = 'results.txt';
     end
     fullPath = fullfile(runParams.outputFolder,fname);
-    fid = fopen(fullPath,'wt');
+    fid = fopen(fullPath,'at');
     fprintf(fid, struct2str(results));
     fclose(fid);
 end 

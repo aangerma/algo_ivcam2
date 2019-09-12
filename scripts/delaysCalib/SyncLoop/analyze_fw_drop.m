@@ -4,7 +4,8 @@ clc
 
 %%
 
-load('test_results.mat')
+% load('test_results.mat')
+load('test_results_drop59.mat')
 Z_delay = delays(:,2) + delays(:,3);
 IR_delay = Z_delay - (delays(:,1)-2^31);
 

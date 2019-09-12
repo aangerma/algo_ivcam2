@@ -64,7 +64,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
 
     
     hw.cmd('DIRTYBITBYPASS');
-    hw.cmd('algo_thermloop_en 1');
+    hw.enableAlgoThermalLoop();
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     
     fprintff('Opening stream...');

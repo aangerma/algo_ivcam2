@@ -7,7 +7,7 @@ EXTLconLocDelayFastF = uint32(5);
 FRMWconLocDelayFastSlope = single(0.81);
 
 EXTLconLocDelaySlow = uint32(2147483763);
-FRMWconLocDelaySlowSlope = single(0.81); % 0.94
+FRMWconLocDelaySlowSlope = single(0.94);
 
 %% DRAM
 
@@ -18,14 +18,14 @@ EXTLconLocDelayFastF = uint32(3);
 FRMWconLocDelayFastSlope = single(0.93);
 
 EXTLconLocDelaySlow = uint32(2147483860);
-FRMWconLocDelaySlowSlope = single(0.93); % 1.02
+FRMWconLocDelaySlowSlope = single(1.02);
 
-hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 1 %d', EXTLconLocDelayFastC))
-hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 2 %d', EXTLconLocDelayFastF))
-hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 3 %d', EXTLconLocDelaySlow))
-hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 4 %f', FRMWconLocDelayFastSlope))
-hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 5 %f', FRMWconLocDelaySlowSlope))
-hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 6 %f', T_ref))
+hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 1 %d', dec2hex(EXTLconLocDelayFastC)));
+hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 2 %d', dec2hex(EXTLconLocDelayFastF)));
+hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 3 %d', dec2hex(EXTLconLocDelaySlow)));
+hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 4 %f', cell2mat(single2hex(FRMWconLocDelayFastSlope))));
+hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 5 %f', cell2mat(single2hex(FRMWconLocDelaySlowSlope))));
+hw.cmd(sprintf('SET_PARAM_SYNC_LOOP 6 %f', cell2mat(single2hex(T_ref))));
 
 %%
 
