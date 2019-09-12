@@ -11,6 +11,8 @@ function [rgbPassed,rgbTable,results,im,rgbs] = cal_rgb(imagePath,calibParams,Ir
         filesRGB = dirFiles(fullfile(imagePath,poses{i}),'RGB*',1);
         img = readAllBytes(filesIR{1});
         im(i).i = rot90(reshape(img,flip(IrImSize)),2);
+        z = Calibration.aux.GetFramesFromDir(fullfile(imagePath,poses{i}),IrImSize(1), IrImSize(2),'Z');
+        im(i).z = rot90(z(:,:,1),2);
         img = typecast(readAllBytes(filesRGB{1}),'uint16');
         rgbs{i} = reshape(double(bitand(img,255)),calibParams.rgb.imSize)';
     end
