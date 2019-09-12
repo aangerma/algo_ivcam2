@@ -60,49 +60,49 @@ for j=1:PoseNum
     ExtrinsicTable=[ExtrinsicTable,poseExtrinsic{:}];
 end
 %% transfer all to cam 0
-ExtrinsicPerCamToCam0={};
+ExtrinsicPerCam={};
 cameraOrig=0;
 for k=1:skuCamNum
     CamsInds=find([ExtrinsicTable.from]==(k-1));
     TransTo=[ExtrinsicTable(CamsInds).to];
     match2orig=find(TransTo==cameraOrig,1);
     if(~isempty(match2orig)) % transformation to cam 0 exists in ExtrinsicTable
-        ExtrinsicPerCamToCam0{k}.R=ExtrinsicTable(CamsInds(match2orig(1))).R;
-        ExtrinsicPerCamToCam0{k}.T=ExtrinsicTable(CamsInds(match2orig(1))).T;
+        ExtrinsicPerCam{k}.R=ExtrinsicTable(CamsInds(match2orig(1))).R;
+        ExtrinsicPerCam{k}.T=ExtrinsicTable(CamsInds(match2orig(1))).T;
     else % use transformation of prev cam to get to cam0. ex: p2->0=data2*R2->1*R1->0+T2->1*R1->0+T1->0
         prevCam=find(TransTo==k-2,1);
-        ExtrinsicPerCamToCam0{k}.R=ExtrinsicTable(CamsInds(prevCam(1))).R*ExtrinsicPerCamToCam0{k-1}.R;
-        ExtrinsicPerCamToCam0{k}.T=ExtrinsicTable(CamsInds(prevCam(1))).T*ExtrinsicPerCamToCam0{k-1}.R+ExtrinsicPerCamToCam0{k-1}.T;
+        ExtrinsicPerCam{k}.R=ExtrinsicTable(CamsInds(prevCam(1))).R*ExtrinsicPerCam{k-1}.R;
+        ExtrinsicPerCam{k}.T=ExtrinsicTable(CamsInds(prevCam(1))).T*ExtrinsicPerCam{k-1}.R+ExtrinsicPerCam{k-1}.T;
     end
     
 end
 
 if skuCamNum==2
     [R180]=ZrotMat(180);
-    ExtrinsicPerCamToCam0{1}.R=ExtrinsicPerCamToCam0{1}.R*R180;
-    ExtrinsicPerCamToCam0{1}.T=ExtrinsicPerCamToCam0{1}.T*R180;
+    ExtrinsicPerCam{1}.R=ExtrinsicPerCam{1}.R*R180;
+    ExtrinsicPerCam{1}.T=ExtrinsicPerCam{1}.T*R180;
 end
 %% rot 90 + external origin
 if calibParams.gnrl.rot90
     [R90]=ZrotMat(90);
-    for i=1:length(ExtrinsicPerCamToCam0)
-        ExtrinsicPerCamToCam0{i}.R=ExtrinsicPerCamToCam0{i}.R*R90;
-        ExtrinsicPerCamToCam0{i}.T=ExtrinsicPerCamToCam0{i}.T*R90;
+    for i=1:length(ExtrinsicPerCam)
+        ExtrinsicPerCam{i}.R=ExtrinsicPerCam{i}.R*R90;
+        ExtrinsicPerCam{i}.T=ExtrinsicPerCam{i}.T*R90;
     end
 end
 
 if(calibParams.transform2ExternalOrigin.applyT)
     Rext=ocv.Rodrigues(deg2rad(calibParams.transform2ExternalOrigin.ang'));
-    for i=1:length(ExtrinsicPerCamToCam0)
-        ExtrinsicPerCamToCam0{i}.R=ExtrinsicPerCamToCam0{i}.R*Rext;
-        ExtrinsicPerCamToCam0{i}.T=ExtrinsicPerCamToCam0{i}.T*Rext+calibParams.transform2ExternalOrigin.T;
+    for i=1:length(ExtrinsicPerCam)
+        ExtrinsicPerCam{i}.R=ExtrinsicPerCam{i}.R*Rext;
+        ExtrinsicPerCam{i}.T=ExtrinsicPerCam{i}.T*Rext+calibParams.transform2ExternalOrigin.T;
     end
 end
 
 save(strcat(calibParams.gnrl.outFolder,'\ExtrinsicPerCamToCam0'),'ExtrinsicPerCamToCam0');
 
 %% Validate extrinsic
-Calibration.L520extrinsicCalib.validateExtrinsic(ExtrinsicPerCamToCam0,PosesData,calibParams)
+Calibration.L520extrinsicCalib.validateExtrinsic(ExtrinsicPerCam,PosesData,calibParams)
 end
 
 
