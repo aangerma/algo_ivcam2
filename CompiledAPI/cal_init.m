@@ -34,6 +34,21 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
     acc                     = [];
     g_temp_count            = 0;
     
+    func_name = dbstack;
+    func_name = func_name(1).name;
+
+    mkdirSafe(output_dir);
+    mkdirSafe(fullfile(output_dir,'mat_files'));
+    
+    % save Input
+    if g_save_input_flag && exist(output_dir,'dir')~=0 
+        fn = fullfile(output_dir, 'mat_files' ,[func_name '_in.mat']);
+        if(~exist('fprintff','var'))
+            save(fn,'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f' ,'verbose' , 'save_input_flag' , 'save_output_flag' , 'dummy_output_flag' );
+        else
+            save(fn,'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f' ,'verbose' , 'save_input_flag' , 'save_output_flag' , 'dummy_output_flag' ,'fprintff' );
+        end
+    end
     
     if(~exist('fprintff','var'))
 %         if (g_debug_log_f)
@@ -46,10 +61,7 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
     else
         g_fprintff = fprintff;
     end
-    
-    mkdirSafe(output_dir);
-    mkdirSafe(fullfile(output_dir,'mat_files'));
-    
+
     result = 1;
     if (g_debug_log_f)
         fprintff('output_dir = %s   \n'        ,output_dir);
@@ -66,6 +78,11 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
     else
         calibParams = 0;
         result = 0;
+    end
+    % save output
+    if g_save_output_flag && exist(output_dir,'dir')~=0 
+        fn = fullfile(output_dir,  'mat_files' ,[func_name '_out.mat']);
+        save(fn,'calibParams','result');
     end
     if exist('fid','var')   
         fclose(fid);

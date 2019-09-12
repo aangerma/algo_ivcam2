@@ -4,7 +4,7 @@ clc
 
 %%
 
-fid = fopen('X:\Users\syaeli\Work\Code\algo_ivcam2\scripts\delaysCalib\SyncLoop\logger_sync_loop2.txt', 'rt');
+fid = fopen('X:\Users\syaeli\Work\Code\algo_ivcam2\scripts\delaysCalib\SyncLoop\logger_sync_loop3.txt', 'rt');
 data = cell(0,1);
 while true
     y = fgetl(fid);
@@ -43,7 +43,7 @@ codes = [1,2,3,4,5,6,11,12,13,20];
 
 %%
 
-iEvent = 140; % 1, 70, 140
+iEvent = 172; % 1, 70, 140
 
 tmp = [code(:, iEvent), value(:, iEvent)];
 for k = 1:size(tmp,1)
