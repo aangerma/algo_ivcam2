@@ -1,3 +1,3 @@
 function [vers] = Version()
-    [vers,~,~] = calibToolVersion();
+    [vers,~,~] = AlgoCameraCalibToolVersion();
 end

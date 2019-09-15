@@ -14,7 +14,7 @@ eeprom.T_ref        = 54.2363663;
 
 % Desired DRAM changes
 dram(1).IR_slope    = 1.19;
-dram(1).IR_offset   = 97865.4;
+dram(1).IR_offset   = 97765.4;
 dram(1).Z_slope     = 0.93;
 dram(1).Z_offset    = 98142.1;
 dram(1).T_ref       = 47.3;
@@ -28,13 +28,18 @@ dram(2).T_ref       = 52.1;
 
 %% Sync Loop preprocessing
 
+eeprom.IR_delay                = round(eeprom.IR_offset + eeprom.IR_slope*eeprom.T_ref);
+eeprom.Z_delay                 = round(eeprom.Z_offset + eeprom.Z_slope*eeprom.T_ref);
+eeprom.conLocDelayFastC        = uint32(8*floor(eeprom.Z_delay/8));
+eeprom.conLocDelayFastF        = uint32(mod(eeprom.Z_delay,8));
+eeprom.conLocDelaySlow         = uint32(2^31)+(uint32(eeprom.Z_delay)-uint32(eeprom.IR_delay));
 for k = 1:length(dram)
-    IR_delay                = round(dram(k).IR_offset + dram(k).IR_slope*dram(k).T_ref);
-    Z_delay                 = round(dram(k).Z_offset + dram(k).Z_slope*dram(k).T_ref);
-    conLocDelayFastC        = uint32(8*floor(Z_delay/8));
-    conLocDelayFastF        = uint32(mod(Z_delay,8));
-    conLocDelaySlow         = uint32(2^31)+(uint32(Z_delay)-uint32(IR_delay));
-    dram(k).setParamCmds    = {dec2hex(conLocDelayFastC), dec2hex(conLocDelayFastF), dec2hex(conLocDelaySlow),...
+    dram(k).IR_delay                = round(dram(k).IR_offset + dram(k).IR_slope*dram(k).T_ref);
+    dram(k).Z_delay                 = round(dram(k).Z_offset + dram(k).Z_slope*dram(k).T_ref);
+    dram(k).conLocDelayFastC        = uint32(8*floor(dram(k).Z_delay/8));
+    dram(k).conLocDelayFastF        = uint32(mod(dram(k).Z_delay,8));
+    dram(k).conLocDelaySlow         = uint32(2^31)+(uint32(dram(k).Z_delay)-uint32(dram(k).IR_delay));
+    dram(k).setParamCmds    = {dec2hex(dram(k).conLocDelayFastC), dec2hex(dram(k).conLocDelayFastF), dec2hex(dram(k).conLocDelaySlow),...
         cell2mat(single2hex(dram(k).Z_slope)), cell2mat(single2hex(dram(k).IR_slope)), cell2mat(single2hex(dram(k).T_ref))};
 end
 
@@ -60,6 +65,21 @@ eventDefinitions = {30,       'enableSL',   {};
                     980+400,  'disableSL',  {};...
                     1380+240, 'enableSL',   {};...
                     1620+400, 'disableSL',  {}};
+eventDefinitions = {10,       'enableSL',   {};
+                    20,   'disableSL',  {};...
+                    30,   'enableSL',   {};...
+                    40,  'disableSL',  {};...
+                    50,   'dramChange', dram(1).setParamCmds;...
+                    60,   'enableSL',   {};...
+                    70,  'disableSL',  {};...
+                    80,  'enableTL',   {};...
+                    90,  'enableSL',   {};...
+                    100,  'disableSL',  {};...
+                    110,   'dramChange', dram(2).setParamCmds;...
+                    120,   'enableSL',   {};...
+                    130,  'disableSL',  {};...
+                    2140, 'enableSL',   {};...
+                    150, 'disableSL',  {}};
 events = struct('time', 0, 'type', '', 'params', {});
 for iEvent = 1:size(eventDefinitions,1)
     events(iEvent).time     = eventDefinitions{iEvent,1};
@@ -108,7 +128,7 @@ while (t < testDuration)
     
     % Event realization
     if ~isempty(futureEvents) && (t >= futureEvents(1).time)
-        fprintf('t = %.1f[min] , T = %.1f , initiating %s event\n', t/60, Tldd(end), futureEvents(1).type)
+        fprintf('t = %.1f[min] , T = %.1f , delays = [%d, %d, %d], initiating %s event\n', t/60, Tldd(end), delayIR, delayZC, delayZF, futureEvents(1).type)
         switch futureEvents(1).type
             case 'enableSL'
                 hw.cmd('ENABLE_SYNC_LOOP 1');
@@ -121,7 +141,7 @@ while (t < testDuration)
                 curThermalLoopEn = 1;
             case 'dramChange'
                 for iCmd = 1:6
-                    hw.cmd(sprintf('SET_PARAM_SYNC_LOOP %d %s', iCmd, futureEvents(1).params{k}));
+                    hw.cmd(sprintf('SET_PARAM_SYNC_LOOP %d %s', iCmd, futureEvents(1).params{iCmd}));
                 end
                 curSyncLoopSet = curSyncLoopSet+1;
             otherwise
@@ -134,5 +154,5 @@ end
 
 % Finalization
 hw.stopStream();
-save('sync_loop_test_results.mat', 'eeprom', 'dram', 'events', 'Tldd', 'delays', 'syncLoopEn', 'syncLoopSet', 'tmptrOffset', 'thermalLoopEn')
+% save('sync_loop_test_results.mat', 'eeprom', 'dram', 'events', 'Tldd', 'delays', 'syncLoopEn', 'syncLoopSet', 'tmptrOffset', 'thermalLoopEn')
 

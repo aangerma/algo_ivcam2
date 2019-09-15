@@ -710,16 +710,16 @@ classdef HWinterface <handle
             end
         end
         function disableAlgoThermalLoop(obj)
-           obj.cmd('ALGO_THERMLOOP_MODE_SET 0 10');
+           obj.cmd('ALGO_THERMLOOP_MODE_SET 0 A');
         end
         function enableAlgoThermalLoop(obj,onlyRtd)
            if ~exist('onlyRtd','var')
                 onlyRtd = 0;
            end
            if onlyRtd
-               obj.cmd('ALGO_THERMLOOP_MODE_SET 1 10');
+               obj.cmd('ALGO_THERMLOOP_MODE_SET 1 A');
            else
-               obj.cmd('ALGO_THERMLOOP_MODE_SET 2 10');
+               obj.cmd('ALGO_THERMLOOP_MODE_SET 2 A');
            end
            
         end

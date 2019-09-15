@@ -18,7 +18,8 @@ calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
 tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
 Calibration.thermal.saveThermalTable( tableShifted , tableName );
 fprintff('Generated algo thermal table full path:\n%s\n',tableName);
-initFldr = fullfile(fileparts(fileparts(mfilename('fullpath'))),'releaseConfigCalibVGA');
+% initFldr = fullfile(fileparts(fileparts(mfilename('fullpath'))),'releaseConfigCalibVGA');
+initFldr = calib_dir;
 %fw = Pipe.loadFirmware(initFldr);
 if(exist(fullfile(calib_dir , 'regsDefinitions.frmw'), 'file') == 2)
     fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir); % incase of DLL assume table same folder as fnCalib
