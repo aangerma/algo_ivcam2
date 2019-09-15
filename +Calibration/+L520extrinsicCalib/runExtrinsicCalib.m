@@ -83,6 +83,7 @@ if skuCamNum==2
     ExtrinsicPerCam{1}.T=ExtrinsicPerCam{1}.T*R180;
 end
 %% rot 90 + external origin
+% !! notice to decide the rotation order 90 vs external
 if calibParams.gnrl.rot90
     [R90]=ZrotMat(90);
     for i=1:length(ExtrinsicPerCam)
