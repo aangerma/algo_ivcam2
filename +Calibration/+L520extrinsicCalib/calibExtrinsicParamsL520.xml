@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+    <sparkParams>
+        <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
+        <azureFolder>E:\SPARK\iv2-cal-01 (azure.spark@intel.com)</azureFolder>
+        <testMode>ATP</testMode>
+    </sparkParams>
+    <gnrl>
+        <verbose>1</verbose>
+        <outFolder>X:\Users\hila\L520\ExtrinsicCalib\newTarget\results\tmp</outFolder>
+        <skuCamsNum>4</skuCamsNum>
+        <rot90>1</rot90>
+    </gnrl>
+    <transform2ExternalOrigin>
+        <applyT>1</applyT>
+        <ang>[-60 , 0 , 0]</ang>
+        <T>[2.2 , -76.4593, -73.8264]</T>       
+    </transform2ExternalOrigin>       
+    <camera>
+        <calibRes>[152 232]</calibRes>
+        <zMaxSubMM>4</zMaxSubMM>       
+    </camera>
+    <target>
+        <cbSquareSz>30</cbSquareSz>
+        <cbPtsSz>[]</cbPtsSz>
+        <markerSpace>5</markerSpace>
+        <markersNumPerColor>4</markersNumPerColor>
+        <circleRad_mm>4.5</circleRad_mm>
+        <blackMarkers>
+            <horizontalCBoffset>2</horizontalCBoffset>
+            <verticalCBoffset>11</verticalCBoffset>
+        </blackMarkers>
+        <whiteMarkers>
+            <horizontalCBoffset>3</horizontalCBoffset>
+            <verticalCBoffset>7</verticalCBoffset>
+        </whiteMarkers>        
+    </target>
+    <errRange>
+    </errRange>
+    <validation>
+        <roi>0.7</roi>
+    </validation>
+    
+    
+    
+</struct>
