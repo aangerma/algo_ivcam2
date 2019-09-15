@@ -77,6 +77,15 @@
         <dfz2DErrH>[0,inf]</dfz2DErrH>
         <dfz2DErrV>[0,inf]</dfz2DErrV>
         <dfzPlaneFit>[0,inf]</dfzPlaneFit>
+		<lineFitRmsErrHor2dRGB>[0 inf]</lineFitRmsErrHor2dRGB>
+        <lineFitRmsErrVer2dRGB>[0 inf]</lineFitRmsErrVer2dRGB>
+		<lineFitMaxRmsErrHor2dRGB>[0 inf]</lineFitMaxRmsErrHor2dRGB>
+        <lineFitMaxRmsErrVer2dRGB>[0 inf]</lineFitMaxRmsErrVer2dRGB>
+        <lineFitMaxErrHor2dRGB>[0 inf]</lineFitMaxErrHor2dRGB>
+        <lineFitMaxErrVer2dRGB>[0 inf]</lineFitMaxErrVer2dRGB>
+        <uvMapMeanRmse>[0 inf]</uvMapMeanRmse>
+        <uvMapMaxErr>[0 inf]</uvMapMaxErr>
+        <uvMapMaxErr95>[0 inf]</uvMapMaxErr95>
     </errRange>
     <validationConfig>
         <!-- in this section the test plan is listed.available metrics:
