@@ -28,8 +28,7 @@ function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams,
             end
             fprintff('\n');
             [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
-            results.rgbIntReprojRms = resultsRGB.rgbIntReprojRms;
-            results.rgbExtReprojRms = resultsRGB.rgbExtReprojRms;
+            results = Validation.aux.mergeResultStruct(results,resultsRGB);
         catch ex
             fprintff('[!] ERROR:%s\n',strtrim(ex.message));
             fprintff('[!] Error in :%s (line %d)\n',strtrim(ex.stack(1).name),ex.stack(1).line);
