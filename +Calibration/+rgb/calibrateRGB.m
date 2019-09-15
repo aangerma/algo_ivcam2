@@ -24,7 +24,7 @@ function [results,rgbTable,rgbPassed] = calibrateRGB(hw, runParams, calibParams,
                 InputPath = fullfile(ivcam2tempdir,'RGB'); 
                 path = fullfile(InputPath,sprintf('Pose%d',i));
                 mkdirSafe(path);
-                Calibration.aux.SaveFramesWrapper(hw, 'IC' , 30 , path);  % save images Z and C in sub dir 
+                Calibration.aux.SaveFramesWrapper(hw, 'ICZ' , 30 , path);  % save images Z and C in sub dir 
             end
             fprintff('\n');
             [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
