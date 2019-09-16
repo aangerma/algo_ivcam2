@@ -2,7 +2,7 @@ clear all
 clc
 
 generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
-curTestDir = 'IC37\';
+curTestDir = 'IC38\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
 capturesPath = [generalPath, curTestDir, 'Images\'];
@@ -14,8 +14,8 @@ ind = strfind(dataIn.output_dir, curTestDir);
 dataIn.output_dir = [generalPath, dataIn.output_dir(ind:end)];
 dataIn.calib_params_fn = [generalPath, dataIn.calib_params_fn(ind:end)];
 dataIn.calib_dir = [generalPath, dataIn.calib_dir(ind:end)];
-save_input_flag = 0;
-save_output_flag = 0;
+dataIn.save_input_flag = 0;
+dataIn.save_output_flag = 0;
 if isfield(dataIn, 'fprintff')
     [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.debug_log_f, dataIn.verbose, dataIn.save_input_flag, dataIn.save_output_flag, dataIn.dummy_output_flag, dataIn.fprintff);
 else

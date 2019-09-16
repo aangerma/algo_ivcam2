@@ -253,7 +253,7 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end
 
-function [merged] = struct_merge(merged , new )
+function [merged] = struct_merge(merged , new ) %TODO: can we just start with EEPROM and override all with regs?
     % regs to keep (and not override by new), namely regs calibrated in ATC
     backupRegs.EXTL.conLocDelaySlow     = merged.EXTL.conLocDelaySlow;
     backupRegs.EXTL.conLocDelayFastC    = merged.EXTL.conLocDelayFastC;

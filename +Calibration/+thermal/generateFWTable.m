@@ -1,5 +1,4 @@
 function [table,results,Invalid_Frames] = generateFWTable(data,calibParams,runParams,fprintff)
-Invalid_Frames = [];
 % Bin frames according to fw loop requirment.
 % Generate a linear fix for angles and an offset for rtd
 
@@ -67,8 +66,8 @@ maxVBias2 = minMaxVBias2(2);
 minVBias2 = minMaxVBias2(1);
 binEdges = linspace(minVBias2,maxVBias2,N);
 dbin = binEdges(2)-binEdges(1);
-binIndices = max(1,min(48,floor((vbias2-minVBias2)/dbin)+1));
-refBinIndex = max(1,min(48,floor((regs.FRMW.dfzVbias(2)-minVBias2)/dbin)+1));
+binIndices = max(1,min(nBins,floor((vbias2-minVBias2)/dbin)+1));
+refBinIndex = max(1,min(nBins,floor((regs.FRMW.dfzVbias(2)-minVBias2)/dbin)+1));
 framesPerVBias2 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binIndices);
 if all(all(isnan(framesPerVBias2(refBinIndex,:,:))))
     fprintff('Self heat didn''t reach algo calibration vBias2. \n');
@@ -114,9 +113,9 @@ tgal = (1/norm(p1-p0)^2)*(p1-p0)*([vbias1(:),vbias3(:)]-p0)';
 % figure,plot(tgal);
 binEdges = t;
 dbin = binEdges(2)-binEdges(1);
-binIndices = floor((tgal)/dbin)+1;
+binIndices = max(1,min(nBins,floor((tgal)/dbin)+1));
 refBinTGal = (1/norm(p1-p0)^2)*(p1-p0)*([regs.FRMW.dfzVbias(1),regs.FRMW.dfzVbias(3)]-p0)';
-refBinIndex = max(1,min(48,floor((refBinTGal)/dbin)+1));
+refBinIndex = max(1,min(nBins,floor((refBinTGal)/dbin)+1));
 framesPerVBias13 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binIndices);
 
 if all(all(isnan(framesPerVBias13(refBinIndex,:,:))))
