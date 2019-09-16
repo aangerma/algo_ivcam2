@@ -1,0 +1,17 @@
+cmd: SET_PARAM_SYNC_LOOP <index> <value>
+
+Index 	- Param name
+
+  1 	- conLocDelayFastC
+  2 	- conLocDelayFastF
+  3 	- conLocDelaySlow
+  4 	- conLocDelayFastSlope
+  5 	- conLocDelaySlowSlope
+  6 	- dfzCalTmp
+  7 	- speedOfLightMMnsec
+
+
+Loggers:
+
+old value:  Algo Thermal Loop - Temperature\Delay (100, index, value)
+new value:  Algo Thermal Loop - Temperature\Delay (200, index, value) 

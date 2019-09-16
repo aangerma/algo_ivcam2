@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version,configurationFolder,atlregs,afterThermalCalib_flag)
+function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version,configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -25,7 +25,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     if ~exist('afterThermalCalib_flag','var')
         afterThermalCalib_flag = 0;
     end
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -75,8 +75,16 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     verValue           = uint32(versionBytes(1))*2^8 + uint32(versionBytes(2));%0x00000203
     verValueFull       = uint32(versionBytes(1))*2^16 +uint32(versionBytes(2))*2^8+uint32(versionBytes(3));%0x00020300 
 
+    fw = Firmware(g_calib_dir);
+    if(isempty(eepromRegs) || ~isstruct(eepromRegs)) % called from HVM tester
+        EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
+        EPROMstructure  = EPROMstructure.updatedEpromTable;
+        eepromBin       = uint8(eepromBin);
+        eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
+    end
+    [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, runParams.afterThermalCalib);
     
-    [results ,luts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,atlregs,results,fnCalib, fprintff, calibParams,g_output_dir);    % save output
+    [results ,luts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,thermalRegs,results,fnCalib, fprintff, calibParams,g_output_dir);    % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn,'results', 'luts');
@@ -86,7 +94,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     end
 end
 
-function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,atlregs,results,fnCalib, fprintff, calibParams,output_dir)
+function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,thermalRegs,results,fnCalib, fprintff, calibParams,output_dir)
     t = tic;
     %% load inital FW.
 %    fw = Pipe.loadFirmware(internalFolder);
@@ -99,16 +107,8 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     %% set regs from all algo calib
     vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(runParams.version)));
     vregs.FRMW.configVersion = uint32(hex2dec(single2hex(runParams.version)));
-    if ~runParams.afterThermalCalib
-        atlregs.FRMW.atlMinVbias1 = single(1);
-        atlregs.FRMW.atlMaxVbias1 = single(3); 
-        atlregs.FRMW.atlMinVbias2 = single(1);
-        atlregs.FRMW.atlMaxVbias2 = single(3);
-        atlregs.FRMW.atlMinVbias3 = single(1);
-        atlregs.FRMW.atlMaxVbias3 = single(3);
-    end
     fw.setRegs(vregs,fnCalib);
-    fw.setRegs(atlregs,fnCalib);
+    fw.setRegs(thermalRegs,fnCalib);
     fw.setRegs(dsmregs,  fnCalib); % DO NOT CHANGE THE ORDER OF THE CALLS TO setRegs
     fw.setRegs(delayRegs,fnCalib); 
     fw.setRegs(dfzRegs,  fnCalib);  
@@ -240,4 +240,28 @@ title('RTD to add over Y');
 xlabel('y_im')
 ylabel('mm')
 Calibration.aux.saveFigureAsImage(ff,runParams,'DFZ','RTD_Fix_Over_Y');
+end
+
+
+function [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, afterThermalCalib)
+thermalRegs = struct;
+if afterThermalCalib
+    dfzRegs.FRMW.dfzCalTmp          = eepromRegs.FRMW.dfzCalTmp;
+    dfzRegs.FRMW.dfzApdCalTmp       = eepromRegs.FRMW.dfzApdCalTmp;
+    dfzRegs.FRMW.dfzVbias           = eepromRegs.FRMW.dfzVbias;
+    dfzRegs.FRMW.dfzIbias           = eepromRegs.FRMW.dfzIbias;
+    thermalRegs.FRMW.atlMinVbias1   = eepromRegs.FRMW.atlMinVbias1;
+    thermalRegs.FRMW.atlMaxVbias1   = eepromRegs.FRMW.atlMaxVbias1;
+    thermalRegs.FRMW.atlMinVbias2   = eepromRegs.FRMW.atlMinVbias2;
+    thermalRegs.FRMW.atlMaxVbias2   = eepromRegs.FRMW.atlMaxVbias2;
+    thermalRegs.FRMW.atlMinVbias3   = eepromRegs.FRMW.atlMinVbias3;
+    thermalRegs.FRMW.atlMaxVbias3   = eepromRegs.FRMW.atlMaxVbias3;
+else % dfzRegs was already enriched in DFZ_calib, thermalRegs are irrelevant
+    thermalRegs.FRMW.atlMinVbias1   = single(1);
+    thermalRegs.FRMW.atlMaxVbias1   = single(3);
+    thermalRegs.FRMW.atlMinVbias2   = single(1);
+    thermalRegs.FRMW.atlMaxVbias2   = single(3);
+    thermalRegs.FRMW.atlMinVbias3   = single(1);
+    thermalRegs.FRMW.atlMaxVbias3   = single(3);
+end
 end

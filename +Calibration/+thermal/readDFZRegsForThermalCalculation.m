@@ -40,7 +40,7 @@ function [regs,luts,eepromRegs,eepromBin] = readDFZRegsForThermalCalculation(hw,
         regs.DEST.baseline2 = single(0);
     end
     if checkAssert
-       assert(all(regs.FRMW.dfzVbias ~= 0),'Unit probably not was not calibrated in Algo1. No calibration vBias1 available.\n');
+       assert(all(regs.FRMW.dfzVbias ~= 0),'Unit probably was not calibrated in Algo1. No calibration vBias1 available.\n');
     end
 end
 

@@ -1,0 +1,22 @@
+9999,9999 -> Calib Table (0x13) is not updated ( major version != 4)
+
+Ram Values:
+1,1 ->   tempCelcius 
+2,2 ->   DelayFastCorrection
+3,3 ->   DelayFastNew
+4,4 ->   DelaySlowOrig
+5,5 ->   DelaySlowCorrection
+6,6 ->   DelaySlowNew
+
+Registes to be updated
+11,11 ->   ASIC_conLocDelayFastC
+12,12 ->   ASIC_conLocDelayFastF
+13,13 ->   ASIC_conLocDelaySlow - (1<<31) 
+
+20,20 ->   syncCompensation
+
+
+
+
+
+

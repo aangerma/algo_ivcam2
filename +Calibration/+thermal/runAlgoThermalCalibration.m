@@ -95,7 +95,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     fprintff('[-] Thermal loop calibration...\n');
     if runParams.thermalLoop
         %% load EPROM structure suitible for calib version tool
-        [regs, luts, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams);
+        [regs, luts, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams, runParams);
         regs.EXTL.conLocDelaySlow   = delayRegs.EXTL.conLocDelaySlow;
         regs.EXTL.conLocDelayFastC  = delayRegs.EXTL.conLocDelayFastC;
         regs.EXTL.conLocDelayFastF  = delayRegs.EXTL.conLocDelayFastF;
