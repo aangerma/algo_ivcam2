@@ -19,9 +19,6 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
 % output:
 %   results - incrmntal result 
 %   luts - undistort table.
-    if ~exist('atlregs','var')
-        atlregs = struct;
-    end
     if ~exist('afterThermalCalib_flag','var')
         afterThermalCalib_flag = 0;
     end
@@ -160,52 +157,6 @@ function results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs)
     results.EXTLconLocDelayFastF = (delayRegs.EXTL.conLocDelayFastF);
     results.DESTtxFRQpd = (dfzRegs.DEST.txFRQpd(1));
 end
-% function writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff)
-%     regs = fw.get();
-%     intregs.DIGG.spare=zeros(1,8,'uint32');
-%     intregs.DIGG.spare(1)=verValueFull;
-%     intregs.DIGG.spare(2)=typecast(single(regs.FRMW.xfov(1)),'uint32');
-%     intregs.DIGG.spare(3)=typecast(single(regs.FRMW.yfov(1)),'uint32');
-%     intregs.DIGG.spare(4)=typecast(single(regs.FRMW.laserangleH),'uint32');
-%     intregs.DIGG.spare(5)=typecast(single(regs.FRMW.laserangleV),'uint32');
-%     intregs.DIGG.spare(6)=verValue; %config version
-%     intregs.DIGG.spare(7)=uint32(typecast(regs.FRMW.calMarginL,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginR,'uint16'));
-%     intregs.DIGG.spare(8)=uint32(typecast(regs.FRMW.calMarginT,'uint16'))*2^16 + uint32(typecast(regs.FRMW.calMarginB,'uint16'));
-%     intregs.JFIL.spare=zeros(1,8,'uint32');
-%     %[zoCol,zoRow] = Calibration.aux.zoLoc(fw);
-%     intregs.JFIL.spare(1)=uint32(regs.FRMW.zoWorldRow(1))*2^16 + uint32(regs.FRMW.zoWorldCol(1));
-%     intregs.JFIL.spare(2)=typecast(regs.FRMW.dfzCalTmp,'uint32');
-%     intregs.JFIL.spare(3)=typecast(single(regs.FRMW.pitchFixFactor),'uint32');
-%     intregs.JFIL.spare(4)=typecast(single(regs.FRMW.polyVars(1)),'uint32');
-%     intregs.JFIL.spare(5)=typecast(single(regs.FRMW.polyVars(2)),'uint32');
-%     intregs.JFIL.spare(6)=typecast(single(regs.FRMW.polyVars(3)),'uint32');
-%     intregs.JFIL.spare(7)=typecast(regs.FRMW.dfzApdCalTmp,'uint32');
-%     
-%     
-%     dcorSpares = zeros(1,8,'single');
-%     dcorSpares(3:5) = single(regs.FRMW.dfzVbias);
-%     dcorSpares(6:8) = single(regs.FRMW.dfzIbias);
-%     intregs.DCOR.spare = dcorSpares;
-%     
-%     % undistAngVert & undistAngHorz
-% %     pckrSpares = zeros(1,8,'single');
-% %     pckrSpares(7:8) = single(regs.FRMW.undistAngVert(1:2));
-% %     intregs.PCKR.spare = pckrSpares;
-% %     
-% %     statSpares = single([regs.FRMW.undistAngVert(3:5),regs.FRMW.undistAngHorz]);
-% %     intregs.STAT.spare = statSpares;
-%     
-%     JFILdnnWeights = regs.JFIL.dnnWeights;
-%     JFILdnnWeights(1:8) = typecast([regs.FRMW.undistAngVert,regs.FRMW.undistAngHorz],'uint32');
-%     JFILdnnWeights(9:13) = typecast([regs.FRMW.fovexExistenceFlag,regs.FRMW.fovexNominal],'uint32');
-%     JFILdnnWeights(14:21) = typecast([regs.FRMW.fovexLensDistFlag,regs.FRMW.fovexRadialK,regs.FRMW.fovexTangentP,regs.FRMW.fovexCenter],'uint32');
-%     intregs.JFIL.dnnWeights = JFILdnnWeights;
-%     
-%     fw.setRegs(intregs,fnCalib);
-%     fw.get();
-%     
-%     fprintff('Zero Order Pixel Location: [%d,%d]\n',uint32(regs.FRMW.zoWorldRow(1)),uint32(regs.FRMW.zoWorldCol(1)));
-% end
 
 function [results,udistRegs,udistlUT] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
@@ -218,8 +169,7 @@ function [results,udistRegs,udistlUT] = fixAng2XYBugWithUndist(runParams, calibP
             fprintff('[x] undist calib failed[e=%g]\n',results.maxPixelDisplacement);
             
         end
-%         ttt=[tempname '.txt'];
-        
+%        ttt=[tempname '.txt'];
 %        hw.runScript(ttt);
 %        hw.shadowUpdate();
         fprintff('[v] Done(%ds)\n',round(toc(t)));

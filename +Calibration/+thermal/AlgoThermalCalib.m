@@ -80,11 +80,11 @@ end
 if finishedHeating % always true at this point
     t = tic;
     % operate fine DSM calibration at stable (reference) state
-    dsmregs = calibrateDSM(hw, fw, runParams, calibParams,fnCalib, fprintff,t);
-    regs.EXTL.dsmXscale     = dsmregs.EXTL.dsmXscale;
-    regs.EXTL.dsmXoffset    = dsmregs.EXTL.dsmXoffset;
-    regs.EXTL.dsmYscale     = dsmregs.EXTL.dsmYscale;
-    regs.EXTL.dsmYoffset    = dsmregs.EXTL.dsmYoffset;
+    dsmRegs = calibrateDSM(hw, fw, runParams, calibParams,fnCalib, fprintff,t);
+    regs.EXTL.dsmXscale     = dsmRegs.EXTL.dsmXscale;
+    regs.EXTL.dsmXoffset    = dsmRegs.EXTL.dsmXoffset;
+    regs.EXTL.dsmYscale     = dsmRegs.EXTL.dsmYscale;
+    regs.EXTL.dsmYoffset    = dsmRegs.EXTL.dsmYoffset;
     results.dsmXscale       = regs.EXTL.dsmXscale;
     results.dsmXshift       = regs.EXTL.dsmXoffset;
     results.dsmYscale       = regs.EXTL.dsmYscale;
@@ -184,15 +184,15 @@ function frameData = prepareFrameData(hw,startTime,calibParams,path)
     frameData.time = toc(startTime);
 end
 
-function [dsmregs] = calibrateDSM(hw,fw, runParams, calibParams, fnCalib, fprintff, t)
+function dsmRegs = calibrateDSM(hw,fw, runParams, calibParams, fnCalib, fprintff, t)
 
     fprintff('[-] DSM calibration...\n');
     if(runParams.DSM)
-        dsmregs = Calibration.DSM.DSM_Calib(hw,fprintff,calibParams,runParams);
-        fw.setRegs(dsmregs,fnCalib);
+        dsmRegs = Calibration.DSM.DSM_Calib(hw,fprintff,calibParams,runParams);
+        fw.setRegs(dsmRegs,fnCalib);
         fprintff('[v] Done(%d)\n',round(toc(t)));
     else
-        dsmregs = struct;
+        dsmRegs = struct;
         fprintff('[?] skipped\n');
     end
     

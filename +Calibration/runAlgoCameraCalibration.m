@@ -127,8 +127,8 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     
     %% Undist and table burn
     [~, ~, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams, runParams);
-    [delayRegs, dsmregs] = getDelayAndDsmRegs(eepromRegs);
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
+    [delayRegs, dsmRegs, ~, ~] = getATCregsFromEEPROM(eepromRegs);
+    results = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
     
 %     %% Print image final fov
 %     [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
@@ -413,26 +413,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         eRegs = hw.readAlgoEEPROMtable();
         vregs.FRMW.calibVersion             = uint32(hex2dec(single2hex(AlgoCameraCalibToolVersion)));
         vregs.FRMW.configVersion            = uint32(hex2dec(single2hex(AlgoCameraCalibToolVersion)));
-        delayRegs.EXTL.conLocDelaySlow      = eRegs.EXTL.conLocDelaySlow;
-        delayRegs.EXTL.conLocDelayFastC     = eRegs.EXTL.conLocDelayFastC;
-        delayRegs.EXTL.conLocDelayFastF     = eRegs.EXTL.conLocDelayFastF;
-        delayRegs.EXTL.conLocDelaySlowSlope = eRegs.EXTL.conLocDelaySlowSlope;
-        delayRegs.EXTL.conLocDelayFastSlope = eRegs.EXTL.conLocDelayFastSlope;
-        dsmRegs.EXTL.dsmXscale              = eRegs.EXTL.dsmXscale;
-        dsmRegs.EXTL.dsmXoffset             = eRegs.EXTL.dsmXoffset;
-        dsmRegs.EXTL.dsmYscale              = eRegs.EXTL.dsmYscale;
-        dsmRegs.EXTL.dsmYoffset             = eRegs.EXTL.dsmYoffset;
-        thermalRegs.FRMW.atlMinVbias1       = eRegs.FRMW.atlMinVbias1;
-        thermalRegs.FRMW.atlMaxVbias1       = eRegs.FRMW.atlMaxVbias1;
-        thermalRegs.FRMW.atlMinVbias2       = eRegs.FRMW.atlMinVbias2;
-        thermalRegs.FRMW.atlMaxVbias2       = eRegs.FRMW.atlMaxVbias2;
-        thermalRegs.FRMW.atlMinVbias3       = eRegs.FRMW.atlMinVbias3;
-        thermalRegs.FRMW.atlMaxVbias3       = eRegs.FRMW.atlMaxVbias3;
-        dfzRegs.FRMW.dfzCalTmp              = eRegs.FRMW.dfzCalTmp;
-        dfzRegs.FRMW.dfzApdCalTmp           = eRegs.FRMW.dfzApdCalTmp;
-        dfzRegs.FRMW.dfzVbias               = eRegs.FRMW.dfzVbias;
-        dfzRegs.FRMW.dfzIbias               = eRegs.FRMW.dfzIbias;
-        
+        [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eRegs);
         fw.setRegs(vregs,'');
         fw.setRegs(delayRegs,'');
         fw.setRegs(dsmRegs,'');
@@ -727,14 +708,24 @@ function RegStateSetOutDir(Outdir)
     g_reg_state_dir = Outdir;
 end
 
-function [delayRegs, dsmregs] = getDelayAndDsmRegs(eepromRegs)
+function [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eepromRegs)
 delayRegs.EXTL.conLocDelaySlow      = eepromRegs.EXTL.conLocDelaySlow;
 delayRegs.EXTL.conLocDelayFastC     = eepromRegs.EXTL.conLocDelayFastC;
 delayRegs.EXTL.conLocDelayFastF     = eepromRegs.EXTL.conLocDelayFastF;
 delayRegs.FRMW.conLocDelaySlowSlope = eepromRegs.FRMW.conLocDelaySlowSlope;
 delayRegs.FRMW.conLocDelayFastSlope = eepromRegs.FRMW.conLocDelayFastSlope;
-dsmregs.EXTL.dsmXscale              = eepromRegs.EXTL.dsmXscale;
-dsmregs.EXTL.dsmXoffset             = eepromRegs.EXTL.dsmXoffset;
-dsmregs.EXTL.dsmYscale              = eepromRegs.EXTL.dsmYscale;
-dsmregs.EXTL.dsmYoffset             = eepromRegs.EXTL.dsmYoffset;
+dsmRegs.EXTL.dsmXscale              = eepromRegs.EXTL.dsmXscale;
+dsmRegs.EXTL.dsmXoffset             = eepromRegs.EXTL.dsmXoffset;
+dsmRegs.EXTL.dsmYscale              = eepromRegs.EXTL.dsmYscale;
+dsmRegs.EXTL.dsmYoffset             = eepromRegs.EXTL.dsmYoffset;
+thermalRegs.FRMW.atlMinVbias1       = eepromRegs.FRMW.atlMinVbias1;
+thermalRegs.FRMW.atlMaxVbias1       = eepromRegs.FRMW.atlMaxVbias1;
+thermalRegs.FRMW.atlMinVbias2       = eepromRegs.FRMW.atlMinVbias2;
+thermalRegs.FRMW.atlMaxVbias2       = eepromRegs.FRMW.atlMaxVbias2;
+thermalRegs.FRMW.atlMinVbias3       = eepromRegs.FRMW.atlMinVbias3;
+thermalRegs.FRMW.atlMaxVbias3       = eepromRegs.FRMW.atlMaxVbias3;
+dfzRegs.FRMW.dfzCalTmp              = eepromRegs.FRMW.dfzCalTmp;
+dfzRegs.FRMW.dfzApdCalTmp           = eepromRegs.FRMW.dfzApdCalTmp;
+dfzRegs.FRMW.dfzVbias               = eepromRegs.FRMW.dfzVbias;
+dfzRegs.FRMW.dfzIbias               = eepromRegs.FRMW.dfzIbias;
 end

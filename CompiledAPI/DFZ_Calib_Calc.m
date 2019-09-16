@@ -72,10 +72,12 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     if ~isfield(results,'shortRangeImagesGeomErr')
             results.shortRangeImagesGeomErr = 0;
     end
-    dfzRegs.FRMW.dfzCalTmp          = DFZ_regs.FRMWdfzCalTmp;
-    dfzRegs.FRMW.dfzApdCalTmp       = DFZ_regs.FRMWdfzApdCalTmp;
-    dfzRegs.FRMW.dfzVbias           = DFZ_regs.FRMWdfzVbias;
-    dfzRegs.FRMW.dfzIbias           = DFZ_regs.FRMWdfzIbias;
+    if isfield(DFZ_regs, 'FRMWdfzCalTmp') % DFZ envelope was the one generating these regs, namely we're in Algo1 before Algo 2
+        dfzRegs.FRMW.dfzCalTmp          = DFZ_regs.FRMWdfzCalTmp;
+        dfzRegs.FRMW.dfzApdCalTmp       = DFZ_regs.FRMWdfzApdCalTmp;
+        dfzRegs.FRMW.dfzVbias           = DFZ_regs.FRMWdfzVbias;
+        dfzRegs.FRMW.dfzIbias           = DFZ_regs.FRMWdfzIbias;
+    end
     dfzRegs.FRMW.fovexExistenceFlag = regs.FRMW.fovexExistenceFlag;
     dfzRegs.FRMW.fovexLensDistFlag = regs.FRMW.fovexLensDistFlag;
     % save output
