@@ -64,6 +64,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     end
     
     hw.cmd('DIRTYBITBYPASS');
+    hw.cmd('ENABLE_SYNC_LOOP 0')
     hw.disableAlgoThermalLoop();
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     hw.setPresetControlState(calibParams.gnrl.presetMode);
@@ -84,7 +85,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% ::calibrate delays::
-    [results, calibPassed ,delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
+    [results, calibPassed ,delayRegs] = Calibration.dataDelay.calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
     if ~calibPassed
         return;
     end
@@ -99,8 +100,10 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
         regs.EXTL.conLocDelaySlow       = delayRegs.EXTL.conLocDelaySlow;
         regs.EXTL.conLocDelayFastC      = delayRegs.EXTL.conLocDelayFastC;
         regs.EXTL.conLocDelayFastF      = delayRegs.EXTL.conLocDelayFastF;
-        regs.FRMW.conLocDelaySlowSlope  = delayRegs.FRMW.conLocDelaySlowSlope;
         regs.FRMW.conLocDelayFastSlope  = delayRegs.FRMW.conLocDelayFastSlope;
+        regs.FRMW.conLocDelaySlowSlope  = delayRegs.FRMW.conLocDelaySlowSlope;
+        regs.FRMW.dfzCalTmp             = delayRegs.FRMW.dfzCalTmp;
+
         if typecast(hw.read('DESTtmptrOffset'),'single') ~= 0
             error('Algo thermal loop was active. Please disconnect and reconnect the unit before running.');
         end
@@ -256,59 +259,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
 
     end
 end
-function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff)
-    calibPassed = 1;
-    fprintff('[-] Depth and IR delay calibration...\n');
-    if(runParams.dataDelay)
-        Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
-        Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
-        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
-        delayRegs.FRMW.conLocDelaySlowSlope = 0; % temporary patch until SyncLoop integration
-        delayRegs.FRMW.conLocDelayFastSlope = 0; % temporary patch until SyncLoop integration
-        
-        fw.setRegs(delayRegs,fnCalib);
-        
-        results.delayIR = delayCalibResults.delayIR;
-        results.delayZ = delayCalibResults.delayZ;
-        
-        results.conLocDelaySlow = delayRegs.EXTL.conLocDelaySlow;
-        results.conLocDelayFastC = delayRegs.EXTL.conLocDelayFastC;
-        results.conLocDelayFastF = delayRegs.EXTL.conLocDelayFastF;
 
-        results.delayS = (1- delayCalibResults.slowDelayCalibSuccess);
-        results.delaySlowPixelVar = delayCalibResults.delaySlowPixelVar;
-        results.delayF = (1-delayCalibResults.fastDelayCalibSuccess);
-        
-        if delayCalibResults.slowDelayCalibSuccess 
-            fprintff('[v] ir delay calib passed [e=%g]\n',results.delayS);
-        else
-            fprintff('[x] ir delay calib failed [e=%g]\n',results.delayS);
-            calibPassed = 0;
-        end
-        
-        pixVarRange = calibParams.errRange.delaySlowPixelVar;
-        if  results.delaySlowPixelVar >= pixVarRange(1) &&...
-                results.delaySlowPixelVar <= pixVarRange(2)
-            fprintff('[v] ir vertical pixel alignment variance [e=%g]\n',results.delaySlowPixelVar);
-        else
-            fprintff('[x] ir vertical pixel alignment variance [e=%g]\n',results.delaySlowPixelVar);
-            calibPassed = 0;
-        end
-        
-        if delayCalibResults.fastDelayCalibSuccess
-            fprintff('[v] depth delay calib passed [e=%g]\n',results.delayF);
-        else
-            fprintff('[x] depth delay calib failed [e=%g]\n',results.delayF);
-            calibPassed = 0;
-        end
-        
-    else
-        delayRegs = struct;
-        fprintff('skipped\n');
-    end
-    
-end
 
 function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
     % Sets all global variables
