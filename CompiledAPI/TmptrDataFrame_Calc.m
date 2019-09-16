@@ -79,11 +79,11 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     fw = Firmware(g_calib_dir);
 
     if(isempty(eepromRegs) || ~isstruct(eepromRegs))
-        EPROMstructure = load(fullfile(g_calib_dir,'eepromStructure.mat'));
-        EPROMstructure = EPROMstructure.updatedEpromTable;
-        eepromBin = uint8(eepromBin);
-        eepromRegs = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
-        [regs] = struct_merge(eepromRegs, regs);
+        EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
+        EPROMstructure  = EPROMstructure.updatedEpromTable;
+        eepromBin       = uint8(eepromBin);
+        eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
+        [regs]          = struct_merge(eepromRegs, regs);
     end
     origFinishedHeating = finishedHeating;
     [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, InputPath, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       

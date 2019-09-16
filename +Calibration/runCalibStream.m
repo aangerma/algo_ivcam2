@@ -143,8 +143,10 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
 
     %% Undist and table burn
+    eepromRegs = atlregs;
+    eepromBin = [];
 %    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder,atlregs,runParams.afterThermalCalib);
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
 
    
     

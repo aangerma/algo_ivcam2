@@ -60,7 +60,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
     %% Init hw configuration
-    atlregs = initConfiguration(hw,fw,runParams,fprintff,t);
+    initConfiguration(hw,fw,runParams,fprintff,t);
 
     
     hw.cmd('DIRTYBITBYPASS');
@@ -126,16 +126,9 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
     
     %% Undist and table burn
-%    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
-    delayRegs.EXTL.conLocDelaySlow = hw.read('EXTLconLocDelaySlow');
-    delayRegs.EXTL.conLocDelayFastC = hw.read('EXTLconLocDelayFastC');
-    delayRegs.EXTL.conLocDelayFastF = hw.read('EXTLconLocDelayFastF');
-    dsmregs.EXTL.dsmXscale  = typecast(hw.read('EXTLdsmXscale'), 'single');
-    dsmregs.EXTL.dsmXoffset = typecast(hw.read('EXTLdsmXoffset'), 'single');
-    dsmregs.EXTL.dsmYscale  = typecast(hw.read('EXTLdsmYscale'), 'single');
-    dsmregs.EXTL.dsmYoffset = typecast(hw.read('EXTLdsmYoffset'), 'single');
-    %TODO: verify that END_calib_Calc has everything it needs
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder,atlregs,runParams.afterThermalCalib);
+    [~, ~, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams, runParams);
+    [delayRegs, dsmRegs, ~, ~] = getATCregsFromEEPROM(eepromRegs);
+    results = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
     
 %     %% Print image final fov
 %     [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
@@ -413,33 +406,20 @@ function [verValue,versionFull] = getVersion(hw,runParams)
     versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
 
-function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)  
+function initConfiguration(hw,fw,runParams,fprintff,t)  
     fprintff('init hw configuration...');
-    atlregs = struct;
     if(runParams.init)
-        eRegs = hw.readAlgoEEPROMtable();
-        if ~runParams.dataDelay
-            vregs.EXTL.conLocDelaySlow      = eRegs.EXTL.conLocDelaySlow;
-            vregs.EXTL.conLocDelayFastC     = eRegs.EXTL.conLocDelayFastC;
-            vregs.EXTL.conLocDelayFastF     = eRegs.EXTL.conLocDelayFastF;
-            vregs.EXTL.conLocDelaySlowSlope = eRegs.EXTL.conLocDelaySlowSlope;
-            vregs.EXTL.conLocDelayFastSlope = eRegs.EXTL.conLocDelayFastSlope;
-        end
         fprintff('[-] Burning default config calib files...');
-%         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
-%         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
-        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
-        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
-        atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
-        atlregs.FRMW.atlMaxVbias1 = eRegs.FRMW.atlMaxVbias1;
-        atlregs.FRMW.atlMinVbias2 = eRegs.FRMW.atlMinVbias2;
-        atlregs.FRMW.atlMaxVbias2 = eRegs.FRMW.atlMaxVbias2;
-        atlregs.FRMW.atlMinVbias3 = eRegs.FRMW.atlMinVbias3;
-        atlregs.FRMW.atlMaxVbias3 = eRegs.FRMW.atlMaxVbias3;
+        eRegs = hw.readAlgoEEPROMtable();
+        vregs.FRMW.calibVersion             = uint32(hex2dec(single2hex(AlgoCameraCalibToolVersion)));
+        vregs.FRMW.configVersion            = uint32(hex2dec(single2hex(AlgoCameraCalibToolVersion)));
+        [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eRegs);
         fw.setRegs(vregs,'');
-        fw.setRegs(atlregs,'');
+        fw.setRegs(delayRegs,'');
+        fw.setRegs(dsmRegs,'');
+        fw.setRegs(thermalRegs,'');
+        fw.setRegs(dfzRegs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib);
-	%TODO: verify that generateTablesForFw doesn't miss something because of afterThermalCalib flag
         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
@@ -726,4 +706,26 @@ end
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;
     g_reg_state_dir = Outdir;
+end
+
+function [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eepromRegs)
+delayRegs.EXTL.conLocDelaySlow      = eepromRegs.EXTL.conLocDelaySlow;
+delayRegs.EXTL.conLocDelayFastC     = eepromRegs.EXTL.conLocDelayFastC;
+delayRegs.EXTL.conLocDelayFastF     = eepromRegs.EXTL.conLocDelayFastF;
+delayRegs.FRMW.conLocDelaySlowSlope = eepromRegs.FRMW.conLocDelaySlowSlope;
+delayRegs.FRMW.conLocDelayFastSlope = eepromRegs.FRMW.conLocDelayFastSlope;
+dsmRegs.EXTL.dsmXscale              = eepromRegs.EXTL.dsmXscale;
+dsmRegs.EXTL.dsmXoffset             = eepromRegs.EXTL.dsmXoffset;
+dsmRegs.EXTL.dsmYscale              = eepromRegs.EXTL.dsmYscale;
+dsmRegs.EXTL.dsmYoffset             = eepromRegs.EXTL.dsmYoffset;
+thermalRegs.FRMW.atlMinVbias1       = eepromRegs.FRMW.atlMinVbias1;
+thermalRegs.FRMW.atlMaxVbias1       = eepromRegs.FRMW.atlMaxVbias1;
+thermalRegs.FRMW.atlMinVbias2       = eepromRegs.FRMW.atlMinVbias2;
+thermalRegs.FRMW.atlMaxVbias2       = eepromRegs.FRMW.atlMaxVbias2;
+thermalRegs.FRMW.atlMinVbias3       = eepromRegs.FRMW.atlMinVbias3;
+thermalRegs.FRMW.atlMaxVbias3       = eepromRegs.FRMW.atlMaxVbias3;
+dfzRegs.FRMW.dfzCalTmp              = eepromRegs.FRMW.dfzCalTmp;
+dfzRegs.FRMW.dfzApdCalTmp           = eepromRegs.FRMW.dfzApdCalTmp;
+dfzRegs.FRMW.dfzVbias               = eepromRegs.FRMW.dfzVbias;
+dfzRegs.FRMW.dfzIbias               = eepromRegs.FRMW.dfzIbias;
 end

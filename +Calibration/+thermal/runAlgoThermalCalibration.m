@@ -95,11 +95,12 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     fprintff('[-] Thermal loop calibration...\n');
     if runParams.thermalLoop
         %% load EPROM structure suitible for calib version tool
-        [regs, luts, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams);
-        regs.EXTL.conLocDelaySlow   = delayRegs.EXTL.conLocDelaySlow;
-        regs.EXTL.conLocDelayFastC  = delayRegs.EXTL.conLocDelayFastC;
-        regs.EXTL.conLocDelayFastF  = delayRegs.EXTL.conLocDelayFastF;
-        
+        [regs, luts, eepromRegs, eepromBin] = Calibration.thermal.readDFZRegsForThermalCalculation(hw, false, calibParams, runParams);
+        regs.EXTL.conLocDelaySlow       = delayRegs.EXTL.conLocDelaySlow;
+        regs.EXTL.conLocDelayFastC      = delayRegs.EXTL.conLocDelayFastC;
+        regs.EXTL.conLocDelayFastF      = delayRegs.EXTL.conLocDelayFastF;
+        regs.FRMW.conLocDelaySlowSlope  = delayRegs.FRMW.conLocDelaySlowSlope;
+        regs.FRMW.conLocDelayFastSlope  = delayRegs.FRMW.conLocDelayFastSlope;
         if typecast(hw.read('DESTtmptrOffset'),'single') ~= 0
             error('Algo thermal loop was active. Please disconnect and reconnect the unit before running.');
         end
@@ -263,6 +264,8 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
+        delayRegs.FRMW.conLocDelaySlowSlope = 0; % temporary patch until SyncLoop integration
+        delayRegs.FRMW.conLocDelayFastSlope = 0; % temporary patch until SyncLoop integration
         
         fw.setRegs(delayRegs,fnCalib);
         
