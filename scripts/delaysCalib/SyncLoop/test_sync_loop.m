@@ -103,6 +103,18 @@ futureEvents    = events;
 hw = HWinterface();
 hw.cmd('dirtybitbypass');
 hw.startStream(0,[480,640]);
+tlState = hw.cmd('GET_ALGO_THERMAL_LOOP');
+if strcmp(tlState(1:end-1), 'AlgoThermalLoopEnable:   TRUE')
+    fprintf('Stream initiated with thermal loop enabled - OK.\n')
+else
+    fprintf('Warning: stream initiated with thermal loop disabled.\n')
+end
+slState = hw.cmd('GET_SYNC_LOOP');
+if strcmp(slState(1:end-1), 'SyncLoopEnable:   TRUE')
+    fprintf('Warning: stream initiated with sync loop enabled.\n')
+else
+    fprintf('Stream initiated with sync loop disabled - OK.\n')
+end
 hw.disableAlgoThermalLoop();
 hw.cmd('ENABLE_SYNC_LOOP 0');
 
@@ -123,9 +135,8 @@ while (t < testDuration)
     delays(end+1,:)         = [delayIR, delayZC, delayZF];
     syncLoopEn(end+1,1)     = curSyncLoopEn;
     syncLoopSet(end+1,1)    = curSyncLoopSet;
-    tmptrOffset(end+1,1)    = hw.read('DESTtmptrOffset');
+    tmptrOffset(end+1,1)    = typecast(hw.read('DESTtmptrOffset'), 'single');
     thermalLoopEn(end+1)    = curThermalLoopEn;
-    
     % Event realization
     if ~isempty(futureEvents) && (t >= futureEvents(1).time)
         fprintf('t = %.1f[min] , T = %.1f , delays = [%d, %d, %d], initiating %s event\n', t/60, Tldd(end), delayIR, delayZC, delayZF, futureEvents(1).type)

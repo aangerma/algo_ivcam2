@@ -45,7 +45,7 @@ function [dsmregs] = calibDSM(hw,params,fprintff,runParams)
         pause(10);
 %         hw = HWinterface();
         hw.cmd('DIRTYBITBYPASS');
-        if ~runParams.afterAlgo2
+        if ~runParams.afterThermalCalib
             hw.disableAlgoThermalLoop();
         end
         pause(10);

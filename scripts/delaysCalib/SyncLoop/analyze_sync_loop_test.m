@@ -3,7 +3,7 @@ clear variables
 clc
 
 load('sync_loop_test_results.mat')
-tmptrOffset = typecast(uint32(tmptrOffset),'single');
+% tmptrOffset = typecast(uint32(tmptrOffset),'single'); % for old results files
 
 % Data interpretation
 C_MMnsec = 299.702547;

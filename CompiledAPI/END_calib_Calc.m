@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version,configurationFolder,atlregs,afterAlgo2_flag)
+function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag,version,configurationFolder,atlregs,afterThermalCalib_flag)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -22,8 +22,8 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     if ~exist('atlregs','var')
         atlregs = struct;
     end
-    if ~exist('afterAlgo2_flag','var')
-        afterAlgo2_flag = 0;
+    if ~exist('afterThermalCalib_flag','var')
+        afterThermalCalib_flag = 0;
     end
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
@@ -68,7 +68,7 @@ function [results ,luts] = END_calib_Calc(delayRegs, dsmregs,roiRegs,dfzRegs,res
     end
     runParams.outputFolder = g_output_dir;
     runParams.undist = undist_flag;
-    runParams.afterAlgo2 = afterAlgo2_flag;
+    runParams.afterThermalCalib = afterThermalCalib_flag;
     runParams.version=version;
     runParams.configurationFolder=configurationFolder; 
     [~,~,versionBytes] = calibToolVersion();
@@ -99,7 +99,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
     %% set regs from all algo calib
     vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(runParams.version)));
     vregs.FRMW.configVersion = uint32(hex2dec(single2hex(runParams.version)));
-    if ~runParams.afterAlgo2
+    if ~runParams.afterThermalCalib
         atlregs.FRMW.atlMinVbias1 = single(1);
         atlregs.FRMW.atlMaxVbias1 = single(3); 
         atlregs.FRMW.atlMinVbias2 = single(1);
@@ -148,7 +148,7 @@ function [results ,undistLuts] = final_calib(runParams,verValue,verValueFull,del
 %     % write new firmware files to another sub folder
     calibOutput=fullfile(output_dir,'calibOutputFiles');
     mkdirSafe(calibOutput);
-    fw.generateTablesForFw(calibOutput,0,runParams.afterAlgo2); 
+    fw.generateTablesForFw(calibOutput,0,runParams.afterThermalCalib); 
 %     calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));    
 %      fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
     
