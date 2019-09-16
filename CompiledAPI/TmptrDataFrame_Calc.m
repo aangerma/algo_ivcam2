@@ -83,7 +83,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
         EPROMstructure = EPROMstructure.updatedEpromTable;
         eepromBin = uint8(eepromBin);
         eepromRegs = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
-        [regs] = struct_merge(regs , eepromRegs);
+        [regs] = struct_merge(eepromRegs, regs);
     end
     origFinishedHeating = finishedHeating;
     [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, InputPath, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
@@ -253,33 +253,14 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end
 
-function [merged] = struct_merge(merged , new ) %TODO: can we just start with EEPROM and override all with regs?
-    % regs to keep (and not override by new), namely regs calibrated in ATC
-    backupRegs.EXTL.conLocDelaySlow     = merged.EXTL.conLocDelaySlow;
-    backupRegs.EXTL.conLocDelayFastC    = merged.EXTL.conLocDelayFastC;
-    backupRegs.EXTL.conLocDelayFastF    = merged.EXTL.conLocDelayFastF;
-    backupRegs.EXTL.dsmXscale           = merged.EXTL.dsmXscale;
-    backupRegs.EXTL.dsmXoffset          = merged.EXTL.dsmXoffset;
-    backupRegs.EXTL.dsmYscale           = merged.EXTL.dsmYscale;
-    backupRegs.EXTL.dsmYoffset          = merged.EXTL.dsmYoffset;
-    backupRegs.FRMW.dfzCalTmp           = merged.FRMW.dfzCalTmp;
-    backupRegs.FRMW.dfzApdCalTmp        = merged.FRMW.dfzApdCalTmp;
-    backupRegs.FRMW.dfzVbias            = merged.FRMW.dfzVbias;
-    backupRegs.FRMW.dfzIbias            = merged.FRMW.dfzIbias;
+function [merged] = struct_merge(existing , new )
+    merged = existing;
     % overriding merged with new
     f = fieldnames(new);
     for i = 1:length(f)
         fn = fieldnames(new.(f{i}));
         for n = 1:length(fn)
             merged.(f{i}).(fn{n}) = new.(f{i}).(fn{n});
-        end
-    end
-    % undoing override for backupRegs
-    f = fieldnames(backupRegs);
-    for i = 1:length(f)
-        fn = fieldnames(backupRegs.(f{i}));
-        for n = 1:length(fn)
-            merged.(f{i}).(fn{n}) = backupRegs.(f{i}).(fn{n});
         end
     end
 end
