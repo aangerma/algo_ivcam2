@@ -27,26 +27,28 @@ else
     fw = Pipe.loadFirmware(initFldr); % use default path of table folder
 end
 
-eepromRegs.FRMW.atlMinVbias1        = single(data.tableResults.angx.p0(1));
-eepromRegs.FRMW.atlMaxVbias1        = single(data.tableResults.angx.p1(1));
-eepromRegs.FRMW.atlMinVbias2        = single(data.tableResults.angy.minval);
-eepromRegs.FRMW.atlMaxVbias2        = single(data.tableResults.angy.maxval);
-eepromRegs.FRMW.atlMinVbias3        = single(data.tableResults.angx.p0(2));
-eepromRegs.FRMW.atlMaxVbias3        = single(data.tableResults.angx.p1(2));
+eepromRegs.FRMW.atlMinVbias1            = single(data.tableResults.angx.p0(1));
+eepromRegs.FRMW.atlMaxVbias1            = single(data.tableResults.angx.p1(1));
+eepromRegs.FRMW.atlMinVbias2            = single(data.tableResults.angy.minval);
+eepromRegs.FRMW.atlMaxVbias2            = single(data.tableResults.angy.maxval);
+eepromRegs.FRMW.atlMinVbias3            = single(data.tableResults.angx.p0(2));
+eepromRegs.FRMW.atlMaxVbias3            = single(data.tableResults.angx.p1(2));
 % AnaSync regs were updated in runAlgoThermalCalibration
-eepromRegs.EXTL.conLocDelaySlow     = uint32(data.regs.EXTL.conLocDelaySlow);
-eepromRegs.EXTL.conLocDelayFastC    = uint32(data.regs.EXTL.conLocDelayFastC);
-eepromRegs.EXTL.conLocDelayFastF    = uint32(data.regs.EXTL.conLocDelayFastF);
+eepromRegs.EXTL.conLocDelaySlow         = uint32(data.regs.EXTL.conLocDelaySlow);
+eepromRegs.EXTL.conLocDelayFastC        = uint32(data.regs.EXTL.conLocDelayFastC);
+eepromRegs.EXTL.conLocDelayFastF        = uint32(data.regs.EXTL.conLocDelayFastF);
+eepromRegs.FRMW.conLocDelaySlowSlope    = uint32(data.regs.FRMW.conLocDelaySlowSlope);
+eepromRegs.FRMW.conLocDelayFastSlope    = uint32(data.regs.FRMW.conLocDelayFastSlope);
 % DSM regs were updated in AlgoThermalCalib
-eepromRegs.EXTL.dsmXscale           = single(data.regs.EXTL.dsmXscale);
-eepromRegs.EXTL.dsmXoffset          = single(data.regs.EXTL.dsmXoffset);
-eepromRegs.EXTL.dsmYscale           = single(data.regs.EXTL.dsmYscale);
-eepromRegs.EXTL.dsmYoffset          = single(data.regs.EXTL.dsmYoffset);
+eepromRegs.EXTL.dsmXscale               = single(data.regs.EXTL.dsmXscale);
+eepromRegs.EXTL.dsmXoffset              = single(data.regs.EXTL.dsmXoffset);
+eepromRegs.EXTL.dsmYscale               = single(data.regs.EXTL.dsmYscale);
+eepromRegs.EXTL.dsmYoffset              = single(data.regs.EXTL.dsmYoffset);
 % Reference state regs were updated in AlgoThermalCalib
-eepromRegs.FRMW.dfzCalTmp           = single(data.regs.FRMW.dfzCalTmp);
-eepromRegs.FRMW.dfzVbias            = single(data.regs.FRMW.dfzVbias);
-eepromRegs.FRMW.dfzIbias            = single(data.regs.FRMW.dfzIbias);
-eepromRegs.FRMW.dfzApdCalTmp        = single(data.regs.FRMW.dfzApdCalTmp);
+eepromRegs.FRMW.dfzCalTmp               = single(data.regs.FRMW.dfzCalTmp);
+eepromRegs.FRMW.dfzVbias                = single(data.regs.FRMW.dfzVbias);
+eepromRegs.FRMW.dfzIbias                = single(data.regs.FRMW.dfzIbias);
+eepromRegs.FRMW.dfzApdCalTmp            = single(data.regs.FRMW.dfzApdCalTmp);
 
 fw.setRegs(eepromRegs,'');
 fw.get();

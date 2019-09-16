@@ -758,4 +758,14 @@
     <Parameter1 Name="ParamIndex" />
     <Parameter2 Name="Value" />
   </Command> 
+    <Command Name="GET_SYNC_LOOP" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x96" IsReadCommand="true" CmdPermission="Public" Description="GET_SYNC_LOOP">
+      <ReadData>
+        <Section Name="SyncLoopEnable" Title="Sync Loop" Offset="0" Size="1" FormatType="Bool" />
+      </ReadData> 
+  </Command>    
+    <Command Name="GET_ALGO_THERMAL_LOOP" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x97" IsReadCommand="true" CmdPermission="Public" Description="Get stack statuses of all threads">
+      <ReadData>
+        <Section Name="AlgoThermalLoopEnable" Title="Algo Thermal Loop" Offset="0" Size="1" FormatType="Bool" />
+      </ReadData>
+  </Command>  
 </Commands>

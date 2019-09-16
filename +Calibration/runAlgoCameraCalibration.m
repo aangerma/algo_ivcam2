@@ -19,7 +19,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
-    runParams.afterAlgo2 = true;
+    runParams.afterThermalCalib = true;
     
     if noCalibrations(runParams)
         calibPassed = -1;
@@ -135,7 +135,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     dsmregs.EXTL.dsmYscale  = typecast(hw.read('EXTLdsmYscale'), 'single');
     dsmregs.EXTL.dsmYoffset = typecast(hw.read('EXTLdsmYoffset'), 'single');
     %TODO: verify that END_calib_Calc has everything it needs
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder,atlregs,runParams.afterAlgo2);
+    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder,atlregs,runParams.afterThermalCalib);
     
 %     %% Print image final fov
 %     [results,calibPassed] = Calibration.aux.calcImFov(fw,results,calibParams,fprintff);
@@ -419,9 +419,11 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
     if(runParams.init)
         eRegs = hw.readAlgoEEPROMtable();
         if ~runParams.dataDelay
-            vregs.EXTL.conLocDelaySlow = eRegs.EXTL.conLocDelaySlow;
-            vregs.EXTL.conLocDelayFastC = eRegs.EXTL.conLocDelayFastC;
-            vregs.EXTL.conLocDelayFastF = eRegs.EXTL.conLocDelayFastF;
+            vregs.EXTL.conLocDelaySlow      = eRegs.EXTL.conLocDelaySlow;
+            vregs.EXTL.conLocDelayFastC     = eRegs.EXTL.conLocDelayFastC;
+            vregs.EXTL.conLocDelayFastF     = eRegs.EXTL.conLocDelayFastF;
+            vregs.EXTL.conLocDelaySlowSlope = eRegs.EXTL.conLocDelaySlowSlope;
+            vregs.EXTL.conLocDelayFastSlope = eRegs.EXTL.conLocDelayFastSlope;
         end
         fprintff('[-] Burning default config calib files...');
 %         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
@@ -436,8 +438,8 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
         atlregs.FRMW.atlMaxVbias3 = eRegs.FRMW.atlMaxVbias3;
         fw.setRegs(vregs,'');
         fw.setRegs(atlregs,'');
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterAlgo2);
-	%TODO: verify that generateTablesForFw doesn't miss something because of afterAlgo2 flag
+        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib);
+	%TODO: verify that generateTablesForFw doesn't miss something because of afterThermalCalib flag
         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
