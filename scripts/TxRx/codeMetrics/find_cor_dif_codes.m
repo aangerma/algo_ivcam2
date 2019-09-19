@@ -24,7 +24,7 @@ downSamplingR=2^decRatio;
 fineCorrRange=16;
 validTh=30; % [mm]
 %%
-FullRes=cell(length(distance),1); 
+FullRes=cell(length(distance),1);
 for j=1:length(distance)
     results(length(Codefiles))=struct;
     for i=1:length(Codefiles)
@@ -32,7 +32,7 @@ for j=1:length(distance)
         results(i).codeName=codeName;
         code_i=find(strcmp({codes.name},codeName));
         TxFullcode=codes(code_i).tCode;
-%         temp=load(strcat(dataPath,'\1\',num2str(distance(i)),'.mat'));
+        %         temp=load(strcat(dataPath,'\1\',num2str(distance(i)),'.mat'));
         temp=load(strcat(codeFolder,'\',codeName,'.mat'));
         cma_=temp.fast;
         [z] = calculateZ(downSamplingR,fineCorrRange,sample_dist,system_delay,TxFullcode,cma_);
@@ -58,23 +58,30 @@ end
 
 %%
 % x=[results.medianz];
-% xname='median z';
-x={results.codeName};
+% xname='median z'; xtick=[];
+
+xtick={results.codeName};
+x=1:length(xtick);
 xname='codeName';
 
 %%
-plotAndSave(x,[results.validPrc],strcat('Valid prc vs',xname),'ValidPrc',outPath);
-plotAndSave(x,[results.validL1],strcat('L1 of Valid transmissions from median z vs',xname),'L1',outPath);
-plotAndSave(x,[results.validL2],strcat('L2 of Valid transmissions from median z vs',xname),'L2',outPath);
-plotAndSave(x,[results.err5],strcat('Prctile 5 of abs(error) vs',xname),'errorPrc5',outPath);
-plotAndSave(x,[results.err95],strcat('Prctile 95 of abs(error) vs',xname),'errorPrc95',outPath);
-plotAndSave(x,[results.err50],strcat('Prctile 50 of abs(error) vs',xname),'errorPrc50',outPath);
-plotAndSave(x,[results.meanError],strcat('mean error vs',xname),'meanError',outPath);
+plotAndSave(x,[results.validPrc],strcat('Valid prc vs',xname),'ValidPrc',outPath,xtick);
+plotAndSave(x,[results.validL1],strcat('L1 of Valid transmissions from median z vs',xname),'L1',outPath,xtick);
+plotAndSave(x,[results.validL2],strcat('L2 of Valid transmissions from median z vs',xname),'L2',outPath,xtick);
+plotAndSave(x,[results.err5],strcat('Prctile 5 of abs(error) vs',xname),'errorPrc5',outPath,xtick);
+plotAndSave(x,[results.err95],strcat('Prctile 95 of abs(error) vs',xname),'errorPrc95',outPath,xtick);
+plotAndSave(x,[results.err50],strcat('Prctile 50 of abs(error) vs',xname),'errorPrc50',outPath,xtick);
+plotAndSave(x,[results.meanError],strcat('mean error vs',xname),'meanError',outPath,xtick);
 
 
-function plotAndSave(x,y,titleS,fileName,outPath)
+function plotAndSave(x,y,titleS,fileName,outPath,xtick)
 h=figure(); plot(x,y);title(titleS); grid minor;
+if(~isempty(xtick))
+    xticklabels(xtick)
+    set(gca,'TickLabelInterpreter','none')
+end
 saveas(h,strcat(outPath,'\',fileName,'.png'));
+
 end
 
 function [codeName]=getStrName(s)
