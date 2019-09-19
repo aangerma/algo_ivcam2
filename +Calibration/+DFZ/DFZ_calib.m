@@ -8,7 +8,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
 %% save temprature of DFZ calibration: 
         [dfzCalTmpStart,~,~,dfzApdCalTmpStart] = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
         for j = 1:3
-            [pzrsIBiasStart(j),pzrsVBiasStart(j)] = hw.pzrPowerGet(j,5);
+            [pzrsIBiasStart(j),pzrsVBiasStart(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
         end
 %%      capture frame Z and I from 5 secnce for DFZ calibration 
         captures = {calibParams.dfz.captures.capture(:).type};
@@ -62,7 +62,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     end
     
     if ~runParams.afterThermalCalib && (i == find(trainImages,1,'last'))
-        DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart);
+        DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart, calibParams.gnrl.pzrMeas);
     end
 %            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
     InputPath = fullfile(ivcam2tempdir,'DFZ');
@@ -187,10 +187,10 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
 end
 
 
-function [DFZRegs] = update_DFZRegsList(hw,DFZRegs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart)
+function [DFZRegs] = update_DFZRegsList(hw,DFZRegs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart, pzrMeasParams)
     [dfzCalTmpEnd,~,~,dfzApdCalTmpEnd] = hw.getLddTemperature();
     for j = 1:3
-        [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrPowerGet(j,5);
+        [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrAvPowerGet(j,pzrMeasParams.nVals2avg,pzrMeasParams.sampIntervalMsec);
     end
     DFZRegs.FRMWdfzCalTmp    = single(dfzCalTmpStart+dfzCalTmpEnd)/2;      %double
     DFZRegs.FRMWdfzApdCalTmp = single(dfzApdCalTmpStart+dfzApdCalTmpEnd)/2;%double

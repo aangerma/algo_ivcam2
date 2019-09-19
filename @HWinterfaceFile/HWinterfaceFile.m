@@ -192,6 +192,18 @@ classdef HWinterfaceFile <handle
             ibias = mean(ibias);
             vbias = mean(vbias);
         end
+        function [ibias,vbias] = pzrAvPowerGet(obj,i,N,dt)
+            % i - #PZR, N - #values to average, dt - sampling interval [msec] (N*dt - total time)
+            if ~exist('dt', 'var')
+                dt = 1; % [msec]
+            end
+            str = obj.cmd(sprintf('PZR_POWER_AVG_GET %s %s %s', dec2hex(i), dec2hex(N), dec2hex(dt)));
+            lines = strsplit(str,newline);
+            line = strsplit(lines{1},{':',' '});
+            vbias = str2double(line{2});
+            line = strsplit(lines{2},{':',' '});
+            ibias = str2double(line{2});
+        end
         function [tempr,humidity]=getHumidityTemperature(obj,N)
             if ~exist('N','var')
                 N = 5;

@@ -152,9 +152,9 @@ function frameData = prepareFrameData(hw,startTime,calibParams,path)
 
     [frameData.temp.ldd,frameData.temp.mc,frameData.temp.ma,frameData.temp.apdTmptr] = hw.getLddTemperature;
 %    frameData.pzrShifts = hw.pzrShifts;
-    [frameData.iBias(1), frameData.vBias(1)] = hw.pzrPowerGet(1,5);
-    [frameData.iBias(2), frameData.vBias(2)] = hw.pzrPowerGet(2,5);
-    [frameData.iBias(3), frameData.vBias(3)] = hw.pzrPowerGet(3,5);
+    for j = 1:3
+        [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
+    end
     Calibration.aux.SaveFramesWrapper(hw, 'ZI' , 1 , path); %after mareg with main remove local calls.
     frameData.time = toc(startTime);
 %    frameData.ptsWithZ = cornersData(frame,regs,calibParams);

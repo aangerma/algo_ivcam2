@@ -19,6 +19,10 @@
        <sphericalScaleFactors>[1,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
        <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
        <cropFactors>[0.15,0.15]</cropFactors>
+       <pzrMeas>
+           <nVals2avg>10</nVals2avg>
+           <sampIntervalMsec>1</sampIntervalMsec>
+       </pzrMeas>
    </gnrl>
    <warmUp>
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
@@ -122,7 +126,8 @@
    </dsm>
    <fwTable>
       <nFramesToIgnore>5</nFramesToIgnore>
-      <tempBinRange>[32 79]</tempBinRange> 
+      <tempBinRes>2</tempBinRes> 
+      <tempBinRange>[0 94]</tempBinRange> 
       <!-- [35 66] -->
       <name>Algo_Thermal_Loop_CalibInfo</name> 
       <tableVersion>3.0</tableVersion> 
