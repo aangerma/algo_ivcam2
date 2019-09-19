@@ -82,6 +82,7 @@ end
 
 function [maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,LongRangestate,inputPath,cameraInput,laserPoints,maxMod_dec,fprintff)
 
+global g_calib_dir
 %% Get frames and mask
 totFrames = GetLongRangeImages(inputPath,cameraInput.imSize(2),cameraInput.imSize(1));
 fn = fullfile(runParams.outputFolder, 'mat_files' , ['LongRange_',LongRangestate,'_frames.mat']);
@@ -157,7 +158,7 @@ end
 %% Create updated preset bin table
 presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
 calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(calibParams.presets.tableVersion),mod(calibParams.presets.tableVersion*100,100)));
-fw = Firmware;
+fw = Firmware(g_calib_dir);
 fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
 end
 

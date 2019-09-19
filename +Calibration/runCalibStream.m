@@ -870,7 +870,7 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
         
         [dfzCalTmpStart,~,~,dfzApdCalTmpStart] = Calibration.aux.collectTempData(hw,runParams,fprintff,'Before DFZ calibration:');
         for j = 1:3
-            [pzrsIBiasStart(j),pzrsVBiasStart(j)] = hw.pzrPowerGet(j,5);
+            [pzrsIBiasStart(j),pzrsVBiasStart(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
         end
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
@@ -884,14 +884,14 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
             if ~strcmp('train',cap.type)
                 [dfzCalTmpEnd,~,~,dfzApdCalTmpEnd] = hw.getLddTemperature();
                 for j = 1:3
-                    [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrPowerGet(j,5);
+                    [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
                 end
             end
         end
         if all(trainImages)
             [dfzCalTmpEnd,~,~,dfzApdCalTmpEnd] = hw.getLddTemperature();
             for j = 1:3
-                [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrPowerGet(j,5);
+                [pzrsIBiasEnd(j),pzrsVBiasEnd(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
             end
         end
         dfzTmpRegs.FRMW.dfzCalTmp = single(dfzApdCalTmpStart+dfzApdCalTmpEnd)/2;

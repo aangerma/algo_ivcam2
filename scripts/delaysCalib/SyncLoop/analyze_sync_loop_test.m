@@ -2,8 +2,16 @@ close all
 clear variables
 clc
 
-load('sync_loop_test_results.mat')
-% tmptrOffset = typecast(uint32(tmptrOffset),'single'); % for old results files
+v = 67;
+
+%%
+
+load(sprintf('sync_loop_test_results_v%d.mat',v))
+if (v < 66)
+    tmptrOffset = typecast(uint32(tmptrOffset),'single'); % for old results files
+end
+
+%%
 
 % Data interpretation
 C_MMnsec = 299.702547;
