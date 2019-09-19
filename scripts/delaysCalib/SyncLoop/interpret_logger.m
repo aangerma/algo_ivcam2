@@ -4,7 +4,7 @@ clc
 
 %%
 
-fid = fopen('X:\Users\syaeli\Work\Code\algo_ivcam2\scripts\delaysCalib\SyncLoop\logger_sync_loop3.txt', 'rt');
+fid = fopen('X:\Users\syaeli\Work\Code\algo_ivcam2\scripts\delaysCalib\SyncLoop\logger_sync_loop4.txt', 'rt');
 data = cell(0,1);
 while true
     y = fgetl(fid);
@@ -43,10 +43,16 @@ codes = [1,2,3,4,5,6,11,12,13,20];
 
 %%
 
-iEvent = 172; % 1, 70, 140
+iEvent = 1; % 1, 70, 140
 
 tmp = [code(:, iEvent), value(:, iEvent)];
 for k = 1:size(tmp,1)
     iName = find(codes==tmp(k,1));
     fprintf('%s = %f\n', names{iName}, tmp(k,2))
 end
+
+%%
+
+dfc_th = 0.81*(value(1, :) - 54.2363663);
+dfc_act = value(2, :);
+figure, hold on, plot(dfc_th,'-o'), plot(dfc_act,'-^'), grid on, legend('theroretic','actual')

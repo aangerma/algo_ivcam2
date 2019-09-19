@@ -111,9 +111,9 @@ else
 end
 slState = hw.cmd('GET_SYNC_LOOP');
 if strcmp(slState(1:end-1), 'SyncLoopEnable:   TRUE')
-    fprintf('Warning: stream initiated with sync loop enabled.\n')
+    fprintf('Stream initiated with sync loop enabled - OK.\n')
 else
-    fprintf('Stream initiated with sync loop disabled - OK.\n')
+    fprintf('Warning: stream initiated with sync loop disabled.\n')
 end
 hw.disableAlgoThermalLoop();
 hw.cmd('ENABLE_SYNC_LOOP 0');
