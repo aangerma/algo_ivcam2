@@ -2,7 +2,8 @@ close all
 clear variables
 clc
 
-v = 67;
+v = 72;
+plotTheoreticTrends = false;
 
 %%
 
@@ -46,6 +47,13 @@ for k = 1:length(uniqueSyncLoopSet)
     leg1{end+1} = sprintf('set %d, enabled', k);
     h1(3*k) = plot(Tldd(syncIdcs), p(1)*Tldd(syncIdcs)+p(2), '-', 'color', mrkrClrs{k});
     leg1{end+1} = sprintf('%.2f*Tldd+%.2f -> ',p(1),p(2));
+    if plotTheoreticTrends
+        if (k==1)
+            plot(Tldd(syncIdcs), eeprom.IR_slope*Tldd(syncIdcs)+eeprom.IR_offset, 'k--')
+        else
+            plot(Tldd(syncIdcs), dram(k-1).IR_slope*Tldd(syncIdcs)+dram(k-1).IR_offset, 'k--')
+        end
+    end
     % Z
     figure(2)
     h2(3*k-2) = plot(Tldd(nonSyncIdcs), Z_delay(nonSyncIdcs), '.', 'color', mrkrClrs{k});
@@ -55,6 +63,13 @@ for k = 1:length(uniqueSyncLoopSet)
     leg2{end+1} = sprintf('set %d, enabled', k);
     h2(3*k) = plot(Tldd(syncIdcs), p(1)*Tldd(syncIdcs)+p(2), '-', 'color', mrkrClrs{k});
     leg2{end+1} = sprintf('%.2f*Tldd+%.2f -> ',p(1),p(2));
+    if plotTheoreticTrends
+        if (k==1)
+            plot(Tldd(syncIdcs), eeprom.Z_slope*Tldd(syncIdcs)+eeprom.Z_offset, 'k--')
+        else
+            plot(Tldd(syncIdcs), dram(k-1).Z_slope*Tldd(syncIdcs)+dram(k-1).Z_offset, 'k--')
+        end
+    end
     % RTD compensation
     figure(3)
     h3(3*k-2) = plot(Tldd(nonSyncIdcs), tmptrOffset(nonSyncIdcs), '.', 'color', mrkrClrs{k});
