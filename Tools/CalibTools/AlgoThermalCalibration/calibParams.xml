@@ -38,6 +38,9 @@
       <conLocDelaySlow>[0 2147483648]</conLocDelaySlow>
       <conLocDelayFastC>[0 2147483648]</conLocDelayFastC>
       <conLocDelayFastF>[0 2147483648]</conLocDelayFastF>
+      <conLocDelaySlowSlope>[0.2 2]</conLocDelaySlowSlope>
+      <conLocDelayFastSlope>[0.2 2]</conLocDelayFastSlope>
+      <dfzCalTmp>[35 75]</dfzCalTmp>
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
@@ -107,9 +110,10 @@
    <dataDelay>
       <!--<fastDelayInitVal>98488</fastDelayInitVal> -->
       <!--<slowDelayInitVal>98488</slowDelayInitVal> -->
-      <fastDelayInitVal>98690</fastDelayInitVal> 
-      <slowDelayInitVal>98583</slowDelayInitVal> 
-      <!--<fastDelatInitOffset>159</fastDelatInitOffset>-->
+      <fastDelayInitVal>98690</fastDelayInitVal>
+      <slowDelayInitVal>98583</slowDelayInitVal>
+      <fastDelayInitSlope>0.8</fastDelayInitSlope>
+      <slowDelayInitSlope>0.9</slowDelayInitSlope>
 	  <iterFixThr>1</iterFixThr>
       <nAttempts>20</nAttempts>
       <calibrateFast>1</calibrateFast>

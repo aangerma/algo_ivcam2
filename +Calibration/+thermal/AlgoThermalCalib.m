@@ -79,6 +79,17 @@ while ~finishedHeating
 end
 if finishedHeating % always true at this point
     t = tic;
+    % operate delays calibration at stable (reference) state
+    [results, calibPassed ,delayRegs] = Calibration.dataDelay.calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
+    if ~calibPassed
+        return;
+    end
+    regs.EXTL.conLocDelaySlow       = delayRegs.EXTL.conLocDelaySlow;
+    regs.EXTL.conLocDelayFastC      = delayRegs.EXTL.conLocDelayFastC;
+    regs.EXTL.conLocDelayFastF      = delayRegs.EXTL.conLocDelayFastF;
+    regs.FRMW.conLocDelayFastSlope  = delayRegs.FRMW.conLocDelayFastSlope;
+    regs.FRMW.conLocDelaySlowSlope  = delayRegs.FRMW.conLocDelaySlowSlope;
+    regs.FRMW.dfzCalTmp             = delayRegs.FRMW.dfzCalTmp; % overriden later by a similar value
     % operate fine DSM calibration at stable (reference) state
     dsmRegs = calibrateDSM(hw, fw, runParams, calibParams,fnCalib, fprintff,t);
     regs.EXTL.dsmXscale     = dsmRegs.EXTL.dsmXscale;
@@ -90,7 +101,7 @@ if finishedHeating % always true at this point
     results.dsmYscale       = regs.EXTL.dsmYscale;
     results.dsmYshift       = regs.EXTL.dsmYoffset;
     % noting reference state for thermal calibration (referred to as "DFZ state" for backward compatibility)
-    regs.FRMW.dfzCalTmp     = framesData(i).temp.ldd;
+    regs.FRMW.dfzCalTmp     = framesData(i).temp.ldd; % overriding Tref from end of delays calibration (delta should be small)
     regs.FRMW.dfzApdCalTmp  = framesData(i).temp.apdTmptr;
     regs.FRMW.dfzVbias      = framesData(i).vBias;
     regs.FRMW.dfzIbias      = framesData(i).iBias;
