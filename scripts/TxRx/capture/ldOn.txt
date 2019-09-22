@@ -11,6 +11,7 @@ mwd a0050078 a005007c ffff0000 // Min/Max X FOV
 mwd a005007c a0050080 ffff0000 // Min/Max Y FOV
 mwd a00504d0 a00504d4 0F000000 // LD_ON always ‘on’, TIA always ‘on’
 mwd a00d01f4 a00d01f8 00000fff // shadow update 
+mwd a00d01f4 a00d01f8 00000fff // EXTLauxShadowUpdate 
 
 iwb e2 03 01 10
 iwb e2 08 01 88
