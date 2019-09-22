@@ -543,7 +543,7 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
-        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw,calibParams.dataDelay,fprintff,runParams,calibParams);
+        [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw, calibParams.dataDelay, fprintff, runParams, calibParams, false);
         
         fw.setRegs(delayRegs,fnCalib);
         

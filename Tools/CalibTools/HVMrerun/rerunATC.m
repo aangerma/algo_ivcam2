@@ -2,7 +2,7 @@ clear all
 clc
 
 generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
-curTestDir = 'IC38\';
+curTestDir = 'ATC4\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
 capturesPath = [generalPath, curTestDir, 'Images\'];
@@ -32,6 +32,40 @@ dataRes.DSM_data = DSM_CoarseCalib_Calc(dataIn.angxRaw, dataIn.angyRaw, dataIn.c
 dataOut = load([inputPath, 'DSM_CoarseCalib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
+
+
+
+
+%TODO: organize delays rerun
+%% IR_DelayCalibCalc (initialization stage)
+fprintf('\nrunning IR_DelayCalibCalc... ');
+files = dir([inputPath, 'IR_DelayCalibCalc_in*']);
+for iFile = 1:length(files)-1
+    fprintf('\ncycle #%d... ', iFile);
+    dataIn = load(sprintf('%sIR_DelayCalibCalc_in%d.mat', inputPath, iFile-1));
+    dataIn.InputPath = sprintf('%sThermal\\Cycle%d', capturesPath, iFile-1);
+    [dataRes.res, dataRes.delayIR, dataRes.im, dataRes.pixVar] = IR_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    dataOut = load(sprintf('%sIR_DelayCalibCalc_out%d.mat', inputPath, iFile-1));
+    checkOutputEquality(dataOut, dataRes)
+end
+fprintf('\n')
+
+%% Z_DelayCalibCalc (initialization stage)
+fprintf('\nrunning Z_DelayCalibCalc... ');
+files = dir([inputPath, 'Z_DelayCalibCalc_in*']);
+for iFile = 1:length(files)-1
+    fprintf('\ncycle #%d... ', iFile);
+    dataIn = load(sprintf('%sZ_DelayCalibCalc_in%d.mat', inputPath, iFile-1));
+    dataIn.InputPath = sprintf('%sThermal\\Cycle%d', capturesPath, iFile-1);
+    [dataRes.res, dataRes.delayZ, dataRes.im] = Z_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.path_both, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    dataOut = load(sprintf('%sZ_DelayCalibCalc_out%d.mat', inputPath, iFile-1));
+    checkOutputEquality(dataOut, dataRes)
+end
+fprintf('\n')
+
+
+
+
 
 %% TmptrDataFrame_Calc (heating stage)
 fprintf('\nrunning TmptrDataFrame_Calc... ');

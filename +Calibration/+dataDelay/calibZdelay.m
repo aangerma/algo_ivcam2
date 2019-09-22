@@ -1,4 +1,4 @@
-function [delayZ,ok] = calibZdelay(hw,dataDelayParams,runParams,calibParams)
+function [delayZ,ok] = calibZdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage)
 verbose = 1;
 NumberOfFrames = calibParams.gnrl.Nof2avg;
 delayZ=dataDelayParams.fastDelayInitVal;
@@ -20,9 +20,14 @@ for i=1:dataDelayParams.nAttempts
     pause(0.1);
     if i==1
        % Save initial up down frames
-       Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'Z_Delay','Initial',sprintf('Up/Down Images - Initial (%d)',delayZ)); 
+       if isFinalStage
+           figureFileName = 'FinalStage_Initial';
+       else
+           figureFileName = 'InitStage_Initial';
+       end
+       Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'Z_Delay',figureFileName,sprintf('Up/Down Images - Initial (%d)',delayZ)); 
     end
-        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, path_both ,delayZ ,calibParams); 
+        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, path_both, delayZ, calibParams, isFinalStage); 
 		
        if (verbose)
             figure(sum(mfilename));
