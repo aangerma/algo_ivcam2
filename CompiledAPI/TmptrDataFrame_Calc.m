@@ -123,7 +123,7 @@ tempTh = calibParams.warmUp.warmUpTh;
 maxTime2WaitSec = maxTime2Wait*60;
 runParams.outputFolder = output_dir;
 runParams.calibRes = double([height, width]); %TODO: find a more elegant solution to passing calibRes to analyzeFramesOverTemperature
-results = [];
+results = struct('nCornersDetected', NaN);
 metrics = [];
 Invalid_Frames = [];
 
@@ -144,6 +144,7 @@ if ~finishedHeating % heating stage
     frame.i = Calibration.aux.average_images(frame.i);
     frame.z = Calibration.aux.average_images(frame.z);
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
+    results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     framesData = acc_FrameData(FrameData);
     
     if(Index == 0)
@@ -229,7 +230,7 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
     
     if isempty(calibParams.gnrl.cbGridSz)
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1);
+        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], calibParams.gnrl.nonRectangleFlag);
         pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
         

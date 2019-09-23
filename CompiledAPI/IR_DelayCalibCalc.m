@@ -88,7 +88,7 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc(path_up, path_down, sz,
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'path_up', 'path_down', 'sz', 'delay', 'calibParams', 'isFinalStage');
         dataDelayParams = calibParams.dataDelay;
-        fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_int_in%d.mat',suffix,g_delay_cnt)]);
+        fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose');
     end
 
@@ -96,7 +96,12 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc(path_up, path_down, sz,
     
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir,  'mat_files' , [func_name sprintf('_out%d.mat',g_delay_cnt)]);
+        if isFinalStage
+            suffix = '_final';
+        else
+            suffix = '_init';
+        end
+        fn = fullfile(g_output_dir,  'mat_files' , [func_name sprintf('%s_out%d.mat',suffix,g_delay_cnt)]);
         save(fn,'res', 'delayIR', 'im' , 'pixVar');
     end
     if(res~=0)

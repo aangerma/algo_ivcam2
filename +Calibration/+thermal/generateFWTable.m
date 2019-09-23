@@ -50,7 +50,7 @@ results.rtd.slope = a;
 if isfield(calibParams.fwTable, 'tempBinRes') % temporary patch until this field is always present
     binRes = calibParams.fwTable.tempBinRes;
 else
-    fprintff('WARNING: bin resolution not defined for thermal RTD table, using 1 as default...')
+    fprintff('WARNING: bin resolution not defined for thermal RTD table, using 1 as default...');
     binRes = 1;
 end
 fwBinCenters = calibParams.fwTable.tempBinRange(1):binRes:calibParams.fwTable.tempBinRange(2);
