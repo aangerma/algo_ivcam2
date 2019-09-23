@@ -33,39 +33,34 @@ dataOut = load([inputPath, 'DSM_CoarseCalib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
 
-
-
-
-%TODO: organize delays rerun
 %% IR_DelayCalibCalc (initialization stage)
 fprintf('\nrunning IR_DelayCalibCalc... ');
-files = dir([inputPath, 'IR_DelayCalibCalc_in*']);
+files = dir([inputPath, 'IR_DelayCalibCalc_init_in*']);
 for iFile = 1:length(files)-1
-    fprintf('\ncycle #%d... ', iFile);
-    dataIn = load(sprintf('%sIR_DelayCalibCalc_in%d.mat', inputPath, iFile-1));
-    dataIn.InputPath = sprintf('%sThermal\\Cycle%d', capturesPath, iFile-1);
+    fprintf('\niteration #%d... ', iFile);
+    dataIn = load(sprintf('%sIR_DelayCalibCalc_init_in%d.mat', inputPath, iFile));
+    dataIn.path_up = sprintf('%sDelayInit\\IR_ScanUp_%d', capturesPath, iFile-1);
+    dataIn.path_down = sprintf('%sDelayInit\\IR_ScanDown_%d', capturesPath, iFile-1);
     [dataRes.res, dataRes.delayIR, dataRes.im, dataRes.pixVar] = IR_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.sz, dataIn.delay, dataIn.calibParams);
-    dataOut = load(sprintf('%sIR_DelayCalibCalc_out%d.mat', inputPath, iFile-1));
+    dataOut = load(sprintf('%sIR_DelayCalibCalc_init_out%d.mat', inputPath, iFile));
     checkOutputEquality(dataOut, dataRes)
 end
 fprintf('\n')
 
 %% Z_DelayCalibCalc (initialization stage)
 fprintf('\nrunning Z_DelayCalibCalc... ');
-files = dir([inputPath, 'Z_DelayCalibCalc_in*']);
+files = dir([inputPath, 'Z_DelayCalibCalc_init_in*']);
 for iFile = 1:length(files)-1
     fprintf('\ncycle #%d... ', iFile);
-    dataIn = load(sprintf('%sZ_DelayCalibCalc_in%d.mat', inputPath, iFile-1));
-    dataIn.InputPath = sprintf('%sThermal\\Cycle%d', capturesPath, iFile-1);
+    dataIn = load(sprintf('%sZ_DelayCalibCalc_init_in%d.mat', inputPath, iFile));
+    dataIn.path_up = sprintf('%sDelayInit\\AltIR_ScanUp_%d', capturesPath, iFile-1);
+    dataIn.path_down = sprintf('%sDelayInit\\AltIR_ScanDown_%d', capturesPath, iFile-1);
+    dataIn.path_both = sprintf('%sDelayInit\\IR_ScanBoth', capturesPath);
     [dataRes.res, dataRes.delayZ, dataRes.im] = Z_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.path_both, dataIn.sz, dataIn.delay, dataIn.calibParams);
-    dataOut = load(sprintf('%sZ_DelayCalibCalc_out%d.mat', inputPath, iFile-1));
+    dataOut = load(sprintf('%sZ_DelayCalibCalc_init_out%d.mat', inputPath, iFile));
     checkOutputEquality(dataOut, dataRes)
 end
 fprintf('\n')
-
-
-
-
 
 %% TmptrDataFrame_Calc (heating stage)
 fprintf('\nrunning TmptrDataFrame_Calc... ');
@@ -76,6 +71,35 @@ for iFile = 1:length(files)-1
     dataIn.InputPath = sprintf('%sThermal\\Cycle%d', capturesPath, iFile-1);
     [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.Invalid_Frames]  = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz , dataIn.InputPath, dataIn.calibParams, dataIn.maxTime2Wait);
     dataOut = load(sprintf('%sTmptrDataFrame_Calc_out%d.mat', inputPath, iFile-1));
+    checkOutputEquality(dataOut, dataRes)
+end
+fprintf('\n')
+
+%% IR_DelayCalibCalc (finalization stage)
+fprintf('\nrunning IR_DelayCalibCalc... ');
+files = dir([inputPath, 'IR_DelayCalibCalc_final_in*']);
+for iFile = 1:length(files)-1
+    fprintf('\niteration #%d... ', iFile);
+    dataIn = load(sprintf('%sIR_DelayCalibCalc_final_in%d.mat', inputPath, iFile));
+    dataIn.path_up = sprintf('%sDelayFinal\\IR_ScanUp_%d', capturesPath, iFile-1);
+    dataIn.path_down = sprintf('%sDelayFinal\\IR_ScanDown_%d', capturesPath, iFile-1);
+    [dataRes.res, dataRes.delayIR, dataRes.im, dataRes.pixVar] = IR_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    dataOut = load(sprintf('%sIR_DelayCalibCalc_final_out%d.mat', inputPath, iFile));
+    checkOutputEquality(dataOut, dataRes)
+end
+fprintf('\n')
+
+%% Z_DelayCalibCalc (finalization stage)
+fprintf('\nrunning Z_DelayCalibCalc... ');
+files = dir([inputPath, 'Z_DelayCalibCalc_final_in*']);
+for iFile = 1:length(files)-1
+    fprintf('\ncycle #%d... ', iFile);
+    dataIn = load(sprintf('%sZ_DelayCalibCalc_final_in%d.mat', inputPath, iFile));
+    dataIn.path_up = sprintf('%sDelayFinal\\AltIR_ScanUp_%d', capturesPath, iFile-1);
+    dataIn.path_down = sprintf('%sDelayFinal\\AltIR_ScanDown_%d', capturesPath, iFile-1);
+    dataIn.path_both = sprintf('%sDelayFinal\\IR_ScanBoth', capturesPath);
+    [dataRes.res, dataRes.delayZ, dataRes.im] = Z_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.path_both, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    dataOut = load(sprintf('%sZ_DelayCalibCalc_final_out%d.mat', inputPath, iFile));
     checkOutputEquality(dataOut, dataRes)
 end
 fprintf('\n')

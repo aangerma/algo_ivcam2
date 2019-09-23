@@ -94,29 +94,34 @@ syncLoopEn      = zeros(0,1);
 syncLoopSet     = zeros(0,1);
 tmptrOffset     = zeros(0,1);
 thermalLoopEn   = zeros(0,1);
+zMidMeanMedStd  = zeros(0,4,'uint16');
 futureEvents    = events;
 
 
 %% Actual test
 
+res = [480,640]; % VGA
+nFrameToAv = 30;
+
 % Initializations
 hw = HWinterface();
 hw.cmd('dirtybitbypass');
-hw.startStream(0,[480,640]);
 tlState = hw.cmd('GET_ALGO_THERMAL_LOOP');
 if strcmp(tlState(1:end-1), 'AlgoThermalLoopEnable:   TRUE')
-    fprintf('Stream initiated with thermal loop enabled - OK.\n')
+    fprintf('Camera woke up with thermal loop enabled - OK.\n')
 else
-    fprintf('Warning: stream initiated with thermal loop disabled.\n')
+    fprintf('Warning: camera woke up with thermal loop disabled.\n')
 end
 slState = hw.cmd('GET_SYNC_LOOP');
 if strcmp(slState(1:end-1), 'SyncLoopEnable:   TRUE')
-    fprintf('Stream initiated with sync loop enabled - OK.\n')
+    fprintf('Camera woke up with sync loop enabled - OK.\n')
 else
-    fprintf('Warning: stream initiated with sync loop disabled.\n')
+    fprintf('Warning: camera woke up with sync loop disabled.\n')
 end
-hw.disableAlgoThermalLoop();
 hw.cmd('ENABLE_SYNC_LOOP 0');
+hw.disableAlgoThermalLoop();
+% hw.cmd('mwd a00e0894 a00e0898 00000001')
+hw.startStream(0,res);
 
 t0                  = tic;
 t                   = toc(t0);
@@ -160,10 +165,13 @@ while (t < testDuration)
         end
         futureEvents = futureEvents(2:end);
     end
+    frame = hw.getFrame(nFrameToAv);
+    zValues = frame.z(:);
+    zMidMeanMedStd(end+1,:) = [frame.z(res(1)/2,res(2)/2), uint16(mean(zValues)), median(zValues), uint16(std(single(zValues)))];
     pause(samplingTime)
 end
 
 % Finalization
 hw.stopStream();
-save('sync_loop_test_results.mat', 'eeprom', 'dram', 'events', 'Tldd', 'delays', 'syncLoopEn', 'syncLoopSet', 'tmptrOffset', 'thermalLoopEn')
+save('sync_loop_test_results.mat', 'eeprom', 'dram', 'events', 'Tldd', 'delays', 'syncLoopEn', 'syncLoopSet', 'tmptrOffset', 'thermalLoopEn', 'zMidMeanMedStd')
 
