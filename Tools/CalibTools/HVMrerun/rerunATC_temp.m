@@ -2,7 +2,7 @@ clear all
 clc
 
 generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
-curTestDir = 'ATC1\';
+curTestDir = 'ATC3\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
 capturesPath = [generalPath, curTestDir, 'Images\'];

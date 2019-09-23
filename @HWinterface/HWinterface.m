@@ -735,7 +735,15 @@ classdef HWinterface <handle
            end
            
         end
-
+        
+        function setAlgoLoops(obj, syncLoopFlag, thermalDsmFlag, thermalRtdFlag)
+           if ~exist('thermalRtdFlag','var')
+                thermalRtdFlag = thermalDsmFlag;
+           end
+           setCmd = dec2hex(double(thermalDsmFlag)*2^0 + double(thermalRtdFlag)*2^1 + double(syncLoopFlag*2^2));
+           obj.cmd(sprintf('ALGO_THERMLOOP_MODE_SET %s A',setCmd));
+        end
+        
         function displayStream(obj)
             f=figure('numbertitle','off','menubar','none');
             t = timer;
