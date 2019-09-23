@@ -230,7 +230,7 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
     
     if isempty(calibParams.gnrl.cbGridSz)
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], calibParams.gnrl.nonRectangleFlag);
+        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], [], calibParams.gnrl.nonRectangleFlag);
         pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
         

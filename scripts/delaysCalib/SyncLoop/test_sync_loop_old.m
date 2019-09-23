@@ -94,19 +94,30 @@ syncLoopEn      = zeros(0,1);
 syncLoopSet     = zeros(0,1);
 tmptrOffset     = zeros(0,1);
 thermalLoopEn   = zeros(0,1);
-depths          = zeros(0,2,'uint16');
 futureEvents    = events;
 
 
 %% Actual test
 
 res = [480,640]; % VGA
-nFrameToAv = 30;
 
 % Initializations
 hw = HWinterface();
 hw.cmd('dirtybitbypass');
-hw.setAlgoLoops(false, false);
+tlState = hw.cmd('GET_ALGO_THERMAL_LOOP');
+if strcmp(tlState(1:end-1), 'AlgoThermalLoopEnable:   TRUE')
+    fprintf('Camera woke up with thermal loop enabled - OK.\n')
+else
+    fprintf('Warning: camera woke up with thermal loop disabled.\n')
+end
+slState = hw.cmd('GET_SYNC_LOOP');
+if strcmp(slState(1:end-1), 'SyncLoopEnable:   TRUE')
+    fprintf('Camera woke up with sync loop enabled - OK.\n')
+else
+    fprintf('Warning: camera woke up with sync loop disabled.\n')
+end
+hw.cmd('ENABLE_SYNC_LOOP 0');
+hw.disableAlgoThermalLoop();
 hw.startStream(0,res);
 
 t0                  = tic;
@@ -133,14 +144,14 @@ while (t < testDuration)
         fprintf('t = %.1f[min] , T = %.1f , delays = [%d, %d, %d], initiating %s event\n', t/60, Tldd(end), delayIR, delayZC, delayZF, futureEvents(1).type)
         switch futureEvents(1).type
             case 'enableSL'
+                hw.cmd('ENABLE_SYNC_LOOP 1');
                 curSyncLoopEn = 1;
-                hw.setAlgoLoops(curSyncLoopEn, curThermalLoopEn);
             case 'disableSL'
+                hw.cmd('ENABLE_SYNC_LOOP 0');
                 curSyncLoopEn = 0;
-                hw.setAlgoLoops(curSyncLoopEn, curThermalLoopEn);
             case 'enableTL'
+                hw.enableAlgoThermalLoop();
                 curThermalLoopEn = 1;
-                hw.setAlgoLoops(curSyncLoopEn, curThermalLoopEn);
             case 'dramChange'
                 for iCmd = 1:6
                     hw.cmd(sprintf('SET_PARAM_SYNC_LOOP %d %s', iCmd, futureEvents(1).params{iCmd}));
@@ -151,12 +162,10 @@ while (t < testDuration)
         end
         futureEvents = futureEvents(2:end);
     end
-    frame = hw.getFrame(nFrameToAv);
-    depths(end+1,:) = [frame.z(res(1)/2,res(2)/2), uint16(median(frame.z(:)))];
     pause(samplingTime)
 end
 
 % Finalization
 hw.stopStream();
-save('sync_loop_test_results.mat', 'eeprom', 'dram', 'events', 'Tldd', 'delays', 'syncLoopEn', 'syncLoopSet', 'tmptrOffset', 'thermalLoopEn', 'depths')
+save('sync_loop_test_results.mat', 'eeprom', 'dram', 'events', 'Tldd', 'delays', 'syncLoopEn', 'syncLoopSet', 'tmptrOffset', 'thermalLoopEn')
 

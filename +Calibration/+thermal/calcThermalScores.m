@@ -2,7 +2,7 @@
 % load("\\ger\ec\proj\ha\RSG\SA_3DCam\TMund\F9010093\1.25Gui Runs\F9010093\TC11_thermostream_run3\validationData.mat");
 % [rtdDriftQuality,xDriftQuality,yDriftQuality] = calcThermalScores(data.framesData);% Mean of x offset, Mean of y offset, Mean of rtd offset
 
-function [errors] = calcThermalScores(data,tablerange,resolution)
+function [errors] = calcThermalScores(data,tablerange,tableRes,resolution)
 framesData = data.framesData;
 invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ) | all(all(isnan(framesData(j).ptsWithZ))),1:numel(framesData));
 framesData = framesData(~invalidFrames);
@@ -11,7 +11,7 @@ tempVec = [framesData.temp];
 tempVec = [tempVec.ldd];
 
 refTmp = data.dfzRefTmp;
-tmpBinEdges = (tablerange(1):tablerange(2)) - 0.5;
+tmpBinEdges = (tablerange(1):tableRes:tablerange(2)) - 0.5;
 
 refBinIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
