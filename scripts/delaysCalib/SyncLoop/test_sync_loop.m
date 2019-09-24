@@ -78,7 +78,7 @@ eventDefinitions = {30,       'enableSL',   {};
 %                     110,   'dramChange', dram(2).setParamCmds;...
 %                     120,   'enableSL',   {};...
 %                     130,  'disableSL',  {};...
-%                     2140, 'enableSL',   {};...
+%                     140, 'enableSL',   {};...
 %                     150, 'disableSL',  {}};
 events = struct('time', 0, 'type', '', 'params', {});
 for iEvent = 1:size(eventDefinitions,1)
@@ -107,7 +107,9 @@ nFrameToAv = 30;
 hw = HWinterface();
 hw.cmd('dirtybitbypass');
 hw.setAlgoLoops(false, false);
+hw.cmd('SET_PARAM_SYNC_LOOP 7 0'); % TODO: remove! (temporary - disable SyncCompensation)
 hw.startStream(0,res);
+hw.cmd('mwd a00e18b8 a00e18bc FFFF0000'); hw.shadowUpdate(); % skip min-range invalidation
 
 t0                  = tic;
 t                   = toc(t0);

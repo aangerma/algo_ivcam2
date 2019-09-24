@@ -2,7 +2,7 @@ close all
 clear variables
 clc
 
-v = 72;
+v = 73;
 plotTheoreticTrends = false;
 
 %%
@@ -96,3 +96,9 @@ h3(end+1) = plot(mean(Tldd([iTL,iTL+1])), mean(tmptrOffset([iTL,iTL+1])), 'p', '
 leg3{end+1} = 'Thermal Loop enable';
 grid on, xlabel('Tldd'), ylabel('RTD thermal offset [mm]'), legend(h3, leg3)
 title(sprintf('Prior models:\n%s -> %s -> %s', eeprom.modelRTD, dram(1).modelRTD, dram(2).modelRTD))
+
+figure(4)
+hold all
+plot(Tldd, single(depths(:,1))/4, '-o')
+plot(Tldd, single(depths(:,2))/4, '-s')
+grid on, xlabel('Tldd [deg]'), ylabel('Z [mm]'), legend('center pixel', 'median')
