@@ -1,4 +1,4 @@
-function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage)
+function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
@@ -105,7 +105,7 @@ function [res , delayZ, im ] = Z_DelayCalibCalc(path_up, path_down, path_both, s
             suffix = '_init';
         end
         fn = fullfile(g_output_dir, 'mat_files' , [func_name sprintf('%s_out%d.mat',suffix,g_delay_cnt)]);
-        save(fn,'res', 'delayZ', 'im');
+        save(fn, 'res', 'delayZ', 'im');
     end
     if(res~=0)
         g_delay_cnt = 0;

@@ -1,4 +1,4 @@
-function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag ,fprintff )
+function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f, verbose, save_input_flag, save_output_flag, dummy_output_flag, fprintff)
 % descrition :
 %   this function configured the all calibration mode of work, initiate
 %   global variable for all cal function use.
@@ -44,9 +44,9 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name '_in.mat']);
         if(~exist('fprintff','var'))
-            save(fn,'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f' ,'verbose' , 'save_input_flag' , 'save_output_flag' , 'dummy_output_flag' );
+            save(fn, 'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f', 'verbose', 'save_input_flag', 'save_output_flag', 'dummy_output_flag');
         else
-            save(fn,'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f' ,'verbose' , 'save_input_flag' , 'save_output_flag' , 'dummy_output_flag' ,'fprintff' );
+            save(fn, 'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f', 'verbose', 'save_input_flag', 'save_output_flag', 'dummy_output_flag', 'fprintff');
         end
     end
     
@@ -82,7 +82,7 @@ function [calibParams , result] = cal_init(output_dir, calib_dir, calib_params_f
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name '_out.mat']);
-        save(fn,'calibParams','result');
+        save(fn, 'calibParams', 'result');
     end
     if exist('fid','var')   
         fclose(fid);

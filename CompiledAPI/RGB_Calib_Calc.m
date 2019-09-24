@@ -1,4 +1,4 @@
-function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(InputPath, calibParams, irImSize, Kdepth, z2mm)
 % description: initiale set of the DSM scale and offset 
 %regs_reff
 % inputs:
@@ -47,7 +47,7 @@ function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irI
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath' , 'calibParams' ,'Kdepth' , 'z2mm','irImSize' );
+        save(fn, 'InputPath', 'calibParams', 'irImSize', 'Kdepth', 'z2mm');
     end
     [rgbPassed,rgbTable,results,im,rgbs] = Calibration.rgb.cal_rgb(InputPath,calibParams,irImSize,Kdepth,z2mm,fprintff,runParams);
     % save images
@@ -59,7 +59,7 @@ function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irI
     % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'rgbPassed','rgbTable','results');
+        save(fn, 'rgbPassed', 'rgbTable', 'results');
     end
     if(exist('fid','var'))
         fclose(fid);

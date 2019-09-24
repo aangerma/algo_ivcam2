@@ -1,4 +1,4 @@
-function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
+function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, LaserPoints, maxMod_dec, sz, calibParams)
 % function [dfzRegs,results,calibPassed] = Preset_Short_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
 % description: 
 %
@@ -66,14 +66,14 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath,La
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','LaserPoints','maxMod_dec', 'sz','calibParams');
+        save(fn, 'InputPath', 'LaserPoints', 'maxMod_dec', 'sz', 'calibParams');
     end
     [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(InputPath,LaserPoints,maxMod_dec,sz,calibParams,output_dir,PresetFolder);       
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'minRangeScaleModRef','ModRefDec');
+        save(fn, 'minRangeScaleModRef', 'ModRefDec');
     end
     if(exist('fid','var'))
         fclose(fid);
