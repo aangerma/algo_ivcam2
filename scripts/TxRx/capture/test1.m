@@ -1,17 +1,18 @@
 clear all; close all; 
-dist_num=1500;
+dist_num=1005;
 load('X:\Users\hila\L520\TxRx\CodesStruct.mat');
 
 
-outputFolder='X:\Users\hila\L520\TxRx\CodeTestData\Test1';
+outputFolder='X:\Users\hila\L520\TxRx\CodeTestData\Test1\codesData';
 warning off
+
+%%
+for(code_i=12:1:length(codes))
+% code_i=7;
 hw = HWinterface();
 hw.cmd('dirtybitbypass');
 hw.runScript('X:\Users\tomer\FG\ldOn.txt');
 pause(1);
-%%
-% for(code_i=1:1:length(codes))
-code_i=13;
 code=codes(code_i).code;
 
 code2Use = uint32(codes(code_i).txCodeRegDec)';
@@ -66,4 +67,7 @@ saveas(h,strcat(outputFolder,'\',num2str(dist_num),'\',codes(code_i).name,'.png'
 
 pause(2);
 hw.cmd('rst');
-% end
+
+pause(7);
+
+end

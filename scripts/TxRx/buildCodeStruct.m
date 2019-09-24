@@ -7,7 +7,7 @@ new_code_length = [16*4,32,26*2,32*2,62,64,70,22*3];
 for i=1:length(names)
     codes(i).name=names{i};
     [codes(i).code,codes(i).txCodeRegDec,codes(i).txCodeRegHex,codes(i).txCodeRegBin,codes(i).codeLength] = Codes.calculateCode(orig_code_length(i),new_code_length(i));    
-    codes(i).tCode=repelem(codes(i).code,8);       
+    codes(i).tCode=repelem(flipud(codes(i).code),8);       
 end
 
 %% 'LFSR_31_2'
@@ -18,7 +18,7 @@ c.name='LFSR_31_2';
 codeL=31*2; 
 [c.txCodeRegDec,c.txCodeRegHex,c.txCodeRegBin,c.codeLength] = Codes.genCodeReg(code,codeL); 
 c.code=code'; 
-c.tCode=repelem(c.code,8);       
+c.tCode=repelem(flipud(c.code),8);       
 codes(end+1)=c; 
 c=struct; 
 %% 'LFSR_63'
@@ -29,7 +29,7 @@ c.name='LFSR_63';
 codeL=63; 
 [c.txCodeRegDec,c.txCodeRegHex,c.txCodeRegBin,c.codeLength] = Codes.genCodeReg(code,codeL); 
 c.code=code'; 
-c.tCode=repelem(c.code,8);       
+c.tCode=repelem(flipud(c.code),8);       
 codes(end+1)=c; 
 
 c=struct; 
@@ -45,7 +45,7 @@ c.name='LFSR_127';
 codeL=127; 
 [c.txCodeRegDec,c.txCodeRegHex,c.txCodeRegBin,c.codeLength] = Codes.genCodeReg(code,codeL); 
 c.code=code'; 
-c.tCode=repelem(c.code,8);       
+c.tCode=repelem(flipud(c.code),8);       
 codes(end+1)=c; 
 
 c=struct; 
@@ -58,7 +58,7 @@ c.name='Rand';
 codeL=64; 
 [c.txCodeRegDec,c.txCodeRegHex,c.txCodeRegBin,c.codeLength] = Codes.genCodeReg(code,codeL); 
 c.code=code'; 
-c.tCode=repelem(c.code,8);       
+c.tCode=repelem(flipud(c.code),8);       
 codes(end+1)=c; 
 
 c=struct; 
@@ -71,5 +71,5 @@ c.name='Rand_even';
 codeL=64; 
 [c.txCodeRegDec,c.txCodeRegHex,c.txCodeRegBin,c.codeLength] = Codes.genCodeReg(code,codeL); 
 c.code=code'; 
-c.tCode=repelem(c.code,8);       
+c.tCode=repelem(flipud(c.code),8);       
 codes(end+1)=c; 
