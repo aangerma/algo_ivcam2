@@ -86,6 +86,8 @@ def maxModulation(xmlPath, debug):
         camera = libRealSense.LibRealSense()
         cameraInfo = camera.get_system_info()
         slash.logger.info('camera info: {}'.format(cameraInfo))
+
+
         if stableTemp == 'true':
             camera = libRealSense.LibRealSense(xRes=xRes, yRes=yRes,
                                                frameRate=test.get('frameRate', None))

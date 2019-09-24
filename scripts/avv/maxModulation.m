@@ -3,15 +3,19 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
 %     testParams = struct('minModprc', '0', 'laserDelta', '1', 'framesNum', '10')
 %     maskParams = struct('roi', '0.09', 'isRoiRect', '0', 'roiCropRect', '0', 'centerShiftX', '0', 'centerShiftY', '0')
 %     fillRateTh = 97
-%     output_folder = 'X:\Data\robot\08061017\debug\vga\long\280cm'
+%     output_folder = 'C:\temp\debug\vga\long\280cm'
 %     test = struct('name', 'vga', 'xRes', '640', 'yRes', '480', 'range', '280cm', 'preset', 'long', 'state', 'state2')
     
     testParams = converToDouble(testParams);    
     maskParams = converToDouble(maskParams); 
     test = converToDouble(test);    
-
     
-    calibParams.presets.long.params = struct();
+   
+    
+    calibParamsFn = fullfile(fileparts(mfilename('fullpath')),'..','..','Tools\CalibTools\IV2calibTool\calibParamsVXGA.xml')
+    calibParams = xml2structWrapper(calibParamsFn);
+    
+%     calibParams.presets.long.params = struct();
     calibParams.presets.long.params.roi = maskParams.roi;
     calibParams.presets.long.params.isRoiRect = maskParams.isRoiRect;
     calibParams.presets.long.params.roiCropRect = maskParams.roiCropRect; 
@@ -20,6 +24,8 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = maxModulation(testPara
     
     calibParams.presets.long.(test.state).fillRateTh = str2double(fillRateTh);
     calibParams.presets.long.(test.state).updateCalibVal = 0;
+    calibParams.presets.long.(test.state).updateCalibVal = 0;
+    
     calibParams.errRange.(strcat('targetDist_', (test.state))) = [0 inf];
     
     global g_fprintff  g_calib_dir g_output_dir;
