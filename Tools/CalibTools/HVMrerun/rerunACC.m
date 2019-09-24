@@ -2,7 +2,7 @@ clear all
 clc
 
 generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
-curTestDir = 'ACC2\';
+curTestDir = 'ACC3\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
 capturesPath = [generalPath, curTestDir, 'Images\'];
@@ -89,5 +89,16 @@ checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
 
 
+
+
+%% RGB_Calib_Calc
+fprintf('\nrunning RGB_Calib_Calc... ');
+dataIn = load([inputPath, 'RGB_Calib_Calc_in.mat']);
+ind = strfind(dataIn.InputPath, curTestDir);
+dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
+[dataRes.rgbPassed, dataRes.rgbTable, dataRes.results] = RGB_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.irImSize, dataIn.Kdepth, dataIn.z2mm);
+dataOut = load([inputPath, 'RGB_Calib_Calc_out.mat']);
+checkOutputEquality(dataOut, dataRes)
+fprintf('\n')
 
 

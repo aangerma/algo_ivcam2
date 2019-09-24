@@ -90,7 +90,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
-        save(fn,'finishedHeating','calibPassed', 'results');
+        save(fn, 'finishedHeating', 'calibPassed', 'results', 'metrics', 'Invalid_Frames');
     end
     if (origFinishedHeating~=0)
         g_temp_count = 0;

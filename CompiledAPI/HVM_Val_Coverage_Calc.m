@@ -1,4 +1,4 @@
-function [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibParams,valResults)
+function [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath, sz, calibParams, valResults)
 % function 
 % description: 
 %
@@ -57,7 +57,7 @@ function [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibPara
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','sz','calibParams','valResults');
+        save(fn, 'InputPath', 'sz', 'calibParams', 'valResults');
     end
     runParams.outputFolder = output_dir;
     [valResults ,allResults] = HVM_Val_Coverage_Calc_int(InputPath,sz,runParams,calibParams,fprintff,valResults);
@@ -65,7 +65,7 @@ function [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibPara
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files', [func_name '_out.mat']);
-        save(fn,'valResults', 'allResults');
+        save(fn, 'valResults', 'allResults');
     end
     if(exist('fid','var'))
         fclose(fid);

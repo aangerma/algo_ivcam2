@@ -1,4 +1,4 @@
-function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs)
+function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams, DFZ_regs)
     % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
     % description: initiale set of the DSM scale and offset
     %regs_reff
@@ -63,7 +63,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     regs = ConvertDFZReg(DFZ_regs);
     if g_save_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath', 'regs' , 'DFZ_regs' , 'calibParams');
+        save(fn, 'InputPath', 'calibParams', 'DFZ_regs');
     end
     [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(InputPath, calib_dir, output_dir, calibParams, fprintff, regs);       
     if ~isfield(results,'rtdDiffBetweenPresets')
@@ -83,7 +83,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'dfzRegs', 'calibPassed','results');
+        save(fn, 'dfzRegs', 'results', 'calibPassed');
     end
     if(exist('fid','var'))
         fclose(fid);

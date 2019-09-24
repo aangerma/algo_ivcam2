@@ -1,4 +1,4 @@
-function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , angxRawZOVec , angyRawZOVec ,dsmregs_current ,calibParams)
+function [result, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(path_spherical, sz, angxRawZOVec, angyRawZOVec, dsmregs_current, calibParams)
     % description: initiale set of the DSM scale and offset
     %
     % inputs:
@@ -51,7 +51,7 @@ function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , 
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'path_spherical', 'sz' , 'angxRawZOVec' , 'angyRawZOVec' ,'dsmregs_current' ,'calibParams');
+        save(fn, 'path_spherical', 'sz', 'angxRawZOVec', 'angyRawZOVec', 'dsmregs_current', 'calibParams');
     end
     
     [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc_int(path_spherical, sz , angxRawZOVec(:) , angyRawZOVec(:) ,dsmregs_current ,calibParams,fprintff,g_output_dir);
@@ -59,7 +59,7 @@ function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , 
     % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'result', 'DSM_data','angxZO','angyZO');
+        save(fn, 'result', 'DSM_data', 'angxZO', 'angyZO');
     end
     if(exist('fid','var'))
         fclose(fid);
