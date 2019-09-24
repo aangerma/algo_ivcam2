@@ -73,3 +73,11 @@ codeL=64;
 c.code=code'; 
 c.tCode=repelem(flipud(c.code),8);       
 codes(end+1)=c; 
+
+
+%% %%%%
+
+
+%% nurmelized code struct for length of ~127
+
+
