@@ -1,9 +1,9 @@
-function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff)
+function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff, thermalLoopEn)
     calibPassed = 1;
     fprintff('[-] Depth and IR delay calibration...\n');
     if(runParams.dataDelay)
         isFinalStage = isfield(results, 'conLocDelaySlow'); % calibrateDelays was called once before
-        hw.cmd('ENABLE_SYNC_LOOP 0')
+        hw.setAlgoLoops(false, thermalLoopEn); % disabling sync loop
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
@@ -23,7 +23,7 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         end
         writeDelayRegsToDRAM(hw, delayRegs)
         pause(1)
-        hw.cmd('ENABLE_SYNC_LOOP 1')
+        hw.setAlgoLoops(true, thermalLoopEn); % enabling sync loop
 
         fw.setRegs(delayRegs,fnCalib);
         
