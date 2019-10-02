@@ -107,9 +107,13 @@ nFrameToAv = 30;
 hw = HWinterface();
 hw.cmd('dirtybitbypass');
 hw.setAlgoLoops(false, false);
-hw.cmd('SET_PARAM_SYNC_LOOP 7 0'); % TODO: remove! (temporary - disable SyncCompensation)
+% hw.cmd('SET_PARAM_SYNC_LOOP 7 0'); % TODO: remove! (temporary - disable SyncCompensation)
 hw.startStream(0,res);
-hw.cmd('mwd a00e18b8 a00e18bc FFFF0000'); hw.shadowUpdate(); % skip min-range invalidation
+hw.cmd('mwd a00e18b8 a00e18bc FFFF0000'); % skip min-range invalidation
+hw.cmd('mwd a00e0894 a00e0898 00000001'); % output depth as range
+hw.cmd('mwd a00e0868 a00e086c 00000000'); % baseline
+hw.cmd('mwd a00e086c a00e0870 00000000'); % baseline2
+hw.shadowUpdate();
 
 t0                  = tic;
 t                   = toc(t0);
