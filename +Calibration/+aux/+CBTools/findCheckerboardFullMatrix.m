@@ -1,4 +1,4 @@
-function [ gridPointsFull,colorsMapFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 ,isRgbImage,cornersDetectionThreshold, nonRectangleFlag)
+function [ gridPointsFull,colorsMapFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 ,isRgbImage,cornersDetectionThreshold, nonRectangleFlag, robustifyFlag)
 %FINDCHECKERBOARDFULLMATRIX detects the calibration chart with the black circle within the white square as an anchor.
 % Gets an IR image of the checkerboard
 % Returns a 20x28x2 matrix where the last 2 dimensions are the xy location
@@ -15,14 +15,17 @@ if ~exist('cornersDetectionThreshold','var') || isempty(cornersDetectionThreshol
         cornersDetectionThreshold = 0.25;
     end
 end
-if(~exist('nonRectangleFlag','var'))
+if(~exist('nonRectangleFlag','var') || isempty(nonRectangleFlag))
     nonRectangleFlag=false;
+end
+if ~exist('robustifyFlag', 'var')
+    robustifyFlag = false;
 end
 if imageRotatedBy180
     ir = rot90(ir,2);
 end
 
-[gridPointsFull,colorsMapFull] = GetSquaresCorners(ir,cornersDetectionThreshold, nonRectangleFlag);
+[gridPointsFull,colorsMapFull] = GetSquaresCorners(ir,cornersDetectionThreshold, nonRectangleFlag,robustifyFlag);
 
 if imageRotatedBy180
     gridPointsFull = rot90(gridPointsFull,2);
@@ -40,7 +43,7 @@ end
 end
 
 
-function [gridPointsFull,colorsMapFull] = GetSquaresCorners(ir,cornersDetectionThreshold, nonRectangleFlag)
+function [gridPointsFull,colorsMapFull] = GetSquaresCorners(ir,cornersDetectionThreshold, nonRectangleFlag,robustifyFlag)
 
 %find CB points
 
@@ -48,7 +51,7 @@ function [gridPointsFull,colorsMapFull] = GetSquaresCorners(ir,cornersDetectionT
 
 pmat = reshape(p,[bsz,2]);
 rows = bsz(1); cols = bsz(2);
-[colorsMap,blackCircRow,blackCircCol] = Calibration.aux.CBTools.calcCheckerColorMap(pmat,ir);
+[colorsMap,blackCircRow,blackCircCol] = Calibration.aux.CBTools.calcCheckerColorMap(pmat,ir,robustifyFlag);
 
 % locate the row and col of the black circle:
 indicesR = (1:rows) + 9 - blackCircRow;

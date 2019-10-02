@@ -80,7 +80,7 @@ end
 if finishedHeating % always true at this point
     t = tic;
     % operate delays calibration at stable (reference) state
-    [results, calibPassed ,delayRegs] = Calibration.dataDelay.calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
+    [results, calibPassed ,delayRegs] = Calibration.dataDelay.calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff, false);
     if ~calibPassed
         return;
     end

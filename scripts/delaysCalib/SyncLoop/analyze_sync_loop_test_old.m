@@ -15,13 +15,16 @@ end
 %%
 
 % Data interpretation
+C_MMnsec = 299.702547;
 Z_delay = double(delays(:,2) + delays(:,3));
 IR_delay = double((delays(:,2) + delays(:,3)) - (delays(:,1) - uint32(2^31)));
 eeprom.modelIR = sprintf('%.2f*Tldd+%.2f', eeprom.IR_slope, eeprom.IR_offset);
 eeprom.modelZ = sprintf('%.2f*Tldd+%.2f', eeprom.Z_slope, eeprom.Z_offset);
+eeprom.modelRTD = sprintf('d(RTD)/dT = %.2f', -eeprom.Z_slope*C_MMnsec);
 for k = 1:length(dram)
     dram(k).modelIR = sprintf('%.2f*Tldd+%.2f', dram(k).IR_slope, dram(k).IR_offset);
     dram(k).modelZ = sprintf('%.2f*Tldd+%.2f', dram(k).Z_slope, dram(k).Z_offset);
+    dram(k).modelRTD = sprintf('d(RTD)/dT = %.2f', -dram(k).Z_slope*C_MMnsec);
 end
 uniqueSyncLoopSet = unique(syncLoopSet);
 
@@ -43,7 +46,7 @@ for k = 1:length(uniqueSyncLoopSet)
     h1(3*k-1) = plot(Tldd(syncIdcs), IR_delay(syncIdcs), 'o', 'color', mrkrClrs{k}, 'markerfacecolor', faceClrs{k});
     leg1{end+1} = sprintf('set %d, enabled', k);
     h1(3*k) = plot(Tldd(syncIdcs), p(1)*Tldd(syncIdcs)+p(2), '-', 'color', mrkrClrs{k});
-    leg1{end+1} = sprintf('%.2f*Tldd+%.2f',p(1),p(2));
+    leg1{end+1} = sprintf('%.2f*Tldd+%.2f -> ',p(1),p(2));
     if plotTheoreticTrends
         if (k==1)
             plot(Tldd(syncIdcs), eeprom.IR_slope*Tldd(syncIdcs)+eeprom.IR_offset, 'k--')
@@ -59,7 +62,7 @@ for k = 1:length(uniqueSyncLoopSet)
     h2(3*k-1) = plot(Tldd(syncIdcs), Z_delay(syncIdcs), 'o', 'color', mrkrClrs{k}, 'markerfacecolor', faceClrs{k});
     leg2{end+1} = sprintf('set %d, enabled', k);
     h2(3*k) = plot(Tldd(syncIdcs), p(1)*Tldd(syncIdcs)+p(2), '-', 'color', mrkrClrs{k});
-    leg2{end+1} = sprintf('%.2f*Tldd+%.2f',p(1),p(2));
+    leg2{end+1} = sprintf('%.2f*Tldd+%.2f -> ',p(1),p(2));
     if plotTheoreticTrends
         if (k==1)
             plot(Tldd(syncIdcs), eeprom.Z_slope*Tldd(syncIdcs)+eeprom.Z_offset, 'k--')
@@ -69,14 +72,14 @@ for k = 1:length(uniqueSyncLoopSet)
     end
     % RTD compensation
     figure(3)
-    h3(2*k-1) = plot(Tldd(nonSyncIdcs), tmptrOffset(nonSyncIdcs), '.', 'color', mrkrClrs{k});
+    h3(3*k-2) = plot(Tldd(nonSyncIdcs), tmptrOffset(nonSyncIdcs), '.', 'color', mrkrClrs{k});
     leg3{end+1} = sprintf('set %d, disabled', k);
-    h3(2*k) = plot(Tldd(syncIdcs), tmptrOffset(syncIdcs), 'o', 'color', mrkrClrs{k}, 'markerfacecolor', faceClrs{k});
+    p = polyfit(Tldd(syncIdcs), tmptrOffset(syncIdcs), 1);
+    h3(3*k-1) = plot(Tldd(syncIdcs), tmptrOffset(syncIdcs), 'o', 'color', mrkrClrs{k}, 'markerfacecolor', faceClrs{k});
     leg3{end+1} = sprintf('set %d, enabled', k);
+    h3(3*k) = plot(Tldd(syncIdcs), p(1)*Tldd(syncIdcs)+p(2), '-', 'color', mrkrClrs{k});
+    leg3{end+1} = sprintf('%.2f*Tldd+%.2f -> ',p(1),p(2));
 end
-p = polyfit(Tldd(thermalLoopEn==1), tmptrOffset(thermalLoopEn==1), 1);
-h3(end+1) = plot(Tldd(thermalLoopEn==1), p(1)*Tldd(thermalLoopEn==1)+p(2), 'k-');
-leg3{end+1} = sprintf('%.2f*Tldd+%.2f',p(1),p(2));
 
 iTL = find(thermalLoopEn==1,1,'first');
 figure(1)
@@ -93,24 +96,10 @@ figure(3)
 h3(end+1) = plot(Tldd(iTL), tmptrOffset(iTL), 'p', 'color', [0.5,0.5,0], 'markerfacecolor', 'y', 'markersize', 10);
 leg3{end+1} = 'Thermal Loop enable';
 grid on, xlabel('Tldd'), ylabel('RTD thermal offset [mm]'), legend(h3, leg3)
-title('DESTtmptrOffset')
+title(sprintf('Prior models:\n%s -> %s -> %s', eeprom.modelRTD, dram(1).modelRTD, dram(2).modelRTD))
 
-rtd = single(depths)/4*2; % [center pixels, median]
 figure(4)
 hold all
-p = polyfit(Tldd(thermalLoopEn==0), rtd(thermalLoopEn==0,1), 1);
-h4(1) = plot(Tldd, rtd(:,1), 'o', 'color', mrkrClrs{1});
-leg4{1} = 'mean over 30 frames';
-h4(2) = plot(Tldd(thermalLoopEn==0), p(1)*Tldd(thermalLoopEn==0)+p(2), '-', 'color', mrkrClrs{1}, 'linewidth', 2);
-leg4{2} = sprintf('%.2f*Tldd+%.2f',p(1),p(2));
-h4(3) = plot(Tldd(iTL), rtd(iTL,1), 'p', 'color', [0.5,0.5,0], 'markerfacecolor', 'y', 'markersize', 10);
-leg4{3} = 'Thermal Loop enable';
-% p = polyfit(Tldd(thermalLoopEn==0), rtd(thermalLoopEn==0,2), 1);
-% h4(3) = plot(Tldd, rtd(:,2), 'o', 'color', mrkrClrs{2});
-% leg4{3} = 'median';
-% h4(4) = plot(Tldd(thermalLoopEn==0), p(1)*Tldd(thermalLoopEn==0)+p(2), '-', 'color', mrkrClrs{2});
-% leg4{4} = sprintf('%.2f*Tldd+%.2f',p(1),p(2));
-% h4(5) = plot(Tldd(iTL)*ones(1,2), rtd(iTL,:), 'p', 'color', [0.5,0.5,0], 'markerfacecolor', 'y', 'markersize', 10);
-% leg4{5} = 'Thermal Loop enable';
-grid on, xlabel('Tldd [deg]'), ylabel('RTD [mm]'), legend(h4, leg4)
-title('RTD @ center pixel')
+plot(Tldd, single(depths(:,1))/4*2, '-o')
+plot(Tldd, single(depths(:,2))/4*2, '-s')
+grid on, xlabel('Tldd [deg]'), ylabel('RTD [mm]'), legend('center pixel', 'median')

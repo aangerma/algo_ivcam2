@@ -1,4 +1,8 @@
-function [colorsMap,blackCircRow,blackCircCol] = calcCheckerColorMap(pmat,ir)
+function [colorsMap,blackCircRow,blackCircCol] = calcCheckerColorMap(pmat,ir,robustifyFlag)
+
+if ~exist('robustifyFlag', 'var')
+    robustifyFlag = false;
+end
 
 rows = size(pmat,1); cols = size(pmat,2);
 squareCenters = 0.25*(pmat(1:rows-1,1:cols-1,:)+...
@@ -13,13 +17,20 @@ colorsMap = toeplitz(mod(1:max(rows,cols),2));
 colorsMap = logical(colorsMap(1:rows,1:cols));    
 
 squaresCentersList = reshape(squareCenters,[],2);
-
-oddSquares = squaresCentersList(indOneColor(:),:);
-evenSquares = squaresCentersList(~indOneColor(:),:);
-
-
-ccOdd = centerColor(ir,oddSquares);
-ccEven = centerColor(ir,evenSquares);
+if robustifyFlag % effective for up/down images in XGA resolution
+    gaussianSigma = 2; % [pixels]
+    ccAllTiles = centerColor(imgaussfilt(ir, gaussianSigma), squaresCentersList); % smooth to eliminate stripes effect
+    ccAllTiles = reshape(ccAllTiles, [size(squareCenters,1), size(squareCenters,2)]);
+    ccDiff = NaN(size(ccAllTiles)); % differentiate to highlight black square
+    ccDiff(2:end-1,2:end-1) = ccAllTiles(2:end-1,2:end-1) - (ccAllTiles(1:end-2,2:end-1)+ccAllTiles(3:end,2:end-1)+ccAllTiles(2:end-1,1:end-2)+ccAllTiles(2:end-1,3:end))/4;
+    ccOdd = ccDiff(indOneColor(:));
+    ccEven = ccDiff(~indOneColor(:));
+else
+    oddSquares = squaresCentersList(indOneColor(:),:);
+    evenSquares = squaresCentersList(~indOneColor(:),:);
+    ccOdd = centerColor(ir,oddSquares);
+    ccEven = centerColor(ir,evenSquares);
+end
 
 topLeftIsWhite = nanmean(ccOdd) > nanmean(ccEven);
 if topLeftIsWhite

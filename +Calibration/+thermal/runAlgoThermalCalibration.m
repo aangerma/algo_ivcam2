@@ -64,8 +64,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     end
     
     hw.cmd('DIRTYBITBYPASS');
-    hw.cmd('ENABLE_SYNC_LOOP 0')
-    hw.disableAlgoThermalLoop();
+    hw.setAlgoLoops(false, false); % (sync loop, thermal loop)
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
     hw.setPresetControlState(calibParams.gnrl.presetMode);
     
@@ -85,7 +84,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% ::calibrate delays::
-    [results, calibPassed ,delayRegs] = Calibration.dataDelay.calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff);
+    [results, calibPassed ,delayRegs] = Calibration.dataDelay.calibrateDelays(hw, runParams, calibParams, results, fw, fnCalib, fprintff, false);
     if ~calibPassed
         return;
     end
@@ -243,7 +242,7 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
         fw.setRegs(vregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_04_%02.0f.bin',mod(calibToolVersion,1)*100)));
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);

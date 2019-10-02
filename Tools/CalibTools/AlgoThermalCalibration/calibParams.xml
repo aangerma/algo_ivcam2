@@ -135,6 +135,6 @@
       <tempBinRange>[0 94]</tempBinRange> 
       <!-- [35 66] -->
       <name>Algo_Thermal_Loop_CalibInfo</name> 
-      <tableVersion>3.0</tableVersion> 
+      <tableVersion>4.0</tableVersion> 
    </fwTable>	
 </struct>
