@@ -80,10 +80,10 @@
    </validationErrRange>
    <fwTable>
       <nFramesToIgnore>15</nFramesToIgnore>
-      <tempBinRes>2</tempBinRes> 
       <tempBinRange>[0 94]</tempBinRange> 
+      <nRows>48</nRows> 
       <!-- [35 66] -->
       <name>Algo_Thermal_Loop_CalibInfo</name> 
-      <tableVersion>3.0</tableVersion> 
+      <tableVersion>4.0</tableVersion> 
    </fwTable>	
 </struct>

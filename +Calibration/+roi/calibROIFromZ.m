@@ -1,4 +1,4 @@
-function [roiregs] = calibROIFromZ( imU,imD,regs,calibParams,runParams)
+function [roiregs,results] = calibROIFromZ( im,regs,calibParams,runParams)
 % Calibrate the margins of the image.
 % 1. Take a spherical mode icmage of up direction.
 % 2. Take a spherical mode image of down direction.
@@ -11,23 +11,41 @@ function [roiregs] = calibROIFromZ( imU,imD,regs,calibParams,runParams)
 % value of Y left to set the margin. Do it for up and down and use the
 % hardest margin. At the end add the extra margins from calibParams.  
 %% Get margins for each image
-edgesU = calcBounds(imU,calibParams,runParams,regs,'imU');
-marginsU = calcMargins(edgesU,regs,runParams);
-edgesD = calcBounds(imD,calibParams,runParams,regs,'imD');
-marginsD = calcMargins(edgesD,regs,runParams);
+edges = calcBounds(im,calibParams,runParams,regs,'im');
+
+%% Calculate the margins we need to take with minimal crop
+calibParamsMinimalCrop = minimalCropParams();
+minimalMargins = calcMargins(edges,regs,calibParamsMinimalCrop,runParams);
+
+%% Get the true margins with the paramters from calibParams
+margins = calcMargins(edges,regs,calibParams,runParams);
+
 
 % As weird as it is, extra margins are consistent with FRMWmargin*.
 % Therefore Top is actually the bottom of the image (in hw.getFrame),
 % Bottom is the top, left is left and right is right. Frame from
 % hw.getFrame are rotated by 180 from the real world. Bottom <-> Top
 % confusion should be fixed. 
-
-extraMargins = [calibParams.roi.extraMarginT,...
-                calibParams.roi.extraMarginB,...
-                calibParams.roi.extraMarginL,...
-                calibParams.roi.extraMarginR]*calibParams.roi.useExtraMargins;
-margins = max([marginsU;marginsD])+extraMargins;
 roiregs = margins2regs(margins,regs);
+
+showedPixelsV = single(regs.GNRL.imgVsize) - margins(1) - margins(2); 
+showedPixelsH = single(regs.GNRL.imgHsize) - margins(3) - margins(4); 
+extraPixels = margins - minimalMargins;
+results.extraPixWorldPercT = extraPixels(2)/showedPixelsV*100;
+results.extraPixWorldPercB = extraPixels(1)/showedPixelsV*100;
+results.extraPixWorldPercL = extraPixels(4)/showedPixelsH*100;
+results.extraPixWorldPercR = extraPixels(3)/showedPixelsH*100;
+end
+function calibParamsMinimalCrop = minimalCropParams()
+calibParamsMinimalCrop.roi.cropAroundOpticalAxis = 0;
+calibParamsMinimalCrop.roi.maxFovX = [];
+calibParamsMinimalCrop.roi.maxFovY= [];
+calibParamsMinimalCrop.roi.squarePixelsRatio = [];
+calibParamsMinimalCrop.roi.extraMarginT = 0;
+calibParamsMinimalCrop.roi.extraMarginB = 0;
+calibParamsMinimalCrop.roi.extraMarginL = 0;
+calibParamsMinimalCrop.roi.extraMarginR = 0;
+calibParamsMinimalCrop.roi.useExtraMargins = 0;
 
 end
 function edges = calcBounds(im,calibParams,runParams,regs,description)
@@ -41,7 +59,7 @@ notNoiseIm = (stdZ<calibParams.roi.zSTDTh) & (sum(~isnan(z),3) == size(z,3));
 % [binaryIm,stats] = maxAreaStat(notNoiseIm,size(notNoiseIm));% Keep only the largest connected component.
 % notNoiseIm(~binaryIm) = 0;
 
-se = strel('disk',calibParams.roi.diskSz+30);
+se = strel('disk',calibParams.roi.diskSz);
 notNoiseIm = imclose(notNoiseIm,se);
 
 % Find the corners of the not noise image - connect them
@@ -128,7 +146,7 @@ function xyClose = closest2pointL1(xy,p)
     [~,Imin] = min(sum(abs(double(xy)-double(p)),2));
     xyClose = xy(Imin,:);
 end
-function marginsTBLR = calcMargins(edges,regs,runParams)
+function marginsTBLR = calcMargins(edges,regs,calibParams,runParams)
 if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
     load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
 else
@@ -136,22 +154,90 @@ else
 end
 
 ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs,tpsUndistModel); 
-edgesXY = structfun(ang2xy,edges,'UniformOutput',false); 
+[edgesXY,edgesTanXY] = structfun(ang2xy,edges,'UniformOutput',false); 
 factor = 0.80;
-marginsTBLR(1) = ceil(max(edgesXY.T(innerIndices(edgesXY.T,factor),2)));
-marginsTBLR(2) = single(regs.GNRL.imgVsize) - floor(min(edgesXY.B(innerIndices(edgesXY.B,factor),2)));
-marginsTBLR(3) = ceil(max(edgesXY.L(innerIndices(edgesXY.L,factor),1)));
-marginsTBLR(4) = single(regs.GNRL.imgHsize) - floor(min(edgesXY.R(innerIndices(edgesXY.R,factor),1)));
+
+tanMarginsTBLR(1) = (max(edgesTanXY.T(innerIndices(edgesTanXY.T,factor),2)));
+tanMarginsTBLR(2) = (min(edgesTanXY.B(innerIndices(edgesTanXY.B,factor),2)));
+tanMarginsTBLR(3) = (max(edgesTanXY.L(innerIndices(edgesTanXY.L,factor),1)));
+tanMarginsTBLR(4) = (min(edgesTanXY.R(innerIndices(edgesTanXY.R,factor),1)));
+
+extraMargins = [calibParams.roi.extraMarginT,...
+                calibParams.roi.extraMarginB,...
+                calibParams.roi.extraMarginL,...
+                calibParams.roi.extraMarginR]*calibParams.roi.useExtraMargins;
+anglesTBLR = atand(tanMarginsTBLR);
+% Margins to angles:
+anglesTBLR = sign(anglesTBLR).*(abs(anglesTBLR)- extraMargins);
+% Crop to a specific field of view
+if ~isempty(calibParams.roi.maxFovX) && calibParams.roi.maxFovX<abs(diff(anglesTBLR(3:4))) 
+    oldFov = anglesTBLR(4)-anglesTBLR(3);
+    newFov = calibParams.roi.maxFovX;
+    anglesTBLR(3) = anglesTBLR(3) + (oldFov-newFov)/2;
+    anglesTBLR(4) = anglesTBLR(4) - (oldFov-newFov)/2;  
+end
+if ~isempty(calibParams.roi.maxFovY) && calibParams.roi.maxFovY<abs(diff(anglesTBLR(1:2))) 
+    oldFov = anglesTBLR(2)-anglesTBLR(1);
+    newFov = calibParams.roi.maxFovY;
+    anglesTBLR(1) = anglesTBLR(1) + (oldFov-newFov)/2;
+    anglesTBLR(2) = anglesTBLR(2) - (oldFov-newFov)/2;  
+end
+
+
+tanMarginsTBLR = tand(anglesTBLR);
+
+if calibParams.roi.cropAroundOpticalAxis
+    tanMarginsTBLR(1:2)= sign(tanMarginsTBLR(1:2)) * min(abs(tanMarginsTBLR(1:2)));
+    tanMarginsTBLR(3:4)= sign(tanMarginsTBLR(3:4)) * min(abs(tanMarginsTBLR(3:4)));
+end
+
+% If we want square pixels, we should take the largest 4 by 3 rect inside
+% the square
+if ~isempty(calibParams.roi.squarePixelsRatio)
+    expectedRatio = calibParams.roi.squarePixelsRatio(2)/calibParams.roi.squarePixelsRatio(1); 
+    if abs(diff(tanMarginsTBLR(1:2)))/abs(diff(tanMarginsTBLR(3:4))) < expectedRatio
+        oldLen = tanMarginsTBLR(4)-tanMarginsTBLR(3);
+        newLen = abs(diff(tanMarginsTBLR(1:2)))/expectedRatio;
+        tanMarginsTBLR(3) = tanMarginsTBLR(3) + (oldLen-newLen)/2;
+        tanMarginsTBLR(4) = tanMarginsTBLR(4) - (oldLen-newLen)/2;
+    else
+        oldLen = tanMarginsTBLR(2)-tanMarginsTBLR(1);
+        newLen = abs(diff(tanMarginsTBLR(3:4)))*expectedRatio;
+        tanMarginsTBLR(1) = tanMarginsTBLR(1) + (oldLen-newLen)/2;
+        tanMarginsTBLR(2) = tanMarginsTBLR(2) - (oldLen-newLen)/2;
+    end
+end
+% Now we have the bounderies of the frame in tanXY domain. We should project them to the image plane so we could use the margin calculation. 
+vTBLR = [0 tanMarginsTBLR(1) 1;
+         0 tanMarginsTBLR(2) 1;
+         tanMarginsTBLR(3) 0 1;
+         tanMarginsTBLR(4) 0 1]';
+[rectX,rectY] = Calibration.aux.vec2xy(vTBLR, regs);
+
+marginsTBLR(1) = rectY(1);
+marginsTBLR(2) = single(single(regs.GNRL.imgVsize)) - rectY(2);
+marginsTBLR(3) = rectX(3);
+marginsTBLR(4) = single(regs.GNRL.imgHsize) - rectX(4);
+
+
 
 marginsTBLR(1:2) = marginsTBLR([2,1]); % marginT actually refers to the bottom of the image and vice versa (names should be swapped)
+
+plotEdges(edgesXY,regs,runParams,rectX,rectY)
 end
-function plotEdges()
-    figure,
-    plot(edgesXY.T(:,1),edgesXY.T(:,2),'linewidth',2),hold on
-    plot(edgesXY.B(:,1),edgesXY.B(:,2),'linewidth',2),hold on
-    plot(edgesXY.L(:,1),edgesXY.L(:,2),'linewidth',2),hold on
-    plot(edgesXY.R(:,1),edgesXY.R(:,2),'linewidth',2),hold on
-    rectangle('Position',[0,0,640,480],'linewidth',2)
+function plotEdges(edgesXY,regs,runParams,rectX,rectY)
+    if ~isempty(runParams)
+        ff = Calibration.aux.invisibleFigure; 
+        plot(edgesXY.T(:,1),edgesXY.T(:,2),'linewidth',2),hold on
+        plot(edgesXY.B(:,1),edgesXY.B(:,2),'linewidth',2),hold on
+        plot(edgesXY.L(:,1),edgesXY.L(:,2),'linewidth',2),hold on
+        plot(edgesXY.R(:,1),edgesXY.R(:,2),'linewidth',2),hold on
+        rectangle('Position',[0,0,regs.GNRL.imgHsize,regs.GNRL.imgVsize],'linewidth',2)
+        hold on
+        rectangle('Position',[rectX(3),rectY(1),rectX(4)-rectX(3),rectY(2)-rectY(1)],'linewidth',2)
+        title('Projected Pincushion in Image Plane');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'ROI','Pincushion$CroppedArea',0);
+    end
 end
 function ind = innerIndices(v,factor)
 % Return the indices of the inner factor percent of vector rows
@@ -159,7 +245,7 @@ vlen = size(v,1);
 allInd = 1:vlen;
 ind = allInd(uint16(vlen*(1-factor)/2) :uint16(vlen*(1+factor)/2));
 end
-function xy = spherical2xy(sphericalPixels,regs,tpsUndistModel)
+function [xy,tanxy] = spherical2xy(sphericalPixels,regs,tpsUndistModel)
 % angX/angY is translated to xyz using the regs
 % Then the xyz is translated to te cordinate in the image plane. If a fov
 % expander model is valid, 
@@ -178,9 +264,8 @@ function xy = spherical2xy(sphericalPixels,regs,tpsUndistModel)
         v = Calibration.aux.ang2vec(angx,angy,regs);
         v = Calibration.Undist.undistByTPSModel( v',tpsUndistModel )';% 2D Undist
         [x,y] = Calibration.aux.vec2xy(v, regs);
-        % (To add) 2D Undist - 
-        % v = Calibration.Undist.undistByTPSModel( v,[],runParams );
         xy = [x,y];
+        tanxy = [(v(1,:)./v(3,:))',(v(2,:)./v(3,:))'];
 end
 function roiregs = margins2regs(margins,regs)
 % y = (1-t)*0 +t*Hsz 

@@ -113,8 +113,16 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 params = Validation.aux.defaultMetricsParams();
                 params.camera.zMaxSubMM = z2mm;
                 params.enabledMetrics{i} = tempNConfig.roi;
-                [tns,allTnsResults] = Validation.metrics.zStd(frames, params);
+                [tns,allTnsResults,zstdDbg] = Validation.metrics.zStd(frames, params);
                 tnsRes.temporalNoise = tns;
+                tnsRes.tempNoise95 = allTnsResults.tempNoise95;
+                
+                ff = Calibration.aux.invisibleFigure;
+                imagesc(zstdDbg.noiseStd,[0,allTnsResults.tempNoise95]); colorbar;
+                title('zSTD Map'); colorbar;
+                Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('zSTD'));
+
+                
                 valResults = Validation.aux.mergeResultStruct(valResults, tnsRes);
                 saveValidationData(allTnsResults,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allTnsResults;
@@ -185,6 +193,12 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                  Calibration.aux.lddWarmUp(hw,app,calibParams,runParams,fprintff);    
             elseif strfind(enabledMetrics{i},'cbufUnderFlowOldXGA')
                 hw.stopStream;
+                hw.cmd('rst');
+                pause(10);
+                clear hw;
+                pause(1);
+                hw = HWinterface;
+                hw.cmd('DIRTYBITBYPASS');
                 hw.cmd('ENABLE_XGA_UPSCALE 0');
                 hw.startStream(0,[768,1024]);
                 hw.getFrame;

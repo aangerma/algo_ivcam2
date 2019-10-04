@@ -35,7 +35,7 @@ end
 if(~exist('x0','var') || isempty(x0))% If x0 is not given, using the regs used i nthe recording
     x0 = double([xfov, yfov, regs.DEST.txFRQpd(1), regs.FRMW.laserangleH, regs.FRMW.laserangleV,...
         regs.FRMW.polyVars, regs.FRMW.pitchFixFactor, regs.FRMW.undistAngHorz, regs.FRMW.undistAngVert,...
-        regs.FRMW.fovexNominal, regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter,regs.FRMW.rtdOverY]);
+        regs.FRMW.fovexNominal, regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter,regs.FRMW.rtdOverY,regs.FRMW.rtdOverX]);
 end
 if isfield(par,'zenith') && par.zenith.useEsTilt
     [laserAngleH, laserAngleV] = getLaserAngleFromEsTilt(regs.FRMW.saTiltFromEs, regs.FRMW.faTiltFromEs, par.zenith);
@@ -52,6 +52,7 @@ if iseval
     outregs = [];
     if verbose
         printPlaneAng(darr,regs,xbest,fprintff,0,eAll,tpsUndistModel);
+        saveRtdFixOverAngX(regs,runParams);
     end
     return
 end
@@ -83,7 +84,7 @@ if ~isempty(optimizedParamsStr)
     return;
 end
 
-optimizedParams = {'DFZ', 'coarseUndist','rtdOnly'};
+optimizedParams = {'DFZ', 'coarseUndist',calibParams.dfz.rtdGroupPreTPS};
 [xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par);
 
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
@@ -94,7 +95,7 @@ outregsPreUndist = x2regs(xbest,regs);
 %% Optimize fine undist correction & FOVex parameters
 x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outregsPreUndist.DEST.txFRQpd(1), outregsPreUndist.FRMW.laserangleH, outregsPreUndist.FRMW.laserangleV,...
     outregsPreUndist.FRMW.polyVars, outregsPreUndist.FRMW.pitchFixFactor, outregsPreUndist.FRMW.undistAngHorz, outregsPreUndist.FRMW.undistAngVert,...
-    outregsPreUndist.FRMW.fovexNominal, outregsPreUndist.FRMW.fovexRadialK, outregsPreUndist.FRMW.fovexTangentP, outregsPreUndist.FRMW.fovexCenter, outregsPreUndist.FRMW.rtdOverY]);
+    outregsPreUndist.FRMW.fovexNominal, outregsPreUndist.FRMW.fovexRadialK, outregsPreUndist.FRMW.fovexTangentP, outregsPreUndist.FRMW.fovexCenter, outregsPreUndist.FRMW.rtdOverY, outregsPreUndist.FRMW.rtdOverX]);
 % optimizedParams = {'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'};
 optimizedParams = {'undistCorrHorz', 'fovexLensDist'};
 % optimizedParams = {'undistCorrHorz'};
@@ -177,6 +178,7 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel)
     else
         rpt = d.rpt;
     end
+    
     [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
     vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs)';
     vUnit = Calibration.Undist.undistByTPSModel( vUnit,tpsUndistModel);% 2D Undist - 
@@ -190,9 +192,16 @@ function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel)
         sing = vUnit(:,2);
     end
     tanY = vUnit(:,2)./vUnit(:,3);
+    tanX = vUnit(:,1)./vUnit(:,3);
+    normedOrigAngX = (rpt(:,2)-rtlRegs.FRMW.rtdOverX(6))/2047;
     rtd_=rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
     rtd_=rtd_ + rtlRegs.FRMW.rtdOverY(1)*tanY.^2 + rtlRegs.FRMW.rtdOverY(2)*tanY.^4 + ...
          + rtlRegs.FRMW.rtdOverY(3)*tanY.^6 ;
+    rtd_=rtd_ + rtlRegs.FRMW.rtdOverX(1)*normedOrigAngX.^2 + ...
+                rtlRegs.FRMW.rtdOverX(2)*abs(normedOrigAngX).^3 + ...
+                rtlRegs.FRMW.rtdOverX(3)*normedOrigAngX.^4 + ...
+                rtlRegs.FRMW.rtdOverX(4)*abs(normedOrigAngX).^5 + ...
+                rtlRegs.FRMW.rtdOverX(5)*normedOrigAngX.^6;
     r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
     v = double(vUnit.*r);
     if nargout>1
@@ -316,6 +325,7 @@ iterRegs.FRMW.fovexRadialK = single(x(22:24));
 iterRegs.FRMW.fovexTangentP = single(x(25:26));
 iterRegs.FRMW.fovexCenter = single(x(27:28));
 iterRegs.FRMW.rtdOverY = single(x(29:31));
+iterRegs.FRMW.rtdOverX = single(x(32:37));
 if(~exist('rtlRegs','var'))
     rtlRegs=iterRegs;
     return;
@@ -344,7 +354,7 @@ function [xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par)
 % set degenerate limits for fixed parameters
 xL = single([regs.FRMW.xfov(1), regs.FRMW.yfov(1), regs.DEST.txFRQpd(1), regs.FRMW.laserangleH, regs.FRMW.laserangleV,...
     regs.FRMW.polyVars, regs.FRMW.pitchFixFactor, regs.FRMW.undistAngHorz, regs.FRMW.undistAngVert,...
-    regs.FRMW.fovexNominal, regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter, regs.FRMW.rtdOverY]);
+    regs.FRMW.fovexNominal, regs.FRMW.fovexRadialK, regs.FRMW.fovexTangentP, regs.FRMW.fovexCenter, regs.FRMW.rtdOverY, regs.FRMW.rtdOverX]);
 xH = xL;
 % set desired limits for optimized parameters
 for iParam = 1:length(optimizedParams)
@@ -367,9 +377,12 @@ for iParam = 1:length(optimizedParams)
         case 'fovexLensDist'
             xL(22:28) = [par.fovexRadialRange(1,:), par.fovexTangentRange(1,:), par.fovexCenterRange(1,:)];
             xH(22:28) = [par.fovexRadialRange(2,:), par.fovexTangentRange(2,:), par.fovexCenterRange(2,:)];
-        case 'rtdOnly'
-            xL([3,29:31]) = [par.delayRange(1),par.rtdOverTanYrange(1,:)];
-            xH([3,29:31]) = [par.delayRange(2),par.rtdOverTanYrange(2,:)];
+        case 'systemDelay'
+            xL([3,29:31,32:37]) = [par.delayRange(1),par.rtdOverTanYrange(1,:),par.rtdOverAngXrange(1,:)];
+            xH([3,29:31,32:37]) = [par.delayRange(2),par.rtdOverTanYrange(2,:),par.rtdOverAngXrange(2,:)];
+        case 'rtdVars'
+            xL([3,29:31,32:37]) = [par.delayRange(1),par.rtdOverTanYrange(1,:),par.rtdOverAngXrange(1,:)];
+            xH([3,29:31,32:37]) = [par.delayRange(2),par.rtdOverTanYrange(2,:),par.rtdOverAngXrange(2,:)];
     end
 end
 end
@@ -420,4 +433,24 @@ y = z*tand(faTilt);
 laserAngleH = -atand(x/z);
 laserAngleV = -asind(y);
 
+end
+function saveRtdFixOverAngX(regs,runParams)
+if ~isempty(runParams)
+    angXVec = linspace(-2047,2047,100);
+    angX = (angXVec-regs.FRMW.rtdOverX(6))/2047;
+    rtd2add = regs.FRMW.rtdOverX(1)*angX.^2 + ...
+                regs.FRMW.rtdOverX(2)*abs(angX).^3 + ...
+                regs.FRMW.rtdOverX(3)*angX.^4 + ...
+                regs.FRMW.rtdOverX(4)*abs(angX).^5 + ...
+                regs.FRMW.rtdOverX(5)*angX.^6;
+    
+    ff = Calibration.aux.invisibleFigure; 
+    plot(angXVec,rtd2add,'linewidth',2);
+    xlabel('angX');
+    ylabel('mm');
+    title('Rtd Fix over angX');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'DFZ','Rtd_Fix_over_angX',1);   
+    
+end
+    
 end

@@ -19,13 +19,14 @@ data.framesData = data.framesData(validFrames);
 tempVec = [data.framesData.temp];
 tempVec = [tempVec.ldd];
 
-
-tmpBinEdges = (calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRes:calibParams.fwTable.tempBinRange(2)) - 0.5;
+nBins = calibParams.fwTable.nRows;
+dLdd = (calibParams.fwTable.tempBinRange(2) - calibParams.fwTable.tempBinRange(1))/(nBins-1);
+tmpBinEdges = linspace(calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2),nBins) - dLdd*0.5;
 refBinIndex = 1+floor((data.dfzRefTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
 
-framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,48,tmpBinIndices);
+framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,nBins,tmpBinIndices);
 
 data.processed.framesPerTemperature = framesPerTemperature;
 
@@ -40,7 +41,7 @@ validFramesData = framesPerTemperature(validTemps,:,:,1);
 isDataWithXYZ = (size(validFramesData,3)>=8); % hack for dealing with missing XYZ data (pointsWithZ(6:8)) in ATC
 stdVals = nanmean(nanstd(validFramesData));
 
-metrics = Calibration.thermal.calcThermalScores(data,calibParams.fwTable.tempBinRange,calibParams.fwTable.tempBinRes,runParams.calibRes);
+metrics = Calibration.thermal.calcThermalScores(data,calibParams,runParams.calibRes);
 
 metrics.stdRtd = stdVals(1);
 metrics.stdXim = stdVals(4);

@@ -71,6 +71,13 @@
       <EXTLconLocDelayFastC>[-inf,inf]</EXTLconLocDelayFastC>
       <EXTLconLocDelayFastF>[-inf,inf]</EXTLconLocDelayFastF>
       <DESTtxFRQpd>[-inf,inf]</DESTtxFRQpd>
+	<dfzScaleErrH>[0,inf]</dfzScaleErrH>
+        <dfzScaleErrV>[0,inf]</dfzScaleErrV>
+        <dfz3DErrH>[0,inf]</dfz3DErrH>
+        <dfz3DErrV>[0,inf]</dfz3DErrV>
+        <dfz2DErrH>[0,inf]</dfz2DErrH>
+        <dfz2DErrV>[0,inf]</dfz2DErrV>
+        <dfzPlaneFit>[0,inf]</dfzPlaneFit>
    </errRange>
    <validationConfig>
       <!-- in this section the test plan is listed.available metrics:
@@ -78,6 +85,7 @@
       For running the same metric more then once add <metric_name>_n, for example:
       <roi_2></roi_2>
       -->
+      <validationRes>[768,1024]</validationRes>
       <cbGridSz>[]</cbGridSz>
       <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
       <wait>
@@ -111,7 +119,7 @@
       <roi></roi>
       <los>
           <numOfFrames>100</numOfFrames>
-          <sphericalMode>1</sphericalMode>
+          <sphericalMode>0</sphericalMode>
       </los>
       <dsm></dsm>
       <readRegState>
@@ -184,6 +192,7 @@
       <meanAbsHorzScaleErrorWht>[0 inf]</meanAbsHorzScaleErrorWht>
       <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
       <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
+	<cbufUnderflowOldXGA>[-inf inf]</cbufUnderflowOldXGA>
   </validationErrRange>   
    <thermal>
        <t0>32.8</t0>
@@ -216,7 +225,6 @@
         <shortRangeCompareROI>0.4</shortRangeCompareROI>
         <sphericalScaleFactors>[1.05,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
         <cropRatios>[0.2 0.0005;0.0005 0.2]</cropRatios>
-	<calibrateOnCropped>1</calibrateOnCropped>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
         <captures>
              <!--<capture>
@@ -289,6 +297,13 @@
         <fovexRadialRange>[0,0,0;0,0,0]</fovexRadialRange>
         <fovexTangentRange>[0,0;0,0]</fovexTangentRange>
         <fovexCenterRange>[0,0;0,0]</fovexCenterRange>
+        <rtdOverTanYrange>[-10,-10,-10;10,10,10]</rtdOverTanYrange>
+        <zenith>
+            <useEsTilt>1</useEsTilt>
+            <applyCorrection>1</applyCorrection>
+            <correctionCoefsHorz>[0.54,0.22]</correctionCoefsHorz>
+            <correctionCoefsVert>[0.68,-0.57]</correctionCoefsVert>
+        </zenith>
     </dfz>
     <roi>
         <useExtraMargins>1</useExtraMargins>  

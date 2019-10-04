@@ -1,4 +1,4 @@
-function [valResults ,allResults] = HVM_Val_Calc(InputPath, sz, params, calibParams, valResults)
+function [valResults ,allResults] = HVM_Val_Calc(InputPath,sz,params,calibParams,valResults)
 % function 
 % description: 
 %
@@ -58,7 +58,7 @@ function [valResults ,allResults] = HVM_Val_Calc(InputPath, sz, params, calibPar
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,'mat_files' , [func_name '_in.mat']);
-        save(fn, 'InputPath', 'sz', 'params', 'calibParams', 'valResults');
+        save(fn,'InputPath','sz','params','calibParams','valResults');
     end
     runParams.outputFolder = output_dir;
     [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runParams,calibParams,fprintff,valResults);
@@ -66,7 +66,7 @@ function [valResults ,allResults] = HVM_Val_Calc(InputPath, sz, params, calibPar
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,'mat_files' , [func_name '_out.mat']);
-        save(fn, 'valResults', 'allResults');
+        save(fn,'valResults', 'allResults');
     end
     if(exist('fid','var'))
         fclose(fid);
@@ -90,7 +90,7 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
 %% load images
     im.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I');
     im.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
-    save(fullfile(runParams.outputFolder,'mat_files','postResetValCbFrame.mat'),'im');
+
     for i =1:1:size(im.i,3)
         frames(i).i = im.i(:,:,i);
         frames(i).z = im.z(:,:,i);
@@ -111,6 +111,7 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
     valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
     saveValidationData(dbg,frames,Metrics,outFolder,debugMode);
     allResults.HVM.(Metrics) = allDfzRes;
+    save(fullfile(runParams.outputFolder,'mat_files','valCbFrame.mat'),'AvgIm','params');
 %% sharpness
     Metrics = 'sharpness';
     [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharp(frames, []);

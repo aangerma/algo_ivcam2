@@ -439,8 +439,8 @@ function statrtButton_callback(varargin)
         [calibPassed] = Calibration.runCalibStream(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
-            waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
-            pause(3);
+%             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
+%             pause(3);
     %        cal_output_dir = fileparts(fopen(app.m_logfid));
             [calibParams , ~] = HVM_Cal_init(calibfn,fprintffS,runparams.outputFolder);
             [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s,app);

@@ -1,4 +1,4 @@
-function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
+function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, results, fw,  fprintff, t)
     fprintff('[-] FOV, System Delay and Zenith calibration...\n');
     calibPassed = 1;
     if(runParams.DFZ) 
@@ -187,6 +187,7 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         DFZRegs.FRMWfovexTangentP           = regs.FRMW.fovexTangentP;
         DFZRegs.FRMWfovexCenter             = regs.FRMW.fovexCenter;
         DFZRegs.FRMWrtdOverY                = regs.FRMW.rtdOverY;
+        DFZRegs.FRMWrtdOverX                = regs.FRMW.rtdOverX;
         DFZRegs.FRMWsaTiltFromEs            = hex2dec(saTiltText([end-1:end, end-4:end-3]));
         DFZRegs.FRMWfaTiltFromEs            = hex2dec(faTiltText([end-1:end, end-4:end-3]));
 end

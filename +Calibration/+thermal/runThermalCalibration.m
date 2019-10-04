@@ -73,10 +73,14 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
         version = typecast(eepromRegs.FRMW.calibVersion,'single');
         whole = floor(version);
         frac = mod(version*100,100);
-
         calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
+        
+        version = calibParams.fwTable.tableVersion;
+        whole = floor(version);
+        frac = mod(version*100,100);
+        calibpostfixThermal = sprintf('_Ver_%02d_%02d',whole,frac);
 
-        calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
+        calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfixThermal,'.bin'];
         tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
         
         try

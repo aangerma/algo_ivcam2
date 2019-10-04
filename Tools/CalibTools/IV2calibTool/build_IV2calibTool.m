@@ -53,6 +53,7 @@ fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen',sprintf('
 % Generate tables for firmware with Algo Gen
 fw.generateTablesForFw(fullfile(outputFolder,'configFiles'));
 fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
+fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02.0f_%02.0f.bin',floor(calibToolVersion),mod(calibToolVersion*100,100))),[]);
 
 %% Generate default algo thermal table
 

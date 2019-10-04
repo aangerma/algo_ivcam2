@@ -15,6 +15,21 @@ if isXGA
     hw.cmd('ENABLE_XGA_UPSCALE 1')
 end
 Calibration.aux.startHwStream(hw,runParams);
+
+framesWorldStart = hw.getFrame(10,0,1);
+badRoiAtStart = badRoiCalibration(framesWorldStart,fprintff);
+if badRoiAtStart
+    fprintff('Unit suffers from bad ROI calibration at warmup start...\n');
+end
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    subplot(121);
+    imagesc(framesWorldStart(1).i);
+    subplot(122);
+    imagesc(framesWorldStart(1).z/4,[0,1000]);colorbar;
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('startUpFrame'),1);
+end
+
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
     hw.cmd(sprintf('mwd a0020c00 a0020c04 %x // DIGGsphericalScale',typecast(regs.DIGG.sphericalScale,'uint32')))
@@ -28,8 +43,13 @@ if calibParams.gnrl.sphericalMode
     hw.shadowUpdate;
 end
 
+pause(1.5);
+% First frame here (mean frame)
+framesCollected = hw.getFrame(10,true,1); %First frame
+ixFrame = 1;
 
 prevTmp = hw.getLddTemperature();
+lastTemp4FrameCollect = prevTmp;
 prevTime = 0;
 tempsForPlot(plotDataI) = prevTmp;
 timesForPlot(plotDataI) = prevTime/60;
@@ -57,6 +77,7 @@ algo2path_temp = fullfile(ivcam2tempdir,'algo2');
 if(exist(algo2path_temp,'dir'))
     rmdir(algo2path_temp,'s');
 end
+
 while ~finishedHeating
     i = i + 1;
     path = fullfile(algo2path_temp,sprintf('thermal%d',i));
@@ -79,8 +100,67 @@ while ~finishedHeating
         imshow(rot90(hw.getFrame().i,2));
         title('Scene Image');
     end
+    if (framesData(i).temp.ldd - lastTemp4FrameCollect(ixFrame)) > calibParams.warmUp.deltaTemp4Fovframe
+        ixFrame = ixFrame + 1;
+        lastTemp4FrameCollect(ixFrame) = framesData(i).temp.ldd;
+        framesCollected(ixFrame) = hw.getFrame(10,true,1);
+    end
 end
 
+hw.setReg('DIGGsphericalEn',0);
+hw.setReg('DESTdepthAsRange',0);
+hw.shadowUpdate;
+pause(1.5);
+framesWorld = hw.getFrame(10,true,1);
+
+for i = 1:length(framesCollected)
+    framesCollected(i).i(:,1) = 0;
+    framesCollected(i).i(:,end) = 0;
+    framesCollected(i).i(1,:) = 0;
+    framesCollected(i).i(end,:) = 0;
+end
+params.camera = struct('zMaxSubMM',hw.z2mm,'K',hw.getIntrinsics);
+params.worldGridFrame = framesWorld;
+params.target.name = 'Iv2A1';
+params.verbose = 0;
+params.nonRectangleFlag = 1;
+dataDir = fullfile(runParams.outputFolder,'mat_files');
+save([dataDir '\framesNparams4FovCalc.mat'],'framesCollected','params');
+[score, res, dbg] = Validation.metrics.losLaserFOVAnglesDrift(framesCollected, params);
+save([dataDir '\fovCalcOut.mat'], 'score', 'res', 'dbg');
+minFovX = min(dbg.fovX);
+maxFovX = max(dbg.fovX);
+minFovY = min(dbg.fovY);
+maxFovY = max(dbg.fovY);
+dFovHor = maxFovX-minFovX;
+dFovVer = maxFovY-minFovY;
+
+percentFovHor = dFovHor/minFovX*100;
+percentFovVer = dFovVer/minFovY*100;
+
+if percentFovHor < calibParams.errRange.fovPercTmpChangeRangeH(1) || percentFovHor > calibParams.errRange.fovPercTmpChangeRangeH(2)
+    calibPassed = false;
+    fprintff('[-] Failed - Percent FOV change from start to end horizontal = %3.1f%%. Fov range=[%2g,%2g]. Th=[%2g,%2g]...\n',percentFovHor,minFovX,maxFovX,calibParams.errRange.fovPercTmpChangeRangeH);
+else
+    fprintff('[-] Passed - Percent FOV change from start to end horizontal = %3.1f%%  Fov range=[%2g,%2g]. Th=[%2g,%2g]...\n',percentFovHor,minFovX,maxFovX,calibParams.errRange.fovPercTmpChangeRangeH);
+end
+if percentFovVer < calibParams.errRange.fovPercTmpChangeRangeV(1) || percentFovVer > calibParams.errRange.fovPercTmpChangeRangeV(2)
+    calibPassed = false;
+    fprintff('[-] Failed - Percent FOV change from start to end vertical = %3.1f%%. Fov range=[%2g,%2g]. Th=[%2g,%2g]...\n',percentFovVer,minFovY,maxFovY,calibParams.errRange.fovPercTmpChangeRangeV);
+else
+    fprintff('[-] Passed - Percent FOV change from start to end vertical = %3.1f%%. Fov range=[%2g,%2g]. Th=[%2g,%2g]...\n',percentFovVer,minFovY,maxFovY,calibParams.errRange.fovPercTmpChangeRangeV);
+end
+
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    subplot(121);
+    plot(lastTemp4FrameCollect,dbg.fovX); grid minor;
+    xlabel('LDD temperature'); ylabel('FOV x');
+    subplot(122);
+    plot(lastTemp4FrameCollect,dbg.fovY); grid minor;
+    xlabel('LDD temperature'); ylabel('FOV y');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating','FovChangeOverTemp',1);
+end
 
 
 
@@ -89,6 +169,24 @@ if i >=4 && sceneFig.isvalid
 end
 if tempFig.isvalid
     close(tempFig);
+end
+
+badRoiAtEnd = badRoiCalibration(framesWorld,fprintff);
+if badRoiAtEnd
+    fprintff('Unit suffers from bad ROI calibration at warmup end...\n');
+end
+if badRoiAtEnd || badRoiAtStart
+    calibPassed = 0;
+else
+    fprintff('No visible roi issues at start and end of warmup...\n');
+end
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    subplot(121);
+    imagesc(framesWorld(1).i);
+    subplot(122);
+    imagesc(framesWorld(1).z/4,[0,1000]);colorbar;
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('warmupEndFrame'),1);
 end
 
 hw.stopStream;
@@ -159,4 +257,8 @@ function frameData = prepareFrameData(hw,startTime,calibParams,path)
     frameData.time = toc(startTime);
 %    frameData.ptsWithZ = cornersData(frame,regs,calibParams);
 end
+function res = badRoiCalibration(frames,fprintff)
+fRates = arrayfun(@(s) mean(s.i(:)>0)*100,frames);
+irFillRate = mean(fRates);
+res = irFillRate < 100;
 
