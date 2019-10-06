@@ -16,7 +16,7 @@ fprintff('Invalid frames: %.0f/%.0f\n',sum(invalidFrames),numel(invalidFrames));
 framesData = framesData(~invalidFrames);
 Invalid_Frames = sum(invalidFrames);
 
-nBins = 48;
+nBins = calibParams.fwTable.nRows;
 N = nBins+1;
 tempData = [framesData.temp];
 vBias = reshape([framesData.vBias],3,[]);
@@ -47,13 +47,12 @@ end
  
 results.rtd.refTemp = refTmp;
 results.rtd.slope = a;
-
-fwBinCenters = calibParams.fwTable.tempBinRange(1):calibParams.fwTable.tempBinRes:calibParams.fwTable.tempBinRange(2);
+fwBinCenters = linspace(calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2),nBins);
 results.rtd.tmptrOffsetValues = -((fwBinCenters-refTmp)*results.rtd.slope)';
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
-    histogram(ldd,25.5:80.5)
+    histogram(ldd,0:80.5)
     title('Frames Per Ldd Temperature Histogram'); grid on;xlabel('Ldd Temperature');ylabel('count');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Histogram_Frames_Per_Temp'));
 end

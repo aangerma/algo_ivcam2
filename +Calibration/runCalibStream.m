@@ -28,7 +28,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     RegStateSetOutDir(runParams.outputFolder);
 
     %% Calibration file names
-    [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams);
+    [runParams,fnCalib] = defineFileNamesAndCreateResultsDir(runParams,calibParams);
     if runParams.afterThermalCalib
         runParams = updateRunParamsForCalibrationAfterThermalCalib(runParams);
     end
@@ -115,10 +115,10 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     
     
    %% Validate spherical fill rate
-   [results,calibPassed] = validateCoverage(hw,1, runParams, calibParams,results, fprintff);
-   if ~calibPassed
-       return 
-   end
+%    [results,calibPassed] = validateCoverage(hw,1, runParams, calibParams,results, fprintff);
+%    if ~calibPassed
+%        return 
+%    end
    Calibration.aux.collectTempData(hw,runParams,fprintff,'Before los validation:');
    [results,calibPassed] = validateLos(hw, runParams, calibParams,results, fprintff);
    if ~calibPassed
@@ -134,19 +134,19 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
     
 %    [results,calibPassed] = calibrateDFZ(hw, runParams, calibParams, results,fw,fnCalib, fprintff, t);
-    [results,calibPassed,dfzRegs] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
+    [results,calibPassed,dfzRegs] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fprintff, t);
     if ~calibPassed
        return 
     end
 
     %% ::ROI::
-    [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t);
+    [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw, fprintff, t);
 
     %% Undist and table burn
     eepromRegs = atlregs;
     eepromBin = [];
 %    results = END_calib_Calc(verValue, verValuefull ,delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist);
-    results = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
+    [results,regs,luts] = END_calib_Calc(delayRegs, dsmregs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
 
    
     
@@ -166,8 +166,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     try
         %% Validate DFZ before reset
         [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
-        
-        
     catch e
         fprintff('[!] ERROR:%s\n',strtrim(e.message));
         fprintff('CoverageValidation or preResetDFZValidation failed. Skipping...\n');
@@ -182,8 +180,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     hw.stopStream;
     burn2Device(hw,1,runParams,calibParams,@fprintf,t);
 
-
- 
+    %% Create table for rtd over angX fix
+    Calibration.DFZ.calculateRtdOverAngXFix(hw,runParams,calibParams,regs,luts, fprintff);
     %% Collecting hardware state
     if runParams.saveRegState
         fprintff('Collecting registers state...');
@@ -215,14 +213,45 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
             end
         end
     end
+    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(calibToolVersion*100,100)));
+
+    if runParams.DFZ && runParams.maxRangePreset && ~calibParams.sysDelayOverLPCorrection.bypass
+       % Update presets to compensate for change in system delay after
+       % laser calibration
+        resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
+        for i = 1:2
+            res = resolutions{i};
+            Calstate = Calibration.presets.findLongRangeStateCal(calibParams,res);
+            if(~isempty(res))
+                hw.stopStream;
+                hw.cmd('rst');
+                pause(10);
+                clear hw;
+                pause(1);
+                hw = HWinterface;
+                hw.cmd('DIRTYBITBYPASS');
+                fprintff('Test %s for long range preset, starting stream.\n',Calstate);
+                hw.startStream(0,res);
+                if i == 1
+                   Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Rtd Over Laser Power Correction - Initial location Of RGB',1); 
+                else
+                    pause(5);
+                end
+                results = findRtdDiffFromLP(hw,results,runParams,calibParams,Calstate,fprintff);
+                
+            end
+        end
+        updateLongRangeRtdOffset(results,runParams);
+        presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
+        fw = Pipe.loadFirmware(presetPath);
+        fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+    end
     
 %     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
-    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(calibParams.presets.tableVersion),mod(calibParams.presets.tableVersion*100,100)));
     
     fprintff('[-] Burning preset table...');
     if ~runParams.afterThermalCalib
         try
-%             fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
             hw = HWinterface;
             hw.cmd(['WrCalibInfo ',calibTempTableFn]);
             fprintff('Done\n');
@@ -232,7 +261,42 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     else
         fprintff(' Skipping... We don''t want to update presets calibration after Algo2\n');
     end
-
+    
+    if ~calibParams.presets.compare.bypass
+        % Calc diff between presets
+        hw.stopStream;
+        hw.cmd('rst');
+        pause(10);
+        clear hw;
+        pause(1);
+        hw = HWinterface;
+        hw.cmd('DIRTYBITBYPASS');
+        fprintff('Comparing presets, starting stream.\n',Calstate);
+        resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
+        for i = 1:2
+            res = resolutions{i};
+            Calstate = Calibration.presets.findLongRangeStateCal(calibParams,res);
+            results.(['rtd2add2short_',Calstate]) = Calibration.presets.compareRtdOfShortAndLong(hw,calibParams,[768,1024],runParams);
+        end
+        updateShortRangeRtdOffset(results,runParams);
+        presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
+        fw = Pipe.loadFirmware(presetPath);
+        fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+        
+        fprintff('[-] Reburning preset table...');
+        if ~runParams.afterThermalCalib
+            try
+                hw = HWinterface;
+                hw.cmd(['WrCalibInfo ',calibTempTableFn]);
+                fprintff('Done\n');
+            catch
+                fprintff('failed to burn preset table\n');
+            end
+        else
+            fprintff(' Skipping... We don''t want to update presets calibration after Algo2\n');
+        end
+    end
+    
 %%
     Calibration.aux.logResults(results,runParams);
     Calibration.aux.writeResults2Spark(results,spark,calibParams.errRange,write2spark,'Cal');
@@ -256,10 +320,58 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     %% rgb calibration
     if calibPassed
         calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t);
+        if runParams.post_calib_validation
+            hw.stopStream;
+            hw.cmd('rst');
+            pause(10);
+        end
     end
     clear hw;
 end
- 
+function updateShortRangeRtdOffset(results,runParams)
+    shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
+    shortRangePreset=readtable(shortRangePresetFn);
+    AlgoThermalLoopOffsetInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset'));
+    shortRangePreset.value(AlgoThermalLoopOffsetInd) = shortRangePreset.value(AlgoThermalLoopOffsetInd) + mean([results.rtd2add2short_state1,results.rtd2add2short_state2]);
+    writetable(shortRangePreset,shortRangePresetFn);
+    
+end
+function updateLongRangeRtdOffset(results,runParams)
+    longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
+    longRangePreset=readtable(longRangePresetFn);
+    AlgoThermalLoopOffsetInd=find(strcmp(longRangePreset.name,'AlgoThermalLoopOffset'));
+    longRangePreset.value(AlgoThermalLoopOffsetInd) = mean([results.rtdDiffViaLaserPower_state1,results.rtdDiffViaLaserPower_state2]);
+    writetable(longRangePreset,longRangePresetFn);
+end
+function results = findRtdDiffFromLP(hw,results,runParams,calibParams,Calstate,fprintff)
+r=Calibration.RegState(hw);
+r.add('JFILinvBypass',true);
+r.add('DESTdepthAsRange',true);
+r.add('DESTbaseline$',single(0));
+r.add('DESTbaseline2$',single(0));
+r.set();
+
+s=hw.cmd('irb e2 09 01');
+max_hex = sscanf(s,'Address: %*s => %s');
+maxMod_dec = hex2dec(max_hex);
+scale = results.(['maxRangeScaleModRef_',Calstate]);
+chosenModRef = dec2hex(round(scale*maxMod_dec));    
+cmdstr = sprintf('iwb e2 0a 01 %s',chosenModRef);
+cmdstrMax = sprintf('iwb e2 0a 01 %s',max_hex);
+hw.cmd(cmdstr);
+pause(5);
+frameLow = hw.getFrame(30);
+hw.cmd(cmdstrMax);
+pause(5);
+frameMax = hw.getFrame(30);
+
+params = Validation.aux.defaultMetricsParams();
+params.roi = calibParams.dfz.shortRangeCompareROI ; params.isRoiRect=1; 
+mask = Validation.aux.getRoiMask(size(frameLow.i), params);
+results.(['rtdDiffViaLaserPower_',Calstate]) = mean(frameMax.z(mask)/4*2) - mean(frameLow.z(mask)/4*2);
+    
+r.reset();
+end
 function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t)
     if runParams.rgb && ~runParams.replayMode
         fprintff('[-] Reseting before RGB calibration... '); 
@@ -292,6 +404,15 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         end
         rgbResults.rgbIntReprojRms = results.rgbIntReprojRms;
         rgbResults.rgbExtReprojRms = results.rgbExtReprojRms;
+        rgbResults.lineFitRmsErrHor2dRGB = results.lineFitRmsErrHor2dRGB;
+        rgbResults.lineFitRmsErrVer2dRGB = results.lineFitRmsErrVer2dRGB;
+        rgbResults.lineFitMaxRmsErrHor2dRGB = results.lineFitMaxRmsErrHor2dRGB;
+        rgbResults.lineFitMaxRmsErrVer2dRGB = results.lineFitMaxRmsErrVer2dRGB;
+        rgbResults.lineFitMaxErrHor2dRGB = results.lineFitMaxErrHor2dRGB;
+        rgbResults.lineFitMaxErrVer2dRGB = results.lineFitMaxErrVer2dRGB;
+        rgbResults.uvMapMeanRmse = results.uvMapMeanRmse;
+        rgbResults.uvMapMaxErr = results.uvMapMaxErr;
+        rgbResults.uvMapMaxErr95 = results.uvMapMaxErr95;
         %% merge all scores outputs
         rgbCalibPassed = Calibration.aux.mergeScores(rgbResults,calibParams.errRange,fprintff);
         calibPassed = calibPassed && rgbCalibPassed;
@@ -505,8 +626,9 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
         fprintff('[-] Burning default config calib files...');
 %         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
 %         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
-        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
-        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+        vers = calibToolVersion;
+        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
+        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
         if runParams.afterThermalCalib
             atlregs.FRMW.atlMinVbias1 = eRegs.FRMW.atlMinVbias1;
             atlregs.FRMW.atlMaxVbias1 = eRegs.FRMW.atlMaxVbias1;
@@ -518,8 +640,10 @@ function atlregs = initConfiguration(hw,fw,runParams,fprintff,t)
         fw.setRegs(vregs,'');
         fw.setRegs(atlregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib);
+        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02d_%02d.bin',floor(vers),mod(vers*100,100))),[]);
         if ~runParams.afterThermalCalib
-            fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
+            
+            fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(vers,1)*100)));
         end
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');

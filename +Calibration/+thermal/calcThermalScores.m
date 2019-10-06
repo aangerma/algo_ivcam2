@@ -2,7 +2,7 @@
 % load("\\ger\ec\proj\ha\RSG\SA_3DCam\TMund\F9010093\1.25Gui Runs\F9010093\TC11_thermostream_run3\validationData.mat");
 % [rtdDriftQuality,xDriftQuality,yDriftQuality] = calcThermalScores(data.framesData);% Mean of x offset, Mean of y offset, Mean of rtd offset
 
-function [errors] = calcThermalScores(data,tablerange,tableRes,resolution)
+function [errors] = calcThermalScores(data,calibParams,resolution)
 framesData = data.framesData;
 invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ) | all(all(isnan(framesData(j).ptsWithZ))),1:numel(framesData));
 framesData = framesData(~invalidFrames);
@@ -10,13 +10,15 @@ Hres=resolution(2); Vres=resolution(1);
 tempVec = [framesData.temp];
 tempVec = [tempVec.ldd];
 
-refTmp = data.dfzRefTmp;
-tmpBinEdges = (tablerange(1):tableRes:tablerange(2)) - 0.5;
-
-refBinIndex = 1+floor((refTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
+nBins = calibParams.fwTable.nRows;
+dLdd = (calibParams.fwTable.tempBinRange(2) - calibParams.fwTable.tempBinRange(1))/(nBins-1);
+tmpBinEdges = linspace(calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2),nBins) - dLdd*0.5;
+refBinIndex = 1+floor((data.dfzRefTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
-framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,48,tmpBinIndices);
+
+
+framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,nBins,tmpBinIndices);
     
 [Xscale,Xoffset] = linearTransformToRef(framesPerTemperature(:,:,4)-single(Hres-1)/2,refBinIndex);
 [Yscale,Yoffset] = linearTransformToRef(framesPerTemperature(:,:,5)-single(Vres-1)/2,refBinIndex);

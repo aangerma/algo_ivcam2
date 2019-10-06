@@ -1,7 +1,6 @@
-function [ results ] = calculateFOVFromZ( imU,imD,regs,calibParams,runParams )
-notNoiseImU = calcLaserBounds(imU,calibParams);
-notNoiseImD = calcLaserBounds(imD,calibParams);
-imFull = (imU.i(:,:,1) + imD.i(:,:,1)) > 0;
+function [ results ] = calculateFOVFromZ( im,regs,calibParams,runParams )
+notNoiseIm = calcLaserBounds(im,calibParams);
+imFull = im.i(:,:,1) > 0;
 if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
     load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
 else
@@ -10,10 +9,8 @@ end
 
 results.mirror.minMaxAngX = minMaxAngle(imFull,2,regs,tpsUndistModel);
 results.mirror.minMaxAngY = minMaxAngle(imFull,1,regs,tpsUndistModel);
-results.laser.minMaxAngXup = minMaxAngle(notNoiseImU,2,regs,tpsUndistModel);
-results.laser.minMaxAngYup = minMaxAngle(notNoiseImU,1,regs,tpsUndistModel);
-results.laser.minMaxAngXdown = minMaxAngle(notNoiseImD,2,regs,tpsUndistModel);
-results.laser.minMaxAngYdown = minMaxAngle(notNoiseImD,1,regs,tpsUndistModel);
+results.laser.minMaxAngX = minMaxAngle(notNoiseIm,2,regs,tpsUndistModel);
+results.laser.minMaxAngY = minMaxAngle(notNoiseIm,1,regs,tpsUndistModel);
     
 
 end
@@ -59,7 +56,7 @@ z(z==0) = nan;%randi(9000,size(zCopy(z==0)));
 stdZ = nanstd(z,[],3);
 stdZ(isnan(stdZ)) = inf;
 notNoiseIm = (stdZ<calibParams.roi.zSTDTh) & (sum(~isnan(z),3) == size(z,3));
-se = strel('disk',calibParams.roi.diskSz+30);
+se = strel('disk',calibParams.roi.diskSz);
 notNoiseIm = imclose(notNoiseIm,se);
 
 

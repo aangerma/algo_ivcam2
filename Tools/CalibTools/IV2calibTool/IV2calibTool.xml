@@ -21,7 +21,7 @@
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
    <cb_FOVex_installed>1</cb_FOVex_installed>
-   <cb_afterAlgo2>0</cb_afterAlgo2>
+   <cb_afterThermalCalib>0</cb_afterThermalCalib>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
    <configurationFolder>releaseConfigCalibVXGA</configurationFolder>
    <presetsDefFolder>defaultValues</presetsDefFolder>

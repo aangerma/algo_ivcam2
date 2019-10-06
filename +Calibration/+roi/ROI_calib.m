@@ -1,4 +1,4 @@
-function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, results,fw,fnCalib, fprintff, t)
+function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, results,fw, fprintff, t)
     fprintff('[-] Calibrating ROI... \n');
     if (runParams.ROI)
         [r,regs] = ROI_calib_Init(hw,fw);
@@ -6,23 +6,10 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         fprintff('[-] Collecting up/down frames... ');
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Take Image From ~20cm - Board should cover the entire fov',1);
         %% capture up down frames 
-%         gainCalibValue = '000ffff0';
-        NumberOfFrames = 30;
-%         [val1, val2] = Calibration.aux.GetGainValue(hw);        % save original gain value
-%         Calibration.aux.SetGainValue(hw,gainCalibValue, val2);  % Scan Direction up
         InputPath = fullfile(ivcam2tempdir,'ROI'); 
-        path_up = fullfile(InputPath,'ZIR_up');
-        Calibration.aux.SaveFramesWrapper(hw , 'ZI' , NumberOfFrames, path_up);             % get frame without post processing (averege) (SDK like)
-
-%         Calibration.aux.SetGainValue(hw,val1, gainCalibValue);  % Scan Direction down
-        path_down = fullfile(InputPath,'ZIR_down');
-        Calibration.aux.SaveFramesWrapper(hw, 'ZI' , NumberOfFrames, path_down);             % get frame without post processing (averege) (SDK like)
-%         Calibration.aux.SetGainValue(hw,val1, val2);            % resore gain inital values
-        pause(0.1);
+        path = fullfile(InputPath,'ZIR');
+        Calibration.aux.SaveFramesWrapper(hw , 'ZI' , calibParams.roi.nFrames, path);             
         fprintff('Done.\n');
-        % Remove modulation as well to get a noise image
-        %% capture noise frames
-%         collectNoiseIm(hw,InputPath);
         %% prepare register set for ROI
         [ROIregs] = prepare_ROI_reg(hw,regs,dfzRegs);
         %% ROI algo    
@@ -32,14 +19,10 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         %% for matlab tool 
         % Ambient value - Mean of the center 21x21 (arbitrary) patch in the noise image.
         fprintff('[v] Done(%ds)\n',round(toc(t)));
-        results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
         fprintff('Mirror opening angles slow and fast:      [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngX);
         fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.mirror.minMaxAngY);
-        fprintff('Laser opening angles slow (up):           [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXup);
-        fprintff('Laser opening angles slow (down):         [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngXdown);
-        fprintff('Laser opening angles fast (up):           [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYup);
-        fprintff('Laser opening angles fast (down):         [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngYdown);
-        fprintff('Laser up/down fov diff:  %2.3g degrees.\n',results.upDownFovDiff);
+        fprintff('Laser opening angles slow and fast:       [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngX);
+        fprintff('                                          [%2.3g,%2.3g] degrees.\n',fovData.laser.minMaxAngY);
     else
         roiRegs = struct;
         fprintff('[?] skipped\n');

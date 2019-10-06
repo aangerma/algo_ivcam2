@@ -1,11 +1,9 @@
-function [roiRegs, results, fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs, results)
+function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs,results)
 % description: initiale set of the DSM scale and offset 
 %regs_reff
 % inputs:
 %   InputPath -  path for input images  dir stucture InputPath\
-%               \IR_down
-%               \IR_up
-%               \IR_Noise
+%               \ZIR
 %        note 
 %           I image naming I_*_000n.bin
 %   calibParams - calibparams strcture.
@@ -61,31 +59,27 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(InputPath, calibParams, RO
     runParams.outputFolder = output_dir;
     % save Input
     regs = ConvertROIReg(ROIregs);
+    width = regs.GNRL.imgHsize;
+    hight = regs.GNRL.imgVsize;
+    im = GetROIImages(InputPath,width,hight);
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'InputPath', 'calibParams', 'ROIregs', 'results');
+        save(fn,'InputPath', 'calibParams' , 'ROIregs','regs','results');
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
+        save(fn,'im', 'calibParams' ,'regs','runParams','results');
     end
-    [roiRegs,results,fovData] = ROI_Calib_Calc_int(InputPath, calibParams, regs,runParams,results);
+    [roiRegs,results,fovData] = ROI_Calib_Calc_int(im, calibParams, regs,runParams,results);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn, 'roiRegs', 'results', 'fovData');
+        save(fn,'roiRegs', 'results','fovData');
     end
     if(exist('fid','var'))
         fclose(fid);
     end
 end
 
-function [roiRegs,results,fovData] = ROI_Calib_Calc_int(InputPath, calibParams, ROI_regs,runParams,results)
-    width = ROI_regs.GNRL.imgHsize;
-    hight = ROI_regs.GNRL.imgVsize;
-    [imUbias,imDbias] = GetROIImages(InputPath,width,hight);
-    fn = fullfile(runParams.outputFolder, 'mat_files' , 'ROI_im.mat');
-        save(fn,'imUbias','imDbias','ROI_regs','calibParams','runParams');
-    [roiRegs] = Calibration.roi.calibROIFromZ(imUbias,imDbias,ROI_regs,calibParams,runParams);
-    fovData = Calibration.validation.calculateFOVFromZ(imUbias,imDbias,ROI_regs,calibParams,runParams);
-    results.upDownFovDiff = sum(abs(fovData.laser.minMaxAngYup-fovData.laser.minMaxAngYdown));
-end
+
 
 function  [ROIregs] = ConvertROIReg(regs)
     mode = regs.FRMWmirrorMovmentMode;
@@ -121,17 +115,9 @@ function  [ROIregs] = ConvertROIReg(regs)
 
 end
 
-function [imUbias,imDbias] = GetROIImages(InputPath,width,hight)
-    path_up     = fullfile(InputPath,'ZIR_up');
-    path_down   = fullfile(InputPath,'ZIR_down');
-    imUbias.i = Calibration.aux.GetFramesFromDir(path_up,width, hight,'I');
-    imUbias.z = Calibration.aux.GetFramesFromDir(path_up,width, hight,'Z');
-    imDbias.i = Calibration.aux.GetFramesFromDir(path_down,width, hight,'I');
-    imDbias.z = Calibration.aux.GetFramesFromDir(path_down,width, hight,'Z');
-        
-    global g_output_dir g_save_input_flag; 
-    if g_save_input_flag % save 
-        fn = fullfile(g_output_dir, 'mat_files' , 'ROI_im.mat');
-        save(fn,'imUbias', 'imDbias');
-    end
+function im = GetROIImages(InputPath,width,hight)
+    path     = fullfile(InputPath,'ZIR');
+
+    im.z = Calibration.aux.GetFramesFromDir(path,width, hight,'Z');
+    im.i = Calibration.aux.GetFramesFromDir(path,width, hight,'I');
 end

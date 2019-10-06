@@ -7,7 +7,7 @@ dsmTable = uint16(dsmTable*2^8);
 rtdTable = typecast(int16(rtdTable*2^8),'uint16');
 tableShifted = [dsmTable,rtdTable]; % FW expected format
 
-version = typecast(eepromRegs.FRMW.calibVersion,'single');
+version = calibParams.fwTable.tableVersion;
 whole = floor(version);
 frac = mod(version*100,100);
 
