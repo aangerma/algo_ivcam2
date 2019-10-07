@@ -1,4 +1,4 @@
-function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, calibParams, fprintff, regs)
+function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, calibParams, fprintff, regs)
     calibPassed = 0;
     captures = {calibParams.dfz.captures.capture(:).type};
     shortRangeImages = strcmp('shortRange',captures);

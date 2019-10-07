@@ -1,4 +1,4 @@
-function [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibParams,valResults)
+function [valResults, allResults] = HVM_Val_Coverage_Calc(InputPath, sz, calibParams, valResults)
 % function 
 % description: 
 %
@@ -60,7 +60,7 @@ function [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibPara
         save(fn,'InputPath','sz','calibParams','valResults');
     end
     runParams.outputFolder = output_dir;
-    [valResults ,allResults] = HVM_Val_Coverage_Calc_int(InputPath,sz,runParams,calibParams,fprintff,valResults);
+    [valResults, allResults] = HVM_Val_Coverage_Calc_int(InputPath, sz, runParams, calibParams, fprintff, valResults);
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 

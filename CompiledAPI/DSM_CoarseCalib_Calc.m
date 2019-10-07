@@ -1,4 +1,4 @@
-function [DSM_data] = DSM_CoarseCalib_Calc(angxRaw, angyRaw , calibParams)
+function [DSM_data] = DSM_CoarseCalib_Calc(angxRaw, angyRaw, calibParams)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:

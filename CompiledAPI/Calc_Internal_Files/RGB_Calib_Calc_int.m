@@ -1,4 +1,4 @@
-function [rgbPassed,rgbTable,results] = RGB_Calib_Calc_int(im,rgbs,calibParams,Kdepth,fprintff,runParams,z2mm)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm)
     results = struct;
     rgbTable = [];
     rgbPassed = 0;

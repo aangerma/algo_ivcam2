@@ -1,4 +1,4 @@
-function [results,regs,luts] = End_Calib_Calc_int(runParams,delayRegs, dsmregs,roiRegs,dfzRegs,thermalRegs,results,fnCalib, fprintff, calibParams)
+function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams)
     t = tic;
     %% load inital FW.
 %    fw = Pipe.loadFirmware(internalFolder);

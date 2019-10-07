@@ -1,4 +1,4 @@
-function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs,results)
+function [roiRegs, results, fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs, results)
 % description: initiale set of the DSM scale and offset 
 %regs_reff
 % inputs:
@@ -68,7 +68,7 @@ function [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIr
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im', 'calibParams' ,'regs','runParams','results');
     end
-    [roiRegs,results,fovData] = ROI_Calib_Calc_int(im, calibParams, regs,runParams,results);
+    [roiRegs, results, fovData] = ROI_Calib_Calc_int(im, calibParams, regs, runParams, results);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);

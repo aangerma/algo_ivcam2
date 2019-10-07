@@ -230,7 +230,7 @@ function app=createComponents(runParamsFile)
     
     
     %checkboxes
-    cbnames = {'replayMode','warmUp','init','gamma','scanDir','minRangePreset','maxRangePreset','validateLOS','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVexInstalled'};
+    cbnames = {'replayMode','warmUp','init','gamma','scanDir','minRangePreset','maxRangePreset','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVexInstalled'};
     
     cbSz=[200 25];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -440,8 +440,8 @@ function statrtButton_callback(varargin)
         calibPassed = Calibration.runAlgoCameraCalibration(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.post_calib_validation && app.cb.replayMode.Value == 0
-            waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
-            pause(3);
+%             waitfor(msgbox('Please disconnect and reconnect the unit for validation. Press ok when done.'));
+%             pause(3);
     %        cal_output_dir = fileparts(fopen(app.m_logfid));
             [calibParams , ~] = HVM_Cal_init(calibfn,fprintffS,runparams.outputFolder);
             [validPassed] = Calibration.validation.validateCalibration(runparams,calibParams,fprintffS,s,app);

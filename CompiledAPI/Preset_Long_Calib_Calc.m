@@ -1,4 +1,4 @@
-function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(InputPath,cameraInput,LaserPoints,maxMod_dec,calibParams)
+function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(InputPath, cameraInput, LaserPoints, maxMod_dec, calibParams)
 % function [dfzRegs,results,calibPassed] = Preset_Long_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
 % description: 
 %
@@ -73,7 +73,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
         mkdirSafe(fileparts(fn));
         save(fn,'im', 'maskParams' ,'runParams','calibParams','longRangestate','cameraInput','LaserPoints','maxMod_dec');
     end
-    [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams,runParams,calibParams,longRangestate,im,cameraInput,LaserPoints,maxMod_dec,fprintff);
+    [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, longRangestate, im, cameraInput, LaserPoints, maxMod_dec, fprintff);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name, longRangestate, '_out.mat']);

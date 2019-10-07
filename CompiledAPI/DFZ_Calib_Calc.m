@@ -1,4 +1,4 @@
-function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs)
+function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams, DFZ_regs)
     % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
     % description: initiale set of the DSM scale and offset
     %regs_reff
@@ -70,7 +70,7 @@ function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DF
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im','output_dir','calibParams', 'regs' , 'DFZ_regs' );
     end
-    [dfzRegs,calibPassed ,results] = DFZ_Calib_Calc_int(im, output_dir, calibParams, fprintff, regs);       
+    [dfzRegs, calibPassed, results] = DFZ_Calib_Calc_int(im, output_dir, calibParams, fprintff, regs);       
     if ~isfield(results,'rtdDiffBetweenPresets')
             results.rtdDiffBetweenPresets = 0;
     end

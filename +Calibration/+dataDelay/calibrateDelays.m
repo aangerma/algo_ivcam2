@@ -12,14 +12,14 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         % Sync Loop management
         curLddTemp = hw.getLddTemperature;
         if ~isFinalStage % initialization stage
-            delayRegs.FRMW.conLocDelaySlowSlope = calibParams.dataDelay.slowDelayInitSlope;
-            delayRegs.FRMW.conLocDelayFastSlope = calibParams.dataDelay.fastDelayInitSlope;
-            delayRegs.FRMW.dfzCalTmp            = curLddTemp;
+            delayRegs.FRMW.conLocDelaySlowSlope = single(calibParams.dataDelay.slowDelayInitSlope);
+            delayRegs.FRMW.conLocDelayFastSlope = single(calibParams.dataDelay.fastDelayInitSlope);
+            delayRegs.FRMW.dfzCalTmp            = single(curLddTemp);
         else % finalization stage
             tempDiff                            = curLddTemp - results.dfzCalTmp;
-            delayRegs.FRMW.conLocDelaySlowSlope = (delayCalibResults.delayIR - results.delayIR)/tempDiff;
-            delayRegs.FRMW.conLocDelayFastSlope = (delayCalibResults.delayZ - results.delayZ)/tempDiff;
-            delayRegs.FRMW.dfzCalTmp            = curLddTemp;
+            delayRegs.FRMW.conLocDelaySlowSlope = single((delayCalibResults.delayIR - results.delayIR)/tempDiff);
+            delayRegs.FRMW.conLocDelayFastSlope = single((delayCalibResults.delayZ - results.delayZ)/tempDiff);
+            delayRegs.FRMW.dfzCalTmp            = single(curLddTemp);
         end
         writeDelayRegsToDRAM(hw, delayRegs)
         pause(1)

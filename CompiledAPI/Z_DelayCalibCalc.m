@@ -96,7 +96,7 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn,'imU', 'imD', 'imB', 'delay', 'dataDelayParams', 'g_verbose');
     end
-    [res, delayZ, im ] = Z_DelayCalibCalc_int(imU, imD, imB , delay, calibParams.dataDelay, g_verbose); 
+    [res, delayZ, im] = Z_DelayCalibCalc_int(imU, imD, imB , delay, calibParams.dataDelay, g_verbose); 
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         if isFinalStage

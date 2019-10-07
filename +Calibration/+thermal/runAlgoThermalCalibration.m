@@ -127,10 +127,9 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
         fprintff('PASSED.\n');
         fprintff('Burning algo thermal table...');
         if runParams.burnCalibrationToDevice
-            version = typecast(eepromRegs.FRMW.calibVersion,'single');
-            whole = floor(version);
-            frac = mod(version*100,100);
-            
+            vers = AlgoThermalCalibToolVersion;
+            whole = floor(vers);
+            frac = round(100*mod(vers,1));
             calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
             
             calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
@@ -238,11 +237,13 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         fprintff('[-] Burning default config calib files...');
 %         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
 %         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
-        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
-        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+        vers = AlgoThermalCalibToolVersion;
+        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
+        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
         fw.setRegs(vregs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)));
+        versPreset = calibParams.presets.tableVersion;
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);

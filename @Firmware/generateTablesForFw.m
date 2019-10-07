@@ -9,10 +9,10 @@ end
 
 regs = obj.get();
 m=obj.getMeta();
-ver = typecast(regs.FRMW.calibVersion,'single');
-v1= floor(ver);
-v2= floor(mod(ver*100,100));
-postfix = sprintf('_Ver_%02d_%02d.',v1,v2);
+vers = typecast(regs.FRMW.calibVersion,'single');
+v1 = floor(vers);
+v2 = round(100*mod(vers,1));
+postfix = sprintf('_Ver_%02d_%02d',v1,v2);
 if(v1==0)
    warning('version is set to default value 0');  
 end
@@ -28,35 +28,35 @@ if(exist('outputFldr','var'))
     mkdirSafe(outputFldr);
     if only_Algo_Calibration_Info
         [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
-        writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%sbin',postfix)));
+        writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%s.bin',postfix)));
     
         return
     end
     
     writetable(struct2table(EPROMtable), strcat(outputFldr,'/EPROMtable.csv'))
-    writetable(struct2table(ConfigTable), strcat(outputFldr,sprintf('/ConfigTable%scsv',postfix)))
+    writetable(struct2table(ConfigTable), strcat(outputFldr,sprintf('/ConfigTable%s.csv',postfix)))
     writetable(struct2table(CbufXsections), strcat(outputFldr,'/CbufSectionsTable.csv'))
     
     [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
-    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%sbin',postfix)));
+    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%s.bin',postfix)));
     
     CBUFtableSize=EPROmaxTableSize;
-    writeTableTobin(CBUFtableSize,0,struct2table(CbufXsections),fullfile(outputFldr,sprintf('CBUF_Calibration_Info_CalibInfo%sbin',postfix)));
+    writeTableTobin(CBUFtableSize,0,struct2table(CbufXsections),fullfile(outputFldr,sprintf('CBUF_Calibration_Info_CalibInfo%s.bin',postfix)));
     
-    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' postfix 'bin']),true);
+    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,sprintf('DIGG_Undist_Info_%d_CalibInfo%s.bin', postfix),true));
     
-    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,['DIGG_Gamma_Info_CalibInfo' postfix 'bin']));
+    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,sprintf('DIGG_Gamma_Info_CalibInfo%s.bin',postfix)));
     
     %no room for undist3: concat it to gamma file
     data = [readbin(gammafn{1});readbin(undistfns{3})];
     writebin(gammafn{1},data);
     delete(undistfns{3});
     
-    txPWRpdfn = obj.writeLUTbin(obj.getAddrData('DESTtxPWRpd_'),fullfile(outputFldr,filesep,['DEST_txPWRpd_Info_CalibInfo' postfix 'bin']));
+    txPWRpdfn = obj.writeLUTbin(obj.getAddrData('DESTtxPWRpd_'),fullfile(outputFldr,filesep,sprintf('DEST_txPWRpd_Info_CalibInfo%s.bin', postfix)));
     
-    obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,['FRMW_tmpTrans_Info'  '.bin']),true);
+    obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,'FRMW_tmpTrans_Info.bin'),true);
     if ~skip_algo_thermal_calib
-        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,['Algo_Thermal_Loop_CalibInfo' postfix 'bin']))
+        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,sprintf('Algo_Thermal_Loop_CalibInfo%s.bin', postfix)))
     end
 end
 end
