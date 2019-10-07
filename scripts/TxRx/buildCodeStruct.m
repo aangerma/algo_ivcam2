@@ -78,6 +78,20 @@ codes(end+1)=c;
 %% %%%%
 
 
-%% nurmelized code struct for length of ~127
+%% normelized code struct for length of ~127
 
+normelizedCode=codes;
 
+for r=1:length(codes)
+if normelizedCode(r).codeLength==127
+    continue ;
+else 
+    if normelizedCode(r).codeLength>50
+        normelizedCode(r).tCode=[codes(r).tCode ; codes(r).tCode]  ;
+    else %32
+        normelizedCode(r).tCode=[codes(r).tCode ; codes(r).tCode ; codes(r).tCode ; codes(r).tCode]  ;
+    end 
+end 
+
+ 
+end
