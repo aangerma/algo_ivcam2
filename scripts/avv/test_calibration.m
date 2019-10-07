@@ -65,7 +65,7 @@ function testsPassed = test_calibration(calibParamsPath,output_dir_Path,DFZ_cali
         runParams.outputFolder = output_dir_Path;
         [filepath,~,~] = fileparts(END_calib_path);
         fnCalib = fullfile(filepath,'..','AlgoInternal','calib.csv');
-        res3 = End_Calib_Calc_int(runParams,delayRegs, dsmregs,roiRegs,dfzRegs,atlregs,results,fnCalib, fprintff, ThresholdParams);
+        res3 = End_Calib_Calc_int(runParams,delayRegs, dsmregs,roiRegs,dfzRegs,thermalRegs,results,fnCalib, fprintff, ThresholdParams);
         endPassed = Calibration.aux.mergeScores(res3,ThresholdParams.errRange,fprintff,0); % checks thresholds     
         if endPassed
           fprintf('** END calibration test passed \n')
@@ -81,7 +81,7 @@ function testsPassed = test_calibration(calibParamsPath,output_dir_Path,DFZ_cali
     try
         load(RGB_calib_path);
         runParams.outputFolder = output_dir_Path;
-        [rgbPassed,rgbTable,res4] = RGB_Calib_Calc_int(im,rgbs,ThresholdParams,Kdepth,fprintff,runParams);
+        [rgbPassed,rgbTable,res4] = RGB_Calib_Calc_int(im,rgbs,ThresholdParams,Kdepth,fprintff,runParams,z2mm);
         if rgbPassed
           fprintf('** RGB calibration test passed \n')
         else
