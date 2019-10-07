@@ -1,55 +1,72 @@
 #! python3
 import slash
+import matlab
 import io
 import sys
+import os
 import os.path as path
 import xml.etree.ElementTree as et
+import glob
 
 sys.path.insert(0, r"Avv\tests")
 import a_common
 
 
-def calibration(xmlPath):
-    slash.logger.info("check calibrationInputParams.xml: {}".format(xmlPath),extra={"highlight": True})
-    if not path.exists(xmlPath):
-        raise FileNotFoundError(xmlPath)
+def calibration_turnin(mode='turnin'):
+    xmlPath = r'X:\Avv\sources\calibration\calibration_turnin.xml'
 
     try:
         xml = et.parse(xmlPath)
-        root = xml.getroot()
-        calibFileName = root.find('./calibParamsFile').text
-    except AttributeError:
-        slash.logger.error("can't find calibParamsFile in xml")
-        raise AttributeError
+        slash.logger.info("test xml definition file: {}".format(xmlPath), extra={"highlight": True})
+    except FileNotFoundError:
+        slash.logger.error("test xml definition file not found: {}".format(xmlPath))
+        raise FileNotFoundError
 
-    calibFilePath = path.join(path.dirname(path.abspath(__file__)), '..\..\..\Tools\CalibTools\IV2calibTool\{}'.format(calibFileName))
-    slash.logger.info("check calibParams.xml: {}".format(calibFilePath),extra={"highlight": True})
-    if not path.exists(calibFilePath):
-        raise FileNotFoundError(xmlPath)
+    root = xml.getroot()
+    output_dir_Path = root.find('./output_dir_Path').text
+    calibparamsfilename = root.find('./calibration_params_filename').text
+    calibParamsPath = os.path.join(os.getcwd(), 'Tools', 'CalibTools', 'IV2calibTool', calibparamsfilename)
+    slash.logger.info("Calibration params path: {}".format(calibParamsPath), extra={"highlight": True})
 
-    slash.logger.info("running calibration")
-    eng = slash.g.mat
+    figfiles = glob.glob(os.path.join(output_dir_Path, 'figures', '*.*'))
+    for f in figfiles:
+        os.remove(f)
+
+    params = dict()
+    basic_path = root.find('./' + mode).text
+    for element in root.find('./calibration_path'):
+        params[element.tag] = os.path.join(basic_path, element.text)
+        slash.logger.debug("{} : {}".format(element.tag, params[element.tag]))
+
     out = io.StringIO()
     err = io.StringIO()
+    eng = slash.g.mat
 
     try:
-        calibPassed = eng.s.Calibration.runCalibStream(xmlPath, calibFilePath, stdout=out, stderr=err, nargout=1)
-    except Exception as e:
-        slash.logger.debug('matlab out: {}'.format(out.getvalue()))
-        slash.logger.error('matlab error: {}'.format(err.getvalue()))
-        raise e
+        res = eng.s.test_calibration(calibParamsPath, output_dir_Path, params["DFZ_calib_path"],params["DSM_calib_path"],params["END_calib_path"],params["RGB_calib_path"],params["ROI_calib_path"],params["Short_Preset_calib_path"],params["Long_Preset_state1_calib_path"],params["Long_Preset_state2_calib_path"], stdout=out, stderr=err, nargout=1)
+    except matlab.engine.MatlabExecutionError:
+        s_err = err.getvalue()
+        slash.logger.error("report crashed: {}".format(s_err))
+        slash.logger.info(out.getvalue())
+        raise RuntimeError
 
-    slash.logger.debug('matlab out: {}'.format(out.getvalue()))
+    slash.logger.debug(out.getvalue())
+    slash.logger.info('** Matlab output:')
 
-    status = lambda x: 'pass' if x else 'failed'
-    slash.logger.info("calibration : {}".format(status(calibPassed)), extra={"highlight": True})
+    for line in out.getvalue().splitlines():
+        if '**' in line:
+            if 'passed' in line:
+                slash.logger.info('{}'.format(line), extra={"highlight": True})
+            else:
+                slash.logger.error('{}'.format(line))
 
-    s = "calibration: out: {}".format(status(calibPassed))
-    slash.logger.info(s, extra={"highlight": True})
+    if not res:
+        a_common.TestFail('At least one of the tests failed')
 
 
-# slash run -vv -l Avv/logs/ -o log.highlights_subpath={context.session.id}/highlights.log -f Avv/tests/test_list.txt -k test_calibration_basic
-@slash.tag('turn_in')
-def test_calibration_basic():
-    filePath = r'X:\Avv\sources\calibration_record\basic\sessionParams.xml'
-    calibration(filePath)
+def test_calibration_turnin():
+    calibration_turnin(mode='turnin')
+
+
+def test_calibration_candidate():
+    calibration_turnin(mode='candidate')
