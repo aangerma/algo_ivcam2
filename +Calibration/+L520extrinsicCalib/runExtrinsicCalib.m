@@ -100,7 +100,7 @@ if(calibParams.transform2ExternalOrigin.applyT)
     end
 end
 
-save(strcat(calibParams.gnrl.outFolder,'\ExtrinsicPerCamToCam0'),'ExtrinsicPerCamToCam0');
+save(strcat(calibParams.gnrl.outFolder,'\ExtrinsicPerCam'),'ExtrinsicPerCam');
 
 %% Validate extrinsic
 Calibration.L520extrinsicCalib.validateExtrinsic(ExtrinsicPerCam,PosesData,calibParams)

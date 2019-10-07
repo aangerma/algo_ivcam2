@@ -7,12 +7,12 @@
     </sparkParams>
     <gnrl>
         <verbose>1</verbose>
-        <outFolder>X:\Users\hila\L520\ExtrinsicCalib\newTarget\results\tmp</outFolder>
-        <skuCamsNum>4</skuCamsNum>
+        <outFolder>X:\Users\hila\L520\ExtrinsicCalib\newTarget\results\integration\extrinsics\2sku2cam0</outFolder>
+        <skuCamsNum>2</skuCamsNum>
         <rot90>1</rot90>
     </gnrl>
     <transform2ExternalOrigin>
-        <applyT>1</applyT>
+        <applyT>0</applyT>
         <ang>[-60 , 0 , 0]</ang>
         <T>[2.2 , -76.4593, -73.8264]</T>       
     </transform2ExternalOrigin>       
