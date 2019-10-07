@@ -53,14 +53,14 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     
     %% call HVM_cal_init
     calib_dir = fileparts(fnCalib);
-    [calibParams , ~] = HVM_Cal_init(calibParamsFn,calib_dir,fprintff,runParams.outputFolder);
+    [calibParams, ~] = HVM_Cal_init(calibParamsFn,calib_dir,fprintff,runParams.outputFolder);
 
     
     %% Start stream to load the configuration
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
     %% Init hw configuration
-    initConfiguration(hw,fw,runParams,fprintff,t);
+    initConfiguration(hw, fw, runParams, calibParams, fprintff, t);
 
     
     hw.cmd('DIRTYBITBYPASS');
@@ -182,7 +182,8 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
             end
         end
     end
-    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(calibToolVersion*100,100)));
+    vers = calibParams.presets.tableVersion;
+    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin', floor(vers), round(100*mod(vers,1))));
 
     if runParams.DFZ && runParams.maxRangePreset && ~calibParams.sysDelayOverLPCorrection.bypass
        % Update presets to compensate for change in system delay after
@@ -268,7 +269,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
         fw.get();%run autogen
          %% Init hw configuration
         runParams.init = 1;
-        initConfiguration(hw,fw,runParams,fprintff,t);
+        initConfiguration(hw, fw, runParams, calibParams, fprintff, t);
     else
         fprintff('PASSED.\n');
     end
@@ -351,7 +352,7 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before rgb calibration:');
         [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fnCalib, fprintff, t);
         if rgbPassed
-            fnRgbTable = fullfile(runParams.outputFolder,...
+            fnRgbTable = fullfile(runParams.outputFolder,'calibOutputFiles',...
                 sprintf('RGB_Calibration_Info_CalibInfo_Ver_%02d_%02d.bin',rgbTable.version));
             writeAllBytes(rgbTable.data,fnRgbTable);
             try
@@ -511,12 +512,12 @@ function [verValue,versionFull] = getVersion(hw,runParams)
     versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
 
-function initConfiguration(hw,fw,runParams,fprintff,t)  
+function initConfiguration(hw, fw, runParams, calibParams, fprintff, t)
     fprintff('init hw configuration...');
     if(runParams.init)
         fprintff('[-] Burning default config calib files...');
         eRegs = hw.readAlgoEEPROMtable();
-	vers = AlgoCameraCalibToolVersion;
+        vers = AlgoCameraCalibToolVersion;
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
         [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eRegs);
@@ -526,8 +527,9 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
         fw.setRegs(thermalRegs,'');
         fw.setRegs(dfzRegs,'');
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib);
-        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02d_%02d.bin',floor(vers),mod(vers*100,100))),[]);
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(vers,1)*100)));
+        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02d_%02d.bin',floor(vers),round(100*mod(vers,1)))),[]);
+        versPreset = calibParams.presets.tableVersion;
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -660,53 +662,6 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
         end
     else
         fprintff('[?] skipped\n');
-    end
-end
-
-function [results,calibPassed] = validateCoverage(hw,sphericalEn, runParams, calibParams, results, fprintff)
-    calibPassed = 1;
-    if runParams.pre_calib_validation
-        if sphericalEn 
-            sphericalmode = 'Spherical Enable';
-            fname = strcat('irCoverage','SpEn');
-            fnameStd = strcat('stdIrCoverage','SpEn');
-        else
-            sphericalmode = 'spherical disable';
-            fname = strcat('irCoverage','SpDis');
-            fnameStd = strcat('stdIrCoverage','SpDis');
-        end
-        
-        %test coverage
-        [~, covResults,dbg] = Calibration.validation.validateCoverage(hw,sphericalEn);
-        % save prob figure
-        ff = Calibration.aux.invisibleFigure;
-        imagesc(dbg.probIm);
-        
-        title(sprintf('Coverage Map %s',sphericalmode)); colormap jet;colorbar;
-        Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage Map %s',sphericalmode));
-
-        ff = Calibration.aux.invisibleFigure;
-        plot(dbg.probImV');
-        
-        title(sprintf('Coverage %s per horizontal slice',sphericalmode));legend('1-H','2','3-C','4','5-L');xlim([0 size(dbg.probIm,2)]);
-        Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('Coverage %s per horizontal slice',sphericalmode));
-        
-        calibPassed = covResults.irCoverage <= calibParams.errRange.(fname)(2) && ...
-            covResults.irCoverage >= calibParams.errRange.(fname)(1);
-        
-        
-        if calibPassed
-            fprintff('[v] ir coverage %s passed[e=%g]\n',sphericalmode,covResults.irCoverage);
-        else
-            fprintff('[x] ir coverage %s failed[e=%g]\n',sphericalmode,covResults.irCoverage);
-        end
-        if sphericalEn
-            results.(fname) = covResults.irCoverage;
-            results.(fnameStd) = covResults.stdIrCoverage; 
-        else
-            results.(fname) = covResults.irCoverage;
-            results.(fnameStd) = covResults.stdIrCoverage; 
-        end
     end
 end
 

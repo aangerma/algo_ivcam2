@@ -363,7 +363,7 @@
         <imSize>[1920,1080]</imSize>
     </rgb>
     <presets>
-        <tableVersion>5.11</tableVersion>
+        <tableVersion>5.01</tableVersion>
         <compare>
             <bypass>0</bypass>
             <nTrials>3</nTrials>

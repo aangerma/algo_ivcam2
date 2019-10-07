@@ -2,7 +2,7 @@
 <struct>
    <sparkParams>
         <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
-        <azureFolder>E:\SPARK\iv2-cal-01 (azure.spark@intel.com)</azureFolder>
+        <azureFolder>E:\SPARK\iv2-cal1-05 (azure.spark@intel.com)</azureFolder>
         <testMode>ATP</testMode>
    </sparkParams>
    <gnrl>

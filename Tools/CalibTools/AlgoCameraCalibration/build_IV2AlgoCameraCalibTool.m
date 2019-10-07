@@ -42,16 +42,19 @@ eval(cmd);
 copyfile(toolConfig.calibParamsFile,outputFolder);
 copyfile(toolConfigFile,fullfile(outputFolder, 'IV2AlgoCameraCalibTool.xml'));
 fw = Pipe.loadFirmware(sprintf('../../../+Calibration/%s',toolConfig.configurationFolder));
-vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
-vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
+vers = AlgoCameraCalibToolVersion;
+vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
+vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
 fw.setRegs(vregs,'');
+calibParams = xml2structWrapper(toolConfig.calibParamsFile);
+versPreset = calibParams.presets.tableVersion;
 % Generate tables for old firmware
 fw.writeFirmwareFiles(fullfile(outputFolder,'configFilesNoAlgoGen'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(calibToolVersion,1)*100)));
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))));
 % Generate tables for firmware with Algo Gen
 fw.generateTablesForFw(fullfile(outputFolder,'configFiles'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
-fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02.0f_%02.0f.bin',floor(calibToolVersion),mod(calibToolVersion*100,100))),[]);
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
+fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02d_%02d.bin',floor(vers),round(100*mod(vers,1)))),[]);
 
 %% Generate default algo thermal table
 

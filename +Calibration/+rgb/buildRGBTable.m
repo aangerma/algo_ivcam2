@@ -4,8 +4,9 @@ function [RGBTable] = buildRGBTable(res,params)
     TableSize = 112;
     
     %current table version
-    TableVersionMajor = uint8(0);
-    TableVersionMinor = uint8(1);
+    vers = AlgoCameraCalibToolVersion;
+    TableVersionMajor = uint8(floor(vers));
+    TableVersionMinor = uint8(mod(vers*100,100));
     calibratorID = uint8(1);
     procId = uint8(0);
     %initialize the stream
