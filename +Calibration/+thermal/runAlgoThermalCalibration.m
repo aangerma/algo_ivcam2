@@ -133,7 +133,11 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
             
             calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
             
-            calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
+            version = calibParams.fwTable.tableVersion;
+            whole = floor(version);
+            frac = mod(version*100,100);
+            calibpostfixThermal = sprintf('_Ver_%02d_%02d',whole,frac);
+            calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfixThermal,'.bin'];
             tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
             
             try

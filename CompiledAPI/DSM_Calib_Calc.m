@@ -1,4 +1,4 @@
-function [success, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz , angxRawZOVec , angyRawZOVec ,dsmregs_current ,calibParams)
+function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(path_spherical, sz, angxRawZOVec, angyRawZOVec, dsmregs_current, calibParams)
     % description: initiale set of the DSM scale and offset
     %
     % inputs:
@@ -60,7 +60,7 @@ function [success, DSM_data,angxZO,angyZO] = DSM_Calib_Calc(path_spherical, sz ,
 
     end
     
-    [success, DSM_data,angxZO,angyZO] = DSM_Calib_Calc_int(im, sz , angxRawZOVec(:) , angyRawZOVec(:) ,dsmregs_current ,calibParams,fprintff);
+    [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc_int(im, sz, angxRawZOVec(:), angyRawZOVec(:), dsmregs_current, calibParams, fprintff);
     
     % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0

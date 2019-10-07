@@ -1,4 +1,4 @@
-function [result, DSM_data,angxZO,angyZO] = DSM_Calib_Calc_int(im, sz , angxRawZOVec , angyRawZOVec ,dsmregs_current ,calibParams,fprintff)
+function [result, DSM_data, angxZO, angyZO] = DSM_Calib_Calc_int(im, sz, angxRawZOVec, angyRawZOVec, dsmregs_current, calibParams, fprintff)
     result = 1;
     margin = calibParams.dsm.margin;
     

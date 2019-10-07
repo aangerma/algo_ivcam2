@@ -1,4 +1,4 @@
-function [tablefn] = RtdOverAngX_Calib_Calc_int(imConstant,imSteps, calibParams, regs,luts,runParams)
+function [tablefn] = RtdOverAngX_Calib_Calc_int(imConstant, imSteps, calibParams, regs, luts, runParams)
 
 diffRTD = single(imSteps-imConstant)*2/4;
 

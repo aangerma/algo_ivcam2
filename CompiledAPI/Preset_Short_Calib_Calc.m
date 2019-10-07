@@ -1,4 +1,4 @@
-function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
+function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, LaserPoints, maxMod_dec, sz, calibParams)
 % function [dfzRegs,results,calibPassed] = Preset_Short_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
 % description: 
 %
@@ -72,7 +72,7 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath,La
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im', 'LaserPoints' ,'maxMod_dec','sz','calibParams','output_dir','PresetFolder');
     end
-    [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(im,LaserPoints,maxMod_dec,sz,calibParams,output_dir,PresetFolder);       
+    [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(im, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder);       
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 

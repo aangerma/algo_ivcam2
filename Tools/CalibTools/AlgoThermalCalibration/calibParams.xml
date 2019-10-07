@@ -31,26 +31,26 @@
        <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
-       <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
+       <requiredTmptrRange>[40 50]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
    </warmUp>
    <errRange>
       <delayIR>[0 100000]</delayIR>
       <delayZ>[0 100000]</delayZ>
-      <conLocDelaySlow>[0 2147483648]</conLocDelaySlow>
-      <conLocDelayFastC>[0 2147483648]</conLocDelayFastC>
-      <conLocDelayFastF>[0 2147483648]</conLocDelayFastF>
+      <conLocDelaySlow>[0 2147484648]</conLocDelaySlow>
+      <conLocDelayFastC>[0 100000]</conLocDelayFastC>
+      <conLocDelayFastF>[0 7]</conLocDelayFastF>
       <conLocDelaySlowSlope>[0.2 2]</conLocDelaySlowSlope>
       <conLocDelayFastSlope>[0.2 2]</conLocDelayFastSlope>
       <dfzCalTmp>[35 75]</dfzCalTmp>
       <delayF>[0 0.9]</delayF>
       <delayS>[0 0.9]</delayS>
       <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
-      <dsmXscale>[0.5 2]</dsmXscale>
-      <dsmYscale>[0.5 2]</dsmYscale>
+      <dsmXscale>[50 100]</dsmXscale>
+      <dsmYscale>[50 100]</dsmYscale>
       <dsmXshift>[25 35]</dsmXshift>
       <dsmYshift>[25 35]</dsmYshift>
       <stdRtd>[0 inf]</stdRtd>
-      <stdXim>[0 1.5]</stdXim>
+      <stdXim>[0 3]</stdXim>
       <stdYim>[0 1]</stdYim>
       <stdXmm>[0 inf]</stdXmm>
       <stdYmm>[0 inf]</stdYmm>
@@ -61,12 +61,9 @@
       <p2pXmm>[0 inf]</p2pXmm>
       <p2pYmm>[0 inf]</p2pYmm>
       <p2pZmm>[0 inf]</p2pZmm>
-      <meanEGeom>[0 20]</meanEGeom>
-      <minEGeom>[0 15]</minEGeom>
-      <maxEGeom>[0 50]</maxEGeom>
       <xScale>[0 0.01]</xScale>
       <yScale>[0 0.008]</yScale>
-      <xShift>[0 1.5]</xShift>
+      <xShift>[0 3]</xShift>
       <yShift>[0 0.8]</yShift>
       <rtdShit>[0 inf]</rtdShit>
       <thermalRtdRefTemp>[32 79]</thermalRtdRefTemp>
@@ -131,8 +128,8 @@
    </dsm>
    <fwTable>
       <nFramesToIgnore>5</nFramesToIgnore>
-      <tempBinRes>2</tempBinRes> 
       <tempBinRange>[0 94]</tempBinRange> 
+      <nRows>48</nRows> 
       <!-- [35 66] -->
       <name>Algo_Thermal_Loop_CalibInfo</name> 
       <tableVersion>4.0</tableVersion> 

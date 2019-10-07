@@ -1,4 +1,4 @@
-function [valResults ,allResults] = HVM_Val_Calc(InputPath,sz,params,calibParams,valResults)
+function [valResults, allResults] = HVM_Val_Calc(InputPath, sz, params, calibParams, valResults)
 % function 
 % description: 
 %
@@ -61,7 +61,7 @@ function [valResults ,allResults] = HVM_Val_Calc(InputPath,sz,params,calibParams
         save(fn,'InputPath','sz','params','calibParams','valResults');
     end
     runParams.outputFolder = output_dir;
-    [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runParams,calibParams,fprintff,valResults);
+    [valResults, allResults] = HVM_Val_Calc_int(InputPath, sz, params, runParams, calibParams, fprintff, valResults);
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 

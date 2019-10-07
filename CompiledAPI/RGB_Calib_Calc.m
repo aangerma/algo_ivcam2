@@ -1,4 +1,4 @@
-function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(InputPath, calibParams, irImSize, Kdepth, z2mm)
 % description: calculates the calibration between the IR/Depth images and
 % the RGB images
 %regs_reff
@@ -57,7 +57,7 @@ function [rgbPassed,rgbTable,results] = RGB_Calib_Calc(InputPath,calibParams,irI
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im' ,'rgbs', 'calibParams' ,'Kdepth' , 'runParams','runParams' ,'z2mm');
     end
-    [rgbPassed,rgbTable,results] = RGB_Calib_Calc_int(im,rgbs,calibParams,Kdepth,fprintff,runParams,z2mm);
+    [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm);
 
     % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 

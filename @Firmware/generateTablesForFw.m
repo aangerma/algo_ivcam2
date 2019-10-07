@@ -13,6 +13,7 @@ ver = typecast(regs.FRMW.calibVersion,'single');
 v1= floor(ver);
 v2= floor(mod(ver*100,100));
 postfix = sprintf('_Ver_%02d_%02d.',v1,v2);
+postfixThermal = sprintf('_Ver_%02d_%02d.',4,v2);
 if(v1==0)
    warning('version is set to default value 0');  
 end
@@ -38,7 +39,7 @@ if(exist('outputFldr','var'))
     writetable(struct2table(CbufXsections), strcat(outputFldr,'/CbufSectionsTable.csv'))
     
     [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
-    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%sbin',postfix)));
+    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%sbin',postfixThermal)));
     
     CBUFtableSize=EPROmaxTableSize;
     writeTableTobin(CBUFtableSize,0,struct2table(CbufXsections),fullfile(outputFldr,sprintf('CBUF_Calibration_Info_CalibInfo%sbin',postfix)));
@@ -56,7 +57,7 @@ if(exist('outputFldr','var'))
     
     obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,['FRMW_tmpTrans_Info'  '.bin']),true);
     if ~skip_algo_thermal_calib
-        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,['Algo_Thermal_Loop_CalibInfo' postfix 'bin']))
+        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,['Algo_Thermal_Loop_CalibInfo' postfixThermal 'bin']))
     end
 end
 end

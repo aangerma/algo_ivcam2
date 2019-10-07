@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results,regs,luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, version, configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
+function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, version, configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -77,9 +77,9 @@ function [results,regs,luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRe
     [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, runParams.afterThermalCalib);
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn, 'runParams', 'delayRegs','dsmregs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'calibParams');
+        save(fn, 'runParams', 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'calibParams');
     end
-    [results ,regs,luts] = End_Calib_Calc_int(runParams,delayRegs, dsmregs,roiRegs,dfzRegs,thermalRegs,results,fnCalib, fprintff, calibParams);    % save output
+    [results ,regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams);    % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn, 'results', 'regs','luts');

@@ -1,4 +1,4 @@
-function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams,runParams,calibParams,LongRangestate,totFrames,cameraInput,laserPoints,maxMod_dec,fprintff)
+function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, LongRangestate, totFrames, cameraInput, laserPoints, maxMod_dec, fprintff)
 %% Get frames and mask
 mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
 %% Define parameters

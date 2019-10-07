@@ -1,4 +1,4 @@
-function [tablefn] = RtdOverAngX_Calib_Calc(inputPath,calibParams,regs,luts)
+function [tablefn] = RtdOverAngX_Calib_Calc(inputPath, calibParams, regs, luts)
 
 
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn;
@@ -54,7 +54,7 @@ function [tablefn] = RtdOverAngX_Calib_Calc(inputPath,calibParams,regs,luts)
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'imConstant','imSteps', 'calibParams' ,'regs','luts','runParams');
     end
-    [tablefn] = RtdOverAngX_Calib_Calc_int(imConstant,imSteps, calibParams, regs,luts,runParams);
+    [tablefn] = RtdOverAngX_Calib_Calc_int(imConstant, imSteps, calibParams, regs, luts, runParams);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);

@@ -1,4 +1,4 @@
-function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(Frames,LaserPoints,maxMod_dec,sz,calibParams,output_dir,PresetFolder)
+function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(Frames, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder)
 runParams.outputFolder = output_dir; % need update
 %% Detecting ROI on low laser image
 [whiteCenter,blackCenter,ROI_Coffset]=detectROI(Frames(1).i,runParams);
