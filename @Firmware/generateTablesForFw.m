@@ -1,21 +1,22 @@
-function [EPROMtable,ConfigTable,CbufXsections,DiggGammaTable] = generateTablesForFw(obj,outputFldr,only_Algo_Calibration_Info,skip_algo_thermal_calib)
-if ~exist('only_Algo_Calibration_Info','var')
+function [EPROMtable, ConfigTable, CbufXsections, DiggGammaTable] = generateTablesForFw(obj, outputFldr, only_Algo_Calibration_Info, skip_algo_thermal_calib, versions)
+if ~exist('only_Algo_Calibration_Info','var') || isempty(only_Algo_Calibration_Info)
     only_Algo_Calibration_Info = 0;
 end
-if ~exist('skip_algo_thermal_calib','var')
+if ~exist('skip_algo_thermal_calib','var') || isempty(skip_algo_thermal_calib)
     skip_algo_thermal_calib = 0;
 end
-
-
-regs = obj.get();
-m=obj.getMeta();
-vers = typecast(regs.FRMW.calibVersion,'single');
-v1 = floor(vers);
-v2 = round(100*mod(vers,1));
-postfix = sprintf('_Ver_%02d_%02d',v1,v2);
-if(v1==0)
-   warning('version is set to default value 0');  
+if ~exist('versions','var')
+    regs = obj.get();
+    vers = typecast(regs.FRMW.calibVersion,'single');
+    versions.algoCalib = vers;
+    versions.algoThermal = vers;
+    versions.cbufCalib = vers;
+    versions.destTxPwrPd = vers;
+    versions.diggGamma = vers;
+    versions.diggUndist = vers;
 end
+
+m=obj.getMeta();
 EPROMtable=m([m.TransferToFW]=='1');
 ConfigTable=m([m.TransferToFW]=='2');
 CbufXsections=m([m.TransferToFW]=='3');
@@ -28,35 +29,43 @@ if(exist('outputFldr','var'))
     mkdirSafe(outputFldr);
     if only_Algo_Calibration_Info
         [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
-        writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%s.bin',postfix)));
-    
+        algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', versions.algoCalib);
+        writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr, algoTableFileName));
         return
     end
     
     writetable(struct2table(EPROMtable), strcat(outputFldr,'/EPROMtable.csv'))
-    writetable(struct2table(ConfigTable), strcat(outputFldr,sprintf('/ConfigTable%s.csv',postfix)))
+    tableVerStr = Calibration.aux.genTableBinFileName('', versions.algoCalib);
+    writetable(struct2table(ConfigTable), strcat(outputFldr,sprintf('/ConfigTable%s.csv',tableVerStr(1:end-4))))
     writetable(struct2table(CbufXsections), strcat(outputFldr,'/CbufSectionsTable.csv'))
     
     [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
-    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr,sprintf('Algo_Calibration_Info_CalibInfo%s.bin',postfix)));
+    algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', versions.algoCalib);
+    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr, algoTableFileName));
     
     CBUFtableSize=EPROmaxTableSize;
-    writeTableTobin(CBUFtableSize,0,struct2table(CbufXsections),fullfile(outputFldr,sprintf('CBUF_Calibration_Info_CalibInfo%s.bin',postfix)));
+    cbufTableFileName = Calibration.aux.genTableBinFileName('CBUF_Calibration_Info_CalibInfo', versions.cbufCalib);
+    writeTableTobin(CBUFtableSize,0,struct2table(CbufXsections),fullfile(outputFldr, cbufTableFileName));
     
-    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,sprintf('DIGG_Undist_Info_%d_CalibInfo%s.bin', postfix),true));
+    undistTableFileName = Calibration.aux.genTableBinFileName('DIGG_Undist_Info_%d_CalibInfo', versions.diggUndist);
+    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep, undistTableFileName), true);
     
-    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,sprintf('DIGG_Gamma_Info_CalibInfo%s.bin',postfix)));
+    gammaTableFileName = Calibration.aux.genTableBinFileName('DIGG_Gamma_Info_CalibInfo', versions.diggGamma);
+    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep, gammaTableFileName));
     
     %no room for undist3: concat it to gamma file
     data = [readbin(gammafn{1});readbin(undistfns{3})];
     writebin(gammafn{1},data);
     delete(undistfns{3});
     
-    txPWRpdfn = obj.writeLUTbin(obj.getAddrData('DESTtxPWRpd_'),fullfile(outputFldr,filesep,sprintf('DEST_txPWRpd_Info_CalibInfo%s.bin', postfix)));
+    txPwrPdTableFileName = Calibration.aux.genTableBinFileName('DEST_txPWRpd_Info_CalibInfo', versions.destTxPwrPd);
+    txPWRpdfn = obj.writeLUTbin(obj.getAddrData('DESTtxPWRpd_'),fullfile(outputFldr,filesep, txPwrPdTableFileName));
     
     obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,'FRMW_tmpTrans_Info.bin'),true);
+    
     if ~skip_algo_thermal_calib
-        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,sprintf('Algo_Thermal_Loop_CalibInfo%s.bin', postfix)))
+        thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', versions.algoThermal);
+        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep, thermalTableFileName))
     end
 end
 end
@@ -226,3 +235,4 @@ else
     
 end
 end
+

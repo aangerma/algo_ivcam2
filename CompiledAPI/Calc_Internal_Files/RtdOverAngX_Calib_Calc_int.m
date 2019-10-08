@@ -44,7 +44,7 @@ rtd2add = Calibration.DFZ.applyRtdOverAngXFix( meanAngXPerGroup(:),regs );
 tableValues = -rtd2add + regs.DEST.txFRQpd(1);
 tableValues = fillStartNans(tableValues);   
 tableValues = flipud(fillStartNans(flipud(tableValues)));  
-tablefn = generateRtdOverAngXTable(runParams,tableValues);
+tablefn = generateRtdOverAngXTable(runParams, tableValues, calibParams.tableVersions.algoRtdOverAngX);
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure; 
@@ -63,11 +63,11 @@ if ~isempty(runParams)
     
 end
 end
-function fname = generateRtdOverAngXTable(runParams,tableValues)
-vers = calibToolVersion;
-fname = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02d_%02d.bin',floor(vers),mod(vers*100,100)));
+function rtdOverXTableFullPath = generateRtdOverAngXTable(runParams, tableValues, versRtdOverX)
+rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', versRtdOverX);
+rtdOverXTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rtdOverXTableFileName);
 fw = Firmware;
-fw.writeRtdOverAngXTable(fname,tableValues);
+fw.writeRtdOverAngXTable(rtdOverXTableFullPath,tableValues);
 end
 function table = fillStartNans(table)
     for i = 1:size(table,2)

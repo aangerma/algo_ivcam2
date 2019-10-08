@@ -19,9 +19,10 @@ if isempty(strfind(version, 'R2018b')) %#ok
     error('build_IV2AlgoCameraCalibTool() must be ran with Matlab R2018b!');
 end
 toolConfig = xml2structWrapper(toolConfigFile);
+calibParams = xml2structWrapper(toolConfig.calibParamsFile);
 %%
-[ver,sub] = calibToolVersion();
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2AlgoCameraCalibTool%s\\%1.2f.%1.0f\\',gProjID,ver,sub);
+[vers,sub] = AlgoCameraCalibToolVersion;
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2AlgoCameraCalibTool%s\\%1.2f.%1.0f\\',gProjID,vers,sub);
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2AlgoCameraCalibTool.m ' ...
@@ -42,19 +43,19 @@ eval(cmd);
 copyfile(toolConfig.calibParamsFile,outputFolder);
 copyfile(toolConfigFile,fullfile(outputFolder, 'IV2AlgoCameraCalibTool.xml'));
 fw = Pipe.loadFirmware(sprintf('../../../+Calibration/%s',toolConfig.configurationFolder));
-vers = AlgoCameraCalibToolVersion;
 vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
 vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
 fw.setRegs(vregs,'');
-calibParams = xml2structWrapper(toolConfig.calibParamsFile);
-versPreset = calibParams.presets.tableVersion;
+
+presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
+rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
 % Generate tables for old firmware
 fw.writeFirmwareFiles(fullfile(outputFolder,'configFilesNoAlgoGen'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))));
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen', presetsTableFileName));
 % Generate tables for firmware with Algo Gen
-fw.generateTablesForFw(fullfile(outputFolder,'configFiles'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
-fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02d_%02d.bin',floor(vers),round(100*mod(vers,1)))),[]);
+fw.generateTablesForFw(fullfile(outputFolder,'configFiles'),[],[], calibParams.tableVersions);
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles', presetsTableFileName),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
+fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles', rtdOverXTableFileName),[]);
 
 %% Generate default algo thermal table
 

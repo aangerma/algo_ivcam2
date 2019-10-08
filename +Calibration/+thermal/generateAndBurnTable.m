@@ -7,16 +7,14 @@ dsmTable = uint16(dsmTable*2^8);
 rtdTable = typecast(int16(rtdTable*2^8),'uint16');
 tableShifted = [dsmTable,rtdTable]; % FW expected format
 
-version = calibParams.fwTable.tableVersion;
-whole = floor(version);
-frac = mod(version*100,100);
+thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', calibParams.tableVersions.algoThermal);
+thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
 
-calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
+algoTableName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', calibParams.tableVersions.algoCalib);
+algoTableFileName = fullfile(runParams.outputFolder, algoTableName);
 
-calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
-tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
-Calibration.thermal.saveThermalTable( tableShifted , tableName );
-fprintff('Generated algo thermal table full path:\n%s\n',tableName);
+Calibration.thermal.saveThermalTable( tableShifted , thermalTableFullPath );
+fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
 initFldr = fullfile(fileparts(fileparts(mfilename('fullpath'))),'releaseConfigCalibVGA');
 %fw = Pipe.loadFirmware(initFldr);
 if(exist(fullfile(calib_dir , 'regsDefinitions.frmw'), 'file') == 2)
@@ -39,7 +37,7 @@ fw.generateTablesForFw(runParams.outputFolder,1);
 if calibPassed && ~isempty(hw)
     fprintff('Burning algo thermal table...');
     try 
-        cmdstr = sprintf('WrCalibInfo %s',tableName);
+        cmdstr = sprintf('WrCalibInfo %s',thermalTableFileName);
         hw.cmd(cmdstr);
         fprintff('Done\n');
     catch
@@ -47,8 +45,7 @@ if calibPassed && ~isempty(hw)
     end
     fprintff('Burning algo calibration table...');
     try
-        algoCalibInfoName = fullfile(calibOutput,['Algo_Calibration_Info_CalibInfo',calibpostfix,'.bin']);
-        cmdstr = sprintf('WrCalibInfo %s',algoCalibInfoName);
+        cmdstr = sprintf('WrCalibInfo %s',algoTableFileName);
         hw.cmd(cmdstr);
         fprintff('Done\n');
     catch

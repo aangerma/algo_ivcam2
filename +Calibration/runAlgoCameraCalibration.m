@@ -182,9 +182,8 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
             end
         end
     end
-    vers = calibParams.presets.tableVersion;
-    calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin', floor(vers), round(100*mod(vers,1))));
-
+    presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
+    presetsTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', presetsTableFileName);
     if runParams.DFZ && runParams.maxRangePreset && ~calibParams.sysDelayOverLPCorrection.bypass
        % Update presets to compensate for change in system delay after
        % laser calibration
@@ -214,7 +213,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
         updateLongRangeRtdOffset(results,runParams);
         presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
         fw = Pipe.loadFirmware(presetPath);
-        fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+        fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
     end
     
 %     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
@@ -240,13 +239,13 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
         updateShortRangeRtdOffset(results,runParams);
         presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
         fw = Pipe.loadFirmware(presetPath);
-        fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+        fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
         
         fprintff('[-] Reburning preset table...');
         if ~runParams.afterThermalCalib
             try
                 hw = HWinterface;
-                hw.cmd(['WrCalibInfo ',calibTempTableFn]);
+                hw.cmd(['WrCalibInfo ',presetsTableFullPath]);
                 fprintff('Done\n');
             catch
                 fprintff('failed to burn preset table\n');
@@ -352,9 +351,8 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before rgb calibration:');
         [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fnCalib, fprintff, t);
         if rgbPassed
-            fnRgbTable = fullfile(runParams.outputFolder,'calibOutputFiles',...
-                sprintf('RGB_Calibration_Info_CalibInfo_Ver_%02d_%02d.bin',rgbTable.version));
-            writeAllBytes(rgbTable.data,fnRgbTable);
+            rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', rgbTable.version);
+            writeAllBytes(rgbTable.data, fullfile(runParams.outputFolder,'calibOutputFiles', rgbTableFileName));
             try
                 hw.cmd(sprintf('WrCalibInfo "%s"',fnRgbTable));
             catch
@@ -526,10 +524,11 @@ function initConfiguration(hw, fw, runParams, calibParams, fprintff, t)
         fw.setRegs(dsmRegs,'');
         fw.setRegs(thermalRegs,'');
         fw.setRegs(dfzRegs,'');
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib);
-        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02d_%02d.bin',floor(vers),round(100*mod(vers,1)))),[]);
-        versPreset = calibParams.presets.tableVersion;
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))));
+        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib, calibParams.tableVersions);
+        rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
+        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles', rtdOverXTableFileName),[]);
+        presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles', presetsTableFileName));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -742,8 +741,6 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
         fprintff('skiped\n');
     end
     
-    
-%     hw.burn2device(runParams.outputFolder,doCalibBurn,doConfigBurn);
      if doCalibBurn
         fprintff('[!] burning...');
         calibOutput=fullfile(runParams.outputFolder,'calibOutputFiles');

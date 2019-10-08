@@ -7,17 +7,10 @@ dsmTable = uint16(dsmTable*2^8);
 rtdTable = typecast(int16(rtdTable*2^8),'uint16');
 tableShifted = [dsmTable,rtdTable]; % FW expected format
 
-
-version = calibParams.fwTable.tableVersion;
-whole = floor(version);
-frac = mod(version*100,100);
-
-calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
-
-calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
-tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
-Calibration.thermal.saveThermalTable( tableShifted , tableName );
-fprintff('Generated algo thermal table full path:\n%s\n',tableName);
+thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', calibParams.tableVersions.algoThermal);
+thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
+Calibration.thermal.saveThermalTable( tableShifted , thermalTableFullPath );
+fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
 % initFldr = fullfile(fileparts(fileparts(mfilename('fullpath'))),'releaseConfigCalibVGA');
 initFldr = calib_dir;
 %fw = Pipe.loadFirmware(initFldr);
@@ -52,7 +45,7 @@ eepromRegs.FRMW.dfzApdCalTmp            = single(data.regs.FRMW.dfzApdCalTmp);
 
 fw.setRegs(eepromRegs,'');
 fw.get();
-fw.generateTablesForFw(runParams.outputFolder,1);
+fw.generateTablesForFw(runParams.outputFolder,1,[],calibParams.tableVersions);
 
 end
 
