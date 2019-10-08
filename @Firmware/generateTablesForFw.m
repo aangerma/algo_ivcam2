@@ -48,7 +48,7 @@ if(exist('outputFldr','var'))
     writeTableTobin(CBUFtableSize,0,struct2table(CbufXsections),fullfile(outputFldr, cbufTableFileName));
     
     undistTableFileName = Calibration.aux.genTableBinFileName('DIGG_Undist_Info_%d_CalibInfo', versions.diggUndist);
-    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep, undistTableFileName, true));
+    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep, undistTableFileName), true);
     
     gammaTableFileName = Calibration.aux.genTableBinFileName('DIGG_Gamma_Info_CalibInfo', versions.diggGamma);
     gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep, gammaTableFileName));
