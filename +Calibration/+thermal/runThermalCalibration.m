@@ -70,31 +70,22 @@ function  [calibPassed] = runThermalCalibration(runParamsFn,calibParamsFn, fprin
     else %% burn tables
         fprintff('PASSED.\n');
         fprintff('Burning algo thermal table...');
-        version = typecast(eepromRegs.FRMW.calibVersion,'single');
-        whole = floor(version);
-        frac = mod(version*100,100);
-        calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
-        
-        version = calibParams.fwTable.tableVersion;
-        whole = floor(version);
-        frac = mod(version*100,100);
-        calibpostfixThermal = sprintf('_Ver_%02d_%02d',whole,frac);
-
-        calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfixThermal,'.bin'];
-        tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
-        
+        thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', calibParams.tableVersions.algoThermal);
+        thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
         try
-            cmdstr = sprintf('WrCalibInfo %s',tableName);
+            cmdstr = sprintf('WrCalibInfo %s',thermalTableFullPath);
             hw.cmd(cmdstr);
             fprintff('Done\n');
         catch
             fprintf('Failed to write Algo_Thermal_Table to EPROM. You are probably using an unsupported fw version.\n');
             calibPassed = 0;
         end
+        
         fprintff('Burning algo calibration table...');
+        algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', calibParams.tableVersions.algoCalib);
+        algoTableFullPath = fullfile(runParams.outputFolder, algoTableFileName);
         try
-            algoCalibInfoName = fullfile(runParams.outputFolder,['Algo_Calibration_Info_CalibInfo',calibpostfix,'.bin']);
-            cmdstr = sprintf('WrCalibInfo %s',algoCalibInfoName);
+            cmdstr = sprintf('WrCalibInfo %s',algoTableFullPath);
             hw.cmd(cmdstr);
             fprintff('Done\n');
         catch

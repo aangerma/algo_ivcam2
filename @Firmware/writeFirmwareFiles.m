@@ -10,11 +10,7 @@ function writeFirmwareFiles(obj,outputFldr)
     
     v1=bitand(bitshift(regs.DIGG.spare(1),-16),uint32(255));
     v2=bitand(bitshift(regs.DIGG.spare(1),-8),uint32(255));
-    configpostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
-    
-    calibpostfix = sprintf('_Ver_%02d_%02d.',v1,v2);
-    
-    
+    vers = single(v1)+single(v2)/100;
     
     m=obj.getMeta();
     
@@ -24,17 +20,21 @@ function writeFirmwareFiles(obj,outputFldr)
     %
     d=obj.getAddrData(calib_regs2write);
     assert(length(d)<=62,'Max lines in calibration file is limited to 62 due to eprom memmory limitation');
-    writeMWD(d,fullfile(outputFldr,filesep,['Algo_Pipe_Calibration_VGA_CalibData' calibpostfix 'txt']),1,510);
+    algoPipeCalibTableFileName = Calibration.aux.genTableBinFileName('Algo_Pipe_Calibration_VGA_CalibData', vers);
+    writeMWD(d,fullfile(outputFldr,filesep, [algoPipeCalibTableFileName(1:end-4), '.txt']),1,510);
     
     d=obj.getAddrData(calibR_regs2write);
-    writeMWD(d,fullfile(outputFldr,filesep,['Reserved_512_Calibration_2_CalibData' calibpostfix 'txt']),1,62);
+    reserved512TableFileName = Calibration.aux.genTableBinFileName('Reserved_512_Calibration_2_CalibData', vers);
+    writeMWD(d,fullfile(outputFldr,filesep,[reserved512TableFileName(1:end-4) '.txt']),1,62);
     
+    undistTableFileName = Calibration.aux.genTableBinFileName('DIGG_Undist_Info_%d_CalibInfo', vers);
+    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep, undistTableFileName),true);
     
-    undistfns=obj.writeLUTbin(obj.getAddrData('DIGGundistModel'),fullfile(outputFldr,filesep,['DIGG_Undist_Info_%d_CalibInfo' calibpostfix 'bin']),true);
+    gammaTableFileName = Calibration.aux.genTableBinFileName('DIGG_Gamma_Info_CalibInfo', vers);
+    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep, gammaTableFileName));
     
-    gammafn =obj.writeLUTbin(obj.getAddrData('DIGGgamma_'),fullfile(outputFldr,filesep,['DIGG_Gamma_Info_CalibInfo' calibpostfix 'bin']));
-    
-    obj.writeAlgoThermalBin(fullfile(outputFldr,filesep,['Algo_Thermal_Loop_CalibInfo' calibpostfix 'bin']))
+    thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', vers);
+    obj.writeAlgoThermalBin(fullfile(outputFldr,filesep, thermalTableFileName));
     %no room for undist3: concat it to gamma file
     data = [readbin(gammafn{1});readbin(undistfns{3})];
     writebin(gammafn{1},data);
@@ -45,11 +45,14 @@ function writeFirmwareFiles(obj,outputFldr)
     
     config_regs2write=cell2str({m([m.group]==CONFIG_GROUP_KEY).regName},'|');
     
-    writeMWD(obj.getAddrData(config_regs2write),fullfile(outputFldr,filesep,['Algo_Dynamic_Configuration_VGA30_%d_ConfigData' configpostfix 'txt']),3,510);
+    algoDynamicCfgTableFileName = Calibration.aux.genTableBinFileName('Algo_Dynamic_Configuration_VGA30_%d_ConfigData', vers);
+    writeMWD(obj.getAddrData(config_regs2write),fullfile(outputFldr,filesep, [algoDynamicCfgTableFileName(1:end-4), '.txt']),3,510);
     
-    obj.writeLUTbin(obj.getAddrData('DCORtmpltCrse'),fullfile(outputFldr,filesep,['DCOR_cml_%d_Info_ConfigInfo' configpostfix 'bin']));
+    dcorCmlTableFileName = Calibration.aux.genTableBinFileName('DCOR_cml_%d_Info_ConfigInfo', vers);
+    obj.writeLUTbin(obj.getAddrData('DCORtmpltCrse'),fullfile(outputFldr,filesep, dcorCmlTableFileName));
     
-    obj.writeLUTbin(obj.getAddrData('DCORtmpltFine'),fullfile(outputFldr,filesep,['DCOR_fml_%d_Info_ConfigInfo' configpostfix 'bin']));
+    dcorFmlTableFileName = Calibration.aux.genTableBinFileName('DCOR_fml_%d_Info_ConfigInfo', vers);
+    obj.writeLUTbin(obj.getAddrData('DCORtmpltFine'),fullfile(outputFldr,filesep, dcorFmlTableFileName));
     
     
 end

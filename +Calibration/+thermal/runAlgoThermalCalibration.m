@@ -54,7 +54,7 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     Calibration.aux.collectTempData(hw,runParams,fprintff,'Before starting stream:');
     
     %% Init hw configuration
-    initConfiguration(hw,fw,runParams,fprintff,t);
+    initConfiguration(hw,fw,runParams,calibParams,fprintff,t);
 
     %% Stream initiation
     proceed = safetyCheck(hw, fprintff);
@@ -127,16 +127,10 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
         fprintff('PASSED.\n');
         fprintff('Burning algo thermal table...');
         if runParams.burnCalibrationToDevice
-            vers = AlgoThermalCalibToolVersion;
-            whole = floor(vers);
-            frac = round(100*mod(vers,1));
-            calibpostfix = sprintf('_Ver_%02d_%02d',whole,frac);
-            
-            calibParams.fwTable.name = [calibParams.fwTable.name,calibpostfix,'.bin'];
-            tableName = fullfile(runParams.outputFolder,calibParams.fwTable.name);
-            
+            thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', calibParams.tableVersions.algoThermal);
+            thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
             try
-                cmdstr = sprintf('WrCalibInfo %s',tableName);
+                cmdstr = sprintf('WrCalibInfo %s',thermalTableFullPath);
                 hw.cmd(cmdstr);
                 fprintff('Done\n');
             catch
@@ -144,9 +138,10 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
                 calibPassed = 0;
             end
             fprintff('Burning algo calibration table...');
+            algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', calibParams.tableVersions.algoCalib);
+            algoTableFullPath = fullfile(runParams.outputFolder, algoTableFileName);
             try
-                algoCalibInfoName = fullfile(runParams.outputFolder,['Algo_Calibration_Info_CalibInfo',calibpostfix,'.bin']);
-                cmdstr = sprintf('WrCalibInfo %s',algoCalibInfoName);
+                cmdstr = sprintf('WrCalibInfo %s',algoTableFullPath);
                 hw.cmd(cmdstr);
                 fprintff('Done\n');
             catch
@@ -219,7 +214,7 @@ function [verValue,versionFull] = getVersion(hw,runParams)
     versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
 
-function initConfiguration(hw,fw,runParams,fprintff,t)  
+function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
 %         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
@@ -235,28 +230,24 @@ function initConfiguration(hw,fw,runParams,fprintff,t)
 %         fprintff('Done(%ds)\n',round(toc(t)));
         % Create config calib files
         fprintff('[-] Burning default config calib files...');
-%         fw.writeFirmwareFiles(fullfile(runParams.internalFolder,'configFiles'));
-%         fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_00.bin')));
         vers = AlgoThermalCalibToolVersion;
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
         fw.setRegs(vregs,'');
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'));
-        versPreset = calibParams.presets.tableVersion;
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_%02d_%02d.bin',floor(versPreset),round(100*mod(versPreset,1)))));
+        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),[],[], calibParams.tableVersions);
+        % generate remaining tables which are not managed through actual FW regs
+        rtxOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
+        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles', rtxOverXTableFileName),[]);
+        presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
+        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles', presetsTableFileName));
+        rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
+        writeAllBytes(zeros(1,112,'uint8'), fullfile(runParams.internalFolder,'initialCalibFiles', rgbTableFileName));
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
         fprintff('Done\n');
     else
         fprintff('skipped\n');
-        txDelay = typecast(hw.read('DESTtxFRQpd_000'),'single');
-        txDelayRef = fw.getAddrData('DESTtxFRQpd_000');
-        txDelayRef = typecast(txDelayRef{2},'single');
-        if abs(txDelay-txDelayRef)>0.5
-           fprintff('WARNING: Calibration should be done with default EEPROM or with init stage checked!\n'); 
-        end
-
     end
 end
 

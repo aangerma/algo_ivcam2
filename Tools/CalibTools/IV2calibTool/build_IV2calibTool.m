@@ -47,13 +47,16 @@ fw = Pipe.loadFirmware(sprintf('../../../+Calibration/%s',toolConfig.configurati
 vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(calibToolVersion)));
 vregs.FRMW.configVersion = uint32(hex2dec(single2hex(calibToolVersion)));
 fw.setRegs(vregs,'');
+
+presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
+rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
 % Generate tables for old firmware
 fw.writeFirmwareFiles(fullfile(outputFolder,'configFilesNoAlgoGen'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen',sprintf('Dynamic_Range_Info_CalibInfo_Ver_00_%02.0f.bin',mod(calibToolVersion,1)*100)));
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen', presetsTableFileName));
 % Generate tables for firmware with Algo Gen
 fw.generateTablesForFw(fullfile(outputFolder,'configFiles'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02.0f.bin',mod(calibToolVersion,1)*100)),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
-fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles',sprintf('Algo_rtdOverAngX_CalibInfo_Ver_%02.0f_%02.0f.bin',floor(calibToolVersion),mod(calibToolVersion*100,100))),[]);
+fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles', presetsTableFileName),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
+fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles', rtdOverXTableFileName),[]);
 
 %% Generate default algo thermal table
 

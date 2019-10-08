@@ -48,14 +48,11 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
 %     % write old firmware files to sub folder
 %     oldFirmwareOutput=fullfile(runParams.outputFolder,'oldCalibfiles'); 
 %     mkdirSafe(oldFirmwareOutput);
-%     fw.writeFirmwareFiles(oldFirmwareOutput);
 %     % write new firmware files to another sub folder
     calibOutput=fullfile(runParams.outputFolder,'calibOutputFiles');
     mkdirSafe(calibOutput);
-    fw.generateTablesForFw(calibOutput,0,runParams.afterThermalCalib); 
-%     calibTempTableFn = fullfile(calibOutput,sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(runParams.version*100,100)));    
-%      fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
-    
+    fw.generateTablesForFw(calibOutput,0,runParams.afterThermalCalib, calibParams.tableVersions); 
+   
     results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs);
 end
 function results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs)

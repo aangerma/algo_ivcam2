@@ -67,9 +67,10 @@ if calibParams.presets.long.updateCalibVal
     writetable(longRangePreset,longRangePresetFn);
 end
 presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
-calibTempTableFn = fullfile(runParams.outputFolder,'calibOutputFiles',sprintf('Dynamic_Range_Info_CalibInfo_Ver_05_%02d.bin',mod(calibToolVersion*100,100)));
+presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
+presetsTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', presetsTableFileName);
 fw = Pipe.loadFirmware(presetPath);
-fw.writeDynamicRangeTable(calibTempTableFn,presetPath);
+fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
     
 
 end
