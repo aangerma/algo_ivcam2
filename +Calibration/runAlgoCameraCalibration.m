@@ -1,4 +1,4 @@
-function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
+function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, fprintff, spark, app)
     t=tic;
     results = struct;
     if(~exist('fprintff','var'))
@@ -287,22 +287,30 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
     end
     clear hw;
 end
-function updateShortRangeRtdOffset(results,runParams)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function updateShortRangeRtdOffset(results, runParams)
     shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
     shortRangePreset=readtable(shortRangePresetFn);
     AlgoThermalLoopOffsetInd=find(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset'));
     shortRangePreset.value(AlgoThermalLoopOffsetInd) = shortRangePreset.value(AlgoThermalLoopOffsetInd) + mean([results.rtd2add2short_state1,results.rtd2add2short_state2]);
     writetable(shortRangePreset,shortRangePresetFn);
-    
 end
-function updateLongRangeRtdOffset(results,runParams)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function updateLongRangeRtdOffset(results, runParams)
     longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
     longRangePreset=readtable(longRangePresetFn);
     AlgoThermalLoopOffsetInd=find(strcmp(longRangePreset.name,'AlgoThermalLoopOffset'));
     longRangePreset.value(AlgoThermalLoopOffsetInd) = mean([results.rtdDiffViaLaserPower_state1,results.rtdDiffViaLaserPower_state2]);
     writetable(longRangePreset,longRangePresetFn);
 end
-function results = findRtdDiffFromLP(hw,results,runParams,calibParams,Calstate,fprintff)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function results = findRtdDiffFromLP(hw, results, runParams, calibParams, Calstate, fprintff)
 r=Calibration.RegState(hw);
 r.add('JFILinvBypass',true);
 r.add('DESTdepthAsRange',true);
@@ -331,7 +339,10 @@ results.(['rtdDiffViaLaserPower_',Calstate]) = mean(frameMax.z(mask)/4*2) - mean
     
 r.reset();
 end
-function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprintff,fnCalib,t)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function calibPassed = calRGB(hw, calibParams, runParams, results, calibPassed, fprintff, fnCalib, t)
     if runParams.rgb && ~runParams.replayMode
         fprintff('[-] Reseting before RGB calibration... '); 
 %         hw.saveRecData();
@@ -377,7 +388,10 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         calibPassed = calibPassed && rgbCalibPassed;
     end
 end
-function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [results, calibPassed] = preResetDFZValidation(hw, fw, results, calibParams, runParams, fprintff)
     % Compare the geometric error between spherical image and regular image
     calibPassed = 1;
     if runParams.pre_calib_validation
@@ -431,19 +445,18 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
 %         hw.setReg('DIGGsphericalScale',[640,480]);
         hw.shadowUpdate;
         
-        
         calibPassed = (results.eGeomSphericalDis < calibParams.errRange.eGeomSphericalDis(2)) && (results.eGeomSphericalEn<calibParams.errRange.eGeomSphericalEn(2));
         if calibPassed
             fprintff('[v] DFZ pre reset validation passed[eReg=%.2g,eSp=%.2g]\n',results.eGeomSphericalDis,results.eGeomSphericalEn);
         else
             fprintff('[x] DFZ pre reset validation failed[eReg=%.2g,eSp=%.2g]\n',results.eGeomSphericalDis,results.eGeomSphericalEn);
         end
-        
     end
-    
-
 end
-function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [runParams, calibParams] = loadParamsXMLFiles(runParamsFn, calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     %backward compatibility
     if(~isfield(runParams,'uniformProjectionDFZ'))
@@ -451,13 +464,15 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     end
    
     if(~exist('calibParamsFn','var') || isempty(calibParamsFn))
-        %% ::load default caliration configuration
+        % ::load default caliration configuration
         calibParamsFn='calibParams360p.xml';
     end
     calibParams = xml2structWrapper(calibParamsFn);
-    
 end
-function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [runParams, fnCalib, fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams, calibParams)
     runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
     mkdirSafe(runParams.outputFolder);
     mkdirSafe(runParams.internalFolder);
@@ -478,7 +493,9 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     copyfile(fullfile(eepromStructureFn,'*.csv'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
 end
 
-function hw = loadHWInterface(runParams,fw,fprintff,t)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function hw = loadHWInterface(runParams, fw, fprintff, t)
     fprintff('Loading HW interface...');
     if isfield(runParams,'replayFile')
         hwRecFile = runParams.replayFile;
@@ -497,14 +514,14 @@ function hw = loadHWInterface(runParams,fw,fprintff,t)
         end
     else
         hw=HWinterface(fw,fullfile(runParams.outputFolder,'sessionRecord.mat'));
-        
     end
     fprintff('Done(%ds)\n',round(toc(t)));
 end
 
-function [verValue,versionFull] = getVersion(hw,runParams)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [verValue, versionFull] = getVersion(hw, runParams)
     verValue = typecast(uint8([round(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
-    
     unitConfigVersion=hw.read('DIGGspare_005');
     if(unitConfigVersion~=verValue)
         warning('incompatible configuration versions!');
@@ -512,20 +529,25 @@ function [verValue,versionFull] = getVersion(hw,runParams)
     versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function initConfiguration(hw, fw, runParams, calibParams, fprintff, t)
     fprintff('init hw configuration...');
     if(runParams.init)
         fprintff('[-] Burning default config calib files...');
+        % extracting regs
         eRegs = hw.readAlgoEEPROMtable();
         vers = AlgoCameraCalibToolVersion;
         vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
         vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
         [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eRegs);
+        % setting regs in FW object
         fw.setRegs(vregs,'');
         fw.setRegs(delayRegs,'');
         fw.setRegs(dsmRegs,'');
         fw.setRegs(thermalRegs,'');
         fw.setRegs(dfzRegs,'');
+        % generating and burning tables
         fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib, calibParams.tableVersions);
         rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
         fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles', rtdOverXTableFileName),[]);
@@ -540,7 +562,9 @@ function initConfiguration(hw, fw, runParams, calibParams, fprintff, t)
     end
 end
 
-function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [calibParams, ret] = HVM_Cal_init(fn_calibParams, calib_dir, fprintff, output_dir)
     % Sets all global variables
     if(~exist('output_dir','var'))
         output_dir = fullfile(ivcam2tempdir,'\cal_tester\output');
@@ -550,52 +574,21 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,ou
     save_input_flag     = 1;
     save_output_flag    = 1;
     dummy_output_flag   = 0;
-    ret = 1;
+    ret                 = 1;
     [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
 
-function [results,calibPassed] = validateLos(hw, runParams, calibParams, results, fprintff)
-    calibPassed = 1;
-    if runParams.validateLOS
-        %test coverage
-        [losResults] = Calibration.validation.validateLOS(hw,runParams,[],calibParams.gnrl.cbPtsSz,fprintff);
-        if ~isempty(fieldnames(losResults))
-            metrics = {'losMaxP2p','losMeanStdX','losMeanStdY'};
-            for m=1:length(metrics)
-                results.(metrics{m}) = losResults.(metrics{m});
-                metricPassed = losResults.(metrics{m}) <= calibParams.errRange.(metrics{m})(2) && ...
-                    losResults.(metrics{m}) >= calibParams.errRange.(metrics{m})(1);
-                calibPassed = calibPassed & metricPassed;
-            end
-            if calibPassed
-                fprintff('[v] los max peak to peak passed[e=%g]\n',losResults.losMaxP2p);
-            else
-                fprintff('[x] los max peak to peak failed[e=%g]\n',losResults.losMaxP2p);
-            end
-        else
-            calibPassed = false;
-            fprintff('[x] los metric finished with error\n',[]);
-        end
-    end
-    
-end
-function [results] = calibratePresets(hw, results,runParams,calibParams, fprintff,fw)
-%% calibrate min range
-    results = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff);
-%% switch presets
-%     hw.stopStream(); 
-%     fprintff('Switch to long range preset\n');
-%     % set preset to max range: Gain control=1
-%     hw.setPresetControlState(1);   
-%     hw.startStream(0,runParams.calibRes);
-%% calibrate max range
-%     results = calibrateLongRangePreset(hw, results,runParams,calibParams, fprintff);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% burn presets
-%    burnPresets(hw,runParams,calibParams, fprintff,fw);
+function [results] = calibratePresets(hw, results,runParams,calibParams, fprintff, fw)
+    % calibrate min range
+    results = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff);
     hw.setPresetControlState(1);   
 end
-function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [results] = calibrateMinRangePreset(hw, results, runParams, calibParams, fprintff)
     if runParams.minRangePreset
         fprintff('[-] Calibrating short range laser power...\n');
         Calibration.aux.switchPresetAndUpdateModRef( hw,2,calibParams,results );
@@ -608,7 +601,9 @@ function [results] = calibrateMinRangePreset(hw, results,runParams,calibParams, 
     end
 end
 
-function [results] = calibrateLongRangePreset(hw,resolution,state,results,runParams,calibParams, fprintff)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [results] = calibrateLongRangePreset(hw, resolution, state, results, runParams, calibParams, fprintff)
     if runParams.maxRangePreset
         fprintff(['[-] Calibrating long range laser power on ',mat2str(resolution),' resolution ...\n']);
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
@@ -616,15 +611,16 @@ function [results] = calibrateLongRangePreset(hw,resolution,state,results,runPar
         [results.(['maxRangeScaleModRef_',state]),maxModRefDec,results.(['maxFillRate_',state]),...
          results.(['targetDist_',state])] = Calibration.presets.calibrateLongRange(hw,calibParams,state,runParams,fprintff);
 
-        
-        %% Set laser val
+        % Set laser val
         tmpres.maxRangeScaleModRef=results.(['maxRangeScaleModRef_',state]); 
         tmpres.maxModRefDec=maxModRefDec;
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,tmpres );
     end
 end
 
-function [results,calibPassed] = validateScanDirection(hw, results,runParams,calibParams, fprintff)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [results, calibPassed] = validateScanDirection(hw, results, runParams, calibParams, fprintff)
     calibPassed = 1;
     fprintff('[-] Validating scan direction...\n');
     if runParams.scanDir
@@ -666,7 +662,9 @@ function [results,calibPassed] = validateScanDirection(hw, results,runParams,cal
     end
 end
 
-function calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function calibrateJfilGamma(fw, calibParams, runParams, fnCalib, fprintff)
     fprintff('[-] Jfil gamma...\n');
     if (runParams.gamma)
         irInnerRange = calibParams.gnrl.irInnerRange;
@@ -683,6 +681,8 @@ function calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff)
     end
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t)
     fprintff('[-] Digg gamma...\n');
@@ -703,24 +703,11 @@ function results = calibrateDiggGamma(runParams, calibParams, results, fprintff,
         fprintff('[?] skipped\n');
     end
 end
-function [results,calibPassed,dfzRegs,dfzTmpRegs] = calibrateDFZ(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t)
-        [results,calibPassed,dfzRegs,dfzTmpRegs] = Calibration.DFZ.DFZ_calib(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
-%        [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams, results, fw, fnCalib, fprintff, t);
-end
 
-function imNoise = collectNoiseIm(hw)
-        hw.cmd('iwb e2 06 01 00'); % Remove bias
-        hw.cmd('iwb e2 08 01 0'); % modulation amp is 0
-        hw.cmd('iwb e2 03 01 10');% internal modulation (from register)
-        pause(0.1);
-        imNoise = hw.getFrame(10).i;
-        hw.cmd('iwb e2 03 01 90');% 
-        hw.cmd('iwb e2 06 01 70'); % Return bias
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
-    
-    
+function burn2Device(hw, calibPassed, runParams, calibParams, fprintff, t)
+
     doCalibBurn = false;
     fprintff('[!] setting burn calibration...');
     if(runParams.burnCalibrationToDevice)
@@ -733,7 +720,7 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     else
         fprintff('skiped\n');
     end
-    
+
     doConfigBurn = false;
     fprintff('[!] setting burn configuration...');
     if(runParams.burnConfigurationToDevice)
@@ -742,44 +729,54 @@ function burn2Device(hw,calibPassed,runParams,calibParams,fprintff,t)
     else
         fprintff('skiped\n');
     end
-    
-     if doCalibBurn
+
+    if doCalibBurn
         fprintff('[!] burning...');
         calibOutput=fullfile(runParams.outputFolder,'calibOutputFiles');
-        hw.burnCalibConfigFiles(calibOutput); 
+        hw.burnCalibConfigFiles(calibOutput);
         fprintff('Done(%ds)\n',round(toc(t)));
-     end
-    
+    end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function res = noCalibrations(runParams)
     res = ~(runParams.gamma || runParams.ROI || runParams.DFZ || runParams.undist ||runParams.rgb || runParams.minRangePreset || runParams.maxRangePreset || runParams.init );
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function res = onlyRGBCalib(runParams)
     res = ~(runParams.gamma || runParams.ROI || runParams.DFZ || runParams.undist) && runParams.rgb;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;
     g_reg_state_dir = Outdir;
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eepromRegs)
-delayRegs.EXTL.conLocDelaySlow      = eepromRegs.EXTL.conLocDelaySlow;
-delayRegs.EXTL.conLocDelayFastC     = eepromRegs.EXTL.conLocDelayFastC;
-delayRegs.EXTL.conLocDelayFastF     = eepromRegs.EXTL.conLocDelayFastF;
-delayRegs.FRMW.conLocDelaySlowSlope = eepromRegs.FRMW.conLocDelaySlowSlope;
-delayRegs.FRMW.conLocDelayFastSlope = eepromRegs.FRMW.conLocDelayFastSlope;
-dsmRegs.EXTL.dsmXscale              = eepromRegs.EXTL.dsmXscale;
-dsmRegs.EXTL.dsmXoffset             = eepromRegs.EXTL.dsmXoffset;
-dsmRegs.EXTL.dsmYscale              = eepromRegs.EXTL.dsmYscale;
-dsmRegs.EXTL.dsmYoffset             = eepromRegs.EXTL.dsmYoffset;
-thermalRegs.FRMW.atlMinVbias1       = eepromRegs.FRMW.atlMinVbias1;
-thermalRegs.FRMW.atlMaxVbias1       = eepromRegs.FRMW.atlMaxVbias1;
-thermalRegs.FRMW.atlMinVbias2       = eepromRegs.FRMW.atlMinVbias2;
-thermalRegs.FRMW.atlMaxVbias2       = eepromRegs.FRMW.atlMaxVbias2;
-thermalRegs.FRMW.atlMinVbias3       = eepromRegs.FRMW.atlMinVbias3;
-thermalRegs.FRMW.atlMaxVbias3       = eepromRegs.FRMW.atlMaxVbias3;
-dfzRegs.FRMW.dfzCalTmp              = eepromRegs.FRMW.dfzCalTmp;
-dfzRegs.FRMW.dfzApdCalTmp           = eepromRegs.FRMW.dfzApdCalTmp;
-dfzRegs.FRMW.dfzVbias               = eepromRegs.FRMW.dfzVbias;
-dfzRegs.FRMW.dfzIbias               = eepromRegs.FRMW.dfzIbias;
+    delayRegs.EXTL.conLocDelaySlow      = eepromRegs.EXTL.conLocDelaySlow;
+    delayRegs.EXTL.conLocDelayFastC     = eepromRegs.EXTL.conLocDelayFastC;
+    delayRegs.EXTL.conLocDelayFastF     = eepromRegs.EXTL.conLocDelayFastF;
+    delayRegs.FRMW.conLocDelaySlowSlope = eepromRegs.FRMW.conLocDelaySlowSlope;
+    delayRegs.FRMW.conLocDelayFastSlope = eepromRegs.FRMW.conLocDelayFastSlope;
+    dsmRegs.EXTL.dsmXscale              = eepromRegs.EXTL.dsmXscale;
+    dsmRegs.EXTL.dsmXoffset             = eepromRegs.EXTL.dsmXoffset;
+    dsmRegs.EXTL.dsmYscale              = eepromRegs.EXTL.dsmYscale;
+    dsmRegs.EXTL.dsmYoffset             = eepromRegs.EXTL.dsmYoffset;
+    thermalRegs.FRMW.atlMinVbias1       = eepromRegs.FRMW.atlMinVbias1;
+    thermalRegs.FRMW.atlMaxVbias1       = eepromRegs.FRMW.atlMaxVbias1;
+    thermalRegs.FRMW.atlMinVbias2       = eepromRegs.FRMW.atlMinVbias2;
+    thermalRegs.FRMW.atlMaxVbias2       = eepromRegs.FRMW.atlMaxVbias2;
+    thermalRegs.FRMW.atlMinVbias3       = eepromRegs.FRMW.atlMinVbias3;
+    thermalRegs.FRMW.atlMaxVbias3       = eepromRegs.FRMW.atlMaxVbias3;
+    dfzRegs.FRMW.dfzCalTmp              = eepromRegs.FRMW.dfzCalTmp;
+    dfzRegs.FRMW.dfzApdCalTmp           = eepromRegs.FRMW.dfzApdCalTmp;
+    dfzRegs.FRMW.dfzVbias               = eepromRegs.FRMW.dfzVbias;
+    dfzRegs.FRMW.dfzIbias               = eepromRegs.FRMW.dfzIbias;
 end
