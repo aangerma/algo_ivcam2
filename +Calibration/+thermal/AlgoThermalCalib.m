@@ -12,7 +12,7 @@ plotDataI = 1;
 
 isXGA = all(runParams.calibRes==[768,1024]);
 if isXGA
-    hw.cmd('ENABLE_XGA_UPSCALE 1')
+    hw.cmd('ENABLE_XGA_UPSCALE 1');
 end
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
