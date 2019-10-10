@@ -5,7 +5,9 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         isFinalStage = isfield(results, 'conLocDelaySlow'); % calibrateDelays was called once before
         hw.setAlgoLoops(false, thermalLoopEn); % disabling sync loop
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
+        if ~isFinalStage
+            Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Delay Calibration',1);
+        end
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw, calibParams.dataDelay, fprintff, runParams, calibParams, isFinalStage);
         
@@ -21,6 +23,9 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
             delayRegs.FRMW.conLocDelayFastSlope = single((delayCalibResults.delayZ - results.delayZ)/tempDiff);
             delayRegs.FRMW.dfzCalTmp            = single(curLddTemp);
         end
+        fprintff('Setting sync loop: IRdelay = %d+%.2f(T-%.2f), Zdelay = %d+%.2f(T-%.2f)\n',...
+            delayCalibResults.delayIR, delayRegs.FRMW.conLocDelaySlowSlope, delayRegs.FRMW.dfzCalTmp,...
+            delayCalibResults.delayZ, delayRegs.FRMW.conLocDelayFastSlope, delayRegs.FRMW.dfzCalTmp)
         writeDelayRegsToDRAM(hw, delayRegs)
         pause(1)
         hw.setAlgoLoops(true, thermalLoopEn); % enabling sync loop

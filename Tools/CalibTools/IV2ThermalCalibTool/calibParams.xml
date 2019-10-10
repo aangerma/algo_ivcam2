@@ -82,8 +82,17 @@
       <nFramesToIgnore>15</nFramesToIgnore>
       <tempBinRange>[0 94]</tempBinRange> 
       <nRows>48</nRows> 
-      <!-- [35 66] -->
       <name>Algo_Thermal_Loop_CalibInfo</name> 
-      <tableVersion>4.0</tableVersion> 
-   </fwTable>	
+   </fwTable>
+   <tableVersions>
+        <algoCalib>4.01</algoCalib>
+        <algoRtdOverAngX>3.15</algoRtdOverAngX>
+        <algoThermal>4.01</algoThermal>
+        <cbufCalib>3.15</cbufCalib>
+        <destTxPwrPd>3.15</destTxPwrPd>
+        <diggGamma>3.15</diggGamma>
+        <diggUndist>3.15</diggUndist>
+        <dynamicRange>5.15</dynamicRange>
+        <rgbCalib>0.01</rgbCalib>
+   </tableVersions>
 </struct>
