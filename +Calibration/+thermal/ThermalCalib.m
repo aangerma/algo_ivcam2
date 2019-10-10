@@ -261,4 +261,4 @@ function res = badRoiCalibration(frames,fprintff)
 fRates = arrayfun(@(s) mean(s.i(:)>0)*100,frames);
 irFillRate = mean(fRates);
 res = irFillRate < 100;
-
+end

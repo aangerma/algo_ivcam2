@@ -30,6 +30,7 @@
        <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
+       <deltaTemp4Fovframe>5</deltaTemp4Fovframe>
    </warmUp>
    <errRange>
       <stdRtd>[0 inf]</stdRtd>
