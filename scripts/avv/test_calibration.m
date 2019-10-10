@@ -24,8 +24,6 @@ function testsPassed = test_calibration(calibParamsPath,output_dir_Path,DFZ_cali
 % Long_Preset_state2_calib_path = 'X:\Avv\sources\calibration\PC02\mat_files\Preset_Long_Calib_Calc_state2_int_in.mat';
 % test_calibration(calibParamsPath,output_dir_Path,DFZ_calib_path,DSM_calib_path,END_calib_path,RGB_calib_path,ROI_calib_path,Short_Preset_calib_path,Long_Preset_state1_calib_path,Long_Preset_state2_calib_path)
 
-   % output_dir_Path = output_dir_Path{:};	
-
     ThresholdParams = xml2structWrapper(calibParamsPath);
     fprintff = @fprintf;
     %DFZ calibration
