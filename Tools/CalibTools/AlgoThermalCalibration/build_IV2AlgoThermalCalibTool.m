@@ -5,13 +5,13 @@ Steps for resleasing a new calibration gui:
 3. Look for differences in outputFiles in respect to previous version and verify only things that was supposed to change actually did.
 %}
 
-if isempty(strfind(version, 'R2017a')) %#ok
-    error('build_IV2AlgoThermalCalibTool() must be ran with Matlab R2017a!');
+if isempty(strfind(version, 'R2018b')) %#ok
+    error('build_IV2AlgoThermalCalibTool() must be ran with Matlab R2018b!');
 end
 
 %%
 [ver,sub] = AlgoThermalCalibToolVersion();
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2AlgoThermalCalibTool\\%1.2f.%1.0f\\',ver,sub);
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\ATC\\%1.2f.%1.0f\\',ver,sub);
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2AlgoThermalCalibTool.m ' ...

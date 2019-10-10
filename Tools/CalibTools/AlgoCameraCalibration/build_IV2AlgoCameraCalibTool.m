@@ -22,7 +22,7 @@ toolConfig = xml2structWrapper(toolConfigFile);
 calibParams = xml2structWrapper(toolConfig.calibParamsFile);
 %%
 [vers,sub] = AlgoCameraCalibToolVersion;
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2AlgoCameraCalibTool%s\\%1.2f.%1.0f\\',gProjID,vers,sub);
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\ACC%s\\%1.2f.%1.0f\\',gProjID,vers,sub);
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2AlgoCameraCalibTool.m ' ...
@@ -49,6 +49,7 @@ fw.setRegs(vregs,'');
 
 presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
 rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
+rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
 % Generate tables for old firmware
 fw.writeFirmwareFiles(fullfile(outputFolder,'configFilesNoAlgoGen'));
 fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen', presetsTableFileName));
@@ -56,9 +57,7 @@ fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen', presetsT
 fw.generateTablesForFw(fullfile(outputFolder,'configFiles'),[],[], calibParams.tableVersions);
 fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles', presetsTableFileName),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
 fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles', rtdOverXTableFileName),[]);
-
-%% Generate default algo thermal table
-
+writeAllBytes(zeros(1,112,'uint8'), fullfile(outputFolder,'configFiles', rgbTableFileName));
 
 % %%
 % mcc -m IV2rgbCalibTool.m ...
