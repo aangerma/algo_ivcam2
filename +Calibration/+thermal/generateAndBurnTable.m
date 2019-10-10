@@ -32,7 +32,7 @@ eepromRegs.FRMW.atlMaxVbias3 = single(data.tableResults.angx.p1(2));
 
 fw.setRegs(eepromRegs,'');
 fw.get();
-fw.generateTablesForFw(runParams.outputFolder,1);
+fw.generateTablesForFw(runParams.outputFolder,1,[],calibParams.tableVersions);
 
 if calibPassed && ~isempty(hw)
     fprintff('Burning algo thermal table...');
