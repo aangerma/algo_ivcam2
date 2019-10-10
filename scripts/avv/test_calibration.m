@@ -44,7 +44,7 @@ function testsPassed = test_calibration(calibParamsPath,output_dir_Path,DFZ_cali
    %DSM calibration
 
     try
-        load(DSM_calib_path);
+        load(DSM_calib_path) ; 
         [res2, DSM_data,angxZO,angyZO] = DSM_Calib_Calc_int(im, sz , angxRawZOVec , angyRawZOVec ,dsmregs_current ,ThresholdParams,fprintff);
         dsmPassed = (res2 +1)/2; %result =-1\1 --> dsmpassed= 0/1
         if dsmPassed
