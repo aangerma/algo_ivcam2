@@ -22,7 +22,7 @@ toolConfig = xml2structWrapper(toolConfigFile);
 calibParams = xml2structWrapper(toolConfig.calibParamsFile);
 %%
 [vers,sub] = AlgoCameraCalibToolVersion;
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\IV2AlgoCameraCalibTool%s\\%1.2f.%1.0f\\',gProjID,vers,sub);
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\ACC%s\\%1.2f.%1.0f\\',gProjID,vers,sub);
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2AlgoCameraCalibTool.m ' ...

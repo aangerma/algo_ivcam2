@@ -216,9 +216,14 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
         fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
     end
     
-%     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
-    
     fprintff('[-] Burning preset table...');
+    try
+        hw = HWinterface;
+        hw.cmd(['WrCalibInfo ',presetsTableFullPath]);
+        fprintff('Done\n');
+    catch
+        fprintff('failed to burn preset table\n');
+    end
     
     if ~calibParams.presets.compare.bypass
         % Calc diff between presets
@@ -242,16 +247,12 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn,calibParamsFn, fp
         fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
         
         fprintff('[-] Reburning preset table...');
-        if ~runParams.afterThermalCalib
-            try
-                hw = HWinterface;
-                hw.cmd(['WrCalibInfo ',presetsTableFullPath]);
-                fprintff('Done\n');
-            catch
-                fprintff('failed to burn preset table\n');
-            end
-        else
-            fprintff(' Skipping... We don''t want to update presets calibration after Algo2\n');
+        try
+            hw = HWinterface;
+            hw.cmd(['WrCalibInfo ',presetsTableFullPath]);
+            fprintff('Done\n');
+        catch
+            fprintff('failed to burn preset table\n');
         end
     end
     
@@ -352,9 +353,10 @@ function calibPassed = calRGB(hw,calibParams,runParams,results,calibPassed,fprin
         [results,rgbTable,rgbPassed] = Calibration.rgb.calibrateRGB(hw, runParams, calibParams, results,fnCalib, fprintff, t);
         if rgbPassed
             rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', rgbTable.version);
-            writeAllBytes(rgbTable.data, fullfile(runParams.outputFolder,'calibOutputFiles', rgbTableFileName));
+            rgbTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rgbTableFileName);
+            writeAllBytes(rgbTable.data, rgbTableFullPath);
             try
-                hw.cmd(sprintf('WrCalibInfo "%s"',fnRgbTable));
+                hw.cmd(sprintf('WrCalibInfo "%s"',rgbTableFullPath));
             catch
                 fprintff('Failed to write RGB calibration table. Check if EEPROM TOC supports RGB.\n');
             end
