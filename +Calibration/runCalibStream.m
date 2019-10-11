@@ -171,11 +171,6 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         fprintff('CoverageValidation or preResetDFZValidation failed. Skipping...\n');
     end
 
-    %% merge all scores outputs
-%     calibPassed = Calibration.aux.mergeScores(results,calibParams.errRange,fprintff,0);
-    
-    
-    
     %% Burn 2 device
     hw.stopStream;
     burn2Device(hw,1,runParams,calibParams,@fprintf,t);
@@ -195,63 +190,37 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
             res = resolutions{i};
             Calstate = Calibration.presets.findLongRangeStateCal(calibParams,res);
             if(~isempty(res))
-                hw.stopStream;
-                hw.cmd('rst');
-                pause(10);
-                clear hw;
-                pause(1);
-                hw = HWinterface;
-                hw.cmd('DIRTYBITBYPASS');
                 fprintff('Test %s for long range preset, starting stream.\n',Calstate);
-                isXGA = all(res==[768,1024]);
-                if isXGA
-                    hw.cmd('ENABLE_XGA_UPSCALE 1')
-                end
+                hw = Calibration.aux.resetCamera( hw );
                 hw.startStream(0,res);
                 results = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
-                
             end
         end
     end
-    presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
-    presetsTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', presetsTableFileName);
-
-    if runParams.DFZ && runParams.maxRangePreset && ~calibParams.sysDelayOverLPCorrection.bypass
-       % Update presets to compensate for change in system delay after
-       % laser calibration
+    presetsTableFullPath = GeneratePresetsTable_Calib_Calc(calibParams);
+    fprintff('[-] Burning preset table...');
+    try
+        hw = HWinterface;
+        hw.cmd(['WrCalibInfo ',presetsTableFullPath]);
+        fprintff('Done\n');
+    catch
+        fprintff('failed to burn preset table\n');
+    end
+    
+    if ~calibParams.presets.compare.bypass
+        % Calc diff between presets
+        hw = Calibration.aux.resetCamera( hw );
+        fprintff('Comparing presets per resolution...');
         resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
         for i = 1:2
             res = resolutions{i};
-            Calstate = Calibration.presets.findLongRangeStateCal(calibParams,res);
-            if(~isempty(res))
-                hw.stopStream;
-                hw.cmd('rst');
-                pause(10);
-                clear hw;
-                pause(1);
-                hw = HWinterface;
-                hw.cmd('DIRTYBITBYPASS');
-                fprintff('Test %s for long range preset, starting stream.\n',Calstate);
-                hw.startStream(0,res);
-                if i == 1
-                   Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Rtd Over Laser Power Correction - Initial location Of RGB',1); 
-                else
-                    pause(5);
-                end
-                results = findRtdDiffFromLP(hw,results,runParams,calibParams,Calstate,fprintff);
-                
-            end
+            rtd2addRes = Calibration.presets.compareRtdOfShortAndLong(hw,calibParams,res,runParams);
+            results = Validation.aux.mergeResultStruct(results, rtd2addRes);
         end
-        updateLongRangeRtdOffset(results,runParams);
-        presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
-        fw = Pipe.loadFirmware(presetPath);
-        fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
-    end
-    
-%     presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
-    
-    fprintff('[-] Burning preset table...');
-    if ~runParams.afterThermalCalib
+        UpdateShortPresetRtdDiff_Calib_Calc(results);
+        presetsTableFullPath = GeneratePresetsTable_Calib_Calc(calibParams);
+        
+        fprintff('[-] Reburning preset table...');
         try
             hw = HWinterface;
             hw.cmd(['WrCalibInfo ',presetsTableFullPath]);
@@ -259,44 +228,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         catch
             fprintff('failed to burn preset table\n');
         end
-    else
-        fprintff(' Skipping... We don''t want to update presets calibration after Algo2\n');
     end
     
-    if ~calibParams.presets.compare.bypass
-        % Calc diff between presets
-        hw.stopStream;
-        hw.cmd('rst');
-        pause(10);
-        clear hw;
-        pause(1);
-        hw = HWinterface;
-        hw.cmd('DIRTYBITBYPASS');
-        fprintff('Comparing presets, starting stream.\n',Calstate);
-        resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
-        for i = 1:2
-            res = resolutions{i};
-            Calstate = Calibration.presets.findLongRangeStateCal(calibParams,res);
-            results.(['rtd2add2short_',Calstate]) = Calibration.presets.compareRtdOfShortAndLong(hw,calibParams,res,runParams);
-        end
-        updateShortRangeRtdOffset(results,runParams);
-        presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
-        fw = Pipe.loadFirmware(presetPath);
-        fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
-        
-        fprintff('[-] Reburning preset table...');
-        if ~runParams.afterThermalCalib
-            try
-                hw = HWinterface;
-                hw.cmd(['WrCalibInfo ',presetsTableFullPath]);
-                fprintff('Done\n');
-            catch
-                fprintff('failed to burn preset table\n');
-            end
-        else
-            fprintff(' Skipping... We don''t want to update presets calibration after Algo2\n');
-        end
-    end
     
 %%
     Calibration.aux.logResults(results,runParams);
