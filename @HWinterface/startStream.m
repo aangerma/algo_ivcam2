@@ -1,5 +1,5 @@
 function startStream(obj,FrameGraberMode,resolution,colorResolution,rgbFR)
-timeout = 10; %timeout until first frame is valid
+timeout = 5; %timeout until first frame is valid
 if(obj.m_dotnetcam.Stream.IsDepthPlaying)
     return;
 end
