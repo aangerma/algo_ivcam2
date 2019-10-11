@@ -17,15 +17,15 @@ if (runParams.DFZ)
     [r] = rtdOverAngXFixInit(hw,runParams,fprintff);
     
     Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Rtd Over AngX - Board should cover the entire fov',1);
-    delayVec = regs.DEST.txFRQpd(1)*ones(1,calibParams.rtdOverAngX.res,'single');
-    setRtdOverAngXFix(hw,delayVec);
+    [delayVecNoChange,delayVecSteps] = RtdOverAngXStateValues_Calib_Calc(calibParams,regs);
+    
+    setRtdOverAngXFix(hw,delayVecNoChange);
     pause(2);
     inputPath = fullfile(ivcam2tempdir,'rtdOverAngX'); 
     pathConstant = fullfile(inputPath,'frames_constant');
     Calibration.aux.SaveFramesWrapper(hw , 'Z' , calibParams.rtdOverAngX.nFrames, pathConstant);     
 
-    delayVec = regs.DEST.txFRQpd(1)-single(1:calibParams.rtdOverAngX.res)*calibParams.rtdOverAngX.stepSize;
-    setRtdOverAngXFix(hw,delayVec);
+    setRtdOverAngXFix(hw,delayVecSteps);
     pause(2);
     inputPath = fullfile(ivcam2tempdir,'rtdOverAngX'); 
     pathSteps = fullfile(inputPath,'frames_steps');

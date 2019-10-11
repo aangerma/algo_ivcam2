@@ -388,6 +388,7 @@
             <bypass>0</bypass>
             <nTrials>3</nTrials>
             <roi>0.4</roi>
+            <nFrames>20</nFrames>
         </compare>
         <long>
             <updateCalibVal>1</updateCalibVal>

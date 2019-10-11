@@ -1,7 +1,7 @@
-function rtd2add2short = compareRtdOfShortAndLong(hw,calibParams,res,runParams)
-params = Validation.aux.defaultMetricsParams();
-params.roi = calibParams.presets.compare.roi; params.isRoiRect=1; 
-mask = Validation.aux.getRoiMask(res, params);
+function results = compareRtdOfShortAndLong(hw,calibParams,res,runParams)
+
+% Init stage
+z2mm = single(hw.z2mm);
 N = calibParams.presets.compare.nTrials;
 for i = 1:N
     for p = 1:2
@@ -15,15 +15,13 @@ for i = 1:N
         r.add('DESTbaseline2$',single(0));
         r.set();
         hw.getFrame(30);
-        frame(p) = hw.getFrame(30);
+        inputPath = fullfile(ivcam2tempdir,'presetsAlignment'); 
+        trialPath = fullfile(inputPath,sprintf('trial_%d',i));
+        presetPath = fullfile(trialPath,sprintf('preset_%d',p));
+        Calibration.aux.SaveFramesWrapper(hw , 'Z' , calibParams.presets.compare.nFrames, presetPath);
     end
-    hw.stopStream;
-    diff(i) = mean(single(frame(1).z(mask))/4*2) - mean(single(frame(2).z(mask))/4*2);
 end
-rtd2add2short = mean(diff);
-if ~isempty(runParams)
-    ff = Calibration.aux.invisibleFigure();
-    plot(diff);title('Rtd Long-Short'); ylabel('mm'); xlabel('trial #');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Presets','CompareMeanZPostBurning'); 
-end
+hw.stopStream;
+results = PresetsAlignment_Calib_Calc(inputPath,calibParams,res,z2mm);
+
 end

@@ -119,11 +119,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 %    if ~calibPassed
 %        return 
 %    end
-   Calibration.aux.collectTempData(hw,runParams,fprintff,'Before los validation:');
-   [results,calibPassed] = validateLos(hw, runParams, calibParams,results, fprintff);
-   if ~calibPassed
-       return
-   end
+%    Calibration.aux.collectTempData(hw,runParams,fprintff,'Before los validation:');
+%    [results,calibPassed] = validateLos(hw, runParams, calibParams,results, fprintff);
+%    if ~calibPassed
+%        return
+%    end
     %% ::gamma:: 
 	results = calibrateDiggGamma(runParams, calibParams, results, fprintff, t);
 	calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff);
@@ -165,7 +165,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 
     try
         %% Validate DFZ before reset
-        [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
+        [results,~] = preResetDFZValidation(hw,fw,results,calibParams,runParams,fprintff);
     catch e
         fprintff('[!] ERROR:%s\n',strtrim(e.message));
         fprintff('CoverageValidation or preResetDFZValidation failed. Skipping...\n');
@@ -277,7 +277,7 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
         for i = 1:2
             res = resolutions{i};
             Calstate = Calibration.presets.findLongRangeStateCal(calibParams,res);
-            results.(['rtd2add2short_',Calstate]) = Calibration.presets.compareRtdOfShortAndLong(hw,calibParams,[768,1024],runParams);
+            results.(['rtd2add2short_',Calstate]) = Calibration.presets.compareRtdOfShortAndLong(hw,calibParams,res,runParams);
         end
         updateShortRangeRtdOffset(results,runParams);
         presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
