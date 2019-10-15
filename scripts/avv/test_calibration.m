@@ -157,7 +157,7 @@ function testsPassed = test_calibration(calibParamsPath,output_dir_Path,DFZ_cali
         lpresetPassed2=0;
     end
     %Summary 
-    testsPassed = dfzPassed & dsmPassed & endPassed & rgbPassed & roiPassed & spresetPassed & lpresetPassed1 & lpresetPassed2;
+    testsPassed =dfzPassed & dsmPassed & endPassed & rgbPassed & roiPassed & spresetPassed & lpresetPassed1 & lpresetPassed2;
     if testsPassed
         fprintf('** All tests passed! \n')
     else
