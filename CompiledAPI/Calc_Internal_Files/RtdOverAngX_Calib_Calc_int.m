@@ -66,7 +66,7 @@ end
 function rtdOverXTableFullPath = generateRtdOverAngXTable(runParams, tableValues, versRtdOverX)
 rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', versRtdOverX);
 rtdOverXTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rtdOverXTableFileName);
-fw = Firmware;
+fw = Pipe.loadFirmware(fullfile(runParams.outputFolder,'AlgoInternal'));
 fw.writeRtdOverAngXTable(rtdOverXTableFullPath,tableValues);
 end
 function table = fillStartNans(table)
