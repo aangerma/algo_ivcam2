@@ -114,7 +114,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
 
     %% Undist and table burn
     [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
-    [delayRegs, dsmRegs, ~, ~] = getATCregsFromEEPROM(eepromRegs);
+    [delayRegs, dsmRegs, ~, ~] = Calibraion.aux.getATCregsFromEEPROMregs(eepromRegs);
     [results,regs,luts] = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
     
     hw.runPresetScript('maReset');
@@ -411,29 +411,13 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 function initConfiguration(hw, fw, runParams, calibParams, fprintff, t)
     fprintff('init hw configuration...');
     if(runParams.init)
         fprintff('[-] Burning default config calib files...');
         % extracting regs
-        eRegs = hw.readAlgoEEPROMtable();
-        vers = AlgoCameraCalibToolVersion;
-        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
-        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
-        [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eRegs);
-        % setting regs in FW object
-        fw.setRegs(vregs,'');
-        fw.setRegs(delayRegs,'');
-        fw.setRegs(dsmRegs,'');
-        fw.setRegs(thermalRegs,'');
-        fw.setRegs(dfzRegs,'');
-        % generating and burning tables
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),0,runParams.afterThermalCalib, calibParams.tableVersions);
-        rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
-        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles', rtdOverXTableFileName),[]);
-        presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles', presetsTableFileName));
+        [~, eepromBin] = hw.readAlgoEEPROMtable();
+        GenInitCalibTables_Calc(calibParams, eepromBin);
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -638,26 +622,3 @@ function RegStateSetOutDir(Outdir)
     g_reg_state_dir = Outdir;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROM(eepromRegs)
-    delayRegs.EXTL.conLocDelaySlow      = eepromRegs.EXTL.conLocDelaySlow;
-    delayRegs.EXTL.conLocDelayFastC     = eepromRegs.EXTL.conLocDelayFastC;
-    delayRegs.EXTL.conLocDelayFastF     = eepromRegs.EXTL.conLocDelayFastF;
-    delayRegs.FRMW.conLocDelaySlowSlope = eepromRegs.FRMW.conLocDelaySlowSlope;
-    delayRegs.FRMW.conLocDelayFastSlope = eepromRegs.FRMW.conLocDelayFastSlope;
-    dsmRegs.EXTL.dsmXscale              = eepromRegs.EXTL.dsmXscale;
-    dsmRegs.EXTL.dsmXoffset             = eepromRegs.EXTL.dsmXoffset;
-    dsmRegs.EXTL.dsmYscale              = eepromRegs.EXTL.dsmYscale;
-    dsmRegs.EXTL.dsmYoffset             = eepromRegs.EXTL.dsmYoffset;
-    thermalRegs.FRMW.atlMinVbias1       = eepromRegs.FRMW.atlMinVbias1;
-    thermalRegs.FRMW.atlMaxVbias1       = eepromRegs.FRMW.atlMaxVbias1;
-    thermalRegs.FRMW.atlMinVbias2       = eepromRegs.FRMW.atlMinVbias2;
-    thermalRegs.FRMW.atlMaxVbias2       = eepromRegs.FRMW.atlMaxVbias2;
-    thermalRegs.FRMW.atlMinVbias3       = eepromRegs.FRMW.atlMinVbias3;
-    thermalRegs.FRMW.atlMaxVbias3       = eepromRegs.FRMW.atlMaxVbias3;
-    dfzRegs.FRMW.dfzCalTmp              = eepromRegs.FRMW.dfzCalTmp;
-    dfzRegs.FRMW.dfzApdCalTmp           = eepromRegs.FRMW.dfzApdCalTmp;
-    dfzRegs.FRMW.dfzVbias               = eepromRegs.FRMW.dfzVbias;
-    dfzRegs.FRMW.dfzIbias               = eepromRegs.FRMW.dfzIbias;
-end

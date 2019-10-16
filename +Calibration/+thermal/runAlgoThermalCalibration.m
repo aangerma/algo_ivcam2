@@ -66,8 +66,6 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
 %     Calibration.aux.startHwStream(hw,runParams);
     hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
-    %% Verify unit's configuration version
-    [verValue,verValuefull] = getVersion(hw,runParams);  
     
     %% Set coarse DSM values 
     calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
@@ -148,11 +146,17 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     end
     clear hw;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     calibParams = xml2structWrapper(calibParamsFn);
     
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams)
     runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
     mkdirSafe(runParams.outputFolder);
@@ -173,6 +177,8 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     copyfile(fullfile(eepromStructureFn,'*.mat'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
     copyfile(fullfile(eepromStructureFn,'*.csv'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
     fprintff('Loading HW interface...');
@@ -198,33 +204,14 @@ function hw = loadHWInterface(runParams,fw,fprintff,t)
     fprintff('Done(%ds)\n',round(toc(t)));
 end
 
-function [verValue,versionFull] = getVersion(hw,runParams)
-    verValue = typecast(uint8([round(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
-    
-    unitConfigVersion=hw.read('DIGGspare_005');
-    if(unitConfigVersion~=verValue)
-        warning('incompatible configuration versions!');
-    end
-    versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
         % Create config calib files
         fprintff('[-] Burning default config calib files...');
-        vers = AlgoThermalCalibToolVersion;
-        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
-        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
-        fw.setRegs(vregs,'');
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),[],[], calibParams.tableVersions);
-        % generate remaining tables which are not managed through actual FW regs
-        rtxOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
-        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles', rtxOverXTableFileName),[]);
-        presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles', presetsTableFileName));
-        rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
-        writeAllBytes(zeros(1,112,'uint8'), fullfile(runParams.internalFolder,'initialCalibFiles', rgbTableFileName));
+        GenInitCalibTables_Calc(calibParams);
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -234,6 +221,7 @@ function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
     % Sets all global variables
@@ -249,6 +237,7 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,ou
     [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     % Set a DSM value that makes the valid area of the image in spherical
@@ -262,9 +251,13 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function res = noCalibrations(runParams)
     res = ~(runParams.DSM || runParams.dataDelay || runParams.init);
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;
