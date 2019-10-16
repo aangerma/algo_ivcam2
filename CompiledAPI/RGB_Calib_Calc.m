@@ -13,7 +13,8 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(InputPath, calibParams,
 % rgbTable - <vector> contains the data that will make the rgb table 
 % results - <struct> with two interesting fields: rgbIntReprojRms,rgbExtReprojRms
 
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
+    t0 = tic;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -67,7 +68,11 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(InputPath, calibParams,
     if(exist('fid','var'))
         fclose(fid);
     end
-
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nRGB_Calib_Calc run time = %.1f[sec]\n', t1);
+    end
 end
 
 function [im,rgbs] = loadRGBFrames(imagePath,IrImSize,calibParams)

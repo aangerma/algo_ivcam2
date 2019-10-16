@@ -57,12 +57,6 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     initConfiguration(hw,fw,runParams,calibParams,fprintff,t);
 
     %% Stream initiation
-    proceed = safetyCheck(hw, fprintff);
-    if (proceed~=1)
-        calibPassed = false;
-        return;
-    end
-    
     hw.cmd('DIRTYBITBYPASS');
     hw.setAlgoLoops(false, false); % (sync loop, thermal loop)
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
@@ -72,8 +66,6 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
 %     Calibration.aux.startHwStream(hw,runParams);
     hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
-    %% Verify unit's configuration version
-    [verValue,verValuefull] = getVersion(hw,runParams);  
     
     %% Set coarse DSM values 
     calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
@@ -154,11 +146,17 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     end
     clear hw;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     calibParams = xml2structWrapper(calibParamsFn);
     
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams)
     runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
     mkdirSafe(runParams.outputFolder);
@@ -179,6 +177,8 @@ function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(ru
     copyfile(fullfile(eepromStructureFn,'*.mat'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
     copyfile(fullfile(eepromStructureFn,'*.csv'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function hw = loadHWInterface(runParams,fw,fprintff,t)
     fprintff('Loading HW interface...');
@@ -204,44 +204,14 @@ function hw = loadHWInterface(runParams,fw,fprintff,t)
     fprintff('Done(%ds)\n',round(toc(t)));
 end
 
-function [verValue,versionFull] = getVersion(hw,runParams)
-    verValue = typecast(uint8([round(100*mod(runParams.version,1)) floor(runParams.version) 0 0]),'uint32');
-    
-    unitConfigVersion=hw.read('DIGGspare_005');
-    if(unitConfigVersion~=verValue)
-        warning('incompatible configuration versions!');
-    end
-    versionFull = typecast(uint8([runParams.subVersion round(100*mod(runParams.version,1)) floor(runParams.version) 0]),'uint32');
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
-%         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-%         fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLvAPD|EXTLauxShadow.*$).*',fnAlgoInitMWD);
-%         hw.runPresetScript('maReset');
-%         pause(0.1);
-%         hw.runScript(fnAlgoInitMWD);
-%         pause(0.1);
-%         hw.runPresetScript('maRestart');
-%         pause(0.1);
-%         hw.shadowUpdate();
-%         hw.setUsefullRegs();
-%         fprintff('Done(%ds)\n',round(toc(t)));
         % Create config calib files
         fprintff('[-] Burning default config calib files...');
-        vers = AlgoThermalCalibToolVersion;
-        vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
-        vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
-        fw.setRegs(vregs,'');
-        fw.generateTablesForFw(fullfile(runParams.internalFolder,'initialCalibFiles'),[],[], calibParams.tableVersions);
-        % generate remaining tables which are not managed through actual FW regs
-        rtxOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
-        fw.writeRtdOverAngXTable(fullfile(runParams.internalFolder,'initialCalibFiles', rtxOverXTableFileName),[]);
-        presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
-        fw.writeDynamicRangeTable(fullfile(runParams.internalFolder,'initialCalibFiles', presetsTableFileName));
-        rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
-        writeAllBytes(zeros(1,112,'uint8'), fullfile(runParams.internalFolder,'initialCalibFiles', rgbTableFileName));
+        GenInitCalibTables_Calc(calibParams);
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -251,6 +221,7 @@ function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,output_dir)
     % Sets all global variables
@@ -266,6 +237,7 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,ou
     [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     % Set a DSM value that makes the valid area of the image in spherical
@@ -279,66 +251,15 @@ function calibrateCoarseDSM(hw, runParams, calibParams, fprintff, t)
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function res = noCalibrations(runParams)
     res = ~(runParams.DSM || runParams.dataDelay || runParams.init);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;
     g_reg_state_dir = Outdir;
-end
-
-function proceed = safetyCheck(hw, fprintff)
-    dirtyBitGet = hw.cmd('dirtybitget');
-    if strcmp(dirtyBitGet, 'Address: 0x0 => 00 00 00 00')
-        fprintff('Dirty bit is off --> unit is eye safe. Proceeding...\n');
-        proceed = 1;
-    else
-        fprintff('WARNING: dirty bit is on --> unit may be unsafe! Prompting user response...');
-        % building the dialog box
-        bckClr = [0.6,0.1,0.1];
-        figHandle = figure('Position', [600,500,300,100], 'Name', 'Dirty bit alert', 'NumberTitle', 'off', 'Color', bckClr,...
-            'ToolBar', 'none', 'MenuBar', 'none', 'userdata', 0, 'KeyPressFcn', @exitOnEnter, 'WindowButtonDownFcn', @(varargin) set(varargin{1},'userdata',1));
-        axes('Parent', figHandle, 'visible', 'off');
-        txtString = [sprintf('Dirty bit is on --> unit may be unsafe!\n'),...
-            sprintf('Proper safety measures must be used.\n'),...
-            sprintf('Type "y" only if you are using all required safety measures.\n'),...
-            sprintf('Otherwise, type "n".\n\n'),...
-            sprintf('Do you with to continue? (y/n)')];
-        txt = uicontrol('Parent', figHandle, 'Style', 'text', 'Position', [10, 10, 300, 85], 'HorizontalAlignment', 'left',...
-            'BackgroundColor', bckClr, 'ForegroundColor', 'y', 'String', txtString);
-        t0 = tic;
-        while(ishandle(figHandle) && get(figHandle,'userdata')==0)
-            t1 = toc(t0);
-            title(sprintf('Waiting... (%.0f[sec])', t1))
-            pause(0.5)
-        end
-        % responding to input
-        if ishandle(figHandle)
-            key = get(figHandle,'CurrentKey');
-            if strcmp(key, 'y')
-                proceed = 1;
-            elseif strcmp(key, 'n')
-                proceed = 0;
-            end
-            close(figHandle);
-        else
-            proceed = -1;
-        end
-        switch proceed
-            case -1
-                fprintff(' User avoided responding --> aborting.\n');
-            case 0
-                fprintff(' Aborting by user request.\n');
-            case 1
-                fprintff(' Proceeding on user''s responsibility.\n');
-        end
-    end
-end
-
-function exitOnEnter(figHandle,varargin)
-    key = get(figHandle,'CurrentKey');
-    if (strcmp (key , 'y')) || (strcmp (key , 'n'))
-        set(figHandle,'userdata',1);
-    end
 end

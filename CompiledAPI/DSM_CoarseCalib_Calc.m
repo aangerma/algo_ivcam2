@@ -12,7 +12,8 @@ function [DSM_data] = DSM_CoarseCalib_Calc(angxRaw, angyRaw, calibParams)
 %       dsmYscale
 %       dsmYoffset
 %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn;
+    t0 = tic;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -63,7 +64,11 @@ function [DSM_data] = DSM_CoarseCalib_Calc(angxRaw, angyRaw, calibParams)
     if(exist('fid','var'))
         fclose(fid);
     end
-
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nDSM_CoarseCalib_Calc run time = %.1f[sec]\n', t1);
+    end
 end
 
 function [scale,offset] = stretch2margin(rawMin,rawMax,margin)

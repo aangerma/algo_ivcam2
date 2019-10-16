@@ -24,7 +24,8 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
 %   pixVar    - delay variance.
 %
 
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn;
+    t0 = tic;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
     unFiltered  = 0;
 
     % setting default global value in case not initial in the init function;
@@ -106,6 +107,11 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
     end
     if(res~=0)
         g_delay_cnt = 0;
+    end
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nIR_DelayCalibCalc run time = %.1f[sec]\n', t1);
     end
 end
 

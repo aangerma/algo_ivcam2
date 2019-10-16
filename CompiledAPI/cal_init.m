@@ -19,10 +19,9 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
 %    global g_calib_params_fn g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff ;
 %    g_calib_params_fn       = calib_params_fn;
 
-
-
+    t0 = tic;
     clear delay_R_calib_calc;   % persistance variable in function.
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt acc g_LogFn g_temp_count;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt acc g_LogFn g_temp_count g_countRuntime;
     g_delay_cnt             = 0;
     g_calib_dir             = calib_dir;
     g_output_dir            = output_dir;
@@ -33,6 +32,7 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
     g_dummy_output_flag     = dummy_output_flag;
     acc                     = [];
     g_temp_count            = 0;
+    g_countRuntime          = 1;
     
     func_name = dbstack;
     func_name = func_name(1).name;
@@ -88,6 +88,10 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
         fclose(fid);
     end
 
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\ncal_init run time = %.1f[sec]\n', t1);
+    end
     return;
 end
 

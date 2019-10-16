@@ -15,7 +15,8 @@ function [valResults, allResults] = HVM_Val_Coverage_Calc(InputPath, sz, calibPa
 %   valResults - 
 %   
 
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
+    t0 = tic;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -69,6 +70,11 @@ function [valResults, allResults] = HVM_Val_Coverage_Calc(InputPath, sz, calibPa
     end
     if(exist('fid','var'))
         fclose(fid);
+    end
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nHVM_Val_Coverage_Calc run time = %.1f[sec]\n', t1);
     end
 end
 

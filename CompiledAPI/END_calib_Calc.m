@@ -17,10 +17,12 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
 % output:
 %   results - incrmntal result 
 %   luts - undistort table.
+
+    t0 = tic;
     if ~exist('afterThermalCalib_flag','var')
         afterThermalCalib_flag = 0;
     end
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -87,29 +89,24 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     if(exist('fid','var'))
         fclose(fid);
     end
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nEND_calib_Calc run time = %.1f[sec]\n', t1);
+    end
 end
 
 
 
 function [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, afterThermalCalib)
-thermalRegs = struct;
-if afterThermalCalib
-    dfzRegs.FRMW.dfzCalTmp          = eepromRegs.FRMW.dfzCalTmp;
-    dfzRegs.FRMW.dfzApdCalTmp       = eepromRegs.FRMW.dfzApdCalTmp;
-    dfzRegs.FRMW.dfzVbias           = eepromRegs.FRMW.dfzVbias;
-    dfzRegs.FRMW.dfzIbias           = eepromRegs.FRMW.dfzIbias;
-    thermalRegs.FRMW.atlMinVbias1   = eepromRegs.FRMW.atlMinVbias1;
-    thermalRegs.FRMW.atlMaxVbias1   = eepromRegs.FRMW.atlMaxVbias1;
-    thermalRegs.FRMW.atlMinVbias2   = eepromRegs.FRMW.atlMinVbias2;
-    thermalRegs.FRMW.atlMaxVbias2   = eepromRegs.FRMW.atlMaxVbias2;
-    thermalRegs.FRMW.atlMinVbias3   = eepromRegs.FRMW.atlMinVbias3;
-    thermalRegs.FRMW.atlMaxVbias3   = eepromRegs.FRMW.atlMaxVbias3;
-else % dfzRegs was already enriched in DFZ_calib, thermalRegs are irrelevant
-    thermalRegs.FRMW.atlMinVbias1   = single(1);
-    thermalRegs.FRMW.atlMaxVbias1   = single(3);
-    thermalRegs.FRMW.atlMinVbias2   = single(1);
-    thermalRegs.FRMW.atlMaxVbias2   = single(3);
-    thermalRegs.FRMW.atlMinVbias3   = single(1);
-    thermalRegs.FRMW.atlMaxVbias3   = single(3);
-end
+    if afterThermalCalib
+        [~, ~, thermalRegs, dfzRegs] = getATCregsFromEEPROMregs(eepromRegs, dfzRegs);
+    else % dfzRegs was already enriched in DFZ_calib, thermalRegs are irrelevant
+        thermalRegs.FRMW.atlMinVbias1   = single(1);
+        thermalRegs.FRMW.atlMaxVbias1   = single(3);
+        thermalRegs.FRMW.atlMinVbias2   = single(1);
+        thermalRegs.FRMW.atlMaxVbias2   = single(3);
+        thermalRegs.FRMW.atlMinVbias3   = single(1);
+        thermalRegs.FRMW.atlMaxVbias3   = single(3);
+    end
 end
