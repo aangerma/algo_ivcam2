@@ -57,12 +57,6 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     initConfiguration(hw,fw,runParams,calibParams,fprintff,t);
 
     %% Stream initiation
-    proceed = safetyCheck(hw, fprintff);
-    if (proceed~=1)
-        calibPassed = false;
-        return;
-    end
-    
     hw.cmd('DIRTYBITBYPASS');
     hw.setAlgoLoops(false, false); % (sync loop, thermal loop)
     Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
@@ -217,17 +211,6 @@ end
 function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)  
     fprintff('init hw configuration...');
     if(runParams.init)
-%         fnAlgoInitMWD  =  fullfile(runParams.internalFolder,filesep,'algoInit.txt');
-%         fw.genMWDcmd('^(?!MTLB|EPTG|FRMW|EXTLvAPD|EXTLauxShadow.*$).*',fnAlgoInitMWD);
-%         hw.runPresetScript('maReset');
-%         pause(0.1);
-%         hw.runScript(fnAlgoInitMWD);
-%         pause(0.1);
-%         hw.runPresetScript('maRestart');
-%         pause(0.1);
-%         hw.shadowUpdate();
-%         hw.setUsefullRegs();
-%         fprintff('Done(%ds)\n',round(toc(t)));
         % Create config calib files
         fprintff('[-] Burning default config calib files...');
         vers = AlgoThermalCalibToolVersion;
@@ -286,59 +269,4 @@ end
 function RegStateSetOutDir(Outdir)
     global g_reg_state_dir;
     g_reg_state_dir = Outdir;
-end
-
-function proceed = safetyCheck(hw, fprintff)
-    dirtyBitGet = hw.cmd('dirtybitget');
-    if strcmp(dirtyBitGet, 'Address: 0x0 => 00 00 00 00')
-        fprintff('Dirty bit is off --> unit is eye safe. Proceeding...\n');
-        proceed = 1;
-    else
-        fprintff('WARNING: dirty bit is on --> unit may be unsafe! Prompting user response...');
-        % building the dialog box
-        bckClr = [0.6,0.1,0.1];
-        figHandle = figure('Position', [600,500,300,100], 'Name', 'Dirty bit alert', 'NumberTitle', 'off', 'Color', bckClr,...
-            'ToolBar', 'none', 'MenuBar', 'none', 'userdata', 0, 'KeyPressFcn', @exitOnEnter, 'WindowButtonDownFcn', @(varargin) set(varargin{1},'userdata',1));
-        axes('Parent', figHandle, 'visible', 'off');
-        txtString = [sprintf('Dirty bit is on --> unit may be unsafe!\n'),...
-            sprintf('Proper safety measures must be used.\n'),...
-            sprintf('Type "y" only if you are using all required safety measures.\n'),...
-            sprintf('Otherwise, type "n".\n\n'),...
-            sprintf('Do you with to continue? (y/n)')];
-        txt = uicontrol('Parent', figHandle, 'Style', 'text', 'Position', [10, 10, 300, 85], 'HorizontalAlignment', 'left',...
-            'BackgroundColor', bckClr, 'ForegroundColor', 'y', 'String', txtString);
-        t0 = tic;
-        while(ishandle(figHandle) && get(figHandle,'userdata')==0)
-            t1 = toc(t0);
-            title(sprintf('Waiting... (%.0f[sec])', t1))
-            pause(0.5)
-        end
-        % responding to input
-        if ishandle(figHandle)
-            key = get(figHandle,'CurrentKey');
-            if strcmp(key, 'y')
-                proceed = 1;
-            elseif strcmp(key, 'n')
-                proceed = 0;
-            end
-            close(figHandle);
-        else
-            proceed = -1;
-        end
-        switch proceed
-            case -1
-                fprintff(' User avoided responding --> aborting.\n');
-            case 0
-                fprintff(' Aborting by user request.\n');
-            case 1
-                fprintff(' Proceeding on user''s responsibility.\n');
-        end
-    end
-end
-
-function exitOnEnter(figHandle,varargin)
-    key = get(figHandle,'CurrentKey');
-    if (strcmp (key , 'y')) || (strcmp (key , 'n'))
-        set(figHandle,'userdata',1);
-    end
 end

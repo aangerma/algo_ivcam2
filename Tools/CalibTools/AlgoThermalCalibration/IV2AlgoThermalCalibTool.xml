@@ -13,9 +13,10 @@
    <cb_FOVexInstalled>1</cb_FOVexInstalled>
    <cb_manualCaptures>0</cb_manualCaptures>
    <cb_performValidation>0</cb_performValidation>
-   <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
-   <calibRes>[480,1024]</calibRes>
+   <outputdirectory>C:\temp\unitCalib\</outputdirectory>
    <configurationFolder>releaseConfigCalibVXGA</configurationFolder>
+   <presetsDefFolder>defaultValues</presetsDefFolder>
    <calibParamsFile>calibParams.xml</calibParamsFile>
    <toolName>IV2 Algo Thermal Calibration Tool</toolName>
+   <calibRes>[480,1024]</calibRes>
 </struct>

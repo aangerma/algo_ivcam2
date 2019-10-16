@@ -4,6 +4,7 @@ Steps for resleasing a new calibration gui:
 2. Run the section below.
 3. Look for differences in outputFiles in respect to previous version and verify only things that was supposed to change actually did.
 %}
+
 global gProjID;
 if isempty(gProjID)
     gProjID = iv2Proj.L515;
@@ -22,7 +23,7 @@ toolConfig = xml2structWrapper(toolConfigFile);
 calibParams = xml2structWrapper(toolConfig.calibParamsFile);
 %%
 [vers,sub] = AlgoCameraCalibToolVersion;
-outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\ACC%s\\%1.2f.%1.0f\\',gProjID,vers,sub);
+outputFolder = sprintf('\\\\ger\\ec\\proj\\ha\\RSG\\SA_3DCam\\Algorithm\\Releases\\IVCAM2.0\\ACC_%s\\%1.2f.%1.0f\\',gProjID,vers,sub);
 mkdirSafe(outputFolder);
 cmd = sprintf([
     'mcc -m IV2AlgoCameraCalibTool.m ' ...
@@ -35,7 +36,7 @@ cmd = sprintf([
     '-a ..\\..\\..\\@HWinterface\\presetScripts\\* '...
     '-a ..\\..\\..\\@HWinterface\\IVCam20Device\\* '...
     '-a ..\\@Spark\\* '...
-    ],outputFolder,toolConfig.presetsDefFolder,toolConfig.configurationFolder);
+    ],outputFolder, toolConfig.presetsDefFolder, toolConfig.configurationFolder);
 eval(cmd);
 
 

@@ -20,7 +20,7 @@
    <cb_uniformProjectionDFZ>0</cb_uniformProjectionDFZ>
    <cb_saveRegState>0</cb_saveRegState>
    <cb_FOVexInstalled>1</cb_FOVexInstalled>
-   <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
+   <outputdirectory>C:\temp\unitCalib\</outputdirectory>
    <configurationFolder>releaseConfigCalibVXGA</configurationFolder>
    <presetsDefFolder>defaultValues</presetsDefFolder>
    <calibParamsFile>calibParamsVXGA.xml</calibParamsFile>

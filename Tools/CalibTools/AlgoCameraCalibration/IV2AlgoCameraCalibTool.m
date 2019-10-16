@@ -9,7 +9,7 @@ end
 function outputFolderChange_callback(varargin)
     app=guidata(varargin{1});
     
-    hwRecFile = fullfile(app.outputdirectorty.String,filesep,'sessionRecord.mat');
+    hwRecFile = fullfile(app.outputdirectory.String,filesep,'sessionRecord.mat');
     if app.cb.replayMode.Value
         app.StartButton.BackgroundColor=[.5 .94 .94];
         app.logarea.String={''};
@@ -28,8 +28,8 @@ function loadDefaults(app)
         return;
     end
     s=xml2structWrapper(app.defaultsFilename);
-    if ~(exist(s.outputdirectorty,'dir'))
-        s.outputdirectorty = 'C:\temp\unitCalib\';
+    if ~(exist(s.outputdirectory,'dir'))
+        s.outputdirectory = 'C:\temp\unitCalib\';
     end
     
     ff=fieldnames(s);
@@ -151,17 +151,17 @@ function app=createComponents(runParamsFile)
     app.AbortButton.Visible='off';
     
     
-    % Create outputdirectortyEditFieldLabel
-    app.outputdirectortyEditFieldLabel = uicontrol('style','text','parent',configurationTab);
-    app.outputdirectortyEditFieldLabel.HorizontalAlignment = 'left';
-    app.outputdirectortyEditFieldLabel.Position = [10 sz(2)-56 94 15];
-    app.outputdirectortyEditFieldLabel.String = 'Output directorty';
+    % Create outputdirectoryEditFieldLabel
+    app.outputdirectoryEditFieldLabel = uicontrol('style','text','parent',configurationTab);
+    app.outputdirectoryEditFieldLabel.HorizontalAlignment = 'left';
+    app.outputdirectoryEditFieldLabel.Position = [10 sz(2)-56 94 15];
+    app.outputdirectoryEditFieldLabel.String = 'Output directorty';
     
-    % Create outputdirectorty
-    app.outputdirectorty =  uicontrol('style','edit','parent',configurationTab);
-    app.outputdirectorty.HorizontalAlignment='left';
-    app.outputdirectorty.Position = [110 sz(2)-60 490 22];
-    app.outputdirectorty.KeyReleaseFcn=@outputFolderChange_callback;
+    % Create outputdirectory
+    app.outputdirectory =  uicontrol('style','edit','parent',configurationTab);
+    app.outputdirectory.HorizontalAlignment='left';
+    app.outputdirectory.Position = [110 sz(2)-60 490 22];
+    app.outputdirectory.KeyReleaseFcn=@outputFolderChange_callback;
    
     % Create Operator field label
     app.operatorEditFieldLabel = uicontrol('style','text','parent',configurationTab);
@@ -195,7 +195,7 @@ function app=createComponents(runParamsFile)
     
     % Create outputFldrBrowseBtn
     app.outputFldrBrowseBtn =  uicontrol('style','pushbutton','parent',configurationTab);
-    app.outputFldrBrowseBtn.Callback = {@setFolder,app.outputdirectorty};
+    app.outputFldrBrowseBtn.Callback = {@setFolder,app.outputdirectory};
     app.outputFldrBrowseBtn.Position = [606 sz(2)-60 21 22];
     app.outputFldrBrowseBtn.String = '...';
 
@@ -286,15 +286,15 @@ function addPoxtFix_callback(varargin)
     app=guidata(varargin{1});
     set_watches(app.figH,false);
     
-    if(isempty(app.outputdirectorty.String) || app.outputdirectorty.String(end)~=filesep)
-        app.outputdirectorty.String(end+1)=filesep;
+    if(isempty(app.outputdirectory.String) || app.outputdirectory.String(end)~=filesep)
+        app.outputdirectory.String(end+1)=filesep;
     end
     try
         hw = HWinterface;
         s=hw.getSerial();
     catch
     end
-    app.outputdirectorty.String=fullfile(app.outputdirectorty.String,s,filesep);
+    app.outputdirectory.String=fullfile(app.outputdirectory.String,s,filesep);
     set_watches(app.figH,true);
 end
 
@@ -312,7 +312,7 @@ function saveDefaults(varargin)
     
     s=structfun(@(x) x.Value,app.cb,'uni',0);
     s=cell2struct(struct2cell(s),strcat('cb_',fieldnames(s)));
-    s.outputdirectorty=app.outputdirectorty.String;
+    s.outputdirectory=app.outputdirectory.String;
     s.configurationFolder = app.configurationFolder;
     s.presetsDefFolder= app.presetsDefFolder; 
     s.calibParamsFile = app.calibParamsFile;
@@ -320,8 +320,8 @@ function saveDefaults(varargin)
     s.toolName = app.toolName;
     s.calibRes = app.calibRes;
 %    s.calibRes = app.chooseResBtn.String{app.chooseResBtn.Value};
-    if(isempty(s.outputdirectorty))
-        s.outputdirectorty=' ';%structxml bug
+    if(isempty(s.outputdirectory))
+        s.outputdirectory=' ';%structxml bug
     end
     struct2xmlWrapper(s,app.defaultsFilename);
     
@@ -363,18 +363,18 @@ function statrtButton_callback(varargin)
         info = ''; % Until reading from unit
         serialStr = '00000000'; % Until reading from unit
         fwVersion = ''; % Until reading from unit
-        origOutputFolder = app.outputdirectorty.String;
+        origOutputFolder = app.outputdirectory.String;
         if app.cb.replayMode.Value
-            seesionFile = app.outputdirectorty.String;
+            seesionFile = app.outputdirectory.String;
             [~,~, extensionStr] = fileparts(seesionFile);
             if ~(exist(seesionFile,'file') && strcmp(extensionStr,'.mat'))
-                msg = sprintf( 'the file %s does not existor is not a valid session recording\n',app.outputdirectorty.String);
+                msg = sprintf( 'the file %s does not existor is not a valid session recording\n',app.outputdirectory.String);
                 fprintffS('[!] ERROR: %s',msg);
                 errordlg(msg);
                 return;
             end
             runparams.outputFolder = tempname;
-            runparams.replayFile = app.outputdirectorty.String;
+            runparams.replayFile = app.outputdirectory.String;
         else
             
             try
@@ -387,11 +387,11 @@ function statrtButton_callback(varargin)
                 errordlg(e.message);
                 return;
             end
-            revisionList = dirFolders(fullfile(app.outputdirectorty.String,serialStr),'ACC*');
+            revisionList = dirFolders(fullfile(app.outputdirectory.String,serialStr),'ACC*');
             revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'ACC(?<rev>\d+)','names'));
             currRev = sprintf('ACC%02d',round(max([0;revInt(:)])+1));
-            app.outputdirectorty.String = fullfile(app.outputdirectorty.String,serialStr,currRev);
-            runparams.outputFolder=app.outputdirectorty.String;
+            app.outputdirectory.String = fullfile(app.outputdirectory.String,serialStr,currRev);
+            runparams.outputFolder=app.outputdirectory.String;
             
         end
         runparams.configurationFolder = app.configurationFolder;
@@ -465,7 +465,7 @@ function statrtButton_callback(varargin)
         fprintffS('[!] ERROR:%s\n',strtrim(e.message));
         fprintffS('[!] Error in :%s (line %d)\n',strtrim(e.stack(1).name),e.stack(1).line);
         
-        fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectorty.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
+        fid = fopen(sprintf('%s%cerror_%s.log',app.outputdirectory.String,filesep,datestr(now,'YYYY_mm_dd_HH_MM_SS')),'w');
         if(fid~=-1)
             fprintf(fid,strrep(getReport(e),'\','\\'));
             fclose(fid);
@@ -477,7 +477,7 @@ function statrtButton_callback(varargin)
     end
     
     %restore original folder
-    app.outputdirectorty.String = origOutputFolder;
+    app.outputdirectory.String = origOutputFolder;
 
     app.AbortButton.Visible='off';
     app.AbortButton.Enable='off';
