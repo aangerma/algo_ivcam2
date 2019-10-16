@@ -10,22 +10,11 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         end
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw, calibParams.dataDelay, fprintff, runParams, calibParams, isFinalStage);
-        
-        % Sync Loop management
-        curLddTemp = hw.getLddTemperature;
         if ~isFinalStage % initialization stage
-            delayRegs.FRMW.conLocDelaySlowSlope = single(calibParams.dataDelay.slowDelayInitSlope);
-            delayRegs.FRMW.conLocDelayFastSlope = single(calibParams.dataDelay.fastDelayInitSlope);
-            delayRegs.FRMW.dfzCalTmp            = single(curLddTemp);
+            delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResults);
         else % finalization stage
-            tempDiff                            = curLddTemp - results.dfzCalTmp;
-            delayRegs.FRMW.conLocDelaySlowSlope = single((delayCalibResults.delayIR - results.delayIR)/tempDiff);
-            delayRegs.FRMW.conLocDelayFastSlope = single((delayCalibResults.delayZ - results.delayZ)/tempDiff);
-            delayRegs.FRMW.dfzCalTmp            = single(curLddTemp);
+            delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, results, delayCalibResults);
         end
-        fprintff('Setting sync loop: IRdelay = %d+%.2f(T-%.2f), Zdelay = %d+%.2f(T-%.2f)\n',...
-            delayCalibResults.delayIR, delayRegs.FRMW.conLocDelaySlowSlope, delayRegs.FRMW.dfzCalTmp,...
-            delayCalibResults.delayZ, delayRegs.FRMW.conLocDelayFastSlope, delayRegs.FRMW.dfzCalTmp)
         writeDelayRegsToDRAM(hw, delayRegs)
         pause(1)
         hw.setAlgoLoops(true, thermalLoopEn); % enabling sync loop

@@ -2,7 +2,7 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
 % description: the function should run in the beginning of calibration or re-calibration.
 % inputs:
 %   calibParams - struct with general params concerning calibration process
-%   eepromBin - BIN data with unit EEPROM (if exists and non-empty - ATC data will not be overriden).
+%   eepromBin   - BIN data with unit EEPROM (if exists and non-empty - ATC data will not be overriden).
 
     global g_output_dir g_save_input_flag g_fprintff g_LogFn g_calib_dir;
 
