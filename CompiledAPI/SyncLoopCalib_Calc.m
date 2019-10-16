@@ -7,8 +7,9 @@ function delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResult
 %   delayCalibResults1 - results of second IR & Z delays calibration (if already carried out)
 % output:
 %   delayRegs - enriched regs struct (with delay slopes)
-
-    global g_output_dir g_save_input_flag g_save_output_flag g_fprintff g_LogFn;
+    
+    t0 = tic;
+    global g_output_dir g_save_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
 
     % setting default global value in case not initial in the init function;
     if isempty(g_save_input_flag)
@@ -33,7 +34,7 @@ function delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResult
         fprintff = g_fprintff; 
     end
 
-    isFinalStage = exists('delayCalibResults2', 'var') && ~isempty(delayCalibResults2);
+    isFinalStage = exist('delayCalibResults2', 'var') && ~isempty(delayCalibResults2);
     
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
@@ -43,7 +44,11 @@ function delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResult
             suffix = '_init';
         end
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in.mat',suffix)]);
-        save(fn, 'delayRegs', 'calibParams', 'delayCalibResults1', 'delayCalibResults2');
+        if isFinalStage
+            save(fn, 'delayRegs', 'calibParams', 'delayCalibResults1', 'delayCalibResults2');
+        else
+            save(fn, 'delayRegs', 'calibParams', 'delayCalibResults1');
+        end
     end
 
     % Defining sync loop model
@@ -74,5 +79,10 @@ function delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResult
         end
         fn = fullfile(g_output_dir,  'mat_files' , [func_name sprintf('%s_out.mat',suffix)]);
         save(fn, 'delayRegs');
+    end
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nSyncLoopCalib_Calc run time = %.1f[sec]\n', t1);
     end
 end

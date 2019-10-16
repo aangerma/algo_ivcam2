@@ -17,7 +17,8 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, L
 %   
 %
 
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn; % g_regs g_luts;
+    t0 = tic;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -81,6 +82,11 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, L
     end
     if(exist('fid','var'))
         fclose(fid);
+    end
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nPreset_Short_Calib_Calc run time = %.1f[sec]\n', t1);
     end
 end
 

@@ -1,7 +1,7 @@
 function [delayVecNoChange,delayVecSteps] = RtdOverAngXStateValues_Calib_Calc(calibParams,regs)
 
-
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn;
+    t0 = tic;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -56,5 +56,10 @@ function [delayVecNoChange,delayVecSteps] = RtdOverAngXStateValues_Calib_Calc(ca
     end
     if(exist('fid','var'))
         fclose(fid);
+    end
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nRtdOverAngXStateValues_Calib_Calc run time = %.1f[sec]\n', t1);
     end
 end

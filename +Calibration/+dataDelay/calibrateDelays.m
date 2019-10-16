@@ -10,15 +10,25 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         end
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw, calibParams.dataDelay, fprintff, runParams, calibParams, isFinalStage);
+        
+        % Sync Loop management
+        curLddTemp = hw.getLddTemperature;
         if ~isFinalStage % initialization stage
-            delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResults);
+            delayCalibResults1 = delayCalibResults; 
+            delayCalibResults1.temperature = curLddTemp;
+            delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResults1);
         else % finalization stage
-            delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, results, delayCalibResults);
+            delayCalibResults1 = results;
+            delayCalibResults1.temperature = results.dfzCalTmp;
+            delayCalibResults2 = delayCalibResults;
+            delayCalibResults1.temperature = curLddTemp;
+            delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResults1, delayCalibResults2);
         end
         writeDelayRegsToDRAM(hw, delayRegs)
         pause(1)
         hw.setAlgoLoops(true, thermalLoopEn); % enabling sync loop
 
+        % Results handling
         fw.setRegs(delayRegs,fnCalib);
         
         results.delayIR                 = delayCalibResults.delayIR;

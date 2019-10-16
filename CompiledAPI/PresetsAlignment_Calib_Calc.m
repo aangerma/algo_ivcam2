@@ -14,7 +14,9 @@ function [results] = PresetsAlignment_Calib_Calc(InputPath,calibParams,res,z2mm)
     %   results - geomErr:  and extraImagesGeomErr:
     %   calibPassed - pass fail
     %
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_calib_dir g_LogFn; % g_regs g_luts;
+    
+    t0 = tic;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_calib_dir g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -76,6 +78,11 @@ function [results] = PresetsAlignment_Calib_Calc(InputPath,calibParams,res,z2mm)
     end
     if(exist('fid','var'))
         fclose(fid);
+    end
+    
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nPresetAlignment_Calib_Calc run time = %.1f[sec]\n', t1);
     end
 end
 

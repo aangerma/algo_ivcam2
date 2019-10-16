@@ -4,7 +4,8 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
 %   calibParams - struct with general params concerning calibration process
 %   eepromBin   - BIN data with unit EEPROM (if exists and non-empty - ATC data will not be overriden).
 
-    global g_output_dir g_save_input_flag g_fprintff g_LogFn g_calib_dir;
+    t0 = tic;
+    global g_output_dir g_save_input_flag g_fprintff g_LogFn g_calib_dir g_countRuntime;
 
     % setting default global value in case not initial in the init function;
     if isempty(g_save_input_flag)
@@ -26,14 +27,8 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
         fprintff = g_fprintff; 
     end
 
-    % save Input
-    if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        fn = fullfile(g_output_dir, 'mat_files' ,[func_name '_in.mat']);
-        save(fn, 'calibParams', 'eepromBin');
-    end
-
     % Scope definition
-    if exists('eepromBin', 'var') && ~isempty(eepromBin)
+    if exist('eepromBin', 'var') && ~isempty(eepromBin)
         isATC = false;
         fprintff('Generating default tables for ACC calibration (preserving ATC tables).\n')
     else
@@ -41,13 +36,19 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
         fprintff('Generating default tables for full calibration (overriding existing tables).\n')
     end
 
-    % Regs extraction
-    fw = Firmware(g_calib_dir);
+    % save Input
+    if g_save_input_flag && exist(g_output_dir,'dir')~=0 
+        fn = fullfile(g_output_dir, 'mat_files' ,[func_name '_in.mat']);
+        if isATC
+            save(fn, 'calibParams');
+        else
+            save(fn, 'calibParams', 'eepromBin');
+        end
+    end
+    
+    % Regs management
+    fw = Pipe.loadFirmware(g_calib_dir);
     fw.get();
-    EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
-    EPROMstructure  = EPROMstructure.updatedEpromTable;
-    eepromBin       = uint8(eepromBin);
-    eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
     if isATC
         vers = AlgoThermalCalibToolVersion;
     else
@@ -55,14 +56,18 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
     end
     verRegs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
     verRegs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
-    [delayRegs, dsmRegs, thermalRegs, dfzRegs] = Calibraion.aux.getATCregsFromEEPROMregs(eepromRegs);
-    
-    % Setting regs in FW object
     fw.setRegs(verRegs,'');
-    fw.setRegs(delayRegs,'');
-    fw.setRegs(dsmRegs,'');
-    fw.setRegs(thermalRegs,'');
-    fw.setRegs(dfzRegs,'');
+    if ~isATC % we're in ACC and should preserve ATC calibration results
+        EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
+        EPROMstructure  = EPROMstructure.updatedEpromTable;
+        eepromBin       = uint8(eepromBin);
+        eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
+        [delayRegs, dsmRegs, thermalRegs, dfzRegs] = Calibraion.aux.getATCregsFromEEPROMregs(eepromRegs);
+        fw.setRegs(delayRegs,'');
+        fw.setRegs(dsmRegs,'');
+        fw.setRegs(thermalRegs,'');
+        fw.setRegs(dfzRegs,'');
+    end
     
     % Generating tables from FW object and remaining tables which are not managed through actual FW regs
     outDir = fullfile(g_calib_dir, 'initialCalibFiles');
@@ -74,5 +79,9 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
     rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
     writeAllBytes(zeros(1,112,'uint8'), fullfile(outDir, rgbTableFileName));
 
+    if g_countRuntime
+        t1 = toc(t0);
+        fprintff('\nGenInitCalibTables_Calc run time = %.1f[sec]\n', t1);
+    end
 end
 
