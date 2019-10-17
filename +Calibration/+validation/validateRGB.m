@@ -81,7 +81,7 @@ end
 function [results,dbg] = runUVandLF( depthFrame, params, rgbFrame, postFix)
 [~, resultsUvMap,dbg] = Validation.metrics.uvMapping(depthFrame, params, rgbFrame);
 pts = cat(3,dbg.cornersRGB(:,:,1),dbg.cornersRGB(:,:,2),zeros(size(dbg.cornersRGB,1),size(dbg.cornersRGB,2)));
-pts = Calibration.aux.CBTools.slimNans(pts);
+pts = CBTools.slimNans(pts);
 if isfield(params,'rgbDistort')
     invd = du.math.fitInverseDist(params.Krgbn,params.rgbDistort);
     pixsUndist = du.math.distortCam(reshape(pts(:,:,1:2),[],2)', params.Krgb, invd);

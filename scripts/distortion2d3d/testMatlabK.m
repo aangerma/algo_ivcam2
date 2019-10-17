@@ -14,7 +14,7 @@ hw.stopStream();
 %%
 
 for iIm=1:3
-    [ptsCropped(:,:,:,iIm)] = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(iIm).i, 1, [], [], false);
+    [ptsCropped(:,:,:,iIm)] = CBTools.findCheckerboardFullMatrix(im(iIm).i, 1, [], [], false);
 end
 meanOver4 = mean(0*ptsCropped+1,4);
 ptsCroppedJoint = bsxfun(@times, ptsCropped, meanOver4);

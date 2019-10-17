@@ -2,7 +2,7 @@ function [blackMask,whiteMask]=CreateMaskOfSq(irImage,margins)
 marginR=margins(1); % remove marginR (#) rows from checkers
 marginC=margins(2); % remove marginR (#) coulmns from checkers
 imageSize=size(irImage);
-pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(irImage,1);
+pts = CBTools.findCheckerboardFullMatrix(irImage,1);
 [R,C,~]=size(pts);
 figure,imagesc(irImage),hold on, plot(vec(pts(:,:,1)),vec(pts(:,:,2)),'*')
 

@@ -221,8 +221,8 @@ for k = 1:length(intersectFieldsDEST)
 end
 for ii = 1:length(d)-1
     dout(ii).i = spherical2regularIR(d(imIx(ii)).i, regs, tpsUndistModel_vFullFromEval);
-    corners = Calibration.aux.CBTools.findCheckerboardFullMatrix(dout(ii).i,1,[],[],true);
-    rectCorners = Calibration.aux.CBTools.findCheckerboardFullMatrix(dout(ii).i,1,[],[],false);
+    corners = CBTools.findCheckerboardFullMatrix(dout(ii).i,1,[],[],true);
+    rectCorners = CBTools.findCheckerboardFullMatrix(dout(ii).i,1,[],[],false);
     figure(1)
     subplot(2,2,ii)
     imagesc(dout(ii).i)
@@ -301,7 +301,7 @@ for i = 1:nof_secne
     d(i).i = im(i).i;
     d(i).z = im(i).z;
     
-    [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1, [], [], nonRectangleFlag);
+    [pts,colors] = CBTools.findCheckerboardFullMatrix(d(i).i, 1, [], [], nonRectangleFlag);
     if all(isnan(pts(:)))
         error('Error! Checkerboard detection failed on image %d!',i);
     end
@@ -325,7 +325,7 @@ for i = 1:nof_secne
     imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
         im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
     %             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
-    [ptsCropped,colorsCropped] = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1, [], [], nonRectangleFlag);
+    [ptsCropped,colorsCropped] = CBTools.findCheckerboardFullMatrix(imCropped, 1, [], [], nonRectangleFlag);
     gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
 %       [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
     gridCropped(end+1) = 1;

@@ -10,7 +10,7 @@ params.expectedGridSize = [];
 
 
 for i = 1:numel(frames)
-    pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(frames(i).i, 0);
+    pts = CBTools.findCheckerboardFullMatrix(frames(i).i, 0);
     data.ptsFull = pts;
     data.pts = reshape(pts,[],2);
     data.v = Validation.aux.pointsToVertices(reshape(pts,[],2), frames(i).z, params.camera);

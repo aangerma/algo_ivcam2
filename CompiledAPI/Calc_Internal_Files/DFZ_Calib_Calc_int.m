@@ -153,9 +153,9 @@ function d = prepareDataForOptimization(im, OutputDir, calibParams, regs)
         d(i).z = im(i).z;
         
         try
-            [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
+            [pts,colors] = CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
         catch
-            [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1);
+            [pts,colors] = CBTools.findCheckerboardFullMatrix(d(i).i, 1);
         end
         if all(isnan(pts(:)))
             Calibration.aux.CBTools.interpretFailedCBDetection(d(i).i, sprintf('DFZ image #%d',i));

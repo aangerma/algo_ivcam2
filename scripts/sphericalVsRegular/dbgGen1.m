@@ -11,7 +11,7 @@ targetInfo.cornersX = 20;
 targetInfo.cornersY = 28;
 %% For the regular frame, compare eGeom with calibDFZ 
 
-pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(frames.i, 1);
+pts = CBTools.findCheckerboardFullMatrix(frames.i, 1);
 regs.DEST.depthAsRange=0;regs.DIGG.sphericalEn=0;
 [rptRegular,frames.r,frames.sing,frames.verts] = mySamplePointsRtd(frames.z,pts,regs);
 
@@ -36,7 +36,7 @@ frames.grid = [size(pts,1),size(pts,2),1];
 
 %% For the spherical frame, compare eGeom with calibDFZ 
 
-pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
+pts = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
 regs.DEST.depthAsRange=1;regs.DIGG.sphericalEn=1;
 [rptSpherical,framesSpherical.r,framesSpherical.sing] = mySamplePointsRtd(framesSpherical.z,pts,regs);
 rptSpherical = reshape(rptSpherical,[20,28,3]);

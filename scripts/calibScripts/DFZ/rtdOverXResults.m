@@ -53,9 +53,9 @@ for i = 1:nof_secne
     d(i).z = im(i).z;
     
     try
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
+        [pts,colors] = CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
     catch
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1);
+        [pts,colors] = CBTools.findCheckerboardFullMatrix(d(i).i, 1);
     end
     if all(isnan(pts(:)))
         error('Error! Checkerboard detection failed on image %d!',i);

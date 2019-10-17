@@ -19,7 +19,7 @@ tic;
 while i < 20000
     apdVals{i} = hw.cmd('APD_FLYBACK_VALUES_GET');
     frame = hw.getFrame(1,1,1);
-    [pts,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 0);
+    [pts,~] = CBTools.findCheckerboardFullMatrix(frame.i, 0);
     pts = reshape(pts,[],2);
     rIm = single(frame.z)/single(regs.GNRL.zNorm);
     rPts = interp2(rIm,pts(:,1),pts(:,2));

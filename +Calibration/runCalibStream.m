@@ -400,8 +400,8 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         targetInfo = targetInfoGenerator('Iv2A1');
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
-%         [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1,0,0.2, 1);
+        [pts,colors] = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
+%         [pts,colors] = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1,0,0.2, 1);
         grid = [size(pts,1),size(pts,2),1];
         framesSpherical.pts = pts;
         framesSpherical.grid = grid;
@@ -975,7 +975,7 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
             targetInfo = targetInfoGenerator(cap.target);
             
             
-            pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 1);
+            pts = CBTools.findCheckerboardFullMatrix(im(i).i, 1);
             grid = [size(pts,1),size(pts,2),1];  
 %             [pts,grid] = Validation.aux.findCheckerboard(im(i).i,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
 %             grid(end+1) = 1;
@@ -1003,7 +1003,7 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
             imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
                 im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
 %             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
-            ptsCropped = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
+            ptsCropped = CBTools.findCheckerboardFullMatrix(imCropped, 1);
             gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
 %             [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
             gridCropped(end+1) = 1;

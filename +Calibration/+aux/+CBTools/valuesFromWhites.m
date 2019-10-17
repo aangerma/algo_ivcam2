@@ -2,8 +2,8 @@ function [rtdFromWhite,ptsFromWhite1,ptsFromWhite2] = valuesFromWhites(rtd,pts,c
 %VALUESFROMWHITES Summary of this function goes here
 %   Detailed explanation goes here
 
-slimPts = Calibration.aux.CBTools.slimNans(pts);
-slimColors = Calibration.aux.CBTools.slimNans(colorMap);
+slimPts = CBTools.slimNans(pts);
+slimColors = CBTools.slimNans(colorMap);
 
 ptsFromWhite1 = nan([size(slimColors),2]);
 ptsFromWhite2 = nan([size(slimColors),2]);

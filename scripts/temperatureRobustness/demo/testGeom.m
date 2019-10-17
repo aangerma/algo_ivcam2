@@ -31,7 +31,7 @@ for j = 1:1e5
     
     f = hw.getFrame(1,1);
     [f.temp.ldd,f.temp.mc,f.temp.ma,f.temp.tSense,f.temp.vSense] = hw.getLddTemperature;
-    f.pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(f.i, 1);
+    f.pts = CBTools.findCheckerboardFullMatrix(f.i, 1);
     f.rpt = Calibration.aux.samplePointsRtd(f.z,f.pts,regs,1);
     f.time = toc;
     

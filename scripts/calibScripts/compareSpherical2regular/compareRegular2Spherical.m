@@ -17,8 +17,8 @@ hw.shadowUpdate;
 frameSp = hw.getFrame(10);
 frameSp = hw.getFrame(10);
 
-pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i,1);
-ptsSp = Calibration.aux.CBTools.findCheckerboardFullMatrix(frameSp.i,1);
+pts = CBTools.findCheckerboardFullMatrix(frame.i,1);
+ptsSp = CBTools.findCheckerboardFullMatrix(frameSp.i,1);
 
 rVals = interp2(single(frame.z)/4,vec(pts(:,:,2)),vec(pts(:,:,1)));
 rValsSp = interp2(single(frameSp.z)/4,vec(ptsSp(:,:,2)),vec(ptsSp(:,:,1)));

@@ -17,8 +17,8 @@ hw.stopStream
 
 %% CB detection
 
-ptsSphMag = Calibration.aux.CBTools.findCheckerboardFullMatrix(imSphMag.i,1,[],[],true);
-ptsSphFull = Calibration.aux.CBTools.findCheckerboardFullMatrix(imSphFull.i,1,[],[],true);
+ptsSphMag = CBTools.findCheckerboardFullMatrix(imSphMag.i,1,[],[],true);
+ptsSphFull = CBTools.findCheckerboardFullMatrix(imSphFull.i,1,[],[],true);
 ptsSphMag(isnan(ptsSphFull)) = nan;
 ptsSphFull(isnan(ptsSphMag)) = nan;
 

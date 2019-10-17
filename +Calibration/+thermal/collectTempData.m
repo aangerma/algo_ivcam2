@@ -235,7 +235,7 @@ end
 end
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
 if isempty(calibParams.gnrl.cbGridSz)
-    [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1);
+    [pts,colors] = CBTools.findCheckerboardFullMatrix(frame.i, 1);
     pts = reshape(pts,[],2);
     if calibParams.gnrl.rgb.doStream
         [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.color, 0);
@@ -258,7 +258,7 @@ end
 if ~regs.DIGG.sphericalEn
     zIm = single(frame.z)/single(regs.GNRL.zNorm);
     if calibParams.gnrl.sampleRTDFromWhiteCheckers && isempty(calibParams.gnrl.cbGridSz)
-        [zPts,~,~,pts,~] = Calibration.aux.CBTools.valuesFromWhitesNonSq(zIm,reshape(pts,20,28,2),colors,1/8);
+        [zPts,~,~,pts,~] = CBTools.valuesFromWhitesNonSq(zIm,reshape(pts,20,28,2),colors,1/8);
         pts = reshape(pts,[],2);
     else
         zPts = interp2(zIm,pts(:,1),pts(:,2));

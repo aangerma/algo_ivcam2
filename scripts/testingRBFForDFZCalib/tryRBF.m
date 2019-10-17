@@ -29,7 +29,7 @@ for i = 1:nof_secne
     d(i).i = im(i).i;
     d(i).z = im(i).z;
 
-    pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1);
+    pts = CBTools.findCheckerboardFullMatrix(d(i).i, 1);
     grid = [size(pts,1),size(pts,2),1];    
     
     targetInfo.cornersX = grid(1);
@@ -53,7 +53,7 @@ for i = 1:nof_secne
     imCropped = zeros(size(im(i).i));
     imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
         im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
-    ptsCropped = Calibration.aux.CBTools.findCheckerboardFullMatrix(imCropped, 1);
+    ptsCropped = CBTools.findCheckerboardFullMatrix(imCropped, 1);
     gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
     gridCropped(end+1) = 1;
 

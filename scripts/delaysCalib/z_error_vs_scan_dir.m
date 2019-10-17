@@ -24,8 +24,8 @@ Calibration.aux.SetGainValue(hw,val1, val2);            % resore gain inital val
 hw.stopStream
 
 %% CB detection
-ptsUp = Calibration.aux.CBTools.findCheckerboardFullMatrix(imUp.i,1,[],[],true);
-ptsDown = Calibration.aux.CBTools.findCheckerboardFullMatrix(imDown.i,1,[],[],true);
+ptsUp = CBTools.findCheckerboardFullMatrix(imUp.i,1,[],[],true);
+ptsDown = CBTools.findCheckerboardFullMatrix(imDown.i,1,[],[],true);
 isNanVal = isnan(ptsUp) | isnan(ptsDown);
 ptsUp(isNanVal) = nan;
 ptsDown(isNanVal) = nan;

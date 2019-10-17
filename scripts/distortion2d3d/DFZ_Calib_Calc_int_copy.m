@@ -50,7 +50,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
         d(i).i = im(i).i;
         d(i).z = im(i).z;
         
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
+        [pts,colors] =CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
         if all(isnan(pts(:)))
             error('Error! Checkerboard detection failed on image %d!',i);
         end
@@ -121,7 +121,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
         calibParams.dfz.calibrateOnCropped = 0;
         [dfzRegs,res,allVertices] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,doEval,[],runParams);
         results.geomErr = res.geomErr;        
-        results.lineFit = Calibration.aux.calcLineDistortion(allVertices,calibParams.dfz.Kfor2dError);
+        results.lineFit = CBTools.calcLineDistortion(allVertices,calibParams.dfz.Kfor2dError);
         [results.planeFit, results.scaleErr] = CalcPlaneFitAndScaleError(metricParams, allVertices);
         tpsUndistModel_vFullFromEval = [];
         
@@ -134,7 +134,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
         for iEvalRoi = 1:length(dForEval)
             [~,resForEval{iEvalRoi},allVerticesForEval{iEvalRoi}] = Calibration.aux.calibDFZ(dForEval{iEvalRoi}(trainImages),regs,calibParams,fprintff,0,doEval,x0,runParams,tpsUndistModel_vFullFromEval);
             results.geomErrForEval{iEvalRoi} = resForEval{iEvalRoi}.geomErr;
-            results.lineFitForEval{iEvalRoi} = Calibration.aux.calcLineDistortion(allVerticesForEval{iEvalRoi},calibParams.dfz.Kfor2dError);
+            results.lineFitForEval{iEvalRoi} = CBTools.calcLineDistortion(allVerticesForEval{iEvalRoi},calibParams.dfz.Kfor2dError);
             [results.planeFitForEval{iEvalRoi}, results.scaleErrForEval{iEvalRoi}] = CalcPlaneFitAndScaleError(metricParams, allVerticesForEval{iEvalRoi});
         end
     else
@@ -247,11 +247,11 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
             resultsOnCropped.geomErr,resultsEvalOnFullAfterDfzWithCropped.geomErr,resultsOnFull.geomErr,resultsDFZcroppedDfzFullTps.geomErr,resultsDFZcroppedDfzFullTpsDfz.geomErr);
 
         results.geomErr = resultsDFZcroppedDfzFullTpsDfz.geomErr;
-        results.lineFit = Calibration.aux.calcLineDistortion(allVerticesFinal,calibParams.dfz.Kfor2dError);
+        results.lineFit = CBTools.calcLineDistortion(allVerticesFinal,calibParams.dfz.Kfor2dError);
         [results.planeFit, results.scaleErr] = CalcPlaneFitAndScaleError(metricParams, allVerticesFinal);
         for iEvalRoi = 1:length(dForEval)
             results.geomErrForEval{iEvalRoi} = resultsDFZcroppedDfzFullTpsDfzForEval{iEvalRoi}.geomErr;
-            results.lineFitForEval{iEvalRoi} = Calibration.aux.calcLineDistortion(allVerticesFinalForEval{iEvalRoi},calibParams.dfz.Kfor2dError);
+            results.lineFitForEval{iEvalRoi} = CBTools.calcLineDistortion(allVerticesFinalForEval{iEvalRoi},calibParams.dfz.Kfor2dError);
             [results.planeFitForEval{iEvalRoi}, results.scaleErrForEval{iEvalRoi}] = CalcPlaneFitAndScaleError(metricParams, allVerticesFinalForEval{iEvalRoi});
         end
     end

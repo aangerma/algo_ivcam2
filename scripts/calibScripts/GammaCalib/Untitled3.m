@@ -3,7 +3,7 @@ hw = HWinterface;
 frame = hw.getFrame(10);
 frame = hw.getFrame(10);
 
-pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i,1);
+pts = CBTools.findCheckerboardFullMatrix(frame.i,1);
 
 figure;
 tabplot;
@@ -17,7 +17,7 @@ for i = 1:2
     pause(0.5);
     frame = hw.getFrame(10);
     B = adapthisteq(frame.i,'distribution','exponential');
-    pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(B,1);
+    pts = CBTools.findCheckerboardFullMatrix(B,1);
     tabplot;
     imagesc(B);
     hold on

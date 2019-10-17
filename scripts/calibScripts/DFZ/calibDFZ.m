@@ -207,8 +207,8 @@ function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams,tpsUnd
         end
         v = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel);
         v = reshape(v,[grid(1:2),3]);
-        v = Calibration.aux.CBTools.slimNans(v);
-        pts = Calibration.aux.CBTools.slimNans(pts);
+        v = CBTools.slimNans(v);
+        pts = CBTools.slimNans(pts);
         ptx = pts(:,:,1);
         pty = pts(:,:,2);
         distX = sqrt(sum(diff(v,1,2).^2,3))/30-1;

@@ -25,7 +25,7 @@ fw = Pipe.loadFirmware('C:\temp\unitCalib\F8480012\PC24\AlgoInternal');
 % d(i).i = framesSpherical(i).i;
 % d(i).c = framesSpherical(i).c;
 % d(i).z = framesSpherical(i).z;
-% pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical(i).i, 1);
+% pts = CBTools.findCheckerboardFullMatrix(framesSpherical(i).i, 1);
 % grid = [size(pts,1),size(pts,2),1];
 % d(i).pts = pts;
 % d(i).grid = grid;
@@ -59,7 +59,7 @@ framesSpherical = hw.getFrame(60);
 r.reset();
 
 % rpt in both modes:
-pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
+pts = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
 regs.DEST.depthAsRange=1;regs.DIGG.sphericalEn=1;
 rptSpherical = mySamplePointsRtd(framesSpherical.z,pts,regs);
 rptSpherical = reshape(rptSpherical,[20,28,3]);
@@ -74,7 +74,7 @@ framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs
 [~,dfzResSpherical] = Calibration.aux.calibDFZ(framesSpherical,regs,calibParams,@sprintf,0,1);
 
 
-pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(frames.i, 1);
+pts = CBTools.findCheckerboardFullMatrix(frames.i, 1);
 regs.DEST.depthAsRange=0;regs.DIGG.sphericalEn=0;
 [rptRegular,frames.r] = mySamplePointsRtd(frames.z,pts,regs);
 frames.pts3d = create3DCorners(targetInfo)';
