@@ -68,12 +68,12 @@ function [success] = UpdateShortPresetRtdDiff_Calib_Calc(results)
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'success');
     end
-    if(exist('fid','var'))
-        fclose(fid);
-    end
     
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nUpdateShortPresetRtdDiff_Calib_Calc run time = %.1f[sec]\n', t1);
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end

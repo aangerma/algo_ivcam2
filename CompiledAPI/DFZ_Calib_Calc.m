@@ -91,13 +91,12 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'dfzRegs', 'calibPassed','results');
     end
-    if(exist('fid','var'))
-        fclose(fid);
-    end
-    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nDFZ_Calib_Calc run time = %.1f[sec]\n', t1);
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 

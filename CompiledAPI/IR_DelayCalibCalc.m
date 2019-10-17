@@ -113,6 +113,9 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
         t1 = toc(t0);
         fprintff('\nIR_DelayCalibCalc run time = %.1f[sec]\n', t1);
     end
+    if(exist('fid','var'))
+        fclose(fid);
+    end
 end
 
 

@@ -75,13 +75,12 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(InputPath, calibParams, RO
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'roiRegs', 'results','fovData');
     end
-    if(exist('fid','var'))
-        fclose(fid);
-    end
-    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nROI_Calib_Calc run time = %.1f[sec]\n', t1);
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 

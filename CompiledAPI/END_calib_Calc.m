@@ -86,13 +86,12 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn, 'results', 'regs','luts');
     end
-    if(exist('fid','var'))
-        fclose(fid);
-    end
-    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nEND_calib_Calc run time = %.1f[sec]\n', t1);
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 
