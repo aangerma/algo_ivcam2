@@ -88,6 +88,6 @@ if isfield(params,'rgbDistort')
     ptsUndist = cat(3,reshape(pixsUndist',size(pts,1),size(pts,2),[]),pts(:,:,3));
     pts = ptsUndist;
 end
-[resultsLineFit] = Validation.metrics.get3DlineFitErrors(pts);
+[resultsLineFit] = Validation.aux.get3DlineFitErrors(pts);
 [results] = arrangResultStruct( resultsLineFit,resultsUvMap, postFix);
 end
