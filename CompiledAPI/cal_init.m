@@ -84,10 +84,10 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
         fn = fullfile(output_dir,  'mat_files' ,[func_name '_out.mat']);
         save(fn, 'calibParams', 'result');
     end
-    if exist('fid','var')   
+    
+    if exist('fid','var')
         fclose(fid);
     end
-
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\ncal_init run time = %.1f[sec]\n', t1);

@@ -83,5 +83,8 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
         t1 = toc(t0);
         fprintff('\nGenInitCalibTables_Calc run time = %.1f[sec]\n', t1);
     end
+    if(exist('fid','var'))
+        fclose(fid);
+    end
 end
 

@@ -115,6 +115,9 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
         t1 = toc(t0);
         fprintff('\nZ_DelayCalibCalc run time = %.1f[sec]\n', t1);
     end
+    if(exist('fid','var'))
+        fclose(fid);
+    end
 end
 
 function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams ,verbose)

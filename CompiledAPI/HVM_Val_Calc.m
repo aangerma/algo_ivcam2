@@ -69,13 +69,12 @@ function [valResults, allResults] = HVM_Val_Calc(InputPath, sz, params, calibPar
         fn = fullfile(output_dir,'mat_files' , [func_name '_out.mat']);
         save(fn,'valResults', 'allResults');
     end
-    if(exist('fid','var'))
-        fclose(fid);
-    end
-
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nHVM_Val_Calc run time = %.1f[sec]\n', t1);
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 

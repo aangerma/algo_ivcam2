@@ -81,6 +81,9 @@ function delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResult
         save(fn, 'delayRegs');
     end
     
+    if exist('fid','var')   
+        fclose(fid);
+    end
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nSyncLoopCalib_Calc run time = %.1f[sec]\n', t1);

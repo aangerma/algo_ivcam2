@@ -65,13 +65,12 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(InputPath, calibParams,
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'rgbPassed','rgbTable','results');
     end
-    if(exist('fid','var'))
-        fclose(fid);
-    end
-    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nRGB_Calib_Calc run time = %.1f[sec]\n', t1);
+    end
+    if(exist('fid','var'))
+        fclose(fid);
     end
 end
 
