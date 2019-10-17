@@ -85,12 +85,12 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
         save(fn, 'calibParams', 'result');
     end
     
-    if exist('fid','var')
-        fclose(fid);
-    end
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\ncal_init run time = %.1f[sec]\n', t1);
+    end
+    if exist('fid','var')
+        fclose(fid);
     end
     return;
 end
