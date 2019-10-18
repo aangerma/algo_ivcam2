@@ -86,6 +86,7 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn, 'results', 'regs','luts');
     end
+    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nEND_calib_Calc run time = %.1f[sec]\n', t1);
@@ -99,7 +100,7 @@ end
 
 function [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, afterThermalCalib)
     if afterThermalCalib
-        [~, ~, thermalRegs, dfzRegs] = getATCregsFromEEPROMregs(eepromRegs, dfzRegs);
+        [~, ~, thermalRegs, dfzRegs] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs, dfzRegs);
     else % dfzRegs was already enriched in DFZ_calib, thermalRegs are irrelevant
         thermalRegs.FRMW.atlMinVbias1   = single(1);
         thermalRegs.FRMW.atlMaxVbias1   = single(3);

@@ -80,6 +80,7 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, L
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'minRangeScaleModRef','ModRefDec');
     end
+    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nPreset_Short_Calib_Calc run time = %.1f[sec]\n', t1);
