@@ -68,8 +68,8 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     runParams.afterThermalCalib = afterThermalCalib_flag;
     runParams.version=version;
     runParams.configurationFolder=configurationFolder; 
- 
-    fw = Firmware(g_calib_dir);
+    initFolder = g_calib_dir;
+    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
     if(isempty(eepromRegs) || ~isstruct(eepromRegs)) % called from HVM tester
         EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
         EPROMstructure  = EPROMstructure.updatedEpromTable;

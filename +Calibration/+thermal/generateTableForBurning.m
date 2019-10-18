@@ -11,14 +11,9 @@ thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_Ca
 thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
 Calibration.thermal.saveThermalTable( tableShifted , thermalTableFullPath );
 fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
-% initFldr = fullfile(fileparts(fileparts(mfilename('fullpath'))),'releaseConfigCalibVGA');
+
 initFldr = calib_dir;
-%fw = Pipe.loadFirmware(initFldr);
-if(exist(fullfile(calib_dir , 'regsDefinitions.frmw'), 'file') == 2)
-    fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir); % incase of DLL assume table same folder as fnCalib
-else
-    fw = Pipe.loadFirmware(initFldr); % use default path of table folder
-end
+fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir);
 
 eepromRegs.FRMW.atlMinVbias1            = single(data.tableResults.angx.p0(1));
 eepromRegs.FRMW.atlMaxVbias1            = single(data.tableResults.angx.p1(1));

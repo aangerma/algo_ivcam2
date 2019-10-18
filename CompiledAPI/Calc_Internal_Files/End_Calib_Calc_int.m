@@ -1,13 +1,8 @@
 function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams)
     t = tic;
     %% load inital FW.
-%    fw = Pipe.loadFirmware(internalFolder);
-    path = fileparts(fnCalib);
-    if(exist(fullfile(path , 'regsDefinitions.frmw'), 'file') == 2)
-        fw = Pipe.loadFirmware(path,'tablesFolder',path); % incase of DLL assume table same folder as fnCalib
-    else
-        fw = Pipe.loadFirmware(path); % use default path of table folder
-    end
+    initFolder = fileparts(fnCalib);
+    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
     %% set regs from all algo calib
     vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(runParams.version)));
     vregs.FRMW.configVersion = uint32(hex2dec(single2hex(runParams.version)));
@@ -37,7 +32,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     fn = fullfile(temp_dir,'postUndistState.txt');
     fw.genMWDcmd('DIGG|DEST|CBUF',fn);
     %% prepare preset table
-    presetPath = path; 
+    presetPath = initFolder; 
     Calibration.presets.updatePresetsEndOfCalibration(runParams,calibParams,presetPath,results);
     
     %% Print image final fov
@@ -45,10 +40,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     fnUndsitLut = fullfile(runParams.outputFolder,'FRMWundistModel.bin32');
     fw.writeUpdated(fnCalib);
     io.writeBin(fnUndsitLut,undistLuts.FRMW.undistModel);
-%     % write old firmware files to sub folder
-%     oldFirmwareOutput=fullfile(runParams.outputFolder,'oldCalibfiles'); 
-%     mkdirSafe(oldFirmwareOutput);
-%     % write new firmware files to another sub folder
+    % write new firmware files to another sub folder
     calibOutput=fullfile(runParams.outputFolder,'calibOutputFiles');
     mkdirSafe(calibOutput);
     fw.generateTablesForFw(calibOutput,0,runParams.afterThermalCalib, calibParams.tableVersions); 
