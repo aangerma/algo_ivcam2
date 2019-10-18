@@ -61,6 +61,7 @@ function [DSM_data] = DSM_CoarseCalib_Calc(angxRaw, angyRaw, calibParams)
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'DSM_data');
     end
+    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nDSM_CoarseCalib_Calc run time = %.1f[sec]\n', t1);

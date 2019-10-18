@@ -60,6 +60,7 @@ function [tablefn] = RtdOverAngX_Calib_Calc(inputPath, calibParams, regs, luts)
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'tablefn');
     end
+    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nRtdOverAngX_Calib_Calc run time = %.1f[sec]\n', t1);

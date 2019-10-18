@@ -68,6 +68,7 @@ function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(path_spherical, sz
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
         save(fn,'success', 'DSM_data','angxZO','angyZO');
     end
+    
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nDSM_Calib_Calc run time = %.1f[sec]\n', t1);

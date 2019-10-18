@@ -76,8 +76,8 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     end
     height = sz(1);
     width  = sz(2);
-    fw = Firmware(g_calib_dir);
-
+    initFolder = g_calib_dir;
+    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
     if(isempty(eepromRegs) || ~isstruct(eepromRegs))
         EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
         EPROMstructure  = EPROMstructure.updatedEpromTable;

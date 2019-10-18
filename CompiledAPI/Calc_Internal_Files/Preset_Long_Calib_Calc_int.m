@@ -69,9 +69,10 @@ end
 presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
 presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
 presetsTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', presetsTableFileName);
-fw = Pipe.loadFirmware(presetPath);
+
+initFolder = presetPath;
+fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
 fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
-    
 
 end
 

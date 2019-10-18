@@ -47,7 +47,8 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
     end
     
     % Regs management
-    fw = Pipe.loadFirmware(g_calib_dir);
+    initFolder = g_calib_dir;
+    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
     fw.get();
     if isATC
         vers = AlgoThermalCalibToolVersion;

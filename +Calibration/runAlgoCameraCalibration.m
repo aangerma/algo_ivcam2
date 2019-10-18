@@ -42,7 +42,8 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
     end
     %% Load init fw
     fprintff('Loading initial firmware...');
-    fw = Pipe.loadFirmware(runParams.internalFolder);
+    initFolder = runParams.internalFolder;
+    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
     fw.get();%run autogen
     fprintff('Done(%ds)\n',round(toc(t)));
     
