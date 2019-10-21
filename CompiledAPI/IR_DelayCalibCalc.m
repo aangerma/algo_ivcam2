@@ -126,15 +126,21 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
     res = 0; %(WIP) not finish calibrate
     nsEps       = 2;
     
-% debug image
-    im=cat(3,imD,(imD+imU)/2,imU);          % debug
+    % debug image
+    im=cat(3,imD,(imD+imU)/2,imU); % debug
 
-% estimate delay
+    % estimate delay
     rotateBy180 = 1;
     p1 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imD, rotateBy180, [], [], [], true);
     p2 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imU, rotateBy180, [], [], [], true);
     if ~isempty(p1(~isnan(p1))) && ~isempty(p2(~isnan(p2)))
-        delayIR = calcDelayFromCornersOffset(p1, p2, imD);
+        if 0 % old calculation (as in QS release)
+            nomMirrorFreq = 20e3;
+            t=@(px)acos(-(px/size(imD,1)*2-1))/(2*pi*nomMirrorFreq);
+            delayIR = round(nanmean(vec(t(p1(:,:,2))-t(p2(:,:,2))))/2*1e9);
+        end
+        t = Calibration.dataDelay.genMapSphericalPixel2Time(imD);
+        delayIR = round(nanmean(vec(t(p1(:,:,1),p1(:,:,2)) - t(p2(:,:,1),p2(:,:,2))))/2 * 1e9); % [nsec]
         diff = p1(:,:,2)-p2(:,:,2);
         diff = diff(~isnan(diff));
         pixVar = var(diff);
@@ -142,7 +148,7 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
         pixVar = NaN;
     end
     
-    if (~exist('delayIR','var'))                         %CB was not found, throw delay forward to find a good location
+    if (~exist('delayIR','var')) %CB was not found, throw delay forward to find a good location
         delayIR = 3000;
     end
     if (verbose)
@@ -152,11 +158,11 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
         drawnow;
     end
    
-% check convergence
-    if (abs(delayIR)<=dataDelayParams.iterFixThr)        % delay calibration converege 
+    % check convergence
+    if (abs(delayIR)<=dataDelayParams.iterFixThr) % delay calibration converege 
         res = 1;                                       
     elseif (n>1 && abs(delayIR)-nsEps > abs(CurrentDelay))  
-        res = -1;                                       % not converging delay calibration converege 
+        res = -1; % not converging delay calibration converege 
         warning('delay not converging!');
     end
     delayIR = CurrentDelay + delayIR;
@@ -178,43 +184,4 @@ function imo=getFilteredImage(d,unFiltered)
         imo=reshape(nanmedian_(imv),size(im));
     end
     imo=normByMax(imo);
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function delayIR = calcDelayFromCornersOffset(p1, p2, imD)
-    if 0 % old calculation (as in QS release)
-        nomMirrorFreq = 20e3;
-        t=@(px)acos(-(px/size(imD,1)*2-1))/(2*pi*nomMirrorFreq);
-        delayIR = round(nanmean(vec(t(p1(:,:,2))-t(p2(:,:,2))))/2*1e9);
-    end
-    % finding borders of primary visited region
-    [nPixY, nPixX] = size(imD);
-    minPixX = 1 + find(imD(nPixY/2, 1:nPixX/2)==0, 1, 'last'); % left border
-    maxPixX = (nPixX/2 - 1) + find(imD(nPixY/2, nPixX/2:end)==0, 1, 'first') - 1; % right border
-    xPixels = minPixX:maxPixX;
-    minVisitedPixY = NaN(1,length(xPixels)); % upper border
-    maxVisitedPixY = NaN(1,length(xPixels)); % bottom border
-    for k = 1:length(xPixels)
-        validPixels = find(imD(:, xPixels(k))>0);
-        if ~isempty(validPixels)
-            minVisitedPixY(k) = validPixels(1);
-            maxVisitedPixY(k) = validPixels(end);
-        end
-    end
-    % smoothing upper & bottom borders
-    xFactor = 0.75; % to avoid abnormality in upper-right part of the primary visited region
-    xi = xPixels(1:round(xFactor*length(xPixels)));
-    yi = minVisitedPixY(1:round(xFactor*length(xPixels)));
-    pMin = polyfit(xi(~isnan(yi)), yi(~isnan(yi)), 1);
-    yMin = @(xx) pMin(1)*xx + pMin(2);
-    xi = xPixels;
-    yi = maxVisitedPixY;
-    pMax = polyfit(xi(~isnan(yi)), yi(~isnan(yi)), 1);
-    yMax = @(xx) pMax(1)*xx + pMax(2);
-    % mapping pixel to relative time within scan
-    nomMirrorFreq = 20.62e3; % typical freq (taken from POC3 analysis)
-    t = @(x,y) acos(-( (y-yMin(x))./(yMax(x)-yMin(x)) * 2 - 1) ) / (2*pi*nomMirrorFreq);
-    % calculating the delay
-    delayIR = round(nanmean(vec(t(p1(:,:,1),p1(:,:,2)) - t(p2(:,:,1),p2(:,:,2))))/2 * 1e9); % [nsec]
 end
