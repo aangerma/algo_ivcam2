@@ -83,7 +83,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
     
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nPresete_Long_Calib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\nPreset_Long_Calib_Calc run time = %.1f[sec]\n', t1);
     end
     if(exist('fid','var'))
         fclose(fid);
