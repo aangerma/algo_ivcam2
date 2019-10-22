@@ -1,4 +1,4 @@
-function testsPassed = test_calibration(calibParamsPath,output_dir_Path,DFZ_calib_path,DSM_calib_path,END_calib_path,RGB_calib_path,ROI_calib_path,Short_Preset_calib_path,Long_Preset_state1_calib_path,Long_Preset_state2_calib_path)
+function testsPassed =  test_calibration(calibParamsPath,output_dir_Path,DFZ_calib_path,DSM_calib_path,END_calib_path,RGB_calib_path,ROI_calib_path,Short_Preset_calib_path,Long_Preset_state1_calib_path,Long_Preset_state2_calib_path)
 % Run validation tests
 % testConfig: struct for test defenition:
 %  calibParamsPath: (string), path to calibration parameters- algo_ivcam2\Tools\CalibTools\IV2calibTool\calibParamsVXGA.xml
