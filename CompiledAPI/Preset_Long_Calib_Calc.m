@@ -77,7 +77,7 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
     [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, longRangestate, im, cameraInput, LaserPoints, maxMod_dec, fprintff);
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name, longRangestate, '_out.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name, '_', longRangestate, '_out.mat']);
         save(fn,'maxRangeScaleModRef','maxFillRate','targetDist');
     end
     

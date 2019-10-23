@@ -84,7 +84,7 @@ if ~isempty(optimizedParamsStr)
     return;
 end
 
-optimizedParams = {'DFZ', 'coarseUndist',calibParams.dfz.rtdGroupPreTPS};
+optimizedParams = {'DFZ', 'coarseUndist', calibParams.dfz.rtdGroupPreTPS};
 [xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par);
 
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
@@ -97,8 +97,7 @@ x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outre
     outregsPreUndist.FRMW.polyVars, outregsPreUndist.FRMW.pitchFixFactor, outregsPreUndist.FRMW.undistAngHorz, outregsPreUndist.FRMW.undistAngVert,...
     outregsPreUndist.FRMW.fovexNominal, outregsPreUndist.FRMW.fovexRadialK, outregsPreUndist.FRMW.fovexTangentP, outregsPreUndist.FRMW.fovexCenter, outregsPreUndist.FRMW.rtdOverY, outregsPreUndist.FRMW.rtdOverX]);
 % optimizedParams = {'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'};
-optimizedParams = {'undistCorrHorz', 'fovexLensDist'};
-% optimizedParams = {'undistCorrHorz'};
+optimizedParams = {'undistCorrHorz'}; % other 3 fine undist models found to be unnecessary
 [xL, xH] = setLimitsPerParameterGroup(optimizedParams, outregsPreUndist, par);
 
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
