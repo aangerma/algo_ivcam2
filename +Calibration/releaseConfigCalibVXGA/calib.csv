@@ -19,10 +19,10 @@ DESTtxFRQpd_002         f5250
 EXTLconLocDelaySlow     h80000010
 EXTLconLocDelayFastC    h0180f8
 EXTLconLocDelayFastF    d0
-EXTLdsmXscale           f67.41
-EXTLdsmYscale           f68.34
-EXTLdsmXoffset          f30.71
-EXTLdsmYoffset          f30.33
+EXTLdsmXscale           f61.62
+EXTLdsmYscale           f68.77
+EXTLdsmXoffset          f33.99
+EXTLdsmYoffset          f31.14
 JFILinvMinMax           hffff0320
 FRMWfovexExistenceFlag  b1
 FRMWpolyVars_001        f100

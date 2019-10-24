@@ -68,8 +68,8 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
     
-    %% Set coarse DSM values 
-    calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
+    %% Set coarse DSM values %TODO: remove completely
+    % calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
     
     %% Get a frame to see that hwinterface works.
     fprintff('Capturing frame...');
