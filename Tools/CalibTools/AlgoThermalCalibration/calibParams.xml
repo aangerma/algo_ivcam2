@@ -112,7 +112,7 @@
       <slowDelayInitVal>98583</slowDelayInitVal>
       <fastDelayInitSlope>0.8</fastDelayInitSlope>
       <slowDelayInitSlope>0.9</slowDelayInitSlope>
-	  <iterFixThr>1</iterFixThr>
+	  <iterFixThr>3</iterFixThr>
       <nAttempts>20</nAttempts>
       <calibrateFast>1</calibrateFast>
       <sphericalScaleFactors>[0.7 1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->

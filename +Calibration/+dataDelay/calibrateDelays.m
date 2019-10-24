@@ -21,7 +21,7 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
             delayCalibResults1 = results;
             delayCalibResults1.temperature = results.dfzCalTmp;
             delayCalibResults2 = delayCalibResults;
-            delayCalibResults1.temperature = curLddTemp;
+            delayCalibResults2.temperature = curLddTemp;
             delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResults1, delayCalibResults2);
         end
         writeDelayRegsToDRAM(hw, delayRegs)

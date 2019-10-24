@@ -1,4 +1,4 @@
-function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, delay, calibParams, isFinalStage)
+function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
@@ -72,9 +72,8 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
     height = sz(1);
     imUs_i = Calibration.aux.GetFramesFromDir(path_up   ,width , height);
     imDs_i = Calibration.aux.GetFramesFromDir(path_down ,width , height);
-    % average I image
-    imU_i = average_image(imUs_i);
-    imD_i = average_image(imDs_i);
+    imU_i = double(imUs_i);
+    imD_i = double(imDs_i);
 % w/o filter getting I image only 
     imU=getFilteredImage(imU_i,unFiltered);
     imD=getFilteredImage(imD_i,unFiltered);
@@ -87,13 +86,13 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
             suffix = '_init';
         end
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'path_up', 'path_down', 'sz', 'delay', 'calibParams', 'isFinalStage');
+        save(fn, 'path_up', 'path_down', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
         dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose');
+        save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose', 'fResMirror', 'g_delay_cnt');
     end
 
-    [res, delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU, imD, delay, calibParams.dataDelay, g_verbose); 
+    [res, delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU, imD, delay, calibParams.dataDelay, g_verbose, fResMirror, g_delay_cnt); 
     
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
@@ -118,57 +117,7 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
     end
 end
 
-
-function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDelay, dataDelayParams ,verbose)
-    global g_delay_cnt;
-    n = g_delay_cnt;
-    res = 0; %(WIP) not finish calibrate
-    nsEps       = 2;
-    
-    nomMirroFreq = 20e3;
-% debug image
-    im=cat(3,imD,(imD+imU)/2,imU);          % debug
-
-% estimate delay    
-    t=@(px)acos(-(px/size(imD,1)*2-1))/(2*pi*nomMirroFreq);
-    
-    rotateBy180 = 1;
-    p1 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imD, rotateBy180, [], [], [], true);
-    p2 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imU, rotateBy180, [], [], [], true);
-    if ~isempty(p1(~isnan(p1))) && ~isempty(p2(~isnan(p2)))
-       
-        delayIR = round(nanmean(vec(t(p1(:,:,2))-t(p2(:,:,2))))/2*1e9);
-        diff = p1(:,:,2)-p2(:,:,2);
-        diff = diff(~isnan(diff));
-        pixVar = var(diff);
-    else
-        pixVar = NaN;
-    end
-    
-    if (~exist('delayIR','var'))                         %CB was not found, throw delay forward to find a good location
-        delayIR = 3000;
-    end
-    if (verbose)
-        figure(sum(mfilename));
-        imagesc(im);
-        title(sprintf('IR delay: %d (%d)',CurrentDelay,delayIR));
-        drawnow;
-    end
-   
-% check convergence
-    if (abs(delayIR)<=dataDelayParams.iterFixThr)        % delay calibration converege 
-        res = 1;                                       
-    elseif (n>1 && abs(delayIR)-nsEps > abs(CurrentDelay))  
-        res = -1;                                       % not converging delay calibration converege 
-        warning('delay not converging!');
-    end
-    delayIR = CurrentDelay + delayIR;
-end 
-
-
-function [IM_avg] = average_image(stream) 
-    IM_avg = sum(double(stream),3)./sum(stream~=0,3);
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function imo=getFilteredImage(d,unFiltered)
     im=double(d);

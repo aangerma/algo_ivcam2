@@ -1,4 +1,4 @@
-function [results] = PresetsAlignment_Calib_Calc(InputPath,calibParams,res,z2mm)
+function [results] = PresetsAlignment_Calib_Calc(InputPath, calibParams, res, z2mm)
     % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
     % description: initiale set of the DSM scale and offset
     %regs_reff
@@ -66,11 +66,11 @@ function [results] = PresetsAlignment_Calib_Calc(InputPath,calibParams,res,z2mm)
     im = GetImages(InputPath,res);
     if g_save_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','calibParams' , 'res' );
+        save(fn, 'InputPath', 'calibParams', 'res', 'z2mm');
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn,'im','calibParams', 'runParams','z2mm','res' );
+        save(fn, 'im', 'calibParams', 'runParams', 'z2mm', 'res');
     end
-    [results] = PresetsAlignment_Calib_Calc_int(im, calibParams, runParams,z2mm,res);       
+    [results] = PresetsAlignment_Calib_Calc_int(im, calibParams, runParams, z2mm, res);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);

@@ -1,11 +1,12 @@
-function [delayZ,ok] = calibZdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage)
+function [delayZ,ok] = calibZdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage, fResMirror)
 verbose = 1;
 NumberOfFrames = calibParams.gnrl.Nof2avg;
 delayZ=dataDelayParams.fastDelayInitVal;
 % delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;
 
 path_both = fullfile(ivcam2tempdir,'Z_Delay_both');
-Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_both);             % get frame without post processing (averege) (SDK like)
+doAverage = true; % no need for saving multiple images that are just averaged inside Z_DelayCalibCalc
+Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_both, doAverage);             % get frame without post processing (averege) (SDK like)
 
 
 [~,saveVal] = hw.cmd('irb e2 06 01'); % Original Laser Bias
@@ -27,7 +28,7 @@ for i=1:dataDelayParams.nAttempts
        end
        Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'Z_Delay',figureFileName,sprintf('Up/Down Images - Initial (%d)',delayZ)); 
     end
-        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, path_both, delayZ, calibParams, isFinalStage); 
+        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, path_both, delayZ, calibParams, isFinalStage, fResMirror); 
 		
        if (verbose)
             figure(sum(mfilename));

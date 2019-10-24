@@ -2,7 +2,7 @@ clear all
 clc
 
 generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
-curTestDir = 'ACC3\';
+curTestDir = 'ACC27\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
 capturesPath = [generalPath, curTestDir, 'Images\'];
@@ -60,17 +60,32 @@ fprintf('\nrunning END_calib_Calc... ');
 dataIn = load([inputPath, 'END_calib_Calc_in.mat']);
 ind = strfind(dataIn.fnCalib, curTestDir);
 dataIn.fnCalib = [generalPath, dataIn.fnCalib(ind:end)];
-[dataRes.results, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.version, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin, dataIn.afterThermalCalib_flag);
+[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.version, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin, dataIn.afterThermalCalib_flag);
 dataOut = load([inputPath, 'END_calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
 
+%% RtdOverAngXStateValues_Calib_Calc
+fprintf('\nrunning RtdOverAngXStateValues_Calib_Calc... ');
+dataIn = load([inputPath, 'RtdOverAngXStateValues_Calib_Calc_in.mat']);
+[dataRes.delayVecNoChange, dataRes.delayVecSteps] = RtdOverAngXStateValues_Calib_Calc(dataIn.calibParams, dataIn.regs);
+dataOut = load([inputPath, 'RtdOverAngXStateValues_Calib_Calc_out.mat']);
+checkOutputEquality(dataOut, dataRes)
+fprintf('\n')
 
-
+%% RtdOverAngX_Calib_Calc
+fprintf('\nrunning RtdOverAngX_Calib_Calc... ');
+dataIn = load([inputPath, 'RtdOverAngX_Calib_Calc_in.mat']);
+ind = strfind(dataIn.inputPath, curTestDir);
+dataIn.inputPath = [generalPath, dataIn.inputPath(ind:end)];
+[dataRes.tablefn] = RtdOverAngX_Calib_Calc(dataIn.inputPath, dataIn.calibParams, dataIn.regs, dataIn.luts);
+dataOut = load([inputPath, 'RtdOverAngX_Calib_Calc_out.mat']);
+checkOutputEquality(dataOut, dataRes)
+fprintf('\n')
 
 %% Preset_Long_Calib_Calc
 fprintf('\nrunning Preset_Long_Calib_Calc (state 1)... ');
-dataIn = load([inputPath, 'Preset_Long_Calib_Calcstate1_in.mat']);
+dataIn = load([inputPath, 'Preset_Long_Calib_Calc_state1_in.mat']);
 ind = strfind(dataIn.InputPath, curTestDir);
 dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
 [dataRes.maxRangeScaleModRef, dataRes.maxFillRate, dataRes.targetDist] = Preset_Long_Calib_Calc(dataIn.InputPath, dataIn.cameraInput, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.calibParams);
@@ -80,7 +95,7 @@ fprintf('\n')
 
 %% Preset_Long_Calib_Calc
 fprintf('\nrunning Preset_Long_Calib_Calc (state 2)... ');
-dataIn = load([inputPath, 'Preset_Long_Calib_Calcstate2_in.mat']);
+dataIn = load([inputPath, 'Preset_Long_Calib_Calc_state2_in.mat']);
 ind = strfind(dataIn.InputPath, curTestDir);
 dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
 [dataRes.maxRangeScaleModRef, dataRes.maxFillRate, dataRes.targetDist] = Preset_Long_Calib_Calc(dataIn.InputPath, dataIn.cameraInput, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.calibParams);
@@ -88,8 +103,32 @@ dataOut = load([inputPath, 'Preset_Long_Calib_Calcstate2_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
 
+%% PresetsAlignment_Calib_Calc
+fprintf('\nrunning PresetsAlignment_Calib_Calc... ');
+dataIn = load([inputPath, 'PresetsAlignment_Calib_Calc_in.mat']);
+ind = strfind(dataIn.InputPath, curTestDir);
+dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
+dataIn.z2mm = 4; %TODO: remove!
+[dataRes.results] = PresetsAlignment_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.res, dataIn.z2mm);
+dataOut = load([inputPath, 'PresetsAlignment_Calib_Calc_out.mat']);
+checkOutputEquality(dataOut, dataRes)
+fprintf('\n')
 
+%% UpdateShortPresetRtdDiff_Calib_Calc
+fprintf('\nrunning UpdateShortPresetRtdDiff_Calib_Calc... ');
+dataIn = load([inputPath, 'UpdateShortPresetRtdDiff_Calib_Calc_in.mat']);
+[dataRes.success] = UpdateShortPresetRtdDiff_Calib_Calc(dataIn.results);
+dataOut = load([inputPath, 'UpdateShortPresetRtdDiff_Calib_Calc_out.mat']);
+checkOutputEquality(dataOut, dataRes)
+fprintf('\n')
 
+%% GeneratePresetsTable_Calib_Calc
+fprintf('\nrunning GeneratePresetsTable_Calib_Calc... ');
+dataIn = load([inputPath, 'GeneratePresetsTable_Calib_Calc_in.mat']);
+[dataRes.presetsTableFullPath] = GeneratePresetsTable_Calib_Calc(dataIn.calibParams);
+dataOut = load([inputPath, 'GeneratePresetsTable_Calib_Calc_out.mat']);
+checkOutputEquality(dataOut, dataRes)
+fprintf('\n')
 
 %% RGB_Calib_Calc
 fprintf('\nrunning RGB_Calib_Calc... ');

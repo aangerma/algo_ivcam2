@@ -36,7 +36,7 @@ fprintf('\n')
 %% IR_DelayCalibCalc (initialization stage)
 fprintf('\nrunning IR_DelayCalibCalc... ');
 files = dir([inputPath, 'IR_DelayCalibCalc_init_in*']);
-for iFile = 1:length(files)-1
+for iFile = 1:length(files)
     fprintf('\niteration #%d... ', iFile);
     dataIn = load(sprintf('%sIR_DelayCalibCalc_init_in%d.mat', inputPath, iFile));
     ind = strfind(dataIn.path_up, curTestDir);
@@ -51,7 +51,7 @@ fprintf('\n')
 %% Z_DelayCalibCalc (initialization stage)
 fprintf('\nrunning Z_DelayCalibCalc... ');
 files = dir([inputPath, 'Z_DelayCalibCalc_init_in*']);
-for iFile = 1:length(files)-1
+for iFile = 1:length(files)
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sZ_DelayCalibCalc_init_in%d.mat', inputPath, iFile));
     ind = strfind(dataIn.path_up, curTestDir);
@@ -81,7 +81,7 @@ fprintf('\n')
 %% IR_DelayCalibCalc (finalization stage)
 fprintf('\nrunning IR_DelayCalibCalc... ');
 files = dir([inputPath, 'IR_DelayCalibCalc_final_in*']);
-for iFile = 1:length(files)-1
+for iFile = 1:length(files)
     fprintf('\niteration #%d... ', iFile);
     dataIn = load(sprintf('%sIR_DelayCalibCalc_final_in%d.mat', inputPath, iFile));
     ind = strfind(dataIn.path_up, curTestDir);
@@ -96,7 +96,7 @@ fprintf('\n')
 %% Z_DelayCalibCalc (finalization stage)
 fprintf('\nrunning Z_DelayCalibCalc... ');
 files = dir([inputPath, 'Z_DelayCalibCalc_final_in*']);
-for iFile = 1:length(files)-1
+for iFile = 1:length(files)
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sZ_DelayCalibCalc_final_in%d.mat', inputPath, iFile));
     ind = strfind(dataIn.path_up, curTestDir);
