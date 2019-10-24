@@ -1,8 +1,9 @@
-function [t, xLims, yLims] = genMapSphericalPixel2Time(im)
+function [t, xLims, yLims] = genMapSphericalPixel2Time(im, fResMirror)
     % t = genMapSphericalPixel2Time(im)
     %   Generates mapping of spherical pixels to relative time within scan
     % input:
     %   im - IR image (taken in spherical mode)
+    %   fResMirror - mirror resonance frequency measured in unit [Hz]
     % output:
     %   t - time within scan [sec] (function handle)
     %   xLims - left/right borders of primary visited region (array of scalars)
@@ -37,7 +38,5 @@ function [t, xLims, yLims] = genMapSphericalPixel2Time(im)
     yLims = {yMin, yMax};
     
     % mapping pixel to relative time within scan
-    nomMirrorFreq = 20.62e3; % typical freq (taken from POC3 analysis)
-    %TODO: get freq from temperature, send function from outside
-    t = @(x,y) acos(-( (y-yMin(x))./(yMax(x)-yMin(x)) * 2 - 1) ) / (2*pi*nomMirrorFreq);
+    t = @(x,y) acos(-( (y-yMin(x))./(yMax(x)-yMin(x)) * 2 - 1) ) / (2*pi*fResMirror);
 end

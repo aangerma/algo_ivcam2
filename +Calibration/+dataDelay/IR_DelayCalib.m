@@ -1,4 +1,4 @@
-function [res, d,im,pixVar] = IR_DelayCalib(hw, delay, calibParams, Val_mode, isFinalStage)
+function [res, d,im,pixVar] = IR_DelayCalib(hw, delay, calibParams, Val_mode, isFinalStage, fResMirror)
     if(~exist('Val_mode','var'))
        Val_mode  = false;
     end
@@ -23,7 +23,7 @@ function [res, d,im,pixVar] = IR_DelayCalib(hw, delay, calibParams, Val_mode, is
     Calibration.aux.SaveFramesWrapper(hw, 'I' , NumberOfFrames, path_down);             % get frame without post processing (averege) (SDK like)
     Calibration.aux.SetGainValue(hw,val1, val2);            % resore gain inital values
 
-    [res, d, im ,pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, delay, calibParams, isFinalStage); 
+    [res, d, im ,pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, delay, calibParams, isFinalStage, fResMirror); 
 %%    IR_DelayCalibOuput(d, pixVar);
 end
 

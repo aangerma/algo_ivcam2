@@ -1,4 +1,4 @@
-function [res, d,im,pixVar] = Z_DelayCalib(hw, path_both, delay, calibParams, isFinalStage)
+function [res, d,im,pixVar] = Z_DelayCalib(hw, path_both, delay, calibParams, isFinalStage, fResMirror)
     if isFinalStage
         suffix = '_final';
     else
@@ -20,7 +20,7 @@ function [res, d,im,pixVar] = Z_DelayCalib(hw, path_both, delay, calibParams, is
     Calibration.aux.SaveFramesWrapper(hw, 'ALT_IR' , NumberOfFrames, path_down);             % get frame without post processing (averege) (SDK like)
     Calibration.aux.SetGainValue(hw,val1, val2);            % resore gain inital values
 
-    [res, d, im ] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage); 
+    [res, d, im ] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage, fResMirror); 
 %%    Z_DelayCalibOuput(d, pixVar);
 end
 

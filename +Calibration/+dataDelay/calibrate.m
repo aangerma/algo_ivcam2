@@ -1,5 +1,8 @@
 function [regs, results]=calibrate(hw, dataDelayParams, fprintff, runParams, calibParams, isFinalStage)
 
+fResMirror = Calibration.aux.getMirrorFreq(hw);
+fprintff('Mirror resonance frequency: %.1f\n', fResMirror);
+
 results = struct('fastDelayCalibSuccess',[],'slowDelayCalibSuccess',[],'delaySlowPixelVar',[]);
 
 warning('off','vision:calibrate:boardShouldBeAsymmetric');
@@ -36,7 +39,7 @@ r.set();
 hw.cmd('mwd a005006c a0050070 00000100');  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 
 %% CALIBRATE IR
-[delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage);
+[delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage, fResMirror);
 results.delayIR = delayIR;
 results.slowDelayCalibSuccess = delayIRsuccess;
 results.delaySlowPixelVar = pixelVar;
@@ -56,7 +59,7 @@ results.vertEdge =  metricsResults.vertMean;
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;
 if calibParams.dataDelay.calibrateFast
-    [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage);
+    [delayZ,delayZsuccess]=Calibration.dataDelay.calibZdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage, fResMirror);
 else
     delayZsuccess = true;
     delayZ = delayIR;

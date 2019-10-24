@@ -1,4 +1,4 @@
-function [delayIR,ok, pixelVar] = calibIRdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage)
+function [delayIR,ok, pixelVar] = calibIRdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage, fResMirror)
     verbose = 1;
     delayIR = dataDelayParams.slowDelayInitVal;
 
@@ -21,7 +21,7 @@ function [delayIR,ok, pixelVar] = calibIRdelay(hw, dataDelayParams, runParams, c
            Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'IR_Delay',figureFileName,sprintf('Up/Down Images - Initial (%d)',delayIR)); 
         end
         
-        [res, d(i),im,pixelVar] = Calibration.dataDelay.IR_DelayCalib(hw, delayIR, calibParams, false, isFinalStage);  
+        [res, d(i),im,pixelVar] = Calibration.dataDelay.IR_DelayCalib(hw, delayIR, calibParams, false, isFinalStage, fResMirror);  
         if (verbose)
             figure(sum(mfilename));
             imagesc(im);

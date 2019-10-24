@@ -1,4 +1,4 @@
-function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, delay, calibParams, isFinalStage)
+function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
@@ -87,13 +87,13 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
             suffix = '_init';
         end
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'path_up', 'path_down', 'sz', 'delay', 'calibParams', 'isFinalStage');
+        save(fn, 'path_up', 'path_down', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
         dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose');
+        save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose', 'fResMirror');
     end
 
-    [res, delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU, imD, delay, calibParams.dataDelay, g_verbose); 
+    [res, delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU, imD, delay, calibParams.dataDelay, g_verbose, fResMirror); 
     
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
@@ -120,7 +120,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDelay, dataDelayParams ,verbose)
+function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDelay, dataDelayParams ,verbose, fResMirror)
     global g_delay_cnt;
     n = g_delay_cnt;
     res = 0; %(WIP) not finish calibrate
@@ -139,7 +139,7 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
             t=@(px)acos(-(px/size(imD,1)*2-1))/(2*pi*nomMirrorFreq);
             delayIR = round(nanmean(vec(t(p1(:,:,2))-t(p2(:,:,2))))/2*1e9);
         end
-        t = Calibration.dataDelay.genMapSphericalPixel2Time(imD);
+        t = Calibration.dataDelay.genMapSphericalPixel2Time(imD, fResMirror);
         delayIR = round(nanmean(vec(t(p1(:,:,1),p1(:,:,2)) - t(p2(:,:,1),p2(:,:,2))))/2 * 1e9); % [nsec]
         diff = p1(:,:,2)-p2(:,:,2);
         diff = diff(~isnan(diff));

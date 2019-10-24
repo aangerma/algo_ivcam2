@@ -1,4 +1,4 @@
-function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage)
+function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
@@ -91,12 +91,12 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
             suffix = '_init';
         end
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'path_up', 'path_down', 'path_both' , 'sz', 'delay', 'calibParams', 'isFinalStage');
+        save(fn, 'path_up', 'path_down', 'path_both' , 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
         dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn,'imU', 'imD', 'imB', 'delay', 'dataDelayParams', 'g_verbose');
+        save(fn,'imU', 'imD', 'imB', 'delay', 'dataDelayParams', 'g_verbose', 'fResMirror');
     end
-    [res, delayZ, im] = Z_DelayCalibCalc_int(imU, imD, imB , delay, calibParams.dataDelay, g_verbose); 
+    [res, delayZ, im] = Z_DelayCalibCalc_int(imU, imD, imB , delay, calibParams.dataDelay, g_verbose, fResMirror); 
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         if isFinalStage
@@ -122,7 +122,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams ,verbose)
+function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams ,verbose, fResMirror)
     global g_delay_cnt;
     n = g_delay_cnt;
     nsEps       = 2;
@@ -136,7 +136,7 @@ function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, da
         % time per pixel in spherical coordinates
         delayZ = int32(round(25*10^3*delayPx/size(imB,1)/2));
     end
-    delayZ = calcDelayFromCorrelationDifference(imB, imU, imD);
+    delayZ = calcDelayFromCorrelationDifference(imB, imU, imD, fResMirror);
     im=cat(3,imD,(imD+imU)/2,imU);
 
     if (verbose)
@@ -251,8 +251,8 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function delayZ = calcDelayFromCorrelationDifference(ir, imU, imD)
-    [t, xLims, yLims] = Calibration.dataDelay.genMapSphericalPixel2Time(ir);
+function delayZ = calcDelayFromCorrelationDifference(ir, imU, imD, fResMirror)
+    [t, xLims, yLims] = Calibration.dataDelay.genMapSphericalPixel2Time(ir, fResMirror);
     % eliminating NaN's
     ir(isnan(ir)) = 0;
     imU(isnan(imU)) = 0;
