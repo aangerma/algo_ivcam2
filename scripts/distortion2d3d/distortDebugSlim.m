@@ -318,7 +318,7 @@ for i = 1:nof_secne
     d(i).grid = grid;
     d(i).pts3d = create3DCorners(targetInfo)';
 %     d(i).rpt = Calibration.aux.samplePointsRtd(im(i).z,pts,regs);
-    d(i).rpt = Calibration.aux.samplePointsRtdAdvanced(im(i).z,pts,regs,colors,0,calibParams.dfz.sampleRTDFromWhiteCheckers);
+    d(i).rpt = Calibration.aux.samplePointsRtd(im(i).z,pts,regs,0,colors,calibParams.dfz.sampleRTDFromWhiteCheckers);
     
 
     imCropped = zeros(size(im(i).i));

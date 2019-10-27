@@ -392,7 +392,7 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         framesSpherical.grid = grid;
         framesSpherical.pts3d = create3DCorners(targetInfo)';
         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs);
-%         framesSpherical.rpt = Calibration.aux.samplePointsRtdAdvanced(framesSpherical.z,pts,regs,colors,0,1);
+%         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs,0,colors,1);
         if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
             load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
         else

@@ -287,7 +287,7 @@ function [ptsWithZ] = cornersData(frame,regs,luts,calibParams)
         if isempty(colors)
             rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
         else
-            rpt = Calibration.aux.samplePointsRtdAdvanced(frame.z,reshape(pts,20,28,2),regs,colors,0,calibParams.gnrl.sampleRTDFromWhiteCheckers);
+            rpt = Calibration.aux.samplePointsRtd(frame.z,reshape(pts,20,28,2),regs,0,colors,calibParams.gnrl.sampleRTDFromWhiteCheckers);
         end
         rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
         
