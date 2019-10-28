@@ -107,10 +107,6 @@ function im = GetDFZImages(InputPath,width,height)
     for i=1:numel(dirfiles)
         im(i).i = Calibration.aux.GetFramesFromDir(fullfile(InputPath,dirfiles(i).name),width, height);
         im(i).z = Calibration.aux.GetFramesFromDir(fullfile(InputPath,dirfiles(i).name),width, height,'Z');
-%         im(i).i = Calibration.aux.average_images(im(i).i);
-%         im(i).z = Calibration.aux.average_images(im(i).z);
-        im(i).i = double(im(i).i);
-        im(i).z = double(im(i).z);
     end
     global g_output_dir g_save_input_flag;
     if g_save_input_flag % save

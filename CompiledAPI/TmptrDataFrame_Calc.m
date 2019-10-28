@@ -143,8 +143,6 @@ end
 if ~finishedHeating % heating stage
     frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
     frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
-    frame.i = Calibration.aux.average_images(frame.i);
-    frame.z = Calibration.aux.average_images(frame.z);
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));

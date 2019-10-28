@@ -46,40 +46,16 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
         end
     end
     
-    % Regs management
-    initFolder = g_calib_dir;
-    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
-    fw.get();
+    % initialization process
+    outDir = fullfile(g_calib_dir, 'initialCalibFiles');
     if isATC
         vers = AlgoThermalCalibToolVersion;
+        GenInitCalibTables_Calc_int(g_calib_dir, outDir, vers, calibParams.tableVersions)
     else
         vers = AlgoCameraCalibToolVersion;
-    end
-    verRegs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
-    verRegs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
-    fw.setRegs(verRegs,'');
-    if ~isATC % we're in ACC and should preserve ATC calibration results
-        EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
-        EPROMstructure  = EPROMstructure.updatedEpromTable;
-        eepromBin       = uint8(eepromBin);
-        eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
-        [delayRegs, dsmRegs, thermalRegs, dfzRegs] = Calibraion.aux.getATCregsFromEEPROMregs(eepromRegs);
-        fw.setRegs(delayRegs,'');
-        fw.setRegs(dsmRegs,'');
-        fw.setRegs(thermalRegs,'');
-        fw.setRegs(dfzRegs,'');
+        GenInitCalibTables_Calc_int(g_calib_dir, outDir, vers, calibParams.tableVersions, eepromBin)
     end
     
-    % Generating tables from FW object and remaining tables which are not managed through actual FW regs
-    outDir = fullfile(g_calib_dir, 'initialCalibFiles');
-    fw.generateTablesForFw(outDir, 0, ~isATC, calibParams.tableVersions);
-    rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
-    fw.writeRtdOverAngXTable(fullfile(outDir, rtdOverXTableFileName),[]);
-    presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
-    fw.writeDynamicRangeTable(fullfile(outDir, presetsTableFileName));
-    rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
-    writeAllBytes(zeros(1,112,'uint8'), fullfile(outDir, rgbTableFileName));
-
     if g_countRuntime
         t1 = toc(t0);
         fprintff('\nGenInitCalibTables_Calc run time = %.1f[sec]\n', t1);
