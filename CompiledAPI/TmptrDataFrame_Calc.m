@@ -303,10 +303,10 @@ end
 function ptsWithZ = applyDsmTransformation(ptsWithZ, regs, type)
     switch type
         case 'direct' % convert from degrees to digital units
-            ptsWithZ(:,2) = (ptsWithZ(:,2) + double(regs.EXTL.dsmXoffset)) * double(regs.EXTL.dsmXscale);
-            ptsWithZ(:,3) = (ptsWithZ(:,3) + double(regs.EXTL.dsmYoffset)) * double(regs.EXTL.dsmYscale);
+            ptsWithZ(:,2) = (ptsWithZ(:,2) + double(regs.EXTL.dsmXoffset)) * double(regs.EXTL.dsmXscale) - 2047;
+            ptsWithZ(:,3) = (ptsWithZ(:,3) + double(regs.EXTL.dsmYoffset)) * double(regs.EXTL.dsmYscale) - 2047;
         case 'inverse' % convert from digital units to degrees
-            ptsWithZ(:,2) = ptsWithZ(:,2)/double(regs.EXTL.dsmXscale) - double(regs.EXTL.dsmXoffset);
-            ptsWithZ(:,3) = ptsWithZ(:,3)/double(regs.EXTL.dsmYscale) - double(regs.EXTL.dsmYoffset);
+            ptsWithZ(:,2) = (ptsWithZ(:,2) + 2047)/double(regs.EXTL.dsmXscale) - double(regs.EXTL.dsmXoffset);
+            ptsWithZ(:,3) = (ptsWithZ(:,3) + 2047)/double(regs.EXTL.dsmYscale) - double(regs.EXTL.dsmYoffset);
     end
 end
