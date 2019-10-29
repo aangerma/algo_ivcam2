@@ -43,6 +43,7 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
     mkdir(OutDir);
 
     % copying meta data
+    mkdir(fullfile(OutDir,'CalibParams'));
     source = fullfile(ivcam2root,'Tools','CalibTools','AlgoThermalCalibration','calibParams.xml');
     target = fullfile(OutDir,'CalibParams','calibParams.xml');
     copyfile(source,target,'f');
@@ -52,9 +53,10 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
     copyfile(source,target,'f');
 
     internalFolder = fullfile(OutDir,'CalibFiles');
-    configurationFolder = fullfile(ivcam2root,'+Calibration','releaseConfigCalibVXGA');
+    configurationFolder = 'releaseConfigCalibVXGA';
     Calibration.aux.defineFileNamesAndCreateResultsDir(internalFolder, configurationFolder)
 
+    mkdir(fullfile(OutDir,'DefaultTables'));
     calibParams = xml2structWrapper(source);
     GenInitCalibTables_Calc_int(internalFolder, fullfile(OutDir,'DefaultTables'), 0, calibParams.tableVersions);
     
