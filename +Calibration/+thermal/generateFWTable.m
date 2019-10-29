@@ -106,16 +106,13 @@ minvbias1 = minmaxvbias1(1);
 p0 = [minvbias1,a*minvbias1 + b];
 p1 = [maxvbias1,a*maxvbias1 + b];
 
-t = linspace(0,1,N);
-% For some p, find ||p - p1 + tgal(pend-p1)||^2
-% tgal = (1/||(pend-p1||^2)*(pend-p1)*(p-p1)';
+t = linspaceCanonicalCenters(N);
 tgal = (1/norm(p1-p0)^2)*(p1-p0)*([vbias1(:),vbias3(:)]-p0)';
-% figure,plot(tgal);
 binEdges = t;
 dbin = binEdges(2)-binEdges(1);
-binIndices = max(1,min(nBins,floor((tgal)/dbin)+1));
+binIndices = max(1,min(nBins,round(tgal/dbin)+1));
 refBinTGal = (1/norm(p1-p0)^2)*(p1-p0)*([regs.FRMW.dfzVbias(1),regs.FRMW.dfzVbias(3)]-p0)';
-refBinIndex = max(1,min(nBins,floor((refBinTGal)/dbin)+1));
+refBinIndex = max(1,min(nBins,round(refBinTGal/dbin)+1));
 framesPerVBias13 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binIndices);
 
 if all(all(isnan(framesPerVBias13(refBinIndex,:,:))))
@@ -159,6 +156,13 @@ dsmXoffset = (regs.EXTL.dsmXoffset*dsmXscale-2048*angXscale+angXoffset+2048)./ds
 dsmYscale = angYscale*regs.EXTL.dsmYscale;
 dsmYoffset = (regs.EXTL.dsmYoffset*dsmYscale-2048*angYscale+angYoffset+2048)./dsmYscale;
 
+
+%%%
+%TODO: add temporary extrapolation
+vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams);
+%%%
+
+
 table = [dsmXscale,...
             dsmYscale,...
             dsmXoffset,...
@@ -187,7 +191,7 @@ assert(~any(isnan(table(:))),'Thermal table contains nans \n');
 
 end
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [offset] = constantTransformToRef(framesPerTemperature,refBinIndex)
 
@@ -207,6 +211,8 @@ for i = 1:nFrames
 end
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [anga,angb] = linearTransformToRef(framesPerTemperature,refBinIndex)
 
@@ -228,12 +234,17 @@ end
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [a,b] = linearTrans(x1,x2)
 A = [x1,ones(size(x1))];
 res = inv(A'*A)*A'*x2;
 a = res(1);
 b = res(2);
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function table = fillStartNans(table)
     for i = 1:size(table,2)
         ni = find(~isnan(table(:,i)),1);
@@ -242,6 +253,9 @@ function table = fillStartNans(table)
         end
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function tableNoInnerNans = fillInnerNans(table)
     tableNoInnerNans = table;
     
@@ -257,31 +271,8 @@ function tableNoInnerNans = fillInnerNans(table)
     end
 
 end
-% function framesPerTemperatureHindSightFix = transformFrames(framesPerTemperature,angXscale,angXoffset,angYscale,angYoffset,destTmprtOffset,regs)
-% %[rtd,angx,angy,pts,verts]
-% tableSz = numel(angYscale);
-% nTemps = size(framesPerTemperature,1);
-% framesPerTemperatureHindSightFix = framesPerTemperature;
-% angXscale(tableSz+1:nTemps) = angXscale(tableSz);
-% angYscale(tableSz+1:nTemps) = angYscale(tableSz);
-% angXoffset(tableSz+1:nTemps) = angXoffset(tableSz);
-% angYoffset(tableSz+1:nTemps) = angYoffset(tableSz);
-% destTmprtOffset(tableSz+1:nTemps) = destTmprtOffset(tableSz);
-% 
-% for i = 1:nTemps
-%     currFrame = squeeze(framesPerTemperature(i,:,:));
-%     currFrame(:,1) = currFrame(:,1) + destTmprtOffset(i);
-%     currFrame(:,2) = currFrame(:,2)*angXscale(i) + angXoffset(i);
-%     currFrame(:,3) = currFrame(:,3)*angYscale(i) + angYoffset(i);
-%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(currFrame(:,2),currFrame(:,3),regs), regs); % Cheating here as I do not apply the undistort
-%     
-%     [oXYZ] = ang2vec(currFrame(:,2),currFrame(:,3),regs,[]);
-%     
-%     [currFrame(:,4),currFrame(:,5)] = Calibration.aux.vec2xy(Calibration.aux.ang2vec(currFrame(:,2),currFrame(:,3),regs), regs);
-%     
-% end
-% 
-% end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function verifyThermalSweepValidity(ldd, startI, warmUpParams)
 if (startI >= 0.5*length(ldd))
@@ -292,4 +283,40 @@ if (diff(warmUpParams.requiredTmptrRange)>0) % valid obligatory range
         error('Thermal sweep %.1f-%.1f missed obligatory range [%d,%d]', min(ldd), max(ldd), warmUpParams.requiredTmptrRange(1), warmUpParams.requiredTmptrRange(2))
     end
 end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function vBiasLims = extrapolateVBiasLimits(results, ldd, vBias, calibParams)
+
+vBiasLims = zeros(3,2);
+
+% vBias2
+coef2 = polyfit(ldd, vBias(2,:), 2);
+fit2 = @(x) coef2(1)*x.^2 + coef2(2)*x + coef2(3);
+vBiasLims(2,:) = fit2(calibParams.fwTable.tempBinRange);
+
+% vBias1/3
+p0 = results.angx.p0;
+p1 = results.angx.p1;
+tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBias([1,3],:)'-p0)';
+coef13 = polyfit(ldd, tgal, 2);
+fit13 = @(x) coef13(1)*x.^2 + coef13(2)*x + coef13(3);
+tgalExtrapLims = fit13(calibParams.fwTable.tempBinRange);
+vBiasLims([1,3],:) = p0' + (p1-p0)'*tgalExtrapLims;
+
+if calibParams.fwTable.extrap.expandVbiasLims
+    vBiasSpan = diff(vBiasLims,[],2);
+    vBiasLims = vBiasLims + calibParams.fwTable.extrap.expandFactor*vBiasSpan*[-1,1];
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function x = linspaceCanonicalCenters(n)
+% generates grid for which bin centers are evenly-spaced between 0 and 1
+xMin = -(2*n-2)/((2*n-3)^2-1);
+xMax = (2*n-2)*(2*n-3)/((2*n-3)^2-1);
+x = linspace(xMin, xMax, n);
 end
