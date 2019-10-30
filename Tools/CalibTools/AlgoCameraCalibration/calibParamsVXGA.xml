@@ -335,8 +335,8 @@
         <zenith>
             <useEsTilt>1</useEsTilt>
             <applyCorrection>1</applyCorrection>
-            <correctionCoefsHorz>[0.54,0.22]</correctionCoefsHorz>
-            <correctionCoefsVert>[0.68,-0.57]</correctionCoefsVert>
+            <correctionCoefsHorz>[0.82,0.12]</correctionCoefsHorz>
+            <correctionCoefsVert>[0.90,-0.24]</correctionCoefsVert>
         </zenith>
     </dfz>
     <roi>
