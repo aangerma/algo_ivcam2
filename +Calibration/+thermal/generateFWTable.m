@@ -156,22 +156,23 @@ dsmXoffset = (regs.EXTL.dsmXoffset*dsmXscale-2048*angXscale+angXoffset+2048)./ds
 dsmYscale = angYscale*regs.EXTL.dsmYscale;
 dsmYoffset = (regs.EXTL.dsmYoffset*dsmYscale-2048*angYscale+angYoffset+2048)./dsmYscale;
 
-
-%%%
-%TODO: add temporary extrapolation
-vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams);
-%%%
-
-
+% table organization
 table = [dsmXscale,...
             dsmYscale,...
             dsmXoffset,...
             dsmYoffset,...
             destTmprtOffset];
-
 table = fillInnerNans(table);   
 table = fillStartNans(table);   
 table = flipud(fillStartNans(flipud(table)));   
+
+% extrapolation
+vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams);
+table = extrapolateTable(table, results, vBiasLims, calibParams.fwTable.extrap);
+results.angy.minval = vBiasLims(2,1);
+results.angy.maxval = vBiasLims(2,2);
+results.angx.p0 = vBiasLims([1,3],1)';
+results.angx.p1 = vBiasLims([1,3],2)';
 results.table = table;
 
 if ~isempty(runParams)
@@ -310,6 +311,18 @@ if calibParams.fwTable.extrap.expandVbiasLims
     vBiasLims = vBiasLims + calibParams.fwTable.extrap.expandFactor*vBiasSpan*[-1,1];
 end
 
+if 0
+    figure, hold all
+    lddExt = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), 48);
+    plot(ldd, vBias(1,:), 'b.-'), plot(lddExt, p0(1)+(p1(1)-p0(1))*fit13(lddExt), 'c-o')
+    plot(ldd, vBias(2,:), '.-', 'color', [0,0.5,0]),  plot(lddExt, fit2(lddExt), 'g-o')
+    plot(ldd, vBias(3,:), 'r.-'),  plot(lddExt, p0(2)+(p1(2)-p0(2))*fit13(lddExt), 'm-o')
+    plot(calibParams.fwTable.tempBinRange, vBiasLims(1,:), 'bp')
+    plot(calibParams.fwTable.tempBinRange, vBiasLims(2,:), 'p', 'color', [0,0.5,0])
+    plot(calibParams.fwTable.tempBinRange, vBiasLims(3,:), 'rp')
+    grid on, xlabel('LDD [deg]'), ylabel('vBias [V]'), legend('vBias1','extrap','vBias2','extrap','vBias3','extrap','vBias1Lims','vBias2Lims','vBias3Lims')
+end
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -319,4 +332,58 @@ function x = linspaceCanonicalCenters(n)
 xMin = -(2*n-2)/((2*n-3)^2-1);
 xMax = (2*n-2)*(2*n-3)/((2*n-3)^2-1);
 x = linspace(xMin, xMax, n);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function table = extrapolateTable(table, results, vBiasLims, extrapParams)
+
+% angy extrapolation
+origGridY = linspace(results.angy.minval, results.angy.maxval, results.angy.nBins);
+extrapGridY = linspace(vBiasLims(2,1), vBiasLims(2,2), results.angy.nBins);
+[extrapYScale, yScaleStr] = polyExtrap(origGridY', table(:,2), extrapGridY, extrapParams.yScaleOrder);
+[extrapYOffset, yOffsetStr] = polyExtrap(origGridY', table(:,4), extrapGridY, extrapParams.yOffsetOrder);
+
+% angx extrapolation
+p0 = results.angx.p0;
+p1 = results.angx.p1;
+tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBiasLims([1,3],:)'-p0)';
+origGridX = linspace(0, 1, results.angx.nBins);
+extrapGridX = linspace(tgal(1), tgal(2), results.angx.nBins);
+[extrapXScale, xScaleStr] = polyExtrap(origGridX', table(:,1), extrapGridX, extrapParams.xScaleOrder);
+[extrapXOffset, xOffsetStr] = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOffsetOrder);
+
+% debug plot
+if 0
+    figure, hold all
+    plot(origGridY, table(:,2), 'b.-'),                     plot(extrapGridY, extrapYScale, 'c-o')
+    plot(origGridY, table(:,4), '.-', 'color', [0,0.5,0]),  plot(extrapGridY, extrapYOffset, 'g-o')
+    plot(p0(1)+origGridX*(p1(1)-p0(1)), table(:,1), 'r.-'), plot(vBiasLims(1,1)+origGridX*(vBiasLims(1,2)-vBiasLims(1,1)), extrapXScale, 'm-o')
+    plot(p0(1)+origGridX*(p1(1)-p0(1)), table(:,3), 'k.-'), plot(vBiasLims(1,1)+origGridX*(vBiasLims(1,2)-vBiasLims(1,1)), extrapXOffset, '-o', 'color', [0.5,0.5,0.5])
+    grid on, xlabel('vBias'), legend('yScale',yScaleStr,'yOffset',yOffsetStr,'xScale',xScaleStr,'xOffset',xOffsetStr)
+end
+
+% table update
+table(:,1) = extrapXScale;
+table(:,2) = extrapYScale;
+table(:,3) = extrapXOffset;
+table(:,4) = extrapYOffset;
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [extrapVals, extrapStr] = polyExtrap(origGrid, origVals, extrapGrid, polyOrder)
+polyCoef = polyfit(origGrid, origVals, polyOrder);
+switch polyOrder
+    case 1
+        polyFunc = @(x) polyCoef(1)*x + polyCoef(2);
+        extrapStr = sprintf('%.2f+%.2f*x', polyCoef(2), polyCoef(1));
+    case 2
+        polyFunc = @(x) polyCoef(1)*x.^2 + polyCoef(2)*x + polyCoef(3);
+        extrapStr = sprintf('%.2f+%.2f*x+%.2f*x^2', polyCoef(3), polyCoef(2), polyCoef(1));
+    otherwise
+        error('polyExtrap currently supports orders 1 & 2 only')
+end
+extrapVals = polyFunc(extrapGrid);
 end

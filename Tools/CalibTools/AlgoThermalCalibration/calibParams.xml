@@ -134,6 +134,10 @@
       <extrap>
           <expandVbiasLims>1</expandVbiasLims>
           <expandFactor>0.05</expandFactor>
+          <xScaleOrder>2</xScaleOrder>
+          <xOffsetOrder>1</xOffsetOrder>
+          <yScaleOrder>2</yScaleOrder>
+          <yOffsetOrder>2</yOffsetOrder>
       </extrap>
    </fwTable>
    <tableVersions>
