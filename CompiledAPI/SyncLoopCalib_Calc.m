@@ -62,8 +62,8 @@ function delayRegs = SyncLoopCalib_Calc(delayRegs, calibParams, delayCalibResult
         delayIR                             = delayCalibResults2.delayIR;
         delayZ                              = delayCalibResults2.delayZ;
         tempDiff                            = delayCalibResults2.temperature - delayCalibResults1.temperature;
-        delayRegs.FRMW.conLocDelaySlowSlope = single((delayIR - delayCalibResults1.delayIR)/tempDiff);
-        delayRegs.FRMW.conLocDelayFastSlope = single((delayZ - delayCalibResults1.delayZ)/tempDiff);
+        delayRegs.FRMW.conLocDelaySlowSlope = single((double(delayIR) - double(delayCalibResults1.delayIR))/tempDiff);
+        delayRegs.FRMW.conLocDelayFastSlope = single((double(delayZ) - double(delayCalibResults1.delayZ))/tempDiff);
         delayRegs.FRMW.dfzCalTmp            = single(delayCalibResults2.temperature);
     end
     fprintff('Setting sync loop: IRdelay = %d+%.2f(T-%.2f), Zdelay = %d+%.2f(T-%.2f)\n',...

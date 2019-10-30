@@ -62,7 +62,7 @@ function [dfzRegs,calibPassed,results] = DFZ_Calib_Calc_int_copy(InputPath, cali
         
         
         %        d(i).c = im(i).c;
-        [d(i).rpt,pts,colors] = Calibration.aux.samplePointsRtdAdvanced(im(i).z,pts,regs,colors,0,calibParams.dfz.sampleRTDFromWhiteCheckers);
+        [d(i).rpt,pts,colors] = Calibration.aux.samplePointsRtd(im(i).z,pts,regs,0,colors,calibParams.dfz.sampleRTDFromWhiteCheckers);
         
         d(i).pts = pts;
         d(i).grid = grid;

@@ -102,6 +102,8 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [finishedHeating,calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
@@ -141,9 +143,8 @@ end
 if ~finishedHeating % heating stage
     frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
     frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
-    frame.i = Calibration.aux.average_images(frame.i);
-    frame.z = Calibration.aux.average_images(frame.z);
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
+    FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     framesData = acc_FrameData(FrameData);
     
@@ -179,6 +180,9 @@ if ~finishedHeating % heating stage
     end
 else % steady-state stage
     framesData = acc_FrameData([]); % avoid using last frame, captured after fine DSM calibration
+    for iFrame = 1:length(framesData)
+        framesData(iFrame).ptsWithZ = applyDsmTransformation(framesData(iFrame).ptsWithZ, regs, 'direct'); % recreate corners with up-to-date DSM values
+    end
     data.framesData = framesData;
     data.regs = regs;
     save(fullfile(output_dir,'mat_files','data_in.mat'),'data');
@@ -215,13 +219,15 @@ end
 % update persistent table 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [a] = acc_FrameData(a)
     global acc;
     acc = [acc; a] ;
     a = acc;
 end
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
     sz = size(frame.i);
@@ -247,12 +253,14 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     if isempty(colors)
         rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
     else
-        rpt = Calibration.aux.samplePointsRtdAdvanced(frame.z,reshape(pts,20,28,2),regs,colors,0,calibParams.gnrl.sampleRTDFromWhiteCheckers);
+        rpt = Calibration.aux.samplePointsRtd(frame.z,reshape(pts,20,28,2),regs,0,colors,calibParams.gnrl.sampleRTDFromWhiteCheckers);
     end
     rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
     ptsWithZ = [rpt,reshape(pts,[],2)]; % without XYZ which is not calibrated well at this stage
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [merged] = struct_merge(existing , new )
     merged = existing;
@@ -265,6 +273,8 @@ function [merged] = struct_merge(existing , new )
         end
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function results = UpdateResultsStruct(results)
     results.thermalRtdRefTemp = results.rtd.refTemp;
@@ -284,4 +294,17 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP1x = results.angx.p1(1);
     results.thermalAngxP1y = results.angx.p1(2);
     results = rmfield(results, {'rtd', 'angy', 'angx', 'table'});
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function ptsWithZ = applyDsmTransformation(ptsWithZ, regs, type)
+    switch type
+        case 'direct' % convert from degrees to digital units
+            ptsWithZ(:,2) = (ptsWithZ(:,2) + double(regs.EXTL.dsmXoffset)) * double(regs.EXTL.dsmXscale) - 2047;
+            ptsWithZ(:,3) = (ptsWithZ(:,3) + double(regs.EXTL.dsmYoffset)) * double(regs.EXTL.dsmYscale) - 2047;
+        case 'inverse' % convert from digital units to degrees
+            ptsWithZ(:,2) = (ptsWithZ(:,2) + 2047)/double(regs.EXTL.dsmXscale) - double(regs.EXTL.dsmXoffset);
+            ptsWithZ(:,3) = (ptsWithZ(:,3) + 2047)/double(regs.EXTL.dsmYscale) - double(regs.EXTL.dsmYoffset);
+    end
 end

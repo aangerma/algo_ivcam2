@@ -28,7 +28,9 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     RegStateSetOutDir(runParams.outputFolder);
 
     %% Calibration file names
-    [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams);
+    mkdirSafe(runParams.outputFolder);
+    runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
+    [fnCalib,fnUndsitLut] = Calibration.aux.defineFileNamesAndCreateResultsDir(runParams.internalFolder, runParams.configurationFolder);
     
     fprintff('Starting calibration:\n');
     fprintff('%-15s %s\n','stated at',datestr(now));
@@ -68,8 +70,8 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
     hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
     
-    %% Set coarse DSM values 
-    calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
+    %% Set coarse DSM values %TODO: remove completely
+    % calibrateCoarseDSM(hw, runParams, calibParams, fprintff,t);
     
     %% Get a frame to see that hwinterface works.
     fprintff('Capturing frame...');
@@ -154,29 +156,6 @@ function [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn)
     runParams=xml2structWrapper(runParamsFn);
     calibParams = xml2structWrapper(calibParamsFn);
     
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [runParams,fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(runParams,calibParams)
-    runParams.internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
-    mkdirSafe(runParams.outputFolder);
-    mkdirSafe(runParams.internalFolder);
-    fnCalib     = fullfile(runParams.internalFolder,'calib.csv');
-    fnUndsitLut = fullfile(runParams.internalFolder,'FRMWundistModel.bin32');
-    initFldr = fullfile(fileparts(mfilename('fullpath')), '../', runParams.configurationFolder);
-    initPresetsFolder = fullfile(fileparts(mfilename('fullpath')), '../','+presets','+defaultValues');
-    eepromStructureFn = fullfile(fileparts(mfilename('fullpath')), '../','eepromStructure');
-    copyfile(fullfile(initFldr,'*.csv'),  runParams.internalFolder);
-    copyfile(fullfile(initPresetsFolder,'*.csv'),  runParams.internalFolder);
-    copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), runParams.internalFolder);
-    copyfile(fullfile(runParams.internalFolder ,'*.frmw'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
-    copyfile(fullfile(runParams.internalFolder ,'*.csv'), fullfile(ivcam2root,'CompiledAPI','calib_dir'));
-%     struct2xmlWrapper(calibParams,fullfile(runParams.outputFolder,'calibParams.xml'));
-    copyfile(fullfile(eepromStructureFn,'*.csv'),  runParams.internalFolder);
-    copyfile(fullfile(eepromStructureFn,'*.mat'),  runParams.internalFolder);
-    copyfile(fullfile(eepromStructureFn,'*.mat'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
-    copyfile(fullfile(eepromStructureFn,'*.csv'),  fullfile(ivcam2root,'CompiledAPI','calib_dir'));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
