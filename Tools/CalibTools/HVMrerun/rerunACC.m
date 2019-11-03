@@ -60,7 +60,7 @@ fprintf('\nrunning END_calib_Calc... ');
 dataIn = load([inputPath, 'END_calib_Calc_in.mat']);
 ind = strfind(dataIn.fnCalib, curTestDir);
 dataIn.fnCalib = [generalPath, dataIn.fnCalib(ind:end)];
-[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.version, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin, dataIn.afterThermalCalib_flag);
+[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin, dataIn.afterThermalCalib_flag);
 dataOut = load([inputPath, 'END_calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')

@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, version, configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
+function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -61,12 +61,12 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'version', 'configurationFolder', 'eepromRegs', 'eepromBin', 'afterThermalCalib_flag');
+        save(fn, 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'configurationFolder', 'eepromRegs', 'eepromBin', 'afterThermalCalib_flag');
     end
     runParams.outputFolder = g_output_dir;
     runParams.undist = undist_flag;
     runParams.afterThermalCalib = afterThermalCalib_flag;
-    runParams.version=version;
+    runParams.version = AlgoCameraCalibToolVersion;
     runParams.configurationFolder=configurationFolder; 
     initFolder = g_calib_dir;
     fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
