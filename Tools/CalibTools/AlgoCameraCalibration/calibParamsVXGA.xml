@@ -352,6 +352,7 @@
         <maxFovY>[]</maxFovY>
         <diskSz>60</diskSz>
         <zSTDTh>50</zSTDTh>
+        <useMinimalXRangeFromATC>1</useMinimalXRangeFromATC>
         <assumeStraightLines>0</assumeStraightLines>
     </roi>
     <!--<dest>
