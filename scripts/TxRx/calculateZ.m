@@ -8,7 +8,7 @@ max_dist=sample_dist*length(TxFullcode);
 [peak_index_FullCor,~] = fineCor(fineCorrRange,coarseDownSamplingR,TxFullcode,corrOffset,cma);
 
 % fine only
-cor_dec = Utils.correlator(uint16(cma), uint8(flip(TxFullcode)));
+cor_dec = Utils.correlator(uint16(cma), uint8(TxFullcode));
 [~, maxIndDec] = max(cor_dec);
 peak_index_fineOnly = maxIndDec-1;
 peak_index_fineOnly = permute(peak_index_fineOnly,[2 1]);

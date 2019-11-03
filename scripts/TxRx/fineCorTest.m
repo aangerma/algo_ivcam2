@@ -1,4 +1,4 @@
-cor_dec = Utils.correlator(uint16(cma), uint8(flip(TxFullcode)));
+cor_dec = Utils.correlator(uint16(cma), uint8((TxFullcode)));
 [~, maxIndDec] = max(cor_dec);
 peak_index = maxIndDec-1;
 peak_index = permute(peak_index,[2 1]);
