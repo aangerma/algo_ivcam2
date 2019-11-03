@@ -5,16 +5,6 @@ end
 if ~exist('skip_algo_thermal_calib','var') || isempty(skip_algo_thermal_calib)
     skip_algo_thermal_calib = 0;
 end
-if ~exist('versions','var')
-    regs = obj.get();
-    vers = typecast(regs.FRMW.calibVersion,'single');
-    versions.algoCalib = vers;
-    versions.algoThermal = vers;
-    versions.cbufCalib = vers;
-    versions.destTxPwrPd = vers;
-    versions.diggGamma = vers;
-    versions.diggUndist = vers;
-end
 
 m=obj.getMeta();
 EPROMtable=m([m.TransferToFW]=='1');
@@ -26,6 +16,16 @@ EPROmaxTableSize=496;
 % EEPROMVersion=EPROMtable(find(strcmp({EPROMtable.algoName},'eepromVersion'))).value;
 EPROMtable=updateEEPROMstructure(obj,struct2table(EPROMtable));
 if(exist('outputFldr','var'))
+    if ~exist('versions','var')
+        regs = obj.get();
+        vers = typecast(regs.FRMW.calibVersion,'single');
+        versions.algoCalib = vers;
+        versions.algoThermal = vers;
+        versions.cbufCalib = vers;
+        versions.destTxPwrPd = vers;
+        versions.diggGamma = vers;
+        versions.diggUndist = vers;
+    end
     mkdirSafe(outputFldr);
     if only_Algo_Calibration_Info
         [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));

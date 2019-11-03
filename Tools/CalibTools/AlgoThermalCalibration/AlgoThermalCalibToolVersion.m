@@ -4,7 +4,7 @@ function [vers, subVersion] = AlgoThermalCalibToolVersion()
         vers = 3.01;
         subVersion = 0;
     else
-        vers = 4.01;
+        vers = 4.17;
         subVersion = 0;
     end
 end

@@ -13,7 +13,7 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         %% prepare register set for ROI
         [ROIregs] = prepare_ROI_reg(hw,regs,dfzRegs);
         %% ROI algo    
-        [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs,results);
+        [roiRegs,results,fovData] = ROI_Calib_Calc(InputPath, calibParams, ROIregs,results,eepromBin);
         %% ROI post
         r.reset();
         %% for matlab tool 

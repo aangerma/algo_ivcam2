@@ -37,6 +37,15 @@ eepromRegs.FRMW.dfzCalTmp               = single(data.regs.FRMW.dfzCalTmp);
 eepromRegs.FRMW.dfzVbias                = single(data.regs.FRMW.dfzVbias);
 eepromRegs.FRMW.dfzIbias                = single(data.regs.FRMW.dfzIbias);
 eepromRegs.FRMW.dfzApdCalTmp            = single(data.regs.FRMW.dfzApdCalTmp);
+% Minimal and maximal mems angles in both axis
+eepromRegs.FRMW.atlMinAngXL = int16(data.dsmMovement.minX(1));
+eepromRegs.FRMW.atlMinAngXR = int16(data.dsmMovement.minX(2));
+eepromRegs.FRMW.atlMaxAngXL = int16(data.dsmMovement.maxX(1));
+eepromRegs.FRMW.atlMaxAngXR = int16(data.dsmMovement.maxX(2));
+eepromRegs.FRMW.atlMinAngYU = int16(data.dsmMovement.minY(1));
+eepromRegs.FRMW.atlMinAngYB = int16(data.dsmMovement.minY(2));
+eepromRegs.FRMW.atlMaxAngYU = int16(data.dsmMovement.maxY(1));
+eepromRegs.FRMW.atlMaxAngYB = int16(data.dsmMovement.maxY(2));
 
 fw.setRegs(eepromRegs,'');
 fw.get();

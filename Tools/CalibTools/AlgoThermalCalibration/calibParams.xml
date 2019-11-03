@@ -16,7 +16,7 @@
        <cbGridSz>[]</cbGridSz>
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
-       <sphericalScaleFactors>[1,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
+       <sphericalScaleFactors>[1,1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
        <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
        <cropFactors>[0.15,0.15]</cropFactors>
        <nonRectangleFlag>0</nonRectangleFlag>
@@ -26,12 +26,13 @@
        </pzrMeas>
    </gnrl>
    <warmUp>
+       <nFramesForZStd>10</nFramesForZStd>
        <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
        <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
-       <requiredTmptrRange>[45 50]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
+       <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
    </warmUp>
    <errRange>
       <delayIR>[0 100000]</delayIR>
@@ -66,6 +67,7 @@
       <xShift>[0 5]</xShift>
       <yShift>[0 0.8]</yShift>
       <rtdShit>[0 inf]</rtdShit>
+      <yDsmLosDegredation>[0,2]</yDsmLosDegredation>
       <thermalRtdRefTemp>[32 79]</thermalRtdRefTemp>
       <thermalRtdSlope>[0.5 2]</thermalRtdSlope>
       <thermalAngyMinAbsScale>[0.5 2]</thermalAngyMinAbsScale>
@@ -126,6 +128,10 @@
      <margin>100</margin>
      <useCenterOfProjection>0</useCenterOfProjection>
    </dsm>
+   <roi>
+        <diskSz>60</diskSz>
+        <zSTDTh>50</zSTDTh>  
+    </roi>
    <fwTable>
       <nFramesToIgnore>5</nFramesToIgnore>
       <tempBinRange>[0 94]</tempBinRange> 
@@ -141,14 +147,14 @@
       </extrap>
    </fwTable>
    <tableVersions>
-        <algoCalib>4.01</algoCalib>
-        <algoRtdOverAngX>3.15</algoRtdOverAngX>
-        <algoThermal>4.01</algoThermal>
-        <cbufCalib>3.15</cbufCalib>
-        <destTxPwrPd>3.15</destTxPwrPd>
-        <diggGamma>3.15</diggGamma>
-        <diggUndist>3.15</diggUndist>
-        <dynamicRange>5.15</dynamicRange>
-        <rgbCalib>0.01</rgbCalib>
+        <algoCalib>4.17</algoCalib>
+        <algoRtdOverAngX>3.17</algoRtdOverAngX>
+        <algoThermal>4.17</algoThermal>
+        <cbufCalib>3.17</cbufCalib>
+        <destTxPwrPd>3.17</destTxPwrPd>
+        <diggGamma>3.17</diggGamma>
+        <diggUndist>3.17</diggUndist>
+        <dynamicRange>5.17</dynamicRange>
+        <rgbCalib>0.17</rgbCalib>
    </tableVersions>
 </struct>

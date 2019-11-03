@@ -54,6 +54,7 @@
       <yShift>[0 0.8]</yShift>
       <rtdShit>[0 inf]</rtdShit>
       <fovPercTmpChangeRangeH>[-5.0 5.0]</fovPercTmpChangeRangeH>
+      <yDsmLosDegredation>[0,2]</yDsmLosDegredation>
    </errRange>
    <validation>
        <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>

@@ -17,7 +17,11 @@ end
 %     save(fndata,'data','timeForCoolDown');
 % end
 
-data.coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime);
+% data.coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime);
+data.coolingStage.duration = 0;
+data.coolingStage.startTemp = 0;
+data.coolingStage.endTemp = 0;
+
 [data.framesData,data.heatingStage] = Calibration.thermal.collectTempData(hw,regs,calibParams,runParams,fprintff,maxHeatTime,app);
 
 

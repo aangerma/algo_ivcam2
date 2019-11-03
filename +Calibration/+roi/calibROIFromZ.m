@@ -1,4 +1,4 @@
-function [roiregs,results] = calibROIFromZ( im,regs,calibParams,runParams)
+function [roiregs,results] = calibROIFromZ( im,regs,calibParams,runParams,fprintff)
 % Calibrate the margins of the image.
 % 1. Take a spherical mode icmage of up direction.
 % 2. Take a spherical mode image of down direction.
@@ -14,11 +14,11 @@ function [roiregs,results] = calibROIFromZ( im,regs,calibParams,runParams)
 edges = calcBounds(im,calibParams,runParams,regs,'im');
 
 %% Calculate the margins we need to take with minimal crop
-calibParamsMinimalCrop = minimalCropParams();
-minimalMargins = calcMargins(edges,regs,calibParamsMinimalCrop,runParams);
+calibParamsMinimalCrop = minimalCropParams(calibParams);
+minimalMargins = calcMargins(edges,regs,calibParamsMinimalCrop,runParams,fprintff);
 
 %% Get the true margins with the paramters from calibParams
-margins = calcMargins(edges,regs,calibParams,runParams);
+margins = calcMargins(edges,regs,calibParams,runParams,fprintff);
 
 
 % As weird as it is, extra margins are consistent with FRMWmargin*.
@@ -36,7 +36,7 @@ results.extraPixWorldPercB = extraPixels(1)/showedPixelsV*100;
 results.extraPixWorldPercL = extraPixels(4)/showedPixelsH*100;
 results.extraPixWorldPercR = extraPixels(3)/showedPixelsH*100;
 end
-function calibParamsMinimalCrop = minimalCropParams()
+function calibParamsMinimalCrop = minimalCropParams(calibParams)
 calibParamsMinimalCrop.roi.cropAroundOpticalAxis = 0;
 calibParamsMinimalCrop.roi.maxFovX = [];
 calibParamsMinimalCrop.roi.maxFovY= [];
@@ -63,49 +63,43 @@ se = strel('disk',calibParams.roi.diskSz);
 notNoiseIm = imclose(notNoiseIm,se);
 
 % Find the corners of the not noise image - connect them
-[xi,yi] = meshgrid(1:size(notNoiseIm,2),1:size(notNoiseIm,1));
-xi(~notNoiseIm) = inf;
-yi(~notNoiseIm) = inf;
-xy = [xi(:),yi(:)];
-xyTopLeft = closest2pointL1(xy,[1,1]);
-xyTopRight = closest2pointL1(xy,[regs.GNRL.imgHsize,1]);
-xyBottomLeft = closest2pointL1(xy,[1,regs.GNRL.imgVsize]);
-xyBottomRight = closest2pointL1(xy,[regs.GNRL.imgHsize,regs.GNRL.imgVsize]);
-
-n = 1000;
-topEdge = [linspace(xyTopLeft(2),xyTopRight(2),n)',linspace(xyTopLeft(1),xyTopRight(1),n)']; 
-bottomEdge = [linspace(xyBottomRight(2),xyBottomLeft(2),n)',linspace(xyBottomRight(1),xyBottomLeft(1),n)']; 
-leftEdge = [linspace(xyBottomLeft(2),xyTopLeft(2),n)',linspace(xyBottomLeft(1),xyTopLeft(1),n)']; 
-rightEdge = [linspace(xyTopRight(2),xyBottomRight(2),n)',linspace(xyTopRight(1),xyBottomRight(1),n)']; 
-imageFrame = [topEdge; rightEdge; bottomEdge; leftEdge];% Add left column
-
-
-% % Find the right and left margins - index of the pixels that bound the
-% % image without the noise.
-% leftImIndex = find(diff(noiseColumns)==-1,1,'first')+1;
-% rightImIndex = find(diff(noiseColumns)==1,1,'last');
-% if isempty(leftImIndex) || leftImIndex>(size(im,2)/2)
-%     leftImIndex = find(sum(notNoiseIm)>0,1,'first');
-% end
-% if isempty(rightImIndex) || rightImIndex<(size(im,2)/2)
-%     rightImIndex = find(sum(notNoiseIm)>0,1,'last');
-% end
-% 
-% % The top noise strip of the image is diagonal. Find the pixel where the noise stops for each column.
-topEdgeX = (xyTopLeft(1):xyTopRight(1));
-topEdgeY = arrayfun(@(x) find(notNoiseIm(:,x)>0,1,'first'), topEdgeX);
-topEdge = [topEdgeY',topEdgeX'];
-bottomEdgeX = (xyBottomLeft(1):xyBottomRight(1));
-bottomEdgeY = arrayfun(@(x) find(notNoiseIm(:,x)>0,1,'last'), bottomEdgeX);
-bottomEdge = [bottomEdgeY',bottomEdgeX'];
-leftEdgeY = (xyTopLeft(2):xyBottomLeft(2));
-leftEdgeX = arrayfun(@(y) find(notNoiseIm(y,:)>0,1,'first'), leftEdgeY);
-leftEdge = [leftEdgeY',leftEdgeX'];
-rightEdgeY = (xyTopRight(2):xyBottomRight(2));
-rightEdgeX = arrayfun(@(y) find(notNoiseIm(y,:)>0,1,'last'), rightEdgeY);
-rightEdge = [rightEdgeY',rightEdgeX'];
-imageFrame = [topEdge; rightEdge; flipud(bottomEdge); flipud(leftEdge)];% Add left column
-
+if calibParams.roi.assumeStraightLines
+    [xi,yi] = meshgrid(1:size(notNoiseIm,2),1:size(notNoiseIm,1));
+    xi(~notNoiseIm) = inf;
+    yi(~notNoiseIm) = inf;
+    xy = [xi(:),yi(:)];
+    xyTopLeft = closest2pointL1(xy,[1,1]);
+    xyTopRight = closest2pointL1(xy,[regs.GNRL.imgHsize,1]);
+    xyBottomLeft = closest2pointL1(xy,[1,regs.GNRL.imgVsize]);
+    xyBottomRight = closest2pointL1(xy,[regs.GNRL.imgHsize,regs.GNRL.imgVsize]);
+    n = 1000;
+    topEdge = [linspace(xyTopLeft(2),xyTopRight(2),n)',linspace(xyTopLeft(1),xyTopRight(1),n)']; 
+    bottomEdge = [linspace(xyBottomRight(2),xyBottomLeft(2),n)',linspace(xyBottomRight(1),xyBottomLeft(1),n)']; 
+    leftEdge = [linspace(xyBottomLeft(2),xyTopLeft(2),n)',linspace(xyBottomLeft(1),xyTopLeft(1),n)']; 
+    rightEdge = [linspace(xyTopRight(2),xyBottomRight(2),n)',linspace(xyTopRight(1),xyBottomRight(1),n)']; 
+    imageFrame = [topEdge; rightEdge; bottomEdge; leftEdge];% Add left column
+else
+    [xi,yi] = meshgrid(1:size(notNoiseIm,2),1:size(notNoiseIm,1));
+    xi(~notNoiseIm) = inf;
+    yi(~notNoiseIm) = inf;
+    xy = [xi(:),yi(:)];
+    xyTopLeft = closest2pointL1(xy,[1,1]);
+    xyTopRight = closest2pointL1(xy,[regs.GNRL.imgHsize,1]);
+    xyBottomLeft = closest2pointL1(xy,[1,regs.GNRL.imgVsize]);
+    xyBottomRight = closest2pointL1(xy,[regs.GNRL.imgHsize,regs.GNRL.imgVsize]);
+    contourCW = bwtraceboundary(notNoiseIm,fliplr(xyTopLeft),'W');% Starting at top left
+    
+    topLeftI = find(all(contourCW == fliplr(xyTopLeft),2),1);
+    topRightI = find(all(contourCW == fliplr(xyTopRight),2));
+    bottomLeftI = find(all(contourCW == fliplr(xyBottomLeft),2));
+    bottomRightI = find(all(contourCW == fliplr(xyBottomRight),2));
+    
+    topEdge = contourCW(topLeftI:topRightI,:); 
+    bottomEdge = contourCW(bottomRightI:bottomLeftI,:); 
+    leftEdge = contourCW(bottomLeftI:end,:); 
+    rightEdge = contourCW(topRightI:bottomRightI,:); 
+    imageFrame = [topEdge; rightEdge; bottomEdge; leftEdge];% Add left column
+end
 
 ff = Calibration.aux.invisibleFigure; 
 imagesc(im.i(:,:,1)); hold on; plot(imageFrame(:,2),imageFrame(:,1),'r','linewidth',2);
@@ -146,12 +140,13 @@ function xyClose = closest2pointL1(xy,p)
     [~,Imin] = min(sum(abs(double(xy)-double(p)),2));
     xyClose = xy(Imin,:);
 end
-function marginsTBLR = calcMargins(edges,regs,calibParams,runParams)
+function marginsTBLR = calcMargins(edges,regs,calibParams,runParams,fprintff)
 if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
     load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
 else
     tpsUndistModel = [];
 end
+
 
 ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs,tpsUndistModel); 
 [edgesXY,edgesTanXY] = structfun(ang2xy,edges,'UniformOutput',false); 
@@ -161,6 +156,26 @@ tanMarginsTBLR(1) = (max(edgesTanXY.T(innerIndices(edgesTanXY.T,factor),2)));
 tanMarginsTBLR(2) = (min(edgesTanXY.B(innerIndices(edgesTanXY.B,factor),2)));
 tanMarginsTBLR(3) = (max(edgesTanXY.L(innerIndices(edgesTanXY.L,factor),1)));
 tanMarginsTBLR(4) = (min(edgesTanXY.R(innerIndices(edgesTanXY.R,factor),1)));
+
+if calibParams.roi.useMinimalXRangeFromATC
+    angx = single([regs.FRMW.atlMaxAngXL;regs.FRMW.atlMinAngXR]);
+    angy = angx*0;
+    [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
+    v = Calibration.aux.ang2vec(angx,angy,regs);
+    v = Calibration.Undist.undistByTPSModel( v',tpsUndistModel )';% 2D Undist
+    [xATC,~] = Calibration.aux.vec2xy(v, regs);
+    tanxATC = (v(1,:)./v(3,:));
+    isATCTighter = abs(tanMarginsTBLR(3:4)) > abs(tanxATC);
+    if isATCTighter(1)
+        tanMarginsTBLR(3) = tanxATC(1);
+    end
+    if isATCTighter(2)
+        tanMarginsTBLR(4) = tanxATC(2);
+    end
+else
+    xATC = [];
+end
+
 
 extraMargins = [calibParams.roi.extraMarginT,...
                 calibParams.roi.extraMarginB,...
@@ -195,11 +210,12 @@ end
 % the square
 if ~isempty(calibParams.roi.squarePixelsRatio)
     expectedRatio = calibParams.roi.squarePixelsRatio(2)/calibParams.roi.squarePixelsRatio(1); 
-    if abs(diff(tanMarginsTBLR(1:2)))/abs(diff(tanMarginsTBLR(3:4))) < expectedRatio
+    if abs(diff(tanMarginsTBLR(1:2)))/abs(diff(tanMarginsTBLR(3:4))) < expectedRatio % limited by y FOV
         oldLen = tanMarginsTBLR(4)-tanMarginsTBLR(3);
         newLen = abs(diff(tanMarginsTBLR(1:2)))/expectedRatio;
         tanMarginsTBLR(3) = tanMarginsTBLR(3) + (oldLen-newLen)/2;
         tanMarginsTBLR(4) = tanMarginsTBLR(4) - (oldLen-newLen)/2;
+        fprintff('ROI is limted by y FOV \n');
     else
         oldLen = tanMarginsTBLR(2)-tanMarginsTBLR(1);
         newLen = abs(diff(tanMarginsTBLR(3:4)))*expectedRatio;
@@ -223,9 +239,9 @@ marginsTBLR(4) = single(regs.GNRL.imgHsize) - rectX(4);
 
 marginsTBLR(1:2) = marginsTBLR([2,1]); % marginT actually refers to the bottom of the image and vice versa (names should be swapped)
 
-plotEdges(edgesXY,regs,runParams,rectX,rectY)
+plotEdges(edgesXY,regs,runParams,rectX,rectY,xATC)
 end
-function plotEdges(edgesXY,regs,runParams,rectX,rectY)
+function plotEdges(edgesXY,regs,runParams,rectX,rectY,xATC)
     if ~isempty(runParams)
         ff = Calibration.aux.invisibleFigure; 
         plot(edgesXY.T(:,1),edgesXY.T(:,2),'linewidth',2),hold on
@@ -235,6 +251,9 @@ function plotEdges(edgesXY,regs,runParams,rectX,rectY)
         rectangle('Position',[0,0,regs.GNRL.imgHsize,regs.GNRL.imgVsize],'linewidth',2)
         hold on
         rectangle('Position',[rectX(3),rectY(1),rectX(4)-rectX(3),rectY(2)-rectY(1)],'linewidth',2)
+        for i = 1:numel(xATC)
+           plot([xATC(i),xATC(i)],[0, regs.GNRL.imgVsize],'g-','linewidth',2);
+        end
         title('Projected Pincushion in Image Plane');
         Calibration.aux.saveFigureAsImage(ff,runParams,'ROI','Pincushion$CroppedArea',0);
     end

@@ -15,7 +15,9 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     
     %% prepare spare register to store the fov. 
 %     writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff);
-    
+    if runParams.afterThermalCalib
+    	results = verticalFovChange(runParams, calibParams, results,fw);
+    end 
     [results,undistRegs,undistLuts] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t);
     fw.setRegs(undistRegs,fnCalib);
     fw.setLut(undistLuts);
@@ -53,7 +55,24 @@ function results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs)
     results.EXTLconLocDelayFastF = (delayRegs.EXTL.conLocDelayFastF);
     results.DESTtxFRQpd = (dfzRegs.DEST.txFRQpd(1));
 end
-
+function results = verticalFovChange(runParams, calibParams, results,fw)
+    if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
+        load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
+    else
+        tpsUndistModel = [];
+    end
+    regs = fw.get();
+    angy = single([regs.FRMW.atlMinAngYU;regs.FRMW.atlMaxAngYB;regs.FRMW.atlMaxAngYU;regs.FRMW.atlMinAngYB]);
+    angx = angy*0;
+    [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(angx,angy,regs);
+    v = Calibration.aux.ang2vec(angx,angy,regs);
+    v = Calibration.Undist.undistByTPSModel( v',tpsUndistModel )';% 2D Undist
+    tanyATC = (v(2,:)./v(3,:));
+    atanyATC = atand(tanyATC);
+    results.fovSmallestOverTmptr = abs(atanyATC(4)-atanyATC(3));
+    results.fovLargestOverTmptr = abs(atanyATC(2)-atanyATC(1));
+    results.fovTmptrMaxChangeRatio = 100*(results.fovLargestOverTmptr/results.fovSmallestOverTmptr-1);
+end
 function [results,udistRegs,udistlUT] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t)
     fprintff('[-] Fixing ang2xy using undist table...\n');
     if(runParams.undist)

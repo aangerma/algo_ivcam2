@@ -24,7 +24,12 @@ function GenInitCalibTables_Calc_int(initFolder, outFolder, calibToolVers, table
     rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', tableVersions.algoRtdOverAngX);
     fw.writeRtdOverAngXTable(fullfile(outFolder, rtdOverXTableFileName),[]);
     presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', tableVersions.dynamicRange);
-    fw.writeDynamicRangeTable(fullfile(outFolder, presetsTableFileName));
+    [presetsPath, presetsFolder] = fileparts(outFolder);
+    if strcmp(presetsFolder, 'initialCalibFiles') % called by GenInitCalibTables_Calc
+        fw.writeDynamicRangeTable(fullfile(outFolder, presetsTableFileName), presetsPath);
+    else % called directly (e.g. by DLL build script)
+        fw.writeDynamicRangeTable(fullfile(outFolder, presetsTableFileName));
+    end
     rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', tableVersions.rgbCalib);
     writeAllBytes(zeros(1,112,'uint8'), fullfile(outFolder, rgbTableFileName));
     
