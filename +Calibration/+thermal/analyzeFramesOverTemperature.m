@@ -86,7 +86,7 @@ if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (po
     if inValidationStage % Compare calibration to theoretical Fix
         legends = {'Post Fix (val)'};
     else
-        legends = {'Pre Fix (val)'};
+        legends = {'Pre Fix (cal)'};
     end
     
     if ~isempty(runParams)
