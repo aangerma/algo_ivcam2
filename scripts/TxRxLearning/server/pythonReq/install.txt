@@ -1,0 +1,1 @@
+To install just write: “pip install -r requirements.txt --proxy http://proxy-chain.intel.com:911 --user”

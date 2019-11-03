@@ -1,0 +1,12 @@
+open pycharm in server: 
+cd /opt/pycharm-*/bin
+./pycharm.sh
+create link to pycharm
+sudo ln -s /opt/pycharm-community-2019.2.3/bin/pycharm.sh /usr/local/bin/pycharm
+
+open tensor board to see results: 
+tensorboard --logdir #LogFolder
+for example: 
+tensorboard --logdir ivcam/32
+open in e:
+143.185.115.10:6007

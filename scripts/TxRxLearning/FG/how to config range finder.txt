@@ -1,0 +1,7 @@
+WrConfigData C:\sources\ivcam2_project\Enable_Mems_ConfigData_Ver_02_11.txt
+RST
+DIRTYBITBYPASS
+load script C:\sources\ivcam2_project\ldOn.txt -> commit
+
+cancel ldOn: RST
+return to regular config: WrConfigData C:\sources\ivcam2_project\Enable_Mems_ConfigData_Ver_02_04.txt
