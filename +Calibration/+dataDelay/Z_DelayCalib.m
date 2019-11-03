@@ -7,18 +7,17 @@ function [res, d,im,pixVar] = Z_DelayCalib(hw, path_both, delay, calibParams, is
     gainCalibValue  = '000ffff0';
     unFiltered      = 0;
     NumberOfFrames  = calibParams.gnrl.Nof2avg; % should be 30
-    doAverage = true; % no need for saving multiple images that are just averaged inside Z_DelayCalibCalc
 
     sz = Z_DelayCalibInit(hw , delay);
     %    [imU,imD]= Calibration.aux.getScanDirImgs(hw);  % seprate to get frame
     [val1, val2] = Calibration.aux.GetGainValue(hw);        % save original gain value
     Calibration.aux.SetGainValue(hw,gainCalibValue, val2);  % Scan Direction up
     path_up = fullfile(ivcam2tempdir,sprintf('Z_Delay%s_up',suffix));
-    Calibration.aux.SaveFramesWrapper(hw , 'ALT_IR' , NumberOfFrames, path_up, doAverage);             % get frame without post processing (averege) (SDK like)
+    Calibration.aux.SaveFramesWrapper(hw , 'ALT_IR' , NumberOfFrames, path_up);             % get frame without post processing (averege) (SDK like)
     
     Calibration.aux.SetGainValue(hw,val1, gainCalibValue);  % Scan Direction down
     path_down = fullfile(ivcam2tempdir,sprintf('Z_Delay%s_down',suffix));
-    Calibration.aux.SaveFramesWrapper(hw, 'ALT_IR' , NumberOfFrames, path_down, doAverage);             % get frame without post processing (averege) (SDK like)
+    Calibration.aux.SaveFramesWrapper(hw, 'ALT_IR' , NumberOfFrames, path_down);             % get frame without post processing (averege) (SDK like)
     Calibration.aux.SetGainValue(hw,val1, val2);            % resore gain inital values
 
     [res, d, im ] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage, fResMirror); 

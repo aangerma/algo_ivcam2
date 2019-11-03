@@ -5,8 +5,7 @@ delayZ=dataDelayParams.fastDelayInitVal;
 % delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;
 
 path_both = fullfile(ivcam2tempdir,'Z_Delay_both');
-doAverage = true; % no need for saving multiple images that are just averaged inside Z_DelayCalibCalc
-Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_both, doAverage);             % get frame without post processing (averege) (SDK like)
+Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_both);             % get frame without post processing (averege) (SDK like)
 
 
 [~,saveVal] = hw.cmd('irb e2 06 01'); % Original Laser Bias

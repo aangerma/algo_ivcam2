@@ -70,8 +70,11 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
     
     width = sz(2);
     height = sz(1);
-    imU_i = Calibration.aux.GetFramesFromDir(path_up   ,width , height);
-    imD_i = Calibration.aux.GetFramesFromDir(path_down ,width , height);
+    imUs_i = Calibration.aux.GetFramesFromDir(path_up   ,width , height);
+    imDs_i = Calibration.aux.GetFramesFromDir(path_down ,width , height);
+    % average I image
+    imU_i = average_image(imUs_i);
+    imD_i = average_image(imDs_i);
 % w/o filter getting I image only 
     imU=getFilteredImage(imU_i,unFiltered);
     imD=getFilteredImage(imD_i,unFiltered);

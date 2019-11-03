@@ -191,8 +191,7 @@ function frameData = prepareFrameData(hw,startTime,calibParams,path)
     for j = 1:3
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
-    doAverage = true;
-    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , calibParams.gnrl.Nof2avg , path, doAverage); %after mareg with main remove local calls.
+    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , calibParams.gnrl.Nof2avg , path); %after mareg with main remove local calls.
     frameData.time = toc(startTime);
 end
 

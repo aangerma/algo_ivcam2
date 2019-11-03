@@ -79,8 +79,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
     mkdirSafe(path{i});
     fn = fullfile(path{i},'image_params.xml');
     struct2xmlWrapper(targetInfo,fn,'image_params');                        % save targetInfo as XML file. 
-    doAverage = true; % no need for saving multiple images that are just averaged inside DFZ_Calib_Calc
-    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path{i}, doAverage);  % save images Z and I in sub dir 
+    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path{i});  % save images Z and I in sub dir 
     
     if strcmp(cap.type,'shortRange')
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );

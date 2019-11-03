@@ -71,6 +71,11 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
     imUs_z = Calibration.aux.GetFramesFromDir(path_up   ,width , height);
     imDs_z = Calibration.aux.GetFramesFromDir(path_down ,width , height);
     imBs_i = Calibration.aux.GetFramesFromDir(path_both ,width , height);
+
+    % average I image
+    imU_z = average_image(imUs_z);
+    imD_z = average_image(imDs_z);
+    imB_i = average_image(imBs_i);
 % w/o filter getting I image only 
     imU=getFilteredImage(imU_z,unFiltered);
     imD=getFilteredImage(imD_z,unFiltered);

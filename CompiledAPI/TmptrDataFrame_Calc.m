@@ -148,6 +148,8 @@ end
 if ~finishedHeating % heating stage
     frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
     frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
+    frame.i = Calibration.aux.average_images(frame.i);
+    frame.z = Calibration.aux.average_images(frame.z);
     
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
     zForStd = nan(size(frame.z));
