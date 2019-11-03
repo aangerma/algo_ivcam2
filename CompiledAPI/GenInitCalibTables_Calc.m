@@ -30,14 +30,14 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
     % Scope definition
     if exist('eepromBin', 'var') && ~isempty(eepromBin)
         isATC = false;
-        fprintff('Generating default tables for ACC calibration (preserving ATC tables).\n')
+        fprintff('Generating default tables for ACC calibration (preserving ATC tables).\n');
     else
         isATC = true;
-        fprintff('Generating default tables for full calibration (overriding existing tables).\n')
+        fprintff('Generating default tables for full calibration (overriding existing tables).\n');
     end
 
     % save Input
-    if g_save_input_flag && exist(g_output_dir,'dir')~=0 
+    if g_save_input_flag && (exist(g_output_dir,'dir')~=0)
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name '_in.mat']);
         if isATC
             save(fn, 'calibParams');

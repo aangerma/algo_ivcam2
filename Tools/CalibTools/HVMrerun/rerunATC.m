@@ -25,6 +25,16 @@ dataOut = load([inputPath, 'cal_init_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
 
+%% GenInitCalibTables_Calc
+fprintf('\nrunning GenInitCalibTables_Calc... ');
+dataIn = load([inputPath, 'GenInitCalibTables_Calc_in.mat']);
+if isfield(dataIn, 'eepromBin')
+    GenInitCalibTables_Calc(dataIn.calibParams, dataIn.eepromBin)
+else
+    GenInitCalibTables_Calc(dataIn.calibParams)
+end
+fprintf('\n')
+
 %% DSM_CoarseCalib_Calc
 fprintf('\nrunning DSM_CoarseCalib_Calc... ');
 dataIn = load([inputPath, 'DSM_CoarseCalib_Calc_in.mat']);

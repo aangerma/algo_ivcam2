@@ -78,6 +78,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 %     Calibration.aux.startHwStream(hw,runParams);
     hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
+    fprintff('Set laser to full FOV projection\n');
+    hw.cmd('SET_RECTIFIED_PROJECTION 0');
     %% Verify unit's configuration version
    [verValue,verValuefull] = getVersion(hw,runParams);  
     
@@ -129,7 +131,11 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
 	calibrateJfilGamma(fw, calibParams,runParams,fnCalib,fprintff);
 
     %% Calibrate min range preset
+    fprintff('Set laser to rectified FOV projection\n');
+    hw.cmd('SET_RECTIFIED_PROJECTION 1');
     [results] = calibratePresets(hw, results,runParams,calibParams, fprintff,fw);
+    fprintff('Set laser to full FOV projection\n');
+    hw.cmd('SET_RECTIFIED_PROJECTION 0');
     
     %% ::DFZ::  Apply DFZ result if passed (It affects next calibration stages)
     
@@ -140,6 +146,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     end
 
     %% ::ROI::
+    fprintff('Set laser to rectified FOV projection\n');
+    hw.cmd('SET_RECTIFIED_PROJECTION 1');
     [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw, fprintff, t);
 
     %% Undist and table burn
@@ -176,7 +184,12 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     burn2Device(hw,1,runParams,calibParams,@fprintf,t);
 
     %% Create table for rtd over angX fix
+    fprintff('Set laser to full FOV projection\n');
+    hw.cmd('SET_RECTIFIED_PROJECTION 0');
     Calibration.DFZ.calculateRtdOverAngXFix(hw,runParams,calibParams,regs,luts, fprintff);
+    fprintff('Set laser to rectified FOV projection\n');
+    hw.cmd('SET_RECTIFIED_PROJECTION 1');
+    
     %% Collecting hardware state
     if runParams.saveRegState
         fprintff('Collecting registers state...');
@@ -185,6 +198,8 @@ function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spa
     end
     %% Long range calibrations
     if runParams.maxRangePreset
+        fprintff('Set laser to rectified FOV projection\n');
+        hw.cmd('SET_RECTIFIED_PROJECTION 1');
         resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
         for i = 1:2
             res = resolutions{i};

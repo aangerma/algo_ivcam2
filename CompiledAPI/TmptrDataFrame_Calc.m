@@ -132,19 +132,30 @@ Invalid_Frames = [];
 persistent Index
 persistent prevTmp
 persistent prevTime
+persistent lastZFrames
+persistent diskObject
 
 if isempty(Index) || (g_temp_count == 0)
     Index     = 0;
     prevTmp   = 0;  %hw.getLddTemperature();
     prevTime  = 0;
+    lastZFrames = nan([runParams.calibRes,calibParams.warmUp.nFramesForZStd]);
+    diskObject = strel('disk',calibParams.roi.diskSz);
+
 end
 % add error checking;
 
 if ~finishedHeating % heating stage
     frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
     frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
+    
+    binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
+    zForStd = nan(size(frame.z));
+    zForStd(binLargest) = frame.z(binLargest);
+    lastZFrames(:,:,mod(Index,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
+    [FrameData.minMaxMemsAngX,FrameData.minMaxMemsAngY] = minMaxDSMAngles(regs,lastZFrames,calibParams,diskObject);
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     framesData = acc_FrameData(FrameData);
     
@@ -185,13 +196,16 @@ else % steady-state stage
     end
     data.framesData = framesData;
     data.regs = regs;
-    save(fullfile(output_dir,'mat_files','data_in.mat'),'data');
+    
+    save(fullfile(output_dir,'mat_files','data_in.mat'),'data','calibParams','runParams','regs','eepromRegs');
     
     invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
     data.framesData = data.framesData(~invalidFrames);
     data.dfzRefTmp = regs.FRMW.dfzCalTmp;
     [table,results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
     data.tableResults = results;
+    [data] = Calibration.thermal.applyThermalFix(data,regs,[],calibParams,runParams,1);
+    results.yDsmLosDegredation = data.tableResults.yDsmLosDegredation;
     results = UpdateResultsStruct(results); % output single layer results struct
     if isempty(table)
         calibPassed = 0;
@@ -228,7 +242,54 @@ function [a] = acc_FrameData(a)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [minMaxMemsAngX,minMaxMemsAngY] = minMaxDSMAngles(regs,lastZFrames,calibParams,diskObject)
+%% Calculates the min and max DSM angles along the center axis of the image (middle row,middle col)
+% The purpose is to follow accros the degredation in vertical fov for eye safety concerns, and the horizontal fov for ROI cropping in ACC.
+% 
+% 1. Target only the largest fully connected component, in case a small
+% spherical scale factor causes stripes at the side of image.
+% 2. Take the min and max valid pixels for the center row and col and
+% return theirDSM values. Use pixels with low STD as "valid pixels"
+z2mm = single(regs.GNRL.zNorm);
+irrelevantPixels = sum(~isnan(lastZFrames),3) < calibParams.warmUp.nFramesForZStd;
+zStd = nanstd(lastZFrames,[],3)/z2mm;
+zStd(irrelevantPixels) = nan;
+zStd(isnan(zStd)) = inf;
+notNoiseIm = zStd<calibParams.roi.zSTDTh;
+notNoiseIm = imclose(notNoiseIm,diskObject);
 
+if ~any(notNoiseIm(:))
+   % No valid point
+    minMaxMemsAngX = [nan,nan];
+    minMaxMemsAngY = [nan,nan];
+    return;
+end
+
+minMaxX = minmax(find(notNoiseIm(round(size(notNoiseIm,1)/2),:)));
+minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2))));
+
+xx = (minMaxX-0.5)*4 - double(regs.DIGG.sphericalOffset(1));
+yy = minMaxY - double(regs.DIGG.sphericalOffset(2));
+
+xx = xx*2^10;
+yy = yy*2^12;
+
+minMaxAngX = xx/double(regs.DIGG.sphericalScale(1));
+minMaxAngY = yy/double(regs.DIGG.sphericalScale(2));
+
+minMaxMemsAngX = (minMaxAngX+2047)/regs.EXTL.dsmXscale - regs.EXTL.dsmXoffset;
+minMaxMemsAngY = (minMaxAngY+2047)/regs.EXTL.dsmYscale - regs.EXTL.dsmYoffset;
+
+end
+function [binLargest] = maxAreaMask(binaryIm)
+CC = bwconncomp(binaryIm);
+numPixels = cellfun(@numel,CC.PixelIdxList);
+[~,idx] = max(numPixels);
+binLargest = zeros(size(binaryIm),'logical');
+binLargest(CC.PixelIdxList{idx}) = 1;
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
     sz = size(frame.i);
     pixelCropWidth = sz.*calibParams.gnrl.cropFactors;

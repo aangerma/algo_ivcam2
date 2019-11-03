@@ -35,6 +35,10 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
             ,'HVM_Val_Coverage_Calc.m' ...
             };
 
+    % updating eeprom structure file
+    fw = Firmware;
+    fw.generateTablesForFw();
+    
     % out folder preparation
     OutDir = 'Output';
     if exist(OutDir, 'dir')
