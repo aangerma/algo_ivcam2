@@ -20,9 +20,10 @@ for i = 1:size(framesPerTemperature,1)
     meanRtdXYOffset(i,:,:) = nanmean( RtdXY );
     validPts = ~any(isnan(diff(:,:,1)),2);
     rmsRtdXYOffset(i,:,:) =  rms(RtdXY(validPts,:,:));
-    maxOffset = max(abs(RtdXY(validPts,:,:)));
+    rtdValidPts = RtdXY(validPts,:,:);
+    [maxOffset,ix] = max(abs(rtdValidPts));
     if ~isempty(maxOffset)
-        maxRtdXYOffset(i,:,:) = maxOffset;
+        maxRtdXYOffset(i,:,:) = [rtdValidPts(ix(1),1),rtdValidPts(ix(2),2),rtdValidPts(ix(3),3)];
     end
     
 end
