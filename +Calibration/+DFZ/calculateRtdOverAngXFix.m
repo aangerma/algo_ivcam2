@@ -21,17 +21,13 @@ if (runParams.DFZ)
     
     setRtdOverAngXFix(hw,delayVecNoChange);
     pause(2);
-    inputPath = fullfile(ivcam2tempdir,'rtdOverAngX'); 
-    pathConstant = fullfile(inputPath,'frames_constant');
-    Calibration.aux.SaveFramesWrapper(hw , 'Z' , calibParams.rtdOverAngX.nFrames, pathConstant);     
+    depthDataConstant = captureFramesWrapper(hw, 'Z', calibParams.rtdOverAngX.nFrames);
 
     setRtdOverAngXFix(hw,delayVecSteps);
     pause(2);
-    inputPath = fullfile(ivcam2tempdir,'rtdOverAngX'); 
-    pathSteps = fullfile(inputPath,'frames_steps');
-    Calibration.aux.SaveFramesWrapper(hw , 'Z' , calibParams.rtdOverAngX.nFrames, pathSteps);     
+    depthDataSteps = captureFramesWrapper(hw, 'Z', calibParams.rtdOverAngX.nFrames);
 
-    tablefn = RtdOverAngX_Calib_Calc(inputPath,calibParams,regs,luts);
+    tablefn = RtdOverAngX_Calib_Calc(depthDataConstant, depthDataSteps, calibParams, regs, luts);
     
     r.reset();
     

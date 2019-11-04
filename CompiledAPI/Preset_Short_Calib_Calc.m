@@ -1,11 +1,9 @@
-function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, LaserPoints, maxMod_dec, sz, calibParams)
-% function [dfzRegs,results,calibPassed] = Preset_Short_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
+function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, sz, calibParams)
+% function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, sz, calibParams)
 % description: 
 %
 % inputs:
-%   InputPath -  path for input images  dir stucture InputPath\PoseN N =1:5
-%        note 
-%           I image naming I_*_000n.bin
+%   depthData - images with different mod ref values (in binary sequence form)
 %   calibParams - calibparams strcture.
 %   LaserPoints - 
 %   maxMod_dec -
@@ -63,13 +61,13 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, L
     else % algo_cal app_windows
         fprintff = g_fprintff; 
     end
-    width = sz(2);
-    height = sz(1);
-    im = GetMinRangeImages(InputPath,width,height);
+
+    im = convertBinDataToFrames(depthData, sz, true, 'depth');
+    
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','LaserPoints','maxMod_dec', 'sz','calibParams');
+        save(fn,'depthData','LaserPoints','maxMod_dec', 'sz','calibParams');
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im', 'LaserPoints' ,'maxMod_dec','sz','calibParams','output_dir','PresetFolder');
     end
@@ -90,22 +88,4 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(InputPath, L
     end
 end
 
-function [frames] = GetMinRangeImages(InputPath,width,height)
-    d = dir(InputPath);
-    isub = [d(:).isdir]; %# returns logical vector
-    nameFolds = {d(isub).name}';
-    nameFolds(ismember(nameFolds,{'.','..'})) = [];
-    nameFolds = sort(nameFolds);
-    for i = 1:numel(nameFolds)
-        path = fullfile(InputPath,nameFolds{i});
-        frames(i).i = Calibration.aux.GetFramesFromDir(path,width, height);
-        frames(i).i = Calibration.aux.average_images(frames(i).i);
-    end
-    
-    global g_output_dir g_save_input_flag; 
-    if g_save_input_flag % save 
-            fn = fullfile(g_output_dir,'mat_files' , 'MinRange_im.mat');
-            save(fn,'frames');
-    end
-end
 

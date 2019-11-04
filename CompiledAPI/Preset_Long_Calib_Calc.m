@@ -1,11 +1,9 @@
-function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(InputPath, cameraInput, LaserPoints, maxMod_dec, calibParams)
-% function [dfzRegs,results,calibPassed] = Preset_Long_Calib_Calc(InputPath,LaserPoints,maxMod_dec,sz,calibParams)
+function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData, cameraInput, LaserPoints, maxMod_dec, calibParams)
+% function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData, cameraInput, LaserPoints, maxMod_dec, calibParams)
 % description: 
 %
 % inputs:
-%   InputPath -  path for input images  dir stucture InputPath\PoseN N =1:5
-%        note 
-%           I image naming I_*_000n.bin
+%   depthData - images with different mod ref values (in binary sequence form)
 %   calibParams - calibparams strcture.
 %   LaserPoints - 
 %   maxMod_dec -
@@ -64,12 +62,13 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
     longRangestate =  Calibration.presets.findLongRangeStateCal(calibParams,cameraInput.imSize);
     runParams.outputFolder = output_dir;
     maskParams = calibParams.presets.long.params;
-    im = GetLongRangeImages(InputPath,cameraInput.imSize(2),cameraInput.imSize(1));
+    
+    im = convertBinDataToFrames(depthData, cameraInput.imSize, false, 'depth');
         
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name,'_', longRangestate, '_in.mat']);
-        save(fn,'InputPath','LaserPoints','maxMod_dec', 'cameraInput','calibParams','longRangestate');
+        save(fn,'depthData','LaserPoints','maxMod_dec', 'cameraInput','calibParams','longRangestate');
         fn = fullfile(output_dir, 'mat_files' , [func_name,'_', longRangestate, '_int_in.mat']);
         mkdirSafe(fileparts(fn));
         save(fn,'im', 'maskParams' ,'runParams','calibParams','longRangestate','cameraInput','LaserPoints','maxMod_dec');
@@ -90,17 +89,5 @@ function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc
     end
 end
 
-function [frames] = GetLongRangeImages(InputPath,width,height)
-d = dir(InputPath);
-isub = [d(:).isdir]; %# returns logical vector
-nameFolds = {d(isub).name}';
-nameFolds(ismember(nameFolds,{'.','..'})) = [];
-nameFolds = sort(nameFolds);
-for k = 1:numel(nameFolds)
-    path = fullfile(InputPath,nameFolds{k});
-    frames(k).z = Calibration.aux.GetFramesFromDir(path,width, height,'Z');
-    frames(k).i = Calibration.aux.GetFramesFromDir(path,width, height,'I');
-end
-end
 
 

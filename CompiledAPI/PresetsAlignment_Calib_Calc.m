@@ -1,11 +1,9 @@
-function [results] = PresetsAlignment_Calib_Calc(InputPath, calibParams, res, z2mm)
+function [results] = PresetsAlignment_Calib_Calc(depthData, calibParams, res, z2mm)
     % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
     % description: initiale set of the DSM scale and offset
     %regs_reff
     % inputs:
-    %   InputPath -  path for input images  dir stucture InputPath\PoseN N =1:5
-    %        note
-    %           I image naming I_*_000n.bin
+    %   depthData - images from different trials and presets (in binary sequence form)
     %   calibParams - calibparams strcture.
     %   DFZ_regs - list of hw regs values and FW regs
     %
@@ -63,10 +61,15 @@ function [results] = PresetsAlignment_Calib_Calc(InputPath, calibParams, res, z2
     
     % save Input
     runParams.outputFolder = output_dir;
-    im = GetImages(InputPath,res);
+    for iTrial = 1:size(depthData,1)
+        for iPreset = 1:size(depthData,2)
+            im(iTrial,iPreset) = convertBinDataToFrames(depthData{iTrial,iPreset}, res, true, 'depth');
+        end
+    end
+    
     if g_save_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'InputPath', 'calibParams', 'res', 'z2mm');
+        save(fn, 'depthData', 'calibParams', 'res', 'z2mm');
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn, 'im', 'calibParams', 'runParams', 'z2mm', 'res');
     end
@@ -86,14 +89,3 @@ function [results] = PresetsAlignment_Calib_Calc(InputPath, calibParams, res, z2
     end
 end
 
-
-function im = GetImages(InputPath,res)
-    dirfiles = dir(fullfile(InputPath,'trial_*'));
-    for i=1:numel(dirfiles)
-        presetfiles = dir(fullfile(InputPath,dirfiles(i).name,'preset_*'));
-        for p = 1:2
-            im(i,p).z = Calibration.aux.GetFramesFromDir(fullfile(InputPath,dirfiles(i).name,presetfiles(p).name),res(2), res(1),'Z');
-            im(i,p).z = Calibration.aux.average_images(im(i,p).z);
-        end
-    end
-end

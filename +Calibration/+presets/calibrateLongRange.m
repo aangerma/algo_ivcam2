@@ -5,10 +5,6 @@ laserDelta = calibParams.presets.long.(stateName).laserDelta;%1; % decimal
 framesNum = calibParams.presets.long.(stateName).framesNum;%10;
 cameraInput.z2mm = hw.z2mm;
 cameraInput.imSize = double(hw.streamSize);
-outDir = fullfile(ivcam2tempdir,'PresetLongRange');
-if exist(outDir,'dir')
-    rmdir(outDir,'s');
-end
 maskParams = calibParams.presets.long.params;%params.roi = 0.1; params.isRoiRect = 0; params.roiCropRect = 0; params.maskCenterShift = [0,0];
 %% Create Mask
 maskParams4user = maskParams;
@@ -19,11 +15,11 @@ mask4user = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams4user);
 Calibration.aux.CBTools.showImageRequestDialog(hw,3,diag([1 1 1]),'Long Range Calibration - place black target on center of checkerboard and move camera to end of rail to 800mm and center ROI ',[],uint8(1-mask4user).*uint8(255));
 
 %% Capture frames
-[laserPoints,maxMod_dec] = Calibration.presets.captureVsLaserMod(hw,minModprc,laserDelta,framesNum,outDir);
+[depthData,laserPoints,maxMod_dec] = Calibration.presets.captureVsLaserMod(hw,minModprc,laserDelta,framesNum);
 
 %% Find laser scale
 %[maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,outDir,cameraInput,laserPoints,maxMod_dec,fprintff);
-[maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(outDir,cameraInput,laserPoints,maxMod_dec,calibParams);
+[maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData,cameraInput,laserPoints,maxMod_dec,calibParams);
 
 
 end

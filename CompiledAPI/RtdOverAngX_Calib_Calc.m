@@ -1,4 +1,4 @@
-function [tablefn] = RtdOverAngX_Calib_Calc(inputPath, calibParams, regs, luts)
+function [tablefn] = RtdOverAngX_Calib_Calc(depthDataConstant, depthDataSteps, calibParams, regs, luts)
 
     t0 = tic;
     global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
@@ -44,13 +44,13 @@ function [tablefn] = RtdOverAngX_Calib_Calc(inputPath, calibParams, regs, luts)
     
     runParams.outputFolder = output_dir;
     width = regs.GNRL.imgHsize;
-    hight = regs.GNRL.imgVsize;
-    imConstant = mean(Calibration.aux.GetFramesFromDir(fullfile(inputPath,'frames_constant'),width, hight,'Z'),3);
-    imSteps = mean(Calibration.aux.GetFramesFromDir(fullfile(inputPath,'frames_steps'),width, hight,'Z'),3);
+    height = regs.GNRL.imgVsize;
+    imConstant = convertBinDataToFrames(depthDataConstant, [height, width], true, 'depth');
+    imSteps = convertBinDataToFrames(depthDataSteps, [height, width], true, 'depth');
     
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'inputPath', 'calibParams' ,'regs','luts');
+        save(fn,'depthDataConstant', 'depthDataSteps', 'calibParams' ,'regs','luts');
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'imConstant','imSteps', 'calibParams' ,'regs','luts','runParams');
     end

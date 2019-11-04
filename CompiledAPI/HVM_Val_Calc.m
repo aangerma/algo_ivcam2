@@ -1,12 +1,9 @@
-function [valResults, allResults] = HVM_Val_Calc(InputPath, sz, params, calibParams, valResults)
+function [valResults, allResults] = HVM_Val_Calc(depthData, sz, params, calibParams, valResults)
 % function 
 % description: 
 %
 % inputs:
-%   InputPath -  path for input images  dir stucture InputPath
-%        note 
-%           I image naming I_*_000n.bin
-%           Z image naming Z_*_000n.bin
+%   depthData -  images (in binary sequence form)
 %   calibParams - calibparams strcture.
 %   valResults - validation result strcture can be empty or with prev
 %   running inoreder to accumate results
@@ -59,10 +56,10 @@ function [valResults, allResults] = HVM_Val_Calc(InputPath, sz, params, calibPar
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','sz','params','calibParams','valResults');
+        save(fn,'depthData','sz','params','calibParams','valResults');
     end
     runParams.outputFolder = output_dir;
-    [valResults, allResults] = HVM_Val_Calc_int(InputPath, sz, params, runParams, calibParams, fprintff, valResults);
+    [valResults, allResults] = HVM_Val_Calc_int(depthData, sz, params, runParams, calibParams, fprintff, valResults);
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
@@ -82,7 +79,7 @@ end
 
 
 
-function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runParams,calibParams,fprintff,valResults)
+function [valResults ,allResults] = HVM_Val_Calc_int(depthData,sz,params,runParams,calibParams,fprintff,valResults)
     
 %% get frames
     defaultDebug = 0;
@@ -90,12 +87,8 @@ function [valResults ,allResults] = HVM_Val_Calc_int(InputPath,sz,params,runPara
     mkdirSafe(outFolder);
     debugMode = flip(dec2bin(uint16(defaultDebug),2)=='1');
 
-    width = sz(2);
-    height = sz(1);
 %% load images
-    im.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I');
-    im.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
-
+    im = convertBinDataToFrames(depthData, sz, false, 'depth');
     for i =1:1:size(im.i,3)
         frames(i).i = im.i(:,:,i);
         frames(i).z = im.z(:,:,i);

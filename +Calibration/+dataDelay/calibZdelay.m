@@ -4,9 +4,7 @@ NumberOfFrames = calibParams.gnrl.Nof2avg;
 delayZ=dataDelayParams.fastDelayInitVal;
 % delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;
 
-path_both = fullfile(ivcam2tempdir,'Z_Delay_both');
-Calibration.aux.SaveFramesWrapper(hw , 'I' , NumberOfFrames, path_both);             % get frame without post processing (averege) (SDK like)
-
+depthDataBoth = captureFramesWrapper(hw, 'I', NumberOfFrames);
 
 [~,saveVal] = hw.cmd('irb e2 06 01'); % Original Laser Bias
 hw.cmd('iwb e2 06 01 00'); % set Laser Bias to 0
@@ -27,7 +25,7 @@ for i=1:dataDelayParams.nAttempts
        end
        Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'Z_Delay',figureFileName,sprintf('Up/Down Images - Initial (%d)',delayZ)); 
     end
-        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, path_both, delayZ, calibParams, isFinalStage, fResMirror); 
+        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, depthDataBoth, delayZ, calibParams, isFinalStage, fResMirror); 
 		
        if (verbose)
             figure(sum(mfilename));

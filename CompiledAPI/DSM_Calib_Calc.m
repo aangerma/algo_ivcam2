@@ -1,4 +1,4 @@
-function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(path_spherical, sz, angxRawZOVec, angyRawZOVec, dsmregs_current, calibParams)
+function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(depthData, sz, angxRawZOVec, angyRawZOVec, dsmregs_current, calibParams)
     % description: initiale set of the DSM scale and offset
     %
     % inputs:
@@ -49,13 +49,11 @@ function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(path_spherical, sz
         fprintff = g_fprintff; 
     end
 
-    width = sz(2);
-    height = sz(1);
-    im = Calibration.aux.GetFramesFromDir(path_spherical ,width , height);
+    im = convertBinDataToFrames(depthData, sz, false, 'depth');
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'path_spherical', 'sz' , 'angxRawZOVec' , 'angyRawZOVec' ,'dsmregs_current' ,'calibParams');
+        save(fn, 'depthData', 'sz' , 'angxRawZOVec' , 'angyRawZOVec' ,'dsmregs_current' ,'calibParams');
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn, 'im', 'sz' , 'angxRawZOVec' , 'angyRawZOVec' ,'dsmregs_current' ,'calibParams');
 

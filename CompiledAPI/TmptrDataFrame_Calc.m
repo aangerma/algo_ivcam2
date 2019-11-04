@@ -1,4 +1,4 @@
-function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,InputPath, calibParams, maxTime2Wait)
+function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,depthData, calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -7,7 +7,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
 %   regs      - register list for calculation (zNorm ,kRaw ,hbaseline
 %   ,baseline ,xfov ,yfov ,laserangleH ,laserangleV)
 %   FrameData - structure of device state during frame capturing (varity temprature sensor , iBias , vBias etc) 
-%   InputPath - I & Z image of the checkerboard
+%   depthData - images (in binary sequence form)
 %
 % output:
 %   result
@@ -72,7 +72,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-        save(fn,'finishedHeating','regs', 'eepromRegs','eepromBin', 'FrameData', 'sz' ,'InputPath','calibParams', 'maxTime2Wait' );
+        save(fn,'finishedHeating','regs', 'eepromRegs','eepromBin', 'FrameData', 'sz' ,'depthData','calibParams', 'maxTime2Wait' );
     end
     height = sz(1);
     width  = sz(2);
@@ -86,7 +86,7 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
         [regs]          = struct_merge(eepromRegs, regs);
     end
     origFinishedHeating = finishedHeating;
-    [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, InputPath, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
+    [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, depthData, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
@@ -104,7 +104,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [finishedHeating,calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, InputPath,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
+function [finishedHeating,calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, depthData,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -146,11 +146,7 @@ end
 % add error checking;
 
 if ~finishedHeating % heating stage
-    frame.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I'); % later remove local copy
-    frame.z = Calibration.aux.GetFramesFromDir(InputPath,width, height,'Z');
-    frame.i = Calibration.aux.average_images(frame.i);
-    frame.z = Calibration.aux.average_images(frame.z);
-    
+    frame = convertBinDataToFrames(depthData, [height, width], true, 'depth');
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
     zForStd = nan(size(frame.z));
     zForStd(binLargest) = frame.z(binLargest);
