@@ -13,7 +13,7 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(depthData, calibParams, RO
 %
 
     t0 = tic;
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -23,6 +23,9 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(depthData, calibParams, RO
     end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
+    end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
@@ -74,6 +77,8 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(depthData, calibParams, RO
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'depthData', 'calibParams' , 'ROIregs','regs','results','eepromBin');
+    end
+    if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im', 'calibParams' ,'regs','runParams','results');
     end

@@ -13,7 +13,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(depthData, rgbData, cal
 % results - <struct> with two interesting fields: rgbIntReprojRms,rgbExtReprojRms
 
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -23,6 +23,9 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(depthData, rgbData, cal
     end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
+    end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
@@ -55,6 +58,8 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(depthData, rgbData, cal
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn, 'depthData', 'rgbData', 'calibParams', 'Kdepth', 'irImSize', 'z2mm');
+    end
+    if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im' ,'rgbs', 'calibParams' ,'Kdepth' , 'runParams','runParams' ,'z2mm');
     end

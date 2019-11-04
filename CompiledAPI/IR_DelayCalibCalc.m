@@ -25,7 +25,7 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
 %
 
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
     unFiltered  = 0;
 
     % setting default global value in case not initial in the init function;
@@ -44,9 +44,12 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
+    end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
-    end
+    end    
     if isempty(g_dummy_output_flag)
         g_dummy_output_flag = 0;
     end
@@ -71,15 +74,18 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
     imU = getFilteredImage(imU,unFiltered);
     imD = getFilteredImage(imD,unFiltered);
 
+    if isFinalStage
+        suffix = '_final';
+    else
+        suffix = '_init';
+    end
+        
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        if isFinalStage
-            suffix = '_final';
-        else
-            suffix = '_init';
-        end
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'depthDataUp', 'depthDataDown', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+    end
+    if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose', 'fResMirror', 'g_delay_cnt');
@@ -89,11 +95,6 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
     
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        if isFinalStage
-            suffix = '_final';
-        else
-            suffix = '_init';
-        end
         fn = fullfile(g_output_dir,  'mat_files' , [func_name sprintf('%s_out%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'res', 'delayIR', 'im', 'pixVar');
     end
