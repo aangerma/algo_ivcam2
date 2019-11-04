@@ -1,4 +1,4 @@
-function [maxRangeScaleModRef, maxMod_dec, maxFillRate, targetDist] = calibrateLongRange(hw,calibParams,stateName,runParams,fprintff)
+function [isConverged, maxRangeScaleModRef, maxMod_dec, maxFillRate, targetDist] = calibrateLongRange(hw,calibParams,stateName,runParams,fprintff)
 %% Define parameters
 minModprc = calibParams.presets.long.(stateName).minModprc;%0 ;
 laserDelta = calibParams.presets.long.(stateName).laserDelta;%1; % decimal
@@ -15,12 +15,13 @@ mask4user = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams4user);
 Calibration.aux.CBTools.showImageRequestDialog(hw,3,diag([1 1 1]),'Long Range Calibration - place black target on center of checkerboard and move camera to end of rail to 800mm and center ROI ',[],uint8(1-mask4user).*uint8(255));
 
 %% Capture frames
-[depthData,laserPoints,maxMod_dec] = Calibration.presets.captureVsLaserMod(hw,minModprc,laserDelta,framesNum);
-
-%% Find laser scale
-%[maxRangeScaleModRef, maxFillRate, targetDist] = findScaleByFillRate(maskParams,runParams,calibParams,outDir,cameraInput,laserPoints,maxMod_dec,fprintff);
-[maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData,cameraInput,laserPoints,maxMod_dec,calibParams);
-
+[depthData,laserPoints,maxMod_dec,laserPoint0] = Calibration.presets.captureVsLaserMod(hw,minModprc,laserDelta,framesNum);
+[isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData,cameraInput,laserPoints,maxMod_dec,laserPoint0,calibParams);
+while (isConverged==0)
+    Calibration.aux.RegistersReader.setModRef(hw, nextLaserPoint);
+    depthData = captureFramesWrapper(hw, 'ZI', framesNum);
+    [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData,cameraInput,laserPoints,maxMod_dec,nextLaserPoint,calibParams);
+end
 
 end
 

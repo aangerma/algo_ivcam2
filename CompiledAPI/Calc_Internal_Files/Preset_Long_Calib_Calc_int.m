@@ -1,41 +1,60 @@
-function [maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, LongRangestate, totFrames, cameraInput, laserPoints, maxMod_dec, fprintff)
-%% Get frames and mask
+function [isConverged, curScore, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, LongRangestate, im, cameraInput, laserPoints, maxMod_dec, testedPoints, testedScores, fprintff)
+
 mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
-%% Define parameters
 fillRateTh = calibParams.presets.long.(LongRangestate).fillRateTh; %97;
 
-%% Calculate fill rate
-scores = zeros(length(totFrames),1);
+% Calculate fill rate
 oneFrame = struct('i',zeros(cameraInput.imSize(1),cameraInput.imSize(2)),'z',zeros(cameraInput.imSize(1),cameraInput.imSize(2)));
-frames = repmat(oneFrame,size(totFrames(1).z,3),1);
-for iScenario = 1:length(totFrames)
-   for iFrame = 1:size(totFrames(iScenario).z,3)
-       frames(iFrame).i = double(totFrames(iScenario).i(:,:,iFrame));
-       frames(iFrame).z = double(totFrames(iScenario).z(:,:,iFrame));
-       frames(iFrame).i(~mask) = nan;
-       frames(iFrame).z(~mask) = nan;
-   end
-   [scores(iScenario,1), ~, ~] = Validation.metrics.fillRate(frames, maskParams); 
+frames = repmat(oneFrame,size(im.z,3),1);
+for iFrame = 1:size(im.z,3)
+    frames(iFrame).i = double(im.i(:,:,iFrame));
+    frames(iFrame).z = double(im.z(:,:,iFrame));
+    frames(iFrame).i(~mask) = nan;
+    frames(iFrame).z(~mask) = nan;
 end
-maxFillRate = max(scores);
+[curScore, ~, ~] = Validation.metrics.fillRate(frames, maskParams);
+testedScores(end) = curScore;
 
-%% Plot
+% convergence check
+[isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores, fillRateTh);
+if (isConverged==-1) % fatal error
+    if (nextLaserPoint==Inf)
+        fprintff('[!] Long range preset calibration: Fill rate threshold could not be attained. Modulation ref set to 1.\n')
+        maxRangeScaleModRef = 1;
+    elseif (nextLaserPoint==-Inf)
+        fprintff('[!] Long range preset calibration: Fill rate threshold is always exceeded. Modulation ref set to 0.\n')
+        maxRangeScaleModRef = 0;
+    end
+    maxFillRate = max(testedScores);
+    targetDist = NaN;
+    return
+elseif (isConverged==0) % wait for next iteration
+    maxRangeScaleModRef = NaN;
+    maxFillRate = NaN;
+    targetDist = NaN;
+    return
+end
+
+%% convergence achieved - proceed to final operations
+maxFillRate = max(testedScores);
+
+% Plot
 ff1 = Calibration.aux.invisibleFigure;
-plot(laserPoints,scores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
 hold on;
-plot(laserPoints, repelem(fillRateTh,length(laserPoints)), 'r'); grid minor; hold off;
+plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
 Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
 ff1 = Calibration.aux.invisibleFigure;
-plot(laserPoints,scores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
 hold on;
-plot(laserPoints, repelem(fillRateTh,length(laserPoints)), 'r'); grid minor; hold off;
+plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
 Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
 ff2 = Calibration.aux.invisibleFigure;
-subplot(2,1,1);imagesc(imfuse(totFrames(end).i(:,:,end),mask));title('IR image with ROI mask');
-subplot(2,1,2);imagesc(imfuse(totFrames(end).z(:,:,end),mask));title('Depth (not normalized) image with ROI mask');
+subplot(2,1,1);imagesc(imfuse(im.i(:,:,end),mask));title('IR image with ROI mask');
+subplot(2,1,2);imagesc(imfuse(im.z(:,:,end),mask));title('Depth (not normalized) image with ROI mask');
 Calibration.aux.saveFigureAsImage(ff2,runParams,'Presets','Long_Range_Laser_Calib_mask',1);imagesc(imfuse(frames(1).z,mask));title('Depth (not normalized) image with ROI mask');
 
-%% Find laser scale
+% analyze target distance
 zIm = {frames.z};
 zIm = cellfun(@(x) x(:)./double(cameraInput.z2mm), zIm,'UniformOutput',false);
 zIm_mean = cellfun(@(x) x(x(:)~=0), zIm,'UniformOutput', false);
@@ -47,18 +66,17 @@ if (targetDist < calibParams.errRange.(['targetDist_',LongRangestate])(1)) || (t
     fprintff(['[-] Long range preset calibration: the target is placed in the wrong location. It should be at ' num2str(mean(calibParams.errRange.(['targetDist_',LongRangestate]))) '[mm] but it is at ' num2str(targetDist) ' [mm]. Modulation ref will remain at max value\n']);  
     return;
 end
-ix = find(scores >= fillRateTh, 1);
-if isempty(ix)
-    maxRangeScaleModRef = 1;
-    fprintff(['[-] Long range preset calibration: no fill rate found above threshold = ' num2str(fillRateTh) ' %% \n']);
-    return;
-end
-startIx = max(ix-1,1); endIx = min(ix+1,length(scores));
-bestIx = startIx:endIx;
-[~,ix_min]= min(abs(scores(bestIx) - fillRateTh));
-maxRangeScaleModRef = round(laserPoints(bestIx(ix_min)))/maxMod_dec;
 
-%% prepare output script
+% Find laser scale
+[testedScores, sortIdcs] = sort(testedScores, 'ascend');
+testedPoints = testedPoints(sortIdcs);
+ix = find(testedScores >= fillRateTh, 1, 'first'); % always non-empty
+startIx = max(ix-1,1); endIx = min(ix+1,length(testedScores));
+bestIx = startIx:endIx;
+[~,ix_min]= min(abs(testedScores(bestIx) - fillRateTh));
+maxRangeScaleModRef = round(testedPoints(bestIx(ix_min)))/maxMod_dec;
+
+% prepare output script
 if calibParams.presets.long.updateCalibVal
     longRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','longRangePreset.csv');
     longRangePreset=readtable(longRangePresetFn);
@@ -76,3 +94,53 @@ fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores, fillRateTh)
+% initialization
+isConverged = 0;
+nextLaserPoint = NaN;
+% trivial stop condition
+availablePoints = setdiff(laserPoints, testedPoints);
+if isempty(availablePoints)
+    isConverged = 1;
+    return
+end
+% choosing next point
+if (length(testedPoints)==1) % choose another point on search region boundary
+    if (testedPoints < max(availablePoints))
+        nextLaserPoint = max(availablePoints); % maximal fill rate must be attained once
+    else
+        nextLaserPoint = min(availablePoints);
+    end
+else % 2 tested points or more
+    [testedScores, sortIdcs] = sort(testedScores, 'ascend');
+    testedPoints = testedPoints(sortIdcs);
+    indAbove = find(testedScores >= fillRateTh, 1, 'first');
+    indBelow = find(testedScores < fillRateTh, 1, 'last');
+    if isempty(indAbove) % threshold cannot be attained
+        isConverged = -1;
+        nextLaserPoint = Inf; % indicating we would wish for a larger mod ref
+        return
+    end
+    if isempty(indBelow)
+        if (min(testedPoints) <= min(availablePoints)) % threshold will always be exceeded
+            isConverged = -1;
+            nextLaserPoint = -Inf; % indicating we would wish for a smaller mod ref
+            return
+        else % lower limit somehow wasn't chosen yet
+            nextLaserPoint = min(availablePoints);
+            return
+        end
+    end
+    % apply binary search
+    searchIdcs = find(availablePoints > testedPoints(indBelow) & availablePoints < testedPoints(indAbove));
+    if isempty(searchIdcs) % further optimization is beyond laser points resolution
+        isConverged = 1;
+    else
+        ind = round(length(searchIdcs)/2);
+        nextLaserPoint = availablePoints(searchIdcs(ind));
+    end
+end
+
+end

@@ -173,7 +173,11 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
                 fprintff('Test %s for long range preset, starting stream.\n',Calstate);
                 hw = Calibration.aux.resetCamera( hw );
                 hw.startStream(0,res);
-                results = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
+                [isConverged, results] = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
+                if (isConverged==-1) % fill rate threshold beyond search region boundaries
+                    calibPassed = 0;
+                    return;
+                end
             end
         end
     end
@@ -463,12 +467,12 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [results] = calibrateLongRangePreset(hw, resolution, state, results, runParams, calibParams, fprintff)
+function [isConverged, results] = calibrateLongRangePreset(hw, resolution, state, results, runParams, calibParams, fprintff)
     if runParams.maxRangePreset
         fprintff(['[-] Calibrating long range laser power on ',mat2str(resolution),' resolution ...\n']);
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
         % run on calib Res
-        [results.(['maxRangeScaleModRef_',state]),maxModRefDec,results.(['maxFillRate_',state]),...
+        [isConverged, results.(['maxRangeScaleModRef_',state]),maxModRefDec,results.(['maxFillRate_',state]),...
          results.(['targetDist_',state])] = Calibration.presets.calibrateLongRange(hw,calibParams,state,runParams,fprintff);
 
         % Set laser val
