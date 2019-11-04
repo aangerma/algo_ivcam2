@@ -109,7 +109,6 @@ function [valResults ,allResults] = HVM_Val_Calc_int(depthData,sz,params,runPara
     valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
     saveValidationData(dbg,frames,Metrics,outFolder,debugMode);
     allResults.HVM.(Metrics) = allDfzRes;
-    save(fullfile(runParams.outputFolder,'mat_files','valCbFrame.mat'),'AvgIm','params');
 %% sharpness
     Metrics = 'sharpness';
     [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharp(frames, []);

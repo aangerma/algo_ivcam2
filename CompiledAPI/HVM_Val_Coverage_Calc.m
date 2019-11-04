@@ -89,10 +89,7 @@ function [valResults ,allCovRes] = HVM_Val_Coverage_Calc_int(depthData,sz,runPar
     for i =1:1:size(im.i,3)
         frames(i).i = im.i(:,:,i);
     end
-
-    fn = fullfile(runParams.outputFolder, 'mat_files',  'Coverage_out.mat');
-    save(fn,'frames');
-    
+  
     Metrics = 'coverage';
 %    covConfig = calibParams.validationConfig.(Metrics);
     %calculate ir coverage metric
