@@ -2,6 +2,7 @@ function [isConverged, curScore, nextLaserPoint, maxRangeScaleModRef, maxFillRat
 
 mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
 fillRateTh = calibParams.presets.long.(LongRangestate).fillRateTh; %97;
+guessOnInterval = calibParams.presets.long.(LongRangestate).guessOnInterval;
 
 % Calculate fill rate
 oneFrame = struct('i',zeros(cameraInput.imSize(1),cameraInput.imSize(2)),'z',zeros(cameraInput.imSize(1),cameraInput.imSize(2)));
@@ -16,7 +17,7 @@ end
 testedScores(end) = curScore;
 
 % convergence check
-[isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores, fillRateTh);
+[isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores, fillRateTh, guessOnInterval);
 if (isConverged==-1) % fatal error
     if (nextLaserPoint==Inf)
         fprintff('[!] Long range preset calibration: Fill rate threshold could not be attained. Modulation ref set to 1.\n')
@@ -96,7 +97,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores, fillRateTh)
+function [isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores, fillRateTh, guessOnInterval)
 % initialization
 isConverged = 0;
 nextLaserPoint = NaN;
@@ -133,12 +134,13 @@ else % 2 tested points or more
             return
         end
     end
-    % apply binary search
+    % apply binary search (with possible bias)
     searchIdcs = find(availablePoints > testedPoints(indBelow) & availablePoints < testedPoints(indAbove));
     if isempty(searchIdcs) % further optimization is beyond laser points resolution
         isConverged = 1;
     else
-        ind = round(length(searchIdcs)/2);
+        ind = round(length(searchIdcs)*guessOnInterval); % guessOnInterval = fraction along [0,1] of next guess
+        ind = max(1, min(length(searchIdcs), ind));
         nextLaserPoint = availablePoints(searchIdcs(ind));
     end
 end

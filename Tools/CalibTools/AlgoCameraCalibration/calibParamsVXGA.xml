@@ -378,7 +378,8 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>98</fillRateTh>                      
+                <fillRateTh>98</fillRateTh>
+                <guessOnInterval>0.5</guessOnInterval>
             </state1>
             <state2>
                 <ModRefPresetState>modulation_ref_factor_2</ModRefPresetState>
@@ -386,7 +387,8 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>70</fillRateTh>                        
+                <fillRateTh>70</fillRateTh>
+                <guessOnInterval>0.5</guessOnInterval>
             </state2>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
             <estDistTargetReflect>0.8</estDistTargetReflect>-->
