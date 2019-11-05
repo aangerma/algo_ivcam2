@@ -10,7 +10,7 @@ if exist('cameraType', 'var') && strcmp(cameraType, 'rgb') % RGB camera
             frames{iPose} = double(bitand(frames{iPose}, 255));
         end
     else % single pose
-        frames = convertBinDataToFramesSingleType(binData, frameSize, 'uint16', false);
+        frames = convertBinDataToFramesSingleType(binData, frameSize, 'uint16', doAverage);
         frames = double(bitand(frames, 255));
     end
 else % depth camera (default)
@@ -26,10 +26,10 @@ else % depth camera (default)
         end
     else % single pose
         if isfield(binData, 'i')
-            frames.i = convertBinDataToFramesSingleType(binData.i, frameSize, 'uint8', false);
+            frames.i = convertBinDataToFramesSingleType(binData.i, frameSize, 'uint8', doAverage);
         end
         if isfield(binData, 'z')
-            frames.z = convertBinDataToFramesSingleType(binData.z, frameSize, 'uint16', false);
+            frames.z = convertBinDataToFramesSingleType(binData.z, frameSize, 'uint16', doAverage);
         end
     end
 end

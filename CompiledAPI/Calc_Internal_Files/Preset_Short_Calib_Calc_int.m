@@ -1,36 +1,57 @@
-function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(Frames, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder)
+function [isConverged, curScore, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(Frames, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder, testedPoints, testedScores)
+
 runParams.outputFolder = output_dir; % need update
-%% Detecting ROI on low laser image
-[whiteCenter,blackCenter,ROI_Coffset]=detectROI(Frames(1).i,runParams);
-%% analyzing white and black patch
-Wmax=[]; Wmean=[];Bmin=[]; 
-for i=1:length(Frames)
-%      IRmat=reshape([Frames{i}.i],imsize(1),imsize(2),FramesNum);IR=mean(IRmat,3);
-    IR=Frames(i).i;
-    wpatch=IR(round(whiteCenter(2)-ROI_Coffset(2)):round(whiteCenter(2)+ROI_Coffset(2)),round(whiteCenter(1)-ROI_Coffset(1)):round(whiteCenter(1)+ROI_Coffset(1)));
-    bpatch=IR(round(blackCenter(2)-ROI_Coffset(2)):round(blackCenter(2)+ROI_Coffset(2)),round(blackCenter(1)-ROI_Coffset(1)):round(blackCenter(1)+ROI_Coffset(1)));
-    %     figure(); imagesc(IR); hold all;
-    %     rectangle('position', [round(whiteCenter(1)-ROI_Coffset(1)),round(whiteCenter(2)-ROI_Coffset(2)),2*ROI_Coffset(1),2*ROI_Coffset(2)]);
-    %     rectangle('position', [round(blackCenter(1)-ROI_Coffset(1)),round(blackCenter(2)-ROI_Coffset(2)),2*ROI_Coffset(1),2*ROI_Coffset(2)]);
-    [Wmax(i),Wmean(i),~]= getIRvalues(wpatch);
-    [~,~,Bmin(i)]= getIRvalues(bpatch);
-    
+[whiteCenter,blackCenter,ROI_Coffset]=detectROI(Frames(1).i,runParams); % Detecting ROI on low laser image
+
+% analyzing white and black patch
+IR=Frames.i;
+wpatch=IR(round(whiteCenter(2)-ROI_Coffset(2)):round(whiteCenter(2)+ROI_Coffset(2)),round(whiteCenter(1)-ROI_Coffset(1)):round(whiteCenter(1)+ROI_Coffset(1)));
+bpatch=IR(round(blackCenter(2)-ROI_Coffset(2)):round(blackCenter(2)+ROI_Coffset(2)),round(blackCenter(1)-ROI_Coffset(1)):round(blackCenter(1)+ROI_Coffset(1)));
+%     figure(); imagesc(IR); hold all;
+%     rectangle('position', [round(whiteCenter(1)-ROI_Coffset(1)),round(whiteCenter(2)-ROI_Coffset(2)),2*ROI_Coffset(1),2*ROI_Coffset(2)]);
+%     rectangle('position', [round(blackCenter(1)-ROI_Coffset(1)),round(blackCenter(2)-ROI_Coffset(2)),2*ROI_Coffset(1),2*ROI_Coffset(2)]);
+[Wmax,Wmean,~]= getIRvalues(wpatch);
+[~,~,Bmin]= getIRvalues(bpatch);
+testedScores(:,end) = [Wmax; Wmean; double(Wmax-Bmin)];
+curScore = testedScores(:,end);
+
+% convergence check
+[isConverged, nextLaserPoint] = chooseNextLaserPoint(LaserPoints, testedPoints, testedScores(3,:));
+if (isConverged==0) % wait for next iteration
+    minRangeScaleModRef = NaN;
+    ModRefDec = NaN;
+    return
+end
+p = polyfit(testedPoints, testedScores(3,:), 2);
+maxPt = -p(2)/(2*p(1));
+if (maxPt < min(LaserPoints))
+    isConverged = -1;
+    nextLaserPoint = -Inf;
+    fprintff('[!] Short range preset calibration: maximal contrast is always exceeded. Modulation ref set to 0.\n')
+    minRangeScaleModRef = 0;
+    ModRefDec = min(LaserPoints);
+    return
+elseif (maxPt > max(LaserPoints))
+    isConverged = -1;
+    nextLaserPoint = Inf;
+    fprintff('[!] Short range preset calibration: maximal contrast could not be attained. Modulation ref set to 1.\n')
+    minRangeScaleModRef = 1;
+    ModRefDec = max(LaserPoints);
+    return
 end
 
-DR=double(Wmax-Bmin);
-diffDR=diff(DR);diffWmean=diff(Wmean);
-p=polyfit(LaserPoints,DR,2);
+%% convergence achieved - proceed to final operations
+
 LaserDelta = LaserPoints(2)-LaserPoints(1);
 lp=[LaserPoints,LaserPoints(end)+LaserDelta:LaserDelta:2*LaserPoints(end)];
 fittedline=p(1)*lp.^2+p(2)*lp+p(3);
 
-ParbMaxX=-p(2)/(2*p(1));
-if(maxMod_dec<ParbMaxX)
+if (maxPt > maxMod_dec)
     ModRefDec=maxMod_dec;
 else
-    ModRefDec=round(ParbMaxX);
+    ModRefDec = round(maxPt);
 end
-minRangeScaleModRef=ModRefDec/maxMod_dec;
+minRangeScaleModRef = ModRefDec/maxMod_dec;
 
 %% prepare output script
 shortRangePresetFn = fullfile(PresetFolder,'shortRangePreset.csv');
@@ -49,17 +70,18 @@ writetable(shortRangePreset,shortRangePresetFn);
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     subplot(1,3,1);
-    plot(LaserPoints,Wmax,LaserPoints,Wmean); title('IR values- white patch');xlabel('laser modulation [dec]'); legend('max', 'mean');grid minor;
+    plot(testedPoints,testedScores(1,:),testedPoints,testedScores(2,:)); title('IR values- white patch');xlabel('laser modulation [dec]'); legend('max', 'mean');grid minor;
     subplot(1,3,2);hold all;
-    plot(lp,fittedline);plot(LaserPoints,DR); title('DR: Wmax-Bmin');xlabel('laser modulation [dec]');grid minor
+    plot(lp,fittedline);plot(testedPoints, testedScores(3,:)); title('DR: Wmax-Bmin');xlabel('laser modulation [dec]');grid minor
     subplot(1,3,3);
-    plot(LaserPoints,double(Wmax)-Wmean); title(' Wmax-Wmean white patch');xlabel('laser modulation [dec]');grid minor;
+    plot(testedPoints,double(testedScores(1,:))-testedScores(2,:)); title(' Wmax-Wmean white patch');xlabel('laser modulation [dec]');grid minor;
     subplot(1,3,2);scatter(ModRefDec,p(1)*ModRefDec.^2+p(2)*ModRefDec+p(3));
     Calibration.aux.saveFigureAsImage(ff,runParams,'SRpresetLaserCalib','PresetDir');
-
 end
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [whiteCenter,blackCenter,ROI_Coffset]=detectROI(im,runParams)
 % detect corners and centers
@@ -95,9 +117,56 @@ Calibration.aux.saveFigureAsImage(ff,runParams,'ROIforSRpresetLaerCalib','Preset
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [max,mean,min]= getIRvalues(im)
 im=im(:);
 mean = nanmean(im);
 max=prctile(im,98);
 min=prctile(im,1);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores)
+% initialization
+isConverged = 0;
+nextLaserPoint = NaN;
+% trivial stop condition
+availablePoints = setdiff(laserPoints, testedPoints);
+if isempty(availablePoints)
+    isConverged = 1;
+    return
+end
+% choosing next point
+if (length(testedPoints)==1) % choose another point on search region boundary
+    if (testedPoints < max(laserPoints))
+        nextLaserPoint = max(laserPoints); % maximal point must be tested once
+    else
+        nextLaserPoint = min(laserPoints);
+    end
+elseif (length(testedPoints)==2) % choose an intermediate point
+    if (min(testedPoints) > min(laserPoints))
+        nextLaserPoint = min(laserPoints); % minimal point must be tested once
+    else
+        ind = max(1,round(length(laserPoints)/2));
+        nextLaserPoint = laserPoints(ind);
+    end
+else % 3 tested points or more
+    p = polyfit(testedPoints, testedScores, 2);
+    if (p(1)>=0) % maximum cannot be calculated
+        [~,ind] = min(abs(availablePoints-mean(testedPoints(end-1:end)))); % try halving previous step
+        nextLaserPoint = availablePoints(ind);
+    else
+        maxPt = -p(2)/(2*p(1));
+        [~,sortIdcs] = sort(abs(laserPoints-maxPt));
+        if all(arrayfun(@(x) any(x==testedPoints), laserPoints(sortIdcs(1:3))))
+            isConverged = 1;
+        else
+            [~,ind] = min(abs(availablePoints-maxPt));
+            nextLaserPoint = availablePoints(ind);
+        end
+    end
+end
+
 end

@@ -1,5 +1,5 @@
-function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, sz, calibParams)
-% function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, sz, calibParams)
+function [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, curLaserPoint, sz, calibParams)
+% function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, curLaserPoint, sz, calibParams)
 % description: 
 %
 % inputs:
@@ -17,6 +17,7 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, L
 
     t0 = tic;
     global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
+    global g_laser_points g_scores
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -65,23 +66,31 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, L
         fprintff = g_fprintff; 
     end
 
+    g_laser_points = [g_laser_points, curLaserPoint];
+    g_scores = [g_scores, NaN(3,1)];
+    
     im = Calibration.aux.convertBinDataToFrames(depthData, sz, true, 'depth');
     
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'depthData','LaserPoints','maxMod_dec', 'sz','calibParams');
+        save(fn, 'depthData', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'sz','calibParams');
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im', 'LaserPoints' ,'maxMod_dec','sz','calibParams','output_dir','PresetFolder');
     end
-    [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(im, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder);       
-
+    [isConverged, curScore, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(im, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder, g_laser_points, g_scores);       
+    g_scores(:,end) = curScore;
+    if (abs(isConverged)==1)
+        g_laser_points = [];
+        g_scores = [];
+    end
+    
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'minRangeScaleModRef','ModRefDec');
+        save(fn, 'isConverged', 'nextLaserPoint', 'minRangeScaleModRef', 'ModRefDec');
     end
     
     if g_countRuntime
