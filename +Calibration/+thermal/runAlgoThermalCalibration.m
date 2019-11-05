@@ -191,7 +191,7 @@ function initConfiguration(hw,fw,runParams,calibParams,fprintff,t)
     if(runParams.init)
         % Create config calib files
         fprintff('[-] Burning default config calib files...');
-        GenInitCalibTables_Calc(calibParams);
+        GenInitCalibTables_Calc(calibParams, '');
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);

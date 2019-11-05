@@ -334,9 +334,9 @@
         <rtdOverAngXrange>[-30,-30,-30,-30,-30,0;30,30,30,30,30,0]</rtdOverAngXrange>
         <zenith>
             <useEsTilt>1</useEsTilt>
-            <applyCorrection>1</applyCorrection>
-            <correctionCoefsHorz>[0.82,0.12]</correctionCoefsHorz>
-            <correctionCoefsVert>[0.90,-0.24]</correctionCoefsVert>
+            <applyCorrection>0</applyCorrection>
+            <correctionCoefsHorz>[1,0.33]</correctionCoefsHorz>
+            <correctionCoefsVert>[1,-0.32]</correctionCoefsVert>
         </zenith>
     </dfz>
     <roi>

@@ -58,7 +58,7 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
 
     internalFolder = fullfile(OutDir,'CalibFiles');
     configurationFolder = 'releaseConfigCalibVXGA';
-    Calibration.aux.defineFileNamesAndCreateResultsDir(internalFolder, configurationFolder)
+    Calibration.aux.defineFileNamesAndCreateResultsDir(internalFolder, configurationFolder);
 
     mkdir(fullfile(OutDir,'DefaultTables'));
     calibParams = xml2structWrapper(source);

@@ -1,7 +1,8 @@
-function GenInitCalibTables_Calc(calibParams, eepromBin)
+function GenInitCalibTables_Calc(calibParams, outDir, eepromBin)
 % description: the function should run in the beginning of calibration or re-calibration.
 % inputs:
 %   calibParams - struct with general params concerning calibration process
+%   outDir      - directory for generating the default tables
 %   eepromBin   - BIN data with unit EEPROM (if exists and non-empty - ATC data will not be overriden).
 
     t0 = tic;
@@ -40,14 +41,16 @@ function GenInitCalibTables_Calc(calibParams, eepromBin)
     if g_save_input_flag && (exist(g_output_dir,'dir')~=0)
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name '_in.mat']);
         if isATC
-            save(fn, 'calibParams');
+            save(fn, 'calibParams', 'outDir');
         else
-            save(fn, 'calibParams', 'eepromBin');
+            save(fn, 'calibParams', 'outDir', 'eepromBin');
         end
     end
     
     % initialization process
-    outDir = fullfile(g_calib_dir, 'initialCalibFiles');
+    if isempty(outDir)
+        outDir = fullfile(g_calib_dir, 'initialCalibFiles');
+    end
     if isATC
         vers = AlgoThermalCalibToolVersion;
         GenInitCalibTables_Calc_int(g_calib_dir, outDir, vers, calibParams.tableVersions)

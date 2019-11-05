@@ -125,7 +125,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
 
     %% Undist and table burn
     [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
-    [delayRegs, dsmRegs, ~, ~] = Calibraion.aux.getATCregsFromEEPROMregs(eepromRegs);
+    [delayRegs, dsmRegs, ~, ~] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs);
     [results,regs,luts] = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
     
     hw.runPresetScript('maReset');
@@ -416,7 +416,7 @@ function initConfiguration(hw, fw, runParams, calibParams, fprintff, t)
         fprintff('[-] Burning default config calib files...');
         % extracting regs
         [~, eepromBin] = hw.readAlgoEEPROMtable();
-        GenInitCalibTables_Calc(calibParams, eepromBin);
+        GenInitCalibTables_Calc(calibParams, '', eepromBin);
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);

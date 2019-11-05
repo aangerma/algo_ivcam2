@@ -29,9 +29,9 @@ fprintf('\n')
 fprintf('\nrunning GenInitCalibTables_Calc... ');
 dataIn = load([inputPath, 'GenInitCalibTables_Calc_in.mat']);
 if isfield(dataIn, 'eepromBin')
-    GenInitCalibTables_Calc(dataIn.calibParams, dataIn.eepromBin)
+    GenInitCalibTables_Calc(dataIn.calibParams, dataIn.outDir, dataIn.eepromBin)
 else
-    GenInitCalibTables_Calc(dataIn.calibParams)
+    GenInitCalibTables_Calc(dataIn.calibParams, dataIn.outDir)
 end
 fprintf('\n')
 
