@@ -60,10 +60,6 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
     configurationFolder = 'releaseConfigCalibVXGA';
     Calibration.aux.defineFileNamesAndCreateResultsDir(internalFolder, configurationFolder);
 
-    mkdir(fullfile(OutDir,'DefaultTables'));
-    calibParams = xml2structWrapper(source);
-    GenInitCalibTables_Calc_int(internalFolder, fullfile(OutDir,'DefaultTables'), 0, calibParams.tableVersions);
-    
     % Compilation
         % .NET app, IVCAM2.Algo.CalibrationMatlab library,
         % CalibrationEngine class, .NET version 4.5, no encryption, local app
