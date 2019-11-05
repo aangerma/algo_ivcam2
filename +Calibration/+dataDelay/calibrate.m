@@ -36,7 +36,6 @@ r.add('DIGGsphericalScale',int16(double(sphericalScale).*calibParams.dataDelay.s
 r.set();
 
 % origBias = zeroBias(hw);
-hw.cmd('mwd a005006c a0050070 00000100');  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 
 %% CALIBRATE IR
 [delayIR,delayIRsuccess,pixelVar]=Calibration.dataDelay.calibIRdelay(hw, dataDelayParams, runParams, calibParams, isFinalStage, fResMirror);
@@ -73,7 +72,6 @@ regs=Calibration.dataDelay.setAbsDelay(hw,delayZ,delayIR);
 %% SET OLD VALUES
 r.reset();
 % setBias(hw,origBias);
-hw.cmd('mwd a005006c a0050070 00000000');  % // Gain Treshold = 1, Gain < Treshold ? LD_ON ShutDown
 end
 
 function origBias = zeroBias(hw)
