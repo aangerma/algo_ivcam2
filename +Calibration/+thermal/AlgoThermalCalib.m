@@ -189,7 +189,7 @@ function [depthData, frameData] = prepareFrameData(hw,startTime,calibParams)
     for j = 1:3
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
-    depthData = captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
     frameData.time = toc(startTime);
 end
 

@@ -66,7 +66,7 @@ function [results] = PresetsAlignment_Calib_Calc(depthData, calibParams, res, z2
     runParams.outputFolder = output_dir;
     for iTrial = 1:size(depthData,1)
         for iPreset = 1:size(depthData,2)
-            im(iTrial,iPreset) = convertBinDataToFrames(depthData{iTrial,iPreset}, res, true, 'depth');
+            im(iTrial,iPreset) = Calibration.aux.convertBinDataToFrames(depthData{iTrial,iPreset}, res, true, 'depth');
         end
     end
     

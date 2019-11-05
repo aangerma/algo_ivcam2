@@ -15,7 +15,7 @@ for i = 1:N
         r.add('DESTbaseline2$',single(0));
         r.set();
         hw.getFrame(30);       
-        depthData{i,p} = captureFramesWrapper(hw, 'Z', calibParams.presets.compare.nFrames);
+        depthData{i,p} = Calibration.aux.captureFramesWrapper(hw, 'Z', calibParams.presets.compare.nFrames);
     end
 end
 hw.stopStream;

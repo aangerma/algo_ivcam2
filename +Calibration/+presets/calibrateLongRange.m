@@ -19,7 +19,7 @@ Calibration.aux.CBTools.showImageRequestDialog(hw,3,diag([1 1 1]),'Long Range Ca
 [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData,cameraInput,laserPoints,maxMod_dec,laserPoint0,calibParams);
 while (isConverged==0)
     Calibration.aux.RegistersReader.setModRef(hw, nextLaserPoint);
-    depthData = captureFramesWrapper(hw, 'ZI', framesNum);
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', framesNum);
     [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData,cameraInput,laserPoints,maxMod_dec,nextLaserPoint,calibParams);
 end
 

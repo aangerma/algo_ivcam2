@@ -108,10 +108,10 @@ if isempty(availablePoints)
 end
 % choosing next point
 if (length(testedPoints)==1) % choose another point on search region boundary
-    if (testedPoints < max(availablePoints))
-        nextLaserPoint = max(availablePoints); % maximal fill rate must be attained once
+    if (testedPoints < max(laserPoints))
+        nextLaserPoint = max(laserPoints); % maximal fill rate must be attained once
     else
-        nextLaserPoint = min(availablePoints);
+        nextLaserPoint = min(laserPoints);
     end
 else % 2 tested points or more
     [testedScores, sortIdcs] = sort(testedScores, 'ascend');

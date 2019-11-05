@@ -4,7 +4,7 @@ NumberOfFrames = calibParams.gnrl.Nof2avg;
 delayZ=dataDelayParams.fastDelayInitVal;
 % delayZ=dataDelayParams.slowDelayInitVal+dataDelayParams.fastDelatInitOffset;
 
-depthDataBoth = captureFramesWrapper(hw, 'I', NumberOfFrames);
+depthDataBoth = Calibration.aux.captureFramesWrapper(hw, 'I', NumberOfFrames);
 
 [~,saveVal] = hw.cmd('irb e2 06 01'); % Original Laser Bias
 hw.cmd('iwb e2 06 01 00'); % set Laser Bias to 0

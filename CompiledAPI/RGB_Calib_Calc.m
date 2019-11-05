@@ -51,8 +51,8 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(depthData, rgbData, cal
    end
     runParams.outputFolder = g_output_dir;
 
-    im = convertBinDataToFrames(depthData, irImSize, doAverage, 'depth');
-    rgbs = convertBinDataToFrames(rgbData, flip(calibParams.rgb.imSize), doAverage, 'rgb');
+    im = Calibration.aux.convertBinDataToFrames(depthData, irImSize, doAverage, 'depth');
+    rgbs = Calibration.aux.convertBinDataToFrames(rgbData, flip(calibParams.rgb.imSize), doAverage, 'rgb');
     
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 

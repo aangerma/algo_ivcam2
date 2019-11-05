@@ -146,7 +146,7 @@ end
 % add error checking;
 
 if ~finishedHeating % heating stage
-    frame = convertBinDataToFrames(depthData, [height, width], true, 'depth');
+    frame = Calibration.aux.convertBinDataToFrames(depthData, [height, width], true, 'depth');
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
     zForStd = nan(size(frame.z));
     zForStd(binLargest) = frame.z(binLargest);

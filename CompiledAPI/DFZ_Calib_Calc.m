@@ -65,7 +65,7 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(depthData, calibParams
     regs = ConvertDFZReg(DFZ_regs);
     width = regs.GNRL.imgHsize;
     height = regs.GNRL.imgVsize;
-    im = convertBinDataToFrames(depthData, [height,width], true, 'depth');    
+    im = Calibration.aux.convertBinDataToFrames(depthData, [height,width], true, 'depth');    
     if g_save_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn,'depthData','calibParams' , 'DFZ_regs' );

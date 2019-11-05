@@ -85,7 +85,7 @@ function [valResults ,allCovRes] = HVM_Val_Coverage_Calc_int(depthData,sz,runPar
     debugMode = flip(dec2bin(uint16(defaultDebug),2)=='1');
 
 %% load images
-    im = convertBinDataToFrames(depthData, sz, false, 'depth');
+    im = Calibration.aux.convertBinDataToFrames(depthData, sz, false, 'depth');
     for i =1:1:size(im.i,3)
         frames(i).i = im.i(:,:,i);
     end

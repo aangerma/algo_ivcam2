@@ -68,9 +68,9 @@ function [res, delayZ, im] = Z_DelayCalibCalc(depthDataUp, depthDataDown, depthD
         fprintff = g_fprintff; 
     end
 
-    imU_z = convertBinDataToFrames(depthDataUp, sz, true, 'depth');
-    imD_z = convertBinDataToFrames(depthDataDown, sz, true, 'depth');
-    imB_i = convertBinDataToFrames(depthDataBoth, sz, true, 'depth');
+    imU_z = Calibration.aux.convertBinDataToFrames(depthDataUp, sz, true, 'depth');
+    imD_z = Calibration.aux.convertBinDataToFrames(depthDataDown, sz, true, 'depth');
+    imB_i = Calibration.aux.convertBinDataToFrames(depthDataBoth, sz, true, 'depth');
     imU = getFilteredImage(imU_z, unFiltered);
     imD = getFilteredImage(imD_z, unFiltered);
     imB = getFilteredImage(imB_i, unFiltered);

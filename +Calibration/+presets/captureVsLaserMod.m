@@ -16,7 +16,7 @@ end
 hw.getFrame(framesNum,false); 
 laserPoint0 = max(LaserPoints);
 Calibration.aux.RegistersReader.setModRef(hw, laserPoint0);
-depthData = captureFramesWrapper(hw, 'ZI', framesNum);
+depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', framesNum);
 
 end
 

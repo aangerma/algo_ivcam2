@@ -69,8 +69,8 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
         fprintff = g_fprintff; 
     end
 
-    imU = convertBinDataToFrames(depthDataUp, sz, true, 'depth');
-    imD = convertBinDataToFrames(depthDataDown, sz, true, 'depth');
+    imU = Calibration.aux.convertBinDataToFrames(depthDataUp, sz, true, 'depth');
+    imD = Calibration.aux.convertBinDataToFrames(depthDataDown, sz, true, 'depth');
     imU = getFilteredImage(imU,unFiltered);
     imD = getFilteredImage(imD,unFiltered);
 

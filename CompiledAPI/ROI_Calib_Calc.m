@@ -72,7 +72,7 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(depthData, calibParams, RO
     
     width = regs.GNRL.imgHsize;
     height = regs.GNRL.imgVsize;
-    im = convertBinDataToFrames(depthData, [height, width], false, 'depth');
+    im = Calibration.aux.convertBinDataToFrames(depthData, [height, width], false, 'depth');
     
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);

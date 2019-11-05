@@ -65,7 +65,7 @@ function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, L
         fprintff = g_fprintff; 
     end
 
-    im = convertBinDataToFrames(depthData, sz, true, 'depth');
+    im = Calibration.aux.convertBinDataToFrames(depthData, sz, true, 'depth');
     
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 

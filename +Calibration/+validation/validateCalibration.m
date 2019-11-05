@@ -274,7 +274,7 @@ function [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,
 %
 %% capturing
     nof_frames = calibParams.validationConfig.HVM_Val.numOfFrames;
-    depthData = captureFramesWrapper(hw, 'ZI', nof_frames);
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
 
 %% get K zMaxSubMM
     params.camera.K          = getKMat(hw);
@@ -300,7 +300,7 @@ function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fp
     pause(0.1);
 %% capturing
     nof_frames = calibParams.validationConfig.coverage.numOfFrames;
-    depthData = captureFramesWrapper(hw, 'I', nof_frames);
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'I', nof_frames);
     sz = hw.streamSize();
 
 %calculate ir coverage metric

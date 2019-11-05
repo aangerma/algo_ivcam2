@@ -6,7 +6,7 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         fprintff('[-] Collecting up/down frames... ');
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Take Image From ~20cm - Board should cover the entire fov',1);
         %% capture frames 
-        depthData = captureFramesWrapper(hw, 'ZI', calibParams.roi.nFrames);
+        depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.roi.nFrames);
         fprintff('Done.\n');
         %% prepare register set for ROI
         [ROIregs] = prepare_ROI_reg(hw,regs,dfzRegs);

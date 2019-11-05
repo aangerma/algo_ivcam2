@@ -71,7 +71,7 @@ function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetD
     runParams.outputFolder = output_dir;
     maskParams = calibParams.presets.long.params;
     
-    im = convertBinDataToFrames(depthData, cameraInput.imSize, false, 'depth');
+    im = Calibration.aux.convertBinDataToFrames(depthData, cameraInput.imSize, false, 'depth');
         
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
