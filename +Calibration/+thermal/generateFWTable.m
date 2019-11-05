@@ -21,6 +21,7 @@ N = nBins+1;
 tempData = [framesData.temp];
 vBias = reshape([framesData.vBias],3,[]);
 ldd = [tempData.ldd];
+ma = [tempData.ma];
 timev = [framesData.time];
 
 %% Linear RTD fix
@@ -34,6 +35,7 @@ refTmp = data.dfzRefTmp;
 startI = calibParams.fwTable.nFramesToIgnore+1;
 verifyThermalSweepValidity(ldd, startI, calibParams.warmUp)
 [a,b] = linearTrans(vec(ldd(startI:end)),vec(rtdPerFrame(startI:end)));
+[aMA,bMA] = linearTrans(vec(ma(startI:end)),vec(rtdPerFrame(startI:end)));
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -43,10 +45,18 @@ if ~isempty(runParams)
     hold on
     plot(ldd,a*ldd+b);
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_Temp'));
+    ff = Calibration.aux.invisibleFigure;
+    plot(ma,rtdPerFrame,'*');
+    title('RTD(ma) and Fitted line');
+    grid on;xlabel('ma Temperature');ylabel('mean rtd');
+    hold on
+    plot(ma,aMA*ma+bMA);
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_MA_Temp'));
 end
  
 results.rtd.refTemp = refTmp;
 results.rtd.slope = a;
+results.ma.slope = aMA;
 fwBinCenters = linspace(calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2),nBins);
 results.rtd.tmptrOffsetValues = -((fwBinCenters-refTmp)*results.rtd.slope)';
 

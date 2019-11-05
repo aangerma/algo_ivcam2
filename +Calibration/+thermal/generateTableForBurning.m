@@ -46,6 +46,8 @@ eepromRegs.FRMW.atlMinAngYU = int16(data.dsmMovement.minY(1));
 eepromRegs.FRMW.atlMinAngYB = int16(data.dsmMovement.minY(2));
 eepromRegs.FRMW.atlMaxAngYU = int16(data.dsmMovement.maxY(1));
 eepromRegs.FRMW.atlMaxAngYB = int16(data.dsmMovement.maxY(2));
+% RTD Slope for fix calculation using ma temperature
+eepromRegs.FRMW.atlSlopeMA  = single(data.tableResults.ma.slope);
 
 fw.setRegs(eepromRegs,'');
 fw.get();
