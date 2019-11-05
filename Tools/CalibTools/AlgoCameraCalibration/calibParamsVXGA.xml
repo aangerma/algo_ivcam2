@@ -346,8 +346,8 @@
         <useExtraMargins>1</useExtraMargins>  
         <extraMarginL>0</extraMarginL>  
         <extraMarginR>0</extraMarginR>  
-        <extraMarginT>0.2</extraMarginT>  
-        <extraMarginB>0.2</extraMarginB>   
+        <extraMarginT>0.1</extraMarginT>  
+        <extraMarginB>0.1</extraMarginB>   
         <maxFovX>70</maxFovX>
         <maxFovY>[]</maxFovY>
         <diskSz>60</diskSz>
