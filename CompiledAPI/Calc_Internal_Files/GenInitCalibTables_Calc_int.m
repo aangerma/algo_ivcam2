@@ -12,7 +12,7 @@ function GenInitCalibTables_Calc_int(initFolder, outFolder, calibToolVers, table
         EPROMstructure  = EPROMstructure.updatedEpromTable;
         eepromBin       = uint8(eepromBin);
         eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
-        [delayRegs, dsmRegs, thermalRegs, dfzRegs] = Calibraion.aux.getATCregsFromEEPROMregs(eepromRegs);
+        [delayRegs, dsmRegs, thermalRegs, dfzRegs] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs);
         fw.setRegs(delayRegs,'');
         fw.setRegs(dsmRegs,'');
         fw.setRegs(thermalRegs,'');

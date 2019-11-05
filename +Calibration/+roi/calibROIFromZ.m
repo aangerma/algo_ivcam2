@@ -46,7 +46,7 @@ calibParamsMinimalCrop.roi.extraMarginB = 0;
 calibParamsMinimalCrop.roi.extraMarginL = 0;
 calibParamsMinimalCrop.roi.extraMarginR = 0;
 calibParamsMinimalCrop.roi.useExtraMargins = 0;
-
+calibParamsMinimalCrop.roi.useMinimalXRangeFromATC = calibParams.roi.useMinimalXRangeFromATC;
 end
 function edges = calcBounds(im,calibParams,runParams,regs,description)
 %% Mark desired pixels on spherical image

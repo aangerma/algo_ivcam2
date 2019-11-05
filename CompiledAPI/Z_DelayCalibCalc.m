@@ -1,11 +1,11 @@
-function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz, delay, calibParams, isFinalStage, fResMirror)
+function [res, delayZ, im] = Z_DelayCalibCalc(depthDataUp, depthDataDown, depthDataBoth, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
 % inputs:
-%   path_up   - path to scan up images. 
-%   path_down - path to scan down images.  
-%   path_both - path to scan down images.  
+%   depthDataUp - up images (in binary sequence form)
+%   depthDataDown - down images (in binary sequence form)
+%   depthDataBoth - IR images (in binary sequence form) 
 %       files format bin files naming I_0001 I_0002 ... 
 %       NOTE:
 %           - seprate dir for up/down
@@ -25,7 +25,7 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
 %
 
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
 
     unFiltered  = 0;
      if isempty(g_delay_cnt)
@@ -42,6 +42,9 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
     end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
+    end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
@@ -65,28 +68,25 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
         fprintff = g_fprintff; 
     end
 
-    
-    width = sz(2);
-    height = sz(1);
-    imUs_z = Calibration.aux.GetFramesFromDir(path_up   ,width , height);
-    imDs_z = Calibration.aux.GetFramesFromDir(path_down ,width , height);
-    imBs_i = Calibration.aux.GetFramesFromDir(path_both ,width , height);
-% w/o filter getting I image only 
-    imU=getFilteredImage(imU_z,unFiltered);
-    imD=getFilteredImage(imD_z,unFiltered);
-    imB=getFilteredImage(imB_i,unFiltered);
+    imU_z = Calibration.aux.convertBinDataToFrames(depthDataUp, sz, true, 'depth');
+    imD_z = Calibration.aux.convertBinDataToFrames(depthDataDown, sz, true, 'depth');
+    imB_i = Calibration.aux.convertBinDataToFrames(depthDataBoth, sz, true, 'depth');
+    imU = getFilteredImage(imU_z, unFiltered);
+    imD = getFilteredImage(imD_z, unFiltered);
+    imB = getFilteredImage(imB_i, unFiltered);
 
-    
-    
+    if isFinalStage
+        suffix = '_final';
+    else
+        suffix = '_init';
+    end
+        
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        if isFinalStage
-            suffix = '_final';
-        else
-            suffix = '_init';
-        end
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'path_up', 'path_down', 'path_both' , 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+        save(fn, 'depthDataUp', 'depthDataDown', 'depthDataBoth', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+    end
+    if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn,'imU', 'imD', 'imB', 'delay', 'dataDelayParams', 'g_verbose', 'fResMirror', 'g_delay_cnt');
@@ -94,11 +94,6 @@ function [res, delayZ, im] = Z_DelayCalibCalc(path_up, path_down, path_both, sz,
     [res, delayZ, im] = Z_DelayCalibCalc_int(imU, imD, imB , delay, calibParams.dataDelay, g_verbose, fResMirror, g_delay_cnt); 
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        if isFinalStage
-            suffix = '_final';
-        else
-            suffix = '_init';
-        end
         fn = fullfile(g_output_dir, 'mat_files' , [func_name sprintf('%s_out%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'res', 'delayZ', 'im');
     end

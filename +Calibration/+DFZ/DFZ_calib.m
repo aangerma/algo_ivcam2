@@ -14,19 +14,16 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         captures = {calibParams.dfz.captures.capture(:).type};
         trainImages = strcmp('train',captures);
         nof_frames = 45; %todo take it from calibparams
-        path = cell(1,length(captures));
         for i=1:length(captures)
-            [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams,results);
+            [depthData{i},DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,runParams,results);
         end
-        
-        
-        [dfzRegs,dfzresults,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs);
+
+        [dfzRegs, dfzresults, calibPassed] = DFZ_Calib_Calc(depthData, calibParams, DFZ_regs);
         results.geomErr = dfzresults.geomErr;
         results.extraImagesGeomErr = dfzresults.extraImagesGeomErr;
         results.potentialPitchFixInDegrees = dfzresults.potentialPitchFixInDegrees;
         results.rtdDiffBetweenPresets = dfzresults.rtdDiffBetweenPresets;
         results.shortRangeImagesGeomErr = dfzresults.shortRangeImagesGeomErr;
-        
         
         results.dfzScaleErrH = dfzresults.dfzScaleErrH;
         results.dfzScaleErrV = dfzresults.dfzScaleErrV;
@@ -36,7 +33,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         results.dfz2DErrV = dfzresults.dfz2DErrV;
         results.dfzPlaneFit = dfzresults.dfzPlaneFit;
         
-        DFZ_calib_Output(hw,fw,r,dfzRegs,results ,runParams,calibParams);
+        DFZ_calib_Output(hw, fw, r, dfzRegs, results, runParams, calibParams);
 
         if calibParams.dfz.zenith.useEsTilt && ((DFZ_regs.FRMWsaTiltFromEs==65535) || (DFZ_regs.FRMWfaTiltFromEs==65535))
             fprintff('WARNING: 0xFFFF found in SPOT TILT -> failing DFZ calibration\n')
@@ -47,9 +44,9 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         fprintff('[?] skipped\n');
     end
 end
-function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,path,runParams,results)
+function [depthData, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,runParams,results)
     cap = calibParams.dfz.captures.capture(i);
-    targetInfo = targetInfoGenerator(cap.target);
+    targetInfo = targetInfoGenerator(cap.target); % not saved anywhere
     cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
     cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
     ii = 0;
@@ -70,17 +67,7 @@ function [InputPath,DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_r
         DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart, calibParams.gnrl.pzrMeas);
     end
 %            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
-    InputPath = fullfile(ivcam2tempdir,'DFZ');
-    if strcmp(cap.type,'shortRange')
-        path{i} = fullfile(InputPath,sprintf('Pose%d_SR',nx(i)));
-    else
-        path{i} = fullfile(InputPath,sprintf('Pose%d',nx(i)));
-    end
-    mkdirSafe(path{i});
-    fn = fullfile(path{i},'image_params.xml');
-    struct2xmlWrapper(targetInfo,fn,'image_params');                        % save targetInfo as XML file. 
-    doAverage = true; % no need for saving multiple images that are just averaged inside DFZ_Calib_Calc
-    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path{i}, doAverage);  % save images Z and I in sub dir 
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
     
     if strcmp(cap.type,'shortRange')
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );

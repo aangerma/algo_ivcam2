@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, version, configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
+function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -22,7 +22,7 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     if ~exist('afterThermalCalib_flag','var')
         afterThermalCalib_flag = 0;
     end
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
+    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -35,6 +35,9 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
+    end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
     end
     if isempty(g_dummy_output_flag)
         g_dummy_output_flag = 0;
@@ -61,12 +64,12 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'version', 'configurationFolder', 'eepromRegs', 'eepromBin', 'afterThermalCalib_flag');
+        save(fn, 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'configurationFolder', 'eepromRegs', 'eepromBin', 'afterThermalCalib_flag');
     end
     runParams.outputFolder = g_output_dir;
     runParams.undist = undist_flag;
     runParams.afterThermalCalib = afterThermalCalib_flag;
-    runParams.version=version;
+    runParams.version = AlgoCameraCalibToolVersion;
     runParams.configurationFolder=configurationFolder; 
     initFolder = g_calib_dir;
     fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
@@ -77,7 +80,7 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
         eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
     end
     [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, runParams.afterThermalCalib);
-    if g_save_input_flag && exist(g_output_dir,'dir')~=0 
+    if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn, 'runParams', 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'calibParams');
     end

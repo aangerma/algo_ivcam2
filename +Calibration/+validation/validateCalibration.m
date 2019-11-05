@@ -274,15 +274,13 @@ function [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,
 %
 %% capturing
     nof_frames = calibParams.validationConfig.HVM_Val.numOfFrames;
-    InputPath = fullfile(ivcam2tempdir,'HVM_V_1'); 
-    mkdirSafe(InputPath);
-    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , InputPath);  % save images Z and I in sub dir 
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
 
 %% get K zMaxSubMM
     params.camera.K          = getKMat(hw);
     params.camera.zMaxSubMM  = 2^double(hw.read('GNRLzMaxSubMMExp'));
     sz = hw.streamSize();
-    [valResults ,allResults] = HVM_Val_Calc(InputPath,sz,params,calibParams,valResults);
+    [valResults ,allResults] = HVM_Val_Calc(depthData,sz,params,calibParams,valResults);
 
 end 
 function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fprintff,spark,app,valResults)
@@ -301,14 +299,12 @@ function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fp
     r.set();
     pause(0.1);
 %% capturing
-    InputPath = fullfile(ivcam2tempdir,'HVM_Coverage');
     nof_frames = calibParams.validationConfig.coverage.numOfFrames;
-    mkdirSafe(InputPath);
-    Calibration.aux.SaveFramesWrapper(hw, 'I' , nof_frames , InputPath);  % save images Z and I in sub dir 
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'I', nof_frames);
     sz = hw.streamSize();
 
 %calculate ir coverage metric
-    [valResults ,allResults] = HVM_Val_Coverage_Calc(InputPath,sz,calibParams,valResults);
+    [valResults ,allResults] = HVM_Val_Coverage_Calc(depthData,sz,calibParams,valResults);
 %clean up hw
     r.reset();
 end 

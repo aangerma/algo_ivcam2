@@ -1,11 +1,9 @@
-function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams, DFZ_regs)
-    % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
+function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(depthData, calibParams, DFZ_regs)
+    % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(depthData,calibParams,DFZ_regs)
     % description: initiale set of the DSM scale and offset
     %regs_reff
     % inputs:
-    %   InputPath -  path for input images  dir stucture InputPath\PoseN N =1:5
-    %        note
-    %           I image naming I_*_000n.bin
+    %   depthData - images from different poses (in binary sequence form)
     %   calibParams - calibparams strcture.
     %   DFZ_regs - list of hw regs values and FW regs
     %
@@ -15,7 +13,7 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams
     %   calibPassed - pass fail
     %
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_calib_dir g_LogFn g_countRuntime; % g_regs g_luts;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_calib_dir g_LogFn g_countRuntime; % g_regs g_luts;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -25,6 +23,9 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams
     end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
+    end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
@@ -63,11 +64,13 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams
     % save Input
     regs = ConvertDFZReg(DFZ_regs);
     width = regs.GNRL.imgHsize;
-    hight = regs.GNRL.imgVsize;
-    im = GetDFZImages(InputPath,width,hight);
+    height = regs.GNRL.imgVsize;
+    im = Calibration.aux.convertBinDataToFrames(depthData, [height,width], true, 'depth');    
     if g_save_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','calibParams' , 'DFZ_regs' );
+        save(fn,'depthData','calibParams' , 'DFZ_regs' );
+    end
+    if g_save_internal_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'im','output_dir','calibParams', 'regs' , 'DFZ_regs' );
     end
@@ -101,19 +104,7 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(InputPath, calibParams
     end
 end
 
-
-function im = GetDFZImages(InputPath,width,height)
-    dirfiles = dir([InputPath,'\Pose*']);
-    for i=1:numel(dirfiles)
-        im(i).i = Calibration.aux.GetFramesFromDir(fullfile(InputPath,dirfiles(i).name),width, height);
-        im(i).z = Calibration.aux.GetFramesFromDir(fullfile(InputPath,dirfiles(i).name),width, height,'Z');
-    end
-    global g_output_dir g_save_input_flag;
-    if g_save_input_flag % save
-        fn = fullfile(g_output_dir, 'mat_files' , 'DFZ_im.mat');
-        save(fn,'im');
-    end
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function  DFZRegs = ConvertDFZReg(regs)
     DFZRegs.DEST.depthAsRange   	= logical(regs.DESTdepthAsRange);

@@ -14,14 +14,11 @@ for i = 1:N
         r.add('DESTbaseline$',single(0));
         r.add('DESTbaseline2$',single(0));
         r.set();
-        hw.getFrame(30);
-        inputPath = fullfile(ivcam2tempdir,'presetsAlignment'); 
-        trialPath = fullfile(inputPath,sprintf('trial_%d',i));
-        presetPath = fullfile(trialPath,sprintf('preset_%d',p));
-        Calibration.aux.SaveFramesWrapper(hw , 'Z' , calibParams.presets.compare.nFrames, presetPath);
+        hw.getFrame(30);       
+        depthData{i,p} = Calibration.aux.captureFramesWrapper(hw, 'Z', calibParams.presets.compare.nFrames);
     end
 end
 hw.stopStream;
-results = PresetsAlignment_Calib_Calc(inputPath,calibParams,res,z2mm);
+results = PresetsAlignment_Calib_Calc(depthData,calibParams,res,z2mm);
 
 end

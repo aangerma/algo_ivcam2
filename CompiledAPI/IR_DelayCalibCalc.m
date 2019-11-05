@@ -1,10 +1,10 @@
-function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, delay, calibParams, isFinalStage, fResMirror)
+function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDown, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
 % inputs:
-%   path_up   - path to scan up images. 
-%   path_down - path to scan down images.  
+%   depthDataUp - up images (in binary sequence form)
+%   depthDataDown - down images (in binary sequence form)
 %       files format bin files naming I_0001 I_0002 ... 
 %       NOTE:
 %           - seprate dir for up/down
@@ -25,7 +25,7 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
 %
 
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
     unFiltered  = 0;
 
     % setting default global value in case not initial in the init function;
@@ -44,9 +44,12 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
+    end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
-    end
+    end    
     if isempty(g_dummy_output_flag)
         g_dummy_output_flag = 0;
     end
@@ -66,25 +69,23 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
         fprintff = g_fprintff; 
     end
 
-    
-    
-    width = sz(2);
-    height = sz(1);
-    imU_i = Calibration.aux.GetFramesFromDir(path_up   ,width , height);
-    imD_i = Calibration.aux.GetFramesFromDir(path_down ,width , height);
-% w/o filter getting I image only 
-    imU=getFilteredImage(imU_i,unFiltered);
-    imD=getFilteredImage(imD_i,unFiltered);
+    imU = Calibration.aux.convertBinDataToFrames(depthDataUp, sz, true, 'depth');
+    imD = Calibration.aux.convertBinDataToFrames(depthDataDown, sz, true, 'depth');
+    imU = getFilteredImage(imU,unFiltered);
+    imD = getFilteredImage(imD,unFiltered);
 
-        % save Input
+    if isFinalStage
+        suffix = '_final';
+    else
+        suffix = '_init';
+    end
+        
+    % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
-        if isFinalStage
-            suffix = '_final';
-        else
-            suffix = '_init';
-        end
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'path_up', 'path_down', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+        save(fn, 'depthDataUp', 'depthDataDown', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+    end
+    if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose', 'fResMirror', 'g_delay_cnt');
@@ -94,11 +95,6 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(path_up, path_down, sz, 
     
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
-        if isFinalStage
-            suffix = '_final';
-        else
-            suffix = '_init';
-        end
         fn = fullfile(g_output_dir,  'mat_files' , [func_name sprintf('%s_out%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'res', 'delayIR', 'im', 'pixVar');
     end

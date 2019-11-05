@@ -83,9 +83,6 @@ function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, cali
 		vertices = allVerticesFinal;
 		save(fullfile(runParams.outputFolder,'AlgoInternal','verticesDFZ.mat'),'vertices');
     end
-    
-    
-    
 
     results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
     fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);

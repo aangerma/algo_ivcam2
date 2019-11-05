@@ -125,8 +125,8 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
 
     %% Undist and table burn
     [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
-    [delayRegs, dsmRegs, ~, ~] = Calibraion.aux.getATCregsFromEEPROMregs(eepromRegs);
-    [results,regs,luts] = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.version,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
+    [delayRegs, dsmRegs, ~, ~] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs);
+    [results,regs,luts] = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
     
     hw.runPresetScript('maReset');
     pause(0.1);
@@ -173,7 +173,11 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
                 fprintff('Test %s for long range preset, starting stream.\n',Calstate);
                 hw = Calibration.aux.resetCamera( hw );
                 hw.startStream(0,res);
-                results = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
+                [isConverged, results] = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
+                if (isConverged==-1) % fill rate threshold beyond search region boundaries
+                    calibPassed = 0;
+                    return;
+                end
             end
         end
     end
@@ -412,7 +416,7 @@ function initConfiguration(hw, fw, runParams, calibParams, fprintff, t)
         fprintff('[-] Burning default config calib files...');
         % extracting regs
         [~, eepromBin] = hw.readAlgoEEPROMtable();
-        GenInitCalibTables_Calc(calibParams, eepromBin);
+        GenInitCalibTables_Calc(calibParams, '', eepromBin);
         hw.burnCalibConfigFiles(fullfile(runParams.internalFolder,'initialCalibFiles'));
         hw.cmd('rst');
         pause(10);
@@ -463,12 +467,12 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [results] = calibrateLongRangePreset(hw, resolution, state, results, runParams, calibParams, fprintff)
+function [isConverged, results] = calibrateLongRangePreset(hw, resolution, state, results, runParams, calibParams, fprintff)
     if runParams.maxRangePreset
         fprintff(['[-] Calibrating long range laser power on ',mat2str(resolution),' resolution ...\n']);
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
         % run on calib Res
-        [results.(['maxRangeScaleModRef_',state]),maxModRefDec,results.(['maxFillRate_',state]),...
+        [isConverged, results.(['maxRangeScaleModRef_',state]),maxModRefDec,results.(['maxFillRate_',state]),...
          results.(['targetDist_',state])] = Calibration.presets.calibrateLongRange(hw,calibParams,state,runParams,fprintff);
 
         % Set laser val

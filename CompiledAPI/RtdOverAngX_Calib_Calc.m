@@ -1,7 +1,7 @@
-function [tablefn] = RtdOverAngX_Calib_Calc(inputPath, calibParams, regs, luts)
+function [tablefn] = RtdOverAngX_Calib_Calc(depthDataConstant, depthDataSteps, calibParams, regs, luts)
 
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
+    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
     % setting default global value in case not initial in the init function;
     if isempty(g_debug_log_f)
         g_debug_log_f = 0;
@@ -11,6 +11,9 @@ function [tablefn] = RtdOverAngX_Calib_Calc(inputPath, calibParams, regs, luts)
     end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
+    end
+    if isempty(g_save_internal_input_flag)
+        g_save_internal_input_flag = 0;
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
@@ -44,13 +47,15 @@ function [tablefn] = RtdOverAngX_Calib_Calc(inputPath, calibParams, regs, luts)
     
     runParams.outputFolder = output_dir;
     width = regs.GNRL.imgHsize;
-    hight = regs.GNRL.imgVsize;
-    imConstant = mean(Calibration.aux.GetFramesFromDir(fullfile(inputPath,'frames_constant'),width, hight,'Z'),3);
-    imSteps = mean(Calibration.aux.GetFramesFromDir(fullfile(inputPath,'frames_steps'),width, hight,'Z'),3);
+    height = regs.GNRL.imgVsize;
+    imConstant = Calibration.aux.convertBinDataToFrames(depthDataConstant, [height, width], true, 'depth');
+    imSteps = Calibration.aux.convertBinDataToFrames(depthDataSteps, [height, width], true, 'depth');
     
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'inputPath', 'calibParams' ,'regs','luts');
+        save(fn,'depthDataConstant', 'depthDataSteps', 'calibParams' ,'regs','luts');
+    end
+    if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
         save(fn,'imConstant','imSteps', 'calibParams' ,'regs','luts','runParams');
     end

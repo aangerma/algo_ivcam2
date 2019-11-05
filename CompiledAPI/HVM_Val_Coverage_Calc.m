@@ -1,11 +1,9 @@
-function [valResults, allResults] = HVM_Val_Coverage_Calc(InputPath, sz, calibParams, valResults)
+function [valResults, allResults] = HVM_Val_Coverage_Calc(depthData, sz, calibParams, valResults)
 % function 
 % description: 
 %
 % inputs:
-%   InputPath -  path for input images  dir stucture InputPath
-%        note 
-%           I image naming I_*_000n.bin
+%   depthData -  images (in binary sequence form)
 %   calibParams - calibparams strcture.
 %   valResults - validation result strcture can be empty or with prev
 %   running inoreder to accumate results
@@ -58,10 +56,10 @@ function [valResults, allResults] = HVM_Val_Coverage_Calc(InputPath, sz, calibPa
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,'mat_files' , [func_name '_in.mat']);
-        save(fn,'InputPath','sz','calibParams','valResults');
+        save(fn,'depthData','sz','calibParams','valResults');
     end
     runParams.outputFolder = output_dir;
-    [valResults, allResults] = HVM_Val_Coverage_Calc_int(InputPath, sz, runParams, calibParams, fprintff, valResults);
+    [valResults, allResults] = HVM_Val_Coverage_Calc_int(depthData, sz, runParams, calibParams, fprintff, valResults);
 
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
@@ -78,7 +76,7 @@ function [valResults, allResults] = HVM_Val_Coverage_Calc(InputPath, sz, calibPa
     end
 end
 
-function [valResults ,allCovRes] = HVM_Val_Coverage_Calc_int(InputPath,sz,runParams,calibParams,fprintff,valResults)
+function [valResults ,allCovRes] = HVM_Val_Coverage_Calc_int(depthData,sz,runParams,calibParams,fprintff,valResults)
     width = sz(2);
     height = sz(1);
     defaultDebug = 0;
@@ -87,15 +85,11 @@ function [valResults ,allCovRes] = HVM_Val_Coverage_Calc_int(InputPath,sz,runPar
     debugMode = flip(dec2bin(uint16(defaultDebug),2)=='1');
 
 %% load images
-    im.i = Calibration.aux.GetFramesFromDir(InputPath,width, height,'I');
-    
+    im = Calibration.aux.convertBinDataToFrames(depthData, sz, false, 'depth');
     for i =1:1:size(im.i,3)
         frames(i).i = im.i(:,:,i);
     end
-
-    fn = fullfile(runParams.outputFolder, 'mat_files',  'Coverage_out.mat');
-    save(fn,'frames');
-    
+  
     Metrics = 'coverage';
 %    covConfig = calibParams.validationConfig.(Metrics);
     %calculate ir coverage metric

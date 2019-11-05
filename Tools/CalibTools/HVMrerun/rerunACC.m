@@ -50,7 +50,7 @@ fprintf('\nrunning ROI_Calib_Calc... ');
 dataIn = load([inputPath, 'ROI_Calib_Calc_in.mat']);
 ind = strfind(dataIn.InputPath, curTestDir);
 dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.roiRegs, dataRes.results, dataRes.fovData] = ROI_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.ROIregs, dataIn.results);
+[dataRes.roiRegs, dataRes.results, dataRes.fovData] = ROI_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.ROIregs, dataIn.results, dataIn.eepromBin);
 dataOut = load([inputPath, 'ROI_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
@@ -60,7 +60,7 @@ fprintf('\nrunning END_calib_Calc... ');
 dataIn = load([inputPath, 'END_calib_Calc_in.mat']);
 ind = strfind(dataIn.fnCalib, curTestDir);
 dataIn.fnCalib = [generalPath, dataIn.fnCalib(ind:end)];
-[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.version, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin, dataIn.afterThermalCalib_flag);
+[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin, dataIn.afterThermalCalib_flag);
 dataOut = load([inputPath, 'END_calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
@@ -108,7 +108,6 @@ fprintf('\nrunning PresetsAlignment_Calib_Calc... ');
 dataIn = load([inputPath, 'PresetsAlignment_Calib_Calc_in.mat']);
 ind = strfind(dataIn.InputPath, curTestDir);
 dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-dataIn.z2mm = 4; %TODO: remove!
 [dataRes.results] = PresetsAlignment_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.res, dataIn.z2mm);
 dataOut = load([inputPath, 'PresetsAlignment_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)

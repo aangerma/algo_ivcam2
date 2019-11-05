@@ -334,9 +334,9 @@
         <rtdOverAngXrange>[-30,-30,-30,-30,-30,0;30,30,30,30,30,0]</rtdOverAngXrange>
         <zenith>
             <useEsTilt>1</useEsTilt>
-            <applyCorrection>1</applyCorrection>
-            <correctionCoefsHorz>[0.82,0.12]</correctionCoefsHorz>
-            <correctionCoefsVert>[0.90,-0.24]</correctionCoefsVert>
+            <applyCorrection>0</applyCorrection>
+            <correctionCoefsHorz>[1,0.33]</correctionCoefsHorz>
+            <correctionCoefsVert>[1,-0.32]</correctionCoefsVert>
         </zenith>
     </dfz>
     <roi>
@@ -352,6 +352,7 @@
         <maxFovY>[]</maxFovY>
         <diskSz>60</diskSz>
         <zSTDTh>50</zSTDTh>
+        <useMinimalXRangeFromATC>1</useMinimalXRangeFromATC>
         <assumeStraightLines>0</assumeStraightLines>
     </roi>
     <!--<dest>
@@ -377,7 +378,8 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>98</fillRateTh>                      
+                <fillRateTh>98</fillRateTh>
+                <guessOnInterval>0.5</guessOnInterval>
             </state1>
             <state2>
                 <ModRefPresetState>modulation_ref_factor_2</ModRefPresetState>
@@ -385,7 +387,8 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>70</fillRateTh>                        
+                <fillRateTh>70</fillRateTh>
+                <guessOnInterval>0.5</guessOnInterval>
             </state2>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
             <estDistTargetReflect>0.8</estDistTargetReflect>-->

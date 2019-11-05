@@ -19,14 +19,11 @@ if runParams.rgb
         img = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('RGB to Depth - Image %d',i));
         %                im(i) = rotFrame180(img);
         
-        % save images for RGB cal
-        InputPath = fullfile(ivcam2tempdir,'RGB');
-        path = fullfile(InputPath,sprintf('Pose%d',i));
-        mkdirSafe(path);
-        Calibration.aux.SaveFramesWrapper(hw, 'ICZ' , 30 , path);  % save images Z and C in sub dir
+        % capture images for RGB cal
+        [depthData, rgbData] = Calibration.aux.captureFramesWrapper(hw, 'ICZ', 30);
     end
     fprintff('\n');
-    [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(InputPath,calibParams,irImSize,Kdepth,z2mm);
+    [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(depthData, rgbData, calibParams,irImSize,Kdepth,z2mm);
     results = Validation.aux.mergeResultStruct(results,resultsRGB);
     
 else
