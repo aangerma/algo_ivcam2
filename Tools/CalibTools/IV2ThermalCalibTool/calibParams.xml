@@ -22,6 +22,11 @@
            <nVals2avg>10</nVals2avg>
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
+	   <rgb>
+	   <doStream>1</doStream>
+	   <res>[1920,1080]</res>
+	   <startIxRgb>6</startIxRgb>
+	   </rgb>
    </gnrl>
    <warmUp>
        <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
@@ -80,6 +85,10 @@
       <xShift>[0 inf]</xShift>
       <yShift>[0 inf]</yShift>
       <rtdShit>[0 inf]</rtdShit>
+	  <uvMeanRmse>[-inf inf]</uvMeanRmse>
+      <uvMaxErr>[-inf inf]</uvMaxErr>
+      <uvMaxErr95>[-inf inf]</uvMaxErr95>
+      <uvMinErr>[-inf inf]</uvMinErr>
    </validationErrRange>
    <fwTable>
       <nFramesToIgnore>15</nFramesToIgnore>

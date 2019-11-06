@@ -3,14 +3,15 @@ function [] = startHwStream(hw,runParams)
 %   Detailed explanation goes here
 if 1
     if isfield(runParams,'rgb') && runParams.rgb
-        hw.startStream([],[],[1920 1080]);
+        if ~isfield(runParams, 'rgbRes')
+            runParams.rgbRes = [1920 1080];
+        end
+        hw.startStream([],runParams.calibRes,runParams.rgbRes);
     else
         hw.startStream(0,runParams.calibRes);
-        
     end
 else
     hw.startStream(0,runParams.calibRes);
 end
 
 end
-

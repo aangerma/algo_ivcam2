@@ -1,34 +1,15 @@
-function [  ] = plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage)
+function [  ] = plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB)
 
 % ptsWithZ = [rtd,angx,angy,pts,verts];
 
 % Plots mean X/Y/RTD offset in respect to calib temp
 % Plots RMS X/Y/RTD diff in respect to calib temp
-nCollection = size(framesPerTemperature,4);
-meanRtdXYOffset = nan(size(framesPerTemperature,1),3,nCollection);
-rmsRtdXYOffset = nan(size(framesPerTemperature,1),3,nCollection);
-maxRtdXYOffset = nan(size(framesPerTemperature,1),3,nCollection);
-
-refFrame = squeeze(framesPerTemperature(refBinIndex,:,:,:));
-for i = 1:size(framesPerTemperature,1)
-    currFrame = squeeze(framesPerTemperature(i,:,:,:));
-    if all(all(isnan(currFrame(:,:,1))))
-       continue;
-    end
-    diff = currFrame - refFrame;
-    RtdXY = diff(:,[1,4,5],:);
-    meanRtdXYOffset(i,:,:) = nanmean( RtdXY );
-    validPts = ~any(isnan(diff(:,:,1)),2);
-    rmsRtdXYOffset(i,:,:) =  rms(RtdXY(validPts,:,:));
-    rtdValidPts = RtdXY(validPts,:,:);
-    [maxOffset,ix] = max(abs(rtdValidPts));
-    if ~isempty(maxOffset)
-        maxRtdXYOffset(i,:,:) = [rtdValidPts(ix(1),1),rtdValidPts(ix(2),2),rtdValidPts(ix(3),3)];
-    end
-    
+%%
+[meanRtdXYOffset,rmsRtdXYOffset,maxRtdXYOffset] = calcDataOffsets(framesPerTemperature,refBinIndex,[1,4,5]);
+if exist('plotRGB','var') && plotRGB
+    [meanXYOffset_rgb,rmsXYOffset_rgb,maxXYOffset_rgb] = calcDataOffsets(framesPerTemperature,refBinIndex,[9,10]);
 end
-
-
+%%
 sq = @squeeze;
 if ~isempty(runParams)
     % RTD error
@@ -37,6 +18,7 @@ if ~isempty(runParams)
     else
         legends = {'Post Fix (val)'};
     end
+    nCollection = size(framesPerTemperature,4);
     if nCollection > 1
         legends = legends(1:nCollection);
     else
@@ -53,7 +35,7 @@ if ~isempty(runParams)
     plot(tmpBinEdges,sq(maxRtdXYOffset(:,1,:)))
     title('Heating Stage Rtd Max Diff'); grid on;xlabel('degrees');ylabel('RTD [mm]');legend(legends);axis square;
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Rtd_Errors'),1);
-
+    
     
     ff = Calibration.aux.invisibleFigure;
     subplot(131);
@@ -66,7 +48,7 @@ if ~isempty(runParams)
     plot(tmpBinEdges,sq(maxRtdXYOffset(:,2,:)))
     title('Heating Stage X Max Diff'); grid on;xlabel('degrees');ylabel('X diff [pixels]');legend(legends);axis square;
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Xim_Errors'),1);
-
+    
     ff = Calibration.aux.invisibleFigure;
     subplot(131);
     plot(tmpBinEdges,sq(meanRtdXYOffset(:,3,:)))
@@ -78,9 +60,91 @@ if ~isempty(runParams)
     plot(tmpBinEdges,sq(maxRtdXYOffset(:,3,:)))
     title('Heating Stage Y Max Diff'); grid on;xlabel('degrees');ylabel('Y diff [pixels]');legend(legends);axis square;
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Yim_Errors'),1);
-            
-
+    
+    
+    ff = Calibration.aux.invisibleFigure;
+    iWithTemps = find(~isnan(meanRtdXYOffset(:,1)));
+    xIrLow = framesPerTemperature(iWithTemps(1),:,4);
+    yIrLow = framesPerTemperature(iWithTemps(1),:,5);
+    xIrHigh = framesPerTemperature(iWithTemps(end),:,4);
+    yIrHigh = framesPerTemperature(iWithTemps(end),:,5);
+    plot(xIrLow,yIrLow,'+g');
+    hold on;
+    plot(xIrHigh,yIrHigh,'+b');
+    quiver(xIrLow,yIrLow,xIrHigh-xIrLow,yIrHigh-yIrLow,'r');
+    title('IR corners movement from lowest to highest temperature');grid minor;legend('Lowest','Highest');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_corners_movement'),1);
+    
+    
+    if exist('plotRGB','var') && plotRGB
+        ff = Calibration.aux.invisibleFigure;
+        subplot(131);
+        plot(tmpBinEdges,sq(meanXYOffset_rgb(:,1,:)))
+        title('Heating Stage Mean X Offset RGB'); grid on;xlabel('degrees');ylabel('X diff [pixels]');legend(legends);axis square;
+        subplot(132);
+        plot(tmpBinEdges,sq(rmsXYOffset_rgb(:,1,:)))
+        title('Heating Stage X RMS RGB'); grid on;xlabel('degrees');ylabel('X diff [pixels]');legend(legends);axis square;
+        subplot(133);
+        plot(tmpBinEdges,sq(maxXYOffset_rgb(:,1,:)))
+        title('Heating Stage X Max Diff RGB'); grid on;xlabel('degrees');ylabel('X diff [pixels]');legend(legends);axis square;
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating_rgb',sprintf('Xim_Errors'),1);
+        
+        ff = Calibration.aux.invisibleFigure;
+        subplot(131);
+        plot(tmpBinEdges,sq(meanXYOffset_rgb(:,2,:)))
+        title('Heating Stage Mean Y Offset RGB'); grid on;xlabel('degrees');ylabel('Y diff [pixels]');legend(legends);axis square;
+        subplot(132);
+        plot(tmpBinEdges,sq(rmsXYOffset_rgb(:,2,:)))
+        title('Heating Stage Y RMS RGB'); grid on;xlabel('degrees');ylabel('Y diff [pixels]');legend(legends);axis square;
+        subplot(133);
+        plot(tmpBinEdges,sq(maxXYOffset_rgb(:,2,:)))
+        title('Heating Stage Y Max Diff RGB'); grid on;xlabel('degrees');ylabel('Y diff [pixels]');legend(legends);axis square;
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating_rgb',sprintf('Yim_Errors'),1);
+        
+        ff = Calibration.aux.invisibleFigure;
+        iWithTemps = find(~isnan(meanXYOffset_rgb(:,1)));
+        xRgbLow = framesPerTemperature(iWithTemps(1),:,9);
+        yRgbLow = framesPerTemperature(iWithTemps(1),:,10);
+        xRgbHigh = framesPerTemperature(iWithTemps(end),:,9);
+        yRgbHigh = framesPerTemperature(iWithTemps(end),:,10);
+        plot(xRgbLow,yRgbLow,'+g');
+        hold on;
+        plot(xRgbHigh,yRgbHigh,'+b');
+        quiver(xRgbLow,yRgbLow,xRgbHigh-xRgbLow,yRgbHigh-yRgbLow,'r');
+        title('RGB corners movement from lowest to highest temperature');grid minor;legend('Lowest','Highest');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating_rgb',sprintf('RGB_corners_movement'),1);
+    end
 end
 
 end
 
+
+function [meanDataOffset,rmsDataOffset,maxDataOffset] = calcDataOffsets(framesPerTemperature,refBinIndex,dataInds)
+nCollection = size(framesPerTemperature,4);
+meanDataOffset = nan(size(framesPerTemperature,1),numel(dataInds),nCollection);
+rmsDataOffset = nan(size(framesPerTemperature,1),numel(dataInds),nCollection);
+maxDataOffset = nan(size(framesPerTemperature,1),numel(dataInds),nCollection);
+%%
+refFrame = squeeze(framesPerTemperature(refBinIndex,:,:,:));
+for i = 1:size(framesPerTemperature,1)
+    currFrame = squeeze(framesPerTemperature(i,:,:,:));
+    if all(all(isnan(currFrame(:,:,1))))
+        continue;
+    end
+    diff = currFrame - refFrame;
+    data = diff(:,dataInds,:);
+    meanDataOffset(i,:,:) = nanmean( data );
+    validPts = ~any(isnan(data(:,1)),2);
+    rmsDataOffset(i,:,:) =  rms(data(validPts,:,:));
+    dataValidPts = data(validPts,:,:);
+    if isempty(dataValidPts)
+        continue;
+    end
+    [maxOffset,ix] = max(abs(dataValidPts));
+    ixLinear = sub2ind(size(dataValidPts), ix, 1:numel(dataInds));
+    if ~isempty(maxOffset)
+        maxDataOffset(i,:,:) = dataValidPts(ixLinear);
+    end
+end
+
+end
