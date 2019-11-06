@@ -400,7 +400,7 @@
                 <roiCropRect>0</roiCropRect>
                 <maskCenterShift>[0,0]</maskCenterShift>
             </params>
-            <JFILinvMinMax>4294903760</JFILinvMinMax> <!-- invalidate z below 500mm -->
+            <JFILinvMinMax>4294903720</JFILinvMinMax> <!-- invalidate z below 500mm -->
             <coarseMaskingRange>[0,40]</coarseMaskingRange><!-- until supported between resolutions -->
             <JFILgammaScale>67109888</JFILgammaScale>
             <JFILgammaShift>0</JFILgammaShift>
@@ -409,7 +409,7 @@
             <coarseMaskingRange>[0,0]</coarseMaskingRange>
             <JFILgammaScale>171115520</JFILgammaScale>
             <JFILgammaShift>4286644224</JFILgammaShift>
-            <JFILinvMinMax>4294902560</JFILinvMinMax> <!-- invalidate z below  -->
+            <JFILinvMinMax>4294902520</JFILinvMinMax> <!-- invalidate z below  -->
         </short>
     </presets>
    <tableVersions>
