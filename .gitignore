@@ -252,6 +252,10 @@ temp*.m
 *.mat
 !roi_exp_results.mat
 !+Calibration/eepromStructure/eepromStructure.mat
+!scripts/projectionFovLutScripts/YlocScripts/data.mat
+!scripts/projectionFovLutScripts/createFovLut/roiResultsUnit525.mat
+!scripts/projectionFovLutScripts/createFovLut/tpsUndistModel.mat
+
 scripts/maxRange/Results.xlsx
 .vscode/settings.json
 *.avi
