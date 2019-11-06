@@ -1,22 +1,13 @@
 function [presetsTableFullPath] = GeneratePresetsTable_Calib_Calc(calibParams)
 
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime;
     % setting default global value in case not initial in the init function;
-    if isempty(g_debug_log_f)
-        g_debug_log_f = 0;
-    end
-    if isempty(g_verbose)
-        g_verbose = 0;
-    end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
-    end
-    if isempty(g_dummy_output_flag)
-        g_dummy_output_flag = 0;
     end
     
     func_name = dbstack;

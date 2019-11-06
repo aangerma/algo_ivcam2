@@ -1,11 +1,16 @@
-function [minRangeScaleModRef, maxMod_dec] = calibrateMinRange(hw,calibParams,runParams,fprintff)
+function [isConverged, minRangeScaleModRef, maxMod_dec] = calibrateMinRange(hw,calibParams,runParams,fprintff)
 
 %% capture frames
 minModprc=0 ;
 LaserDelta=2; % decimal
 FramesNum=10;
 
-[depthData,LaserPoints,maxMod_dec] = Calibration.presets.captureVsLaserMod(hw,minModprc,LaserDelta,FramesNum);
+[depthData,LaserPoints,maxMod_dec,laserPoint0] = Calibration.presets.captureVsLaserMod(hw,minModprc,LaserDelta,FramesNum);
 sz = hw.streamSize;
-[minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData,LaserPoints,maxMod_dec,sz,calibParams);
+[isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData,LaserPoints,maxMod_dec,laserPoint0,sz,calibParams);
+while (isConverged==0)
+    Calibration.aux.RegistersReader.setModRef(hw, nextLaserPoint);
+    depthData = Calibration.aux.captureFramesWrapper(hw, 'I', framesNum);
+    [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData,LaserPoints,maxMod_dec,nextLaserPoint,sz,calibParams);
+end
 end

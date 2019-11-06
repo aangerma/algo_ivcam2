@@ -150,7 +150,7 @@ end
 
 ang2xy = @(sphericalPixels) spherical2xy(sphericalPixels,regs,tpsUndistModel); 
 [edgesXY,edgesTanXY] = structfun(ang2xy,edges,'UniformOutput',false); 
-factor = 0.80;
+factor = 0.95;
 
 tanMarginsTBLR(1) = (max(edgesTanXY.T(innerIndices(edgesTanXY.T,factor),2)));
 tanMarginsTBLR(2) = (min(edgesTanXY.B(innerIndices(edgesTanXY.B,factor),2)));

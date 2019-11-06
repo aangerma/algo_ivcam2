@@ -25,7 +25,7 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
 %
 
     t0 = tic;
-    global g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_delay_cnt g_LogFn g_countRuntime;
     unFiltered  = 0;
 
     % setting default global value in case not initial in the init function;
@@ -35,12 +35,6 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
         g_delay_cnt = g_delay_cnt+1; 
     end
 
-    if isempty(g_debug_log_f)
-        g_debug_log_f = 0;
-    end
-    if isempty(g_verbose)
-        g_verbose = 0;
-    end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -50,9 +44,7 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end    
-    if isempty(g_dummy_output_flag)
-        g_dummy_output_flag = 0;
-    end
+
     func_name = dbstack;
     func_name = func_name(1).name;
 
@@ -88,10 +80,10 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'g_verbose', 'fResMirror', 'g_delay_cnt');
+        save(fn, 'imU', 'imD', 'delay' ,'dataDelayParams', 'fResMirror', 'g_delay_cnt');
     end
 
-    [res, delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU, imD, delay, calibParams.dataDelay, g_verbose, fResMirror, g_delay_cnt); 
+    [res, delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU, imD, delay, calibParams.dataDelay, fResMirror, g_delay_cnt); 
     
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 

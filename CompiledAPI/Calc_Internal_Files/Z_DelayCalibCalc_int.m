@@ -1,4 +1,4 @@
-function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams ,verbose, fResMirror, delay_cnt)
+function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams, fResMirror, delay_cnt)
     nsEps       = 2;
     unFiltered  = 0;
     res = 0; %(WIP) not finish calibrate
@@ -6,7 +6,7 @@ function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, da
     delayZ = calcDelayFromCorrelationDifference(imB, imU, imD, fResMirror);
     
     im=cat(3,imD,(imD+imU)/2,imU); % debug image
-    if (verbose)
+    if (0)
         figure(sum(mfilename));
         imagesc(im);
         title(sprintf('Z delay: %d (%d)',CurrentDelay,delayZ));

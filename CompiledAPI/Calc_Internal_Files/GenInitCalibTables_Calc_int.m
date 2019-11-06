@@ -1,6 +1,7 @@
 function GenInitCalibTables_Calc_int(initFolder, outFolder, calibToolVers, tableVersions, eepromBin)
 
     preserveThermalCalib = exist('eepromBin', 'var');
+    
     % Regs management
     fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
     fw.get();
@@ -24,10 +25,11 @@ function GenInitCalibTables_Calc_int(initFolder, outFolder, calibToolVers, table
     rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', tableVersions.algoRtdOverAngX);
     fw.writeRtdOverAngXTable(fullfile(outFolder, rtdOverXTableFileName),[]);
     presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', tableVersions.dynamicRange);
-    [presetsPath, presetsFolder] = fileparts(outFolder);
-    if strcmp(presetsFolder, 'initialCalibFiles') % called by GenInitCalibTables_Calc
+    presetsPath = fileparts(outFolder);
+    temp = dbstack;
+    if (length(temp)>1) && strcmp(temp(2).name, 'GenInitCalibTables_Calc') % called by GenInitCalibTables_Calc
         fw.writeDynamicRangeTable(fullfile(outFolder, presetsTableFileName), presetsPath);
-    else % called directly (e.g. by DLL build script)
+    else % called directly
         fw.writeDynamicRangeTable(fullfile(outFolder, presetsTableFileName));
     end
     rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', tableVersions.rgbCalib);

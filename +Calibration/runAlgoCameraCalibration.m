@@ -106,7 +106,11 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
     %% Calibrate min range preset
     fprintff('Set laser to rectified FOV projection\n');
     hw.cmd('SET_RECTIFIED_PROJECTION 1');
-    [results] = calibratePresets(hw, results,runParams,calibParams, fprintff,fw);
+    [isConverged, results] = calibratePresets(hw, results,runParams,calibParams, fprintff,fw);
+    if (isConverged==-1) % maximal contrast is beyond search region boundaries
+        calibPassed = 0;
+        return;
+    end
     fprintff('Set laser to full FOV projection\n');
     hw.cmd('SET_RECTIFIED_PROJECTION 0');
     
@@ -444,15 +448,15 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [results] = calibratePresets(hw, results,runParams,calibParams, fprintff, fw)
+function [isConverged, results] = calibratePresets(hw, results,runParams,calibParams, fprintff, fw)
     % calibrate min range
-    results = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff);
+    [isConverged, results] = calibrateMinRangePreset(hw, results,runParams,calibParams, fprintff);
     hw.setPresetControlState(1);   
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [results] = calibrateMinRangePreset(hw, results, runParams, calibParams, fprintff)
+function [isConverged, results] = calibrateMinRangePreset(hw, results, runParams, calibParams, fprintff)
     if runParams.minRangePreset
         fprintff('[-] Calibrating short range laser power...\n');
         Calibration.aux.switchPresetAndUpdateModRef( hw,2,calibParams,results );
@@ -460,7 +464,7 @@ function [results] = calibrateMinRangePreset(hw, results, runParams, calibParams
         hw.setReg('JFILgammaShift',uint32(0));
         hw.shadowUpdate;
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
-        [results.minRangeScaleModRef,results.maxModRefDec] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
+        [isConverged, results.minRangeScaleModRef, results.maxModRefDec] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
     end
 end
