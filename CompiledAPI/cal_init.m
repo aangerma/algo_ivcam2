@@ -1,4 +1,4 @@
-function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn, debug_log_f, verbose, save_input_flag, save_internal_input_flag, save_output_flag, dummy_output_flag, fprintff)
+function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn, save_input_flag, save_internal_input_flag, save_output_flag, fprintff)
 % descrition :
 %   this function configured the all calibration mode of work, initiate
 %   global variable for all cal function use.
@@ -17,21 +17,15 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
 %       result      - <bool> 1- success 0 - fail
 %
 
-%    global g_calib_params_fn g_output_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprinff ;
-%    g_calib_params_fn       = calib_params_fn;
-
     t0 = tic;
     clear delay_R_calib_calc;   % persistance variable in function.
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_delay_cnt acc g_LogFn g_temp_count g_countRuntime;
+    global g_output_dir g_calib_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_delay_cnt acc g_LogFn g_temp_count g_countRuntime;
     g_delay_cnt                 = 0;
     g_calib_dir                 = calib_dir;
     g_output_dir                = output_dir;
-    g_debug_log_f               = debug_log_f;
-    g_verbose                   = verbose;
     g_save_input_flag           = save_input_flag;
     g_save_output_flag          = save_output_flag;
     g_save_internal_input_flag  = save_internal_input_flag;
-    g_dummy_output_flag         = dummy_output_flag;
     acc                         = [];
     g_temp_count                = 0;
     g_countRuntime              = 1;
@@ -53,26 +47,19 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
     end
     
     if(~exist('fprintff','var'))
-%         if (g_debug_log_f)
         g_LogFn = fullfile(g_output_dir,'cal_log.txt');
         fid = fopen(g_LogFn,'w');
         fprintff = @(varargin) fprintf(fid,varargin{:});
-%         else
-%             fprintff = @(varargin) varargin{:};
-%         end
     else
         g_fprintff = fprintff;
     end
 
     result = 1;
     fprintff('<< Algo calibration version: %.2f >>\n', AlgoCameraCalibToolVersion);
-    if (g_debug_log_f)
+    if (0)
         fprintff('output_dir = %s   \n'        ,output_dir);
-        fprintff('g_debug_log_f = %d  \n'      ,g_debug_log_f);
-        fprintff('g_verbose = %d  \n'          ,g_verbose);
         fprintff('g_save_input_flag = %d  \n'  ,g_save_input_flag);
         fprintff('g_save_output_flag = %d  \n' ,g_save_output_flag);
-        fprintff('g_dummy_output_flag = %d  \n',g_dummy_output_flag);
     end
     
     % load calib params from.XML  

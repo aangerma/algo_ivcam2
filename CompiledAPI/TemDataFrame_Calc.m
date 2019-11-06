@@ -20,18 +20,12 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
 %   invalid_Frames - number of invalid frames relvent only on last phase when table
 %   ready
 %
-    global g_output_dir g_calib_dir g_debug_log_f g_verbose  g_save_input_flag  g_save_output_flag  g_dummy_output_flag g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
+    global g_output_dir g_calib_dir g_save_input_flag  g_save_output_flag  g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
     fprintff = g_fprintff;
     
     % setting default global value in case not initial in the init function;
     if isempty(g_temp_count)
         g_temp_count = 0;
-    end
-    if isempty(g_debug_log_f)
-        g_debug_log_f = 0;
-    end
-    if isempty(g_verbose)
-        g_verbose = 0;
     end
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
@@ -39,11 +33,6 @@ function [finishedHeating,calibPassed, tableResults, metrics, Invalid_Frames]  =
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-    if isempty(g_dummy_output_flag)
-        g_dummy_output_flag = 0;
-    end
-    
-   
     
     func_name = dbstack;
     func_name = func_name(1).name;
