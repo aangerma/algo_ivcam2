@@ -6,12 +6,12 @@ function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, da
     delayZ = calcDelayFromCorrelationDifference(imB, imU, imD, fResMirror);
     
     im=cat(3,imD,(imD+imU)/2,imU); % debug image
-    if (verbose)
-        figure(sum(mfilename));
-        imagesc(im);
-        title(sprintf('Z delay: %d (%d)',CurrentDelay,delayZ));
-        drawnow;
-    end
+%     if (verbose)
+%         figure(sum(mfilename));
+%         imagesc(im);
+%         title(sprintf('Z delay: %d (%d)',CurrentDelay,delayZ));
+%         drawnow;
+%     end
    
     % check convergence
     if (abs(delayZ)<=dataDelayParams.iterFixThr)        % delay calibration converege 

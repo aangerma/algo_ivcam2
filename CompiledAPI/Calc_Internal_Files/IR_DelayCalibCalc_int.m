@@ -21,12 +21,12 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
     end
     
     im=cat(3,imD,(imD+imU)/2,imU); % debug image
-    if (verbose)
-        figure(sum(mfilename));
-        imagesc(im);
-        title(sprintf('IR delay: %d (%d)',CurrentDelay,delayIR));
-        drawnow;
-    end
+%     if (verbose)
+%         figure(sum(mfilename));
+%         imagesc(im);
+%         title(sprintf('IR delay: %d (%d)',CurrentDelay,delayIR));
+%         drawnow;
+%     end
    
     % check convergence
     if (abs(delayIR)<=dataDelayParams.iterFixThr) % delay calibration converege 
