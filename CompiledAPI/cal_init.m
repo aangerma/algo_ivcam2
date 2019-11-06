@@ -65,6 +65,7 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
     end
 
     result = 1;
+    g_fprintff('<< Algo calibration version: %.2f >>\n', AlgoCameraCalibToolVersion)
     if (g_debug_log_f)
         fprintff('output_dir = %s   \n'        ,output_dir);
         fprintff('g_debug_log_f = %d  \n'      ,g_debug_log_f);

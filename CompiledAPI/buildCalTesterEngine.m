@@ -45,18 +45,18 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
         rmdir(OutDir, 's');
     end
     mkdir(OutDir);
+    internalFolder = fullfile(OutDir,'CalibFiles');
+    mkdir(internalFolder);
 
     % copying meta data
-    mkdir(fullfile(OutDir,'CalibParams'));
     source = fullfile(ivcam2root,'Tools','CalibTools','AlgoThermalCalibration','calibParams.xml');
-    target = fullfile(OutDir,'CalibParams','calibParams.xml');
+    target = fullfile(internalFolder,'calibParams.ATC.xml');
     copyfile(source,target,'f');
     
     source = fullfile(ivcam2root,'Tools','CalibTools','AlgoCameraCalibration','calibParamsVXGA.xml');
-    target = fullfile(OutDir,'CalibParams','calibParamsVXGA.xml');
+    target = fullfile(internalFolder,'calibParams.ACC.xml');
     copyfile(source,target,'f');
 
-    internalFolder = fullfile(OutDir,'CalibFiles');
     configurationFolder = 'releaseConfigCalibVXGA';
     Calibration.aux.defineFileNamesAndCreateResultsDir(internalFolder, configurationFolder);
 
