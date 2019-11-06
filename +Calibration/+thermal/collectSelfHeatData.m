@@ -1,4 +1,4 @@
-function [ data] = collectSelfHeatData(hw,data,calibParams,runParams,fprintff,maximalCoolingAngHeatingTimes,app)
+function [ data] = collectSelfHeatData(hw,data,calibParams,runParams,fprintff,maximalCoolingAngHeatingTimes,app,inValidationStage)
 % Do a cycle of cooling and heating. Collect data during the heatin stage
 regs = data.regs;
 if isempty(maximalCoolingAngHeatingTimes)
@@ -17,12 +17,12 @@ end
 %     save(fndata,'data','timeForCoolDown');
 % end
 
-% data.coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime);
-data.coolingStage.duration = 0;
-data.coolingStage.startTemp = 0;
-data.coolingStage.endTemp = 0;
+data.coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); 
+% data.coolingStage.duration = 0;
+% data.coolingStage.startTemp = 0;
+% data.coolingStage.endTemp = 0;
 
-[data.framesData,data.heatingStage] = Calibration.thermal.collectTempData(hw,regs,calibParams,runParams,fprintff,maxHeatTime,app);
+[data.framesData,data.heatingStage] = Calibration.thermal.collectTempData(hw,regs,calibParams,runParams,fprintff,maxHeatTime,app,inValidationStage);
 
 
 end

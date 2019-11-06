@@ -1,4 +1,4 @@
-function [ framesData, info ] = collectTempData(hw,regs,calibParams,runParams,fprintff,maxTime2Wait,app)
+function [ framesData, info ] = collectTempData(hw,regs,calibParams,runParams,fprintff,maxTime2Wait,app,inValidationStage)
 
 tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
@@ -14,6 +14,10 @@ plotDataI = 1;
 isXGA = all(runParams.calibRes==[768,1024]);
 if isXGA
     hw.cmd('ENABLE_XGA_UPSCALE 1')
+end
+if calibParams.gnrl.rgb.doStream && inValidationStage
+    runParams.rgb = 1;
+    runParams.rgbRes = calibParams.gnrl.rgb.res;
 end
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
@@ -52,7 +56,10 @@ plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degree
 
 while ~finishedHeating
     i = i + 1;
-    tmpData = getFrameData(hw,regs,calibParams);
+    [tmpData,frame] = getFrameData(hw,regs,calibParams);
+    if i == 1
+        firstFrame = frame;
+    end
     tmpData.time = toc(startTime);
     framesData(i) = tmpData;
     
@@ -89,6 +96,7 @@ while ~finishedHeating
         title('Scene Image');
     end
 end
+lastFrame = frame;
 
 if i >=4 && sceneFig.isvalid
     close(sceneFig);
@@ -139,6 +147,28 @@ if ~isempty(runParams)
     title('Heating Stage'); grid on;xlabel('sec');ylabel('Apd temperature [degrees]');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('ApdTempOverTime'),1);
     
+    if calibParams.gnrl.rgb.doStream && inValidationStage
+        ff = Calibration.aux.invisibleFigure;
+        subplot(321)
+        imagesc(firstFrame.color);
+        title(['Minimum temperature RGB image. Ldd = ' num2str(framesData(1).temp.ldd)]);
+        subplot(322)
+        imagesc(lastFrame.color);
+        title(['Maximum temperature RGB image. Ldd = ' num2str(framesData(end).temp.ldd)]);
+        subplot(323)
+        imagesc(rot90(firstFrame.i,2));
+        title(['Minimum temperature IR image. Ldd = ' num2str(framesData(1).temp.ldd)]);
+        subplot(324)
+        imagesc(rot90(lastFrame.i,2));
+        title(['Maximum temperature IR image. Ldd = ' num2str(framesData(end).temp.ldd)]);
+        subplot(325)
+        imagesc(rot90(firstFrame.z,2));
+        title(['Minimum temperature depth image. Ldd = ' num2str(framesData(1).temp.ldd)]);
+        subplot(326)
+        imagesc(rot90(lastFrame.z,2));
+        title(['Maximum temperature depth image. Ldd = ' num2str(framesData(end).temp.ldd)]);
+        Calibration.aux.saveFigureAsImage(ff,runParams,'imThermalCompare',sprintf('depthNrgb'),1);
+    end
 end
 info.duration = heatTimeVec(end);
 info.startTemp = LddTempVec(1);
@@ -156,11 +186,22 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
 if isempty(calibParams.gnrl.cbGridSz)
     [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1);
     pts = reshape(pts,[],2);
+    if calibParams.gnrl.rgb.doStream
+        [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.color, 0);
+        ptsColor = reshape(ptsColor,[],2);
+    end
 else
     [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
     if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
         ptsWithZ = [];
         return;
+    end
+     if calibParams.gnrl.rgb.doStream
+        [ptsColor,gridSize] = Validation.aux.findCheckerboard(frame.color,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+        if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
+            ptsWithZ = [];
+            return;
+        end
     end
 end
 if ~regs.DIGG.sphericalEn
@@ -190,7 +231,21 @@ if ~regs.DIGG.sphericalEn
     [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
     ptsWithZ = [rtd,angx,angy,pts,verts];
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
-    
+    if calibParams.gnrl.rgb.doStream
+        ptsWithZ = [ptsWithZ,ptsColor];
+    end
+%     v = ptsWithZ(:,6:8);
+%     if size(v,1) == 20*28
+%         v = reshape(v,20,28,3);
+%         rows = find(any(~isnan(v(:,:,1)),2));
+%         cols = find(any(~isnan(v(:,:,1)),1));
+%         grd = [numel(rows),numel(cols)];
+%         v = reshape(v(rows,cols,:),[],3);
+%     else
+%         grd = [9,13];
+%     end
+%     [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
+%     fprintf('eGeom - %2.2f\n',eGeom);
 else
     rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
     rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
@@ -209,11 +264,18 @@ else
     v = double(vUnit.*r);
     ptsWithZ = [rpt,reshape(pts,[],2),v];
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
+    if calibParams.gnrl.rgb.doStream
+        ptsWithZ = [ptsWithZ,ptsColor];
+    end
 end
 end
 
-function frameData = getFrameData(hw,regs,calibParams)
+function [frameData,frame] = getFrameData(hw,regs,calibParams)
     frame = hw.getFrame();
+    if calibParams.gnrl.rgb.doStream
+        rgbFrame  = hw.getColorFrame();
+        frame.color = rgbFrame.color;
+    end
     [frameData.temp.ldd,frameData.temp.mc,frameData.temp.ma,frameData.temp.apdTmptr] = hw.getLddTemperature;
     frameData.temp.humidity = hw.getHumidityTemperature;
 %     frameData.pzrShifts = hw.pzrShifts;

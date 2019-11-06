@@ -30,7 +30,12 @@ framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,nBi
 
 data.processed.framesPerTemperature = framesPerTemperature;
 
-Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage);
+if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'doStream') && calibParams.gnrl.rgb.doStream
+    plotRGB = 1;
+else
+    plotRGB = 0;
+end
+Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB);
 
 validTemps = ~all(any(isnan(framesPerTemperature(:,:,:,1)),3),2);
 assert(sum(validTemps)>1, 'Thermal sweep occupies less than 2 bins - this is incompatible with code later on')
@@ -41,7 +46,17 @@ validFramesData = framesPerTemperature(validTemps,:,:,1);
 isDataWithXYZ = (size(validFramesData,3)>=8); % hack for dealing with missing XYZ data (pointsWithZ(6:8)) in ATC
 stdVals = nanmean(nanstd(validFramesData));
 
+
 metrics = Calibration.thermal.calcThermalScores(data,calibParams,runParams.calibRes);
+if plotRGB
+    [params] = prepareParams4UvMap(data.camerasParams);
+    params.inValidationStage = inValidationStage;
+    uvResults = Calibration.thermal.calcThermalUvMap(framesPerTemperature,tmpBinEdges,calibParams,runParams,params);
+    metrics.uvMeanRmse = nanmean(uvResults(:,1));
+    metrics.uvMaxErr = max(uvResults(:,2));
+    metrics.uvMaxErr95 = max(uvResults(:,3));
+    metrics.uvMinErr = min(uvResults(:,4));
+end
 
 metrics.stdRtd = stdVals(1);
 metrics.stdXim = stdVals(4);
@@ -75,7 +90,7 @@ else
     validFramesData = validFramesData(:,validCBPoints(:),:);
 end
 if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (pointsWithZ(6:8)) in ATC
-    eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesData(i,:,end-2:end)), cbGridSz, calibParams.gnrl.cbSquareSz);
+    eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesData(i,:,6:8)), cbGridSz, calibParams.gnrl.cbSquareSz);
     eGeomOverTemp = nan(1,numel(tmpBinEdges));
     eGeomOverTemp(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
     
@@ -99,3 +114,9 @@ end
 data.results = metrics;
 end
 
+function [params] = prepareParams4UvMap(camerasParams)
+params.depthRes = camerasParams.depthRes;
+params.rgbPmat = camerasParams.rgbPmat;
+params.Krgb = camerasParams.Krgb;
+params.rgbDistort = camerasParams.rgbDistort;
+end

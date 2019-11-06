@@ -28,9 +28,9 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     
     
     runParams.manualCaptures = 0;
-    data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,calibParams.validation.maximalCoolingAndHeatingTimes,app);
+    data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,calibParams.validation.maximalCoolingAndHeatingTimes,app,1);
     save(fullfile(runParams.outputFolder,'validationData.mat'),'data','calibParams','runParams');
- 
+    data.camerasParams = getCamerasParams(hw,runParams,calibParams);
     [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,1);
     
     % Option two - partial validation, let it cool down to N degrees below calibration temperature and then compare to calibration temperature 
@@ -53,4 +53,21 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     
 end
 
-
+function [camerasParams] = getCamerasParams(hw,runParams,calibParams)
+[ ~,b] = hw.cmd('RGB_INTRINSICS_GET');
+intr = typecast(b,'single');
+Krgb = eye(3);
+Krgb([1,5,7,8,4]) = intr([calibParams.gnrl.rgb.startIxRgb:calibParams.gnrl.rgb.startIxRgb+3,1]);%intr([6:9,1]);
+drgb = intr(calibParams.gnrl.rgb.startIxRgb+4:calibParams.gnrl.rgb.startIxRgb+8);
+[ ~,b] = hw.cmd('RGB_EXTRINSICS_GET');
+extr = typecast(b,'single');
+Rrgb = reshape(extr(1:9),[3 3])';
+Trgb = extr(10:12)';
+camerasParams.rgbRes = calibParams.gnrl.rgb.res;
+camerasParams.rgbPmat = Krgb*[Rrgb Trgb];
+camerasParams.rgbDistort = drgb;
+camerasParams.Krgb = Krgb;
+camerasParams.depthRes = runParams.calibRes;
+camerasParams.zMaxSubMM = hw.z2mm;
+camerasParams.Kdepth = hw.getIntrinsics;
+end
