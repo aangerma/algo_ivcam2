@@ -21,7 +21,12 @@ N = nBins+1;
 tempData = [framesData.temp];
 vBias = reshape([framesData.vBias],3,[]);
 ldd = [tempData.ldd];
-ma = [tempData.ma];
+if isfield(tempData,'ma')
+    ma = [tempData.ma];
+else % Function wasn't fed the ma temperature
+    ma = [tempData.ldd];
+    fprintff('No ma data recorded. Treating ldd as a proxy for ma temperature.\n');
+end
 timev = [framesData.time];
 
 %% Linear RTD fix
