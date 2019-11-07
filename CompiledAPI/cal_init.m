@@ -6,12 +6,9 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
 %   output_dir               - <string> directory for all outputs (saved images , logs , output results ...
 %   calib_dir                - path to calibration folder
 %   calib_params_fn          - <string> path of XML file include all calib_params 
-%   debug_log_f              - <bool> 1 to output log file pf the run. 
-%   verbose                  - <uint> 1 to 5 varbositty level.
 %   save_input_flag          - <bool> 1 record all input params of all cal functions  
 %   save_internal_input_flag - <bool> 1 record all input params of all cal internal functions  
 %   save_output_flag         - <bool> 1 record all outputs of all cal functions
-%   dummy_output_flag        - <bool> 1 autuo generate / from files output for tester flow debug.
 %   
 %   outputs:
 %       result      - <bool> 1- success 0 - fail
@@ -40,9 +37,9 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name '_in.mat']);
         if(~exist('fprintff','var'))
-            save(fn, 'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f', 'verbose', 'save_input_flag', 'save_output_flag', 'dummy_output_flag');
+            save(fn, 'output_dir', 'calib_dir', 'calib_params_fn', 'save_input_flag', 'save_internal_input_flag', 'save_output_flag');
         else
-            save(fn, 'output_dir', 'calib_dir', 'calib_params_fn', 'debug_log_f', 'verbose', 'save_input_flag', 'save_output_flag', 'dummy_output_flag', 'fprintff');
+            save(fn, 'output_dir', 'calib_dir', 'calib_params_fn', 'save_input_flag', 'save_internal_input_flag', 'save_output_flag', 'fprintff');
         end
     end
     

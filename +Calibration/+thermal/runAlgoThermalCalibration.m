@@ -208,13 +208,11 @@ function [calibParams , ret] = HVM_Cal_init(fn_calibParams,calib_dir,fprintff,ou
     if(~exist('output_dir','var'))
         output_dir = fullfile(ivcam2tempdir,'\cal_tester\output');
     end
-    debug_log_f         = 0;
-    verbose             = 0;
     save_input_flag     = 1;
+    save_internal_input_flag     = 1;
     save_output_flag    = 1;
-    dummy_output_flag   = 0;
     ret = 1;
-    [calibParams ,~] = cal_init(output_dir,calib_dir,fn_calibParams, debug_log_f ,verbose , save_input_flag , save_output_flag , dummy_output_flag,fprintff);
+    [calibParams ,~] = cal_init(output_dir, calib_dir, fn_calibParams, save_input_flag, save_internal_input_flag, save_output_flag, fprintff);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
