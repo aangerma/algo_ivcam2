@@ -39,8 +39,8 @@ function [tablefn] = RtdOverAngX_Calib_Calc(depthDataConstant, depthDataSteps, c
     runParams.outputFolder = output_dir;
     width = regs.GNRL.imgHsize;
     height = regs.GNRL.imgVsize;
-    imConstant = Calibration.aux.convertBinDataToFrames(depthDataConstant, [height, width], true, 'depth');
-    imSteps = Calibration.aux.convertBinDataToFrames(depthDataSteps, [height, width], true, 'depth');
+    imConstant = Calibration.aux.convertBinDataToFrames(depthDataConstant, [height, width], true, 'depth').z;
+    imSteps = Calibration.aux.convertBinDataToFrames(depthDataSteps, [height, width], true, 'depth').z;
     
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);

@@ -43,7 +43,7 @@ function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(depthData, sz, ang
         fprintff = g_fprintff; 
     end
 
-    im = Calibration.aux.convertBinDataToFrames(depthData, sz, false, 'depth');
+    im = Calibration.aux.convertBinDataToFrames(depthData, sz, false, 'depth').i;
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
