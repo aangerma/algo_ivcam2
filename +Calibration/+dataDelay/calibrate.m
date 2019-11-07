@@ -44,7 +44,7 @@ results.slowDelayCalibSuccess = delayIRsuccess;
 results.delaySlowPixelVar = pixelVar;
 
 % Metrics - edge width on one direction vs final image
-[imU,~]=Calibration.dataDelay.getScanDirImgs(hw);
+[imU,~]=Calibration.dataDelay.getScanDirImagesByLocTable(hw);
 frameU.i = imU; frameU.z = imU; 
 frame = hw.getFrame(10);
 [~, metricsResults] = Validation.metrics.gridEdgeSharp(frame, []);
