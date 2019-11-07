@@ -101,10 +101,12 @@ if finishedHeating % always true at this point
     results.dsmYshift       = regs.EXTL.dsmYoffset;
     % noting reference state for thermal calibration (referred to as "DFZ state" for backward compatibility)
     regs.FRMW.dfzCalTmp     = framesData(i).temp.ldd; % overriding Tref from end of delays calibration (delta should be small)
+    regs.FRMW.atlMaCalTmp     = framesData(i).temp.ma; % overriding Tref from end of delays calibration (delta should be small)
     regs.FRMW.dfzApdCalTmp  = framesData(i).temp.apdTmptr;
     regs.FRMW.dfzVbias      = framesData(i).vBias;
     regs.FRMW.dfzIbias      = framesData(i).iBias;
     fprintff('Algo Calib reference Ldd Temp: %2.2fdeg\n',regs.FRMW.dfzCalTmp);
+    fprintff('Algo Calib reference MA Temp: %2.2fdeg\n',regs.FRMW.atlMaCalTmp);
     fprintff('Algo Calib reference vBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzVbias);
     fprintff('Algo Calib reference iBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzIbias);
     % perform algo thermal calibration
