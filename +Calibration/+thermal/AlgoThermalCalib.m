@@ -14,6 +14,8 @@ isXGA = all(runParams.calibRes==[768,1024]);
 if isXGA
     hw.cmd('ENABLE_XGA_UPSCALE 1');
 end
+runParams.rgb = calibParams.gnrl.rgb.doSave;
+runParams.rgb.res = calibParams.gnrl.rgb.res;
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
@@ -182,16 +184,22 @@ if manualCaptures
 end
 end
 
-function [frameBytes, frameData] = prepareFrameData(hw,startTime,calibParams)
-%    frame = hw.getFrame();
-%    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path(i));
+function [imageData, frameData] = prepareFrameData(hw,startTime,calibParams)
+    %    frame = hw.getFrame();
+    %    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path(i));
 
     [frameData.temp.ldd,frameData.temp.mc,frameData.temp.ma,frameData.temp.apdTmptr] = hw.getLddTemperature;
-%    frameData.pzrShifts = hw.pzrShifts;
+    %    frameData.pzrShifts = hw.pzrShifts;
     for j = 1:3
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
-    frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
+    if calibParams.gnrl.rgb.doSave
+        [depthData, rgbData] = Calibration.aux.captureFramesWrapper(hw, 'ZIC', calibParams.gnrl.Nof2avg);
+        imageData = depthData;
+        imageData.color = rgbData;
+    else
+        imageData = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
+    end
     frameData.time = toc(startTime);
 end
 

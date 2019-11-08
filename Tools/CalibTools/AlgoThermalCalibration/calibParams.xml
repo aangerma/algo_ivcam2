@@ -24,6 +24,10 @@
            <nVals2avg>10</nVals2avg>
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
+	   <rgb>
+	   <doSave>1</doSave>
+	   <res>[1920,1080]</res>
+	   </rgb>
    </gnrl>
    <warmUp>
        <nFramesForZStd>10</nFramesForZStd>

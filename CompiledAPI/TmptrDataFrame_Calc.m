@@ -136,6 +136,9 @@ end
 
 if ~finishedHeating % heating stage
     frame = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [], true);
+if calibParams.gnrl.rgb.doSave
+	frame.color = Calibration.aux.convertBytesToFrames(frameBytes, [calibParams.gnrl.rgb.res(2), calibParams.gnrl.rgb.res(1)], true, 'rgb');
+end
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
     zForStd = nan(size(frame.z));
     zForStd(binLargest) = frame.z(binLargest);
@@ -287,14 +290,24 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], [], calibParams.gnrl.nonRectangleFlag);
         pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
-        
+        if isfield(frame,'color')
+            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.color, 1, [], [], calibParams.gnrl.nonRectangleFlag);
+        end
     else
         colors = [];
         [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
-            warning('checkerboard not detected. all target must be included in the image');
+            warning('Checkerboard not detected in IR image. All of the target must be included in the image');
             ptsWithZ = [];
             return;
+        end
+        if isfield(frame,'color')
+            [ptsColor,gridSize] = Validation.aux.findCheckerboard(frame.color,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+            if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
+                warning('Checkerboard not detected in color image. All of the target must be included in the image');
+                ptsWithZ = [];
+                return;
+            end
         end
     end
     assert(regs.DIGG.sphericalEn==1, 'Frames for ATC must be captured in spherical mode')
