@@ -1,4 +1,4 @@
-function [depthData,LaserPoints,maxMod_dec,laserPoint0] = captureVsLaserMod(hw,minModprc,laserDelta,framesNum)
+function [frameBytes,LaserPoints,maxMod_dec,laserPoint0] = captureVsLaserMod(hw,minModprc,laserDelta,framesNum)
 % minModprc=percent from max to be minimum value,  laserDelta=laser loop
 % interval (decimal)
 %% read max modulation
@@ -16,7 +16,7 @@ end
 hw.getFrame(framesNum,false); 
 laserPoint0 = max(LaserPoints);
 Calibration.aux.RegistersReader.setModRef(hw, laserPoint0);
-depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', framesNum);
+frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', framesNum);
 
 end
 

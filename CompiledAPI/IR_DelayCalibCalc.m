@@ -1,15 +1,10 @@
-function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDown, sz, delay, calibParams, isFinalStage, fResMirror)
+function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(frameBytesUp, frameBytesDown, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
 % inputs:
-%   depthDataUp - up images (in binary sequence form)
-%   depthDataDown - down images (in binary sequence form)
-%       files format bin files naming I_0001 I_0002 ... 
-%       NOTE:
-%           - seprate dir for up/down
-%           - NO extra bin files shoud be in the directory
-%           - all images same resolution.
+%   frameBytesUp - up images (in bytes sequence form)
+%   frameBytesDown - down images (in bytes sequence form)
 %   width     - image width.
 %   hight     - image hight.
 %   delay     - the delay value that the images was taken (first round (initial value, 2nd etc the valus is come from the pre iteration. 
@@ -61,8 +56,8 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
         fprintff = g_fprintff; 
     end
 
-    imU = Calibration.aux.convertBinDataToFrames(depthDataUp, sz, true, 'depth').i;
-    imD = Calibration.aux.convertBinDataToFrames(depthDataDown, sz, true, 'depth').i;
+    imU = Calibration.aux.convertBytesToFrames(frameBytesUp, sz, [], true).i;
+    imD = Calibration.aux.convertBytesToFrames(frameBytesDown, sz, [], true).i;
     imU = getFilteredImage(imU,unFiltered);
     imD = getFilteredImage(imD,unFiltered);
 
@@ -75,7 +70,7 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDo
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'depthDataUp', 'depthDataDown', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+        save(fn, 'frameBytesUp', 'frameBytesDown', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
     end
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         dataDelayParams = calibParams.dataDelay;

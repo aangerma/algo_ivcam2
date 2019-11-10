@@ -1,9 +1,10 @@
-function [results] = PresetsAlignment_Calib_Calc(depthData, calibParams, res, z2mm)
+function [results] = PresetsAlignment_Calib_Calc(frameBytes, nPresets, calibParams, res, z2mm)
     % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
     % description: initiale set of the DSM scale and offset
     %regs_reff
     % inputs:
-    %   depthData - images from different trials and presets (in binary sequence form)
+    %   frameBytes - images from different trials and presets (in bytes sequence form)
+    %   nPresets - number of presets compared
     %   calibParams - calibparams strcture.
     %   DFZ_regs - list of hw regs values and FW regs
     %
@@ -55,15 +56,14 @@ function [results] = PresetsAlignment_Calib_Calc(depthData, calibParams, res, z2
     
     % save Input
     runParams.outputFolder = output_dir;
-    for iTrial = 1:size(depthData,1)
-        for iPreset = 1:size(depthData,2)
-            im(iTrial,iPreset) = Calibration.aux.convertBinDataToFrames(depthData{iTrial,iPreset}, res, true, 'depth');
-        end
+    for iPose = 1:length(frameBytes)
+        im(iPose) = Calibration.aux.convertBytesToFrames(frameBytes{iPose}, res, [], true);
     end
+    im = reshape(im, nPresets, [])';
     
     if g_save_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'depthData', 'calibParams', 'res', 'z2mm');
+        save(fn, 'frameBytes', 'nPresets', 'calibParams', 'res', 'z2mm');
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);

@@ -1,9 +1,9 @@
-function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData, cameraInput, LaserPoints, maxMod_dec, curLaserPoint, calibParams)
-% function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(depthData, cameraInput, LaserPoints, maxMod_dec, curLaserPoint, calibParams)
+function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(frameBytes, cameraInput, LaserPoints, maxMod_dec, curLaserPoint, calibParams)
+% function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(frameBytes, cameraInput, LaserPoints, maxMod_dec, curLaserPoint, calibParams)
 % description: 
 %
 % inputs:
-%   depthData - images with different mod ref values (in binary sequence form)
+%   frameBytes - images with different mod ref values (in bytes sequence form)
 %   calibParams - calibparams strcture.
 %   LaserPoints - 
 %   maxMod_dec -
@@ -58,12 +58,12 @@ function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetD
     runParams.outputFolder = output_dir;
     maskParams = calibParams.presets.long.params;
     
-    im = Calibration.aux.convertBinDataToFrames(depthData, cameraInput.imSize, false, 'depth');
+    im = Calibration.aux.convertBytesToFrames(frameBytes, cameraInput.imSize, [], false);
         
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name,'_', longRangestate, sprintf('_in%d.mat', length(g_laser_points))]);
-        save(fn,'depthData', 'cameraInput', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'calibParams');
+        save(fn,'frameBytes', 'cameraInput', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'calibParams');
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name,'_', longRangestate, sprintf('_int_in%d.mat', length(g_laser_points))]);

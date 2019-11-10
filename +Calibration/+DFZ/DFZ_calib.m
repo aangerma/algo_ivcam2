@@ -15,10 +15,10 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         trainImages = strcmp('train',captures);
         nof_frames = 45; %todo take it from calibparams
         for i=1:length(captures)
-            [depthData{i},DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,runParams,results);
+            [frameBytes{i},DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,runParams,results);
         end
 
-        [dfzRegs, dfzresults, calibPassed] = DFZ_Calib_Calc(depthData, calibParams, DFZ_regs);
+        [dfzRegs, dfzresults, calibPassed] = DFZ_Calib_Calc(frameBytes, calibParams, DFZ_regs);
         results.geomErr = dfzresults.geomErr;
         results.extraImagesGeomErr = dfzresults.extraImagesGeomErr;
         results.potentialPitchFixInDegrees = dfzresults.potentialPitchFixInDegrees;
@@ -44,7 +44,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         fprintff('[?] skipped\n');
     end
 end
-function [depthData, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,runParams,results)
+function [frameBytes, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart,nof_frames,runParams,results)
     cap = calibParams.dfz.captures.capture(i);
     targetInfo = targetInfoGenerator(cap.target); % not saved anywhere
     cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
@@ -67,7 +67,7 @@ function [depthData, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ_
         DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart, calibParams.gnrl.pzrMeas);
     end
 %            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
-    depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
+    frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
     
     if strcmp(cap.type,'shortRange')
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );

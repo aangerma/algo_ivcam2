@@ -20,10 +20,10 @@ if runParams.rgb
         %                im(i) = rotFrame180(img);
         
         % capture images for RGB cal
-        [depthData, rgbData] = Calibration.aux.captureFramesWrapper(hw, 'ICZ', 30);
+        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ICZ', 30);
     end
     fprintff('\n');
-    [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(depthData, rgbData, calibParams,irImSize,Kdepth,z2mm);
+    [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(frameBytes, calibParams,irImSize,Kdepth,z2mm);
     results = Validation.aux.mergeResultStruct(results,resultsRGB);
     
 else

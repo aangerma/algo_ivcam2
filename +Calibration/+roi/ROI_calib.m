@@ -6,12 +6,12 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         fprintff('[-] Collecting up/down frames... ');
         Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Take Image From ~20cm - Board should cover the entire fov',1);
         %% capture frames 
-        depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.roi.nFrames);
+        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.roi.nFrames);
         fprintff('Done.\n');
         %% prepare register set for ROI
         [ROIregs] = prepare_ROI_reg(hw,regs,dfzRegs);
         %% ROI algo    
-        [roiRegs,results,fovData] = ROI_Calib_Calc(depthData, calibParams, ROIregs,results,eepromBin);
+        [roiRegs,results,fovData] = ROI_Calib_Calc(frameBytes, calibParams, ROIregs,results,eepromBin);
         %% ROI post
         r.reset();
         %% for matlab tool 

@@ -1,9 +1,9 @@
-function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(depthData, calibParams, DFZ_regs)
-    % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(depthData,calibParams,DFZ_regs)
+function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(frameBytes, calibParams, DFZ_regs)
+    % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(frameBytes,calibParams,DFZ_regs)
     % description: initiale set of the DSM scale and offset
     %regs_reff
     % inputs:
-    %   depthData - images from different poses (in binary sequence form)
+    %   frameBytes - images from different poses (in bytes sequence form)
     %   calibParams - calibparams strcture.
     %   DFZ_regs - list of hw regs values and FW regs
     %
@@ -56,10 +56,10 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(depthData, calibParams
     regs = ConvertDFZReg(DFZ_regs);
     width = regs.GNRL.imgHsize;
     height = regs.GNRL.imgVsize;
-    im = Calibration.aux.convertBinDataToFrames(depthData, [height,width], true, 'depth');    
+    im = Calibration.aux.convertBytesToFrames(frameBytes, [height,width], [], true);    
     if g_save_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'depthData','calibParams' , 'DFZ_regs' );
+        save(fn,'frameBytes','calibParams' , 'DFZ_regs' );
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);

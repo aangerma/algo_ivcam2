@@ -1,6 +1,6 @@
 function dsmregs = DSM_Calib(hw,fprintff,calibParams,runParams)
-    [depthData, angxRawZOVec , angyRawZOVec, dsmregs_current, sz] = DSM_Calib_init(hw,calibParams,runParams);
-    [~ , DSM_data ,angxZO ,angyZO]  = DSM_Calib_Calc(depthData, sz , angxRawZOVec , angyRawZOVec ,dsmregs_current ,calibParams);
+    [frameBytes, angxRawZOVec , angyRawZOVec, dsmregs_current, sz] = DSM_Calib_init(hw,calibParams,runParams);
+    [~ , DSM_data ,angxZO ,angyZO]  = DSM_Calib_Calc(frameBytes, sz , angxRawZOVec , angyRawZOVec ,dsmregs_current ,calibParams);
     dsmregs     = DSM_Calib_Output(hw,fprintff,DSM_data,angxZO ,angyZO , runParams); 
     % matlab GUI
     
@@ -67,7 +67,7 @@ function dsmregs = DSM_Calib_Output(hw,fprintff,DSM_data,angxZO,angyZO,runParams
 
 end
 
-function [depthData, angxRawVec ,angyRawVec ,dsmregs, sz] = DSM_Calib_init(hw,calibParams,runParams)
+function [frameBytes, angxRawVec ,angyRawVec ,dsmregs, sz] = DSM_Calib_init(hw,calibParams,runParams)
 %%  prepare angxRawVec angyRawVec
     nSamples = calibParams.dsm.nSamples;
     StopMirrorInRestAngle(hw);
@@ -79,7 +79,7 @@ function [depthData, angxRawVec ,angyRawVec ,dsmregs, sz] = DSM_Calib_init(hw,ca
     % Shadow update:
     hw.shadowUpdate();
     pause(0.1);
-    depthData = Calibration.aux.captureFramesWrapper(hw, 'I', calibParams.gnrl.Nof2avg);
+    frameBytes = Calibration.aux.captureFramesWrapper(hw, 'I', calibParams.gnrl.Nof2avg);
 %%  read DSM scale / offset 
     dsmregs.Xscale = typecast(hw.read('EXTLdsmXscale'),'single');
     dsmregs.Yscale = typecast(hw.read('EXTLdsmYscale'),'single');

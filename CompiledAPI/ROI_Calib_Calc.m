@@ -1,8 +1,8 @@
-function [roiRegs, results, fovData] = ROI_Calib_Calc(depthData, calibParams, ROIregs, results, eepromBin)
+function [roiRegs, results, fovData] = ROI_Calib_Calc(frameBytes, calibParams, ROIregs, results, eepromBin)
 % description: initiale set of the DSM scale and offset 
 %regs_reff
 % inputs:
-%   depthData - images (in binary sequence form)
+%   frameBytes - images (in bytes sequence form)
 %   calibParams - calibparams strcture.
 %   ROIregs - list of hw regs values and FW regs
 %                                  
@@ -63,11 +63,11 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(depthData, calibParams, RO
     
     width = regs.GNRL.imgHsize;
     height = regs.GNRL.imgVsize;
-    im = Calibration.aux.convertBinDataToFrames(depthData, [height, width], false, 'depth');
+    im = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [], false);
     
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'depthData', 'calibParams' , 'ROIregs','regs','results','eepromBin');
+        save(fn,'frameBytes', 'calibParams' , 'ROIregs','regs','results','eepromBin');
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
