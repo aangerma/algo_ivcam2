@@ -89,8 +89,8 @@ def maxModulation(xmlPath, debug):
 
 
         if stableTemp == 'true':
-            camera = libRealSense.LibRealSense(xRes=xRes, yRes=yRes,
-                                               frameRate=test.get('frameRate', None))
+            camera = libRealSense.LibRealSense(zXRes=xRes, zYRes=yRes,
+                                               zFrameRate=test.get('frameRate', None))
             if not camera.get_to_stable_temp():
                 raise common.TestFail("Test failed On stable temperature")
             camera.close_stream()
