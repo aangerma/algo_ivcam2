@@ -5,7 +5,7 @@ if (strcmp(type, 'ALT_IR'))
     type = 'I';
 end
 % capturing
-if contains(type, 'C')
+if contains(type, 'rgb')
     imRgb = hw.getColorFrameRAW(1);
 end
 imDepth = hw.getFrame(nFrames, false);
@@ -20,7 +20,7 @@ if contains(type, 'Z')
         frameBytes.z(iFrame,:) = typecast(imDepth(iFrame).z(:), 'uint8');
     end
 end
-if contains(type, 'C')
+if contains(type, 'rgb')
     frameBytes.yuy2(1,:) = typecast(imRgb.color(:), 'uint8');
 end
 
