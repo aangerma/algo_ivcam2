@@ -60,8 +60,8 @@ end
 while ~finishedHeating
     % collect data without performing any calibration
     i = i + 1;
-    [depthData, framesData(i)] = prepareFrameData(hw,startTime,calibParams);  %
-    [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, framesData(i),sz, depthData, calibParams, maxTime2Wait);
+    [frameBytes, framesData(i)] = prepareFrameData(hw,startTime,calibParams);  %
+    [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, framesData(i),sz, frameBytes, calibParams, maxTime2Wait);
     
     if tempFig.isvalid
         tempsForPlot(plotDataI) = framesData(i).temp.ldd;
@@ -109,8 +109,8 @@ if finishedHeating % always true at this point
     fprintff('Algo Calib reference iBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzIbias);
     % perform algo thermal calibration
     i = i + 1;
-    [depthData, framesData(i)] = prepareFrameData(hw,startTime,calibParams);
-    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, depthData, calibParams, maxTime2Wait); 
+    [frameBytes, framesData(i)] = prepareFrameData(hw,startTime,calibParams);
+    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, frameBytes, calibParams, maxTime2Wait); 
     fnames = fieldnames(resultsThermal);
     for iField = 1:length(fnames)
         results.(fnames{iField}) = resultsThermal.(fnames{iField});
@@ -180,7 +180,7 @@ if manualCaptures
 end
 end
 
-function [depthData, frameData] = prepareFrameData(hw,startTime,calibParams)
+function [frameBytes, frameData] = prepareFrameData(hw,startTime,calibParams)
 %    frame = hw.getFrame();
 %    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path(i));
 
@@ -189,7 +189,7 @@ function [depthData, frameData] = prepareFrameData(hw,startTime,calibParams)
     for j = 1:3
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
-    depthData = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
+    frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
     frameData.time = toc(startTime);
 end
 

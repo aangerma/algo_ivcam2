@@ -21,13 +21,13 @@ if (runParams.DFZ)
     
     setRtdOverAngXFix(hw,delayVecNoChange);
     pause(2);
-    depthDataConstant = Calibration.aux.captureFramesWrapper(hw, 'Z', calibParams.rtdOverAngX.nFrames);
+    frameBytesConstant = Calibration.aux.captureFramesWrapper(hw, 'Z', calibParams.rtdOverAngX.nFrames);
 
     setRtdOverAngXFix(hw,delayVecSteps);
     pause(2);
-    depthDataSteps = Calibration.aux.captureFramesWrapper(hw, 'Z', calibParams.rtdOverAngX.nFrames);
+    frameBytesSteps = Calibration.aux.captureFramesWrapper(hw, 'Z', calibParams.rtdOverAngX.nFrames);
 
-    tablefn = RtdOverAngX_Calib_Calc(depthDataConstant, depthDataSteps, calibParams, regs, luts);
+    tablefn = RtdOverAngX_Calib_Calc(frameBytesConstant, frameBytesSteps, calibParams, regs, luts);
     
     r.reset();
     

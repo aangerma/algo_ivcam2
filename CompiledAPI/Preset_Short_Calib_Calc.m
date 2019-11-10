@@ -1,9 +1,9 @@
-function [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, curLaserPoint, sz, calibParams)
-% function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(depthData, LaserPoints, maxMod_dec, curLaserPoint, sz, calibParams)
+function [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(frameBytes, LaserPoints, maxMod_dec, curLaserPoint, sz, calibParams)
+% function [minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(frameBytes, LaserPoints, maxMod_dec, curLaserPoint, sz, calibParams)
 % description: 
 %
 % inputs:
-%   depthData - images with different mod ref values (in binary sequence form)
+%   frameBytes - images with different mod ref values (in bytes sequence form)
 %   calibParams - calibparams strcture.
 %   LaserPoints - 
 %   maxMod_dec -
@@ -56,12 +56,12 @@ function [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_
     g_laser_points = [g_laser_points, curLaserPoint];
     g_scores = [g_scores, NaN(3,1)];
     
-    im = Calibration.aux.convertBinDataToFrames(depthData, sz, true, 'depth');
+    im = Calibration.aux.convertBytesToFrames(frameBytes, sz, [], true);
     
     % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'depthData', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'sz','calibParams');
+        save(fn, 'frameBytes', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'sz','calibParams');
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);

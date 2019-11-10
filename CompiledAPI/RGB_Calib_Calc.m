@@ -1,10 +1,9 @@
-function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(depthData, rgbData, calibParams, irImSize, Kdepth, z2mm)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams, irImSize, Kdepth, z2mm)
 % description: calculates the calibration between the IR/Depth images and
 % the RGB images
 %regs_reff
 % inputs:
-%   depthData - depth camera images (in binary sequence form)
-%   rgbData - RGB camera images (in binary sequence form)
+%   frameBytes - images (in bytes sequence form)
 %   calibParams - calibparams strcture.
 %                                  
 % output:
@@ -42,13 +41,14 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(depthData, rgbData, cal
    end
     runParams.outputFolder = g_output_dir;
 
-    im = Calibration.aux.convertBinDataToFrames(depthData, irImSize, doAverage, 'depth');
-    rgbs = Calibration.aux.convertBinDataToFrames(rgbData, flip(calibParams.rgb.imSize), doAverage, 'rgb');
+    im = Calibration.aux.convertBytesToFrames(frameBytes, irImSize, flip(calibParams.rgb.imSize), doAverage);
+    rgbs = mat2cell([im.yuy2], calibParams.rgb.imSize(1), calibParams.rgb.imSize(2)*ones(1,length(im))); % extracting RGB images
+    im = rmfield(im, 'yuy2'); % disposing of RGB images
     
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'depthData', 'rgbData', 'calibParams', 'Kdepth', 'irImSize', 'z2mm');
+        save(fn, 'frameBytes', 'calibParams', 'Kdepth', 'irImSize', 'z2mm');
     end
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);

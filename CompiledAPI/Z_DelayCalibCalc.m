@@ -1,16 +1,11 @@
-function [res, delayZ, im] = Z_DelayCalibCalc(depthDataUp, depthDataDown, depthDataBoth, sz, delay, calibParams, isFinalStage, fResMirror)
+function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
 % inputs:
-%   depthDataUp - up images (in binary sequence form)
-%   depthDataDown - down images (in binary sequence form)
-%   depthDataBoth - IR images (in binary sequence form) 
-%       files format bin files naming I_0001 I_0002 ... 
-%       NOTE:
-%           - seprate dir for up/down
-%           - NO extra bin files shoud be in the directory
-%           - all images same resolution.
+%   frameBytesUp - up images (in bytes sequence form)
+%   frameBytesDown - down images (in bytes sequence form)
+%   frameBytesBoth - IR images (in bytes sequence form) 
 %   sz     - image hight,width.
 %   delay     - the delay value that the images was taken (first round (initial value, 2nd etc the valus is come from the pre iteration. 
 % output:
@@ -60,9 +55,9 @@ function [res, delayZ, im] = Z_DelayCalibCalc(depthDataUp, depthDataDown, depthD
         fprintff = g_fprintff; 
     end
 
-    imU_z = Calibration.aux.convertBinDataToFrames(depthDataUp, sz, true, 'depth').z;
-    imD_z = Calibration.aux.convertBinDataToFrames(depthDataDown, sz, true, 'depth').z;
-    imB_i = Calibration.aux.convertBinDataToFrames(depthDataBoth, sz, true, 'depth').i;
+    imU_z = Calibration.aux.convertBytesToFrames(frameBytesUp, sz, [], true).i;
+    imD_z = Calibration.aux.convertBytesToFrames(frameBytesDown, sz, [], true).i;
+    imB_i = Calibration.aux.convertBytesToFrames(frameBytesBoth, sz, [], true).i;
     imU = getFilteredImage(imU_z, unFiltered);
     imD = getFilteredImage(imD_z, unFiltered);
     imB = getFilteredImage(imB_i, unFiltered);
@@ -76,7 +71,7 @@ function [res, delayZ, im] = Z_DelayCalibCalc(depthDataUp, depthDataDown, depthD
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'depthDataUp', 'depthDataDown', 'depthDataBoth', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+        save(fn, 'frameBytesUp', 'frameBytesDown', 'frameBytesBoth', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
     end
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         dataDelayParams = calibParams.dataDelay;

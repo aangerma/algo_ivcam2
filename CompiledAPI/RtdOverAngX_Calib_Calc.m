@@ -1,4 +1,4 @@
-function [tablefn] = RtdOverAngX_Calib_Calc(depthDataConstant, depthDataSteps, calibParams, regs, luts)
+function [tablefn] = RtdOverAngX_Calib_Calc(frameBytesConstant, frameBytesSteps, calibParams, regs, luts)
 
     t0 = tic;
     global g_output_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime;
@@ -39,12 +39,12 @@ function [tablefn] = RtdOverAngX_Calib_Calc(depthDataConstant, depthDataSteps, c
     runParams.outputFolder = output_dir;
     width = regs.GNRL.imgHsize;
     height = regs.GNRL.imgVsize;
-    imConstant = Calibration.aux.convertBinDataToFrames(depthDataConstant, [height, width], true, 'depth').z;
-    imSteps = Calibration.aux.convertBinDataToFrames(depthDataSteps, [height, width], true, 'depth').z;
+    imConstant = Calibration.aux.convertBytesToFrames(frameBytesConstant, [height, width], [], true).z;
+    imSteps = Calibration.aux.convertBytesToFrames(frameBytesSteps, [height, width], [], true).z;
     
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'depthDataConstant', 'depthDataSteps', 'calibParams' ,'regs','luts');
+        save(fn,'frameBytesConstant', 'frameBytesSteps', 'calibParams' ,'regs','luts');
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
