@@ -8,14 +8,14 @@ function [res, d,im,pixVar] = IR_DelayCalib(hw, delay, calibParams, Val_mode, is
   
     [ addresses2save, values2save ] = Calibration.aux.getScanDirectionValues( hw );% save original scan values
     hw.runPresetScript('projectOnlyUpward');  % Scan Direction up
-    depthDataUp = Calibration.aux.captureFramesWrapper(hw, 'I', NumberOfFrames);
+    frameBytesUp = Calibration.aux.captureFramesWrapper(hw, 'I', NumberOfFrames);
     Calibration.aux.setScanDirectionValues( hw,addresses2save, values2save ); % resore gain inital values
     
     hw.runPresetScript('projectOnlyDownward'); % Scan Direction down
-    depthDataDown = Calibration.aux.captureFramesWrapper(hw, 'I', NumberOfFrames);
+    frameBytesDown = Calibration.aux.captureFramesWrapper(hw, 'I', NumberOfFrames);
     Calibration.aux.setScanDirectionValues( hw,addresses2save, values2save ); % resore gain inital values
 
-    [res, d, im ,pixVar] = IR_DelayCalibCalc(depthDataUp, depthDataDown, sz, delay, calibParams, isFinalStage, fResMirror); 
+    [res, d, im ,pixVar] = IR_DelayCalibCalc(frameBytesUp, frameBytesDown, sz, delay, calibParams, isFinalStage, fResMirror); 
 %%    IR_DelayCalibOuput(d, pixVar);
 end
 
