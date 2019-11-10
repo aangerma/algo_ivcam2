@@ -406,6 +406,8 @@
             <JFILgammaShift>0</JFILgammaShift>
         </long>
         <short>
+            <resultScaleFactor>1</resultScaleFactor> <!-- Multiply the resulting mod ref -->
+            <resultOffsetFactor>0</resultOffsetFactor> <!-- Added to the resulting mod ref -->
             <coarseMaskingRange>[0,0]</coarseMaskingRange>
             <JFILgammaScale>171115520</JFILgammaScale>
             <JFILgammaShift>4286644224</JFILgammaShift>

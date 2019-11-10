@@ -51,7 +51,7 @@ if (maxPt > maxMod_dec)
 else
     ModRefDec = round(maxPt);
 end
-minRangeScaleModRef = ModRefDec/maxMod_dec;
+minRangeScaleModRef = ModRefDec/maxMod_dec*calibParams.presets.short.resultScaleFactor + calibParams.presets.short.resultOffsetFactor;
 
 %% prepare output script
 shortRangePresetFn = fullfile(PresetFolder,'shortRangePreset.csv');
