@@ -12,16 +12,16 @@ imDepth = hw.getFrame(nFrames, false);
 % data streaming
 if contains(type, 'I')
     for iFrame = 1:nFrames
-        frameBytes.i(iFrame,:) = uint8(imDepth(iFrame).i(:));
+        frameBytes.i(iFrame,:) = imDepth(iFrame).i(:);
     end
 end
 if contains(type, 'Z')
     for iFrame = 1:nFrames
-        frameBytes.z(iFrame,:) = uint8(typecast(imDepth(iFrame).z(:), 'uint8'));
+        frameBytes.z(iFrame,:) = typecast(imDepth(iFrame).z(:), 'uint8');
     end
 end
 if contains(type, 'C')
-    frameBytes.yuy2 = uint8(typecast(imRgb.color(:), 'uint8'));
+    frameBytes.yuy2(1,:) = typecast(imRgb.color(:), 'uint8');
 end
 
 end
