@@ -142,12 +142,17 @@
       <nRows>48</nRows> 
       <name>Algo_Thermal_Loop_CalibInfo</name> 
       <extrap>
+          <rtdJumpDet>
+              <nSmooth>1</nSmooth>
+              <nSigma>2</nSigma>
+          </rtdJumpDet>
           <expandVbiasLims>1</expandVbiasLims>
           <expandFactor>0.05</expandFactor>
           <xScaleOrder>2</xScaleOrder>
           <xOffsetOrder>1</xOffsetOrder>
           <yScaleOrder>2</yScaleOrder>
           <yOffsetOrder>2</yOffsetOrder>
+          <rtdOrder>3</rtdOrder>
       </extrap>
    </fwTable>
    <tableVersions>
