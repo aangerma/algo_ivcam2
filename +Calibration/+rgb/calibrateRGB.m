@@ -11,6 +11,7 @@ if runParams.rgb
     captures = captures(~strcmp(captures,'shortRange'));
     tmpcalibParams.dfz.captures.capture = calibParams.dfz.captures.capture(~strcmp(captures,'shortRange'));
     fprintff('Collecting images for RGB calibration: ');
+    rgbCalTemperatue = hw.getLddTemperature();
     for i=1:length(captures)
         fprintff('%s',num2str(i));
         cap = tmpcalibParams.dfz.captures.capture(i);
@@ -23,7 +24,7 @@ if runParams.rgb
         frameBytes = Calibration.aux.captureFramesWrapper(hw, 'IZrgb', 30);
     end
     fprintff('\n');
-    [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(frameBytes, calibParams,irImSize,Kdepth,z2mm);
+    [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(frameBytes, calibParams,irImSize,Kdepth,z2mm,rgbCalTemperatue);
     results = Validation.aux.mergeResultStruct(results,resultsRGB);
     
 else
