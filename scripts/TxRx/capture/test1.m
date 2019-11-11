@@ -7,6 +7,7 @@ outputFolder='X:\Users\hila\L520\TxRx\CodeTestData\Test1\codesData';
 warning off
 
 %%
+inds=[1,4,6,14:16]; 
 for(code_i=12:1:length(codes))
 % code_i=7;
 hw = HWinterface();
