@@ -20,7 +20,7 @@ if runParams.rgb
         %                im(i) = rotFrame180(img);
         
         % capture images for RGB cal
-        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ICZ', 30);
+        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'IZrgb', 30);
     end
     fprintff('\n');
     [rgbPassed,rgbTable,resultsRGB] = RGB_Calib_Calc(frameBytes, calibParams,irImSize,Kdepth,z2mm);
