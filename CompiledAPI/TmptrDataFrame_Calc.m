@@ -253,7 +253,7 @@ if ~any(notNoiseIm(:))
 end
 
 minMaxX = minmax(find(notNoiseIm(round(size(notNoiseIm,1)/2),:)));
-minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2))));
+minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2)))');
 
 xx = (minMaxX-0.5)*4 - double(regs.DIGG.sphericalOffset(1));
 yy = minMaxY - double(regs.DIGG.sphericalOffset(2));
@@ -287,8 +287,8 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], [], calibParams.gnrl.nonRectangleFlag);
         pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
-        if isfield(frame,'color')
-            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.color, 1, [], [], calibParams.gnrl.nonRectangleFlag);
+        if isfield(frame,'yuy2')
+            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.yuy2, 0, [], [], calibParams.gnrl.nonRectangleFlag);
         end
     else
         colors = [];
@@ -298,8 +298,8 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
             ptsWithZ = [];
             return;
         end
-        if isfield(frame,'color')
-            [ptsColor,gridSize] = Validation.aux.findCheckerboard(frame.color,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+        if isfield(frame,'yuy2')
+            [ptsColor,gridSize] = Validation.aux.findCheckerboard(frame.yuy2,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
             if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
                 warning('Checkerboard not detected in color image. All of the target must be included in the image');
                 ptsWithZ = [];
@@ -316,6 +316,9 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
     ptsWithZ = [rpt,reshape(pts,[],2)]; % without XYZ which is not calibrated well at this stage
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
+    if isfield(frame,'yuy2')
+        ptsWithZ = [ptsWithZ,reshape(ptsColor,[],2)];
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

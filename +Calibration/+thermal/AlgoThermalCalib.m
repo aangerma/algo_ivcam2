@@ -113,8 +113,7 @@ if finishedHeating % always true at this point
     fprintff('Algo Calib reference iBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzIbias);
     % perform algo thermal calibration
     i = i + 1;
-    [frameBytes, framesData(i)] = prepareFrameData(hw,startTime,calibParams);
-    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, frameBytes, calibParams, maxTime2Wait); 
+    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(end),sz, frameBytes, calibParams, maxTime2Wait); 
     fnames = fieldnames(resultsThermal);
     for iField = 1:length(fnames)
         results.(fnames{iField}) = resultsThermal.(fnames{iField});
