@@ -184,7 +184,7 @@ if manualCaptures
 end
 end
 
-function [imageData, frameData] = prepareFrameData(hw,startTime,calibParams)
+function [frameBytes, frameData] = prepareFrameData(hw,startTime,calibParams)
     %    frame = hw.getFrame();
     %    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path(i));
 
@@ -194,11 +194,9 @@ function [imageData, frameData] = prepareFrameData(hw,startTime,calibParams)
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
     if calibParams.gnrl.rgb.doSave
-        [depthData, rgbData] = Calibration.aux.captureFramesWrapper(hw, 'ZIrgb', calibParams.gnrl.Nof2avg);
-        imageData = depthData;
-        imageData.color = rgbData;
+        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZIrgb', calibParams.gnrl.Nof2avg);
     else
-        imageData = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
+        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
     end
     frameData.time = toc(startTime);
 end

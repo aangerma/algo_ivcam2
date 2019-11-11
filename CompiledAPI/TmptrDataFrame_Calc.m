@@ -135,10 +135,7 @@ end
 % add error checking;
 
 if ~finishedHeating % heating stage
-    frame = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [], true);
-if calibParams.gnrl.rgb.doSave
-	frame.color = Calibration.aux.convertBytesToFrames(frameBytes, [calibParams.gnrl.rgb.res(2), calibParams.gnrl.rgb.res(1)], true, 'rgb');
-end
+    frame = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [calibParams.gnrl.rgb.res(2), calibParams.gnrl.rgb.res(1)], true);
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
     zForStd = nan(size(frame.z));
     zForStd(binLargest) = frame.z(binLargest);
