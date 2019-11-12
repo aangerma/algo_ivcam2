@@ -288,7 +288,7 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
         if isfield(frame,'yuy2')
-            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.yuy2, 0, [], [], calibParams.gnrl.nonRectangleFlag);
+            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.yuy2, 0, [], [], calibParams.gnrl.rgb.nonRectangleFlag);
         end
     else
         colors = [];
