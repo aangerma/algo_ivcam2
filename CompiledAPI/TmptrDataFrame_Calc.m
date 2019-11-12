@@ -1,4 +1,4 @@
-function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,frameBytes, calibParams, maxTime2Wait)
+function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,frameBytes, calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -75,11 +75,11 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
         [regs]          = struct_merge(eepromRegs, regs);
     end
     origFinishedHeating = finishedHeating;
-    [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
+    [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
-        save(fn, 'finishedHeating', 'calibPassed', 'results', 'metrics', 'Invalid_Frames');
+        save(fn, 'finishedHeating', 'calibPassed', 'results', 'metrics','metricsWithTheoreticalFix', 'Invalid_Frames');
     end
     if (origFinishedHeating~=0)
         g_temp_count = 0;
@@ -116,6 +116,7 @@ runParams.outputFolder = output_dir;
 runParams.calibRes = double([height, width]); %TODO: find a more elegant solution to passing calibRes to analyzeFramesOverTemperature
 results = struct('nCornersDetected', NaN);
 metrics = [];
+metricsWithTheoreticalFix = [];
 Invalid_Frames = [];
 
 persistent Index
@@ -202,11 +203,14 @@ else % steady-state stage
     end
     
     [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
+    [fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,0);
+
     save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data','calibParams','runParams','eepromRegs');
     
     Calibration.aux.logResults(data.results,runParams);
     %% merge all scores outputs
     metrics = data.results;
+    metricsWithTheoreticalFix = fixedData.results;
     calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
     
     %% Burn 2 device
