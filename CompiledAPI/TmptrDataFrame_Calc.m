@@ -93,7 +93,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [finishedHeating,calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, frameBytes,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
+function [finishedHeating,calibPassed, results, metrics, metricsWithTheoreticalFix,Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, frameBytes,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
