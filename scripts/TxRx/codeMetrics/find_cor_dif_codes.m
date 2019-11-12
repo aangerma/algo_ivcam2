@@ -13,12 +13,15 @@ else
 end
 load(codesStruct);
 
-dataPath='X:\Users\hila\TxRxinvest\CodeTestData\Test1\codesData';
-distance=[375,430,500,571,682,774,883,1001,1105,1200,1500];
+dataPath='X:\Users\hila\TxRxinvest\CodeTestData\Test3\codeData\rawData';
+disfolders=dir(dataPath);
+disfolders(strcmp({disfolders.name},'.'))=[]; disfolders(strcmp({disfolders.name},'..'))=[];
+
+distance=sort(str2num(str2mat({disfolders.name}))); 
 %% run on code
 codeNames={codes.name};
 %% output
-outPath='X:\Users\hila\TxRxinvest\CodeTestData\Test1\analysis\validTh_300_16sampleDist';
+outPath='X:\Users\hila\TxRxinvest\CodeTestData\Test3\results\validTh_300_16sampleDist';
 mkdirSafe(outPath);
 saveAbsDiffErr=false; 
 %% params
@@ -31,11 +34,13 @@ validTh=fineCorrRange*sample_dist; % [mm]
 DisRes=cell(length(distance),1);
 for j=1:length(distance)
     dataFolder=strcat(dataPath,'\',num2str(distance(j)));
+    CodeMat = dir([dataFolder,'\*.mat']);
     clear results ;
-    results(length(codeNames))=struct;
-    for i=1:length(codeNames)
-        codePath=strcat(dataFolder,'\',codeNames{i},'.mat');
-        codeName=codeNames{i};
+    results(length(CodeMat))=struct;
+    for i=1:length(CodeMat)
+        matName=CodeMat(i).name;
+        codeName=strrep(matName,'.mat','');
+        codePath=strcat(dataFolder,'\',matName);
         results(i).codeName=codeName;
         code_i=find(strcmp({codes.name},codeName));
         TxFullcode=codes(code_i).tCode;
@@ -99,9 +104,9 @@ xtick={results.codeName};
 x=1:length(xtick);
 xname=' codeName';
 p1=strcat(outPath,'/vsCode'); mkdir(p1) ;
-runPlots(x,xname,xtick, DisRes ,cellstr(num2str(distance', 'd=%-d')) ,p1,validTh);
+runPlots(x,xname,xtick, DisRes ,cellstr(num2str(distance, 'd=%-d')) ,p1,validTh);
 %% vs distance
-xtick=cellstr(num2str(distance', 'd=%-d'));
+xtick=cellstr(num2str(distance));
 x=distance;
 xname='distance';
 codeRes=cell(codesNum,1);
@@ -143,7 +148,7 @@ end
 
 function plotAndSave(cmap,x,xAxisName,metricName,YRes, ynames,titleS,fileName,outPath,xtick)
 h=figure('units','normalized','outerposition',[0 0 1 1]); hold all;
-
+ynames=strrep(ynames,'_',' ');
 for i=1:length(ynames)
     s=[YRes{i,:}]';
     if (strcmp(xAxisName,'distance'))
