@@ -343,7 +343,7 @@ end
 
 function results = UpdateResultsStruct(results)
     results.thermalRtdRefTemp       = results.rtd.refTemp;
-    results.thermalRtdSlope         = results.rtd.slope;
+%     results.thermalRtdSlope         = results.rtd.slope;
     results.thermalMinCalTemp       = results.rtd.origMinval;
     results.thermalMaxCalTemp       = results.rtd.origMaxval;
     results.thermalMaSlope          = results.ma.slope;
