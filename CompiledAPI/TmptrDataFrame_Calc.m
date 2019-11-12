@@ -338,23 +338,26 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function results = UpdateResultsStruct(results)
-    results.thermalRtdRefTemp = results.rtd.refTemp;
-    results.thermalRtdSlope = results.rtd.slope;
-    results.thermalAngyMinAbsScale = min(abs(results.angy.scale));
-    results.thermalAngyMaxAbsScale = max(abs(results.angy.scale));
+    results.thermalRtdRefTemp       = results.rtd.refTemp;
+    results.thermalRtdSlope         = results.rtd.slope;
+    results.thermalMinCalTemp       = results.rtd.origMinval;
+    results.thermalMaxCalTemp       = results.rtd.origMaxval;
+    results.thermalMaSlope          = results.ma.slope;
+    results.thermalAngyMinAbsScale  = min(abs(results.angy.scale));
+    results.thermalAngyMaxAbsScale  = max(abs(results.angy.scale));
     results.thermalAngyMinAbsOffset = min(abs(results.angy.offset));
     results.thermalAngyMaxAbsOffset = max(abs(results.angy.offset));
-    results.thermalAngyMinVal = results.angy.minval;
-    results.thermalAngyMaxVal = results.angy.maxval;
-    results.thermalAngxMinAbsScale = min(abs(results.angx.scale));
-    results.thermalAngxMaxAbsScale = max(abs(results.angx.scale));
+    results.thermalAngyMinVal       = results.angy.minval;
+    results.thermalAngyMaxVal       = results.angy.maxval;
+    results.thermalAngxMinAbsScale  = min(abs(results.angx.scale));
+    results.thermalAngxMaxAbsScale  = max(abs(results.angx.scale));
     results.thermalAngxMinAbsOffset = min(abs(results.angx.offset));
     results.thermalAngxMaxAbsOffset = max(abs(results.angx.offset));
-    results.thermalAngxP0x = results.angx.p0(1);
-    results.thermalAngxP0y = results.angx.p0(2);
-    results.thermalAngxP1x = results.angx.p1(1);
-    results.thermalAngxP1y = results.angx.p1(2);
-    results = rmfield(results, {'rtd', 'angy', 'angx', 'table'});
+    results.thermalAngxP0x          = results.angx.p0(1);
+    results.thermalAngxP0y          = results.angx.p0(2);
+    results.thermalAngxP1x          = results.angx.p1(1);
+    results.thermalAngxP1y          = results.angx.p1(2);
+    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table'});
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

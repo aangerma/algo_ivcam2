@@ -74,6 +74,9 @@
       <yDsmLosDegredation>[0,2]</yDsmLosDegredation>
       <thermalRtdRefTemp>[32 79]</thermalRtdRefTemp>
       <thermalRtdSlope>[0.5 2]</thermalRtdSlope>
+      <thermalMinCalTemp>[0 95]</thermalMinCalTemp>
+      <thermalMaxCalTemp>[0 95]</thermalMaxCalTemp>
+      <thermalMaSlope>[-inf inf]</thermalMaSlope>
       <thermalAngyMinAbsScale>[0.5 2]</thermalAngyMinAbsScale>
       <thermalAngyMaxAbsScale>[0.5 2]</thermalAngyMaxAbsScale>
       <thermalAngyMinAbsOffset>[0 1000]</thermalAngyMinAbsOffset>
@@ -141,11 +144,13 @@
       <tempBinRange>[0 94]</tempBinRange> 
       <nRows>48</nRows> 
       <name>Algo_Thermal_Loop_CalibInfo</name> 
+      <jumpDet>
+          <nSmooth>1</nSmooth>
+          <deviationPerc>95</deviationPerc>
+          <minNumOutliers>2</minNumOutliers>
+          <thFactor>2</thFactor>
+      </jumpDet>
       <extrap>
-          <rtdJumpDet>
-              <nSmooth>1</nSmooth>
-              <nSigma>2</nSigma>
-          </rtdJumpDet>
           <expandVbiasLims>1</expandVbiasLims>
           <expandFactor>0.05</expandFactor>
           <xScaleOrder>2</xScaleOrder>
