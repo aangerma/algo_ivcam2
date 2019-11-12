@@ -76,7 +76,7 @@ if ~isempty(runParams)
     title('RTD(ldd) and Fitted line');
     grid on;xlabel('Ldd Temperature');ylabel('mean rtd');
     hold on
-    plot(ldd,a*ldd+b);
+    plot(lddGrid,rtdGrid,'-o');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_Temp'));
     ff = Calibration.aux.invisibleFigure;
     plot(ma,rtdPerFrame,'*');
@@ -400,7 +400,7 @@ extrapGridX = linspace(tgal(1), tgal(2), results.angx.nBins);
 % rtd extrap
 origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
 extrapGridRtd = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
-[extrapRtd, rtdStr] = polyExtrap(origGridRtd', table(:,2), extrapGridRtd, extrapParams.rtdOrder);
+[extrapRtd, rtdStr] = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, extrapParams.rtdOrder);
 
 % debug plot
 if 0
@@ -467,7 +467,7 @@ end
 absDeviation = abs(smoothDiffDetrended - median(smoothDiffDetrended));
 deviationPerc = min(jumpDetParams.deviationPerc, 100*(nPts-jumpDetParams.minNumOutliers)/nPts);
 jumpDetThreshold = jumpDetParams.thFactor * prctile(absDeviation, deviationPerc);
-jumpIdcsSmooth = find(absDeviation >= jumpDetThreshold);
+jumpIdcsSmooth = 1 + find(absDeviation >= jumpDetThreshold);
 if ~isempty(jumpIdcsSmooth)
     jumpIdcs = ceil(jumpDetParams.nSmooth/2)+(jumpIdcsSmooth-1)*jumpDetParams.nSmooth;
 else
