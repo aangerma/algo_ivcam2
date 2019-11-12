@@ -41,7 +41,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams
    end
     runParams.outputFolder = g_output_dir;
 
-    im = Calibration.aux.convertBytesToFrames(frameBytes, irImSize, flip(calibParams.rgb.imSize), doAverage);
+    im = Calibration.aux.convertBytesToFrames(frameBytes, irImSize, flip(calibParams.rgb.imSize), true);
     rgbs = mat2cell([im.yuy2], calibParams.rgb.imSize(1), calibParams.rgb.imSize(2)*ones(1,length(im))); % extracting RGB images
     im = rmfield(im, 'yuy2'); % disposing of RGB images
     if exist('rgbCalTemperature','var')

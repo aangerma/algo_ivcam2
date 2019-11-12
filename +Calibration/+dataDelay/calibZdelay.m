@@ -25,7 +25,7 @@ for i=1:dataDelayParams.nAttempts
        end
        Calibration.dataDelay.saveCurrentUpDown(hw,runParams,'Z_Delay',figureFileName,sprintf('Up/Down Images - Initial (%d)',delayZ)); 
     end
-        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, frameBytesBoth, delayZ, calibParams, isFinalStage, fResMirror); 
+        [res, d(i),im] = Calibration.dataDelay.Z_DelayCalib(hw, frameBytesBoth, delayZ, runParams, calibParams, isFinalStage, fResMirror); 
 		
        if (verbose)
             figure(sum(mfilename));

@@ -1,4 +1,4 @@
-function [res, d,im,pixVar] = Z_DelayCalib(hw, frameBytesBoth, delay, calibParams, isFinalStage, fResMirror)
+function [res, d,im,pixVar] = Z_DelayCalib(hw, frameBytesBoth, delay, runParams, calibParams, isFinalStage, fResMirror)
 
 
     NumberOfFrames  = calibParams.gnrl.Nof2avg; % should be 30
@@ -14,7 +14,7 @@ function [res, d,im,pixVar] = Z_DelayCalib(hw, frameBytesBoth, delay, calibParam
     frameBytesDown = Calibration.aux.captureFramesWrapper(hw, 'ALT_IR', NumberOfFrames);
     Calibration.aux.setScanDirectionValues( hw,addresses2save, values2save ); % resore gain inital values
 
-    [res, d, im ] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, calibParams, isFinalStage, fResMirror); 
+    [res, d, im ] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, runParams, calibParams, isFinalStage, fResMirror); 
 %%    Z_DelayCalibOuput(d, pixVar);
 end
 

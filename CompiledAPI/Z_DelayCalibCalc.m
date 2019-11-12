@@ -1,4 +1,4 @@
-function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, calibParams, isFinalStage, fResMirror)
+function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, runParams, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
@@ -61,6 +61,7 @@ function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, fram
     imU = getFilteredImage(imU_z, unFiltered);
     imD = getFilteredImage(imD_z, unFiltered);
     imB = getFilteredImage(imB_i, unFiltered);
+    dataDelayParams = calibParams.dataDelay;
 
     if isFinalStage
         suffix = '_final';
@@ -71,14 +72,13 @@ function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, fram
     % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'frameBytesUp', 'frameBytesDown', 'frameBytesBoth', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
+        save(fn, 'frameBytesUp', 'frameBytesDown', 'frameBytesBoth', 'sz', 'delay', 'runParams', 'calibParams', 'isFinalStage', 'fResMirror');
     end
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
-        dataDelayParams = calibParams.dataDelay;
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn,'imU', 'imD', 'imB', 'delay', 'dataDelayParams', 'fResMirror', 'g_delay_cnt');
+        save(fn,'imU', 'imD', 'imB', 'delay', 'runParams', 'dataDelayParams', 'fResMirror', 'g_delay_cnt');
     end
-    [res, delayZ, im] = Z_DelayCalibCalc_int(imU, imD, imB , delay, calibParams.dataDelay, fResMirror, g_delay_cnt); 
+    [res, delayZ, im] = Z_DelayCalibCalc_int(imU, imD, imB , delay, runParams, dataDelayParams, fResMirror, g_delay_cnt); 
         % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name sprintf('%s_out%d.mat',suffix,g_delay_cnt)]);
