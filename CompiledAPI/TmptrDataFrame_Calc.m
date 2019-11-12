@@ -1,4 +1,4 @@
-function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,frameBytes, calibParams, maxTime2Wait)
+function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,frameBytes, calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -343,7 +343,6 @@ end
 
 function results = UpdateResultsStruct(results)
     results.thermalRtdRefTemp       = results.rtd.refTemp;
-%     results.thermalRtdSlope         = results.rtd.slope;
     results.thermalMinCalTemp       = results.rtd.origMinval;
     results.thermalMaxCalTemp       = results.rtd.origMaxval;
     results.thermalMaSlope          = results.ma.slope;
