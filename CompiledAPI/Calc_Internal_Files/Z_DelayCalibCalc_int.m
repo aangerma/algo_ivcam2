@@ -1,4 +1,4 @@
-function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, dataDelayParams, fResMirror, delay_cnt)
+function [res , delayZ, im] = Z_DelayCalibCalc_int(imU,imD,imB ,CurrentDelay, runParams, dataDelayParams, fResMirror, delay_cnt)
     nsEps       = 2;
     unFiltered  = 0;
     res = 0; %(WIP) not finish calibrate
