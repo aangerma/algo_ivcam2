@@ -1,7 +1,7 @@
 function [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn)
 
 if(isempty(g_output_dir))
-    output_dir = fullfile(ivcam2tempdir, func_name,'temp');
+    output_dir = fullfile(ivcam2tempdir, func_name);
 else
     output_dir = g_output_dir;
 end

@@ -12,7 +12,7 @@ function [cbCorners,cornersValid,params] = prepareData(im,rgbs,calibParams)
         targetInfo = targetInfoGenerator(cap.target);
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
-        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 1);
+        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 0);
         pts = pts - 1;
         cbCorners{i,1} = reshape(pts,[],2);
 %         tabplot; imagesc(im(i).i); hold on, plot(pts(:,:,1),pts(:,:,2),'r*');

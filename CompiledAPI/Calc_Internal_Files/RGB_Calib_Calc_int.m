@@ -3,7 +3,6 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     rgbTable = [];
     rgbPassed = 0;
        
-    
     [cbCorners,cornersValid,params] = Calibration.rgb.prepareData(im,rgbs,calibParams);
     
     if sum(cornersValid) < 3
