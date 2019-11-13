@@ -1,4 +1,4 @@
-function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, runParams, calibParams, isFinalStage, fResMirror)
+function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, calibParams, isFinalStage, fResMirror)
 % description: the function should run in loop till the delay is converged. 
 %   single loop iteration see function IR_DelayCalib.m 
 %   full IR delay see TODO:  
@@ -20,15 +20,14 @@ function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, fram
 %
 
     t0 = tic;
-    global g_output_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_delay_cnt g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
 
-    unFiltered  = 0;
-     if isempty(g_delay_cnt)
+    % auto-completions
+    if isempty(g_delay_cnt)
         g_delay_cnt = 0;
     else
         g_delay_cnt = g_delay_cnt+1; 
     end
-     % setting default global value in case not initial in the init function;
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -38,48 +37,39 @@ function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, fram
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-
     func_name = dbstack;
     func_name = func_name(1).name;
-
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(g_output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(g_output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
-
-    imU_z = Calibration.aux.convertBytesToFrames(frameBytesUp, sz, [], true).i;
-    imD_z = Calibration.aux.convertBytesToFrames(frameBytesDown, sz, [], true).i;
-    imB_i = Calibration.aux.convertBytesToFrames(frameBytesBoth, sz, [], true).i;
-    imU = getFilteredImage(imU_z, unFiltered);
-    imD = getFilteredImage(imD_z, unFiltered);
-    imB = getFilteredImage(imB_i, unFiltered);
-    dataDelayParams = calibParams.dataDelay;
-
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
+        
+    % input save
     if isFinalStage
         suffix = '_final';
     else
         suffix = '_init';
     end
-        
-    % save Input
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('%s_in%d.mat',suffix,g_delay_cnt)]);
-        save(fn, 'frameBytesUp', 'frameBytesDown', 'frameBytesBoth', 'sz', 'delay', 'runParams', 'calibParams', 'isFinalStage', 'fResMirror');
+        save(fn, 'frameBytesUp', 'frameBytesDown', 'frameBytesBoth', 'sz', 'delay', 'calibParams', 'isFinalStage', 'fResMirror');
     end
+    
+    % operation
+    unFiltered  = 0;
+    imU_z   = Calibration.aux.convertBytesToFrames(frameBytesUp, sz, [], true).i;
+    imD_z   = Calibration.aux.convertBytesToFrames(frameBytesDown, sz, [], true).i;
+    imB_i   = Calibration.aux.convertBytesToFrames(frameBytesBoth, sz, [], true).i;
+    imU     = getFilteredImage(imU_z, unFiltered);
+    imD     = getFilteredImage(imD_z, unFiltered);
+    imB     = getFilteredImage(imB_i, unFiltered);
+    dataDelayParams         = calibParams.dataDelay;
+    runParams.outputFolder  = output_dir;
+    
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name sprintf('_int%s_in%d.mat',suffix,g_delay_cnt)]);
         save(fn,'imU', 'imD', 'imB', 'delay', 'runParams', 'dataDelayParams', 'fResMirror', 'g_delay_cnt');
     end
     [res, delayZ, im] = Z_DelayCalibCalc_int(imU, imD, imB , delay, runParams, dataDelayParams, fResMirror, g_delay_cnt); 
-        % save output
+    
+    % output save
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name sprintf('%s_out%d.mat',suffix,g_delay_cnt)]);
         save(fn, 'res', 'delayZ', 'im');
@@ -88,11 +78,12 @@ function [res, delayZ, im] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, fram
         g_delay_cnt = 0;
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nZ_DelayCalibCalc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end

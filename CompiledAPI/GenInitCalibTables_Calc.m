@@ -8,25 +8,13 @@ function GenInitCalibTables_Calc(calibParams, outDir, eepromBin)
     t0 = tic;
     global g_output_dir g_save_input_flag g_fprintff g_LogFn g_calib_dir g_countRuntime;
 
-    % setting default global value in case not initial in the init function;
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
     func_name = dbstack;
     func_name = func_name(1).name;
-
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(g_output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(g_output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
 
     % Scope definition
     if exist('eepromBin', 'var') && ~isempty(eepromBin)
@@ -37,7 +25,7 @@ function GenInitCalibTables_Calc(calibParams, outDir, eepromBin)
         fprintff('Generating default tables for full calibration (overriding existing tables).\n');
     end
 
-    % save Input
+    % input save
     if g_save_input_flag && (exist(g_output_dir,'dir')~=0)
         fn = fullfile(g_output_dir, 'mat_files' ,[func_name '_in.mat']);
         if isATC
@@ -47,7 +35,7 @@ function GenInitCalibTables_Calc(calibParams, outDir, eepromBin)
         end
     end
     
-    % initialization process
+    % operation
     if isempty(outDir)
         outDir = fullfile(g_calib_dir, 'initialCalibFiles');
     end
@@ -59,11 +47,12 @@ function GenInitCalibTables_Calc(calibParams, outDir, eepromBin)
         GenInitCalibTables_Calc_int(g_calib_dir, outDir, vers, calibParams.tableVersions, eepromBin)
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nGenInitCalibTables_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end

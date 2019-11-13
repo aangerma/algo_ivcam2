@@ -14,9 +14,10 @@ function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetD
 %   
 
     t0 = tic;
-    global g_output_dir g_calib_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
+    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
     global g_laser_points g_scores
-    % setting default global value in case not initial in the init function;
+    
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -26,67 +27,49 @@ function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetD
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-
-    calib_dir = g_calib_dir;
-    PresetFolder = calib_dir;
-    
     func_name = dbstack;
     func_name = func_name(1).name;
-    if(isempty(g_output_dir))
-        output_dir = fullfile(ivcam2tempdir, func_name,'temp');
-    else
-        output_dir = g_output_dir;
-    end
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
     
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
-    
-    g_laser_points = [g_laser_points, curLaserPoint];
-    g_scores = [g_scores, NaN];
-    
+    % input save
     longRangestate =  Calibration.presets.findLongRangeStateCal(calibParams,cameraInput.imSize);
-    runParams.outputFolder = output_dir;
-    maskParams = calibParams.presets.long.params;
-    
-    im = Calibration.aux.convertBytesToFrames(frameBytes, cameraInput.imSize, [], false);
-        
-    % save Input
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name,'_', longRangestate, sprintf('_in%d.mat', length(g_laser_points))]);
-        save(fn,'frameBytes', 'cameraInput', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'calibParams');
+        save(fn, 'frameBytes', 'cameraInput', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'calibParams');
     end
+    
+    % operation
+    g_laser_points = [g_laser_points, curLaserPoint];
+    g_scores = [g_scores, NaN];
+    runParams.outputFolder = output_dir;
+    maskParams = calibParams.presets.long.params;
+    im = Calibration.aux.convertBytesToFrames(frameBytes, cameraInput.imSize, [], false);
+        
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name,'_', longRangestate, sprintf('_int_in%d.mat', length(g_laser_points))]);
         mkdirSafe(fileparts(fn));
-        save(fn,'im', 'maskParams' ,'runParams','calibParams','longRangestate','cameraInput','LaserPoints','maxMod_dec','g_laser_points', 'g_scores', 'fprintff');
+        save(fn, 'maskParams' ,'runParams', 'calibParams', 'longRangestate', 'im', 'cameraInput', 'LaserPoints', 'maxMod_dec', 'g_laser_points', 'g_scores', 'fprintff');
     end
     [isConverged, curScore, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, longRangestate, im, cameraInput, LaserPoints, maxMod_dec, g_laser_points, g_scores, fprintff);
+    
     g_scores(end) = curScore;
     if (abs(isConverged)==1) % initialize globals for next resolution
         g_laser_points = [];
         g_scores = [];
     end
-    % save output
+    
+    % output save
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name, '_', longRangestate, sprintf('_out%d.mat', length(g_laser_points))]);
         save(fn, 'isConverged', 'nextLaserPoint', 'maxRangeScaleModRef', 'maxFillRate', 'targetDist');
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nPreset_Long_Calib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end

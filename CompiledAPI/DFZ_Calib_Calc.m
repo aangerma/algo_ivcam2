@@ -13,8 +13,9 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(frameBytes, calibParam
     %   calibPassed - pass fail
     %
     t0 = tic;
-    global g_output_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_calib_dir g_LogFn g_countRuntime; % g_regs g_luts;
-    % setting default global value in case not initial in the init function;
+    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -24,46 +25,25 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(frameBytes, calibParam
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-    
     func_name = dbstack;
     func_name = func_name(1).name;
-    if(isempty(g_output_dir))
-        output_dir = fullfile(ivcam2tempdir, func_name,'temp');
-    else
-        output_dir = g_output_dir;
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
+    
+    % input save
+    if g_save_input_flag && exist(output_dir,'dir')~=0
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
+        save(fn, 'frameBytes', 'calibParams', 'DFZ_regs' );
     end
     
-    if(~isempty(g_calib_dir))
-        calib_dir = g_calib_dir;
-    else
-        warning('calib_dir missing in cal_init');
-    end
-    
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
-    
-    % save Input
+    % operation
     regs = ConvertDFZReg(DFZ_regs);
     width = regs.GNRL.imgHsize;
     height = regs.GNRL.imgVsize;
     im = Calibration.aux.convertBytesToFrames(frameBytes, [height,width], [], true);    
-    if g_save_input_flag && exist(output_dir,'dir')~=0
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'frameBytes','calibParams' , 'DFZ_regs' );
-    end
+
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn,'im','output_dir','calibParams', 'fprintff', 'regs');
+        save(fn, 'im', 'output_dir', 'calibParams', 'fprintff', 'regs');
     end
     [dfzRegs, calibPassed, results] = DFZ_Calib_Calc_int(im, output_dir, calibParams, fprintff, regs);       
 
@@ -75,17 +55,19 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(frameBytes, calibParam
     end
     dfzRegs.FRMW.fovexExistenceFlag = regs.FRMW.fovexExistenceFlag;
     dfzRegs.FRMW.fovexLensDistFlag  = regs.FRMW.fovexLensDistFlag;
-    % save output
+    
+    % output save
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'dfzRegs', 'calibPassed','results');
+        save(fn, 'dfzRegs', 'results', 'calibPassed');
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nDFZ_Calib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end
@@ -148,7 +130,6 @@ function  DFZRegs = ConvertDFZReg(regs)
 %     DFZRegs.FRMW.dfzApdCalTmp       = regs.FRMWdfzApdCalTmp;
 %     DFZRegs.FRMW.dfzVbias           = regs.FRMWdfzVbias;
 %     DFZRegs.FRMW.dfzIbias           = regs.FRMWdfzIbias;
-
 
     DFZRegs.MTLB.fastApprox(1)          	= logical(regs.MTLBfastApprox(1));
 end

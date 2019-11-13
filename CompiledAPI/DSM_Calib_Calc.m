@@ -13,9 +13,9 @@ function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(frameBytes, sz, an
     %       dsmYoffset
     %
     t0 = tic;
-    global g_output_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
     
-    % setting default global value in case not initial in the init function;
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -25,49 +25,39 @@ function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(frameBytes, sz, an
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-    
     func_name = dbstack;
     func_name = func_name(1).name;
-    
-    
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(g_output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(g_output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
 
-    im = Calibration.aux.convertBytesToFrames(frameBytes, sz, [], false).i;
-    % save Input
+    % input save
     if g_save_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn, 'frameBytes', 'sz' , 'angxRawZOVec' , 'angyRawZOVec' ,'dsmregs_current' ,'calibParams');
     end
+    
+    % operation
+    im = Calibration.aux.convertBytesToFrames(frameBytes, sz, [], false).i;
+    angxRawZOVec = angxRawZOVec(:);
+    angyRawZOVec = angyRawZOVec(:);
+    
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn, 'im', 'sz' , 'angxRawZOVec' , 'angyRawZOVec' ,'dsmregs_current' ,'calibParams');
-
+        save(fn, 'im', 'sz', 'angxRawZOVec', 'angyRawZOVec', 'dsmregs_current', 'calibParams', 'fprintff');
     end
+    [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc_int(im, sz, angxRawZOVec, angyRawZOVec, dsmregs_current, calibParams, fprintff);
     
-    [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc_int(im, sz, angxRawZOVec(:), angyRawZOVec(:), dsmregs_current, calibParams, fprintff);
-    
-    % save output
+    % output save
     if g_save_output_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'success', 'DSM_data','angxZO','angyZO');
+        save(fn,'success', 'DSM_data', 'angxZO', 'angyZO');
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nDSM_Calib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end

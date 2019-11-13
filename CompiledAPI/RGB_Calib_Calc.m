@@ -1,4 +1,4 @@
-function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams, irImSize, Kdepth, z2mm,rgbCalTemperature)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams, irImSize, Kdepth, z2mm, rgbCalTemperature)
 % description: calculates the calibration between the IR/Depth images and
 % the RGB images
 %regs_reff
@@ -12,8 +12,9 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams
 % results - <struct> with two interesting fields: rgbIntReprojRms,rgbExtReprojRms
 
     t0 = tic;
-    global g_output_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
-    % setting default global value in case not initial in the init function;
+    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -23,52 +24,40 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-    
     func_name = dbstack;
     func_name = func_name(1).name;
-    
-   if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(g_output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(g_output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-   end
-    runParams.outputFolder = g_output_dir;
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
 
-    im = Calibration.aux.convertBytesToFrames(frameBytes, irImSize, flip(calibParams.rgb.imSize), true);
-    rgbs = mat2cell([im.yuy2], calibParams.rgb.imSize(1), calibParams.rgb.imSize(2)*ones(1,length(im))); % extracting RGB images
-    im = rmfield(im, 'yuy2'); % disposing of RGB images
-    if exist('rgbCalTemperature','var')
-        rgbCalTemperature = 0; 
-    end
-    % save Input
-    if g_save_input_flag && exist(g_output_dir,'dir')~=0 
+    % input save
+    if g_save_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'frameBytes', 'calibParams', 'Kdepth', 'irImSize', 'z2mm','rgbCalTemperature');
+        save(fn, 'frameBytes', 'calibParams', 'irImSize', 'Kdepth', 'z2mm', 'rgbCalTemperature');
     end
+    
+    % operation
+    im = Calibration.aux.convertBytesToFrames(frameBytes, irImSize, flip(calibParams.rgb.imSize), true);
+    rgbs = {im.yuy2}; % extracting RGB images
+    im = rmfield(im, 'yuy2'); % disposing of RGB images
+    runParams.outputFolder = g_output_dir;
+    
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn,'im' ,'rgbs', 'calibParams' ,'Kdepth' , 'runParams','runParams' ,'z2mm','rgbCalTemperature');
+        save(fn, 'im', 'rgbs', 'calibParams', 'Kdepth', 'fprintff', 'runParams', 'z2mm', 'rgbCalTemperature');
     end
-    [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm,rgbCalTemperature);
+    [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm, rgbCalTemperature);
 
-    % save output
+    % output save
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'rgbPassed','rgbTable','results');
+        save(fn, 'rgbPassed', 'rgbTable', 'results');
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nRGB_Calib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end
