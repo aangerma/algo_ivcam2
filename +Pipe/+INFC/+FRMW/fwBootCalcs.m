@@ -14,9 +14,9 @@ KinvRaw=[regs.DEST.p2axa            0                   regs.DEST.p2axb;
     0                0                   1    ];
 if ~regs.JFIL.upscalexyBypass
     if regs.JFIL.upscalex1y0
-        KinvRaw(1,1) = KinvRaw(1,1)*single(regs.GNRL.imgHsize-1)/single(regs.FRMW.externalHsize-1);
+        KinvRaw(1,1) = KinvRaw(1,1)*single(regs.GNRL.imgHsize-1)/single(2*regs.GNRL.imgHsize-1);
     else
-        KinvRaw(2,2) = KinvRaw(2,2)*single(regs.GNRL.imgVsize-1)/single(regs.FRMW.externalVsize-1);
+        KinvRaw(2,2) = KinvRaw(2,2)*single(regs.GNRL.imgVsize-1)/single(2*regs.GNRL.imgVsize-1);
     end
 end
 
@@ -29,8 +29,18 @@ autogenRegs.FRMW.kRaw=typecast(KRaw([1 4 7 2 5 8 3 6]),'uint32');
 % Calculate K matrix. Note - users image is rotated by 180 degrees in
 % respect to our internal representation.
 Kworld=KRaw;
-Kworld(1,3)=single(regs.FRMW.externalHsize)-1-KRaw(1,3);
-Kworld(2,3)=single(regs.FRMW.externalVsize)-1-KRaw(2,3);
+if regs.JFIL.upscalexyBypass
+    Kworld(1,3)=single(regs.GNRL.imgHsize)-1-KRaw(1,3);
+    Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+else
+    if regs.JFIL.upscalex1y0
+        Kworld(1,3)=2*single(regs.GNRL.imgHsize)-1-KRaw(1,3);
+        Kworld(2,3)=single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+    else
+        Kworld(1,3)=single(regs.GNRL.imgHsize)-1-KRaw(1,3);
+        Kworld(2,3)=2*single(regs.GNRL.imgVsize)-1-KRaw(2,3);
+    end
+end
 
 
 
@@ -41,8 +51,8 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 %% zero order
 % calculate scale and shift
 if(regs.FRMW.calImgHsize~=regs.GNRL.imgHsize || regs.FRMW.calImgVsize~=regs.GNRL.imgVsize)
-    Hratio=double(regs.FRMW.externalHsize)/double(regs.FRMW.calImgHsize);
-    Vratio=double(regs.FRMW.externalVsize)/double(regs.FRMW.calImgVsize);
+    Hratio=double(regs.GNRL.imgHsize)/double(regs.FRMW.calImgHsize);
+    Vratio=double(regs.GNRL.imgVsize)/double(regs.FRMW.calImgVsize);
     
     autogenRegs.FRMW.zoRawCol=regs.FRMW.zoRawCol*Hratio;
     autogenRegs.FRMW.zoRawRow=regs.FRMW.zoRawRow*Vratio;
@@ -54,8 +64,8 @@ else
 end
 
 % calculate world zero order
-autogenRegs.FRMW.zoWorldCol = uint32(regs.FRMW.externalHsize)*uint32(ones(1,5)) - regs.FRMW.zoRawCol;
-autogenRegs.FRMW.zoWorldRow =uint32(regs.FRMW.externalVsize)*uint32(ones(1,5)) - regs.FRMW.zoRawRow;
+autogenRegs.FRMW.zoWorldCol = uint32(regs.GNRL.imgHsize)*uint32(ones(1,5)) - regs.FRMW.zoRawCol;
+autogenRegs.FRMW.zoWorldRow =uint32(regs.GNRL.imgVsize)*uint32(ones(1,5)) - regs.FRMW.zoRawRow;
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% set depth offset constant: distance from the MEMS to the front case
