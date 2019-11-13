@@ -63,15 +63,10 @@ function [dfzRegs, results, calibPassed] = DFZ_Calib_Calc(frameBytes, calibParam
     end
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0
         fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn,'im','output_dir','calibParams', 'regs' , 'DFZ_regs' );
+        save(fn,'im','output_dir','calibParams', 'fprintff', 'regs');
     end
     [dfzRegs, calibPassed, results] = DFZ_Calib_Calc_int(im, output_dir, calibParams, fprintff, regs);       
-    if ~isfield(results,'rtdDiffBetweenPresets')
-            results.rtdDiffBetweenPresets = 0;
-    end
-    if ~isfield(results,'shortRangeImagesGeomErr')
-            results.shortRangeImagesGeomErr = 0;
-    end
+
     if isfield(DFZ_regs, 'FRMWdfzCalTmp') % DFZ envelope was the one generating these regs, namely we're in Algo1 before Algo 2
         dfzRegs.FRMW.dfzCalTmp          = DFZ_regs.FRMWdfzCalTmp;
         dfzRegs.FRMW.dfzApdCalTmp       = DFZ_regs.FRMWdfzApdCalTmp;

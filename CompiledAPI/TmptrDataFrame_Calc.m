@@ -20,8 +20,7 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
 %   invalid_Frames - number of invalid frames relvent only on last phase when table
 %   ready
 %
-    global g_output_dir g_calib_dir g_save_input_flag  g_save_output_flag  g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
-    fprintff = g_fprintff;
+    global g_output_dir g_calib_dir g_save_input_flag  g_save_output_flag  g_skip_thermal_iterations_save  g_fprintff g_temp_count g_LogFn; % g_regs g_luts;
     
     % setting default global value in case not initial in the init function;
     if isempty(g_temp_count)
@@ -32,6 +31,9 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
+    end
+    if isempty(g_skip_thermal_iterations_save)
+        g_skip_thermal_iterations_save = 0;
     end
     
     func_name = dbstack;
@@ -59,7 +61,7 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     end
 
     % save Input
-    if g_save_input_flag && exist(output_dir,'dir')~=0 
+    if ~g_skip_thermal_iterations_save && g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
         save(fn,'finishedHeating','regs', 'eepromRegs','eepromBin', 'FrameData', 'sz' ,'frameBytes','calibParams', 'maxTime2Wait' );
     end
@@ -77,7 +79,7 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     origFinishedHeating = finishedHeating;
     [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
     % save output
-    if g_save_output_flag && exist(output_dir,'dir')~=0 
+    if ~g_skip_thermal_iterations_save && g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
         save(fn, 'finishedHeating', 'calibPassed', 'results', 'metrics','metricsWithTheoreticalFix', 'Invalid_Frames');
     end
@@ -178,46 +180,16 @@ if ~finishedHeating % heating stage
         fprintff('Finished heating reason: %s\n',reason);
     end
 else % steady-state stage
-    framesData = acc_FrameData([]); % avoid using last frame, captured after fine DSM calibration
+    framesData = acc_FrameData([]); % simply reconstruct entire struct array
     for iFrame = 1:length(framesData)
         framesData(iFrame).ptsWithZ = applyDsmTransformation(framesData(iFrame).ptsWithZ, regs, 'direct'); % recreate corners with up-to-date DSM values
     end
     data.framesData = framesData;
     data.regs = regs;
     
-    save(fullfile(output_dir,'mat_files','data_in.mat'),'data','calibParams','runParams','regs','eepromRegs');
-    
-    invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
-    data.framesData = data.framesData(~invalidFrames);
-    data.dfzRefTmp = regs.FRMW.dfzCalTmp;
-    [table,results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
-    data.tableResults = results;
-    [data] = Calibration.thermal.applyThermalFix(data,regs,[],calibParams,runParams,1);
-    results.yDsmLosDegredation = data.tableResults.yDsmLosDegredation;
-    results = UpdateResultsStruct(results); % output single layer results struct
-    if isempty(table)
-        calibPassed = 0;
-        save(fullfile(output_dir,'mat_files' ,'data.mat'),'data','calibParams','runParams','eepromRegs');
-        fprintff('table is empty (no checkerboard where found)\n');
-        return;
-    end
-    
-    [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
-    [fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,0);
-
-    save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data','calibParams','runParams','eepromRegs');
-    
-    Calibration.aux.logResults(data.results,runParams);
-    %% merge all scores outputs
-    metrics = data.results;
-    metricsWithTheoreticalFix = fixedData.results;
-    calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
-    
-    %% Burn 2 device
-    fprintff('Preparing thermal calibration data for burning\n');
-    Calibration.thermal.generateTableForBurning(eepromRegs, data.tableResults.table,calibParams,runParams,fprintff,0,data,calib_dir);
-    fprintff('Thermal calibration finished\n');
-    
+    save(fullfile(output_dir, 'mat_files', 'finalCalcAfterHeating_in.mat'), 'data', 'eepromRegs', 'calibParams', 'fprintff', 'calib_dir', 'output_dir', 'runParams');
+    [data, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = Calibration.thermal.finalCalcAfterHeating(data, eepromRegs, calibParams, fprintff, calib_dir, output_dir, runParams);
+    save(fullfile(output_dir, 'mat_files', 'finalCalcAfterHeating_out.mat'), 'data', 'calibPassed', 'results', 'metrics', 'metricsWithTheoreticalFix', 'Invalid_Frames');
 end
     
 % update ptsWithZ per frame
@@ -337,30 +309,6 @@ function [merged] = struct_merge(existing , new )
             merged.(f{i}).(fn{n}) = new.(f{i}).(fn{n});
         end
     end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function results = UpdateResultsStruct(results)
-    results.thermalRtdRefTemp       = results.rtd.refTemp;
-    results.thermalMinCalTemp       = results.rtd.origMinval;
-    results.thermalMaxCalTemp       = results.rtd.origMaxval;
-    results.thermalMaSlope          = results.ma.slope;
-    results.thermalAngyMinAbsScale  = min(abs(results.angy.scale));
-    results.thermalAngyMaxAbsScale  = max(abs(results.angy.scale));
-    results.thermalAngyMinAbsOffset = min(abs(results.angy.offset));
-    results.thermalAngyMaxAbsOffset = max(abs(results.angy.offset));
-    results.thermalAngyMinVal       = results.angy.minval;
-    results.thermalAngyMaxVal       = results.angy.maxval;
-    results.thermalAngxMinAbsScale  = min(abs(results.angx.scale));
-    results.thermalAngxMaxAbsScale  = max(abs(results.angx.scale));
-    results.thermalAngxMinAbsOffset = min(abs(results.angx.offset));
-    results.thermalAngxMaxAbsOffset = max(abs(results.angx.offset));
-    results.thermalAngxP0x          = results.angx.p0(1);
-    results.thermalAngxP0y          = results.angx.p0(2);
-    results.thermalAngxP1x          = results.angx.p1(1);
-    results.thermalAngxP1y          = results.angx.p1(2);
-    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table'});
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

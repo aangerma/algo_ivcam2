@@ -32,8 +32,6 @@
     <errRange>
         <geomErr>[0.01 1.61]</geomErr>
         <extraImagesGeomErr>[0 2]</extraImagesGeomErr>
-        <shortRangeImagesGeomErr>[0.01 2]</shortRangeImagesGeomErr>
-        <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
         <eGeomSphericalEn>[0.01 2]</eGeomSphericalEn>
         <eGeomSphericalDis>[0.01 2]</eGeomSphericalDis>
         <gammaErr>[0 inf]</gammaErr>

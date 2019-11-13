@@ -35,8 +35,6 @@
         <delaySlowPixelVar>[0.0001 0.5]</delaySlowPixelVar>
         <geomErr>[0.01 1.61]</geomErr>
         <extraImagesGeomErr>[0 2]</extraImagesGeomErr>
-        <shortRangeImagesGeomErr>[0.01 2]</shortRangeImagesGeomErr>
-        <rtdDiffBetweenPresets>[-200 200]</rtdDiffBetweenPresets>
         <eGeomSphericalEn>[0.01 2]</eGeomSphericalEn>
         <eGeomSphericalDis>[0.01 2]</eGeomSphericalDis>
         <gammaErr>[0 inf]</gammaErr>
@@ -303,11 +301,6 @@
             </capture>
             <capture>
                 <target>Iv2A1</target>
-                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
-                <type>shortRange</type>
-            </capture>
-            <capture>
-                <target>Iv2A1</target>
                 <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
                 <type>train</type>
             </capture>
@@ -355,9 +348,9 @@
         <rtdOverAngXrange>[-30,-30,-30,-30,-30,0;30,30,30,30,30,0]</rtdOverAngXrange>
         <zenith>
             <useEsTilt>1</useEsTilt>
-            <applyCorrection>1</applyCorrection>
-            <correctionCoefsHorz>[0.54,0.22]</correctionCoefsHorz>
-            <correctionCoefsVert>[0.68,-0.57]</correctionCoefsVert>
+            <applyCorrection>0</applyCorrection>
+            <correctionCoefsHorz>[1,0.33]</correctionCoefsHorz>
+            <correctionCoefsVert>[1,-0.32]</correctionCoefsVert>
         </zenith>
     </dfz>
     <roi>
