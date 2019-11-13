@@ -24,6 +24,11 @@
            <nVals2avg>10</nVals2avg>
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
+	   <rgb>
+	   <doSave>1</doSave>
+	   <res>[1920,1080]</res>
+	   <nonRectangleFlag>1</nonRectangleFlag>
+	   </rgb>
    </gnrl>
    <warmUp>
        <nFramesForZStd>10</nFramesForZStd>
@@ -70,6 +75,9 @@
       <yDsmLosDegredation>[0,2]</yDsmLosDegredation>
       <thermalRtdRefTemp>[32 79]</thermalRtdRefTemp>
       <thermalRtdSlope>[0.5 2]</thermalRtdSlope>
+      <thermalMinCalTemp>[0 95]</thermalMinCalTemp>
+      <thermalMaxCalTemp>[0 95]</thermalMaxCalTemp>
+      <thermalMaSlope>[-inf inf]</thermalMaSlope>
       <thermalAngyMinAbsScale>[0.5 2]</thermalAngyMinAbsScale>
       <thermalAngyMaxAbsScale>[0.5 2]</thermalAngyMaxAbsScale>
       <thermalAngyMinAbsOffset>[0 1000]</thermalAngyMinAbsOffset>
@@ -137,6 +145,12 @@
       <tempBinRange>[0 94]</tempBinRange> 
       <nRows>48</nRows> 
       <name>Algo_Thermal_Loop_CalibInfo</name> 
+      <jumpDet>
+          <nSmooth>1</nSmooth>
+          <deviationPerc>95</deviationPerc>
+          <minNumOutliers>2</minNumOutliers>
+          <thFactor>2</thFactor>
+      </jumpDet>
       <extrap>
           <expandVbiasLims>1</expandVbiasLims>
           <expandFactor>0.05</expandFactor>
@@ -144,6 +158,7 @@
           <xOffsetOrder>1</xOffsetOrder>
           <yScaleOrder>2</yScaleOrder>
           <yOffsetOrder>2</yOffsetOrder>
+          <rtdOrder>3</rtdOrder>
       </extrap>
    </fwTable>
    <tableVersions>

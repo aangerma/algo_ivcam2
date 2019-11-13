@@ -1,4 +1,4 @@
-function [RGBTable] = buildRGBTable(res,params)
+function [RGBTable] = buildRGBTable(res,params,rgbCalTemperature)
     
     %definitions
     TableSize = 112;
@@ -32,6 +32,8 @@ function [RGBTable] = buildRGBTable(res,params)
     s.setNextSingle( res.extrinsics.r');
     s.setNextSingle( res.extrinsics.t);
 
+    s.setNextSingle(single(rgbCalTemperature));
+    
     RGBTable.data = s.flush();
     RGBTable.version = [TableVersionMajor TableVersionMinor];
 end

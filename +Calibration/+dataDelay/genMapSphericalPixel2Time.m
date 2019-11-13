@@ -12,7 +12,13 @@ function [t, xLims, yLims] = genMapSphericalPixel2Time(im, fResMirror)
     % finding borders of primary visited region
     [nPixY, nPixX] = size(im);
     minPixX = 1 + find(im(nPixY/2, 1:nPixX/2)==0, 1, 'last'); % left border
+    if isempty(minPixX)
+        minPixX = 1;
+    end
     maxPixX = (nPixX/2 - 1) + find(im(nPixY/2, nPixX/2:end)==0, 1, 'first') - 1; % right border
+    if isempty(maxPixX)
+        maxPixX = nPixX;
+    end
     xLims = [minPixX, maxPixX];
     xPixels = minPixX:maxPixX;
     minVisitedPixY = NaN(1,length(xPixels)); % upper border

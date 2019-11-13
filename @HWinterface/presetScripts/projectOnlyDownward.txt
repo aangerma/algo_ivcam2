@@ -1,0 +1,7 @@
+mwd 85001400 85001410 00f000f0 a2000000 00ffff5d 00000000 // Location table 15ns, 24us, 15ns // Project All
+mwd 85000000 85000010 da2000f0 0f000005 00ffff00 00000000 // Location table 15ns, 15ns, 24us // Dont Project
+
+mwd a0050074 a0050078 1 								  // FovDef 1 (Min/Max from registers)
+mwd a0050090 a0050094 00020000                            // RegsProjLocVInit
+mwd a005007c a0050080 00070004                            // Location table Min/Max
+mwd a00d01ec a00d01f0 1  					              // Shadow Update

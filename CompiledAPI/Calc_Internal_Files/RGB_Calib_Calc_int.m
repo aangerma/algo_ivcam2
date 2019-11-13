@@ -1,4 +1,4 @@
-function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm,rgbCalTemperature)
     results = struct;
     rgbTable = [];
     rgbPassed = 0;
@@ -11,7 +11,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
         return
     end
     res = Calibration.rgb.computeCal(cbCorners(cornersValid,:),Kdepth,params);
-    rgbTable = Calibration.rgb.buildRGBTable(res,params);
+    rgbTable = Calibration.rgb.buildRGBTable(res,params,rgbCalTemperature);
     results.rgbIntReprojRms = res.color.rms;
     results.rgbExtReprojRms = res.extrinsics.rms;
     %%

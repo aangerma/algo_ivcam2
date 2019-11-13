@@ -43,6 +43,7 @@ else
 end
 
 
+
 autogenRegs.CBUF.spare=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
 autogenRegs.FRMW.kWorld=typecast(Kworld([1 4 7 2 5 8 3 6]),'uint32');
 regs = Firmware.mergeRegs(regs,autogenRegs);
@@ -52,6 +53,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 if(regs.FRMW.calImgHsize~=regs.GNRL.imgHsize || regs.FRMW.calImgVsize~=regs.GNRL.imgVsize)
     Hratio=double(regs.GNRL.imgHsize)/double(regs.FRMW.calImgHsize);
     Vratio=double(regs.GNRL.imgVsize)/double(regs.FRMW.calImgVsize);
+    
     autogenRegs.FRMW.zoRawCol=regs.FRMW.zoRawCol*Hratio;
     autogenRegs.FRMW.zoRawRow=regs.FRMW.zoRawRow*Vratio;
     regs = Firmware.mergeRegs(regs,autogenRegs);

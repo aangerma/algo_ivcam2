@@ -29,18 +29,46 @@ else % Function wasn't fed the ma temperature
 end
 timev = [framesData.time];
 
-%% Linear RTD fix
 validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
 validPerFrame = cell2mat(validPerFrame);
 validCB = all(validPerFrame,2);
-rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
-refTmp = data.dfzRefTmp;
-% a*ldd +b = rtdPerFrame;
 
+%% RTD fix
+rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
+
+% legacy
 startI = calibParams.fwTable.nFramesToIgnore+1;
 verifyThermalSweepValidity(ldd, startI, calibParams.warmUp)
-[a,b] = linearTrans(vec(ldd(startI:end)),vec(rtdPerFrame(startI:end)));
 [aMA,bMA] = linearTrans(vec(ma(startI:end)),vec(rtdPerFrame(startI:end)));
+results.ma.slope = aMA;
+
+% jump detection
+jumpIdcs = detectJump(rtdPerFrame, calibParams.fwTable.jumpDet, false);
+if isempty(jumpIdcs) % no jump detected
+    ind = 1;
+else % last diff outlier is the first post-jump index
+    ind = jumpIdcs(end);
+    fprintff('Warning: RTD jump detected - excluding measurements below %.2f[deg].\n', ldd(ind))
+end
+
+% group by LDD
+rtdForEst = rtdPerFrame(ind:end);
+minMaxLdd = minmax(ldd(ind:end));
+results.rtd.maxval = minMaxLdd(2);
+results.rtd.minval = minMaxLdd(1);
+results.rtd.nBins = nBins;
+lddGrid = linspace(results.rtd.minval,results.rtd.maxval,nBins);
+rtdGrid = NaN(size(lddGrid));
+lddStep = lddGrid(2)-lddGrid(1);
+for k = 1:length(lddGrid)
+    idcs = abs(ldd(ind:end) - lddGrid(k)) <= lddStep/2;
+    if ~isempty(idcs)
+        rtdGrid(k) = median(rtdForEst(idcs));
+    end
+end
+results.rtd.refTemp = data.dfzRefTmp;
+[~, ind] = min(abs(results.rtd.refTemp - lddGrid));
+results.rtd.tmptrOffsetValues = rtdGrid-rtdGrid(ind); % aligning to reference temperature
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -48,7 +76,7 @@ if ~isempty(runParams)
     title('RTD(ldd) and Fitted line');
     grid on;xlabel('Ldd Temperature');ylabel('mean rtd');
     hold on
-    plot(ldd,a*ldd+b);
+    plot(lddGrid,rtdGrid,'-o');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_Temp'));
     ff = Calibration.aux.invisibleFigure;
     plot(ma,rtdPerFrame,'*');
@@ -58,12 +86,6 @@ if ~isempty(runParams)
     plot(ma,aMA*ma+bMA);
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_MA_Temp'));
 end
- 
-results.rtd.refTemp = refTmp;
-results.rtd.slope = a;
-results.ma.slope = aMA;
-fwBinCenters = linspace(calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2),nBins);
-results.rtd.tmptrOffsetValues = -((fwBinCenters-refTmp)*results.rtd.slope)';
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -73,8 +95,7 @@ if ~isempty(runParams)
 end
 
 
-%% Y Fix
-% groupByVBias2
+%% Y Fix - groupByVBias2
 vbias2 = vBias(2,:);
 minMaxVBias2 = minmax(vbias2);
 maxVBias2 = minMaxVBias2(2);
@@ -94,6 +115,18 @@ end
 results.angy.minval = mean(binEdges(1:2));
 results.angy.maxval = mean(binEdges(end-1:end));
 results.angy.nBins = nBins;
+jumpIdcs = detectJump(results.angy.scale, calibParams.fwTable.jumpDet, true);
+if ~isempty(jumpIdcs)
+    fprintff('Error: angy scale jump detected - failing unit.\n')
+    table = [];
+    return;
+end
+jumpIdcs = detectJump(results.angy.offset, calibParams.fwTable.jumpDet, true);
+if ~isempty(jumpIdcs)
+    fprintff('Error: angy offset jump detected - failing unit.\n')
+    table = [];
+    return;
+end
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -141,7 +174,18 @@ end
 results.angx.p0 = p0;
 results.angx.p1 = p1;
 results.angx.nBins = nBins;
-
+jumpIdcs = detectJump(results.angx.scale, calibParams.fwTable.jumpDet, true);
+if ~isempty(jumpIdcs)
+    fprintff('Error: angx scale jump detected - failing unit.\n')
+    table = [];
+    return;
+end
+jumpIdcs = detectJump(results.angx.offset, calibParams.fwTable.jumpDet, true);
+if ~isempty(jumpIdcs)
+    fprintff('Error: angx offset jump detected - failing unit.\n')
+    table = [];
+    return;
+end
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -183,7 +227,11 @@ table = flipud(fillStartNans(flipud(table)));
 
 % extrapolation
 vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams);
-table = extrapolateTable(table, results, vBiasLims, calibParams.fwTable.extrap);
+table = extrapolateTable(table, results, vBiasLims, calibParams);
+results.rtd.origMinval = results.rtd.minval;
+results.rtd.origMaxval = results.rtd.maxval;
+results.rtd.minval = calibParams.fwTable.tempBinRange(1);
+results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
 results.angy.minval = vBiasLims(2,1);
 results.angy.maxval = vBiasLims(2,2);
 results.angx.p0 = vBiasLims([1,3],1)';
@@ -204,27 +252,6 @@ end
 
 assert(~any(isnan(table(:))),'Thermal table contains nans \n');
 
-
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [offset] = constantTransformToRef(framesPerTemperature,refBinIndex)
-
-nFrames = size(framesPerTemperature,1);  
-target = framesPerTemperature(refBinIndex,:);
-validT = ~isnan(target);
-for i = 1:nFrames
-    source = framesPerTemperature(i,:);
-    valid = logical((~isnan(source)) .* validT);
-    
-    if any(valid)
-        offset(i) = mean(target(valid)) - mean(source(valid));
-    else
-        offset(i) = nan;
-    end
-    
-end
 
 end
 
@@ -351,7 +378,9 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function table = extrapolateTable(table, results, vBiasLims, extrapParams)
+function table = extrapolateTable(table, results, vBiasLims, calibParams)
+
+extrapParams = calibParams.fwTable.extrap;
 
 % angy extrapolation
 origGridY = linspace(results.angy.minval, results.angy.maxval, results.angy.nBins);
@@ -368,6 +397,11 @@ extrapGridX = linspace(tgal(1), tgal(2), results.angx.nBins);
 [extrapXScale, xScaleStr] = polyExtrap(origGridX', table(:,1), extrapGridX, extrapParams.xScaleOrder);
 [extrapXOffset, xOffsetStr] = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOffsetOrder);
 
+% rtd extrap
+origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
+extrapGridRtd = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
+[extrapRtd, rtdStr] = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, extrapParams.rtdOrder);
+
 % debug plot
 if 0
     figure, hold all
@@ -376,6 +410,9 @@ if 0
     plot(p0(1)+origGridX*(p1(1)-p0(1)), table(:,1), 'r.-'), plot(vBiasLims(1,1)+origGridX*(vBiasLims(1,2)-vBiasLims(1,1)), extrapXScale, 'm-o')
     plot(p0(1)+origGridX*(p1(1)-p0(1)), table(:,3), 'k.-'), plot(vBiasLims(1,1)+origGridX*(vBiasLims(1,2)-vBiasLims(1,1)), extrapXOffset, '-o', 'color', [0.5,0.5,0.5])
     grid on, xlabel('vBias'), legend('yScale',yScaleStr,'yOffset',yOffsetStr,'xScale',xScaleStr,'xOffset',xOffsetStr)
+    figure, hold all
+    plot(origGridRtd, table(:,5), 'b.-'),                   plot(extrapGridRtd, extrapRtd, 'c-o')
+    grid on, xlabel('ldd'), legend('RTD',rtdStr)
 end
 
 % table update
@@ -383,6 +420,7 @@ table(:,1) = extrapXScale;
 table(:,2) = extrapYScale;
 table(:,3) = extrapXOffset;
 table(:,4) = extrapYOffset;
+table(:,5) = extrapRtd;
 
 end
 
@@ -397,8 +435,53 @@ switch polyOrder
     case 2
         polyFunc = @(x) polyCoef(1)*x.^2 + polyCoef(2)*x + polyCoef(3);
         extrapStr = sprintf('%.2f+%.2f*x+%.2f*x^2', polyCoef(3), polyCoef(2), polyCoef(1));
+    case 3
+        polyFunc = @(x) polyCoef(1)*x.^3 + polyCoef(2)*x.^2 + polyCoef(3)*x + polyCoef(4);
+        extrapStr = sprintf('%.2f+%.2f*x+%.2f*x^2+%.2f*x^3', polyCoef(4), polyCoef(3), polyCoef(2), polyCoef(1));
     otherwise
-        error('polyExtrap currently supports orders 1 & 2 only')
+        error('polyExtrap currently supports orders 1-3 only')
 end
 extrapVals = polyFunc(extrapGrid);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function jumpIdcs = detectJump(dataVec, jumpDetParams, doDetrend)
+% smooth differentiation
+dataVecSmooth = smooth(dataVec, jumpDetParams.nSmooth);
+dataVecSmooth = dataVecSmooth(ceil(jumpDetParams.nSmooth/2):jumpDetParams.nSmooth:end);
+smoothDiff = diff(dataVecSmooth);
+nPts = length(smoothDiff);
+% detrending
+smoothDiffDetrended = smoothDiff;
+if doDetrend
+    minPosDiff2 = max(0,min(diff([smoothDiff;0]), diff([0;smoothDiff])));
+    minNegDiff2 = min(0,max(diff([smoothDiff;0]), diff([0;smoothDiff])));
+    trend = cumsum(minPosDiff2) + cumsum(minNegDiff2); % only one diff2 can be different than 0 simultaneously
+    trend = trend+(median(smoothDiff)-median(trend));
+    smoothDiffDetrended = smoothDiffDetrended - trend;
+else
+    trend = smoothDiffDetrended*0;
+end
+% jump detection
+absDeviation = abs(smoothDiffDetrended - median(smoothDiffDetrended));
+deviationPerc = min(jumpDetParams.deviationPerc, 100*(nPts-jumpDetParams.minNumOutliers)/nPts);
+jumpDetThreshold = jumpDetParams.thFactor * prctile(absDeviation, deviationPerc);
+jumpIdcsSmooth = 1 + find(absDeviation >= jumpDetThreshold);
+if ~isempty(jumpIdcsSmooth)
+    jumpIdcs = ceil(jumpDetParams.nSmooth/2)+(jumpIdcsSmooth-1)*jumpDetParams.nSmooth;
+else
+    jumpIdcs = [];
+end
+if 0
+    figure
+    subplot(121), hold all
+    plot(dataVec, 'b.-'),               plot(ceil(jumpDetParams.nSmooth/2):jumpDetParams.nSmooth:length(dataVec), dataVecSmooth, 'c-o')
+    grid on, legend('raw', 'smooth')
+    subplot(122), hold all
+    plot(smoothDiff, 'b.-'),            plot(trend, 'c-')
+    plot(smoothDiffDetrended, 'k-o'),   plot([1,length(smoothDiffDetrended)], median(smoothDiffDetrended)+ones(2,1)*[-1,1]*jumpDetThreshold, 'm--')
+    plot(jumpIdcsSmooth, smoothDiffDetrended(jumpIdcsSmooth), 'ro')
+    grid on, legend('smooth diff', 'trend', 'detrended', 'low threshold', 'high threshold', 'jump detected')
+end
 end

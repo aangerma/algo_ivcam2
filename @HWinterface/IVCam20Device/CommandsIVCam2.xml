@@ -43,7 +43,7 @@
     <Parameter1 Name="Offset" />
     <Parameter2 Name="End Address" />
   </Command>
-  <Command Name="MWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x02" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write Tensilica memory ( 32bit )">
+  <Command Name="MWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x02" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write Tensilica memory ( 32bit )">
     <Parameter1 Name="Start Address" />
     <Parameter2 Name="End Address" />
     <Data Name="Data" IsReverseBytes="true" FormatLength="8" />
@@ -66,7 +66,7 @@
     <Parameter3 Name="Size">
     </Parameter3>
   </Command>
-  <Command Name="IWB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x06" I2cRegOffset="0x3024" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 8x8 )">
+  <Command Name="IWB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x06" I2cRegOffset="0x3024" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write to i2c ( 8x8 )">
     <Parameter1 Name="Device ID">
     </Parameter1>
     <Parameter2 Name="Offset">
@@ -75,7 +75,7 @@
     </Parameter3>
     <Data FormatLength="2" />
   </Command>
-  <Command Name="IWW" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x07" I2cRegOffset="0x3028" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 16x8 )">
+  <Command Name="IWW" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x07" I2cRegOffset="0x3028" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write to i2c ( 16x8 )">
     <Parameter1 Name="Device ID">
     </Parameter1>
     <Parameter2 Name="Offset">
@@ -84,7 +84,7 @@
     </Parameter3>
     <Data IsReverseBytes="false" FormatLength="2" />
   </Command>
-  <Command Name="IWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x08" I2cRegOffset="0x302C" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 32x8 )">
+  <Command Name="IWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x08" I2cRegOffset="0x302C" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write to i2c ( 32x8 )">
     <Parameter1 Name="Device ID">
     </Parameter1>
     <Parameter2 Name="Offset">
@@ -93,32 +93,32 @@
     </Parameter3>
     <Data IsReverseBytes="false" FormatLength="2" />
   </Command>
-  <Command Name="FRB" CmdPipe="WinUsb" Opcode="0x09" IsReadCommand="true" ReadFormat="Bytes" Description="Read from flash">
+  <Command Name="FRB" CmdPipe="WinUsb" Opcode="0x09" IsReadCommand="true" ReadFormat="Bytes" CmdPermission="Public" Description="Read from flash">
     <Parameter1 Name="StartIndex">
     </Parameter1>
     <Parameter2 Name="Size">
     </Parameter2>
   </Command>
-  <Command Name="FWB" CmdPipe="WinUsb" Opcode="0x0A" Description="Write to flash">
+  <Command Name="FWB" CmdPipe="WinUsb" Opcode="0x0A" CmdPermission="Public" Description="Write to flash">
     <Parameter1 Name="StartIndex">
     </Parameter1>
     <Parameter2 Name="Size">
     </Parameter2>
     <Data />
   </Command>
-  <Command Name="FES" CmdPipe="WinUsb" Opcode="0x0B" Description="Erase flash sector">
+  <Command Name="FES" CmdPipe="WinUsb" Opcode="0x0B" CmdPermission="Private" Description="Erase flash sector">
     <Parameter1 Name="Sector Index">
     </Parameter1>
     <Parameter2 Name="Number of Sectors">
     </Parameter2>
   </Command>
-  <Command Name="FEF" CmdPipe="WinUsb" Opcode="0x0C" Description="Erase flash full">
+  <Command Name="FEF" CmdPipe="WinUsb" Opcode="0x0C" CmdPermission="Public" Description="Erase flash full">
     <Parameter1 Name="0xACE">
     </Parameter1>
   </Command>
-  <Command Name="FSRU" CmdPipe="WinUsb" Opcode="0x0D" Description="Flash status register unlock">
+  <Command Name="FSRU" CmdPipe="WinUsb" Opcode="0x0D" CmdPermission="Private" Description="Flash status register unlock">
   </Command>
-  <Command Name="FPLOCK" CmdPipe="WinUsb" Opcode="0x0E" Description="Permanent lock on lower Quarter region of the flash.">
+  <Command Name="FPLOCK" CmdPipe="WinUsb" Opcode="0x0E" CmdPermission="Private" Description="Permanent lock on lower Quarter region of the flash.">
     <Parameter1 Name="Password" />
   </Command>
   <Command Name="GLD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x0F" I2cRegOffset="0xA00" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="LoggerCoreGetDataParams">
@@ -181,20 +181,13 @@
 	  <section Name="AlgoConfingurationVersion" Title="Algo configuration version" Offset="220" Size="2" FormatType="MajorMinorVersion" />
     </ReadData>
   </Command>
-  <Command Name="UPD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x11" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Public" Description="OTF update (shadow) ( 32bit )">
-    <Parameter1 Name="OTF MASK" IsReverseBytes="true" FormatLength="4" />
-  </Command>
-  <Command Name="UPDI" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x12" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Public" Description="OTF update immediate (shadow) ( 32bit )">
-    <Parameter1 Name="OTF MASK" IsReverseBytes="true" FormatLength="4" />
-  </Command>
-  <Command Name="GETCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x13" CmdPermission="Public" IsReadCommand="true" Description="Flash Read Calibration Table to HOST">
-    <Parameter1 Name="phase id" />
-  </Command>
-  <Command Name="SETCAL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x14" CmdPermission="Public" Description="Set Calibration Tables">
-    <Parameter1 Name="Region Type 0 - Not valid 1 - RW 2 - Both" />
-    <Parameter2 Name="phase id" />
-    <Data />
-  </Command>
+  <Command Name="VOLTAGE_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x15" IsReadCommand="true" CmdPermission="Public" Description="Read voltage (from 0-MA, 1-MC, 2-APD)">
+    <ReadData>
+      <Section Name="Ma_Voltage" Title="Ma Voltage" Offset="0" Size="4" FormatType="Float" />
+      <Section Name="Mc_Voltage" Title="Mc Voltage" Offset="4" Size="4" FormatType="Float" />
+      <Section Name="Apd_Voltage" Title="Apd Voltage" Offset="8" Size="4" FormatType="Float" />
+    </ReadData>
+  </Command>  
   <Command Name="ERB" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x17" CmdPermission="Public" IsReadCommand="true" ReadFormat="Bytes" Description="Read from eeprom">
     <Parameter1 Name="StartIndex">
     </Parameter1>
@@ -320,14 +313,14 @@
 	<Parameter1 Name="PhaseId" />  
     <Data/>
   </Command>
-  <Command Name="EXEC_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x45" CmdPermission="Public" Description="Execute table">
+  <Command Name="EXEC_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x45" CmdPermission="Private" Description="Execute table">
     <Parameter1 Name="Table Id" />
   </Command>
-  <Command Name="THERMLOOPSTART" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x46" CmdPermission="Public" Description="Thermal loop start">
+  <Command Name="THERMLOOPSTART" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x46" CmdPermission="Private" Description="Thermal loop start">
   </Command>
-  <Command Name="THERMLOOPSTOP" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x47" CmdPermission="Public" Description="Thermal loop stop">
+  <Command Name="THERMLOOPSTOP" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x47" CmdPermission="Private" Description="Thermal loop stop">
   </Command>
-  <Command Name="THERMLOOPGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x49" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Thermal loop get parameters">
+  <Command Name="THERMLOOPGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x49" CmdPermission="Private" ReadFormat="Bytes" IsReadCommand="true" Description="Thermal loop get parameters">
 	<Parameter1 Name="PZR" />
   </Command>
   <Command Name="STACK_STATUS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x4A" IsReadCommand="true" CmdPermission="Public" Description="Get stack statuses of all threads">
@@ -361,21 +354,21 @@
     </ReadData>
   </Command>
   
-  <Command Name="THERMLOOPINDXSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x50" CmdPermission="Public" Description="Thermal loop updated parameter according to index">
+  <Command Name="THERMLOOPINDXSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x50" CmdPermission="Private" Description="Thermal loop updated parameter according to index">
     <Parameter1 Name="PZR" />
 	<Parameter2 Name="Index" />
 	<Parameter3 Name="value" />
   </Command>
   <Command Name="DIRTYBITBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x51" CmdPermission="Public" Description="Bypass eye safety dirty bit indication">
   </Command>
-  <Command Name="DIRTYBITCLEAR" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x52" CmdPermission="Public" Description="Clear eye safety dirty bit indication (tester only)">
+  <Command Name="DIRTYBITCLEAR" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x52" CmdPermission="Private" Description="Clear eye safety dirty bit indication (tester only)">
   </Command>
   <Command Name="DIRTYBITGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x53" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get eye safety dirty bit indication 2B_FLASH/ 2B_EEPROM">
   </Command>
   <Command Name="HWASSERTSTIMERSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x54" CmdPermission="Public" Description="Set new HwAsserts time interval">
     <Parameter1 Name="HwAsserts time interval ms" />
   </Command>
-  <Command Name="TEMP_TIMER_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x55" CmdPermission="Public" Description="Set new PVT time interval">
+  <Command Name="TEMP_TIMER_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x55" CmdPermission="Private" Description="Set new PVT time interval">
     <Parameter1 Name="PVT time interval ms" />
   </Command>
   <Command Name="GTI" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x56" I2cRegOffset="0x200" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="Get Table Info (Version and Size)">
@@ -419,7 +412,7 @@
   <Command Name="CBUF_STATS_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x5F" CmdPermission="Public" Description="Enable Cbuf statistics collection">
     <Parameter1 Name="1 - enable, 0 - disable" />
   </Command>
-  <Command Name="RF_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x60" CmdPermission="Public" Description="Start range finder statistics collection">
+  <Command Name="RF_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x60" CmdPermission="Private" Description="Start range finder statistics collection">
     <Parameter1 Name="Buffer size in bytes" />
   </Command>
   <Command Name="RF_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x61" CmdPermission="Public" IsReadCommand="true" Description="Read range finder statistics in chuncks">
@@ -435,14 +428,14 @@
   <Command Name="U0_IDLE_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x65" CmdPermission="Public" Description="U0 idle low power enable">
     <Parameter1 Name="1 - enable, 0 - disable" />
   </Command>
-  <Command Name="AFE_SEQ_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x66" CmdPermission="Public" Description="Control Afe sequencer mode">
+  <Command Name="AFE_SEQ_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x66" CmdPermission="Private" Description="Control Afe sequencer mode">
     <Parameter1 Name="1 - enable, 0 - disable" />
   </Command>
   <Command Name="IspReadCmd" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x67" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Apical ISP read command">
     <Parameter1 Name="command_type" />
 	<Parameter2 Name="command" />
   </Command>
-  <Command Name="IspWriteCmd" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x68" CmdPermission="Private" Description="Apical ISP write command">
+  <Command Name="IspWriteCmd" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x68" CmdPermission="Public" Description="Apical ISP write command">
     <Parameter1 Name="command_type" />
 	<Parameter2 Name="command" />
 	<Parameter3 Name="value" />
@@ -483,10 +476,10 @@
       <Section Name="MA based streaming" Title="MA" Offset="0" Size="1" FormatType="DecByte" />
     </ReadData>
   </Command>
-  <Command Name="RGB_START_DELAY_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x73" CmdPermission="Public" Description="Define RGB start delay">
+  <Command Name="RGB_START_DELAY_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x73" CmdPermission="Private" Description="Define RGB start delay">
     <Parameter1 Name="Start delay" IsDecimal="true" />
   </Command>
-  <Command Name="RGB_STOP_DELAY_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x74" CmdPermission="Public" Description="Define RGB stop delay">
+  <Command Name="RGB_STOP_DELAY_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x74" CmdPermission="Private" Description="Define RGB stop delay">
     <Parameter1 Name="Stop delay" IsDecimal="true"/>
   </Command> 
   <Command Name="APD_FLYBACK_BYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x75" CmdPermission="Public" Description="Apd flyback loop bypass">
@@ -495,7 +488,7 @@
   <Command Name="APD_FLYBACK_VERBOSE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x76" CmdPermission="Public" Description="Apd flyback loop verbose">
     <Parameter1 Name="1 - enable printouts, 0 - disable printouts" />
   </Command>  
-  <Command Name="APD_FLYBACK_EX_TRIGGER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x77" CmdPermission="Public" Description="Apd flyback loop external trigger">
+  <Command Name="APD_FLYBACK_EX_TRIGGER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x77" CmdPermission="Private" Description="Apd flyback loop external trigger">
     <Parameter1 Name="1 - start, 0 - stop" />
   </Command>  
   <Command Name="APD_FLYBACK_VALUES_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x78" IsReadCommand="true" CmdPermission="Public" Description="FB values. States:0-NotInit,1-Idle,2-Converging,3-Running,4-Error,5-Bypassed">
@@ -512,13 +505,13 @@
 	      <Section Name="reqV" Title="reqV" Offset="28" Size="8" FormatType="Double" />
     </ReadData>
   </Command>
-  <Command Name="CT_KILL_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x79"  CmdPermission="Public" Description="Set CT KILL thresholds: LDD, MC, MA, APD (FF will set default threshold for the relevant thermistor)">
+  <Command Name="CT_KILL_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x79"  CmdPermission="Private" Description="Set CT KILL thresholds: LDD, MC, MA, APD (FF will set default threshold for the relevant thermistor)">
     <Parameter1 Name="LDD" />
 	<Parameter2 Name="MC" />
 	<Parameter3 Name="MA" />
 	<Parameter4 Name="APD" />
   </Command>  
-  <Command Name="REGS_LOCK_BYPASS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7A" CmdPermission="Public" Description="Set regs lock bypass, Reset is required">
+  <Command Name="REGS_LOCK_BYPASS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7A" CmdPermission="Private" Description="Set regs lock bypass, Reset is required">
     <Parameter1 Name="0=OFF, 1=ON" />
     <Parameter2 Name="Password (0x1234) for OFF, (0x????) for ON" />
   </Command>  
@@ -543,10 +536,10 @@
       <Section Name="Laser Power Config Ref" Title="LDPWRCREF" Offset="20" Size="1" FormatType="DecByte" />
     </ReadData>
   </Command>    
-  <Command Name="MA_BASED_STREAMING_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7E" CmdPermission="Public" Description="Set MA based streaming">
+  <Command Name="MA_BASED_STREAMING_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7E" CmdPermission="Private" Description="Set MA based streaming">
     <Parameter1 Name="0 = McBased, 1 = MaBased" />
   </Command>  
-    <Command Name="DPT_INTRINSICS_FULL_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7F" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get depth full intrinsic">
+  <Command Name="DPT_INTRINSICS_FULL_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7F" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get depth full intrinsic">
      <ReadData> 
       <Section Name="hScan" Title="hScan" Offset="0" Size="1" FormatType="DecByte" />
       <Section Name="vScan" Title="vScan" Offset="1" Size="1" FormatType="DecByte" />
@@ -628,7 +621,7 @@
 
     </ReadData>
   </Command>  
-  <Command Name="TESTER_MODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x80" CmdPermission="Public" Description="Set tester mode">
+  <Command Name="TESTER_MODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x80" CmdPermission="Private" Description="Set tester mode">
     <Parameter1 Name="0 = OFF, 1 = ON" />
   </Command> 
   <Command Name="RGB_INTRINSICS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x81" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get rgb intrinsic">
@@ -732,7 +725,7 @@
       <Section Name="iBias" Title="iBias" Offset="8" Size="8" FormatType="Double" />
     </ReadData>
   </Command>
-  <Command Name="HUMIDITY_RESET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x84" IsReadCommand="true" CmdPermission="Public" Description="Reset Humidity Sensor">
+  <Command Name="HUMIDITY_RESET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x84" IsReadCommand="true" CmdPermission="Private" Description="Reset Humidity Sensor">
   </Command>
   <Command Name="HUMIDITY_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x85" IsReadCommand="true" CmdPermission="Public" Description="Readout Humidity Sensor measurement results">
     <ReadData>
@@ -754,7 +747,7 @@
     <Parameter1 Name="Reset Type" />
   </Command>
 
-  <Command Name="LOW_TEMP_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x89"  CmdPermission="Public" Description="Set Low Temp thresholds: LDD">
+  <Command Name="LOW_TEMP_THRESHOLDS_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x89"  CmdPermission="Private" Description="Set Low Temp thresholds: LDD">
     <Parameter1 Name="LOWTH" />
     <Parameter2 Name="LOWCRITICALTH" />
   </Command>    
@@ -777,7 +770,7 @@
       <Section Name="current tSenseStop  (LE hex format)" Title="tSenseStop" Offset="8" Size="2" FormatType="HexNumber" IsDecimal="true" />
     </ReadData>
   </Command>  
-  <Command Name="LOCK_EEPROM" CmdPipe="WinUsb" Opcode="0x8C" Description="Permanent lock EEPROM.">
+  <Command Name="LOCK_EEPROM" CmdPipe="WinUsb" Opcode="0x8C" CmdPermission="Private" Description="Permanent lock EEPROM.">
     <Parameter1 Name="Password" />
   </Command>
   <Command Name="ALGO_GNRL_CODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x8D"  CmdPermission="Public" Description="Set algo gen general code length">
@@ -811,7 +804,7 @@
     <Parameter1 Name="Enable" />
   </Command>
   
-  <Command Name="SET_RECTIFIED_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x94" CmdPermission="Public" Description="Set Rectified Projection (0->full projection, 1->rectified projection">
+  <Command Name="SET_RECTIFIED_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x94" CmdPermission="Private" Description="Set Rectified Projection (0->full projection, 1->rectified projection">
     <Parameter1 Name="Rectified Projection" />
   </Command>
   
@@ -831,11 +824,15 @@
     <Data Name="Data" IsReverseBytes="false" FormatLength="8" />
   </Command>
   
-  <Command Name="FALL_DETECT_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9D" CmdPermission="Public" Description="FALL_DETECT_ENABLE">
+  <Command Name="ONE_DIRECTION_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x99" CmdPermission="Public" Description="ONE_DIRECTION_PROJECTION">
+	<Parameter1 Name="Index" />
+  </Command>
+  
+  <Command Name="FALL_DETECT_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9D" CmdPermission="Private" Description="FALL_DETECT_ENABLE">
     <Parameter1 Name="enable" />
   </Command>
   
-  <Command Name="FALL_DETECT_CONFIG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9E" CmdPermission="Public" Description="FALL_DETECT_CONFIG">
+  <Command Name="FALL_DETECT_CONFIG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9E" CmdPermission="Private" Description="FALL_DETECT_CONFIG">
     <Parameter1 Name="cntThr1" />
     <Parameter2 Name="cntThr2" />
     <Parameter3 Name="ampThr1" />
@@ -850,13 +847,13 @@
 
 
 
-  <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
+  <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Private" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
   </Command>
   
-  <Command Name="MCSTOP" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA2" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTOP">
+  <Command Name="MCSTOP" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA2" CmdPermission="Private" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTOP">
   </Command>
   
-  <Command Name="MCCONFIG_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA3" CmdPermission="Public" IsReadCommand="false" Description="MCCONFIG_SET">
+  <Command Name="MCCONFIG_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA3" CmdPermission="Private" IsReadCommand="false" Description="MCCONFIG_SET">
     <Data IsReverseBytes="false" FormatLength="8" />
   </Command>
   
@@ -879,7 +876,7 @@
     </ReadData>
   </Command>
   
-  <Command Name="MCPARAM_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA5" CmdPermission="Public" IsReadCommand="false" Description="MCPARAM_SET">
+  <Command Name="MCPARAM_SET" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA5" CmdPermission="Private" IsReadCommand="false" Description="MCPARAM_SET">
 	<Parameter1 Name="Index" />
 	<Data IsReverseBytes="false" FormatLength="8" />
   </Command>

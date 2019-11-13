@@ -16,7 +16,7 @@ results.(['rtd2add2short_',Calstate]) = rtd2add2short;
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure();
     plot(diff);title('Rtd Long-Short'); ylabel('mm'); xlabel('trial #');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Presets','CompareMeanZPostBurning'); 
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Presets','CompareMeanZPostBurning',1); 
 end
 
 

@@ -1,4 +1,4 @@
-function [im1,im2,d]=getScanDirImgs(hw,unFiltered)
+function [im1,im2,d]=getScanDirImgsByGainTable(hw,unFiltered)
 % If unfiltered is true, do no perform median filter on results
 if ~exist('unfiltered','var')
    unFiltered = 0; 

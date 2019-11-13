@@ -1,4 +1,4 @@
-function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,frameBytes, calibParams, maxTime2Wait)
+function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames]  = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz ,frameBytes, calibParams, maxTime2Wait)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -75,11 +75,11 @@ function [finishedHeating, calibPassed, results, metrics, Invalid_Frames]  = Tmp
         [regs]          = struct_merge(eepromRegs, regs);
     end
     origFinishedHeating = finishedHeating;
-    [finishedHeating, calibPassed, results, metrics, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
+    [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);       
     % save output
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,  'mat_files' ,[func_name sprintf('_out%d.mat',g_temp_count)]);
-        save(fn, 'finishedHeating', 'calibPassed', 'results', 'metrics', 'Invalid_Frames');
+        save(fn, 'finishedHeating', 'calibPassed', 'results', 'metrics','metricsWithTheoreticalFix', 'Invalid_Frames');
     end
     if (origFinishedHeating~=0)
         g_temp_count = 0;
@@ -93,7 +93,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [finishedHeating,calibPassed, results, metrics, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, frameBytes,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
+function [finishedHeating,calibPassed, results, metrics, metricsWithTheoreticalFix,Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height , width, frameBytes,calibParams,maxTime2Wait,output_dir,fprintff,calib_dir)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -116,6 +116,7 @@ runParams.outputFolder = output_dir;
 runParams.calibRes = double([height, width]); %TODO: find a more elegant solution to passing calibRes to analyzeFramesOverTemperature
 results = struct('nCornersDetected', NaN);
 metrics = [];
+metricsWithTheoreticalFix = [];
 Invalid_Frames = [];
 
 persistent Index
@@ -135,7 +136,7 @@ end
 % add error checking;
 
 if ~finishedHeating % heating stage
-    frame = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [], true);
+    frame = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [calibParams.gnrl.rgb.res(2), calibParams.gnrl.rgb.res(1)], true);
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
     zForStd = nan(size(frame.z));
     zForStd(binLargest) = frame.z(binLargest);
@@ -202,11 +203,14 @@ else % steady-state stage
     end
     
     [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
+    [fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,0);
+
     save(fullfile(output_dir,'mat_files' ,'data_out.mat'),'data','calibParams','runParams','eepromRegs');
     
     Calibration.aux.logResults(data.results,runParams);
     %% merge all scores outputs
     metrics = data.results;
+    metricsWithTheoreticalFix = fixedData.results;
     calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fprintff);
     
     %% Burn 2 device
@@ -253,7 +257,7 @@ if ~any(notNoiseIm(:))
 end
 
 minMaxX = minmax(find(notNoiseIm(round(size(notNoiseIm,1)/2),:)));
-minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2))));
+minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2)))');
 
 xx = (minMaxX-0.5)*4 - double(regs.DIGG.sphericalOffset(1));
 yy = minMaxY - double(regs.DIGG.sphericalOffset(2));
@@ -287,14 +291,24 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], [], calibParams.gnrl.nonRectangleFlag);
         pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
-        
+        if isfield(frame,'yuy2')
+            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.yuy2, 0, [], [], calibParams.gnrl.rgb.nonRectangleFlag);
+        end
     else
         colors = [];
         [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
-            warning('checkerboard not detected. all target must be included in the image');
+            warning('Checkerboard not detected in IR image. All of the target must be included in the image');
             ptsWithZ = [];
             return;
+        end
+        if isfield(frame,'yuy2')
+            [ptsColor,gridSize] = Validation.aux.findCheckerboard(frame.yuy2,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+            if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
+                warning('Checkerboard not detected in color image. All of the target must be included in the image');
+                ptsWithZ = [];
+                return;
+            end
         end
     end
     assert(regs.DIGG.sphericalEn==1, 'Frames for ATC must be captured in spherical mode')
@@ -306,6 +320,9 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
     ptsWithZ = [rpt,reshape(pts,[],2)]; % without XYZ which is not calibrated well at this stage
     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
+    if isfield(frame,'yuy2')
+        ptsWithZ = [ptsWithZ,reshape(ptsColor,[],2)];
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -325,23 +342,25 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function results = UpdateResultsStruct(results)
-    results.thermalRtdRefTemp = results.rtd.refTemp;
-    results.thermalRtdSlope = results.rtd.slope;
-    results.thermalAngyMinAbsScale = min(abs(results.angy.scale));
-    results.thermalAngyMaxAbsScale = max(abs(results.angy.scale));
+    results.thermalRtdRefTemp       = results.rtd.refTemp;
+    results.thermalMinCalTemp       = results.rtd.origMinval;
+    results.thermalMaxCalTemp       = results.rtd.origMaxval;
+    results.thermalMaSlope          = results.ma.slope;
+    results.thermalAngyMinAbsScale  = min(abs(results.angy.scale));
+    results.thermalAngyMaxAbsScale  = max(abs(results.angy.scale));
     results.thermalAngyMinAbsOffset = min(abs(results.angy.offset));
     results.thermalAngyMaxAbsOffset = max(abs(results.angy.offset));
-    results.thermalAngyMinVal = results.angy.minval;
-    results.thermalAngyMaxVal = results.angy.maxval;
-    results.thermalAngxMinAbsScale = min(abs(results.angx.scale));
-    results.thermalAngxMaxAbsScale = max(abs(results.angx.scale));
+    results.thermalAngyMinVal       = results.angy.minval;
+    results.thermalAngyMaxVal       = results.angy.maxval;
+    results.thermalAngxMinAbsScale  = min(abs(results.angx.scale));
+    results.thermalAngxMaxAbsScale  = max(abs(results.angx.scale));
     results.thermalAngxMinAbsOffset = min(abs(results.angx.offset));
     results.thermalAngxMaxAbsOffset = max(abs(results.angx.offset));
-    results.thermalAngxP0x = results.angx.p0(1);
-    results.thermalAngxP0y = results.angx.p0(2);
-    results.thermalAngxP1x = results.angx.p1(1);
-    results.thermalAngxP1y = results.angx.p1(2);
-    results = rmfield(results, {'rtd', 'angy', 'angx', 'table'});
+    results.thermalAngxP0x          = results.angx.p0(1);
+    results.thermalAngxP0y          = results.angx.p0(2);
+    results.thermalAngxP1x          = results.angx.p1(1);
+    results.thermalAngxP1y          = results.angx.p1(2);
+    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table'});
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

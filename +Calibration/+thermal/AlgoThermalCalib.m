@@ -14,6 +14,8 @@ isXGA = all(runParams.calibRes==[768,1024]);
 if isXGA
     hw.cmd('ENABLE_XGA_UPSCALE 1');
 end
+runParams.rgb = calibParams.gnrl.rgb.doSave;
+runParams.rgbRes = calibParams.gnrl.rgb.res;
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
@@ -101,16 +103,17 @@ if finishedHeating % always true at this point
     results.dsmYshift       = regs.EXTL.dsmYoffset;
     % noting reference state for thermal calibration (referred to as "DFZ state" for backward compatibility)
     regs.FRMW.dfzCalTmp     = framesData(i).temp.ldd; % overriding Tref from end of delays calibration (delta should be small)
+    regs.FRMW.atlMaCalTmp     = framesData(i).temp.ma; % overriding Tref from end of delays calibration (delta should be small)
     regs.FRMW.dfzApdCalTmp  = framesData(i).temp.apdTmptr;
     regs.FRMW.dfzVbias      = framesData(i).vBias;
     regs.FRMW.dfzIbias      = framesData(i).iBias;
     fprintff('Algo Calib reference Ldd Temp: %2.2fdeg\n',regs.FRMW.dfzCalTmp);
+    fprintff('Algo Calib reference MA Temp: %2.2fdeg\n',regs.FRMW.atlMaCalTmp);
     fprintff('Algo Calib reference vBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzVbias);
     fprintff('Algo Calib reference iBias: (%2.2f,%2.2f,%2.2f)\n',regs.FRMW.dfzIbias);
     % perform algo thermal calibration
     i = i + 1;
-    [frameBytes, framesData(i)] = prepareFrameData(hw,startTime,calibParams);
-    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(i),sz, frameBytes, calibParams, maxTime2Wait); 
+    [~,calibPassed, resultsThermal,~,~] = TmptrDataFrame_Calc(finishedHeating, regs,eepromRegs, eepromBin, framesData(end),sz, frameBytes, calibParams, maxTime2Wait); 
     fnames = fieldnames(resultsThermal);
     for iField = 1:length(fnames)
         results.(fnames{iField}) = resultsThermal.(fnames{iField});
@@ -181,15 +184,19 @@ end
 end
 
 function [frameBytes, frameData] = prepareFrameData(hw,startTime,calibParams)
-%    frame = hw.getFrame();
-%    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path(i));
+    %    frame = hw.getFrame();
+    %    Calibration.aux.SaveFramesWrapper(hw, 'ZI' , nof_frames , path(i));
 
     [frameData.temp.ldd,frameData.temp.mc,frameData.temp.ma,frameData.temp.apdTmptr] = hw.getLddTemperature;
-%    frameData.pzrShifts = hw.pzrShifts;
+    %    frameData.pzrShifts = hw.pzrShifts;
     for j = 1:3
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
-    frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
+    if calibParams.gnrl.rgb.doSave
+        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZIrgb', calibParams.gnrl.Nof2avg);
+    else
+        frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
+    end
     frameData.time = toc(startTime);
 end
 

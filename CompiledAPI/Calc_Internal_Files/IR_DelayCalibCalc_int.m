@@ -1,4 +1,4 @@
-function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDelay, dataDelayParams ,fResMirror, delay_cnt)
+function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDelay, runParams, dataDelayParams ,fResMirror, delay_cnt)
     res = 0; %(WIP) not finish calibrate
     nsEps       = 2;
     
@@ -21,11 +21,11 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
     end
     
     im=cat(3,imD,(imD+imU)/2,imU); % debug image
-    if (0)
-        figure(sum(mfilename));
+    if 1
+        ff = Calibration.aux.invisibleFigure;
         imagesc(im);
         title(sprintf('IR delay: %d (%d)',CurrentDelay,delayIR));
-        drawnow;
+        Calibration.aux.saveFigureAsImage(ff,runParams,'DataDelay','IR up-down match',1);
     end
    
     % check convergence

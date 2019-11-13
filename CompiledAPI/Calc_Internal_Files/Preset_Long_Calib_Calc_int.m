@@ -53,7 +53,7 @@ Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Cali
 ff2 = Calibration.aux.invisibleFigure;
 subplot(2,1,1);imagesc(imfuse(im.i(:,:,end),mask));title('IR image with ROI mask');
 subplot(2,1,2);imagesc(imfuse(im.z(:,:,end),mask));title('Depth (not normalized) image with ROI mask');
-Calibration.aux.saveFigureAsImage(ff2,runParams,'Presets','Long_Range_Laser_Calib_mask',1);imagesc(imfuse(frames(1).z,mask));title('Depth (not normalized) image with ROI mask');
+Calibration.aux.saveFigureAsImage(ff2,runParams,'Presets','Long_Range_Laser_Calib_mask',1);%imagesc(imfuse(frames(1).z,mask));title('Depth (not normalized) image with ROI mask');
 
 % analyze target distance
 zIm = {frames.z};
