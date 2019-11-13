@@ -13,8 +13,9 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(frameBytes, calibParams, R
 %
 
     t0 = tic;
-    global g_output_dir g_calib_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime;
-    % setting default global value in case not initial in the init function;
+    global g_output_dir g_calib_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -24,72 +25,49 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(frameBytes, calibParams, R
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-    
     func_name = dbstack;
     func_name = func_name(1).name;
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
 
-    if(isempty(g_output_dir))
-        output_dir = fullfile(ivcam2tempdir,'roi_temp');
-    else
-        output_dir = g_output_dir;
-    end
-    
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
-
-    
-    runParams.outputFolder = output_dir;
-    % save Input
-    regs = ConvertROIReg(ROIregs);
-    
-    initFolder = g_calib_dir;
-    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
-    EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
-    EPROMstructure  = EPROMstructure.updatedEpromTable;
-    eepromBin       = uint8(eepromBin);
-    eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
-    regs.FRMW.atlMaxAngXL = eepromRegs.FRMW.atlMaxAngXL;
-    regs.FRMW.atlMinAngXR = eepromRegs.FRMW.atlMinAngXR;
-    
-    width = regs.GNRL.imgHsize;
-    height = regs.GNRL.imgVsize;
-    im = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [], false);
-    
+    % input save
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'frameBytes', 'calibParams' , 'ROIregs','regs','results','eepromBin');
-    end
-    if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn,'im', 'calibParams' ,'regs','runParams','results');
-    end
-    [roiRegs, results, fovData] = ROI_Calib_Calc_int(im, calibParams, regs, runParams, results, fprintff);
-    % save output
-    if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'roiRegs', 'results','fovData');
+        save(fn, 'frameBytes', 'calibParams', 'ROIregs', 'regs', 'results', 'eepromBin');
     end
     
+    % operation
+    runParams.outputFolder  = output_dir;
+    regs                    = ConvertROIReg(ROIregs);
+    eepromRegs              = extractEepromRegs(eepromBin, g_calib_dir);
+    regs.FRMW.atlMaxAngXL   = eepromRegs.FRMW.atlMaxAngXL;
+    regs.FRMW.atlMinAngXR   = eepromRegs.FRMW.atlMinAngXR;
+    width                   = regs.GNRL.imgHsize;
+    height                  = regs.GNRL.imgVsize;
+    im = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [], false);
+    
+    if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
+        save(fn, 'im', 'calibParams', 'regs', 'runParams', 'results', 'fprintff');
+    end
+    [roiRegs, results, fovData] = ROI_Calib_Calc_int(im, calibParams, regs, runParams, results, fprintff);
+    
+    % output save
+    if g_save_output_flag && exist(output_dir,'dir')~=0 
+        fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
+        save(fn, 'roiRegs', 'results', 'fovData');
+    end
+    
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nROI_Calib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function  [ROIregs] = ConvertROIReg(regs)
     mode = regs.FRMWmirrorMovmentMode;

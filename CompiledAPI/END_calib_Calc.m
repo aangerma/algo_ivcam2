@@ -19,11 +19,9 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
 %   luts - undistort table.
 
     t0 = tic;
-    if ~exist('afterThermalCalib_flag','var')
-        afterThermalCalib_flag = 0;
-    end
-    global g_output_dir g_calib_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
-    % setting default global value in case not initial in the init function;
+    global g_output_dir g_calib_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
@@ -33,64 +31,50 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     if isempty(g_save_internal_input_flag)
         g_save_internal_input_flag = 0;
     end
-    
     func_name = dbstack;
     func_name = func_name(1).name;
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
     
-    
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(g_output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(g_output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
-
-    
-    % save Input
+    % input save
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
         save(fn, 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'configurationFolder', 'eepromRegs', 'eepromBin', 'afterThermalCalib_flag');
     end
-    runParams.outputFolder = g_output_dir;
-    runParams.undist = undist_flag;
-    runParams.afterThermalCalib = afterThermalCalib_flag;
-    runParams.version = AlgoCameraCalibToolVersion;
-    runParams.configurationFolder=configurationFolder; 
-    initFolder = g_calib_dir;
-    fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
-    if(isempty(eepromRegs) || ~isstruct(eepromRegs)) % called from HVM tester
-        EPROMstructure  = load(fullfile(g_calib_dir,'eepromStructure.mat'));
-        EPROMstructure  = EPROMstructure.updatedEpromTable;
-        eepromBin       = uint8(eepromBin);
-        eepromRegs      = fw.readAlgoEpromData(eepromBin(17:end),EPROMstructure);
+    
+    % operation
+    runParams.outputFolder          = g_output_dir;
+    runParams.undist                = undist_flag;
+    runParams.afterThermalCalib     = afterThermalCalib_flag;
+    runParams.version               = AlgoCameraCalibToolVersion;
+    runParams.configurationFolder   = configurationFolder; 
+    if (isempty(eepromRegs) || ~isstruct(eepromRegs)) % called from HVM tester
+        eepromRegs = extractEepromRegs(eepromBin, g_calib_dir);
     end
     [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, runParams.afterThermalCalib);
+    
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn, 'runParams', 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'calibParams');
+        save(fn, 'runParams', 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'fprintff', 'calibParams');
     end
-    [results ,regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams);    % save output
+    [results ,regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams);
+    
+    % output save
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
-        save(fn, 'results', 'regs','luts');
+        save(fn, 'results', 'regs', 'luts');
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nEND_calib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, afterThermalCalib)
     if afterThermalCalib

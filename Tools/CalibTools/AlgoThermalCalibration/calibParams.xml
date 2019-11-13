@@ -120,8 +120,8 @@
       <!--<slowDelayInitVal>98488</slowDelayInitVal> -->
       <fastDelayInitVal>98690</fastDelayInitVal>
       <slowDelayInitVal>98583</slowDelayInitVal>
-      <fastDelayInitSlope>0.8</fastDelayInitSlope>
-      <slowDelayInitSlope>0.9</slowDelayInitSlope>
+      <fastDelayInitSlope>1.0</fastDelayInitSlope>
+      <slowDelayInitSlope>1.1</slowDelayInitSlope>
 	  <iterFixThr>3</iterFixThr>
       <nAttempts>20</nAttempts>
       <calibrateFast>1</calibrateFast>

@@ -13,54 +13,48 @@ function [DSM_data] = DSM_CoarseCalib_Calc(angxRaw, angyRaw, calibParams)
 %       dsmYoffset
 %
     t0 = tic;
-    global g_output_dir g_save_input_flag  g_save_output_flag  g_fprintff g_LogFn g_countRuntime;
-    % setting default global value in case not initial in the init function;
+    global g_output_dir g_save_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    
+    % auto-completions
     if isempty(g_save_input_flag)
         g_save_input_flag = 0;
     end
     if isempty(g_save_output_flag)
         g_save_output_flag = 0;
     end
-    
     func_name = dbstack;
     func_name = func_name(1).name;
-
-    if(isempty(g_fprintff)) %% HVM log file
-        if(isempty(g_LogFn))
-            fn = fullfile(g_output_dir,[func_name '_log.txt']);
-        else
-            fn = g_LogFn;
-        end
-        mkdirSafe(g_output_dir);
-        fid = fopen(fn,'a');
-        fprintff = @(varargin) fprintf(fid,varargin{:});
-    else % algo_cal app_windows
-        fprintff = g_fprintff; 
-    end
+    [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
     
-    % save Input
+    % input save
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn,'angxRaw', 'angyRaw' ,'calibParams');
+        save(fn, 'angxRaw', 'angyRaw' ,'calibParams');
     end
+    
+    % operation
     [rawXmin,rawXmax] = minmax_(angxRaw);
     [rawYmin,rawYmax] = minmax_(angyRaw);
     [DSM_data.dsmXscale,DSM_data.dsmXoffset] = stretch2margin(rawXmin,rawXmax, calibParams.coarseDSM.margin);
     [DSM_data.dsmYscale,DSM_data.dsmYoffset] = stretch2margin(rawYmin,rawYmax, calibParams.coarseDSM.margin);
-    % save output
+    
+    % output save
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_out.mat']);
-        save(fn,'DSM_data');
+        save(fn, 'DSM_data');
     end
     
+    % finalization
     if g_countRuntime
         t1 = toc(t0);
-        fprintff('\nDSM_CoarseCalib_Calc run time = %.1f[sec]\n', t1);
+        fprintff('\n%s run time = %.1f[sec]\n', func_name, t1);
     end
-    if(exist('fid','var'))
+    if (fid>-1)
         fclose(fid);
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [scale,offset] = stretch2margin(rawMin,rawMax,margin)
     target = 2047 - margin;
