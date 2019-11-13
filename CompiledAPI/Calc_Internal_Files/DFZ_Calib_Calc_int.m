@@ -42,7 +42,7 @@ function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, cali
         % Calc TPS model to minimize 2D distotion
         [~,resFullPreTPS,allVerticesPreTPS] = evalDfzOnFull(framesData(trainImages),[],xbest,[]);
         [~,resCroppedPreTPS,croppedVerticesPreTPS] = evalDfzOnCropped(framesData(trainImages),[],xbest,[]);
-        tpsUndistModel = Calibration.DFZ.calcTPSModel(framesData,croppedVerticesPreTPS,allVerticesPreTPS,runParams);
+        tpsUndistModel = Calibration.DFZ.calcTPSModel(framesData(trainImages),croppedVerticesPreTPS,allVerticesPreTPS,runParams);
         [~,resOnFullPostTPS,allVerticesPostTPS] = evalDfzOnFull(framesData(trainImages),tpsUndistModel,xbest,[]);
         [~,resOncroppedPostTPS,croppedVerticesPostTPS] = evalDfzOnCropped(framesData(trainImages),tpsUndistModel,xbest,[]);
         % Optimize System Delay again
@@ -96,49 +96,6 @@ function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, cali
         results.extraImagesGeomErr = 0;
         fprintff('No test set.\n');
     end
-    
-    if ~isempty(framesData(shortRangeImages)) && sum(shortRangeImages) == 1
-        srInd = find(shortRangeImages,1,'first');
-        lrInd = srInd-1;
-        if nanmean(vec(abs((framesData(srInd).pts(:,:,1)-framesData(lrInd).pts(:,:,1))))) > 1 % If average corner location is bigger than 1 pixel we probably have missmatched captures
-            fprintff('Long and short range presets DFZ captures are not of the same scene! Short range preset calib failed \n')
-            calibPassed = 0;
-    
-        end
-        invalidCBPoints = isnan(framesData(lrInd).rpt(:,1).*framesData(srInd).rpt(:,1));
-        framesData(lrInd).rpt = framesData(lrInd).rpt.*(~invalidCBPoints);
-        framesData(lrInd).rpt(invalidCBPoints,:) = nan;
-        framesData(srInd).rpt = framesData(srInd).rpt.*(~invalidCBPoints);
-        framesData(srInd).rpt(invalidCBPoints,:) = nan;
-        framesData(lrInd).pts = framesData(lrInd).pts.*reshape(~invalidCBPoints,framesData(lrInd).grid);
-        framesData(lrInd).pts(invalidCBPoints,:) = nan;
-        framesData(srInd).pts = framesData(srInd).pts.*reshape(~invalidCBPoints,framesData(srInd).grid);
-        framesData(srInd).pts(invalidCBPoints,:) = nan;
-        
-        params = Validation.aux.defaultMetricsParams();
-        params.roi = calibParams.dfz.shortRangeCompareROI ; params.isRoiRect=1; 
-        mask = Validation.aux.getRoiMask(size(framesData(lrInd).i), params);
-        results.rtdDiffBetweenPresets = mean(framesData(lrInd).z(mask)/4*2) - mean(framesData(srInd).z(mask)/4*2);
-%         
-%         results.rtdDiffBetweenPresets = nanmean( framesData(lrInd).rpt(:,1) - framesData(srInd).rpt(:,1) );
-        framesData(srInd).rpt(:,1) = framesData(srInd).rpt(:,1) + results.rtdDiffBetweenPresets;
-        framesData(srInd).rptCropped(:,1) = framesData(srInd).rptCropped(:,1) + results.rtdDiffBetweenPresets;
-
-%         [~,dfzResults] = Calibration.aux.calibDFZ(framesData(srInd),regs,calibParams,fprintff,0,1,xbest,runParams,tpsUndistModel);
-        [~,dfzResults] = evalDfzOnCropped(framesData(srInd),tpsUndistModel,xbest,[]);
-        results.shortRangeImagesGeomErr = dfzResults.geomErr;
-        fprintff('geom error on short range image =%.2g\n',results.shortRangeImagesGeomErr);
-        fprintff('Rtd diff between presets =%.2g\n',results.rtdDiffBetweenPresets);
-        
-        % Write results to CSV and burn 2 device
-%        shortRangePresetFn = fullfile(runParams.outputFolder,'AlgoInternal','shortRangePreset.csv');
-%         shortRangePresetFn = fullfile(calib_dir,'shortRangePreset.csv');
-%         shortRangePreset=readtable(shortRangePresetFn);
-%         modRefInd=finframesData(strcmp(shortRangePreset.name,'AlgoThermalLoopOffset')); 
-%         shortRangePreset.value(modRefInd) = results.rtdDiffBetweenPresets;
-%         writetable(shortRangePreset,shortRangePresetFn);
-    end
-    
     
     if(results.geomErr<calibParams.errRange.geomErr(2))
         fprintff('[v] geom calib passed[e=%g]\n',results.geomErr);

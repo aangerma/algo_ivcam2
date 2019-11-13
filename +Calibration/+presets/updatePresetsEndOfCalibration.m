@@ -14,9 +14,6 @@ function [  ] = updatePresetsEndOfCalibration( runParams,calibParams,presetPath 
     longRangePreset = updatePresetTableByFieldName(longRangePreset,'coarse_masking_min',uint16(LRminRange));
     longRangePreset = updatePresetTableByFieldName(longRangePreset,'coarse_masking_max',uint16(LRmaxRange));
     
-    if isfield(results,'rtdDiffBetweenPresets')
-        shortRangePreset = updatePresetTableByFieldName(shortRangePreset,'AlgoThermalLoopOffset',results.rtdDiffBetweenPresets);
-    end
     SRdistRange=calibParams.presets.short.coarseMaskingRange; 
     SRminRange = SRdistRange(1);
     SRmaxRange = SRdistRange(2);

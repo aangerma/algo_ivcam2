@@ -22,8 +22,6 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         results.geomErr = dfzresults.geomErr;
         results.extraImagesGeomErr = dfzresults.extraImagesGeomErr;
         results.potentialPitchFixInDegrees = dfzresults.potentialPitchFixInDegrees;
-        results.rtdDiffBetweenPresets = dfzresults.rtdDiffBetweenPresets;
-        results.shortRangeImagesGeomErr = dfzresults.shortRangeImagesGeomErr;
         
         results.dfzScaleErrH = dfzresults.dfzScaleErrH;
         results.dfzScaleErrV = dfzresults.dfzScaleErrV;
@@ -51,17 +49,11 @@ function [frameBytes, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ
     cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
     ii = 0;
     for n=1:numel(calibParams.dfz.captures.capture)
-        if (~strcmp(calibParams.dfz.captures.capture(n).type,'shortRange'))
-            ii = ii+1;
-        end
+        ii = ii+1;
         nx(n) = ii;
     end
     
-    if strcmp(cap.type,'shortRange')
-        Calibration.aux.switchPresetAndUpdateModRef( hw,2,calibParams,results );
-    else
-        im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
-    end
+    im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
     
     if ~runParams.afterThermalCalib && (i == find(trainImages,1,'last'))
         DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart, calibParams.gnrl.pzrMeas);
@@ -69,19 +61,8 @@ function [frameBytes, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ
 %            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
     frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
     
-    if strcmp(cap.type,'shortRange')
-        Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
-    end
 end
-function [modRefDec] = getModRefDecValFromTable(hw,outFolder, presetCsvName)
-    presetFn = fullfile(outFolder,'AlgoInternal',presetCsvName);
-    presetTable=readtable(presetFn);
-    modRefInd=find(strcmp(presetTable.name,'modulation_ref_factor'));
-    s=hw.cmd('irb e2 09 01');
-    max_hex = sscanf(s,'Address: %*s => %s');
-    maxMod_dec = hex2dec(max_hex);
-    modRefDec = presetTable.value(modRefInd)*maxMod_dec;
-end
+
 
 function [] = DFZ_calib_Output(hw,fw,r,dfzRegs,results ,runParams,calibParams)
         r.reset();

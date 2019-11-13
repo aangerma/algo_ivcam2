@@ -1,4 +1,4 @@
-function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn, save_input_flag, save_internal_input_flag, save_output_flag, fprintff)
+function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn, save_input_flag, save_internal_input_flag, save_output_flag, skip_thermal_iterations_save, fprintff)
 % descrition :
 %   this function configured the all calibration mode of work, initiate
 %   global variable for all cal function use.
@@ -16,16 +16,17 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
 
     t0 = tic;
     clear delay_R_calib_calc;   % persistance variable in function.
-    global g_output_dir g_calib_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_fprintff g_delay_cnt acc g_LogFn g_temp_count g_countRuntime;
-    g_delay_cnt                 = 0;
-    g_calib_dir                 = calib_dir;
-    g_output_dir                = output_dir;
-    g_save_input_flag           = save_input_flag;
-    g_save_output_flag          = save_output_flag;
-    g_save_internal_input_flag  = save_internal_input_flag;
-    acc                         = [];
-    g_temp_count                = 0;
-    g_countRuntime              = 1;
+    global g_output_dir g_calib_dir g_save_input_flag  g_save_internal_input_flag  g_save_output_flag  g_skip_thermal_iterations_save  g_fprintff g_delay_cnt acc g_LogFn g_temp_count g_countRuntime;
+    g_delay_cnt                     = 0;
+    g_calib_dir                     = calib_dir;
+    g_output_dir                    = output_dir;
+    g_save_input_flag               = save_input_flag;
+    g_save_output_flag              = save_output_flag;
+    g_save_internal_input_flag      = save_internal_input_flag;
+    g_skip_thermal_iterations_save  = skip_thermal_iterations_save;
+    acc                             = [];
+    g_temp_count                    = 0;
+    g_countRuntime                  = 1;
     
     func_name = dbstack;
     func_name = func_name(1).name;

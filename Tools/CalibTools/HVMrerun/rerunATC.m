@@ -15,11 +15,13 @@ dataIn.output_dir = [generalPath, dataIn.output_dir(ind:end)];
 dataIn.calib_params_fn = [generalPath, dataIn.calib_params_fn(ind:end)];
 dataIn.calib_dir = [generalPath, dataIn.calib_dir(ind:end)];
 dataIn.save_input_flag = 0;
+dataIn.save_internal_input_flag = 0;
 dataIn.save_output_flag = 0;
+dataIn.skip_thermal_iterations_save = 1;
 if isfield(dataIn, 'fprintff')
-    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_output_flag, dataIn.fprintff);
+    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
 else
-    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_output_flag);
+    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save);
 end
 dataOut = load([inputPath, 'cal_init_out.mat']);
 checkOutputEquality(dataOut, dataRes)
