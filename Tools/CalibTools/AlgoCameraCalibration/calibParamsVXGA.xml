@@ -412,6 +412,12 @@
             <JFILinvMinMax>4294902520</JFILinvMinMax> <!-- invalidate z below  -->
         </short>
     </presets>
+    <aging>
+        <roi>0.5</roi>
+        <DAC>[495,1871,3199,6351]</DAC><!-- DAC values to config before reading vdd -->
+        <nFramesToAverage>30</nFramesToAverage>
+        <nreadsToAverage>30</nreadsToAverage>
+    </aging>
    <tableVersions>
         <algoCalib>4.17</algoCalib>
         <algoRtdOverAngX>3.17</algoRtdOverAngX>
