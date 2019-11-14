@@ -1,21 +1,14 @@
 basePath = 'X:\Users\mkiperwa\algo2ValWrgb\fromTesters\';%'X:\Users\mkiperwa\algo2ValWrgb';
 unitNumber = {'F9340026\Algo2 3.08.0 25C Thermo';'F9340026\Algo2 3.08.0 10C Self Heating';'F9340026\Algo2 3.08.0 10C Thermo';...
     'F9340026\Algo2 3.08.0 Self Heating'};%{'F9340021';'F9340203'; 'F9340255'};
-
+load('X:\Users\mkiperwa\algo2ValWrgb\fromTesters\F9340026\25CThermoTransData_humid.mat');
 for ixUnit = 1:numel(unitNumber)
     folderData = dir([basePath '\' unitNumber{ixUnit}]);
-    %     for ixFldr = 1:numel(folderData)
-    %         if ~contains(folderData(ixFldr).name,'TC')
-    %             continue;
-    %         end
-    %         calibDataFullPath = [basePath '\' unitNumber{ixUnit} '\' folderData(ixFldr).name];
-    %         load([calibDataFullPath '\validationData.mat']);
-    %     end
     calibDataFullPath = [basePath '\' unitNumber{ixUnit}];
     load([calibDataFullPath '\validationData.mat']);
     disp(['Unit ' unitNumber{ixUnit}]);
     tempData = [data.framesData.temp];
-    lddData = [tempData.ldd];
+    lddData = [tempData.humidity];
     minLdd = floor(min(lddData));
     maxLdd = ceil(max(lddData));
     crnrPts = nan(numel(tempData),size(data.framesData(1).ptsWithZ,1),2);
@@ -27,8 +20,6 @@ for ixUnit = 1:numel(unitNumber)
     %%
     tempDiff = 1;
     tempRngVec = minLdd:tempDiff:maxLdd;
-    totalTempRngVec{ixUnit,:} = tempRngVec;
-    %     errVec = nan(numel(tempRngVec)-2,1);
     errVec = nan(numel(tempRngVec)-1,1);
     resultsStruct = struct('xRmse',errVec,'xRmseCorrected',errVec,'yRmse',errVec,'yRmseCorrected',errVec,...
         'xMeanAbsErr',errVec,'xMeanAbsErrCorrected',errVec,'yMeanAbsErr',errVec,'yMeanAbsErrCorrected',errVec,...
@@ -37,18 +28,15 @@ for ixUnit = 1:numel(unitNumber)
     resultStructFN = fieldnames(resultsStruct);
     geoTrans = 'nonreflectivesimilarity'; %'projective'
     figure; title(['Unit ' regexprep(unitNumber{ixUnit},'\',' ')]);
-    referTempRng = [44,45];%[50 51];
+    referTempRng = thermalFix.referenceTempRng;%[50 51];
     [matchedPointsMaxTemp] = getMedianPointPerTemp(crnrPts,referTempRng, lddData);
     xVec = errVec;
-    %     for k = 1:numel(tempRngVec)-2
-    if ixUnit == 1
-        thermalFix = struct('T',nan(3,3,numel(tempRngVec)-1),'tempRange',nan(2,numel(tempRngVec)-1),'referenceTempRng',referTempRng);
-    end
     for k = 1:numel(tempRngVec)-1
         if tempRngVec(k) == referTempRng(1)
-%             for iNames = 1:numel(resultStructFN)
-%                 resultsStruct.(resultStructFN{iNames})(k) = [];
-%             end
+            continue;
+        end
+        ixT = find(thermalFix.tempRange(1,:) == tempRngVec(k));
+        if isempty(ixT)
             continue;
         end
         matchedPoints2 = matchedPointsMaxTemp;
@@ -65,18 +53,14 @@ for ixUnit = 1:numel(unitNumber)
         resultsStruct.yMaxAbsErr(k,1) = maxAbsXyErr(2);
         resultsStruct.xMeanAbsErr(k,1) = meanAbsXyErr(1);
         resultsStruct.yMeanAbsErr(k,1) = meanAbsXyErr(2);
-        %Find transformation
-        tform = fitgeotrans(matchedPoints1,matchedPoints2, geoTrans);
-        if ixUnit == 1
-            thermalFix.T(:,:,k) = tform.T;
-            thermalFix.tempRange(:,k) = [tempRngVec(k);tempRngVec(k+1)];
-        end
-        resultsStruct.scaleCos(k,1) = tform.T(1,1);
-        resultsStruct.scaleSin(k,1) = tform.T(2,1);
-        resultsStruct.tx(k,1) = tform.T(3,1);
-        resultsStruct.ty(k,1) = tform.T(3,2);
-        % Apply the fix        
-        xyCorrect = [matchedPoints1,ones(size(matchedPoints1,1),1)]*tform.T;
+        
+        T = thermalFix.T(:,:,ixT);
+        resultsStruct.scaleCos(k,1) = T(1,1);
+        resultsStruct.scaleSin(k,1) = T(2,1);
+        resultsStruct.tx(k,1) = T(3,1);
+        resultsStruct.ty(k,1) = T(3,2);
+        % Apply the fix
+        xyCorrect = [matchedPoints1,ones(size(matchedPoints1,1),1)]*T;
         xyCorrect = xyCorrect(:,1:2)./xyCorrect(:,3);
         %Calculate errors after fix
         [rmsXyErr,maxAbsXyErr,meanAbsXyErr] = calcErrors(xyCorrect,matchedPoints2);
@@ -87,6 +71,7 @@ for ixUnit = 1:numel(unitNumber)
         resultsStruct.xMeanAbsErrCorrected(k,1) = meanAbsXyErr(1);
         resultsStruct.yMeanAbsErrCorrected(k,1) = meanAbsXyErr(2);
         %Plot corners:
+% %         newPts = matchedPoints2;
         newPts = xyCorrect;
         tabplot;
         plot(matchedPoints1(:,1),matchedPoints1(:,2),'+r');
