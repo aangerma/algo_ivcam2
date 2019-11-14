@@ -9,6 +9,7 @@ function [table,results,Invalid_Frames] = generateFWTable(data,calibParams,runPa
 % •	Averaging of 10 last LDD temperature measurements every second. Temperature sample rate is 10Hz. Same for vBias and Ibias 
 % •	Replace “Reserved_512_Calibration_1_CalibData_Ver_20_00.txt” with ~“Algo_Thermal_Loop_512_ 1_CalibInfo_Ver_21_00.bin” 
 % •	In case table does not exist, continue working with old thermal loop
+
 framesData = data.framesData;
 regs = data.regs;
 invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ),1:numel(framesData));
@@ -43,7 +44,7 @@ verifyThermalSweepValidity(ldd, startI, calibParams.warmUp)
 results.ma.slope = aMA;
 
 % jump detection
-jumpIdcs = detectJump(rtdPerFrame, calibParams.fwTable.jumpDet, false);
+jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, false, runParams);
 if isempty(jumpIdcs) % no jump detected
     ind = 1;
 else % last diff outlier is the first post-jump index
@@ -68,16 +69,10 @@ for k = 1:length(lddGrid)
 end
 results.rtd.refTemp = data.dfzRefTmp;
 [~, ind] = min(abs(results.rtd.refTemp - lddGrid));
-results.rtd.tmptrOffsetValues = rtdGrid-rtdGrid(ind); % aligning to reference temperature
+refRtd = rtdGrid(ind);
+results.rtd.tmptrOffsetValues = rtdGrid-refRtd; % aligning to reference temperature
 
 if ~isempty(runParams)
-    ff = Calibration.aux.invisibleFigure;
-    plot(ldd,rtdPerFrame,'*');
-    title('RTD(ldd) and Fitted line');
-    grid on;xlabel('Ldd Temperature');ylabel('mean rtd');
-    hold on
-    plot(lddGrid,rtdGrid,'-o');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_Temp'));
     ff = Calibration.aux.invisibleFigure;
     plot(ma,rtdPerFrame,'*');
     title('RTD(ma) and Fitted line');
@@ -93,7 +88,6 @@ if ~isempty(runParams)
     title('Frames Per Ldd Temperature Histogram'); grid on;xlabel('Ldd Temperature');ylabel('count');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Histogram_Frames_Per_Temp'));
 end
-
 
 %% Y Fix - groupByVBias2
 vbias2 = vBias(2,:);
@@ -115,13 +109,13 @@ end
 results.angy.minval = mean(binEdges(1:2));
 results.angy.maxval = mean(binEdges(end-1:end));
 results.angy.nBins = nBins;
-jumpIdcs = detectJump(results.angy.scale, calibParams.fwTable.jumpDet, true);
+jumpIdcs = detectJump(results.angy.scale, 'Yscale', calibParams.fwTable.jumpDet, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angy scale jump detected - failing unit.\n')
     table = [];
     return;
 end
-jumpIdcs = detectJump(results.angy.offset, calibParams.fwTable.jumpDet, true);
+jumpIdcs = detectJump(results.angy.offset, 'Yoffset', calibParams.fwTable.jumpDet, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angy offset jump detected - failing unit.\n')
     table = [];
@@ -141,12 +135,10 @@ if ~isempty(runParams)
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Scale and Offset Per vBias2'));
 end
 
-
 %% X Fix - groupByVBias1+3
 vbias1 = vBias(1,:);
 vbias3 = vBias(3,:);
 [a,b] = linearTrans(vec(vbias1(startI:end)),vec(vbias3(startI:end)));
-
 
 minmaxvbias1 = minmax(vbias1);
 maxvbias1 = minmaxvbias1(2);
@@ -162,25 +154,23 @@ binIndices = max(1,min(nBins,round(tgal/dbin)+1));
 refBinTGal = (1/norm(p1-p0)^2)*(p1-p0)*([regs.FRMW.dfzVbias(1),regs.FRMW.dfzVbias(3)]-p0)';
 refBinIndex = max(1,min(nBins,round(refBinTGal/dbin)+1));
 framesPerVBias13 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binIndices);
-
 if all(all(isnan(framesPerVBias13(refBinIndex,:,:))))
     fprintff('Self heat didn''t reach algo calibration vbias1/3.\n');
     table = [];
     return;
 end
 
-
 [results.angx.scale,results.angx.offset] = linearTransformToRef(framesPerVBias13(:,validCB,2),refBinIndex);
 results.angx.p0 = p0;
 results.angx.p1 = p1;
 results.angx.nBins = nBins;
-jumpIdcs = detectJump(results.angx.scale, calibParams.fwTable.jumpDet, true);
+jumpIdcs = detectJump(results.angx.scale, 'Xscale', calibParams.fwTable.jumpDet, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angx scale jump detected - failing unit.\n')
     table = [];
     return;
 end
-jumpIdcs = detectJump(results.angx.offset, calibParams.fwTable.jumpDet, true);
+jumpIdcs = detectJump(results.angx.offset, 'Xoffset', calibParams.fwTable.jumpDet, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angx offset jump detected - failing unit.\n')
     table = [];
@@ -201,8 +191,7 @@ if ~isempty(runParams)
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Scale and Offset Per vBias13'));
 end
 
-
-
+%% Table generation
 angXscale = vec(results.angx.scale);
 angXoffset = vec(results.angx.offset);
 angYscale = vec(results.angy.scale);
@@ -226,32 +215,78 @@ table = fillStartNans(table);
 table = flipud(fillStartNans(flipud(table)));   
 
 % extrapolation
-vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams);
+vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
 table = extrapolateTable(table, results, vBiasLims, calibParams);
 results.rtd.origMinval = results.rtd.minval;
 results.rtd.origMaxval = results.rtd.maxval;
 results.rtd.minval = calibParams.fwTable.tempBinRange(1);
 results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
+results.angy.origMinval = results.angy.minval;
+results.angy.origMaxval = results.angy.maxval;
 results.angy.minval = vBiasLims(2,1);
 results.angy.maxval = vBiasLims(2,2);
+results.angx.origP0 = results.angx.p0;
+results.angx.origP1 = results.angx.p1;
 results.angx.p0 = vBiasLims([1,3],1)';
 results.angx.p1 = vBiasLims([1,3],2)';
 results.table = table;
 
 if ~isempty(runParams)
-    titles = {'dsmXscale','dsmYscale','dsmXoffset','dsmYoffset','RTD Offset'};
-    xlabels = 'Table Row';
-    for i = 1:5
-        ff = Calibration.aux.invisibleFigure;
-        plot(table(:,i));
-        title(titles{i});
-        xlabel(xlabels);
-        Calibration.aux.saveFigureAsImage(ff,runParams,'FWTable',titles{i});
-    end
+    v1Orig = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);
+    v1 = linspace(results.angx.p0(1), results.angx.p1(1), nBins);
+    v3 = linspace(results.angx.p0(2), results.angx.p1(2), nBins);
+    tickIdcs = [1,9,17,25,32,40,48];
+    % angX scale
+    ff = Calibration.aux.invisibleFigure;
+    hold all
+    plot(v1Orig, dsmXscale, '*')
+    plot(v1Orig, dsmXscale, '-o')
+    plot(v1, table(:,1), '.-', 'linewidth', 2)
+    set(gca, 'xtick', v1(tickIdcs))
+    set(gca, 'xticklabel', arrayfun(@(x) sprintf('(%.2f,%.2f)', v1(x), v3(x)), tickIdcs, 'UniformOutput', false))
+    grid on, xlabel('(Vbias1,Vbias3) [V]'), ylabel('DSM X scale [1/deg]'), title('DSM X scale vs. (vBias1,vBias3)');
+    legend('raw', 'table (orig)', 'table (extrapolated)')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_scale_table'));
+    % angY scale
+    ff = Calibration.aux.invisibleFigure;
+    hold all
+    plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYscale, '*')
+    plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYscale, '-o')
+    plot(linspace(results.angy.minval, results.angy.maxval, nBins), table(:,2), '.-', 'linewidth', 2)
+    grid on, xlabel('Vbias2 [V]'), ylabel('DSM Y scale [1/deg]'), title('DSM Y scale vs. vBias2');
+    legend('raw', 'table (orig)', 'table (extrapolated)')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_scale'));
+    % angX offset
+    ff = Calibration.aux.invisibleFigure;
+    hold all
+    plot(v1Orig, dsmXoffset, '*')
+    plot(v1Orig, dsmXoffset, '-o')
+    plot(v1, table(:,3), '.-', 'linewidth', 2)
+    set(gca, 'xtick', v1(tickIdcs))
+    set(gca, 'xticklabel', arrayfun(@(x) sprintf('(%.2f,%.2f)', v1(x), v3(x)), tickIdcs, 'UniformOutput', false))
+    grid on, xlabel('(Vbias1,Vbias3) [V]'), ylabel('DSM X offset [deg]'), title('DSM X offset vs. (vBias1,vBias3)');
+    legend('raw', 'table (orig)', 'table (extrapolated)')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_offset'));
+    % angY offset
+    ff = Calibration.aux.invisibleFigure;
+    hold all
+    plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYoffset, '*')
+    plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYoffset, '-o')
+    plot(linspace(results.angy.minval, results.angy.maxval, nBins), table(:,4), '.-', 'linewidth', 2)
+    grid on, xlabel('Vbias2 [V]'), ylabel('DSM Y offset [deg]'), title('DSM Y offset vs. vBias2');
+    legend('raw', 'table (orig)', 'table (extrapolated)')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_offset'));
+    % RTD
+    ff = Calibration.aux.invisibleFigure;
+    hold all
+    plot(ldd, rtdPerFrame-refRtd,'*');
+    plot(lddGrid, rtdGrid-refRtd,'-o');
+    plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
+    grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');
+    legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('RTD'));
 end
-
 assert(~any(isnan(table(:))),'Thermal table contains nans \n');
-
 
 end
 
@@ -330,7 +365,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function vBiasLims = extrapolateVBiasLimits(results, ldd, vBias, calibParams)
+function vBiasLims = extrapolateVBiasLimits(results, ldd, vBias, calibParams, runParams)
 
 vBiasLims = zeros(3,2);
 
@@ -353,8 +388,8 @@ if calibParams.fwTable.extrap.expandVbiasLims
     vBiasLims = vBiasLims + calibParams.fwTable.extrap.expandFactor*vBiasSpan*[-1,1];
 end
 
-if 0
-    figure, hold all
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure; hold all
     lddExt = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), 48);
     plot(ldd, vBias(1,:), 'b.-'), plot(lddExt, p0(1)+(p1(1)-p0(1))*fit13(lddExt), 'c-o')
     plot(ldd, vBias(2,:), '.-', 'color', [0,0.5,0]),  plot(lddExt, fit2(lddExt), 'g-o')
@@ -363,6 +398,7 @@ if 0
     plot(calibParams.fwTable.tempBinRange, vBiasLims(2,:), 'p', 'color', [0,0.5,0])
     plot(calibParams.fwTable.tempBinRange, vBiasLims(3,:), 'rp')
     grid on, xlabel('LDD [deg]'), ylabel('vBias [V]'), legend('vBias1','extrap','vBias2','extrap','vBias3','extrap','vBias1Lims','vBias2Lims','vBias3Lims')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables','vBiasLimExtrap');
 end
 
 end
@@ -385,8 +421,8 @@ extrapParams = calibParams.fwTable.extrap;
 % angy extrapolation
 origGridY = linspace(results.angy.minval, results.angy.maxval, results.angy.nBins);
 extrapGridY = linspace(vBiasLims(2,1), vBiasLims(2,2), results.angy.nBins);
-[extrapYScale, yScaleStr] = polyExtrap(origGridY', table(:,2), extrapGridY, extrapParams.yScaleOrder);
-[extrapYOffset, yOffsetStr] = polyExtrap(origGridY', table(:,4), extrapGridY, extrapParams.yOffsetOrder);
+extrapYScale = polyExtrap(origGridY', table(:,2), extrapGridY, extrapParams.yScaleOrder);
+extrapYOffset = polyExtrap(origGridY', table(:,4), extrapGridY, extrapParams.yOffsetOrder);
 
 % angx extrapolation
 p0 = results.angx.p0;
@@ -394,26 +430,13 @@ p1 = results.angx.p1;
 tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBiasLims([1,3],:)'-p0)';
 origGridX = linspace(0, 1, results.angx.nBins);
 extrapGridX = linspace(tgal(1), tgal(2), results.angx.nBins);
-[extrapXScale, xScaleStr] = polyExtrap(origGridX', table(:,1), extrapGridX, extrapParams.xScaleOrder);
-[extrapXOffset, xOffsetStr] = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOffsetOrder);
+extrapXScale = polyExtrap(origGridX', table(:,1), extrapGridX, extrapParams.xScaleOrder);
+extrapXOffset = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOffsetOrder);
 
 % rtd extrap
 origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
 extrapGridRtd = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
-[extrapRtd, rtdStr] = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, extrapParams.rtdOrder);
-
-% debug plot
-if 0
-    figure, hold all
-    plot(origGridY, table(:,2), 'b.-'),                     plot(extrapGridY, extrapYScale, 'c-o')
-    plot(origGridY, table(:,4), '.-', 'color', [0,0.5,0]),  plot(extrapGridY, extrapYOffset, 'g-o')
-    plot(p0(1)+origGridX*(p1(1)-p0(1)), table(:,1), 'r.-'), plot(vBiasLims(1,1)+origGridX*(vBiasLims(1,2)-vBiasLims(1,1)), extrapXScale, 'm-o')
-    plot(p0(1)+origGridX*(p1(1)-p0(1)), table(:,3), 'k.-'), plot(vBiasLims(1,1)+origGridX*(vBiasLims(1,2)-vBiasLims(1,1)), extrapXOffset, '-o', 'color', [0.5,0.5,0.5])
-    grid on, xlabel('vBias'), legend('yScale',yScaleStr,'yOffset',yOffsetStr,'xScale',xScaleStr,'xOffset',xOffsetStr)
-    figure, hold all
-    plot(origGridRtd, table(:,5), 'b.-'),                   plot(extrapGridRtd, extrapRtd, 'c-o')
-    grid on, xlabel('ldd'), legend('RTD',rtdStr)
-end
+extrapRtd = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, extrapParams.rtdOrder);
 
 % table update
 table(:,1) = extrapXScale;
@@ -446,7 +469,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function jumpIdcs = detectJump(dataVec, jumpDetParams, doDetrend)
+function jumpIdcs = detectJump(dataVec, paramName, jumpDetParams, doDetrend, runParams)
 % smooth differentiation
 dataVecSmooth = smooth(dataVec, jumpDetParams.nSmooth);
 dataVecSmooth = dataVecSmooth(ceil(jumpDetParams.nSmooth/2):jumpDetParams.nSmooth:end);
@@ -467,21 +490,27 @@ end
 absDeviation = abs(smoothDiffDetrended - median(smoothDiffDetrended));
 deviationPerc = min(jumpDetParams.deviationPerc, 100*(nPts-jumpDetParams.minNumOutliers)/nPts);
 jumpDetThreshold = jumpDetParams.thFactor * prctile(absDeviation, deviationPerc);
-jumpIdcsSmooth = 1 + find(absDeviation >= jumpDetThreshold);
+isOutlier = (absDeviation >= jumpDetThreshold);
+isJump = isOutlier;
+isJump([1:find(~isJump,1,'first'), find(~isJump,1,'last'):end]) = false; % ignoring leading/trailing large slopes
+jumpIdcsSmooth = find(isJump);
 if ~isempty(jumpIdcsSmooth)
-    jumpIdcs = ceil(jumpDetParams.nSmooth/2)+(jumpIdcsSmooth-1)*jumpDetParams.nSmooth;
+    jumpIdcs = ceil(jumpDetParams.nSmooth/2)+((jumpIdcsSmooth+1)-1)*jumpDetParams.nSmooth;
 else
     jumpIdcs = [];
 end
-if 0
-    figure
+% visualization
+if ~isempty(jumpIdcs)
+    ff = Calibration.aux.invisibleFigure;
     subplot(121), hold all
     plot(dataVec, 'b.-'),               plot(ceil(jumpDetParams.nSmooth/2):jumpDetParams.nSmooth:length(dataVec), dataVecSmooth, 'c-o')
-    grid on, legend('raw', 'smooth')
+    grid on, legend('raw', 'smooth'), title(paramName)
     subplot(122), hold all
     plot(smoothDiff, 'b.-'),            plot(trend, 'c-')
     plot(smoothDiffDetrended, 'k-o'),   plot([1,length(smoothDiffDetrended)], median(smoothDiffDetrended)+ones(2,1)*[-1,1]*jumpDetThreshold, 'm--')
-    plot(jumpIdcsSmooth, smoothDiffDetrended(jumpIdcsSmooth), 'ro')
-    grid on, legend('smooth diff', 'trend', 'detrended', 'low threshold', 'high threshold', 'jump detected')
+    plot(find(isOutlier), smoothDiffDetrended(isOutlier), 'ro')
+    plot(jumpIdcsSmooth, smoothDiffDetrended(jumpIdcsSmooth), 'ro', 'markerfacecolor', 'm')
+    grid on, legend('smooth diff', 'trend', 'detrended', 'low threshold', 'high threshold', 'outliers', 'jump detected')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'JumpDetection',paramName);
 end
 end
