@@ -54,11 +54,6 @@ function [frameBytes, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ
     end
     
     im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
-    
-    if ~runParams.afterThermalCalib && (i == find(trainImages,1,'last'))
-        DFZ_regs = update_DFZRegsList(hw,DFZ_regs,dfzCalTmpStart,dfzApdCalTmpStart,pzrsIBiasStart,pzrsVBiasStart, calibParams.gnrl.pzrMeas);
-    end
-%            im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',i),targetInfo);
     frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
     
 end

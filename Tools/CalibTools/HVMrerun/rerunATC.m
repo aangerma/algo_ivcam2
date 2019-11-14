@@ -1,11 +1,10 @@
 clear all
 clc
 
-generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
+generalPath = [pwd, '\'];
 curTestDir = 'ATC4\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
-capturesPath = [generalPath, curTestDir, 'Images\'];
 
 %% cal_init
 fprintf('\nrunning cal_init... ');
@@ -19,9 +18,9 @@ dataIn.save_internal_input_flag = 0;
 dataIn.save_output_flag = 0;
 dataIn.skip_thermal_iterations_save = 1;
 if isfield(dataIn, 'fprintff')
-    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
+    [dataRes.calibParams, dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
 else
-    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save);
+    [dataRes.calibParams, dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
 end
 dataOut = load([inputPath, 'cal_init_out.mat']);
 checkOutputEquality(dataOut, dataRes)
@@ -51,10 +50,7 @@ files = dir([inputPath, 'IR_DelayCalibCalc_init_in*']);
 for iFile = 1:length(files)
     fprintf('\niteration #%d... ', iFile);
     dataIn = load(sprintf('%sIR_DelayCalibCalc_init_in%d.mat', inputPath, iFile));
-    ind = strfind(dataIn.path_up, curTestDir);
-    dataIn.path_up = [generalPath, dataIn.path_up(ind:end)];
-    dataIn.path_down = [generalPath, dataIn.path_down(ind:end)];
-    [dataRes.res, dataRes.delayIR, dataRes.im, dataRes.pixVar] = IR_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    [dataRes.res, dataRes.delayIR, dataRes.im, dataRes.pixVar] = IR_DelayCalibCalc(dataIn.frameBytesUp, dataIn.frameBytesDown, dataIn.sz, dataIn.delay, dataIn.calibParams, dataIn.isFinalStage, dataIn.fResMirror);
     dataOut = load(sprintf('%sIR_DelayCalibCalc_init_out%d.mat', inputPath, iFile));
     checkOutputEquality(dataOut, dataRes)
 end
@@ -66,11 +62,7 @@ files = dir([inputPath, 'Z_DelayCalibCalc_init_in*']);
 for iFile = 1:length(files)
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sZ_DelayCalibCalc_init_in%d.mat', inputPath, iFile));
-    ind = strfind(dataIn.path_up, curTestDir);
-    dataIn.path_up = [generalPath, dataIn.path_up(ind:end)];
-    dataIn.path_down = [generalPath, dataIn.path_down(ind:end)];
-    dataIn.path_both = [generalPath, dataIn.path_both(ind:end)];
-    [dataRes.res, dataRes.delayZ, dataRes.im] = Z_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.path_both, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    [dataRes.res, dataRes.delayZ, dataRes.im] = Z_DelayCalibCalc(dataIn.frameBytesUp, dataIn.frameBytesDown, dataIn.frameBytesBoth, dataIn.sz, dataIn.delay, dataIn.calibParams, dataIn.isFinalStage, dataIn.fResMirror);
     dataOut = load(sprintf('%sZ_DelayCalibCalc_init_out%d.mat', inputPath, iFile));
     checkOutputEquality(dataOut, dataRes)
 end
@@ -82,9 +74,7 @@ files = dir([inputPath, 'TmptrDataFrame_Calc_in*']);
 for iFile = 1:length(files)-1
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sTmptrDataFrame_Calc_in%d.mat', inputPath, iFile-1));
-    ind = strfind(dataIn.InputPath, curTestDir);
-    dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.Invalid_Frames]  = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz , dataIn.InputPath, dataIn.calibParams, dataIn.maxTime2Wait);
+    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.metricsWithTheoreticalFix, dataRes.Invalid_Frames] = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz, dataIn.frameBytes, dataIn.calibParams, dataIn.maxTime2Wait);
     dataOut = load(sprintf('%sTmptrDataFrame_Calc_out%d.mat', inputPath, iFile-1));
     checkOutputEquality(dataOut, dataRes)
 end
@@ -96,10 +86,7 @@ files = dir([inputPath, 'IR_DelayCalibCalc_final_in*']);
 for iFile = 1:length(files)
     fprintf('\niteration #%d... ', iFile);
     dataIn = load(sprintf('%sIR_DelayCalibCalc_final_in%d.mat', inputPath, iFile));
-    ind = strfind(dataIn.path_up, curTestDir);
-    dataIn.path_up = [generalPath, dataIn.path_up(ind:end)];
-    dataIn.path_down = [generalPath, dataIn.path_down(ind:end)];
-    [dataRes.res, dataRes.delayIR, dataRes.im, dataRes.pixVar] = IR_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    [dataRes.res, dataRes.delayIR, dataRes.im, dataRes.pixVar] = IR_DelayCalibCalc(dataIn.frameBytesUp, dataIn.frameBytesDown, dataIn.sz, dataIn.delay, dataIn.calibParams, dataIn.isFinalStage, dataIn.fResMirror);
     dataOut = load(sprintf('%sIR_DelayCalibCalc_final_out%d.mat', inputPath, iFile));
     checkOutputEquality(dataOut, dataRes)
 end
@@ -111,11 +98,7 @@ files = dir([inputPath, 'Z_DelayCalibCalc_final_in*']);
 for iFile = 1:length(files)
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sZ_DelayCalibCalc_final_in%d.mat', inputPath, iFile));
-    ind = strfind(dataIn.path_up, curTestDir);
-    dataIn.path_up = [generalPath, dataIn.path_up(ind:end)];
-    dataIn.path_down = [generalPath, dataIn.path_down(ind:end)];
-    dataIn.path_both = [generalPath, dataIn.path_both(ind:end)];
-    [dataRes.res, dataRes.delayZ, dataRes.im] = Z_DelayCalibCalc(dataIn.path_up, dataIn.path_down, dataIn.path_both, dataIn.sz, dataIn.delay, dataIn.calibParams);
+    [dataRes.res, dataRes.delayZ, dataRes.im] = Z_DelayCalibCalc(dataIn.frameBytesUp, dataIn.frameBytesDown, dataIn.frameBytesBoth, dataIn.sz, dataIn.delay, dataIn.calibParams, dataIn.isFinalStage, dataIn.fResMirror);
     dataOut = load(sprintf('%sZ_DelayCalibCalc_final_out%d.mat', inputPath, iFile));
     checkOutputEquality(dataOut, dataRes)
 end
@@ -124,9 +107,7 @@ fprintf('\n')
 %% DSM_Calib_Calc
 fprintf('\nrunning DSM_Calib_Calc... ');
 dataIn = load([inputPath, 'DSM_Calib_Calc_in.mat']);
-ind = strfind(dataIn.path_spherical, curTestDir);
-dataIn.path_spherical = [generalPath, dataIn.path_spherical(ind:end)];
-[dataRes.result, dataRes.DSM_data, dataRes.angxZO, dataRes.angyZO] = DSM_Calib_Calc(dataIn.path_spherical, dataIn.sz, dataIn.angxRawZOVec, dataIn.angyRawZOVec, dataIn.dsmregs_current, dataIn.calibParams);
+[dataRes.success, dataRes.DSM_data, dataRes.angxZO, dataRes.angyZO] = DSM_Calib_Calc(dataIn.frameBytes, dataIn.sz, dataIn.angxRawZOVec, dataIn.angyRawZOVec, dataIn.dsmregs_current, dataIn.calibParams);
 dataOut = load([inputPath, 'DSM_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
@@ -137,9 +118,7 @@ files = dir([inputPath, 'TmptrDataFrame_Calc_in*']);
 for iFile = length(files)
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sTmptrDataFrame_Calc_in%d.mat', inputPath, iFile-1));
-    ind = strfind(dataIn.InputPath, curTestDir);
-    dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.Invalid_Frames]  = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz , dataIn.InputPath, dataIn.calibParams, dataIn.maxTime2Wait);
+    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.metricsWithTheoreticalFix, dataRes.Invalid_Frames] = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz, dataIn.frameBytes, dataIn.calibParams, dataIn.maxTime2Wait);
     dataOut = load(sprintf('%sTmptrDataFrame_Calc_out%d.mat', inputPath, iFile-1));
     checkOutputEquality(dataOut, dataRes)
 end

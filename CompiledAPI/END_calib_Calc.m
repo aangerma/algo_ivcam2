@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, configurationFolder, eepromRegs, eepromBin, afterThermalCalib_flag)
+function [results, regs, luts] = END_calib_Calc(roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, configurationFolder, eepromRegs, eepromBin)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -38,25 +38,24 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     % input save
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'configurationFolder', 'eepromRegs', 'eepromBin', 'afterThermalCalib_flag');
+        save(fn, 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'configurationFolder', 'eepromRegs', 'eepromBin');
     end
     
     % operation
     runParams.outputFolder          = g_output_dir;
     runParams.undist                = undist_flag;
-    runParams.afterThermalCalib     = afterThermalCalib_flag;
     runParams.version               = AlgoCameraCalibToolVersion;
     runParams.configurationFolder   = configurationFolder; 
     if (isempty(eepromRegs) || ~isstruct(eepromRegs)) % called from HVM tester
         eepromRegs = extractEepromRegs(eepromBin, g_calib_dir);
     end
-    [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, runParams.afterThermalCalib);
+    [delayRegs, dsmRegs, thermalRegs, dfzRegs] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs, dfzRegs);
     
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn, 'runParams', 'delayRegs', 'dsmregs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'fprintff', 'calibParams');
+        save(fn, 'runParams', 'delayRegs', 'dsmRegs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'fprintff', 'calibParams');
     end
-    [results ,regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams);
+    [results ,regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmRegs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams);
     
     % output save
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
@@ -74,17 +73,3 @@ function [results, regs, luts] = END_calib_Calc(delayRegs, dsmregs, roiRegs, dfz
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [dfzRegs, thermalRegs] = getThermalRegs(dfzRegs, eepromRegs, afterThermalCalib)
-    if afterThermalCalib
-        [~, ~, thermalRegs, dfzRegs] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs, dfzRegs);
-    else % dfzRegs was already enriched in DFZ_calib, thermalRegs are irrelevant
-        thermalRegs.FRMW.atlMinVbias1   = single(1);
-        thermalRegs.FRMW.atlMaxVbias1   = single(3);
-        thermalRegs.FRMW.atlMinVbias2   = single(1);
-        thermalRegs.FRMW.atlMaxVbias2   = single(3);
-        thermalRegs.FRMW.atlMinVbias3   = single(1);
-        thermalRegs.FRMW.atlMaxVbias3   = single(3);
-    end
-end

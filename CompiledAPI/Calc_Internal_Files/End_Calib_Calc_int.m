@@ -15,9 +15,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     
     %% prepare spare register to store the fov. 
 %     writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff);
-    if runParams.afterThermalCalib
-    	results = verticalFovChange(runParams, calibParams, results,fw);
-    end 
+    results = verticalFovChange(runParams, calibParams, results,fw);
     [results,undistRegs,undistLuts] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t);
     fw.setRegs(undistRegs,fnCalib);
     fw.setLut(undistLuts);
@@ -45,7 +43,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     % write new firmware files to another sub folder
     calibOutput=fullfile(runParams.outputFolder,'calibOutputFiles');
     mkdirSafe(calibOutput);
-    fw.generateTablesForFw(calibOutput,0,runParams.afterThermalCalib, calibParams.tableVersions); 
+    fw.generateTablesForFw(calibOutput,0,1, calibParams.tableVersions); 
    
     results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs);
 end
