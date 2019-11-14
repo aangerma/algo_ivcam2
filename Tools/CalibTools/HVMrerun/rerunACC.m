@@ -1,7 +1,7 @@
 clear all
 clc
 
-generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
+generalPath = [pwd, '\'];
 curTestDir = 'ACC27\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
@@ -62,7 +62,7 @@ fprintf('\nrunning END_calib_Calc... ');
 dataIn = load([inputPath, 'END_calib_Calc_in.mat']);
 ind = strfind(dataIn.fnCalib, curTestDir);
 dataIn.fnCalib = [generalPath, dataIn.fnCalib(ind:end)];
-[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin, dataIn.afterThermalCalib_flag);
+[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin);
 dataOut = load([inputPath, 'END_calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')

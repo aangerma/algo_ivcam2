@@ -1,7 +1,7 @@
 clear all
 clc
 
-generalPath = 'X:\Users\syaeli\Work\Code\algo_ivcam2\Tools\CalibTools\HVMrerun\';
+generalPath = [pwd, '\'];
 curTestDir = 'ATC4\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
@@ -84,7 +84,8 @@ for iFile = 1:length(files)-1
     dataIn = load(sprintf('%sTmptrDataFrame_Calc_in%d.mat', inputPath, iFile-1));
     ind = strfind(dataIn.InputPath, curTestDir);
     dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.Invalid_Frames]  = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz , dataIn.InputPath, dataIn.calibParams, dataIn.maxTime2Wait);
+    dataIn.calibParams.gnrl.rgb.res = [1920,1080];
+    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.Invalid_Frames] = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz , dataIn.InputPath, dataIn.calibParams, dataIn.maxTime2Wait);
     dataOut = load(sprintf('%sTmptrDataFrame_Calc_out%d.mat', inputPath, iFile-1));
     checkOutputEquality(dataOut, dataRes)
 end

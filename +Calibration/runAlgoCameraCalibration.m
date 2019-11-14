@@ -19,7 +19,6 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
     % runParams - Which calibration to perform.
     % calibParams - inner params that individual calibrations might use.
     [runParams,calibParams] = loadParamsXMLFiles(runParamsFn,calibParamsFn);
-    runParams.afterThermalCalib = true;
     
     if noCalibrations(runParams)
         calibPassed = -1;
@@ -130,7 +129,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
     %% Undist and table burn
     [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
     [delayRegs, dsmRegs, ~, ~] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs);
-    [results,regs,luts] = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin, runParams.afterThermalCalib);
+    [results,regs,luts] = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin);
     
     hw.runPresetScript('maReset');
     pause(0.1);
