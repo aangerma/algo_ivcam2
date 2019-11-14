@@ -1,4 +1,4 @@
-function [tablefn] = RtdOverAngX_Calib_Calc(frameBytesConstant, frameBytesSteps, calibParams, regs, luts)
+function tablefn = RtdOverAngX_Calib_Calc(frameBytesConstant, frameBytesSteps, calibParams, regs, luts)
 
     t0 = tic;
     global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;

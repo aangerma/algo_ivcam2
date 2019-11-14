@@ -128,8 +128,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
 
     %% Undist and table burn
     [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
-    [delayRegs, dsmRegs, ~, ~] = Calibration.aux.getATCregsFromEEPROMregs(eepromRegs);
-    [results,regs,luts] = END_calib_Calc(delayRegs, dsmRegs , roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin);
+    [results,regs,luts] = END_calib_Calc(roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin);
     
     hw.runPresetScript('maReset');
     pause(0.1);

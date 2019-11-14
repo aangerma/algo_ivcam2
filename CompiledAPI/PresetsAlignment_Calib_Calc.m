@@ -1,4 +1,4 @@
-function [results] = PresetsAlignment_Calib_Calc(frameBytes, nPresets, calibParams, res, z2mm)
+function results = PresetsAlignment_Calib_Calc(frameBytes, nPresets, calibParams, res, z2mm)
     % function [dfzRegs,results,calibPassed] = DFZ_Calib_Calc(InputPath,calibParams,DFZ_regs,regs_reff)
     % description: initiale set of the DSM scale and offset
     %regs_reff

@@ -5,7 +5,6 @@ generalPath = [pwd, '\'];
 curTestDir = 'ACC27\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
-capturesPath = [generalPath, curTestDir, 'Images\'];
 
 %% cal_init
 fprintf('\nrunning cal_init... ');
@@ -19,9 +18,9 @@ dataIn.save_internal_input_flag = 0;
 dataIn.save_output_flag = 0;
 dataIn.skip_thermal_iterations_save = 1;
 if isfield(dataIn, 'fprintff')
-    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
+    [dataRes.calibParams, dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
 else
-    [dataRes.calibParams , dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save);
+    [dataRes.calibParams, dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
 end
 dataOut = load([inputPath, 'cal_init_out.mat']);
 checkOutputEquality(dataOut, dataRes)
@@ -29,20 +28,20 @@ fprintf('\n')
 
 %% Preset_Short_Calib_Calc
 fprintf('\nrunning Preset_Short_Calib_Calc... ');
-dataIn = load([inputPath, 'Preset_Short_Calib_Calc_in.mat']);
-ind = strfind(dataIn.InputPath, curTestDir);
-dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.minRangeScaleModRef, dataRes.ModRefDec] = Preset_Short_Calib_Calc(dataIn.InputPath, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.sz, dataIn.calibParams);
-dataOut = load([inputPath, 'Preset_Short_Calib_Calc_out.mat']);
-checkOutputEquality(dataOut, dataRes)
+files = dir([inputPath, 'Preset_Short_Calib_Calc_in*']);
+for iFile = 1:length(files)
+    fprintf('\ncycle #%d... ', iFile);
+    dataIn = load(sprintf('%sPreset_Short_Calib_Calc_in%d.mat', inputPath, iFile));
+    [dataRes.isConverged, dataRes.nextLaserPoint, dataRes.minRangeScaleModRef, dataRes.ModRefDec] = Preset_Short_Calib_Calc(dataIn.frameBytes, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.curLaserPoint, dataIn.sz, dataIn.calibParams);
+    dataOut = load(sprintf('%sPreset_Short_Calib_Calc_out%d.mat', inputPath, iFile));
+    checkOutputEquality(dataOut, dataRes)
+end
 fprintf('\n')
 
 %% DFZ_Calib_Calc
 fprintf('\nrunning DFZ_Calib_Calc... ');
 dataIn = load([inputPath, 'DFZ_Calib_Calc_in.mat']);
-ind = strfind(dataIn.InputPath, curTestDir);
-dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.dfzRegs, dataRes.results, dataRes.calibPassed] = DFZ_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.DFZ_regs);
+[dataRes.dfzRegs, dataRes.results, dataRes.calibPassed] = DFZ_Calib_Calc(dataIn.frameBytes, dataIn.calibParams, dataIn.DFZ_regs);
 dataOut = load([inputPath, 'DFZ_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
@@ -50,9 +49,7 @@ fprintf('\n')
 %% ROI_Calib_Calc
 fprintf('\nrunning ROI_Calib_Calc... ');
 dataIn = load([inputPath, 'ROI_Calib_Calc_in.mat']);
-ind = strfind(dataIn.InputPath, curTestDir);
-dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.roiRegs, dataRes.results, dataRes.fovData] = ROI_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.ROIregs, dataIn.results, dataIn.eepromBin);
+[dataRes.roiRegs, dataRes.results, dataRes.fovData] = ROI_Calib_Calc(dataIn.frameBytes, dataIn.calibParams, dataIn.ROIregs, dataIn.results, dataIn.eepromBin);
 dataOut = load([inputPath, 'ROI_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
@@ -62,7 +59,7 @@ fprintf('\nrunning END_calib_Calc... ');
 dataIn = load([inputPath, 'END_calib_Calc_in.mat']);
 ind = strfind(dataIn.fnCalib, curTestDir);
 dataIn.fnCalib = [generalPath, dataIn.fnCalib(ind:end)];
-[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.delayRegs, dataIn.dsmregs, dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin);
+[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin);
 dataOut = load([inputPath, 'END_calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
@@ -78,39 +75,39 @@ fprintf('\n')
 %% RtdOverAngX_Calib_Calc
 fprintf('\nrunning RtdOverAngX_Calib_Calc... ');
 dataIn = load([inputPath, 'RtdOverAngX_Calib_Calc_in.mat']);
-ind = strfind(dataIn.inputPath, curTestDir);
-dataIn.inputPath = [generalPath, dataIn.inputPath(ind:end)];
-[dataRes.tablefn] = RtdOverAngX_Calib_Calc(dataIn.inputPath, dataIn.calibParams, dataIn.regs, dataIn.luts);
+dataRes.tablefn = RtdOverAngX_Calib_Calc(dataIn.frameBytesConstant, dataIn.frameBytesSteps, dataIn.calibParams, dataIn.regs, dataIn.luts);
 dataOut = load([inputPath, 'RtdOverAngX_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
 
 %% Preset_Long_Calib_Calc
 fprintf('\nrunning Preset_Long_Calib_Calc (state 1)... ');
-dataIn = load([inputPath, 'Preset_Long_Calib_Calc_state1_in.mat']);
-ind = strfind(dataIn.InputPath, curTestDir);
-dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.maxRangeScaleModRef, dataRes.maxFillRate, dataRes.targetDist] = Preset_Long_Calib_Calc(dataIn.InputPath, dataIn.cameraInput, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.calibParams);
-dataOut = load([inputPath, 'Preset_Long_Calib_Calcstate1_out.mat']);
-checkOutputEquality(dataOut, dataRes)
+files = dir([inputPath, 'Preset_Long_Calib_Calc_state1_in*']);
+for iFile = 1:length(files)
+    fprintf('\ncycle #%d... ', iFile);
+    dataIn = load(sprintf('%sPreset_Long_Calib_Calc_state1_in%d.mat', inputPath, iFile));
+    [dataRes.isConverged, dataRes.nextLaserPoint, dataRes.maxRangeScaleModRef, dataRes.maxFillRate, dataRes.targetDist] = Preset_Long_Calib_Calc(dataIn.frameBytes, dataIn.cameraInput, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.curLaserPoint, dataIn.calibParams);
+    dataOut = load(sprintf('%sPreset_Long_Calib_Calc_state1_out%d.mat', inputPath, iFile));
+    checkOutputEquality(dataOut, dataRes)
+end
 fprintf('\n')
 
 %% Preset_Long_Calib_Calc
 fprintf('\nrunning Preset_Long_Calib_Calc (state 2)... ');
-dataIn = load([inputPath, 'Preset_Long_Calib_Calc_state2_in.mat']);
-ind = strfind(dataIn.InputPath, curTestDir);
-dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.maxRangeScaleModRef, dataRes.maxFillRate, dataRes.targetDist] = Preset_Long_Calib_Calc(dataIn.InputPath, dataIn.cameraInput, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.calibParams);
-dataOut = load([inputPath, 'Preset_Long_Calib_Calcstate2_out.mat']);
-checkOutputEquality(dataOut, dataRes)
+files = dir([inputPath, 'Preset_Long_Calib_Calc_state2_in*']);
+for iFile = 1:length(files)
+    fprintf('\ncycle #%d... ', iFile);
+    dataIn = load(sprintf('%sPreset_Long_Calib_Calc_state2_in%d.mat', inputPath, iFile));
+    [dataRes.isConverged, dataRes.nextLaserPoint, dataRes.maxRangeScaleModRef, dataRes.maxFillRate, dataRes.targetDist] = Preset_Long_Calib_Calc(dataIn.frameBytes, dataIn.cameraInput, dataIn.LaserPoints, dataIn.maxMod_dec, dataIn.curLaserPoint, dataIn.calibParams);
+    dataOut = load(sprintf('%sPreset_Long_Calib_Calc_state2_out%d.mat', inputPath, iFile));
+    checkOutputEquality(dataOut, dataRes)
+end
 fprintf('\n')
 
 %% PresetsAlignment_Calib_Calc
 fprintf('\nrunning PresetsAlignment_Calib_Calc... ');
 dataIn = load([inputPath, 'PresetsAlignment_Calib_Calc_in.mat']);
-ind = strfind(dataIn.InputPath, curTestDir);
-dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.results] = PresetsAlignment_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.res, dataIn.z2mm);
+dataRes.results = PresetsAlignment_Calib_Calc(dataIn.frameBytes, dataIn.nPresets, dataIn.calibParams, dataIn.res, dataIn.z2mm);
 dataOut = load([inputPath, 'PresetsAlignment_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
@@ -134,9 +131,7 @@ fprintf('\n')
 %% RGB_Calib_Calc
 fprintf('\nrunning RGB_Calib_Calc... ');
 dataIn = load([inputPath, 'RGB_Calib_Calc_in.mat']);
-ind = strfind(dataIn.InputPath, curTestDir);
-dataIn.InputPath = [generalPath, dataIn.InputPath(ind:end)];
-[dataRes.rgbPassed, dataRes.rgbTable, dataRes.results] = RGB_Calib_Calc(dataIn.InputPath, dataIn.calibParams, dataIn.irImSize, dataIn.Kdepth, dataIn.z2mm);
+[dataRes.rgbPassed, dataRes.rgbTable, dataRes.results] = RGB_Calib_Calc(dataIn.frameBytes, dataIn.calibParams, dataIn.irImSize, dataIn.Kdepth, dataIn.z2mm, dataIn.rgbCalTemperature);
 dataOut = load([inputPath, 'RGB_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
