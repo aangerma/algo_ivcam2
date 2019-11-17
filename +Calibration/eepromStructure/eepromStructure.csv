@@ -91,7 +91,7 @@ uniqueID,regName,type,arraySize,group,defaultValue,address,autogen,range,functio
 100.475.001,FRMWfovexCenter_001,single,1,7,f0,2052,-0,{[-10000.0:100000.0]},fovex distortion center (vertical),1,FRMW,fovexCenter,1,f,0,0,,3,0
 100.500.000,FRMWcalibVersion,uint32,1,7,h00000000,0,-0,{[0:4294967295]},calib version,1,FRMW,calibVersion,NaN,h,00000000,0,,8,0
 100.501.000,FRMWconfigVersion,uint32,1,7,h00000000,0,-0,{[0:4294967295]},config version,1,FRMW,configVersion,NaN,h,00000000,0,,8,0
-100.502.000,FRMWeepromVersion,uint32,1,7,h00000000,0,-0,{[0:4294967295]},EEPROM structure version,1,FRMW,eepromVersion,NaN,h,3D8F5C29,0,,8,1032805417
+100.502.000,FRMWeepromVersion,uint32,1,7,h00000000,0,-0,{[0:4294967295]},EEPROM structure version,1,FRMW,eepromVersion,NaN,h,3DA3D70A,0,,8,1034147594
 100.510.000,FRMWconLocDelaySlowSlope,single,1,7,f0,0,-0,{[-10000.0:100000.0]},slope of Z-IR delay correction vs. LDD temperature [nsec/deg],1,FRMW,conLocDelaySlowSlope,NaN,f,0,0,,3,0
 100.511.000,FRMWconLocDelayFastSlope,single,1,7,f0,0,-0,{[-10000.0:100000.0]},slope of Z delay correction vs. LDD temperature [nsec/deg],1,FRMW,conLocDelayFastSlope,NaN,f,0,0,,3,0
 100.514.000,FRMWatlMinAngXL,int16,1,7,h00000000,0,-0,{[-3000:3000]},min DSM X angle on the lower side,1,FRMW,atlMinAngXL,NaN,h,00000000,0,,7,0
@@ -111,3 +111,4 @@ uniqueID,regName,type,arraySize,group,defaultValue,address,autogen,range,functio
 100.528.000,FRMWvdd4RtdDiff,int16,1,7,h0,2090,-0,{[-10000:10096]},Range difference between 2nd vdd voltage and the 1st vdd voltage,1,FRMW,vdd4RtdDiff,NaN,h,0,0,,7,0
 100.529.000,FRMWdfzCalibrationLddTemp,single,1,7,f0,0,-0,{[-10000.0:100000.0]},ldd temperature during DFZ calibration at the ACC,1,FRMW,dfzCalibrationLddTemp,NaN,f,0,0,,3,0
 100.530.000,FRMWdfzCalibrationVddVal,single,1,7,f0,0,-0,{[-10000.0:100000.0]},vdd value as measured during DFZ calibration at the ACC,1,FRMW,dfzCalibrationVddVal,NaN,f,0,0,,3,0
+100.531.000,FRMWhumidApdTempDiff,single,1,7,f0,0,-0,{[-10000.0:100000.0]},difference between SHTW2 and TSense readings at first TSense temperature above 20deg,1,FRMW,humidApdTempDiff,NaN,f,0,0,,3,0
