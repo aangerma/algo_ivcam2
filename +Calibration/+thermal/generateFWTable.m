@@ -63,7 +63,7 @@ rtdGrid = NaN(size(lddGrid));
 lddStep = lddGrid(2)-lddGrid(1);
 for k = 1:length(lddGrid)
     idcs = abs(ldd(ind:end) - lddGrid(k)) <= lddStep/2;
-    if ~isempty(idcs)
+    if sum(idcs)
         rtdGrid(k) = median(rtdForEst(idcs));
     end
 end
@@ -191,6 +191,56 @@ if ~isempty(runParams)
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Scale and Offset Per vBias13'));
 end
 
+
+%% RGB Fix - groupByLDDtemp
+nBinsRgb = calibParams.fwTable.nRowsRGB;
+ptsWithZ = reshape([framesData.ptsWithZ],560,7,[]);
+rgbCrnrsPerFrame = ptsWithZ(:,6:7,:);
+
+
+minMaxLdd4RGB = minmax(ldd);
+lddGridEdges = linspace(minMaxLdd4RGB(1),minMaxLdd4RGB(2),nBinsRgb+2);
+lddStepRgb = lddGridEdges(2)-lddGridEdges(1);
+lddGridRgb = lddStepRgb/2 + lddGridEdges(1:end-1);
+%{
+% Debug
+figure; stem(lddGridRgb,ones(size(lddGridRgb)),'g')
+hold on;
+stem(lddGridEdges,ones(size(lddGridEdges)),'r');
+%}
+rgbGrid = NaN(size(rgbCrnrsPerFrame,1),size(rgbCrnrsPerFrame,2),nBinsRgb+1);
+for k = 1:length(lddGridRgb)
+    idcs = abs(ldd - lddGridRgb(k)) <= lddStepRgb/2;
+    if ~sum(idcs)
+        continue;
+    end
+    rgbGrid(:,:,k) = nanmedian(rgbCrnrsPerFrame(:,:,idcs),3);
+end
+referencePts = rgbGrid(:,:,end);
+scaleCosParam = nan(nBinsRgb,1);
+scaleSineParam = nan(nBinsRgb,1);
+transXparam = nan(nBinsRgb,1);
+transYparam = nan(nBinsRgb,1);
+%%
+for k = 1:nBinsRgb
+    matchedPoints2 = referencePts;
+    matchedPoints1 = rgbGrid(:,:,k);
+    ixNotNanBoth = ~isnan(matchedPoints1(:,1)) & ~isnan(matchedPoints2(:,1));
+    if ~sum(ixNotNanBoth)
+        continue;
+    end
+    matchedPoints1 = matchedPoints1(ixNotNanBoth,:);
+    matchedPoints2 = matchedPoints2(ixNotNanBoth,:);
+    tform = fitgeotrans(matchedPoints1,matchedPoints2, 'nonreflectivesimilarity');
+    scaleCosParam(k,1) = tform.T(1,1);
+    scaleSineParam(k,1) = tform.T(2,1);
+    transXparam(k,1) = tform.T(3,1);
+    transYparam(k,1) = tform.T(3,2);
+end
+
+results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
+results.rgb.referenceTemp = lddGridRgb(end);
+results.rgb.minTemp = minMaxLdd4RGB(1);
 %% Table generation
 angXscale = vec(results.angx.scale);
 angXoffset = vec(results.angx.offset);

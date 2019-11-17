@@ -144,6 +144,7 @@
       <nFramesToIgnore>5</nFramesToIgnore>
       <tempBinRange>[0 94]</tempBinRange> 
       <nRows>48</nRows> 
+	  <nRowsRGB>29</nRowsRGB>
       <name>Algo_Thermal_Loop_CalibInfo</name> 
       <jumpDet>
           <nSmooth>1</nSmooth>
@@ -165,6 +166,7 @@
         <algoCalib>4.17</algoCalib>
         <algoRtdOverAngX>3.17</algoRtdOverAngX>
         <algoThermal>4.17</algoThermal>
+		<algoRgbThermal>4.17</algoRgbThermal>
         <cbufCalib>3.17</cbufCalib>
         <destTxPwrPd>3.17</destTxPwrPd>
         <diggGamma>3.17</diggGamma>
