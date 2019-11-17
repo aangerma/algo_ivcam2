@@ -5,12 +5,10 @@ if ~isempty(calibParams.gnrl.cbGridSz)
 else
     validCBPoints = all(~isnan(ptsWithZ),2);
     validCBPoints = reshape(validCBPoints,20,28);
-    validRows = find(any((validCBPoints),2));
-    validCols = find(any((validCBPoints),1));
+    validRows = any((validCBPoints),2);
+    validCols = any((validCBPoints),1);
     validCBPoints = validCBPoints(validRows,validCols);
-    isValid = all(vec(validCBPoints));
-    
+    isValid = sum(validCBPoints) > 0;
 end
-
 
 end

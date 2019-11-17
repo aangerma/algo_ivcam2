@@ -1,4 +1,4 @@
-function [data, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = finalCalcAfterHeating(data, eepromRegs, calibParams, fprintff, calib_dir, output_dir, runParams)
+function [data, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = finalCalcAfterHeating(data, eepromRegs, calibParams, fprintff, calib_dir, runParams)
 
 invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
 data.framesData = data.framesData(~invalidFrames);

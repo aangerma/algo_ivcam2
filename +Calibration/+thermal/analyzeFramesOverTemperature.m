@@ -3,8 +3,6 @@ function [data ] = analyzeFramesOverTemperature(data, calibParams,runParams,fpri
 % ,minEGeom,maxeGeom,meaneGeom
 % stdX,stdY,p2pY,p2pX
 
-
-
 tmps = [data.framesData.temp];
 ldds = [tmps.ldd];
 data.dfzRefTmp = max(ldds);
@@ -12,9 +10,8 @@ data.dfzRefTmp = max(ldds);
 invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
 data.framesData = data.framesData(~invalidFrames);
 
-validFrames = arrayfun(@(j) Calibration.thermal.validFrame(data.framesData(j).ptsWithZ,calibParams),1:numel(data.framesData));
+validFrames = arrayfun(@(x) Calibration.thermal.validFrame(x.ptsWithZ,calibParams), data.framesData);
 data.framesData = data.framesData(validFrames);
-
 
 tempVec = [data.framesData.temp];
 tempVec = [tempVec.ldd];

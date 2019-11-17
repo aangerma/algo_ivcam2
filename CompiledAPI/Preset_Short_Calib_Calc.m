@@ -34,33 +34,33 @@ function [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_
     [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
     
     % input save
+    g_laser_points = [g_laser_points, curLaserPoint];
+    g_scores = [g_scores, NaN(3,1)];
     if g_save_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name sprintf('_in%d.mat', length(g_laser_points))]);
         save(fn, 'frameBytes', 'LaserPoints', 'maxMod_dec', 'curLaserPoint', 'sz', 'calibParams');
     end
 
     % operation
     PresetFolder = g_calib_dir;
-    g_laser_points = [g_laser_points, curLaserPoint];
-    g_scores = [g_scores, NaN(3,1)];
     im = Calibration.aux.convertBytesToFrames(frameBytes, sz, [], true);
     
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_int_in.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name sprintf('_int_in%d.mat', length(g_laser_points))]);
         save(fn, 'im', 'LaserPoints', 'maxMod_dec', 'sz', 'calibParams', 'output_dir', 'PresetFolder', 'g_laser_points', 'g_scores');
     end
     [isConverged, curScore, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(im, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder, g_laser_points, g_scores);       
     
     g_scores(:,end) = curScore;
-    if (abs(isConverged)==1)
-        g_laser_points = [];
-        g_scores = [];
-    end
     
     % output save
     if g_save_output_flag && exist(output_dir,'dir')~=0 
-        fn = fullfile(output_dir, 'mat_files' , [func_name '_out.mat']);
+        fn = fullfile(output_dir, 'mat_files' , [func_name, sprintf('_out%d.mat', length(g_laser_points))]);
         save(fn, 'isConverged', 'nextLaserPoint', 'minRangeScaleModRef', 'ModRefDec');
+    end
+    if (abs(isConverged)==1)
+        g_laser_points = [];
+        g_scores = [];
     end
     
     % finalization
