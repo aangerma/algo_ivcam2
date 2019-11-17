@@ -163,15 +163,15 @@
       </extrap>
    </fwTable>
    <tableVersions>
-        <algoCalib>4.17</algoCalib>
-        <algoRtdOverAngX>3.17</algoRtdOverAngX>
-        <algoThermal>4.17</algoThermal>
-		<algoRgbThermal>4.17</algoRgbThermal>
-        <cbufCalib>3.17</cbufCalib>
-        <destTxPwrPd>3.17</destTxPwrPd>
-        <diggGamma>3.17</diggGamma>
-        <diggUndist>3.17</diggUndist>
-        <dynamicRange>5.17</dynamicRange>
-        <rgbCalib>0.17</rgbCalib>
+        <algoCalib>4.19</algoCalib>
+        <algoRtdOverAngX>3.19</algoRtdOverAngX>
+        <algoThermal>4.19</algoThermal>
+	<algoRgbThermal>4.19</algoRgbThermal>
+        <cbufCalib>3.19</cbufCalib>
+        <destTxPwrPd>3.19</destTxPwrPd>
+        <diggGamma>3.19</diggGamma>
+        <diggUndist>3.19</diggUndist>
+        <dynamicRange>5.19</dynamicRange>
+        <rgbCalib>0.19</rgbCalib>
    </tableVersions>
 </struct>

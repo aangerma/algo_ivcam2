@@ -1,4 +1,4 @@
-function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams)
+function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, agingRegs, thermalRegs, results, fnCalib, fprintff, calibParams)
     t = tic;
     %% load inital FW.
     initFolder = fileparts(fnCalib);
@@ -12,6 +12,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     fw.setRegs(delayRegs,fnCalib); 
     fw.setRegs(dfzRegs,  fnCalib);  
     fw.setRegs(roiRegs,  fnCalib);
+    fw.setRegs(agingRegs,fnCalib);
     
     %% prepare spare register to store the fov. 
 %     writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff);

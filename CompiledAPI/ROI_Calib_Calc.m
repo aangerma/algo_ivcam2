@@ -32,7 +32,7 @@ function [roiRegs, results, fovData] = ROI_Calib_Calc(frameBytes, calibParams, R
     % input save
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'frameBytes', 'calibParams', 'ROIregs', 'regs', 'results', 'eepromBin');
+        save(fn, 'frameBytes', 'calibParams', 'ROIregs', 'results', 'eepromBin');
     end
     
     % operation

@@ -8,7 +8,7 @@ else
     validRows = any((validCBPoints),2);
     validCols = any((validCBPoints),1);
     validCBPoints = validCBPoints(validRows,validCols);
-    isValid = sum(validCBPoints) > 0;
+    isValid = sum(validCBPoints(:)) > 0;
 end
 
 end
