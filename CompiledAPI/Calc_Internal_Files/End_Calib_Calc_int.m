@@ -19,7 +19,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     [results,undistRegs,undistLuts] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t);
     fw.setRegs(undistRegs,fnCalib);
     fw.setLut(undistLuts);
-    regs = fw.get();
+    [regs,luts] = fw.get();
     intregs.FRMW.calImgHsize = regs.GNRL.imgHsize;
     intregs.FRMW.calImgVsize = regs.GNRL.imgVsize;
     rtdOverYRegs = calcRtdOverYRegs(regs,runParams); % Translating RTD Over Y fix to txPWRpd regs
@@ -47,6 +47,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
    
     results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs);
 end
+
 function results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs)
     results.EXTLconLocDelaySlow = (delayRegs.EXTL.conLocDelaySlow);
     results.EXTLconLocDelayFastC = (delayRegs.EXTL.conLocDelayFastC);
