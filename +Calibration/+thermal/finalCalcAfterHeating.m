@@ -55,5 +55,5 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP0y          = results.angx.p0(2);
     results.thermalAngxP1x          = results.angx.p1(1);
     results.thermalAngxP1y          = results.angx.p1(2);
-    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table','rgb'});
+    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'rgb'});
 end

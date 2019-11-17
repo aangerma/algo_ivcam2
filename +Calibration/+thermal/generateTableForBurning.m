@@ -19,7 +19,6 @@ thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileNa
 Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
 fprintff('Generated algo thermal RGB table full path:\n%s\n',thermalRgbTableFullPath);
 
-
 initFldr = calib_dir;
 fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir);
 

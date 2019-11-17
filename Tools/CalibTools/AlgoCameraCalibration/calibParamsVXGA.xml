@@ -417,6 +417,7 @@
         <algoCalib>4.19</algoCalib>
         <algoRtdOverAngX>3.19</algoRtdOverAngX>
         <algoThermal>4.19</algoThermal>
+        <algoRgbThermal>4.19</algoRgbThermal>
         <cbufCalib>3.19</cbufCalib>
         <destTxPwrPd>3.19</destTxPwrPd>
         <diggGamma>3.19</diggGamma>

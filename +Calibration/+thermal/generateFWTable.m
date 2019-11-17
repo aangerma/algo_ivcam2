@@ -63,7 +63,7 @@ rtdGrid = NaN(size(lddGrid));
 lddStep = lddGrid(2)-lddGrid(1);
 for k = 1:length(lddGrid)
     idcs = abs(ldd(ind:end) - lddGrid(k)) <= lddStep/2;
-    if sum(idcs)
+    if any(idcs)
         rtdGrid(k) = median(rtdForEst(idcs));
     end
 end
@@ -197,7 +197,6 @@ nBinsRgb = calibParams.fwTable.nRowsRGB;
 ptsWithZ = reshape([framesData.ptsWithZ],560,7,[]);
 rgbCrnrsPerFrame = ptsWithZ(:,6:7,:);
 
-
 minMaxLdd4RGB = minmax(ldd);
 lddGridEdges = linspace(minMaxLdd4RGB(1),minMaxLdd4RGB(2),nBinsRgb+2);
 lddStepRgb = lddGridEdges(2)-lddGridEdges(1);
@@ -241,6 +240,8 @@ end
 results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
 results.rgb.referenceTemp = lddGridRgb(end);
 results.rgb.minTemp = minMaxLdd4RGB(1);
+
+
 %% Table generation
 angXscale = vec(results.angx.scale);
 angXoffset = vec(results.angx.offset);
