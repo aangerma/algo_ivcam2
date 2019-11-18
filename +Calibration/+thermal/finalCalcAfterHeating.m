@@ -8,6 +8,7 @@ data.tableResults = results;
 [data] = Calibration.thermal.applyThermalFix(data,data.regs,[],calibParams,runParams,1);
 results.yDsmLosDegredation = data.tableResults.yDsmLosDegredation;
 results = UpdateResultsStruct(results); % output single layer results struct
+data.regs.FRMW.humidApdTempDiff = results.FRMWhumidApdTempDiff;
 
 if isempty(table)
     calibPassed = 0;
@@ -55,5 +56,6 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP0y          = results.angx.p0(2);
     results.thermalAngxP1x          = results.angx.p1(1);
     results.thermalAngxP1y          = results.angx.p1(2);
-    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'rgb'});
+    results.FRMWhumidApdTempDiff    = results.temp.FRMWhumidApdTempDiff;
+    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'rgb', 'temp'});
 end

@@ -25,9 +25,9 @@
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>
-	   <doSave>1</doSave>
-	   <res>[1920,1080]</res>
-	   <nonRectangleFlag>1</nonRectangleFlag>
+           <doSave>1</doSave>
+           <res>[1920,1080]</res>
+           <nonRectangleFlag>1</nonRectangleFlag>
 	   </rgb>
    </gnrl>
    <warmUp>
@@ -38,6 +38,7 @@
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
        <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
+       <apdTempRange>[20 30]</apdTempRange><!-- for proper estimation based on humidity sensor -->
    </warmUp>
    <errRange>
       <delayIR>[0 100000]</delayIR>

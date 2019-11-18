@@ -22,17 +22,40 @@ N = nBins+1;
 tempData = [framesData.temp];
 vBias = reshape([framesData.vBias],3,[]);
 ldd = [tempData.ldd];
+timev = [framesData.time];
+
+validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
+validPerFrame = cell2mat(validPerFrame);
+validCB = all(validPerFrame,2);
+
+
+%% Temperatures management
 if isfield(tempData,'ma')
     ma = [tempData.ma];
 else % Function wasn't fed the ma temperature
     ma = [tempData.ldd];
     fprintff('No ma data recorded. Treating ldd as a proxy for ma temperature.\n');
 end
-timev = [framesData.time];
+if isfield(tempData, 'tsense')
+    if isfield(tempData, 'shtw2')
+        apdTemp = [tempData.tsense];
+        humidTemp = [tempData.shtw2];
+        ind = find(all(apdTemp'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
+        if ~isempty(ind)
+            results.temp.FRMWhumidApdTempDiff = humidTemp(ind) - apdTemp(ind);
+        else
+            fprintff('WARNING: no tsense measurement within range [%d,%d]. Ignoring shtw2-tsense temperature difference.\n', calibParams.warmUp.apdTempRange);
+            results.temp.FRMWhumidApdTempDiff = 0;
+        end
+    else
+        fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
+        results.temp.FRMWhumidApdTempDiff = 0;
+    end
+else
+    fprintff('WARNING: tsense data missing. Ignoring shtw2-tsense temperature difference.\n');
+    results.temp.FRMWhumidApdTempDiff = 0;
+end
 
-validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
-validPerFrame = cell2mat(validPerFrame);
-validCB = all(validPerFrame,2);
 
 %% RTD fix
 rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
