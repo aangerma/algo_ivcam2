@@ -111,6 +111,18 @@ code=[code16_2,code32_1];
 c.code=code'; 
 c.tCode=repelem(c.code,8);       
 codes(end+1)=c;
+
+%% unbalanced64
+code=[ 0   1   0   1   0   0   1   0   1   0   1   0   0   1   0   0   1   0   0   1   0   1   1   0   1   0   1   0 ...
+   0   1   1   0   0   1   1   0   0   1   0   1   0   1   0   1   0   0   1   0   0   1   0   0   1   0   0   1 ...
+   1   0   1   0   1   0   0   1] ; 
+
+c.name='unbalanced_64'; 
+codeL=64; 
+[c.txCodeRegDec,c.txCodeRegHex,c.txCodeRegBin,c.codeLength] = Codes.genCodeReg(code,codeL); 
+c.code=code'; 
+c.tCode=repelem(c.code,8);       
+codes(end+1)=c; 
 %% normelized code struct for length of ~127
 
 normelizedCode=codes;
