@@ -7,13 +7,12 @@
         <dataSource>file</dataSource>
     </params>
     <tests>
-        <test name="fillRate" metrics="fillRate" target="checkerboard_30" distance="50cm" threshold="[95 : 100]" />
-        <test name="gridEdgeSharp" metrics="gridEdgeSharp" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
-        <test name="gridInterDist" metrics="gridInterDist" target="checkerboard_30" distance="50cm" threshold="[0 : 1.8]" />
-        <test name="losGridDrift" metrics="losGridDrift" target="checkerboard_30" distance="50cm" threshold="[0 : 1.2]" />
-        <test name="losLaserFOVDrift" metrics="losLaserFOVDrift" target="checkerboard_30_spherical" distance="50cm" threshold="[0 : 0.7]" />
-        <test name="planeFit" metrics="planeFit" target="checkerboard_30" distance="50cm" threshold="[0 : 5.5]" />
-        <test name="zStd" metrics="zStd" target="checkerboard_30" distance="50cm" threshold="[0 : 4.5]" />
-        <test name="measurement" metrics="measurement" target="checkerboard_30" distance="50cm" threshold="[6.0:6.6]" />
+        <test name="zFillRate" metrics="zFillRate" target="checkerboard_30" distance="50cm" threshold="[95 : 100]" />
+        <test name="gridEdgeSharpIR" metrics="gridEdgeSharpIR" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
+        <test name="gridInterDistance" metrics="gridInterDistance" target="checkerboard_30" distance="50cm" threshold="[0 : 1.8]" />
+        <test name="losGridStability" metrics="losGridStability" target="checkerboard_30" distance="50cm" threshold="[0 : 1.2]" />
+        <test name="palneFit" metrics="palneFit" target="checkerboard_30" distance="50cm" threshold="[0 : 5.5]" />
+        <test name="zTempNoise" metrics="zTempNoise" target="checkerboard_30" distance="50cm" threshold="[0 : 4.5]" />
+        <test name="gridMaxRect" metrics="gridMaxRect" target="checkerboard_30" distance="50cm" threshold="[6.2:6.6]" />
     </tests>
 </root>
