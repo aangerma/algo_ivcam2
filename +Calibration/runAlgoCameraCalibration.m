@@ -73,8 +73,6 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
 %     Calibration.aux.startHwStream(hw,runParams);
     hw.startStream(0,runParams.calibRes);
     fprintff('Done(%ds)\n',round(toc(t)));
-    fprintff('Set laser to full FOV projection\n');
-    hw.cmd('SET_RECTIFIED_PROJECTION 0');
 
     %% Get a frame to see that hwinterface works.
     fprintff('Capturing frame...');
@@ -126,10 +124,13 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
     hw.cmd('SET_RECTIFIED_PROJECTION 1');
     [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw, fprintff, t);
 
+    %% Aging - Record Range over Vdd
+    [agingRegs,results] = Calibration.aging.AGING_calib(hw, calibParams, results, fprintff, t);
+    
     %% Undist and table burn
     [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
-    [results,regs,luts] = END_calib_Calc(roiRegs,dfzRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin);
-    
+    [results,regs,luts] = END_calib_Calc(roiRegs,dfzRegs,agingRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin);
+        
     hw.runPresetScript('maReset');
     pause(0.1);
     hw.runScript(fullfile(runParams.outputFolder,'AlgoInternal','postUndistState.txt'));
