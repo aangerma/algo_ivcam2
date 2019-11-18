@@ -93,9 +93,16 @@ end
 results.rtd.refTemp = data.dfzRefTmp;
 [~, ind] = min(abs(results.rtd.refTemp - lddGrid));
 refRtd = rtdGrid(ind);
-results.rtd.tmptrOffsetValues = rtdGrid-refRtd; % aligning to reference temperature
+results.rtd.tmptrOffsetValues = -(rtdGrid-refRtd); % aligning to reference temperature
 
 if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    plot(ldd, rtdPerFrame,'*');
+    title('RTD(ldd) and Fitted line');
+    grid on; xlabel('ldd Temperature'); ylabel('mean rtd');
+    hold on
+    plot(lddGrid, rtdGrid, '-o');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_LDD_Temp'));
     ff = Calibration.aux.invisibleFigure;
     plot(ma,rtdPerFrame,'*');
     title('RTD(ma) and Fitted line');
@@ -353,8 +360,8 @@ if ~isempty(runParams)
     % RTD
     ff = Calibration.aux.invisibleFigure;
     hold all
-    plot(ldd, rtdPerFrame-refRtd,'*');
-    plot(lddGrid, rtdGrid-refRtd,'-o');
+    plot(ldd, -(rtdPerFrame-refRtd),'*');
+    plot(lddGrid, -(rtdGrid-refRtd),'-o');
     plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
     grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');
     legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)')
