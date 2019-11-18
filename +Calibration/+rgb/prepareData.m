@@ -13,10 +13,16 @@ function [cbCorners,cornersValid,params] = prepareData(im,rgbs,calibParams)
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
         pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 0);
+        if all(isnan(pts(:)))
+            Calibration.aux.CBTools.interpretFailedCBDetection(im(i).i, sprintf('UV mapping IR image %d',i));
+        end
         pts = pts - 1;
         cbCorners{i,1} = reshape(pts,[],2);
 %         tabplot; imagesc(im(i).i); hold on, plot(pts(:,:,1),pts(:,:,2),'r*');
         pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(rgbs{i}, 0,1);
+        if all(isnan(pts(:)))
+            Calibration.aux.CBTools.interpretFailedCBDetection(rgbs{i}, sprintf('UV mapping RGB image %d',i));
+        end
         pts = pts - 1;
         cbCorners{i,2} = reshape(pts,[],2);
         pt3D = create3DCorners(targetInfo)';

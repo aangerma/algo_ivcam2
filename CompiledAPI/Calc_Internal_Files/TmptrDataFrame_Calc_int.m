@@ -91,7 +91,7 @@ else % steady-state stage
     data.regs = regs;
     
     save(fullfile(output_dir, 'mat_files', 'finalCalcAfterHeating_in.mat'), 'data', 'eepromRegs', 'calibParams', 'fprintff', 'calib_dir', 'output_dir', 'runParams');
-    [data, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = Calibration.thermal.finalCalcAfterHeating(data, eepromRegs, calibParams, fprintff, calib_dir, output_dir, runParams);
+    [data, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = Calibration.thermal.finalCalcAfterHeating(data, eepromRegs, calibParams, fprintff, calib_dir, runParams);
     save(fullfile(output_dir, 'mat_files', 'finalCalcAfterHeating_out.mat'), 'data', 'calibPassed', 'results', 'metrics', 'metricsWithTheoreticalFix', 'Invalid_Frames');
 end
     
@@ -168,10 +168,16 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     
     if isempty(calibParams.gnrl.cbGridSz)
         [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], [], calibParams.gnrl.nonRectangleFlag);
+%         if all(isnan(pts(:)))
+%             Calibration.aux.CBTools.interpretFailedCBDetection(frame.i, 'Heating IR image');
+%         end
         pts = reshape(pts,[],2);
         gridSize = [size(pts,1),size(pts,2),1];
         if isfield(frame,'yuy2')
             [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.yuy2, 0, [], [], calibParams.gnrl.rgb.nonRectangleFlag);
+%             if all(isnan(ptsColor(:)))
+%                 Calibration.aux.CBTools.interpretFailedCBDetection(frame.yuy2, 'Heating RGB image');
+%             end
         end
     else
         colors = [];

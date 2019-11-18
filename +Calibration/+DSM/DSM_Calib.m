@@ -99,14 +99,14 @@ function StopMirrorInRestAngle(hw)
    
     hw.stopStream;
     pause(3);
-    hw.cmd('exec_table 140');% setRestAngle
+    hw.cmd('MEMS_CMD 0');% setRestAngle
     pause(0.5);
     % assert(res.IsCompletedOk, 'For DSM calib to work, it should be the first thing that happens after connecting the USB. Before any capturing.' )
 end
 
 function RestartMirror(hw,runParams)
     % % Disable MC - Disable_MEMS_Driver
-    hw.runPresetScript('resetRestAngle');
+    hw.cmd('MEMS_CMD 1');
     % hw.runPresetScript('maRestart');
     % hw.runPresetScript('systemConfig');
     hw.startStream(0,runParams.calibRes);

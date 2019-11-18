@@ -824,8 +824,12 @@
     <Data Name="Data" IsReverseBytes="false" FormatLength="8" />
   </Command>
   
-  <Command Name="ONE_DIRECTION_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x99" CmdPermission="Public" Description="ONE_DIRECTION_PROJECTION">
+  <Command Name="ONE_DIRECTION_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x99" CmdPermission="Public" Description="ONE_DIRECTION_PROJECTION <param1>: 0->default 1->Downward 2->Upward">
 	<Parameter1 Name="Index" />
+  </Command>
+  
+  <Command Name="MEMS_CMD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9A" CmdPermission="Public" Description="MEMS_CMD <param1> 0->Enable_Mems_Driver 1->Disable_Mems_Driver 2->Open_Mems 3->Close_Mems">
+    <Parameter1 Name="cmd_index" />
   </Command>
   
   <Command Name="FALL_DETECT_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9D" CmdPermission="Private" Description="FALL_DETECT_ENABLE">

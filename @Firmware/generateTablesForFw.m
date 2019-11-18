@@ -86,6 +86,7 @@ function [tableSize]=calcTableSize(table)
 tableSize=0;
 for i=1:size(table,1)
     type=table.type{i};
+    arraySize = table.arraySize(i);
     switch type
         case {'uint32', 'int32','single'}
             s=4;
@@ -93,9 +94,12 @@ for i=1:size(table,1)
             s=2;
         case {'logical', 'uint8'}
             s=1;
+        case {'uint12'}
+            s=1.5;
         otherwise
             error('undifiend type');
     end
+    s = s*arraySize;
     tableSize=tableSize+s*table.arraySize(i);
 end
 end
@@ -131,6 +135,8 @@ for i=1:size(DataTable,1)
             s.setNextInt32(typecast(uint32(value),'int32'));
         case 'int16'
             s.setNextInt16(typecast(uint16(value),'int16'));
+        case 'uint12'
+            s.setNextUint12(typecast(uint32(value),'uint8'));
         otherwise
             s.setNext(value,type);
     end

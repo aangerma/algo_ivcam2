@@ -22,17 +22,40 @@ N = nBins+1;
 tempData = [framesData.temp];
 vBias = reshape([framesData.vBias],3,[]);
 ldd = [tempData.ldd];
+timev = [framesData.time];
+
+validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
+validPerFrame = cell2mat(validPerFrame);
+validCB = all(validPerFrame,2);
+
+
+%% Temperatures management
 if isfield(tempData,'ma')
     ma = [tempData.ma];
 else % Function wasn't fed the ma temperature
     ma = [tempData.ldd];
     fprintff('No ma data recorded. Treating ldd as a proxy for ma temperature.\n');
 end
-timev = [framesData.time];
+if isfield(tempData, 'tsense')
+    if isfield(tempData, 'shtw2')
+        apdTemp = [tempData.tsense];
+        humidTemp = [tempData.shtw2];
+        ind = find(all(apdTemp'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
+        if ~isempty(ind)
+            results.temp.FRMWhumidApdTempDiff = humidTemp(ind) - apdTemp(ind);
+        else
+            fprintff('WARNING: no tsense measurement within range [%d,%d]. Ignoring shtw2-tsense temperature difference.\n', calibParams.warmUp.apdTempRange);
+            results.temp.FRMWhumidApdTempDiff = 0;
+        end
+    else
+        fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
+        results.temp.FRMWhumidApdTempDiff = 0;
+    end
+else
+    fprintff('WARNING: tsense data missing. Ignoring shtw2-tsense temperature difference.\n');
+    results.temp.FRMWhumidApdTempDiff = 0;
+end
 
-validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
-validPerFrame = cell2mat(validPerFrame);
-validCB = all(validPerFrame,2);
 
 %% RTD fix
 rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
@@ -63,16 +86,23 @@ rtdGrid = NaN(size(lddGrid));
 lddStep = lddGrid(2)-lddGrid(1);
 for k = 1:length(lddGrid)
     idcs = abs(ldd(ind:end) - lddGrid(k)) <= lddStep/2;
-    if ~isempty(idcs)
+    if any(idcs)
         rtdGrid(k) = median(rtdForEst(idcs));
     end
 end
 results.rtd.refTemp = data.dfzRefTmp;
 [~, ind] = min(abs(results.rtd.refTemp - lddGrid));
 refRtd = rtdGrid(ind);
-results.rtd.tmptrOffsetValues = rtdGrid-refRtd; % aligning to reference temperature
+results.rtd.tmptrOffsetValues = -(rtdGrid-refRtd); % aligning to reference temperature
 
 if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    plot(ldd, rtdPerFrame,'*');
+    title('RTD(ldd) and Fitted line');
+    grid on; xlabel('ldd Temperature'); ylabel('mean rtd');
+    hold on
+    plot(lddGrid, rtdGrid, '-o');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_LDD_Temp'));
     ff = Calibration.aux.invisibleFigure;
     plot(ma,rtdPerFrame,'*');
     title('RTD(ma) and Fitted line');
@@ -191,6 +221,57 @@ if ~isempty(runParams)
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Scale and Offset Per vBias13'));
 end
 
+
+%% RGB Fix - groupByLDDtemp
+nBinsRgb = calibParams.fwTable.nRowsRGB;
+ptsWithZ = reshape([framesData.ptsWithZ],560,7,[]);
+rgbCrnrsPerFrame = ptsWithZ(:,6:7,:);
+
+minMaxLdd4RGB = minmax(ldd);
+lddGridEdges = linspace(minMaxLdd4RGB(1),minMaxLdd4RGB(2),nBinsRgb+2);
+lddStepRgb = lddGridEdges(2)-lddGridEdges(1);
+lddGridRgb = lddStepRgb/2 + lddGridEdges(1:end-1);
+%{
+% Debug
+figure; stem(lddGridRgb,ones(size(lddGridRgb)),'g')
+hold on;
+stem(lddGridEdges,ones(size(lddGridEdges)),'r');
+%}
+rgbGrid = NaN(size(rgbCrnrsPerFrame,1),size(rgbCrnrsPerFrame,2),nBinsRgb+1);
+for k = 1:length(lddGridRgb)
+    idcs = abs(ldd - lddGridRgb(k)) <= lddStepRgb/2;
+    if ~sum(idcs)
+        continue;
+    end
+    rgbGrid(:,:,k) = nanmedian(rgbCrnrsPerFrame(:,:,idcs),3);
+end
+referencePts = rgbGrid(:,:,end);
+scaleCosParam = nan(nBinsRgb,1);
+scaleSineParam = nan(nBinsRgb,1);
+transXparam = nan(nBinsRgb,1);
+transYparam = nan(nBinsRgb,1);
+%%
+for k = 1:nBinsRgb
+    matchedPoints2 = referencePts;
+    matchedPoints1 = rgbGrid(:,:,k);
+    ixNotNanBoth = ~isnan(matchedPoints1(:,1)) & ~isnan(matchedPoints2(:,1));
+    if ~sum(ixNotNanBoth)
+        continue;
+    end
+    matchedPoints1 = matchedPoints1(ixNotNanBoth,:);
+    matchedPoints2 = matchedPoints2(ixNotNanBoth,:);
+    tform = fitgeotrans(matchedPoints1,matchedPoints2, 'nonreflectivesimilarity');
+    scaleCosParam(k,1) = tform.T(1,1);
+    scaleSineParam(k,1) = tform.T(2,1);
+    transXparam(k,1) = tform.T(3,1);
+    transYparam(k,1) = tform.T(3,2);
+end
+
+results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
+results.rgb.referenceTemp = lddGridRgb(end);
+results.rgb.minTemp = minMaxLdd4RGB(1);
+
+
 %% Table generation
 angXscale = vec(results.angx.scale);
 angXoffset = vec(results.angx.offset);
@@ -279,8 +360,8 @@ if ~isempty(runParams)
     % RTD
     ff = Calibration.aux.invisibleFigure;
     hold all
-    plot(ldd, rtdPerFrame-refRtd,'*');
-    plot(lddGrid, rtdGrid-refRtd,'-o');
+    plot(ldd, -(rtdPerFrame-refRtd),'*');
+    plot(lddGrid, -(rtdGrid-refRtd),'-o');
     plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
     grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');
     legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)')

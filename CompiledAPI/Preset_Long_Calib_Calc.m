@@ -32,6 +32,8 @@ function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetD
     [output_dir, fprintff, fid] = completeInputsToAPI(g_output_dir, func_name, g_fprintff, g_LogFn);
     
     % input save
+    g_laser_points = [g_laser_points, curLaserPoint];
+    g_scores = [g_scores, NaN];
     longRangestate =  Calibration.presets.findLongRangeStateCal(calibParams,cameraInput.imSize);
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name,'_', longRangestate, sprintf('_in%d.mat', length(g_laser_points))]);
@@ -39,8 +41,6 @@ function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetD
     end
     
     % operation
-    g_laser_points = [g_laser_points, curLaserPoint];
-    g_scores = [g_scores, NaN];
     runParams.outputFolder = output_dir;
     maskParams = calibParams.presets.long.params;
     im = Calibration.aux.convertBytesToFrames(frameBytes, cameraInput.imSize, [], false);
@@ -53,15 +53,15 @@ function [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetD
     [isConverged, curScore, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, longRangestate, im, cameraInput, LaserPoints, maxMod_dec, g_laser_points, g_scores, fprintff);
     
     g_scores(end) = curScore;
-    if (abs(isConverged)==1) % initialize globals for next resolution
-        g_laser_points = [];
-        g_scores = [];
-    end
     
     % output save
     if g_save_output_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name, '_', longRangestate, sprintf('_out%d.mat', length(g_laser_points))]);
         save(fn, 'isConverged', 'nextLaserPoint', 'maxRangeScaleModRef', 'maxFillRate', 'targetDist');
+    end
+    if (abs(isConverged)==1) % initialize globals for next resolution
+        g_laser_points = [];
+        g_scores = [];
     end
     
     % finalization

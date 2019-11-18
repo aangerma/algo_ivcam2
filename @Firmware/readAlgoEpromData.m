@@ -13,7 +13,7 @@ readEprom=EPROMstructure;
 for i=1:length(EPROMstructure)
     si=EPROMstructure(i);
     type=si.type;
-    
+    arraysize = si.arraySize;
     switch type
         case {'uint32'}
             val=s.getNextUint32();
@@ -29,6 +29,8 @@ for i=1:length(EPROMstructure)
             val=typecast(val,'uint16');
         case {'logical'}
             val=s.getNext();
+        case {'uint12'}
+            val=s.getNextUint12(arraysize);
         otherwise
             error('undifiend type');
     end

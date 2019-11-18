@@ -44,25 +44,25 @@ if(regs.FRMW.calImgHsize~=regs.GNRL.imgHsize || regs.FRMW.calImgVsize~=regs.GNRL
     Hratio=double(regs.FRMW.externalHsize)/double(regs.FRMW.calImgHsize);
     Vratio=double(regs.FRMW.externalVsize)/double(regs.FRMW.calImgVsize);
     
-    autogenRegs.FRMW.zoRawCol=regs.FRMW.zoRawCol*Hratio;
-    autogenRegs.FRMW.zoRawRow=regs.FRMW.zoRawRow*Vratio;
+    autogenRegs.FRMW.currZORawCol=regs.FRMW.zoRawCol(1)*Hratio;
+    autogenRegs.FRMW.currZORawRow=regs.FRMW.zoRawRow(1)*Vratio;
     regs = Firmware.mergeRegs(regs,autogenRegs);
 else
-    autogenRegs.FRMW.zoRawCol=regs.FRMW.zoRawCol;
-    autogenRegs.FRMW.zoRawRow=regs.FRMW.zoRawRow;
+    autogenRegs.FRMW.currZORawCol=regs.FRMW.zoRawCol(1);
+    autogenRegs.FRMW.currZORawRow=regs.FRMW.zoRawRow(1);
     regs = Firmware.mergeRegs(regs,autogenRegs);
 end
 
 % calculate world zero order
-autogenRegs.FRMW.zoWorldCol = uint32(regs.FRMW.externalHsize)*uint32(ones(1,5)) - regs.FRMW.zoRawCol;
-autogenRegs.FRMW.zoWorldRow =uint32(regs.FRMW.externalVsize)*uint32(ones(1,5)) - regs.FRMW.zoRawRow;
+autogenRegs.FRMW.currZOWorldCol = uint32(regs.FRMW.externalHsize) - regs.FRMW.zoRawCol(1);
+autogenRegs.FRMW.currZOWorldRow = uint32(regs.FRMW.externalVsize) - regs.FRMW.zoRawRow(1);
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% set depth offset constant: distance from the MEMS to the front case
 if(regs.DEST.hbaseline==1) % demo-board
     autogenRegs.FRMW.depthOffset=single(5.7);
 else % ID
-    autogenRegs.FRMW.depthOffset=single(6.437);    
+    autogenRegs.FRMW.depthOffset=single(2);    
 end
 regs = Firmware.mergeRegs(regs,autogenRegs);
 

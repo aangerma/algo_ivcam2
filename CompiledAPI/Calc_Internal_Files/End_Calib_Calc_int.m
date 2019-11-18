@@ -1,4 +1,4 @@
-function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams)
+function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmregs, roiRegs, dfzRegs, agingRegs, thermalRegs, results, fnCalib, fprintff, calibParams)
     t = tic;
     %% load inital FW.
     initFolder = fileparts(fnCalib);
@@ -12,6 +12,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     fw.setRegs(delayRegs,fnCalib); 
     fw.setRegs(dfzRegs,  fnCalib);  
     fw.setRegs(roiRegs,  fnCalib);
+    fw.setRegs(agingRegs,fnCalib);
     
     %% prepare spare register to store the fov. 
 %     writeVersionAndIntrinsics(verValue,verValueFull,fw,fnCalib,calibParams,fprintff);
@@ -19,7 +20,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
     [results,undistRegs,undistLuts] = fixAng2XYBugWithUndist(runParams, calibParams, results,fw,fnCalib, fprintff, t);
     fw.setRegs(undistRegs,fnCalib);
     fw.setLut(undistLuts);
-    regs = fw.get();
+    [regs,luts] = fw.get();
     intregs.FRMW.calImgHsize = regs.GNRL.imgHsize;
     intregs.FRMW.calImgVsize = regs.GNRL.imgVsize;
     rtdOverYRegs = calcRtdOverYRegs(regs,runParams); % Translating RTD Over Y fix to txPWRpd regs
@@ -47,6 +48,7 @@ function [results, regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmreg
    
     results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs);
 end
+
 function results = addRegs2result(results,dsmregs,delayRegs,dfzRegs,roiRegs)
     results.EXTLconLocDelaySlow = (delayRegs.EXTL.conLocDelaySlow);
     results.EXTLconLocDelayFastC = (delayRegs.EXTL.conLocDelayFastC);

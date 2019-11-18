@@ -30,7 +30,7 @@ function [valResults, allResults] = HVM_Val_Coverage_Calc(frameBytes, sz, calibP
     % input save
     if g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir,'mat_files' , [func_name '_in.mat']);
-        save(fn, 'frameBytes', 'sz', 'runParams', 'calibParams', 'fprintff', 'valResults');
+        save(fn, 'frameBytes', 'sz', 'calibParams', 'valResults');
     end
     
     % operation

@@ -6,19 +6,17 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
     rotateBy180 = 1;
     p1 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imD, rotateBy180, [], [], [], true);
     p2 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imU, rotateBy180, [], [], [], true);
-    if ~isempty(p1(~isnan(p1))) && ~isempty(p2(~isnan(p2)))
-        t = Calibration.dataDelay.genMapSphericalPixel2Time(imD, fResMirror);
-        delayIR = round(nanmean(vec(t(p1(:,:,1),p1(:,:,2)) - t(p2(:,:,1),p2(:,:,2))))/2 * 1e9); % [nsec]
-        diff = p1(:,:,2)-p2(:,:,2);
-        diff = diff(~isnan(diff));
-        pixVar = var(diff);
-    else
-        pixVar = NaN;
+    if all(isnan(p1(:)))
+        Calibration.aux.CBTools.interpretFailedCBDetection(imD, 'IR delay down image');
     end
-    
-    if (~exist('delayIR','var')) %CB was not found, throw delay forward to find a good location
-        delayIR = 3000;
+    if all(isnan(p2(:)))
+        Calibration.aux.CBTools.interpretFailedCBDetection(imU, 'IR delay up image');
     end
+    t = Calibration.dataDelay.genMapSphericalPixel2Time(imD, fResMirror);
+    delayIR = round(nanmean(vec(t(p1(:,:,1),p1(:,:,2)) - t(p2(:,:,1),p2(:,:,2))))/2 * 1e9); % [nsec]
+    diff = p1(:,:,2)-p2(:,:,2);
+    diff = diff(~isnan(diff));
+    pixVar = var(diff);
     
     im=cat(3,imD,(imD+imU)/2,imU); % debug image
     if 1

@@ -12,6 +12,13 @@ thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
 Calibration.thermal.saveThermalTable( tableShifted , thermalTableFullPath );
 fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
 
+rgbThermalTable = single(reshape(data.tableResults.rgb.thermalTable',[],1));
+rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.referenceTemp; rgbThermalTable];
+thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
+thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileName);
+Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
+fprintff('Generated algo thermal RGB table full path:\n%s\n',thermalRgbTableFullPath);
+
 initFldr = calib_dir;
 fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir);
 
@@ -38,42 +45,21 @@ eepromRegs.FRMW.dfzVbias                = single(data.regs.FRMW.dfzVbias);
 eepromRegs.FRMW.dfzIbias                = single(data.regs.FRMW.dfzIbias);
 eepromRegs.FRMW.dfzApdCalTmp            = single(data.regs.FRMW.dfzApdCalTmp);
 % Minimal and maximal mems angles in both axis
-eepromRegs.FRMW.atlMinAngXL = int16(data.dsmMovement.minX(1));
-eepromRegs.FRMW.atlMinAngXR = int16(data.dsmMovement.minX(2));
-eepromRegs.FRMW.atlMaxAngXL = int16(data.dsmMovement.maxX(1));
-eepromRegs.FRMW.atlMaxAngXR = int16(data.dsmMovement.maxX(2));
-eepromRegs.FRMW.atlMinAngYU = int16(data.dsmMovement.minY(1));
-eepromRegs.FRMW.atlMinAngYB = int16(data.dsmMovement.minY(2));
-eepromRegs.FRMW.atlMaxAngYU = int16(data.dsmMovement.maxY(1));
-eepromRegs.FRMW.atlMaxAngYB = int16(data.dsmMovement.maxY(2));
-% RTD Slope for fix calculation using ma temperature
-eepromRegs.FRMW.atlSlopeMA  = single(data.tableResults.ma.slope);
-eepromRegs.FRMW.atlMaCalTmp  = single(data.regs.FRMW.atlMaCalTmp);
+eepromRegs.FRMW.atlMinAngXL             = int16(data.dsmMovement.minX(1));
+eepromRegs.FRMW.atlMinAngXR             = int16(data.dsmMovement.minX(2));
+eepromRegs.FRMW.atlMaxAngXL             = int16(data.dsmMovement.maxX(1));
+eepromRegs.FRMW.atlMaxAngXR             = int16(data.dsmMovement.maxX(2));
+eepromRegs.FRMW.atlMinAngYU             = int16(data.dsmMovement.minY(1));
+eepromRegs.FRMW.atlMinAngYB             = int16(data.dsmMovement.minY(2));
+eepromRegs.FRMW.atlMaxAngYU             = int16(data.dsmMovement.maxY(1));
+eepromRegs.FRMW.atlMaxAngYB             = int16(data.dsmMovement.maxY(2));
+% RTD Slope for fix calculation using ma temperature + temperature difference for estimating TSense at low temperatures
+eepromRegs.FRMW.atlSlopeMA              = single(data.tableResults.ma.slope);
+eepromRegs.FRMW.atlMaCalTmp             = single(data.regs.FRMW.atlMaCalTmp);
+eepromRegs.FRMW.humidApdTempDiff        = single(data.regs.FRMW.humidApdTempDiff);
 
 fw.setRegs(eepromRegs,'');
 fw.get();
 fw.generateTablesForFw(runParams.outputFolder,1,[],calibParams.tableVersions);
-
 end
 
-
-function writeMWD(d,fn,nMax,PL_SZ)
-
-n = ceil(size(d,1)/PL_SZ);
-if(n>nMax)
-    error('error, too many registers to write!');
-end
-for i=1:nMax
-    fid = fopen(sprintf(strrep(fn,'\','\\'),i),'w');
-    ibeg = (i-1)*PL_SZ+1;
-    iend = min(i*PL_SZ,size(d,1));
-    if(i<=n)
-        di=d(ibeg:iend,:)';
-        fprintf(fid,'mwd %08x %08x // %s\n',di{:});
-    else
-        fprintf(fid,'mwd a00e0870 00000000 // DO NOTHING\n');%prevent empty file
-    end
-    fclose(fid);
-end
-
-end

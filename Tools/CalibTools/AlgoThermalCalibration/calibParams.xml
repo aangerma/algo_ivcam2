@@ -25,9 +25,9 @@
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>
-	   <doSave>1</doSave>
-	   <res>[1920,1080]</res>
-	   <nonRectangleFlag>1</nonRectangleFlag>
+           <doSave>1</doSave>
+           <res>[1920,1080]</res>
+           <nonRectangleFlag>1</nonRectangleFlag>
 	   </rgb>
    </gnrl>
    <warmUp>
@@ -38,6 +38,7 @@
        <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
        <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
+       <apdTempRange>[20 30]</apdTempRange><!-- for proper estimation based on humidity sensor -->
    </warmUp>
    <errRange>
       <delayIR>[0 100000]</delayIR>
@@ -144,6 +145,7 @@
       <nFramesToIgnore>5</nFramesToIgnore>
       <tempBinRange>[0 94]</tempBinRange> 
       <nRows>48</nRows> 
+	  <nRowsRGB>29</nRowsRGB>
       <name>Algo_Thermal_Loop_CalibInfo</name> 
       <jumpDet>
           <nSmooth>1</nSmooth>
@@ -162,14 +164,15 @@
       </extrap>
    </fwTable>
    <tableVersions>
-        <algoCalib>4.17</algoCalib>
-        <algoRtdOverAngX>3.17</algoRtdOverAngX>
-        <algoThermal>4.17</algoThermal>
-        <cbufCalib>3.17</cbufCalib>
-        <destTxPwrPd>3.17</destTxPwrPd>
-        <diggGamma>3.17</diggGamma>
-        <diggUndist>3.17</diggUndist>
-        <dynamicRange>5.17</dynamicRange>
-        <rgbCalib>0.17</rgbCalib>
+        <algoCalib>4.19</algoCalib>
+        <algoRtdOverAngX>3.19</algoRtdOverAngX>
+        <algoThermal>4.19</algoThermal>
+        <algoRgbThermal>4.19</algoRgbThermal>
+        <cbufCalib>3.19</cbufCalib>
+        <destTxPwrPd>3.19</destTxPwrPd>
+        <diggGamma>3.19</diggGamma>
+        <diggUndist>3.19</diggUndist>
+        <dynamicRange>5.19</dynamicRange>
+        <rgbCalib>0.19</rgbCalib>
    </tableVersions>
 </struct>

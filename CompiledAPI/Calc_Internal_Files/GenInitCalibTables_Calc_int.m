@@ -34,5 +34,6 @@ function GenInitCalibTables_Calc_int(initFolder, outFolder, calibToolVers, table
     end
     rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', tableVersions.rgbCalib);
     writeAllBytes(zeros(1,112,'uint8'), fullfile(outFolder, rgbTableFileName));
-    
+    thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', tableVersions.rgbCalib);
+    Calibration.thermal.saveRgbThermalTable( zeros(118,1,'single') , fullfile(outFolder, thermalRgbTableFileName) );
 end

@@ -1,7 +1,6 @@
 function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, calibParams, fprintff, regs)
     calibPassed = 0;
     captures = {calibParams.dfz.captures.capture(:).type};
-    shortRangeImages = strcmp('shortRange',captures);
     trainImages = strcmp('train',captures);
     testImages = strcmp('test',captures);
     runParams.outputFolder = OutputDir;
@@ -160,7 +159,7 @@ function d = prepareDataForOptimization(im, OutputDir, calibParams, regs)
             [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(d(i).i, 1);
         end
         if all(isnan(pts(:)))
-            error('Error! Checkerboard detection failed on image %d!',i);
+            Calibration.aux.CBTools.interpretFailedCBDetection(d(i).i, sprintf('DFZ image #%d',i));
         end
         grid = [size(pts,1),size(pts,2),1];
         %       [pts,grid] = Validation.aux.findCheckerboard(im(i).i,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.

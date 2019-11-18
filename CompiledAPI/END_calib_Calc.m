@@ -1,5 +1,5 @@
 %function [results ,luts] = END_calib_Calc(verValue,verValueFull,delayRegs, dsmregs,roiRegs,dfzRegs,results,fnCalib,calibParams,undist_flag)
-function [results, regs, luts] = END_calib_Calc(roiRegs, dfzRegs, results, fnCalib, calibParams, undist_flag, configurationFolder, eepromRegs, eepromBin)
+function [results, regs, luts] = END_calib_Calc(roiRegs, dfzRegs, agingRegs, results, fnCalib, calibParams, undist_flag, configurationFolder, eepromRegs, eepromBin)
 % the function calcualte the undistored table based on the result from the DFZ and ROI then prepare calibration scripts  
 % to burn into the eprom. later on the function will create calibration
 % eprom table. the FW will process them and set the registers as needed. 
@@ -9,6 +9,7 @@ function [results, regs, luts] = END_calib_Calc(roiRegs, dfzRegs, results, fnCal
 %   dsmregs      - output of the DSM_Calib_Calc
 %   roiRegs      - output of the ROI_Calib_Calc
 %   dfzRegs      - output of the DFZ_Calib_Calc
+%   agingRegs    - output of RtdOverAging_Calib_Calc
 %   results      - incrmental result of prev algo.
 %   fnCalib      - base directory of calib/config files (calib.csv ,
 %   config.csv , mode.csv)
@@ -38,7 +39,7 @@ function [results, regs, luts] = END_calib_Calc(roiRegs, dfzRegs, results, fnCal
     % input save
     if g_save_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'roiRegs', 'dfzRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'configurationFolder', 'eepromRegs', 'eepromBin');
+        save(fn, 'roiRegs', 'dfzRegs', 'agingRegs', 'results', 'fnCalib', 'calibParams', 'undist_flag', 'configurationFolder', 'eepromRegs', 'eepromBin');
     end
     
     % operation
@@ -53,11 +54,10 @@ function [results, regs, luts] = END_calib_Calc(roiRegs, dfzRegs, results, fnCal
     
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn, 'runParams', 'delayRegs', 'dsmRegs', 'roiRegs', 'dfzRegs', 'thermalRegs', 'results', 'fnCalib', 'fprintff', 'calibParams');
+        save(fn, 'runParams', 'delayRegs', 'dsmRegs', 'roiRegs', 'dfzRegs', 'agingRegs','thermalRegs', 'results', 'fnCalib', 'fprintff', 'calibParams');
     end
-    [results ,regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmRegs, roiRegs, dfzRegs, thermalRegs, results, fnCalib, fprintff, calibParams);
-    
-    % output save
+    [results ,regs, luts] = End_Calib_Calc_int(runParams, delayRegs, dsmRegs, roiRegs, dfzRegs, agingRegs, thermalRegs, results, fnCalib, fprintff, calibParams);
+    % save output
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files', [func_name '_out.mat']);
         save(fn, 'results', 'regs', 'luts');
