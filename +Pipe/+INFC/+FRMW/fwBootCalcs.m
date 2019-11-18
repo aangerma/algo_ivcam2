@@ -45,7 +45,7 @@ if(regs.FRMW.calImgHsize~=regs.GNRL.imgHsize || regs.FRMW.calImgVsize~=regs.GNRL
     Vratio=double(regs.FRMW.externalVsize)/double(regs.FRMW.calImgVsize);
     
     autogenRegs.FRMW.currZORawCol=regs.FRMW.zoRawCol(1)*Hratio;
-    autogenRegs.FRMW. =regs.FRMW.zoRawRow(1)*Vratio;
+    autogenRegs.FRMW.currZORawRow=regs.FRMW.zoRawRow(1)*Vratio;
     regs = Firmware.mergeRegs(regs,autogenRegs);
 else
     autogenRegs.FRMW.currZORawCol=regs.FRMW.zoRawCol(1);
