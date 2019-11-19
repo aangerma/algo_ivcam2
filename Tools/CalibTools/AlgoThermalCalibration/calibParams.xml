@@ -175,7 +175,7 @@
         <dynamicRange>5.19</dynamicRange>
         <rgbCalib>0.19</rgbCalib>
    </tableVersions>
-      <robot>
+   <robot>
        <enable>1</enable>
        <delays>
            <type>'checkerboard_50'</type>

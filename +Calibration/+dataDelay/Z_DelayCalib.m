@@ -13,8 +13,7 @@ function [res, d,im,pixVar] = Z_DelayCalib(hw, frameBytesBoth, delay, runParams,
     hw.runPresetScript('projectOnlyDownward'); % Scan Direction down
     frameBytesDown = Calibration.aux.captureFramesWrapper(hw, 'ALT_IR', NumberOfFrames);
     Calibration.aux.setScanDirectionValues( hw,addresses2save, values2save ); % resore gain inital values
-
-    [res, d, im ] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, runParams, calibParams, isFinalStage, fResMirror); 
+    [res, d, im ] = Z_DelayCalibCalc(frameBytesUp, frameBytesDown, frameBytesBoth, sz, delay, calibParams, isFinalStage, fResMirror); 
 %%    Z_DelayCalibOuput(d, pixVar);
 end
 
