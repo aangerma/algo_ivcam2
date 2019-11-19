@@ -2,7 +2,7 @@ clear all
 clc
 
 generalPath = [pwd, '\'];
-curTestDir = 'ACC27\';
+curTestDir = 'ACC4\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
 
@@ -20,7 +20,7 @@ dataIn.skip_thermal_iterations_save = 1;
 if isfield(dataIn, 'fprintff')
     [dataRes.calibParams, dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
 else
-    [dataRes.calibParams, dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save, dataIn.fprintff);
+    [dataRes.calibParams, dataRes.result] = cal_init(dataIn.output_dir, dataIn.calib_dir, dataIn.calib_params_fn, dataIn.save_input_flag, dataIn.save_internal_input_flag, dataIn.save_output_flag, dataIn.skip_thermal_iterations_save);
 end
 dataOut = load([inputPath, 'cal_init_out.mat']);
 checkOutputEquality(dataOut, dataRes)
@@ -59,7 +59,7 @@ fprintf('\nrunning END_calib_Calc... ');
 dataIn = load([inputPath, 'END_calib_Calc_in.mat']);
 ind = strfind(dataIn.fnCalib, curTestDir);
 dataIn.fnCalib = [generalPath, dataIn.fnCalib(ind:end)];
-[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.roiRegs, dataIn.dfzRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin);
+[dataRes.results, dataRes.regs, dataRes.luts] = END_calib_Calc(dataIn.roiRegs, dataIn.dfzRegs, dataIn.agingRegs, dataIn.results, dataIn.fnCalib, dataIn.calibParams, dataIn.undist_flag, dataIn.configurationFolder, dataIn.eepromRegs, dataIn.eepromBin);
 dataOut = load([inputPath, 'END_calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')
