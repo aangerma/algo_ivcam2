@@ -20,7 +20,7 @@ results = UpdateResultsStruct(results); % output single layer results struct
 data.regs.FRMW.humidApdTempDiff = results.FRMWhumidApdTempDiff;
 
 [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
-[fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,0);
+[fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,1);
 Calibration.aux.logResults(data.results, runParams);
 
 %% merge all scores outputs
