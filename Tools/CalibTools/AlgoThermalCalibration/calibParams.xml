@@ -176,7 +176,7 @@
         <rgbCalib>0.19</rgbCalib>
    </tableVersions>
    <robot>
-       <enable>1</enable>
+       <enable>0</enable>
        <delays>
            <type>'checkerboard_50'</type>
            <dist>50</dist>
