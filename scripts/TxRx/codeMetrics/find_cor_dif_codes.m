@@ -13,7 +13,7 @@ else
 end
 load(codesStruct);
 
-dataPath='X:\Users\hila\TxRxinvest\CodeTestData\Test3\codeData\rawData';
+dataPath='X:\Users\hila\TxRxinvest\CodeTestData\Test4\codeData\raw';
 disfolders=dir(dataPath);
 disfolders(strcmp({disfolders.name},'.'))=[]; disfolders(strcmp({disfolders.name},'..'))=[];
 
@@ -21,7 +21,7 @@ distance=sort(str2num(str2mat({disfolders.name})));
 %% run on code
 codeNames={codes.name};
 %% output
-outPath='X:\Users\hila\TxRxinvest\CodeTestData\Test3\results\validTh_300_16sampleDist';
+outPath='X:\Users\hila\TxRxinvest\CodeTestData\Test4\results\run2_validTh_300_16sampleDist';
 mkdirSafe(outPath);
 saveAbsDiffErr=false; 
 %% params

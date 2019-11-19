@@ -1,7 +1,7 @@
-path='X:\Users\hila\TxRxinvest\CodeTestData\Test3\codeData\rawData';
+path='X:\Users\hila\TxRxinvest\CodeTestData\Test4\codeData\raw';
 disfolders=dir(path);
 disfolders(strcmp({disfolders.name},'.'))=[]; disfolders(strcmp({disfolders.name},'..'))=[];
-outputFolder='X:\Users\hila\TxRxinvest\CodeTestData\Test3\results\AverageAnalysis';
+outputFolder='X:\Users\hila\TxRxinvest\CodeTestData\Test4\results\AverageAnalysis';
 codesStruct='X:\Users\hila\TxRxinvest\CodesStruct.mat' ;
 load('X:\Users\hila\TxRxinvest\CodeTestData\sysDelay.mat')
 load(codesStruct);
