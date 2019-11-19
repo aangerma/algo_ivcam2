@@ -11,7 +11,7 @@
         <test name="gridEdgeSharpIR" metrics="gridEdgeSharpIR" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
         <test name="gridInterDistance" metrics="gridInterDistance" target="checkerboard_30" distance="50cm" threshold="[0 : 1.8]" />
         <test name="losGridStability" metrics="losGridStability" target="checkerboard_30" distance="50cm" threshold="[0 : 1.2]" />
-        <test name="palneFit" metrics="palneFit" target="checkerboard_30" distance="50cm" threshold="[0 : 5.5]" />
+        <test name="planeFit" metrics="planeFit" target="checkerboard_30" distance="50cm" threshold="[0 : 5.5]" />
         <test name="zTempNoise" metrics="zTempNoise" target="checkerboard_30" distance="50cm" threshold="[0 : 4.5]" />
         <test name="gridMaxRect" metrics="gridMaxRect" target="checkerboard_30" distance="50cm" threshold="[6.2:6.6]" />
     </tests>

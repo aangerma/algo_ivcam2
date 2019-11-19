@@ -94,7 +94,7 @@ lgr.print(' done in %4.2f sec \n', toc(fwTic));
 [pipeOutData,pipeOutData.memoryLayoutOut] = Pipe.hwpipe(piStruct, regs, luts,memoryLayout,lgr,p.traceOutDir);
 pipeOutData.regs = regs;
 pipeOutData.luts = luts;
-pipeOutData.camera.K = reshape([typecast(regs.CBUF.spare,'single')';1],3,3)';
+pipeOutData.camera.zK = reshape([typecast(regs.CBUF.spare,'single')';1],3,3)';
 %-----------------------------------PIPE END  -----------------------------------%
 
 
