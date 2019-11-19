@@ -54,8 +54,8 @@ else
 end
 
 % calculate world zero order
-autogenRegs.FRMW.currZOWorldCol = uint32(regs.FRMW.externalHsize) - regs.FRMW.zoRawCol(1);
-autogenRegs.FRMW.currZOWorldRow = uint32(regs.FRMW.externalVsize) - regs.FRMW.zoRawRow(1);
+autogenRegs.FRMW.currZOWorldCol = uint32(regs.FRMW.externalHsize) - regs.FRMW.currZORawCol;
+autogenRegs.FRMW.currZOWorldRow = uint32(regs.FRMW.externalVsize) - regs.FRMW.currZORawRow;
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
 %% set depth offset constant: distance from the MEMS to the front case
