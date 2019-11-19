@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<!--<?xml version="1.0"?>-->
 <root>
     <db saveData="no">X:\Avv\dbValidation.txt</db>
     <params>
@@ -7,12 +7,20 @@
         <dataSource>file</dataSource>
     </params>
     <tests>
-        <test name="zFillRate" metrics="zFillRate" target="checkerboard_30" distance="50cm" threshold="[95 : 100]" />
+        <test name="zFillRate" metrics="zFillRate" target="checkerboard_30" distance="50cm" threshold="[99 : 100]" />
         <test name="gridEdgeSharpIR" metrics="gridEdgeSharpIR" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
-        <test name="gridInterDistance" metrics="gridInterDistance" target="checkerboard_30" distance="50cm" threshold="[0 : 1.8]" />
-        <test name="losGridStability" metrics="losGridStability" target="checkerboard_30" distance="50cm" threshold="[0 : 1.2]" />
-        <test name="planeFit" metrics="planeFit" target="checkerboard_30" distance="50cm" threshold="[0 : 5.5]" />
-        <test name="zTempNoise" metrics="zTempNoise" target="checkerboard_30" distance="50cm" threshold="[0 : 4.5]" />
-        <test name="gridMaxRect" metrics="gridMaxRect" target="checkerboard_30" distance="50cm" threshold="[6.2:6.6]" />
+        <test name="losGridStability" metrics="losGridStability" target="checkerboard_30" distance="50cm" threshold="[0 : 1.1]" />
+        <test name="planeFit" metrics="planeFit" target="checkerboard_30" distance="50cm" threshold="[0 : 3.5]" />
+        <test name="zTempNoise" metrics="zTempNoise" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
+        <test name="gridLineFit" metrics="gridLineFit" target="checkerboard_30" distance="50cm" threshold="[0 : 1.5]" />
+        <test name="irFillRate" metrics="irFillRate" target="checkerboard_30" distance="50cm" threshold="[99.9 : 100]" />
+        <test name="zir" metrics="zir" target="checkerboard_30" distance="50cm" threshold="[-5 : 5]" />
+
+
+
+
+
+
+
     </tests>
 </root>
