@@ -78,6 +78,7 @@ if ~isempty(optimizedParamsStr)
     outregs = x2regs(xbest);
     outregsFull = x2regs(xbest,regs);
     [results.geomErr,~,allVertices,eAll] = optFunc(xbest);
+    printOptimResPerParameterGroup({calibParams.dfz.rtdGroupPreTPS}, outregs, results.geomErr, fprintff)
     if verbose
         printPlaneAng(darr,outregsFull,xbest,fprintff,0,eAll,tpsUndistModel);
     end
@@ -109,8 +110,8 @@ results.geomErr = geomErr;
 printErrAndX(xbest,results.geomErr,eFit,'Xfinal:',verbose)
 outregs_full = outregs;
 outregs = x2regs(xbest);
-printOptimResPerParameterGroup({'DFZ', 'coarseUndist'}, outregs, minerrPreUndist, fprintff)
-printOptimResPerParameterGroup({'undistCorrHorz', 'undistCorrVert', 'fovexNominal', 'fovexLensDist'}, outregs, results.geomErr, fprintff)
+printOptimResPerParameterGroup({'DFZ', 'coarseUndist', calibParams.dfz.rtdGroupPreTPS}, outregs, minerrPreUndist, fprintff)
+printOptimResPerParameterGroup({'undistCorrHorz'}, outregs, results.geomErr, fprintff)
 if verbose
     printPlaneAng(darr,outregs_full,xbest,fprintff,0,eAll,tpsUndistModel);
 end
@@ -409,6 +410,11 @@ for iParam = 1:length(optimizedParams)
             fprintff('FOVex distortion: kVec=[%.2f,%.2f,%.2f], pVec=[%.2f,%.2f], center=[%.2f,%.2f].\n',...
                 regs.FRMW.fovexRadialK(1), regs.FRMW.fovexRadialK(2), regs.FRMW.fovexRadialK(3),...
                 regs.FRMW.fovexTangentP(1), regs.FRMW.fovexTangentP(2), regs.FRMW.fovexCenter(1), regs.FRMW.fovexCenter(2));
+        case 'rtdVars'
+            fprintff('RTD over X : xCoef=[%.2f,%.2f,%.2f,%.2f,%.2f,%.2f].\n',...
+                regs.FRMW.rtdOverX(1), regs.FRMW.rtdOverX(2), regs.FRMW.rtdOverX(3), regs.FRMW.rtdOverX(4), regs.FRMW.rtdOverX(5), regs.FRMW.rtdOverX(6));
+            fprintff('RTD over Y : yCoef=[%.2f,%.2f,%.2f].\n',...
+                regs.FRMW.rtdOverY(1), regs.FRMW.rtdOverY(2), regs.FRMW.rtdOverY(3));
     end
 end
 fprintff('--> eGeom=%.2f.\n', err)
