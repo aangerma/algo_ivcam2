@@ -175,4 +175,12 @@
         <dynamicRange>5.19</dynamicRange>
         <rgbCalib>0.19</rgbCalib>
    </tableVersions>
+   <robot>
+       <enable>0</enable>
+       <delays>
+           <type>'checkerboard_50'</type>
+           <dist>50</dist>
+           <ang>0</ang>
+       </delays>
+   </robot>
 </struct>

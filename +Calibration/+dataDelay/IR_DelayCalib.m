@@ -15,7 +15,7 @@ function [res, d,im,pixVar] = IR_DelayCalib(hw, delay, runParams, calibParams, V
     frameBytesDown = Calibration.aux.captureFramesWrapper(hw, 'I', NumberOfFrames);
     Calibration.aux.setScanDirectionValues( hw,addresses2save, values2save ); % resore gain inital values
 
-    [res, d, im ,pixVar] = IR_DelayCalibCalc(frameBytesUp, frameBytesDown, sz, delay, runParams, calibParams, isFinalStage, fResMirror); 
+    [res, d, im ,pixVar] = IR_DelayCalibCalc(frameBytesUp, frameBytesDown, sz, delay, calibParams, isFinalStage, fResMirror); 
 %%    IR_DelayCalibOuput(d, pixVar);
 end
 
