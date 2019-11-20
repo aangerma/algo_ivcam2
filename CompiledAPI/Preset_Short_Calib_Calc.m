@@ -47,9 +47,9 @@ function [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_
     
     if g_save_internal_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' , [func_name sprintf('_int_in%d.mat', length(g_laser_points))]);
-        save(fn, 'im', 'LaserPoints', 'maxMod_dec', 'sz', 'calibParams', 'output_dir', 'PresetFolder', 'g_laser_points', 'g_scores');
+        save(fn, 'im', 'LaserPoints', 'maxMod_dec', 'sz', 'calibParams', 'output_dir', 'PresetFolder', 'g_laser_points', 'g_scores', 'fprintff');
     end
-    [isConverged, curScore, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(im, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder, g_laser_points, g_scores);       
+    [isConverged, curScore, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(im, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder, g_laser_points, g_scores, fprintff);
     
     g_scores(:,end) = curScore;
     

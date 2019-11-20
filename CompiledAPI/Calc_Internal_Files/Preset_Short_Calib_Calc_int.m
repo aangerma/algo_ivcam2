@@ -1,4 +1,4 @@
-function [isConverged, curScore, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(Frames, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder, testedPoints, testedScores)
+function [isConverged, curScore, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc_int(Frames, LaserPoints, maxMod_dec, sz, calibParams, output_dir, PresetFolder, testedPoints, testedScores, fprintff)
 
 runParams.outputFolder = output_dir; % need update
 [whiteCenter,blackCenter,ROI_Coffset]=detectROI(Frames(1).i,runParams); % Detecting ROI on low laser image
