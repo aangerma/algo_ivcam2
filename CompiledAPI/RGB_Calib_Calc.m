@@ -12,7 +12,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams
 % results - <struct> with two interesting fields: rgbIntReprojRms,rgbExtReprojRms
 
     t0 = tic;
-    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_save_internal_input_flag;
     
     % auto-completions
     if isempty(g_save_input_flag)

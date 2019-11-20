@@ -21,7 +21,7 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
 %   ready
 %
     t0 = tic;
-    global g_output_dir g_calib_dir g_save_input_flag g_save_output_flag g_skip_thermal_iterations_save g_fprintff g_temp_count g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_calib_dir g_skip_thermal_iterations_save g_temp_count;
     
     % auto-completions
     if isempty(g_temp_count)

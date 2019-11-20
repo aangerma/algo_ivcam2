@@ -15,19 +15,23 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
 %
 
     t0 = tic;
-    global g_output_dir g_calib_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_skip_thermal_iterations_save g_fprintff g_delay_cnt acc g_LogFn g_temp_count g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_save_internal_input_flag g_calib_dir g_skip_thermal_iterations_save g_delay_cnt acc g_temp_count g_laser_points g_scores;
 
     % initializations
-    g_delay_cnt                     = 0;
-    g_calib_dir                     = calib_dir;
     g_output_dir                    = output_dir;
     g_save_input_flag               = save_input_flag;
     g_save_output_flag              = save_output_flag;
+    g_countRuntime                  = 1;
+    g_fprintff                      = [];
+    g_LogFn                         = [];
     g_save_internal_input_flag      = save_internal_input_flag;
+    g_calib_dir                     = calib_dir;
     g_skip_thermal_iterations_save  = skip_thermal_iterations_save;
+    g_delay_cnt                     = 0;
     acc                             = [];
     g_temp_count                    = 0;
-    g_countRuntime                  = 1;
+    g_laser_points                  = [];
+    g_scores                        = [];
     mkdirSafe(output_dir);
     mkdirSafe(fullfile(output_dir, 'mat_files'));
     

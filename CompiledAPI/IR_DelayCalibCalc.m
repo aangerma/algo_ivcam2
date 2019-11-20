@@ -20,7 +20,7 @@ function [res, delayIR, im, pixVar] = IR_DelayCalibCalc(frameBytesUp, frameBytes
 %
 
     t0 = tic;
-    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_delay_cnt g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_save_internal_input_flag g_delay_cnt;
     unFiltered  = 0;
 
     % auto-completions

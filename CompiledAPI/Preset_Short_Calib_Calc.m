@@ -16,8 +16,7 @@ function [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_
 %
 
     t0 = tic;
-    global g_output_dir g_calib_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime; % g_regs g_luts;
-    global g_laser_points g_scores
+    global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_save_internal_input_flag g_calib_dir g_laser_points g_scores;
     
     % auto-completions
     if isempty(g_save_input_flag)

@@ -13,7 +13,7 @@ function [success, DSM_data, angxZO, angyZO] = DSM_Calib_Calc(frameBytes, sz, an
     %       dsmYoffset
     %
     t0 = tic;
-    global g_output_dir g_save_input_flag g_save_internal_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_save_internal_input_flag;
     
     % auto-completions
     if isempty(g_save_input_flag)
