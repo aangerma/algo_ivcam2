@@ -15,7 +15,6 @@ ir_=ir;
 
 ir_(isnan(ir_))=0;
 ir_ = histeq(normByMax(ir_));
-% pt = Utils.findCheckerBoardCorners(ir_,boardSize,false);
 [pt,bsz]=detectCheckerboardPoints(ir_);
  boardSize=[9 13];%bsz-1
  

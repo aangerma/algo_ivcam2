@@ -192,28 +192,27 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
     
     if isempty(calibParams.gnrl.cbGridSz)
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], [], calibParams.gnrl.nonRectangleFlag);
-%         if all(isnan(pts(:)))
-%             Calibration.aux.CBTools.interpretFailedCBDetection(frame.i, 'Heating IR image');
-%         end
-        pts = reshape(pts,[],2);
-        gridSize = [size(pts,1),size(pts,2),1];
+        CB = CBTools.Checkerboard (frame.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true,'nonRectangleFlag',calibParams.gnrl.nonRectangleFlag);
+        pts = CB.getGridPointsList;
+        colors = CB.getColorMap;
         if isfield(frame,'yuy2')
-            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.yuy2, 0, [], [], calibParams.gnrl.rgb.nonRectangleFlag);
-%             if all(isnan(ptsColor(:)))
-%                 Calibration.aux.CBTools.interpretFailedCBDetection(frame.yuy2, 'Heating RGB image');
-%             end
+             CB = CBTools.Checkerboard (frame.yuy2, 'targetType', 'checkerboard_Iv2A1','nonRectangleFlag',calibParams.gnrl.rgb.nonRectangleFlag);
+             ptsColor = CB.getGridPointsMat;
         end
     else
         colors = [];
-        [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+        CB = CBTools.Checkerboard (frame.i,'expectedGridSize',calibParams.gnrl.cbGridSz);
+        pts = CB.getGridPointsList;
+        gridSize = CB.getGridSize;
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
             warning('Checkerboard not detected in IR image. All of the target must be included in the image');
             ptsWithZ = [];
             return;
         end
         if isfield(frame,'yuy2')
-            [ptsColor,gridSize] = Validation.aux.findCheckerboard(frame.yuy2,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+            CB = CBTools.Checkerboard (frame.yuy2,'expectedGridSize',calibParams.gnrl.cbGridSz);
+            ptsColor = CB.getGridPointsList;
+            gridSize = CB.getGridSize;
             if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
                 warning('Checkerboard not detected in color image. All of the target must be included in the image');
                 ptsWithZ = [];

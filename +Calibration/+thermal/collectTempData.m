@@ -235,20 +235,27 @@ end
 end
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
 if isempty(calibParams.gnrl.cbGridSz)
-    [pts,colors] = CBTools.findCheckerboardFullMatrix(frame.i, 1);
-    pts = reshape(pts,[],2);
+   
+    CB = CBTools.Checkerboard (frame.i,'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);  
+    pts = CB.getGridPointsList;
+    colors = CB.getColorMap;
     if calibParams.gnrl.rgb.doStream
-        [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.color, 0);
-        ptsColor = reshape(ptsColor,[],2);
+        CB = CBTools.Checkerboard (frame.color,'targetType', 'checkerboard_Iv2A1');  
+        ptsColor = CB.getGridPointsList;
     end
 else
-    [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+    CB = CBTools.Checkerboard (frame.i,'expectedGridSize',calibParams.gnrl.cbGridSz); 
+    gridSize = CB.getGridSize;
+    pts = CB.getGridPointsList;
+    
     if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
         ptsWithZ = [];
         return;
     end
      if calibParams.gnrl.rgb.doStream
-        [ptsColor,gridSize] = Validation.aux.findCheckerboard(frame.color,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+         CB = CBTools.Checkerboard (frame.color,'expectedGridSize',calibParams.gnrl.cbGridSz);
+         gridSize = CB.getGridSize;
+         pts = CB.getGridPointsList;
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
             ptsWithZ = [];
             return;

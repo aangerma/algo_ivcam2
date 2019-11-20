@@ -345,9 +345,12 @@ function [results, calibPassed] = preResetDFZValidation(hw, fw, results, calibPa
         targetInfo = targetInfoGenerator('Iv2A1');
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
-        [pts,colors] = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
-%         [pts,colors] = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1,0,0.2, 1);
-        grid = [size(pts,1),size(pts,2),1];
+        CB = CBTools.Checkerboard (framesSpherical.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);  
+
+        pts = CB.getGridPointsMat;
+        gridSize = CB.getGridSize;
+%         colors = CB.getColorMap;
+        grid = [gridSize(1),gridSize(1),1];
         framesSpherical.pts = pts;
         framesSpherical.grid = grid;
         framesSpherical.pts3d = create3DCorners(targetInfo)';

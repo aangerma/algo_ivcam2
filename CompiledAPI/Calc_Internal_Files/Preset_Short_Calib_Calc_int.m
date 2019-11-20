@@ -81,14 +81,17 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [whiteCenter,blackCenter,ROI_Coffset]=detectROI(im,runParams)
+function [whiteCenter,blackCenter,ROI_Coffset] = detectROI(im,runParams)
 % detect corners and centers
-[pts,gridsize] = Validation.aux.findCheckerboard(im,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+CB = CBTools.Checkerboard (im);  
+gridSize = CB.getGridSize;
+pts = CB.getGridPointsList;
+
 ff = Calibration.aux.invisibleFigure;
 imagesc(im); hold on;
 
-x=pts(:,1); y=pts(:,2);X=reshape(x,gridsize); Y=reshape(y,gridsize);
-patchNum=(gridsize(1)-1)*(gridsize(2)-1);
+x=pts(:,1); y=pts(:,2);X=reshape(x,gridSize); Y=reshape(y,gridSize);
+patchNum=(gridSize(1)-1)*(gridSize(2)-1);
 
 xcenter=(X(1:end-1,1:end-1)+X(1:end-1,2:end))./2;xcenter=xcenter(:);
 ycenter=(Y(1:end-1,1:end-1)+Y(2:end,1:end-1))./2;ycenter=ycenter(:);
@@ -105,8 +108,8 @@ for j=1:patchNum
 end
 [~,whitePatchix]=max(meanPatch);
 whiteCenter=[xcenter(whitePatchix),ycenter(whitePatchix)];
-[p, l]=ind2sub([gridsize(1)-1,gridsize(2)-1],whitePatchix);
-blackPatchix=sub2ind([gridsize(1)-1,gridsize(2)-1],p,l-1);
+[p, l]=ind2sub([gridSize(1)-1,gridSize(2)-1],whitePatchix);
+blackPatchix=sub2ind([gridSize(1)-1,gridSize(2)-1],p,l-1);
 blackCenter=[xcenter(blackPatchix),ycenter(blackPatchix)];
 scatter(whiteCenter(1),whiteCenter(2),'+','MarkerEdgeColor','w','LineWidth',1.5);
 scatter(blackCenter(1),blackCenter(2),'+','MarkerEdgeColor','k','LineWidth',1.5);

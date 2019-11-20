@@ -3,9 +3,11 @@ function [res , delayIR, im ,pixVar] = IR_DelayCalibCalc_int(imU,imD, CurrentDel
     nsEps       = 2;
     
     % estimate delay
-    rotateBy180 = 1;
-    p1 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imD, rotateBy180, [], [], [], true);
-    p2 = Calibration.aux.CBTools.findCheckerboardFullMatrix(imU, rotateBy180, [], [], [], true);
+    CB = CBTools.Checkerboard (imD, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true,'robustifyFlag',true);  
+    p1 = CB.getGridPointsMat;
+    CB = CBTools.Checkerboard (imU, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true,'robustifyFlag',true);
+    p2 = CB.getGridPointsMat;
+    
     if all(isnan(p1(:)))
         Calibration.aux.CBTools.interpretFailedCBDetection(imD, 'IR delay down image');
     end

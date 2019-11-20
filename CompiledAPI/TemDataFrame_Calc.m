@@ -236,13 +236,13 @@ function [ptsWithZ] = cornersData(frame,regs,luts,calibParams)
     frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
     
     if isempty(calibParams.gnrl.cbGridSz)
-        [pts,colors] = CBTools.findCheckerboardFullMatrix(frame.i, 1);
-        pts = reshape(pts,[],2);
-        gridSize = [size(pts,1),size(pts,2),1];
-        
+        CB = CBTools.Checkerboard (frame.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);
+        pts = CB.getGridPointsList;
+        colors = CB.getColorMap;
     else
         colors = [];
-        [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+        CB = CBTools.Checkerboard (frame.i,'expectedGridSize',calibParams.gnrl.cbGridSz);
+        pts = CB.getGridPointsList;
         if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
             warning('checkerboard not detected. all target must be included in the image');
             ptsWithZ = [];

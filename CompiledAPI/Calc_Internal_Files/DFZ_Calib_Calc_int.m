@@ -153,21 +153,20 @@ function d = prepareDataForOptimization(im, OutputDir, calibParams, regs)
         d(i).z = im(i).z;
         
         try
-            [pts,colors] = CBTools.findCheckerboardFullMatrix(d(i).i, 1,0,0.2, 1);
+            CB = CBTools.Checkerboard (d(i).i,'targetType', 'checkerboard_Iv2A1','imageRotatedBy180Flag',true, 'cornersDetectionThreshold', 0.2,'nonRectangleFlag',true);  
+            pts = CB.getGridPointsMat;
+            colors = CB.getColorMap;
         catch
-            [pts,colors] = CBTools.findCheckerboardFullMatrix(d(i).i, 1);
+            CB = CBTools.Checkerboard (d(i).i,'targetType', 'checkerboard_Iv2A1','imageRotatedBy180Flag',true);  
+            pts = CB.getGridPointsMat;
+            colors = CB.getColorMap;
         end
         if all(isnan(pts(:)))
             Calibration.aux.CBTools.interpretFailedCBDetection(d(i).i, sprintf('DFZ image #%d',i));
         end
         grid = [size(pts,1),size(pts,2),1];
-        %       [pts,grid] = Validation.aux.findCheckerboard(im(i).i,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-        %        grid(end+1) = 1;
         targetInfo.cornersX = grid(1);
         targetInfo.cornersY = grid(2);
-        
-        
-        %        d(i).c = im(i).c;
         [d(i).rpt,pts,colors] = Calibration.aux.samplePointsRtd(im(i).z,pts,regs,0,colors,calibParams.dfz.sampleRTDFromWhiteCheckers);
         
         d(i).pts = pts;

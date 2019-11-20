@@ -54,11 +54,10 @@ function [whiteSquares, blackSquares,topLeftIsWhite] = GetSquaresCorners(I)
 
 %find CB points
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-[p,bsz] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(I)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-
-pmat = reshape(p,[bsz,2]);
-
-rows = bsz(1); cols = bsz(2);
+CB = CBTools.Checkerboard (normByMax(double(I)),'expectedGridSize',[9,13]);  
+pmat = CB.getGridPointsMat;
+gridSize = CB.getGridSize;
+rows = gridSize(1); cols = gridSize(2);
 pPerSq = cat(3,pmat(1:rows-1,1:cols-1,:),...
                  pmat(1:rows-1,(1:cols-1)+1,:),...
                  pmat((1:rows-1)+1,1:cols-1,:),...

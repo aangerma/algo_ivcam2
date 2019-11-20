@@ -2,8 +2,11 @@ function [blackMask,whiteMask]=CreateMaskOfSq(irImage,margins)
 marginR=margins(1); % remove marginR (#) rows from checkers
 marginC=margins(2); % remove marginR (#) coulmns from checkers
 imageSize=size(irImage);
-pts = CBTools.findCheckerboardFullMatrix(irImage,1);
-[R,C,~]=size(pts);
+CB = CBTools.Checkerboard (irImage, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);  
+gridSize = CB.getGridSize;
+R = gridSize(1); C = gridSize(2);
+pts = CB.getGridPointsMat;
+
 figure,imagesc(irImage),hold on, plot(vec(pts(:,:,1)),vec(pts(:,:,2)),'*')
 
 ROIpts=pts(marginR+1:R-marginR,marginC+1:C-marginC,:);

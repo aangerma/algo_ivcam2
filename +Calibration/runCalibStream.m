@@ -400,14 +400,13 @@ function [results,calibPassed] = preResetDFZValidation(hw,fw,results,calibParams
         targetInfo = targetInfoGenerator('Iv2A1');
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
-        [pts,colors] = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1);
-%         [pts,colors] = CBTools.findCheckerboardFullMatrix(framesSpherical.i, 1,0,0.2, 1);
+        CB = CBTools.Checkerboard (framesSpherical.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);  
+        pts = CB.getGridPointsMat;
         grid = [size(pts,1),size(pts,2),1];
         framesSpherical.pts = pts;
         framesSpherical.grid = grid;
         framesSpherical.pts3d = create3DCorners(targetInfo)';
         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs);
-%         framesSpherical.rpt = Calibration.aux.samplePointsRtd(framesSpherical.z,pts,regs,0,colors,1);
         if exist(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat'), 'file') == 2
             load(fullfile(runParams.outputFolder,'AlgoInternal','tpsUndistModel.mat')); % loads undistTpsModel
         else
@@ -975,11 +974,11 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
             targetInfo = targetInfoGenerator(cap.target);
             
             
-            pts = CBTools.findCheckerboardFullMatrix(im(i).i, 1);
-            grid = [size(pts,1),size(pts,2),1];  
-%             [pts,grid] = Validation.aux.findCheckerboard(im(i).i,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-%             grid(end+1) = 1;
-             
+        CB = CBTools.Checkerboard (im(i).i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);
+        pts = CB.getGridPointsMat;
+        gridSize = CB.getGridSize;
+        grid = [gridSize(1),gridSize(2),1];  
+            
             targetInfo.cornersX = grid(1);
             targetInfo.cornersY = grid(2);
             d(i).i = im(i).i;
@@ -1002,12 +1001,10 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
             imCropped = zeros(size(im(i).i));
             imCropped(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3)) = ...
                 im(i).i(croppedBbox(2):croppedBbox(2)+croppedBbox(4),croppedBbox(1):croppedBbox(1)+croppedBbox(3));
-%             [ptsCropped, gridCropped] = detectCheckerboard(imCropped);
-            ptsCropped = CBTools.findCheckerboardFullMatrix(imCropped, 1);
+            CB = CBTools.Checkerboard (imcroped, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);
+            ptsCropped = CB.getGridPointsMat;
             gridCropped = [size(ptsCropped,1),size(ptsCropped,2),1];
-%             [ptsCropped,gridCropped] = Validation.aux.findCheckerboard(imCropped,[]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
             gridCropped(end+1) = 1;
-            
             
             d(i).ptsCropped = ptsCropped;
             d(i).gridCropped = gridCropped;
@@ -1018,7 +1015,6 @@ function [results,calibPassed] = calibrateDFZ_backup(hw, runParams, calibParams,
         % dodluts=struct;
         %% Collect stats  dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov
         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);
-	%         calibParams.dfz.pitchFixFactorRange = [0,0];
         results.potentialPitchFixInDegrees = dfzRegs.FRMW.pitchFixFactor*dfzRegs.FRMW.yfov(1)/4096;
         fprintff('Pitch factor fix in degrees = %.2g (At the left & right sides of the projection)\n',results.potentialPitchFixInDegrees);
 %         [dfzRegs,results.geomErr] = Calibration.aux.calibDFZ(d(trainImages),regs,calibParams,fprintff,0,[],[],runParams);

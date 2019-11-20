@@ -12,7 +12,9 @@ for i=1:length(camsData)
         mkdirSafe(data.outPath);
     end
     % detect checkres corners
-    [camsAnalysis{i}.gridPoints,camsAnalysis{i}.gridSize] = Validation.aux.findCheckerboard(double(data.Frames(1).i), []);
+    CB = CBTools.Checkerboard (double(data.Frames(1).i)); 
+    camsAnalysis{i}.gridPoints = CB.getGridPointsList;
+    camsAnalysis{i}.gridSize = CB.getGridSize;
     vis(data.Frames(1).i,camsAnalysis{i}.gridPoints );
     % convert to point cloud
     camsAnalysis{i}.vert= (Validation.aux.pointsToVertices(camsAnalysis{i}.gridPoints-1, double(data.Frames(1).z), data.params))';

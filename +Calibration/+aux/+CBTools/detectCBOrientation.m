@@ -45,10 +45,9 @@ function [whiteSquares, blackSquares,topLeftIsWhite,pPerSq,indOneColor] = GetSqu
 
 %find CB points
 warning('off','vision:calibrate:boardShouldBeAsymmetric') % Supress checkerboard warning
-[p,bsz] = Validation.aux.findCheckerboard(I, []); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-
-
-pmat = reshape(p,[bsz,2]);
+CB = CBTools.Checkerboard (I);
+pmat = CB.getGridPointsMat;
+bsz = CB.getGridSize;
 
 rows = bsz(1); cols = bsz(2);
 pPerSq = cat(3,pmat(1:rows-1,1:cols-1,:),...

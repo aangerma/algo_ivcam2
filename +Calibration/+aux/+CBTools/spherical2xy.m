@@ -17,7 +17,8 @@ end
 function [ cbCorners ] = spherical2xySingle( sp,regs )
 %SPHERICAL2XY Applies to a single image.
 
-[p,~] = Calibration.aux.CBTools.findCheckerboard(normByMax(double(sp.i)), [9,13]); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+CB = CBTools.Checkerboard (normByMax(ddouble(sp.i)),'expectedGridSize',[9,13]);  
+p = CB.getGridPointsList;
 p = p-1; % coordinates should start from 0.
 yy = double(p(:,2));
 xx = double(p(:,1)*4);

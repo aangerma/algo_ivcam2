@@ -10,20 +10,15 @@ params.expectedGridSize = [];
 
 
 for i = 1:numel(frames)
-    pts = CBTools.findCheckerboardFullMatrix(frames(i).i, 0);
-    data.ptsFull = pts;
-    data.pts = reshape(pts,[],2);
-    data.v = Validation.aux.pointsToVertices(reshape(pts,[],2), frames(i).z, params.camera);
-    data.vFull = reshape(data.v,[size(pts,1),size(pts,2),3]);
+    CB = CBTools.Checkerboard (frames(i).i, 'targetType', 'checkerboard_Iv2A1');  
+    data.ptsFull = CB.getGridPointsMat;
+    data.pts = CB.getGridPointsList;
+    data.v = Cb.getGridVerticesList;
+    data.vFull = Cb.getGridVerticesLMat;
     data.r = sqrt(sum(data.v.^2,2));
-    [data.score,~,~] = Validation.metrics.gridInterDist(frames(i), params);
-    fdata(i) = data;
-    
-    
+    [data.score,~,~] = Validation.metrics.gridInterDistance(frames(i),params);
+    fdata(i) = data; 
 end
-
-
-
 
 
 ff = Calibration.aux.invisibleFigure;

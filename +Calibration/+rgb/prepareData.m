@@ -12,14 +12,16 @@ function [cbCorners,cornersValid,params] = prepareData(im,rgbs,calibParams)
         targetInfo = targetInfoGenerator(cap.target);
         targetInfo.cornersX = 20;
         targetInfo.cornersY = 28;
-        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(im(i).i, 0);
+        CB = CBTools.Checkerboard (im(i).i, 'targetType', 'checkerboard_Iv2A1');  
+        pts = CB.getGridPointsMat;
         if all(isnan(pts(:)))
             Calibration.aux.CBTools.interpretFailedCBDetection(im(i).i, sprintf('UV mapping IR image %d',i));
         end
         pts = pts - 1;
         cbCorners{i,1} = reshape(pts,[],2);
 %         tabplot; imagesc(im(i).i); hold on, plot(pts(:,:,1),pts(:,:,2),'r*');
-        pts = Calibration.aux.CBTools.findCheckerboardFullMatrix(rgbs{i}, 0,1);
+        CB = CBTools.Checkerboard (rgbs{i}, 'targetType', 'checkerboard_Iv2A1','rgbImageFlag',true);  
+        pts = CB.getGridPointsMat;
         if all(isnan(pts(:)))
             Calibration.aux.CBTools.interpretFailedCBDetection(rgbs{i}, sprintf('UV mapping RGB image %d',i));
         end
