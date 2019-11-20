@@ -6,7 +6,7 @@ data.dfzRefTmp = data.regs.FRMW.dfzCalTmp;
 [table, results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
 
 if isempty(table)
-    calibPassed = 0;
+    calibPassed = -1;
     metrics = [];
     metricsWithTheoreticalFix = [];
     fprintff('Error: table is empty (generateFWTable aborted)\n');
