@@ -206,7 +206,6 @@
         <test name="zFillRate_w10_220cm" metrics="zFillRate" target="wall_10Reflectivity" distance="220cm" threshold="[90 : 100]" extra=""/>
 		<test name="zFillRate_w10_230cm" metrics="zFillRate" target="wall_10Reflectivity" distance="230cm" threshold="[90 : 100]" extra=""/>
         <test name="zFillRate_w10_240cm" metrics="zFillRate" target="wall_10Reflectivity" distance="240cm" threshold="[90 : 100]" extra=""/>
-		<test name="zFillRate_w10_250cm" metrics="zFillRate" target="wall_10Reflectivity" distance="250cm" threshold="[90 : 100]" extra=""/>
         <test name="zFillRate_w10_260cm" metrics="zFillRate" target="wall_10Reflectivity" distance="260cm" threshold="[90 : 100]" extra=""/>
         <test name="zFillRate_w10_280cm" metrics="zFillRate" target="wall_10Reflectivity" distance="280cm" threshold="[90 : 100]" extra=""/>
         <test name="zFillRate_w10_300cm" metrics="zFillRate" target="wall_10Reflectivity" distance="300cm" threshold="[90 : 100]" extra=""/>
