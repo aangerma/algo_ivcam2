@@ -46,7 +46,7 @@ end
 
 regs = x2regs(x0,regs);
 if iseval
-    [geomErr,~,allVertices,eAll]=errFunc(darr,regs,x0,useCropped,runParams,tpsUndistModel);
+    [geomErr,~,allVertices,eAll]=errFunc(darr,regs,x0,useCropped,runParams,tpsUndistModel,true);
     results.geomErr = geomErr;
     xbest = x0;
     outregs = [];
@@ -57,7 +57,7 @@ if iseval
     return
 end
 
-[e,eFit]=errFunc(darr,regs,x0,useCropped,[],tpsUndistModel);
+[e,eFit]=errFunc(darr,regs,x0,useCropped,[],tpsUndistModel,true);
 printErrAndX(x0,e,eFit,'X0:',verbose)
 
 %% Define optimization settings
@@ -67,14 +67,18 @@ opt.TolFun = 1e-6;
 opt.TolX = 1e-6;
 opt.Display ='none';
 
-optFunc = @(x) (errFunc(darr,regs,x,useCropped,[],tpsUndistModel)); % zenithNorm is omitted, hence zenithNormW is irrelevant
+optFunc = @(x) (errFunc(darr,regs,x,useCropped,[],tpsUndistModel,true));
 
 %% Optimize DFZ + coarse undist
 if ~isempty(optimizedParamsStr)
     optimizedParams = {optimizedParamsStr};
+    optFunc = @(x) (errFunc(darr,regs,x,useCropped,[],tpsUndistModel,false)); % use existing direction vectors and re-calc ranges only
     [xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par);
-
+    fprintff('xL=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',xL);
+    fprintff('xH=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',xH);
+    fprintff('x0=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',x0);
     [xbest] = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
+    fprintff('xbest=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',xbest);
     outregs = x2regs(xbest);
     outregsFull = x2regs(xbest,regs);
     [results.geomErr,~,allVertices,eAll] = optFunc(xbest);
@@ -91,7 +95,7 @@ optimizedParams = {'DFZ', 'coarseUndist', calibParams.dfz.rtdGroupPreTPS};
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregsPreUndist = x2regs(xbest,regs);
-[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,useCropped,[],tpsUndistModel);
+[minerrPreUndist, ~] = errFunc(darr,outregsPreUndist,xbest,useCropped,[],tpsUndistModel,true);
 
 %% Optimize fine undist correction & FOVex parameters
 x0 = double([outregsPreUndist.FRMW.xfov(1), outregsPreUndist.FRMW.yfov(1), outregsPreUndist.DEST.txFRQpd(1), outregsPreUndist.FRMW.laserangleH, outregsPreUndist.FRMW.laserangleV,...
@@ -104,7 +108,7 @@ optimizedParams = {'undistCorrHorz'}; % other 3 fine undist models found to be u
 xbest = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
 % xbest = fminsearchbnd(@(x) optFunc(x),xbest,xL,xH,opt); % 2nd iteration (excessive?)
 outregs = x2regs(xbest,regs);
-[geomErr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,useCropped,runParams,tpsUndistModel); % in debug mode, allVertices should be enabled inside errFunc
+[geomErr,eFit,allVertices,eAll] = errFunc(darr,outregs,xbest,useCropped,runParams,tpsUndistModel,true); % in debug mode, allVertices should be enabled inside errFunc
 results.geomErr = geomErr;
 
 printErrAndX(xbest,results.geomErr,eFit,'Xfinal:',verbose)
@@ -131,20 +135,15 @@ end
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams,tpsUndistModel)
+function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams,tpsUndistModel, reCalcDirections)
     %build registers array
     % X(3) = 4981;
-    if ~exist('runParams','var')
-        runParams = [];
-    end
-    if ~exist('tpsUndistModel','var')
-        tpsUndistModel = [];
-    end
     rtlRegs = x2regs(X,rtlRegs);
     eAll = [];
     eFit = [];
-    allVertices = {};
+    allVertices = calcVertices(darr,X,rtlRegs,useCropped,tpsUndistModel, reCalcDirections);
     for i = 1:numel(darr)
         d = darr(i);
         if useCropped
@@ -152,16 +151,15 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams,t
         else
             grid = d.grid;
         end
-        v = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel);
-        allVertices{i} = v; % DEBUG: enable only in debugging mode
+        v = allVertices{i};
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid = 1:numPlanes
             idxs = (pid-1)*numVert+1:pid*numVert;
             vPlane  = v(idxs,:);
             refPlane = d.pts3d(idxs,:);
-            isValid = ~isnan(vPlane(:,1));
-            [eAll(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane(isValid,:),refPlane(isValid,:),runParams);
+            %isValid = ~isnan(vPlane(:,1));
+            [eAll(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane,refPlane,runParams);
             
             
         end
@@ -171,50 +169,51 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams,t
     e = mean(eAll);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [v,x,y,z] = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel)
-    if useCropped
-        rpt = d.rptCropped;
-    else
-        rpt = d.rpt;
+function allVertices = calcVertices(darr,X,rtlRegs,useCropped,tpsUndistModel, reCalcDirections)
+    allVertices = cell(1,length(darr));
+    persistent vUnit
+    if isempty(vUnit) % first call only
+        vUnit = cell(1,length(darr));
     end
-    
-    [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
-    vUnit = Calibration.aux.ang2vec(angx,angy,rtlRegs)';
-    vUnit = Calibration.Undist.undistByTPSModel( vUnit,tpsUndistModel);% 2D Undist - 
-
-    %vUnit = reshape(vUnit',size(d.rpt));
-    %vUnit(:,:,1) = vUnit(:,:,1);
-    % Update scale to take margins into acount.
-    if rtlRegs.DEST.hbaseline
-        sing = vUnit(:,1);
-    else
-        sing = vUnit(:,2);
+    for i = 1:length(darr)
+        if useCropped
+            rpt = darr(i).rptCropped;
+        else
+            rpt = darr(i).rpt;
+        end
+        if reCalcDirections % otherwise keep last known value
+            [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
+            vUnit{i} = Calibration.aux.ang2vec(angx,angy,rtlRegs)';
+            vUnit{i} = Calibration.Undist.undistByTPSModel( vUnit{i},tpsUndistModel);% 2D Undist -
+        end
+        if rtlRegs.DEST.hbaseline
+            sing = vUnit{i}(:,1);
+        else
+            sing = vUnit{i}(:,2);
+        end
+        tanY = vUnit{i}(:,2)./vUnit{i}(:,3);
+        tanX = vUnit{i}(:,1)./vUnit{i}(:,3);
+        normedOrigAngX = (rpt(:,2)-rtlRegs.FRMW.rtdOverX(6))/2047;
+        rtd_=rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
+        rtd_=rtd_ + rtlRegs.FRMW.rtdOverY(1)*tanY.^2 + rtlRegs.FRMW.rtdOverY(2)*tanY.^4 + ...
+            + rtlRegs.FRMW.rtdOverY(3)*tanY.^6 ;
+        rtd_=rtd_ + rtlRegs.FRMW.rtdOverX(1)*normedOrigAngX.^2 + ...
+            rtlRegs.FRMW.rtdOverX(2)*abs(normedOrigAngX).^3 + ...
+            rtlRegs.FRMW.rtdOverX(3)*normedOrigAngX.^4 + ...
+            rtlRegs.FRMW.rtdOverX(4)*abs(normedOrigAngX).^5 + ...
+            rtlRegs.FRMW.rtdOverX(5)*normedOrigAngX.^6;
+        r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
+        allVertices{i} = double(vUnit{i}.*r);
     end
-    tanY = vUnit(:,2)./vUnit(:,3);
-    tanX = vUnit(:,1)./vUnit(:,3);
-    normedOrigAngX = (rpt(:,2)-rtlRegs.FRMW.rtdOverX(6))/2047;
-    rtd_=rpt(:,1)-rtlRegs.DEST.txFRQpd(1);
-    rtd_=rtd_ + rtlRegs.FRMW.rtdOverY(1)*tanY.^2 + rtlRegs.FRMW.rtdOverY(2)*tanY.^4 + ...
-         + rtlRegs.FRMW.rtdOverY(3)*tanY.^6 ;
-    rtd_=rtd_ + rtlRegs.FRMW.rtdOverX(1)*normedOrigAngX.^2 + ...
-                rtlRegs.FRMW.rtdOverX(2)*abs(normedOrigAngX).^3 + ...
-                rtlRegs.FRMW.rtdOverX(3)*normedOrigAngX.^4 + ...
-                rtlRegs.FRMW.rtdOverX(4)*abs(normedOrigAngX).^5 + ...
-                rtlRegs.FRMW.rtdOverX(5)*normedOrigAngX.^6;
-    r = (0.5*(rtd_.^2 - rtlRegs.DEST.baseline2))./(rtd_ - rtlRegs.DEST.baseline.*sing);
-    v = double(vUnit.*r);
-    if nargout>1
-        x = v(:,1);
-        y = v(:,2);
-        z = v(:,3);
-    end
-    
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams,tpsUndistModel)
     rtlRegs = x2regs(X,rtlRegs);
+    allVertices = calcVertices(darr,X,rtlRegs,useCropped,tpsUndistModel, true);
     for i = 1:numel(darr)
         d = darr(i);
         if useCropped
@@ -224,7 +223,7 @@ function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams,tpsUnd
             grid = d.grid;
             pts = d.pts;
         end
-        v = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel);
+        v = allVertices{i};
         v = reshape(v,[grid(1:2),3]);
         v = Calibration.aux.CBTools.slimNans(v);
         pts = Calibration.aux.CBTools.slimNans(pts);
@@ -258,13 +257,14 @@ function [] = calcScaleError(darr,rtlRegs,X,fprintff,useCropped,runParams,tpsUnd
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll,tpsUndistModel)
     rtlRegs = x2regs(X,rtlRegs);
     horizAng = zeros(1,numel(darr));
     verticalAngl = zeros(1,numel(darr));
     fprintff('                   Plane horizontal angle:   Plane Vertical angle: GID:\n');
-    
+    allVertices = calcVertices(darr,X,rtlRegs,useCropped,tpsUndistModel, true);
     for i = 1:numel(darr)
         d = darr(i);
         if useCropped
@@ -272,7 +272,9 @@ function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll,tpsUndistMod
         else
             grid = d.grid;
         end
-        [~,x,y,z] = calcVerices(d,X,rtlRegs,useCropped,tpsUndistModel);
+        x = allVertices{i}(:,1);
+        y = allVertices{i}(:,2);
+        z = allVertices{i}(:,3);
         numVert = grid(1)*grid(2);
         numPlanes = grid(3);
         for pid=1:numPlanes
@@ -288,12 +290,14 @@ function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll,tpsUndistMod
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [zNorm] = zenithNorm(regs,x)
     rtlRegs = x2regs(x,regs);
     zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function printErrAndX(X,e,eFit,preSTR,verbose)
 if verbose
@@ -305,6 +309,7 @@ if verbose
 end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function rtlRegs = x2regs(x,rtlRegs)
 for(i=1:5)
@@ -349,6 +354,7 @@ diggRegs = Pipe.DIGG.FRMW.getAng2xyCoeffs(rtlRegs);
 rtlRegs=Firmware.mergeRegs(rtlRegs,diggRegs);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par)
 % set degenerate limits for fixed parameters
@@ -387,6 +393,7 @@ for iParam = 1:length(optimizedParams)
 end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function printOptimResPerParameterGroup(optimizedParams, regs, err, fprintff)
 for iParam = 1:length(optimizedParams)
@@ -420,6 +427,7 @@ end
 fprintff('--> eGeom=%.2f.\n', err)
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [laserAngleH, laserAngleV] = getLaserAngleFromEsTilt(saTiltFromEs, faTiltFromEs, params)
 % interpreting as int16 and converting from mdeg to deg
@@ -439,6 +447,9 @@ laserAngleH = -atand(x/z);
 laserAngleV = -asind(y);
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function saveRtdFixOverAngX(regs,runParams)
 if ~isempty(runParams)
     angXVec = linspace(-2047,2047,100);

@@ -18,19 +18,21 @@ end
 tileSize = min(sqrt(sum(diff(pts3d).^2,2)));
 
 %perform rigid fit and find distance from optimal grid
-[err,fitP] = Calibration.aux.rigidFit(p,pts3d);
-fitErr = sqrt(sum((p-fitP).^2,2));
+validRaw = ~isnan(sum(p,2));
+pValidRaw = p(validRaw,:);
+pts3dValidRaw = pts3d(validRaw,:);
+[err,fitP] = Calibration.aux.rigidFit(pValidRaw,pts3dValidRaw);
+fitErr = sqrt(sum((pValidRaw-fitP).^2,2));
 
 % Remove outlier points when we are close to the right solution.
-valid = ~isnan(sum(p,2));
-if sum(fitErr<tileSize/2) >= 0.92*size(pts3d,1)
-    valid = logical(valid .* (fitErr<tileSize/2));
+valid = validRaw;
+if sum(fitErr<tileSize/2) >= 0.92*size(pts3dValidRaw,1)
+    valid(validRaw) = logical(valid(validRaw) .* (fitErr<tileSize/2));
 end
-%gtDistances = triu(squareform(pdist(cornersWorld)));
-%observedDistances = triu(squareform(pdist(ptV')));
-distMat = @(m) (triu(squareform(pdist(m))));
-emat=abs(distMat(p(valid,:))-distMat(pts3d(valid,:)));
-e = sum(emat(:))*2./numel(emat);
+distVec = @(m) pdist(m);
+emat=abs(distVec(p(valid,:))-distVec(pts3d(valid,:)));
+e = sum(emat(:))*2./(sum(valid))^2; % division by (N^2)/2 instead of N*(N-1)/2 - due to legacy 
+
 ptsOut=[];
 [e_dist,fitP] = Calibration.aux.rigidFit(p(valid,:),pts3d(valid,:));
 
