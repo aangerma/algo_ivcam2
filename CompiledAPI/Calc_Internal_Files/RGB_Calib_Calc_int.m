@@ -23,6 +23,9 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     results = Validation.aux.mergeResultStruct(results,resultsUvLf);
     %%
     rgbPassed = true;
+    rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', rgbTable.version);
+    rgbTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rgbTableFileName);
+    writeAllBytes(rgbTable.data, rgbTableFullPath);
 end
 
 

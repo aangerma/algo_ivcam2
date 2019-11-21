@@ -281,7 +281,6 @@ function calibPassed = calRGB(hw, calibParams, runParams, results, calibPassed, 
         if rgbPassed
             rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', rgbTable.version);
             rgbTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rgbTableFileName);
-            writeAllBytes(rgbTable.data, rgbTableFullPath);
             try
                 hw.cmd(sprintf('WrCalibInfo "%s"',rgbTableFullPath));
             catch
