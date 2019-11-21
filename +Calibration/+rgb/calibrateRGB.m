@@ -17,7 +17,10 @@ if runParams.rgb
         cap = tmpcalibParams.dfz.captures.capture(i);
         cap.transformation(1,1) = cap.transformation(1,1)*calibParams.dfz.sphericalScaleFactors(1);
         cap.transformation(2,2) = cap.transformation(2,2)*calibParams.dfz.sphericalScaleFactors(2);
-        img = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('RGB to Depth - Image %d',i));
+        %img = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('RGB to Depth - Image %d',i));
+        Calibration.aux.changeCameraLocation(calibParams.robot.rgb.type,calibParams.robot.rgb.dist(i),calibParams.robot.rgb.ang(i),calibParams,hw,1,cap.transformation,sprintf('RGB to Depth - Image %d',i));
+        img = hw.getFrame(45);
+        
         %                im(i) = rotFrame180(img);
         
         % capture images for RGB cal

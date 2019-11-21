@@ -362,6 +362,7 @@
             <bypass>0</bypass>
             <nTrials>3</nTrials>
             <roi>0.4</roi>
+            <nFrames>30</nFrames>
         </compare>
         <long>
             <updateCalibVal>1</updateCalibVal>
@@ -425,4 +426,60 @@
         <dynamicRange>5</dynamicRange>
         <rgbCalib>0</rgbCalib>
    </tableVersions>
+   <robot>
+       <enable>1</enable>
+       <dfz>
+           <type>'checkerboard_50'</type>
+           <dist>[45,45,55,55,55,65]</dist>
+           <ang>[0,0,0,-15,15,0]</ang>
+       </dfz>
+       <pre_dfz_valid>
+           <type>'checkerboard_50'</type>
+           <dist>60</dist>
+           <ang>0</ang>
+       </pre_dfz_valid>
+       <rtdOverTanX>
+           <type>'checkerboard_50'</type>
+           <dist>50</dist>
+           <ang>0</ang>
+       </rtdOverTanX>
+       <rgb>
+           <type>'checkerboard_50'</type>
+           <dist>[45,55,55,55,65]</dist>
+           <ang>[0,0,-15,15,0]</ang>
+       </rgb> 
+       <validation>
+           <type>'checkerboard_50'</type>
+           <dist>50</dist>
+           <ang>0</ang>
+       </validation>
+       <roi>
+           <type>'checkerboard_50'</type>
+           <dist>20</dist>
+           <ang>0</ang>
+       </roi>
+       <long_preset>
+           <type>'wall_10Reflectivity'</type>
+           <ang>0</ang>
+           <dist>
+               <state1>280</state1>
+               <state2>186</state2>
+           </dist>
+       </long_preset>
+       <short_preset>
+           <type>'checkerboard_50'</type>
+           <dist>20</dist>
+           <ang>0</ang>
+       </short_preset>
+       <scan_dir>
+           <type>'checkerboard_50'</type>
+           <dist>50</dist>
+           <ang>0</ang>
+       </scan_dir>
+       <presets_compare>
+           <type>'checkerboard_50'</type>
+           <dist>50</dist>
+           <ang>0</ang>
+       </presets_compare>
+   </robot>
 </struct>

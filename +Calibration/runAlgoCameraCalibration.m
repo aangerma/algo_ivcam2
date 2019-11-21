@@ -122,13 +122,13 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
     %% ::ROI::
     fprintff('Set laser to rectified FOV projection\n');
     hw.cmd('SET_RECTIFIED_PROJECTION 1');
-    [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw, fprintff, t);
+    [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
+    [results ,roiRegs] = Calibration.roi.ROI_calib(hw, dfzRegs, runParams, calibParams, results,fw, fprintff, t,eepromBin);
 
     %% Aging - Record Range over Vdd
-    [agingRegs,results] = Calibration.aging.AGING_calib(hw, calibParams, results, fprintff, t);
-    
+%     [agingRegs,results] = Calibration.aging.AGING_calib(hw, calibParams, results, fprintff, t);
+    agingRegs = struct;
     %% Undist and table burn
-    [eepromRegs, eepromBin] = hw.readAlgoEEPROMtable();
     [results,regs,luts] = END_calib_Calc(roiRegs,dfzRegs,agingRegs,results,fnCalib,calibParams,runParams.undist,runParams.configurationFolder, eepromRegs, eepromBin);
         
     hw.runPresetScript('maReset');
@@ -178,8 +178,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
                 hw.startStream(0,res);
                 [isConverged, results] = calibrateLongRangePreset(hw,res,Calstate,results,runParams,calibParams, fprintff);
                 if (isConverged==-1) % fill rate threshold beyond search region boundaries
-                    calibPassed = 0;
-                    return;
+                    continue;
                 end
             end
         end
@@ -200,6 +199,9 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
         fprintff('Comparing presets per resolution...');
         resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
         for i = 1:2
+            if i == 1
+                Calibration.aux.changeCameraLocation(calibParams.robot.presets_compare.type,calibParams.robot.presets_compare.dist,calibParams.robot.presets_compare.ang,calibParams,hw,1,diag([.6 .6 1]),'Preset Compare');
+            end
             res = resolutions{i};
             rtd2addRes = Calibration.presets.compareRtdOfShortAndLong(hw,calibParams,res,runParams);
             results = Validation.aux.mergeResultStruct(results, rtd2addRes);
@@ -313,7 +315,10 @@ function [results, calibPassed] = preResetDFZValidation(hw, fw, results, calibPa
         hw.setReg('JFILinvBypass',true);
         hw.shadowUpdate;
         regs=fw.get();
-        frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
+        %frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
+        Calibration.aux.changeCameraLocation(calibParams.robot.pre_dfz_valid.type,calibParams.robot.pre_dfz_valid.dist,calibParams.robot.pre_dfz_valid.ang,calibParams,hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
+        frames = hw.getFrame(45);
+        
         Calibration.aux.collectTempData(hw,runParams,fprintff,'DFZ validation before reset:');
         regs.DEST.depthAsRange=true;regs.DIGG.sphericalEn=true;
         regs.DIGG.sphericalScale = int16(double(regs.DIGG.sphericalScale).*calibParams.dfz.sphericalScaleFactors);
@@ -460,7 +465,9 @@ function [isConverged, results] = calibrateMinRangePreset(hw, results, runParams
         hw.setReg('JFILgammaScale',int16([hex2dec('400'),hex2dec('400')]));
         hw.setReg('JFILgammaShift',uint32(0));
         hw.shadowUpdate;
-        Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
+        %Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
+        Calibration.aux.changeCameraLocation(calibParams.robot.short_preset.type,calibParams.robot.short_preset.dist,calibParams.robot.short_preset.ang,calibParams,hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
+
         [isConverged, results.minRangeScaleModRef, results.maxModRefDec] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
     end
@@ -489,7 +496,11 @@ function [results, calibPassed] = validateScanDirection(hw, results, runParams, 
     calibPassed = 1;
     fprintff('[-] Validating scan direction...\n');
     if runParams.scanDir
-        frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Scan Direction Validation');
+        %frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Scan Direction Validation');
+
+        Calibration.aux.changeCameraLocation(calibParams.robot.scan_dir.type,calibParams.robot.scan_dir.dist,calibParams.robot.scan_dir.ang,calibParams,hw,1,diag([.6 .6 1]),'Scan Direction Validation');
+        frame = hw.getFrame(45);
+        
         IR = frame.i;
 
         [ isLeft, isTop ] = Calibration.aux.CBTools.detectCBOrientation(IR,runParams);      
