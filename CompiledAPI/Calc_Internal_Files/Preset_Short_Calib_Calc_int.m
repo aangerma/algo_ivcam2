@@ -25,14 +25,12 @@ end
 p = polyfit(testedPoints, testedScores(3,:), 2);
 maxPt = -p(2)/(2*p(1));
 if (maxPt < min(LaserPoints))
-    isConverged = -1;
     nextLaserPoint = -Inf;
     fprintff('[!] Short range preset calibration: maximal contrast is always exceeded. Modulation ref set to 0.\n')
     minRangeScaleModRef = 0;
     ModRefDec = min(LaserPoints);
     return
 elseif (maxPt > max(LaserPoints))
-    isConverged = -1;
     nextLaserPoint = Inf;
     fprintff('[!] Short range preset calibration: maximal contrast could not be attained. Modulation ref set to 1.\n')
     minRangeScaleModRef = 1;
