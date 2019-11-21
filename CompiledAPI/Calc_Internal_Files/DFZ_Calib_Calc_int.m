@@ -37,54 +37,17 @@ function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, cali
     else
 
         % Perform DFZ on cropped
-        tt0=tic;
         [~,resOnCropped,~,xbest] = optDfzOnCropped(framesData(trainImages),[],xbest,[]);
-        tt1=toc(tt0);
-        fprintf('Opt on cropped: %.2f[s]\n',tt1);
         % Calc TPS model to minimize 2D distotion
-        tt0=tic;
         [~,resFullPreTPS,allVerticesPreTPS] = evalDfzOnFull(framesData(trainImages),[],xbest,[]);
-        tt1=toc(tt0);
-        fprintf('Initial eval on full: %.2f[s]\n',tt1);
-        tt0=tic;
         [~,resCroppedPreTPS,croppedVerticesPreTPS] = evalDfzOnCropped(framesData(trainImages),[],xbest,[]);
-        tt1=toc(tt0);
-        fprintf('Initial eval on cropped: %.2f[s]\n',tt1);
-        tt0=tic;
         tpsUndistModel = Calibration.DFZ.calcTPSModel(framesData(trainImages),croppedVerticesPreTPS,allVerticesPreTPS,runParams);
-        % debug
-        angs4eval = linspace(-25,20,4)*pi/180;
-        xMat = sin(angs4eval')*cos(angs4eval);
-        yMat = sin(angs4eval')*sin(angs4eval);
-        zMat = cos(angs4eval')*ones(size(angs4eval));
-        tanVec = ([xMat(:),yMat(:)]./zMat(:))';
-        tpsCorr = fnval(tpsUndistModel, tanVec);
-        fprintff('TPS model X: %f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n', tpsCorr(1,:));
-        fprintff('TPS model Y: %f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n', tpsCorr(2,:));
-        % debug
-        tt1=toc(tt0);
-        fprintf('TPS model: %.2f[s]\n',tt1);
-        tt0=tic;
         [~,resOnFullPostTPS,allVerticesPostTPS] = evalDfzOnFull(framesData(trainImages),tpsUndistModel,xbest,[]);
-        tt1=toc(tt0);
-        fprintf('Eval on full after TPS: %.2f[s]\n',tt1);
-        tt0=tic;
         [~,resOncroppedPostTPS,croppedVerticesPostTPS] = evalDfzOnCropped(framesData(trainImages),tpsUndistModel,xbest,[]);
-        tt1=toc(tt0);
-        fprintf('Eval on cropped after TPS: %.2f[s]\n',tt1);
         % Optimize System Delay again
-        tt0=tic;
         [dfzRegs,resOnCroppedPostRtdOpt,~,xbest] = optDfzOnCroppedRtdOnly(framesData(trainImages),tpsUndistModel,xbest,[]);
-        tt1=toc(tt0);
-        fprintf('Opt RTD on cropped: %.2f[s]\n',tt1);
-        tt0=tic;
         [~,resFullFinal,allVerticesFinal] = evalDfzOnFullWithPlanes(framesData(trainImages),tpsUndistModel,xbest,runParams);
-        tt1=toc(tt0);
-        fprintf('Final eval on full: %.2f[s]\n',tt1);
-        tt0=tic;
         [~,resCroppedFinal,croppedVerticesFinal] = evalDfzOnCropped(framesData(trainImages),tpsUndistModel,xbest,[]);
-        tt1=toc(tt0);
-        fprintf('Final eval on cropped: %.2f[s]\n',tt1);
         
         gridSize = framesData(1).grid(1:2);
         resCropped(1) = calcDfzMetrics(croppedVerticesPreTPS,gridSize);

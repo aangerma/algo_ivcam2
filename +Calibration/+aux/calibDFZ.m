@@ -74,11 +74,7 @@ if ~isempty(optimizedParamsStr)
     optimizedParams = {optimizedParamsStr};
     optFunc = @(x) (errFunc(darr,regs,x,useCropped,[],tpsUndistModel,false)); % use existing direction vectors and re-calc ranges only
     [xL, xH] = setLimitsPerParameterGroup(optimizedParams, regs, par);
-    fprintff('xL=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',xL);
-    fprintff('xH=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',xH);
-    fprintff('x0=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',x0);
     [xbest] = fminsearchbnd(@(x) optFunc(x),x0,xL,xH,opt);
-    fprintff('xbest=%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n',xbest);
     outregs = x2regs(xbest);
     outregsFull = x2regs(xbest,regs);
     [results.geomErr,~,allVertices,eAll] = optFunc(xbest);
@@ -159,11 +155,8 @@ function [e,eFit,allVertices,eAll]=errFunc(darr,rtlRegs,X,useCropped,runParams,t
             vPlane  = v(idxs,:);
             refPlane = d.pts3d(idxs,:);
             %isValid = ~isnan(vPlane(:,1));
-            [eAll(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane,refPlane,runParams);
-            
-            
+            [eAll(end+1),eFit(end+1)]=Calibration.aux.evalGeometricDistortion(vPlane,refPlane,runParams); 
         end
-        % allVertices{i} = v;
     end
     eFit = mean(eFit);
     e = mean(eAll);
@@ -288,13 +281,6 @@ function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll,tpsUndistMod
             fprintff('frame %3d:       %7.3g              %7.3g             %7.3g\n', i, horizAng(i), verticalAngl(i),eAll(i));
         end
     end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [zNorm] = zenithNorm(regs,x)
-    rtlRegs = x2regs(x,regs);
-    zNorm = rtlRegs.FRMW.laserangleH.^2 + rtlRegs.FRMW.laserangleV.^2;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
