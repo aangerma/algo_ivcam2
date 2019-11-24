@@ -16,13 +16,14 @@ end
 %     fndata = fullfile('X:\Users\tmund\X:\Users\tmund\ThermalRtdConsistenc',sprintf('data%02.0f.mat',i));
 %     save(fndata,'data','timeForCoolDown');
 % end
-
-data.coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); 
+if ~calibParams.gnrl.skipCoolingStage
+    data.coolingStage = Calibration.thermal.coolDown(hw,calibParams,runParams,fprintff,maxCoolTime); 
+end
 % data.coolingStage.duration = 0;
 % data.coolingStage.startTemp = 0;
 % data.coolingStage.endTemp = 0;
 
-[data.framesData,data.heatingStage] = Calibration.thermal.collectTempData(hw,regs,calibParams,runParams,fprintff,maxHeatTime,app,inValidationStage);
+[data.framesData,data.heatingStage,data.validFillRatePrc] = Calibration.thermal.collectTempData(hw,regs,calibParams,runParams,fprintff,maxHeatTime,app,inValidationStage);
 
 
 end

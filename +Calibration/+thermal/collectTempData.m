@@ -1,4 +1,4 @@
-function [ framesData, info ] = collectTempData(hw,regs,calibParams,runParams,fprintff,maxTime2Wait,app,inValidationStage)
+function [ framesData, info, validFillRatePrc ] = collectTempData(hw,regs,calibParams,runParams,fprintff,maxTime2Wait,app,inValidationStage)
 
 tempSamplePeriod = 60*calibParams.warmUp.warmUpSP;
 tempTh = calibParams.warmUp.warmUpTh;
@@ -28,6 +28,7 @@ if calibParams.gnrl.sphericalMode
     hw.setReg('DESTbaseline$',single(0));
     hw.setReg('DESTbaseline2',single(0));
 end
+hw.cmd('mwd a00e1890 a00e1894 00000001 // JFILinvBypass');
 hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
 hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');    
 hw.shadowUpdate;
@@ -49,6 +50,18 @@ end
 
 fprintff('[-] Starting heating stage (waiting for diff<%1.1f over %1.1f minutes) ...\n',tempTh,calibParams.warmUp.warmUpSP);
 fprintff('Ldd temperatures: %2.2f',prevTmp);
+
+nf = 30;
+hw.getFrame(nf);
+firstFrames = hw.getFrame(nf,0);
+[bananasExist,validFillRatePrc(1)] = hasBananas(firstFrames,calibParams,runParams,prevTmp,sprintf('Startup_Frame'));
+if bananasExist
+    fprintff('Detected invalid pixels in first frames (possible bananas). Valid fill rate: %3.6g \n',validFillRatePrc(1));
+else
+    fprintff('All are valid pixels in first frames (no bananas). Valid fill rate: %3.6g \n',validFillRatePrc(1));
+end
+
+
 
 i = 0;
 tempFig = figure(190789);
@@ -103,6 +116,14 @@ if i >=4 && sceneFig.isvalid
 end
 if tempFig.isvalid
     close(tempFig);
+end
+
+lastFrames = hw.getFrame(nf,0);
+[bananasExist,validFillRatePrc(2)] = hasBananas(lastFrames,calibParams,runParams,prevTmp,sprintf('End_Frame'));
+if bananasExist
+    fprintff('Detected invalid pixels in last frames (possible bananas). Valid fill rate: %3.6g \n',validFillRatePrc(2));
+else
+    fprintff('All are valid pixels in last frames (no bananas). Valid fill rate: %3.6g \n',validFillRatePrc(2));
 end
 
 hw.stopStream;
@@ -292,3 +313,31 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
     
 end
 
+
+function [bananasExist,validFillRatePrc] = hasBananas(frames,calibParams,runParams,lddTemp,figtitle)
+    nf = numel(frames);
+    z = single(cat(3,frames.z));
+    z(z==0) = nan;%randi(9000,size(zCopy(z==0)));
+    stdZ = nanstd(z,[],3);
+    stdZ(isnan(stdZ)) = inf;
+
+    notNoiseIm = stdZ<calibParams.bananas.zSTDTh & sum(isnan(z),3) == 0;
+    se = strel('disk',calibParams.bananas.diskSz);
+    notNoiseImClosed = imclose(notNoiseIm,se);
+    bananasExist = ~all(notNoiseImClosed(:));
+    validFillRatePrc = mean(notNoiseImClosed(:))*100;
+    
+    if ~isempty(runParams)
+        ff = Calibration.aux.invisibleFigure;
+        subplot(311);
+        imagesc(frames(1).i);
+        title(sprintf('IR Image At Ldd=%2.2fdeg',lddTemp));
+        subplot(312);
+        imagesc(stdZ,[0,10]);
+        title('Z Std Image');
+        subplot(313);
+        imagesc(notNoiseImClosed);
+        title('Binary Valid Pixels');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',figtitle,1);
+    end
+end

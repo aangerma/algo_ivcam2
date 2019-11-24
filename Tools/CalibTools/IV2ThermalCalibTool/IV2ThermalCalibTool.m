@@ -326,6 +326,14 @@ function statrtButton_callback(varargin)
         app.m_logfid = fopen(logFn,'wt');
         fprintffS=@(varargin) fprintff(app,varargin{:});
 
+        s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
+        s.addTestProperty('CalibToolVersion',runparams.version)
+        s.addTestProperty('CalibToolSubVersion',runparams.subVersion)
+        s.startDUTsession(serialStr);
+        s.addTestProperty('FWVersion',fwVersion);
+        addGvd2Spark(s,info);
+           
+        
         set_watches(app.figH,false);
         app.AbortButton.Visible='on';
         app.AbortButton.Enable='on';
@@ -338,7 +346,7 @@ function statrtButton_callback(varargin)
         validPassed = 1;
         if calibPassed~=0 && runparams.performValidation
             waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
-            [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS,app);
+            [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS,s,app);
         end
         
         if calibPassed == 1 || calibPassed == -1
@@ -361,6 +369,7 @@ function statrtButton_callback(varargin)
             fprintf(fid,strrep(getReport(e),'\','\\'));
             fclose(fid);
         end
+        s.endDUTsession([], true);
     end
     
     %restore original folder
@@ -370,4 +379,15 @@ function statrtButton_callback(varargin)
     app.AbortButton.Enable='off';
     fclose(app.m_logfid);
     set_watches(app.figH,true);
+    s.endDUTsession([],~calibPassed ||  ~validPassed);
+end
+function addGvd2Spark(s,gvd)
+    C = strsplit(gvd,newline);
+    for i = 1:numel(C)
+        line = strsplit(C{i},{':',' '});
+        if numel(line) > 1
+            s.addTestProperty(['gvd_' line{1}(1:end-1)],line{2});
+        end
+    end
+    
 end
