@@ -70,3 +70,88 @@ def test_calibration_turnin():
 
 def test_calibration_candidate():
     calibration_turnin(mode='candidate')
+
+
+def test_robot_camera_calibration_ATC():
+    CalibParamsXml = os.path.join(os.getcwd(), 'Tools', 'CalibTools', 'AlgoThermalCalibration', 'calibParams.xml')
+    #runParamsXml = os.path.join(os.getcwd(), 'Tools', 'CalibTools', 'AlgoThermalCalibration', 'IV2AlgoThermalCalibTool.xml')
+
+    try:
+        CalibParams = et.parse(CalibParamsXml)
+        slash.logger.info("CalibParams xml file: {}".format(CalibParamsXml), extra={"highlight": True})
+    except FileNotFoundError:
+        slash.logger.error("CalibParams xml file NOT FOUND: {}".format(CalibParamsXml))
+        raise FileNotFoundError
+
+    #try:
+    #    runParams = et.parse(runParamsXml)
+    #    slash.logger.info("runParams xml file: {}".format(runParamsXml), extra={"highlight": True})
+    #except FileNotFoundError:
+    #    slash.logger.error("runParams xml definition file NOT FOUND: {}".format(runParamsXml))
+    #    raise FileNotFoundError
+
+    root = CalibParams.getroot()
+    robot = root.find('./robot')
+    robot.find('./enable').text = "1"
+    CalibParams.write(CalibParamsXml)
+    slash.logger.info("Enable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
+
+    out = io.StringIO()
+    err = io.StringIO()
+    eng = slash.g.mat
+
+    slash.logger.info("Starting ATC calibration- MATLAB...")
+
+    try:
+        eng.s.IV2AlgoThermalCalibTool(runParamsstdout=out, stderr=err, nargout=0)
+    # except matlab.engine.MatlabExecutionError:
+    except Exception as ex:
+        slash.logger.error(ex)
+        s_err = err.getvalue()
+        slash.logger.error("Calibration crashed: {}".format(s_err))
+        slash.logger.info(out.getvalue())
+        raise RuntimeError
+
+    robot.find('./enable').text = "0"
+    CalibParams.write(CalibParamsXml)
+    slash.logger.info("Unable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
+
+    slash.logger.info(out.getvalue())
+
+
+def test_robot_camera_calibration_ACC():
+    CalibParamsXml = os.path.join(os.getcwd(), 'Tools', 'CalibTools', 'AlgoCameraCalibration', 'calibParamsVXGA.xml')
+
+    try:
+        CalibParams = et.parse(CalibParamsXml)
+        slash.logger.info("CalibParams xml file: {}".format(CalibParamsXml), extra={"highlight": True})
+    except FileNotFoundError:
+        slash.logger.error("CalibParams xml file NOT FOUND: {}".format(CalibParamsXml))
+        raise FileNotFoundError
+
+    root = CalibParams.getroot()
+    robot = root.find('./robot')
+    robot.find('./enable').text = "1"
+    CalibParams.write(CalibParamsXml)
+    slash.logger.info("Enable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
+
+    out = io.StringIO()
+    err = io.StringIO()
+    eng = slash.g.mat
+
+    slash.logger.info("Starting ACC calibration- MATLAB...")
+    try:
+        eng.s.IV2AlgoCameraCalibTool(runParamsstdout=out, stderr=err, nargout=0)
+    # except matlab.engine.MatlabExecutionError:
+    except Exception as ex:
+        slash.logger.error(ex)
+        s_err = err.getvalue()
+        slash.logger.error("Calibration crashed: {}".format(s_err))
+        slash.logger.info(out.getvalue())
+        raise RuntimeError
+
+    robot.find('./enable').text = "0"
+    CalibParams.write(CalibParamsXml)
+    slash.logger.info("Unable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
+
+    slash.logger.info(out.getvalue())
