@@ -148,7 +148,7 @@
 	  <nRowsRGB>29</nRowsRGB>
       <name>Algo_Thermal_Loop_CalibInfo</name> 
       <jumpDet>
-          <nSmooth>1</nSmooth>
+          <nSmooth>5</nSmooth>
           <deviationPerc>95</deviationPerc>
           <minNumOutliers>2</minNumOutliers>
           <thFactor>2</thFactor>
