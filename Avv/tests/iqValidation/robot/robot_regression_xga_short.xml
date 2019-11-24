@@ -208,8 +208,8 @@
         <test name="zir_c50_130cm" metrics="zir" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
         <test name="zir_c50_140cm" metrics="zir" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
         <test name="zir_c50_150cm" metrics="zir" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_250cm" metrics="zir" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
         <test name="zir_c50_200cm" metrics="zir" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test name="zir_c50_250cm" metrics="zir" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 
  
         <test name="irFillRate_w10_70cm" metrics="irFillRate" target="wall_10Reflectivity" distance="70cm" threshold="[90 : 100]" extra=""/>
