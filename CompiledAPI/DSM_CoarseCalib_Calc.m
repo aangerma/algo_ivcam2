@@ -13,7 +13,7 @@ function [DSM_data] = DSM_CoarseCalib_Calc(angxRaw, angyRaw, calibParams)
 %       dsmYoffset
 %
     t0 = tic;
-    global g_output_dir g_save_input_flag g_save_output_flag g_fprintff g_LogFn g_countRuntime;
+    global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn;
     
     % auto-completions
     if isempty(g_save_input_flag)

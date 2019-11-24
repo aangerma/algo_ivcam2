@@ -4,22 +4,23 @@ invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.
 data.framesData = data.framesData(~invalidFrames);
 data.dfzRefTmp = data.regs.FRMW.dfzCalTmp;
 [table, results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
+
+if isempty(table)
+    calibPassed = -1;
+    metrics = [];
+    metricsWithTheoreticalFix = [];
+    fprintff('Error: table is empty (generateFWTable aborted)\n');
+    return;
+end
+
 data.tableResults = results;
 [data] = Calibration.thermal.applyThermalFix(data,data.regs,[],calibParams,runParams,1);
 results.yDsmLosDegredation = data.tableResults.yDsmLosDegredation;
 results = UpdateResultsStruct(results); % output single layer results struct
 data.regs.FRMW.humidApdTempDiff = results.FRMWhumidApdTempDiff;
 
-if isempty(table)
-    calibPassed = 0;
-    metrics = [];
-    metricsWithTheoreticalFix = [];
-    fprintff('table is empty (no checkerboard where found)\n');
-    return;
-end
-
 [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
-[fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,0);
+[fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,1);
 Calibration.aux.logResults(data.results, runParams);
 
 %% merge all scores outputs

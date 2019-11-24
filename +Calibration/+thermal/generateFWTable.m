@@ -32,30 +32,50 @@ validCB = all(validPerFrame,2);
 %% Temperatures management
 if isfield(tempData,'ma')
     ma = [tempData.ma];
-else % Function wasn't fed the ma temperature
-    ma = [tempData.ldd];
-    fprintff('No ma data recorded. Treating ldd as a proxy for ma temperature.\n');
+else
+    fprintff('WARNING: ma data missing. Treating ldd as a proxy for ma temperature.\n');
+    ma = [tempData.ldd]; % temporary
 end
 if isfield(tempData, 'tsense')
-    if isfield(tempData, 'shtw2')
-        apdTemp = [tempData.tsense];
-        humidTemp = [tempData.shtw2];
-        ind = find(all(apdTemp'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
-        if ~isempty(ind)
-            results.temp.FRMWhumidApdTempDiff = humidTemp(ind) - apdTemp(ind);
-        else
-            fprintff('WARNING: no tsense measurement within range [%d,%d]. Ignoring shtw2-tsense temperature difference.\n', calibParams.warmUp.apdTempRange);
-            results.temp.FRMWhumidApdTempDiff = 0;
-        end
-    else
-        fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
-        results.temp.FRMWhumidApdTempDiff = 0;
-    end
+    tsense = [tempData.tsense];
 else
     fprintff('WARNING: tsense data missing. Ignoring shtw2-tsense temperature difference.\n');
-    results.temp.FRMWhumidApdTempDiff = 0;
+    tsense = [tempData.ldd]; % temporary
 end
-
+if isfield(tempData, 'shtw2')
+    shtw2 = [tempData.shtw2];
+else
+    fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
+    shtw2 = [tempData.ldd]; % temporary
+end
+results.temp.FRMWhumidApdTempDiff = 0; % default
+if isfield(tempData, 'tsense') && isfield(tempData, 'shtw2')
+    ind = find(all(tsense'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
+    if ~isempty(ind)
+        results.temp.FRMWhumidApdTempDiff = shtw2(ind) - tsense(ind);
+    else
+        fprintff('WARNING: no tsense measurement within range [%d,%d]. Ignoring shtw2-tsense temperature difference.\n', calibParams.warmUp.apdTempRange);
+    end
+end
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    hold all
+    plot(ldd, '.-')
+    plot(ma, '.-')
+    plot(tsense, '.-')
+    plot(shtw2, '.-')
+    if (results.temp.FRMWhumidApdTempDiff~=0)
+        plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
+        leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff'};
+        text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
+    else
+        leg = {'LDD', 'MA', 'TSense', 'SHTW2'};
+    end
+    grid on, xlabel('#frame'), ylabel('temperature [deg]')
+    legend(leg,'Location','northwest')
+    title('Temperature readings')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'));
+end
 
 %% RTD fix
 rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);

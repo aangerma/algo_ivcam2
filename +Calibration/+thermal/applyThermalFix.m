@@ -68,17 +68,17 @@ for k = 1:length(data.framesData)
         
         invalid = isnan(newData.framesData(k).ptsWithZ(:,2));
         
-        xx = int32(newData.framesData(k).ptsWithZ(:,2));
-        yy = int32(newData.framesData(k).ptsWithZ(:,3));
+        xx = (newData.framesData(k).ptsWithZ(:,2));
+        yy = (newData.framesData(k).ptsWithZ(:,3));
 
-        xx = xx*int32(regs.DIGG.sphericalScale(1));
-        yy = yy*int32(regs.DIGG.sphericalScale(2));
+        xx = xx*single(regs.DIGG.sphericalScale(1));
+        yy = yy*single(regs.DIGG.sphericalScale(2));
 
-        xx = bitshift(xx,-12+2);
-        yy = bitshift(yy,-12);
+        xx = (xx*2^(-12+2));
+        yy = (yy*2^(-12));
 
-        xx = xx+int32(regs.DIGG.sphericalOffset(1));
-        yy = yy+int32(regs.DIGG.sphericalOffset(2));
+        xx = xx+single(regs.DIGG.sphericalOffset(1));
+        yy = yy+single(regs.DIGG.sphericalOffset(2));
 
         xx = max(-2^14,min(2^14-1,xx))/4;
         yy = max(-2^11,min(2^11-1,yy));

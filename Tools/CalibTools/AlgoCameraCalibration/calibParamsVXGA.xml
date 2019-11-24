@@ -338,7 +338,7 @@
         <nFrames>30</nFrames>
         <useExtraMargins>1</useExtraMargins>  
         <extraMarginL>0</extraMarginL>  
-        <extraMarginR>0</extraMarginR>  
+        <extraMarginR>1</extraMarginR>  
         <extraMarginT>0.1</extraMarginT>  
         <extraMarginB>0.1</extraMarginB>   
         <maxFovX>70</maxFovX>
@@ -371,7 +371,7 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>98</fillRateTh>
+                <fillRateTh>74</fillRateTh>
                 <guessOnInterval>0.5</guessOnInterval>
             </state1>
             <state2>
@@ -380,7 +380,7 @@
                 <minModprc>0</minModprc>
                 <laserDelta>1</laserDelta>
                 <framesNum>10</framesNum>
-                <fillRateTh>70</fillRateTh>
+                <fillRateTh>38</fillRateTh>
                 <guessOnInterval>0.5</guessOnInterval>
             </state2>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
@@ -414,15 +414,15 @@
         <nreadsToAverage>30</nreadsToAverage>
     </aging>
    <tableVersions>
-        <algoCalib>4.19</algoCalib>
-        <algoRtdOverAngX>3.19</algoRtdOverAngX>
-        <algoThermal>4.19</algoThermal>
-        <algoRgbThermal>4.19</algoRgbThermal>
-        <cbufCalib>3.19</cbufCalib>
-        <destTxPwrPd>3.19</destTxPwrPd>
-        <diggGamma>3.19</diggGamma>
-        <diggUndist>3.19</diggUndist>
-        <dynamicRange>5.19</dynamicRange>
-        <rgbCalib>0.19</rgbCalib>
+        <algoCalib>4</algoCalib>
+        <algoRtdOverAngX>3</algoRtdOverAngX>
+        <algoThermal>4</algoThermal>
+        <algoRgbThermal>4</algoRgbThermal>
+        <cbufCalib>3</cbufCalib>
+        <destTxPwrPd>3</destTxPwrPd>
+        <diggGamma>3</diggGamma>
+        <diggUndist>3</diggUndist>
+        <dynamicRange>5</dynamicRange>
+        <rgbCalib>0</rgbCalib>
    </tableVersions>
 </struct>
