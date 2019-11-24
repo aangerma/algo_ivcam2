@@ -87,7 +87,7 @@ verifyThermalSweepValidity(ldd, startI, calibParams.warmUp)
 results.ma.slope = aMA;
 
 % jump detection
-jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, false, runParams);
+jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, true, false, runParams);
 if isempty(jumpIdcs) % no jump detected
     ind = 1;
 else % last diff outlier is the first post-jump index
@@ -159,13 +159,13 @@ end
 results.angy.minval = mean(binEdges(1:2));
 results.angy.maxval = mean(binEdges(end-1:end));
 results.angy.nBins = nBins;
-jumpIdcs = detectJump(results.angy.scale, 'Yscale', calibParams.fwTable.jumpDet, true, runParams);
+jumpIdcs = detectJump(results.angy.scale, 'Yscale', calibParams.fwTable.jumpDet, false, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angy scale jump detected - failing unit.\n')
     table = [];
     return;
 end
-jumpIdcs = detectJump(results.angy.offset, 'Yoffset', calibParams.fwTable.jumpDet, true, runParams);
+jumpIdcs = detectJump(results.angy.offset, 'Yoffset', calibParams.fwTable.jumpDet, false, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angy offset jump detected - failing unit.\n')
     table = [];
@@ -214,13 +214,13 @@ end
 results.angx.p0 = p0;
 results.angx.p1 = p1;
 results.angx.nBins = nBins;
-jumpIdcs = detectJump(results.angx.scale, 'Xscale', calibParams.fwTable.jumpDet, true, runParams);
+jumpIdcs = detectJump(results.angx.scale, 'Xscale', calibParams.fwTable.jumpDet, false, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angx scale jump detected - failing unit.\n')
     table = [];
     return;
 end
-jumpIdcs = detectJump(results.angx.offset, 'Xoffset', calibParams.fwTable.jumpDet, true, runParams);
+jumpIdcs = detectJump(results.angx.offset, 'Xoffset', calibParams.fwTable.jumpDet, false, true, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angx offset jump detected - failing unit.\n')
     table = [];
@@ -570,10 +570,15 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function jumpIdcs = detectJump(dataVec, paramName, jumpDetParams, doDetrend, runParams)
+function jumpIdcs = detectJump(dataVec, paramName, jumpDetParams, doSmooth, doDetrend, runParams)
 % smooth differentiation
-dataVecSmooth = smooth(dataVec, jumpDetParams.nSmooth);
-dataVecSmooth = dataVecSmooth(ceil(jumpDetParams.nSmooth/2):jumpDetParams.nSmooth:end);
+if doSmooth
+    nSmooth = jumpDetParams.nSmooth;
+else
+    nSmooth = 1;
+end
+dataVecSmooth = smooth(dataVec, nSmooth);
+dataVecSmooth = dataVecSmooth(ceil(nSmooth/2):nSmooth:end);
 smoothDiff = diff(dataVecSmooth);
 nPts = length(smoothDiff);
 % detrending
@@ -596,15 +601,15 @@ isJump = isOutlier;
 isJump([1:find(~isJump,1,'first'), find(~isJump,1,'last'):end]) = false; % ignoring leading/trailing large slopes
 jumpIdcsSmooth = find(isJump);
 if ~isempty(jumpIdcsSmooth)
-    jumpIdcs = ceil(jumpDetParams.nSmooth/2)+((jumpIdcsSmooth+1)-1)*jumpDetParams.nSmooth;
+    jumpIdcs = ceil(nSmooth/2)+((jumpIdcsSmooth+1)-1)*nSmooth;
 else
     jumpIdcs = [];
 end
 % visualization
-if ~isempty(jumpIdcs)
+if ~isempty(runParams) && ~isempty(jumpIdcs)
     ff = Calibration.aux.invisibleFigure;
     subplot(121), hold all
-    plot(dataVec, 'b.-'),               plot(ceil(jumpDetParams.nSmooth/2):jumpDetParams.nSmooth:length(dataVec), dataVecSmooth, 'c-o')
+    plot(dataVec, 'b.-'),               plot(ceil(nSmooth/2):nSmooth:length(dataVec), dataVecSmooth, 'c-o')
     grid on, legend('raw', 'smooth'), title(paramName)
     subplot(122), hold all
     plot(smoothDiff, 'b.-'),            plot(trend, 'c-')
