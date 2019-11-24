@@ -109,6 +109,9 @@ def test_robot_camera_calibration_ATC():
         slash.logger.error(ex)
         s_err = err.getvalue()
         slash.logger.error("Calibration crashed: {}".format(s_err))
+        robot.find('./enable').text = "0"
+        CalibParams.write(CalibParamsXml)
+        slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
         slash.logger.info(out.getvalue())
         raise RuntimeError
 
@@ -147,6 +150,9 @@ def test_robot_camera_calibration_ACC():
         slash.logger.error(ex)
         s_err = err.getvalue()
         slash.logger.error("Calibration crashed: {}".format(s_err))
+        robot.find('./enable').text = "0"
+        CalibParams.write(CalibParamsXml)
+        slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
         slash.logger.info(out.getvalue())
         raise RuntimeError
 
