@@ -1,13 +1,16 @@
 clear all; close all; 
-dist_num=1005;
-load('X:\Users\hila\L520\TxRx\CodesStruct.mat');
+dist_num=1103;
+load('X:\Users\hila\TxRxinvest\CodesStruct.mat');
 
+%% !! remember before test WrConfigData C:\sources\ivcam2_project\Enable_Mems_ConfigData_Ver_02_11.txt // stop the mirror
 
-outputFolder='X:\Users\hila\L520\TxRx\CodeTestData\Test1\codesData';
+outputFolder='X:\Users\hila\TxRxinvest\CodeTestData\Test4\codeData';
+mkdirSafe(outputFolder); 
 warning off
 
 %%
-for(code_i=12:1:length(codes))
+inds=[6,17]; 
+for(code_i=inds )%12:1:length(codes))
 % code_i=7;
 hw = HWinterface();
 hw.cmd('dirtybitbypass');

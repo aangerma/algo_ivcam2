@@ -1,6 +1,6 @@
 function [peak_index,peak_val] = fineCor(fineCorrRange,coarseDownSamplingR,TxFullcode,coarseCorrOffset,cma)
  
-    corrSegment = Utils.correlator(cma, flip(TxFullcode), uint32(zeros(size(cma,2),1)), uint16(coarseCorrOffset)*uint16(coarseDownSamplingR), uint16(fineCorrRange));
+    corrSegment = Utils.correlator(cma, TxFullcode, uint32(zeros(size(cma,2),1)), uint16(coarseCorrOffset)*uint16(coarseDownSamplingR), uint16(fineCorrRange));
 
 %% smooth
 
