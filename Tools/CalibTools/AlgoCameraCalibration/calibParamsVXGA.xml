@@ -414,15 +414,15 @@
         <nreadsToAverage>30</nreadsToAverage>
     </aging>
    <tableVersions>
-        <algoCalib>4.19</algoCalib>
-        <algoRtdOverAngX>3.19</algoRtdOverAngX>
-        <algoThermal>4.19</algoThermal>
-        <algoRgbThermal>4.19</algoRgbThermal>
-        <cbufCalib>3.19</cbufCalib>
-        <destTxPwrPd>3.19</destTxPwrPd>
-        <diggGamma>3.19</diggGamma>
-        <diggUndist>3.19</diggUndist>
-        <dynamicRange>5.19</dynamicRange>
-        <rgbCalib>0.19</rgbCalib>
+        <algoCalib>4.20</algoCalib>
+        <algoRtdOverAngX>3.20</algoRtdOverAngX>
+        <algoThermal>4.20</algoThermal>
+        <algoRgbThermal>4.20</algoRgbThermal>
+        <cbufCalib>3.20</cbufCalib>
+        <destTxPwrPd>3.20</destTxPwrPd>
+        <diggGamma>3.20</diggGamma>
+        <diggUndist>3.20</diggUndist>
+        <dynamicRange>5.20</dynamicRange>
+        <rgbCalib>0.20</rgbCalib>
    </tableVersions>
 </struct>
