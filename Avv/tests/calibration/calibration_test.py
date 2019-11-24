@@ -114,7 +114,7 @@ def test_robot_camera_calibration_ATC():
 
     robot.find('./enable').text = "0"
     CalibParams.write(CalibParamsXml)
-    slash.logger.info("Unable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
+    slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
 
     slash.logger.info(out.getvalue())
 
@@ -152,6 +152,6 @@ def test_robot_camera_calibration_ACC():
 
     robot.find('./enable').text = "0"
     CalibParams.write(CalibParamsXml)
-    slash.logger.info("Unable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
+    slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
 
     slash.logger.info(out.getvalue())
