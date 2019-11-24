@@ -103,7 +103,7 @@ def test_robot_camera_calibration_ATC():
     slash.logger.info("Starting ATC calibration- MATLAB...")
 
     try:
-        eng.s.IV2AlgoThermalCalibTool(runParamsstdout=out, stderr=err, nargout=0)
+        eng.s.IV2AlgoThermalCalibTool(stdout=out, stderr=err, nargout=0)
     # except matlab.engine.MatlabExecutionError:
     except Exception as ex:
         slash.logger.error(ex)
@@ -144,7 +144,7 @@ def test_robot_camera_calibration_ACC():
 
     slash.logger.info("Starting ACC calibration- MATLAB...")
     try:
-        eng.s.IV2AlgoCameraCalibTool(runParamsstdout=out, stderr=err, nargout=0)
+        eng.s.IV2AlgoCameraCalibTool(stdout=out, stderr=err, nargout=0)
     # except matlab.engine.MatlabExecutionError:
     except Exception as ex:
         slash.logger.error(ex)
