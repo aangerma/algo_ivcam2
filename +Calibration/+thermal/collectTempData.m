@@ -300,6 +300,7 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
     end
     frameData.ptsWithZ = cornersData(frame,regs,calibParams);
     frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
+    frameData.maVoltage = hw.getMaVoltagee();
 %     params.camera.zMaxSubMM = 4;
 %     params.camera.K = regs.FRMW.kRaw;
 %     params.target.squareSize = 30;
