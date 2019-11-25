@@ -1,7 +1,7 @@
 clear
 defaultLocalPath ='C:\temp\unitCalib\';
 toolDir = fullfile(ivcam2root,'Tools\CalibTools\AlgoThermalCalibration');
-runParamsFile = 'IV2AlgoCameraCalibTool.xml';
+runParamsFile = 'IV2AlgoThermalCalibTool.xml';
 hw = HWinterface;       
 [info,serialStr,~] = hw.getInfo();
 runParams = xml2structWrapper(fullfile(toolDir,runParamsFile));
@@ -11,7 +11,7 @@ app.presetsDefFolder = runParams.presetsDefFolder;
 app.calibParamsFile = runParams.calibParamsFile;
 app.defaultsFilename = fullfile(toolDir,runParamsFile);
 
-cbnames = {'replayMode','warmUp','init','gamma','scanDir','minRangePreset','maxRangePreset','DFZ','ROI','undist','rgb','burnCalibrationToDevice','burnConfigurationToDevice','debug','pre_calib_validation','post_calib_validation','uniformProjectionDFZ','saveRegState','FOVexInstalled'};
+cbnames = {'replayMode','init','DSM','dataDelay','thermalLoop','coolDown','burnCalibrationToDevice','burnConfigurationToDevice','debug','saveRegState','FOVexInstalled','manualCaptures','performValidation'};
     
 app.disableAdvancedOptions = runParams.disableAdvancedOptions;
 app.calibRes=runParams.calibRes;
