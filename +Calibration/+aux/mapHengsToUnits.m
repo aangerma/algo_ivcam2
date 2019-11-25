@@ -1,10 +1,14 @@
-function mapHengsToUnits
+function mapHengsToUnits(outputFolder)
 
 generalPath = '\\143.185.124.250\Tester-data\IDC Data\IVCAM\L515\Calibration\BIG PBS\';
 hengFolders = dir([generalPath, 'heng*']);
 
 unitSN = zeros(0,1);
 unitData = struct('folder', cell(1,0));
+
+if ~exist('outputFolder', 'var')
+    outputFolder = '';
+end
 
 %%
 
@@ -43,7 +47,7 @@ for iFldr = 1:length(hengFolders)
 end
 toc
 
-save('hengs_to_units_mapping.mat', 'unitSN', 'unitData')
+save([outputFolder, 'hengs_to_units_mapping.mat'], 'unitSN', 'unitData')
 
 end
 
