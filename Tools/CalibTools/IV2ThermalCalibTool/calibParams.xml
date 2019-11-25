@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <struct>
     <sparkParams>
+        <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
+        <azureFolder>E:\SPARK\iv2-cal1-02 (azure.spark@intel.com)</azureFolder>
         <testMode>ATP</testMode>
-   </sparkParams>
+    </sparkParams>
    <gnrl>
        <Nof2avg>30</Nof2avg>
-       
+       <skipCoolingStage>1</skipCoolingStage>
        <lddTKill>75</lddTKill>
        <mcTKill>[]</mcTKill>
        <maTKill>[]</maTKill>
@@ -23,9 +25,9 @@
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>
-	   <doStream>1</doStream>
-	   <res>[1920,1080]</res>
-	   <startIxRgb>6</startIxRgb>
+           <doStream>0</doStream>
+           <res>[1920,1080]</res>
+           <startIxRgb>6</startIxRgb>
 	   </rgb>
    </gnrl>
    <warmUp>
@@ -89,7 +91,14 @@
       <uvMaxErr>[-inf inf]</uvMaxErr>
       <uvMaxErr95>[-inf inf]</uvMaxErr95>
       <uvMinErr>[-inf inf]</uvMinErr>
+      <fillRateStart>[0 inf]</fillRateStart>
+      <fillRateEnd>[0 inf]</fillRateEnd>
    </validationErrRange>
+   <bananas>
+       <lddInterVals>3</lddInterVals>
+       <zSTDTh>50</zSTDTh>
+       <diskSz>60</diskSz>
+   </bananas>
    <fwTable>
       <nFramesToIgnore>15</nFramesToIgnore>
       <tempBinRange>[0 94]</tempBinRange> 

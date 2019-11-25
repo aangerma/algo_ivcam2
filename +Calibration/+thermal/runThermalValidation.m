@@ -1,5 +1,8 @@
-function  [validationPassed] = runThermalValidation(runParams,calibParams, fprintff,app)
-       
+function  [validationPassed] = runThermalValidation(runParams,calibParams, fprintff,spark,app)
+    if(~exist('spark','var'))
+        spark=[];
+    end
+    write2spark = ~isempty(spark);
     t=tic;
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
@@ -40,7 +43,11 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     
    
     %% merge all scores outputs
+    data.results.fillRateStart = data.validFillRatePrc(1);
+    data.results.fillRateEnd = data.validFillRatePrc(2);
     validationPassed = Calibration.aux.mergeScores(data.results,calibParams.validationErrRange,fprintff);
+    Calibration.aux.writeResults2Spark(data.results,spark,calibParams.validationErrRange,write2spark,'Algo2Val');
+
     fprintff('[!] Validation ended - ');
     if(validationPassed==0)
         fprintff('FAILED.\n');

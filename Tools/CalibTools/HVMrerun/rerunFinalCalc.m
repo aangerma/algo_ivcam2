@@ -3,7 +3,7 @@ clc
 
 atcPath = '\\143.185.124.250\Tester-data\IDC Data\IVCAM\L515\Calibration\BIG PBS\HENG-2737\F9340833\ATC3\'; % '\\143.185.124.250\Tester-data\IDC Data\IVCAM\L515\Calibration\BIG PBS\HENG-2693\F9340026\Avishayexperiment\18-11\3.7.0.0 ATC\';
 atcFolder = [atcPath, 'Matlab\mat_files\'];
-calibDir = [atcPath, '\Matlab\AlgoInternal'];
+calibDir = [atcPath, 'Matlab\AlgoInternal'];
 
 %%
 
