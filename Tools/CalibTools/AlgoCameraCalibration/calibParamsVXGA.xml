@@ -405,8 +405,8 @@
        <enable>0</enable>
        <dfz>
            <type>'checkerboard_50'</type>
-           <dist>[45,45,55,55,55,65]</dist>
-           <ang>[0,0,0,-15,15,0]</ang>
+           <dist>[45,45,45,55,65,70]</dist>
+           <ang>[0,+15,-15,0,0,0]</ang>
        </dfz>
        <pre_dfz_valid>
            <type>'checkerboard_50'</type>

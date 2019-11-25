@@ -42,13 +42,13 @@ for fld_=ff(:)'
 end
 
 runparams=structfun(@(x) x.Value,app.cb,'uni',0);
-[runparams.version,runparams.subVersion] = AlgoCameraCalibToolVersion(); 
+[runparams.version,runparams.subVersion] = AlgoThermalCalibToolVersion(); 
 runparams.outputFolder = [];
 runparams.replayFile = [];
 
-revisionList = dirFolders(fullfile(s.outputdirectory,serialStr),'ACC*');
-revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'ACC(?<rev>\d+)','names'));
-currRev = sprintf('ACC%02d',round(max([0;revInt(:)])+1));
+revisionList = dirFolders(fullfile(s.outputdirectory,serialStr),'ATC*');
+revInt = cellfun(@(x) (str2double(x.rev)), regexp(revisionList,'ATC(?<rev>\d+)','names'));
+currRev = sprintf('ATC%02d',round(max([0;revInt(:)])+1));
 runparams.outputFolder = fullfile(s.outputdirectory,serialStr,currRev);
 runparams.configurationFolder = app.configurationFolder;
 runparams.calibParamsFile = app.calibParamsFile;
@@ -68,7 +68,7 @@ logFn = fullfile(runparams.outputFolder,'log.log');
         
 struct2xmlWrapper(runparams,runparamsFn);        
 calibParams.sparkParams.resultsFolder = runparams.outputFolder;
-calibPassed = Calibration.runAlgoCameraCalibration(runparamsFn,calibfn,@fprintf,[],[]);
+calibPassed = Calibration.thermal.runAlgoThermalCalibration(runparamsFn,calibfn,@fprintf,[],[]);
 hw.cmd('rst');
 clear
 function strOut = replaceFirst(str,exp,replace)
