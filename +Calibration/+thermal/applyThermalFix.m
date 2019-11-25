@@ -108,7 +108,36 @@ data.dsmMovement.minY = min(minMaxDSMAngY);
 data.dsmMovement.maxY = max(minMaxDSMAngY);
 
 rangeRatio = (data.dsmMovement.maxY(2) - data.dsmMovement.minY(1))/(data.dsmMovement.minY(2)-data.dsmMovement.maxY(1));
-data.tableResults.yDsmLosDegredation = 100*(abs(rangeRatio-1)); 
+data.tableResults.yDsmLosDegredation = 100*(abs(rangeRatio-1));
+
+if calibParams.bananas.doExtrapolationInX
+    lddGrid = (calibParams.bananas.extrapolationLddRange(1):calibParams.bananas.extrapolationLddRange(2))';
+    for i = 1:2
+        c = polyfit(lddTemp(~isnan(minMaxDSMAngX(:,i)))',minMaxDSMAngX(~isnan(minMaxDSMAngX(:,i)),i),calibParams.bananas.extrapolationPolyOrdersX(i));
+        minMaxDSMAngXExtrap(:,i) = polyval(c,lddGrid);
+    end
+    
+    data.dsmMovement.X = minMaxDSMAngXExtrap;
+    data.dsmMovement.minX = min(minMaxDSMAngXExtrap);
+    data.dsmMovement.maxX = max(minMaxDSMAngXExtrap);
+    
+    ff = Calibration.aux.invisibleFigure;
+    subplot(121);
+    plot(lddTemp,minMaxDSMAngX(:,1),'o');
+    hold on
+    plot(lddGrid,minMaxDSMAngXExtrap(:,1),'-');
+    xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of lower DSM values');
+    grid on
+    subplot(122);
+    plot(lddTemp,minMaxDSMAngX(:,2),'o');
+    hold on
+    plot(lddGrid,minMaxDSMAngXExtrap(:,2),'-');
+    xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of upper DSM values');
+    grid on
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DSM_Extreme_Values'));
+
+    
+end
 end
 
 %%

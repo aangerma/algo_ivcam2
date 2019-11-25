@@ -163,6 +163,12 @@
           <rtdOrder>3</rtdOrder>
       </extrap>
    </fwTable>
+   
+   <bananas>
+       <doExtrapolationInX>1</doExtrapolationInX>
+       <extrapolationLddRange>[10,65]</extrapolationLddRange>
+       <extrapolationPolyOrdersX>[1,2]</extrapolationPolyOrdersX>
+   </bananas>
    <tableVersions>
         <algoCalib>4</algoCalib>
         <algoRtdOverAngX>3</algoRtdOverAngX>

@@ -28,10 +28,12 @@ persistent Index
 persistent prevTmp
 persistent prevTime
 persistent lastZFrames
+persistent zFramesIndex
 persistent diskObject
 
 if isempty(Index) || (g_temp_count == 0)
     Index     = 0;
+    zFramesIndex = 0;
     prevTmp   = 0;  %hw.getLddTemperature();
     prevTime  = 0;
     lastZFrames = nan([runParams.calibRes,calibParams.warmUp.nFramesForZStd]);
@@ -42,10 +44,12 @@ end
 
 if ~finishedHeating % heating stage
     frame = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [calibParams.gnrl.rgb.res(2), calibParams.gnrl.rgb.res(1)], true);
+    framesNoAvg = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [calibParams.gnrl.rgb.res(2), calibParams.gnrl.rgb.res(1)]);
+    nFrames = size(framesNoAvg,3);
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
-    zForStd = nan(size(frame.z));
-    zForStd(binLargest) = frame.z(binLargest);
-    lastZFrames(:,:,mod(Index,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
+    zForStd = nan(size(framesNoAvg.z));
+    zForStd(repmat(binLargest,1,1,nFrames)) = framesNoAvg.z(repmat(binLargest,1,1,nFrames));
+    lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
     [FrameData.minMaxMemsAngX,FrameData.minMaxMemsAngY] = minMaxDSMAngles(regs,lastZFrames,calibParams,diskObject);
@@ -56,6 +60,7 @@ if ~finishedHeating % heating stage
         prevTmp   = FrameData.temp.ldd;
         prevTime  = FrameData.time;
     end
+    zFramesIndex = zFramesIndex + nFrames;
     Index = Index+1;
     i = Index;
 
