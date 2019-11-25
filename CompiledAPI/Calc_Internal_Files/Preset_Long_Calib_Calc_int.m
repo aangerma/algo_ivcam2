@@ -16,8 +16,36 @@ end
 [curScore, ~, ~] = Validation.metrics.fillRate(frames, maskParams);
 testedScores(end) = curScore;
 
+% Plot at best fill rate
+if (length(testedScores)==1)
+    ff2 = Calibration.aux.invisibleFigure;
+    subplot(2,1,1);imagesc(imfuse(im.i(:,:,end),mask));title('IR image with ROI mask');
+    subplot(2,1,2);imagesc(imfuse(im.z(:,:,end),mask));title('Depth (not normalized) image with ROI mask');
+    Calibration.aux.saveFigureAsImage(ff2,runParams,'Presets','Long_Range_Laser_Calib_mask',1);%imagesc(imfuse(frames(1).z,mask));title('Depth (not normalized) image with ROI mask');
+end
+
 % convergence check
 [isConverged, nextLaserPoint] = chooseNextLaserPoint(laserPoints, testedPoints, testedScores, fillRateTh, guessOnInterval);
+if (isConverged==0) % wait for next iteration
+    maxRangeScaleModRef = NaN;
+    maxFillRate = NaN;
+    targetDist = NaN;
+    return
+end
+
+% Plot at last iteration
+ff1 = Calibration.aux.invisibleFigure;
+plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+hold on;
+plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
+Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
+ff1 = Calibration.aux.invisibleFigure;
+plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+hold on;
+plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
+Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
+
+% convergence check
 if (isConverged==-1) % fatal error
     if (nextLaserPoint==Inf)
         fprintff('[!] Long range preset calibration: Fill rate threshold could not be attained. Modulation ref set to 1.\n')
@@ -29,31 +57,10 @@ if (isConverged==-1) % fatal error
     maxFillRate = max(testedScores);
     targetDist = NaN;
     return
-elseif (isConverged==0) % wait for next iteration
-    maxRangeScaleModRef = NaN;
-    maxFillRate = NaN;
-    targetDist = NaN;
-    return
 end
 
 %% convergence achieved - proceed to final operations
 maxFillRate = max(testedScores);
-
-% Plot
-ff1 = Calibration.aux.invisibleFigure;
-plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
-hold on;
-plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
-Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
-ff1 = Calibration.aux.invisibleFigure;
-plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
-hold on;
-plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
-Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
-ff2 = Calibration.aux.invisibleFigure;
-subplot(2,1,1);imagesc(imfuse(im.i(:,:,end),mask));title('IR image with ROI mask');
-subplot(2,1,2);imagesc(imfuse(im.z(:,:,end),mask));title('Depth (not normalized) image with ROI mask');
-Calibration.aux.saveFigureAsImage(ff2,runParams,'Presets','Long_Range_Laser_Calib_mask',1);%imagesc(imfuse(frames(1).z,mask));title('Depth (not normalized) image with ROI mask');
 
 % analyze target distance
 zIm = {frames.z};

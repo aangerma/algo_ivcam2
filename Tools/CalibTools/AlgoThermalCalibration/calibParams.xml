@@ -150,7 +150,7 @@
           <nSmooth>5</nSmooth>
           <deviationPerc>95</deviationPerc>
           <minNumOutliers>2</minNumOutliers>
-          <thFactor>2</thFactor>
+          <thFactor>3</thFactor>
       </jumpDet>
       <extrap>
           <expandVbiasLims>1</expandVbiasLims>
