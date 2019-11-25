@@ -151,23 +151,13 @@ LddTempVec = [tempVec.ldd];
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     plot(heatTimeVec,LddTempVec)
-    title('Heating Stage'); grid on;xlabel('sec');ylabel('ldd temperature [degrees]');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('LddTempOverTime'),1);
-    
-    ff = Calibration.aux.invisibleFigure;
+    hold on    
     plot(heatTimeVec,[tempVec.ma])
-    title('Heating Stage'); grid on;xlabel('sec');ylabel('ma temperature [degrees]');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MaTempOverTime'),1);
-    
-    ff = Calibration.aux.invisibleFigure;
     plot(heatTimeVec,[tempVec.mc])
-    title('Heating Stage'); grid on;xlabel('sec');ylabel('mc temperature [degrees]');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('McTempOverTime'),1);
-    
-    ff = Calibration.aux.invisibleFigure;
     plot(heatTimeVec,[tempVec.apdTmptr])
-    title('Heating Stage'); grid on;xlabel('sec');ylabel('Apd temperature [degrees]');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('ApdTempOverTime'),1);
+    legend({'ldd';'ma';'mc';'apd'});
+    title('Heating Stage'); grid on;xlabel('sec');ylabel('Temperatures [degrees]');
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'),1);
     
     if calibParams.gnrl.rgb.doStream && inValidationStage
         ff = Calibration.aux.invisibleFigure;
@@ -202,6 +192,10 @@ if manualCaptures
     app.stopWarmUpButton.Enable = 'off'; 
     Calibration.aux.globalSkip(1,0);
 end
+
+
+
+
 end
 
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
