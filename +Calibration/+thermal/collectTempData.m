@@ -305,7 +305,7 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
     frameData.ptsWithZ = cornersData(frame,regs,calibParams);
-    
+    frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
 %     params.camera.zMaxSubMM = 4;
 %     params.camera.K = regs.FRMW.kRaw;
 %     params.target.squareSize = 30;

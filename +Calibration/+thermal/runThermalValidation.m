@@ -25,6 +25,7 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     hw.stopStream;
     calibParams.gnrl.sphericalMode = 0;
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0,calibParams,runParams);
+    [data.rgb] = Calibration.thermal.readDataForRgbThermalCalculation(hw,calibParams);
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% Start stream to load the configuration
@@ -32,9 +33,10 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     
     runParams.manualCaptures = 0;
     data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,calibParams.validation.maximalCoolingAndHeatingTimes,app,1);
-    save(fullfile(runParams.outputFolder,'validationData.mat'),'data','calibParams','runParams');
     data.camerasParams = getCamerasParams(hw,runParams,calibParams);
+    save(fullfile(runParams.outputFolder,'validationData.mat'),'data','calibParams','runParams');
     [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,1);
+    
     
     % Option two - partial validation, let it cool down to N degrees below calibration temperature and then compare to calibration temperature 
     
@@ -78,3 +80,4 @@ camerasParams.depthRes = runParams.calibRes;
 camerasParams.zMaxSubMM = hw.z2mm;
 camerasParams.Kdepth = hw.getIntrinsics;
 end
+

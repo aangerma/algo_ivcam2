@@ -1,4 +1,4 @@
-function [uvResults] = calcThermalUvMap(framesPerTemperature,tmpBinEdges,calibParams,runParams,params)
+function [uvResults] = calcThermalUvMap(framesPerTemperature,calibParams,params)
 
 nBins = calibParams.fwTable.nRows;
 uvResults = nan(nBins,4);
@@ -23,18 +23,7 @@ for k = 1:nBins
     uvResults(k,3) = uvResultsTemp.maxErr95;
     uvResults(k,4) = uvResultsTemp.minErr;
 end
-if ~isempty(runParams)
-    if ~params.inValidationStage
-        legends = {'Pre Fix (cal)'};
-    else
-        legends = {'Post Fix (val)'};
-    end
-    
-    ff = Calibration.aux.invisibleFigure;
-    plot(tmpBinEdges,uvResults(:,1));
-    title('UV mapping RMSE vs Temperature'); grid on;xlabel('degrees');ylabel('UV RMSE [rgb pixels]'); legend(legends);axis square;
-    Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
-end
+
 end
 
 function [xyRotated] = rotateImPixelsBy180(xy,imWidth,imHeight)

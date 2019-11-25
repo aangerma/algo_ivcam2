@@ -25,9 +25,11 @@
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>
-           <doStream>0</doStream>
-           <res>[1920,1080]</res>
-           <startIxRgb>6</startIxRgb>
+	   <doStream>1</doStream>
+	   <res>[1920,1080]</res>
+	   <startIxRgb>6</startIxRgb>
+	   <fixRgbThermal>1</fixRgbThermal>
+	   <nBinsThermal>29</nBinsThermal>
 	   </rgb>
    </gnrl>
    <warmUp>
