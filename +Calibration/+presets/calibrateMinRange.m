@@ -3,9 +3,9 @@ function [isConverged, minRangeScaleModRef, maxMod_dec] = calibrateMinRange(hw,c
 %% capture frames
 minModprc=0 ;
 LaserDelta=2; % decimal
-FramesNum=10;
+framesNum=10;
 
-[frameBytes,LaserPoints,maxMod_dec,laserPoint0] = Calibration.presets.captureVsLaserMod(hw,minModprc,LaserDelta,FramesNum);
+[frameBytes,LaserPoints,maxMod_dec,laserPoint0] = Calibration.presets.captureVsLaserMod(hw,minModprc,LaserDelta,framesNum);
 sz = hw.streamSize;
 [isConverged, nextLaserPoint, minRangeScaleModRef, ModRefDec] = Preset_Short_Calib_Calc(frameBytes,LaserPoints,maxMod_dec,laserPoint0,sz,calibParams);
 while (isConverged==0)
