@@ -32,6 +32,7 @@ if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'doStream')
 else
     plotRGB = 0;
 end
+
 Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB);
 
 validTemps = ~all(any(isnan(framesPerTemperature(:,:,:,1)),3),2);
@@ -45,15 +46,12 @@ stdVals = nanmean(nanstd(validFramesData));
 
 
 metrics = Calibration.thermal.calcThermalScores(data,calibParams,runParams.calibRes);
+%%
 if plotRGB
-    [params] = prepareParams4UvMap(data.camerasParams);
-    params.inValidationStage = inValidationStage;
-    uvResults = Calibration.thermal.calcThermalUvMap(framesPerTemperature,tmpBinEdges,calibParams,runParams,params);
-    metrics.uvMeanRmse = nanmean(uvResults(:,1));
-    metrics.uvMaxErr = max(uvResults(:,2));
-    metrics.uvMaxErr95 = max(uvResults(:,3));
-    metrics.uvMinErr = min(uvResults(:,4));
+    [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,ldds,calibParams,runParams,metrics,inValidationStage,fprintff);
+    %%
 end
+
 
 metrics.stdRtd = stdVals(1);
 metrics.stdXim = stdVals(4);
@@ -116,4 +114,64 @@ params.depthRes = camerasParams.depthRes;
 params.rgbPmat = camerasParams.rgbPmat;
 params.Krgb = camerasParams.Krgb;
 params.rgbDistort = camerasParams.rgbDistort;
+end
+
+function [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,ldds,calibParams,runParams,metrics,inValidationStage,fprintff)
+if isfield(calibParams.gnrl.rgb, 'fixRgbThermal') && calibParams.gnrl.rgb.fixRgbThermal
+    fixRgbThermal = 1;
+else
+    fixRgbThermal = 0;
+end
+[params] = prepareParams4UvMap(data.camerasParams);
+params.inValidationStage = inValidationStage;
+uvResults = Calibration.thermal.calcThermalUvMap(framesPerTemperature,calibParams,params);
+metrics.uvMeanRmse = nanmean(uvResults(:,1));
+metrics.uvMaxErr = max(uvResults(:,2));
+metrics.uvMaxErr95 = max(uvResults(:,3));
+metrics.uvMinErr = min(uvResults(:,4));
+if ~isempty(runParams)
+    if ~params.inValidationStage
+        legends = {'Pre Fix (cal)'};
+    else
+        legends = {'Post Fix (val)'};
+    end
+    
+    ff = Calibration.aux.invisibleFigure;
+    plot(tmpBinEdges,uvResults(:,1));
+    title('UV mapping RMSE vs Temperature'); grid on;xlabel('degrees');ylabel('UV RMSE [rgb pixels]'); axis square;
+    if ~fixRgbThermal
+        legend(legends);
+        Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
+    end
+end
+%%
+if fixRgbThermal
+    crnrsData = nan(numel(ldds),size(data.framesData(1).ptsWithZ,1),2);
+    for iTemps = 1:numel(ldds)
+        crnrsData(iTemps,:,:) = data.framesData(iTemps).ptsWithZ(:,9:10);
+    end
+    [fixedCrnrsData] = Calibration.thermal.fixRgbWithThermalCoeffs(crnrsData,ldds,data.rgb,data.rgb.rgbCalTemp,fprintff);
+    framesDataFixed = data.framesData;
+    for iTemps = 1:numel(ldds)
+        framesDataFixed(iTemps).ptsWithZ(:,9:10) = fixedCrnrsData(iTemps,:,:);
+    end
+    nBins = calibParams.fwTable.nRows;
+    framesPerTemperatureFixed = Calibration.thermal.medianFrameByTemp(framesDataFixed,nBins,tmpBinIndices);
+    uvCorrectedResults = Calibration.thermal.calcThermalUvMap(framesPerTemperatureFixed,calibParams,params);
+    metrics.uvMeanRmseFixed = nanmean(uvCorrectedResults(:,1));
+    metrics.uvMaxErrFixed = max(uvCorrectedResults(:,2));
+    metrics.uvMaxErr95Fixed = max(uvCorrectedResults(:,3));
+    metrics.uvMinErrFixed = min(uvCorrectedResults(:,4));
+    if ~isempty(runParams)
+        if ~params.inValidationStage
+            legends = {'UV mapping (cal)','UV mapping after Theoretical Fix(cal)'};
+        else
+            legends = {'UV mapping (val)','UV mapping after Theoretical Fix (val)'};
+        end
+        
+        hold on; plot(tmpBinEdges,uvCorrectedResults(:,1));
+        legend(legends);
+        Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
+    end
+end
 end
