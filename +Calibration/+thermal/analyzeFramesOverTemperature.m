@@ -139,13 +139,13 @@ if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     plot(tmpBinEdges,uvResults(:,1));
     title('UV mapping RMSE vs Temperature'); grid on;xlabel('degrees');ylabel('UV RMSE [rgb pixels]'); axis square;
-    if ~fixRgbThermal
+    if ~fixRgbThermal || ~sum(data.rgb.thermalTable(:))
         legend(legends);
         Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
     end
 end
 %%
-if fixRgbThermal
+if fixRgbThermal && sum(data.rgb.thermalTable(:))
     crnrsData = nan(numel(ldds),size(data.framesData(1).ptsWithZ,1),2);
     for iTemps = 1:numel(ldds)
         crnrsData(iTemps,:,:) = data.framesData(iTemps).ptsWithZ(:,9:10);
