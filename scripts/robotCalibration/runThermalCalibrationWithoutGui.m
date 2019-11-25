@@ -13,7 +13,6 @@ app.defaultsFilename = fullfile(toolDir,runParamsFile);
 
 cbnames = {'replayMode','init','DSM','dataDelay','thermalLoop','coolDown','burnCalibrationToDevice','burnConfigurationToDevice','debug','saveRegState','FOVexInstalled','manualCaptures','performValidation'};
     
-app.disableAdvancedOptions = runParams.disableAdvancedOptions;
 app.calibRes=runParams.calibRes;
 for i=1:length(cbnames)
     f=cbnames{i};

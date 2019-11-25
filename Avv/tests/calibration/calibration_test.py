@@ -61,6 +61,7 @@ def calibration_turnin(mode='turnin'):
                 slash.logger.error('{}'.format(line))
 
     if not res:
+        #raise a_common.TestFail('At least one of the tests failed')
         a_common.TestFail('At least one of the tests failed')
 
 
