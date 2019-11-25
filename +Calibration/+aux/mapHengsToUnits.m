@@ -47,7 +47,7 @@ for iFldr = 1:length(hengFolders)
 end
 toc
 
-save([outputFolder, 'hengs_to_units_mapping.mat'], 'unitSN', 'unitData')
+save([outputFolder, '\hengs_to_units_mapping.mat'], 'unitSN', 'unitData')
 
 end
 
