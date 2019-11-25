@@ -75,7 +75,6 @@ def test_calibration_candidate():
 
 def test_robot_camera_calibration_ATC():
     CalibParamsXml = os.path.join(os.getcwd(), 'Tools', 'CalibTools', 'AlgoThermalCalibration', 'calibParams.xml')
-    #runParamsXml = os.path.join(os.getcwd(), 'Tools', 'CalibTools', 'AlgoThermalCalibration', 'IV2AlgoThermalCalibTool.xml')
 
     try:
         CalibParams = et.parse(CalibParamsXml)
@@ -83,13 +82,6 @@ def test_robot_camera_calibration_ATC():
     except FileNotFoundError:
         slash.logger.error("CalibParams xml file NOT FOUND: {}".format(CalibParamsXml))
         raise FileNotFoundError
-
-    #try:
-    #    runParams = et.parse(runParamsXml)
-    #    slash.logger.info("runParams xml file: {}".format(runParamsXml), extra={"highlight": True})
-    #except FileNotFoundError:
-    #    slash.logger.error("runParams xml definition file NOT FOUND: {}".format(runParamsXml))
-    #    raise FileNotFoundError
 
     root = CalibParams.getroot()
     robot = root.find('./robot')
@@ -105,7 +97,6 @@ def test_robot_camera_calibration_ATC():
 
     try:
         eng.s.runThermalCalibrationWithoutGui(stdout=out, stderr=err, nargout=0)
-    # except matlab.engine.MatlabExecutionError:
     except Exception as ex:
         slash.logger.error(ex)
         s_err = err.getvalue()
@@ -146,7 +137,6 @@ def test_robot_camera_calibration_ACC():
     slash.logger.info("Starting ACC calibration- MATLAB...")
     try:
         eng.s.runCameraCalibrationWithoutGui(stdout=out, stderr=err, nargout=0)
-    # except matlab.engine.MatlabExecutionError:
     except Exception as ex:
         slash.logger.error(ex)
         s_err = err.getvalue()
@@ -162,3 +152,8 @@ def test_robot_camera_calibration_ACC():
     slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
 
     slash.logger.info(out.getvalue())
+
+
+def test_ATC_ACC_robot_calib():
+    test_robot_camera_calibration_ATC()
+    test_robot_camera_calibration_ACC()
