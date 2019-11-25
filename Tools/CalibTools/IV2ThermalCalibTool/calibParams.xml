@@ -95,6 +95,7 @@
       <fillRateEnd>[0 inf]</fillRateEnd>
    </validationErrRange>
    <bananas>
+       <lddInterVals>3</lddInterVals>
        <zSTDTh>50</zSTDTh>
        <diskSz>60</diskSz>
    </bananas>

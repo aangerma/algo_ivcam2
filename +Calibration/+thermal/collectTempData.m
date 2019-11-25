@@ -34,6 +34,7 @@ hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
 hw.shadowUpdate;
 
 prevTmp = hw.getLddTemperature();
+prevTmpForBananas = prevTmp;
 prevTime = 0;
 tempsForPlot(plotDataI) = prevTmp;
 timesForPlot(plotDataI) = prevTime/60;
@@ -50,11 +51,7 @@ end
 
 fprintff('[-] Starting heating stage (waiting for diff<%1.1f over %1.1f minutes) ...\n',tempTh,calibParams.warmUp.warmUpSP);
 fprintff('Ldd temperatures: %2.2f',prevTmp);
-
-nf = 30;
-hw.getFrame(nf);
-firstFrames = hw.getFrame(nf,0);
-[bananasExist,validFillRatePrc(1)] = hasBananas(firstFrames,calibParams,runParams,prevTmp,sprintf('Startup_Frame'));
+[bananasExist,validFillRatePrc(1)] = captureBananaFigure(hw,calibParams,runParams,prevTmpForBananas);
 if bananasExist
     fprintff('Detected invalid pixels in first frames (possible bananas). Valid fill rate: %3.6g \n',validFillRatePrc(1));
 else
@@ -101,6 +98,11 @@ while ~finishedHeating
         fprintff(', %2.2f',prevTmp);
         
     end
+    lddDiffFromLastBananasIsGreat = (framesData(i).temp.ldd - prevTmpForBananas) > calibParams.bananas.lddInterVals;
+    if lddDiffFromLastBananasIsGreat
+        prevTmpForBananas = framesData(i).temp.ldd;
+        captureBananaFigure(hw,calibParams,runParams,prevTmpForBananas);
+    end
     pause(timeBetweenFrames);
     
     if i == 4
@@ -118,8 +120,7 @@ if tempFig.isvalid
     close(tempFig);
 end
 
-lastFrames = hw.getFrame(nf,0);
-[bananasExist,validFillRatePrc(2)] = hasBananas(lastFrames,calibParams,runParams,prevTmp,sprintf('End_Frame'));
+[bananasExist,validFillRatePrc(2)] = captureBananaFigure(hw,calibParams,runParams,prevTmp);
 if bananasExist
     fprintff('Detected invalid pixels in last frames (possible bananas). Valid fill rate: %3.6g \n',validFillRatePrc(2));
 else
@@ -340,4 +341,11 @@ function [bananasExist,validFillRatePrc] = hasBananas(frames,calibParams,runPara
         title('Binary Valid Pixels');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',figtitle,1);
     end
+end
+function [bananasExist,validFillRatePrc] = captureBananaFigure(hw,calibParams,runParams,lddTmp)
+
+nf = 30;
+hw.getFrame(nf);
+frames = hw.getFrame(nf,0);
+[bananasExist,validFillRatePrc] = hasBananas(frames,calibParams,runParams,lddTmp,sprintf('Banana_Frame'));
 end
