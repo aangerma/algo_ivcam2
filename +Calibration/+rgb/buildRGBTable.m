@@ -4,8 +4,6 @@ function [RGBTable] = buildRGBTable(res,params,rgbCalTemperature)
     TableSize = 112;
     
     %current table version
-    TableVersionMajor = uint8(floor(params.version));
-    TableVersionMinor = uint8(mod(params.version*100,100));
     calibratorID = uint8(1);
     procId = uint8(0);
     %initialize the stream
@@ -35,6 +33,5 @@ function [RGBTable] = buildRGBTable(res,params,rgbCalTemperature)
     s.setNextSingle(single(rgbCalTemperature));
     
     RGBTable.data = s.flush();
-    RGBTable.version = [TableVersionMajor TableVersionMinor];
 end
 

@@ -236,67 +236,68 @@ end
 
 
 %% RGB Fix - groupByLDDtemp
-nBinsRgb = calibParams.fwTable.nRowsRGB;
-ptsWithZ = reshape([framesData.ptsWithZ],560,7,[]);
-rgbCrnrsPerFrame = ptsWithZ(:,6:7,:);
-
-minMaxLdd4RGB = minmax(ldd);
-lddGridEdges = linspace(minMaxLdd4RGB(1),minMaxLdd4RGB(2),nBinsRgb+2);
-lddStepRgb = lddGridEdges(2)-lddGridEdges(1);
-lddGridRgb = lddStepRgb/2 + lddGridEdges(1:end-1);
-%{
+if (size(framesData(1).ptsWithZ,2) == 7) % RGB frames captures during heating stage
+    nBinsRgb = calibParams.fwTable.nRowsRGB;
+    ptsWithZ = reshape([framesData.ptsWithZ],560,7,[]);
+    rgbCrnrsPerFrame = ptsWithZ(:,6:7,:);
+    
+    minMaxLdd4RGB = minmax(ldd);
+    lddGridEdges = linspace(minMaxLdd4RGB(1),minMaxLdd4RGB(2),nBinsRgb+2);
+    lddStepRgb = lddGridEdges(2)-lddGridEdges(1);
+    lddGridRgb = lddStepRgb/2 + lddGridEdges(1:end-1);
+    %{
 % Debug
 figure; stem(lddGridRgb,ones(size(lddGridRgb)),'g')
 hold on;
 stem(lddGridEdges,ones(size(lddGridEdges)),'r');
-%}
-rgbGrid = NaN(size(rgbCrnrsPerFrame,1),size(rgbCrnrsPerFrame,2),nBinsRgb+1);
-for k = 1:length(lddGridRgb)
-    idcs = abs(ldd - lddGridRgb(k)) <= lddStepRgb/2;
-    if ~sum(idcs)
-        continue;
+    %}
+    rgbGrid = NaN(size(rgbCrnrsPerFrame,1),size(rgbCrnrsPerFrame,2),nBinsRgb+1);
+    for k = 1:length(lddGridRgb)
+        idcs = abs(ldd - lddGridRgb(k)) <= lddStepRgb/2;
+        if ~sum(idcs)
+            continue;
+        end
+        rgbGrid(:,:,k) = nanmedian(rgbCrnrsPerFrame(:,:,idcs),3);
     end
-    rgbGrid(:,:,k) = nanmedian(rgbCrnrsPerFrame(:,:,idcs),3);
-end
-referencePts = rgbGrid(:,:,end);
-scaleCosParam = nan(nBinsRgb,1);
-scaleSineParam = nan(nBinsRgb,1);
-transXparam = nan(nBinsRgb,1);
-transYparam = nan(nBinsRgb,1);
-%%
-for k = 1:nBinsRgb
-    matchedPoints2 = referencePts;
-    matchedPoints1 = rgbGrid(:,:,k);
-    ixNotNanBoth = ~isnan(matchedPoints1(:,1)) & ~isnan(matchedPoints2(:,1));
-    if ~sum(ixNotNanBoth)
-        continue;
+    referencePts = rgbGrid(:,:,end);
+    scaleCosParam = nan(nBinsRgb,1);
+    scaleSineParam = nan(nBinsRgb,1);
+    transXparam = nan(nBinsRgb,1);
+    transYparam = nan(nBinsRgb,1);
+    %%
+    for k = 1:nBinsRgb
+        matchedPoints2 = referencePts;
+        matchedPoints1 = rgbGrid(:,:,k);
+        ixNotNanBoth = ~isnan(matchedPoints1(:,1)) & ~isnan(matchedPoints2(:,1));
+        if ~sum(ixNotNanBoth)
+            continue;
+        end
+        matchedPoints1 = matchedPoints1(ixNotNanBoth,:);
+        matchedPoints2 = matchedPoints2(ixNotNanBoth,:);
+        tform = fitgeotrans(matchedPoints1,matchedPoints2, 'nonreflectivesimilarity');
+        scaleCosParam(k,1) = tform.T(1,1);
+        scaleSineParam(k,1) = tform.T(2,1);
+        transXparam(k,1) = tform.T(3,1);
+        transYparam(k,1) = tform.T(3,2);
     end
-    matchedPoints1 = matchedPoints1(ixNotNanBoth,:);
-    matchedPoints2 = matchedPoints2(ixNotNanBoth,:);
-    tform = fitgeotrans(matchedPoints1,matchedPoints2, 'nonreflectivesimilarity');
-    scaleCosParam(k,1) = tform.T(1,1);
-    scaleSineParam(k,1) = tform.T(2,1);
-    transXparam(k,1) = tform.T(3,1);
-    transYparam(k,1) = tform.T(3,2);
+    
+    results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
+    results.rgb.referenceTemp = lddGridRgb(end);
+    results.rgb.minTemp = minMaxLdd4RGB(1);
 end
-
-results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
-results.rgb.referenceTemp = lddGridRgb(end);
-results.rgb.minTemp = minMaxLdd4RGB(1);
-
 
 %% Table generation
-angXscale = vec(results.angx.scale);
-angXoffset = vec(results.angx.offset);
-angYscale = vec(results.angy.scale);
-angYoffset = vec(results.angy.offset);
+angXscale       = vec(results.angx.scale);
+angXoffset      = vec(results.angx.offset);
+angYscale       = vec(results.angy.scale);
+angYoffset      = vec(results.angy.offset);
 destTmprtOffset = vec(results.rtd.tmptrOffsetValues);
     
 % Convert to dsm values
-dsmXscale = angXscale*regs.EXTL.dsmXscale;
-dsmXoffset = (regs.EXTL.dsmXoffset*dsmXscale-2048*angXscale+angXoffset+2048)./dsmXscale;
-dsmYscale = angYscale*regs.EXTL.dsmYscale;
-dsmYoffset = (regs.EXTL.dsmYoffset*dsmYscale-2048*angYscale+angYoffset+2048)./dsmYscale;
+dsmXscale   = angXscale*regs.EXTL.dsmXscale;
+dsmXoffset  = (regs.EXTL.dsmXoffset*dsmXscale-2048*angXscale+angXoffset+2048)./dsmXscale;
+dsmYscale   = angYscale*regs.EXTL.dsmYscale;
+dsmYoffset  = (regs.EXTL.dsmYoffset*dsmYscale-2048*angYscale+angYoffset+2048)./dsmYscale;
 
 % table organization
 table = [dsmXscale,...
@@ -309,21 +310,32 @@ table = fillStartNans(table);
 table = flipud(fillStartNans(flipud(table)));   
 
 % extrapolation
-vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
-table = extrapolateTable(table, results, vBiasLims, calibParams);
-results.rtd.origMinval = results.rtd.minval;
-results.rtd.origMaxval = results.rtd.maxval;
-results.rtd.minval = calibParams.fwTable.tempBinRange(1);
-results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
+vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
+table                   = extrapolateTable(table, results, vBiasLims, calibParams);
+results.rtd.origMinval  = results.rtd.minval;
+results.rtd.origMaxval  = results.rtd.maxval;
+results.rtd.minval      = calibParams.fwTable.tempBinRange(1);
+results.rtd.maxval      = calibParams.fwTable.tempBinRange(2);
 results.angy.origMinval = results.angy.minval;
 results.angy.origMaxval = results.angy.maxval;
-results.angy.minval = vBiasLims(2,1);
-results.angy.maxval = vBiasLims(2,2);
-results.angx.origP0 = results.angx.p0;
-results.angx.origP1 = results.angx.p1;
-results.angx.p0 = vBiasLims([1,3],1)';
-results.angx.p1 = vBiasLims([1,3],2)';
-results.table = table;
+results.angy.minval     = vBiasLims(2,1);
+results.angy.maxval     = vBiasLims(2,2);
+results.angx.origP0     = results.angx.p0;
+results.angx.origP1     = results.angx.p1;
+results.angx.p0         = vBiasLims([1,3],1)';
+results.angx.p1         = vBiasLims([1,3],2)';
+results.table           = table;
+
+if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outputRawData
+    results.raw.vbias1      = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);
+    results.raw.dsmXscale   = dsmXscale;
+    results.raw.dsmXoffset  = dsmXoffset;
+    results.raw.vbias2      = linspace(results.angy.origMinval, results.angy.origMaxval, nBins);
+    results.raw.dsmYscale   = dsmYscale;
+    results.raw.dsmYoffset  = dsmYoffset;
+    results.raw.ldd         = ldd;
+    results.raw.rtd         = -(rtdPerFrame-refRtd);
+end
 
 if ~isempty(runParams)
     v1Orig = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);

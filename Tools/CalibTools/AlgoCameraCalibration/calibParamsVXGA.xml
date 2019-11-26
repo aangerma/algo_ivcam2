@@ -338,7 +338,7 @@
         <nFrames>30</nFrames>
         <useExtraMargins>1</useExtraMargins>  
         <extraMarginL>0</extraMarginL>  
-        <extraMarginR>1</extraMarginR>  
+        <extraMarginR>0</extraMarginR>  
         <extraMarginT>0.1</extraMarginT>  
         <extraMarginB>0.1</extraMarginB>   
         <maxFovX>70</maxFovX>
