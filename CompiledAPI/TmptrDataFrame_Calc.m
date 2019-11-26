@@ -55,7 +55,15 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     end
     origFinishedHeating = finishedHeating;
     
-    [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);
+    try
+        [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);
+    catch ME % save input for debugging
+        if g_save_input_flag && exist(output_dir,'dir')~=0
+            fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
+            save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait');
+        end
+        rethrow(ME)
+    end
     
     % output save
     if ~g_skip_thermal_iterations_save && g_save_output_flag && exist(output_dir,'dir')~=0 
