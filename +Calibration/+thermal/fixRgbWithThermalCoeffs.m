@@ -1,10 +1,11 @@
-function [fixedCrnrsData] = fixRgbWithThermalCoeffs(crnrsData,temps,rgbThermalData,rgbCalibTemp,fprintff)
+function [fixedCrnrsData,isFixed] = fixRgbWithThermalCoeffs(crnrsData,temps,rgbThermalData,rgbCalibTemp,fprintff)
 nBins = size(rgbThermalData.thermalTable,1);
 % temps = [data.framesData.temp];
 % temps = [temps.ldd];
 fixedCrnrsData = crnrsData;
 tempRange = [rgbThermalData.minTemp rgbThermalData.referenceTemp];
 ixInRange = temps >= tempRange(1) & temps <= tempRange(2);
+isFixed = 0;
 if ~sum(ixInRange)
     fprintff('No frame data was found in the thermal RGB table range: [%2.2f,%2.2f]',tempRange(1),tempRange(2));
     return;
@@ -22,6 +23,10 @@ end
 % referenceTempMedian = squeeze(median(crnrsDataInRng(ixPerTemp{end},:,:),1));
 %%
 iForInverseTrans = find(abs(rgbCalibTemp-tempGrid) <= tempStep/2);
+if isempty(iForInverseTrans)
+    fprintff('RGB calibration temperature is not in thermal fix range. RGB calibration temperature: %2.2f, thermal RGB table range: [%2.2f,%2.2f]',rgbCalibTemp,tempRange(1),tempRange(2));
+    return;
+end
 transMatFromCalibTemp =  [rgbThermalData.thermalTable(iForInverseTrans,1), -rgbThermalData.thermalTable(iForInverseTrans,2),0;...
     rgbThermalData.thermalTable(iForInverseTrans,2), rgbThermalData.thermalTable(iForInverseTrans,1), 0;...
     rgbThermalData.thermalTable(iForInverseTrans,3), rgbThermalData.thermalTable(iForInverseTrans,4), 1];
@@ -50,7 +55,7 @@ for ixTempGroup = 1:numel(ixPerTemp)-1 %Running on nBins (29) temperature groups
 end
 %%
 fixedCrnrsData(ixInRange,:,:) = crnrsDataInRng;
-
+isFixed = 1;
 end
 
 % crnrsData = nan(numel(temps),size(data.framesData(1).ptsWithZ,1),2);

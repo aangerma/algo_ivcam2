@@ -148,30 +148,37 @@ end
 if fixRgbThermal && sum(data.rgb.thermalTable(:))
     crnrsData = nan(numel(ldds),size(data.framesData(1).ptsWithZ,1),2);
     for iTemps = 1:numel(ldds)
-        crnrsData(iTemps,:,:) = data.framesData(iTemps).ptsWithZ(:,9:10);
+        crnrsData(iTemps,:,:) = data.framesData(iTemps).ptsWithZ(:,end-1:end);
     end
-    [fixedCrnrsData] = Calibration.thermal.fixRgbWithThermalCoeffs(crnrsData,ldds,data.rgb,data.rgb.rgbCalTemp,fprintff);
-    framesDataFixed = data.framesData;
-    for iTemps = 1:numel(ldds)
-        framesDataFixed(iTemps).ptsWithZ(:,9:10) = fixedCrnrsData(iTemps,:,:);
-    end
-    nBins = calibParams.fwTable.nRows;
-    framesPerTemperatureFixed = Calibration.thermal.medianFrameByTemp(framesDataFixed,nBins,tmpBinIndices);
-    uvCorrectedResults = Calibration.thermal.calcThermalUvMap(framesPerTemperatureFixed,calibParams,params);
-    metrics.uvMeanRmseFixed = nanmean(uvCorrectedResults(:,1));
-    metrics.uvMaxErrFixed = max(uvCorrectedResults(:,2));
-    metrics.uvMaxErr95Fixed = max(uvCorrectedResults(:,3));
-    metrics.uvMinErrFixed = min(uvCorrectedResults(:,4));
-    if ~isempty(runParams)
-        if ~params.inValidationStage
-            legends = {'UV mapping (cal)','UV mapping after Theoretical Fix(cal)'};
-        else
-            legends = {'UV mapping (val)','UV mapping after Theoretical Fix (val)'};
+    [fixedCrnrsData,isFixed] = Calibration.thermal.fixRgbWithThermalCoeffs(crnrsData,ldds,data.rgb,data.rgb.rgbCalTemp,fprintff);
+    if isFixed
+        framesDataFixed = data.framesData;
+        for iTemps = 1:numel(ldds)
+            framesDataFixed(iTemps).ptsWithZ(:,end-1:end) = fixedCrnrsData(iTemps,:,:);
         end
-        
-        hold on; plot(tmpBinEdges,uvCorrectedResults(:,1));
-        legend(legends);
-        Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
+        nBins = calibParams.fwTable.nRows;
+        framesPerTemperatureFixed = Calibration.thermal.medianFrameByTemp(framesDataFixed,nBins,tmpBinIndices);
+        uvCorrectedResults = Calibration.thermal.calcThermalUvMap(framesPerTemperatureFixed,calibParams,params);
+        metrics.uvMeanRmseFixed = nanmean(uvCorrectedResults(:,1));
+        metrics.uvMaxErrFixed = max(uvCorrectedResults(:,2));
+        metrics.uvMaxErr95Fixed = max(uvCorrectedResults(:,3));
+        metrics.uvMinErrFixed = min(uvCorrectedResults(:,4));
+        if ~isempty(runParams)
+            if ~params.inValidationStage
+                legends = {'UV mapping (cal)','UV mapping after Theoretical Fix(cal)'};
+            else
+                legends = {'UV mapping (val)','UV mapping after Theoretical Fix (val)'};
+            end
+            
+            hold on; plot(tmpBinEdges,uvCorrectedResults(:,1));
+            legend(legends);
+            Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
+        end
+    else
+        if ~isempty(runParams)
+            legend(legends);
+            Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
+        end
     end
 end
 end
