@@ -648,6 +648,19 @@ classdef HWinterface <handle
             line = strsplit(lines{2},{':',' '});
             ibias = str2double(line{2});
         end
+        function vdd = getMaVoltagee(obj,N)
+            if ~exist('N','var')
+                N = 5;
+            end
+            data = zeros(N,1);
+            for i = 1:N
+                obj.cmd('mwd b00a00c4 b00a00c8 19E662bC');
+                voltSamples = obj.cmd('MRD4 b00a00c8');
+                data(i) = (hex2dec(voltSamples(end-2:end))+1157.2)/1865.8;
+                pause(0.005);
+            end
+            vdd = mean(data); 
+        end
         function [tempr,humidity]=getHumidityTemperature(obj,N)
             if ~exist('N','var')
                 N = 5;

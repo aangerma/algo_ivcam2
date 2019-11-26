@@ -48,6 +48,11 @@ else
     fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
     shtw2 = [tempData.ldd]; % temporary
 end
+if ~checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
+    results = [];
+    table = [];
+    return;
+end
 results.temp.FRMWhumidApdTempDiff = 0; % default
 if isfield(tempData, 'tsense') && isfield(tempData, 'shtw2')
     ind = find(all(tsense'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
@@ -87,7 +92,7 @@ verifyThermalSweepValidity(ldd, startI, calibParams.warmUp)
 results.ma.slope = aMA;
 
 % jump detection
-jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, true, false, runParams);
+jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, true, runParams);
 if isempty(jumpIdcs) % no jump detected
     ind = 1;
 else % last diff outlier is the first post-jump index
@@ -159,13 +164,7 @@ end
 results.angy.minval = mean(binEdges(1:2));
 results.angy.maxval = mean(binEdges(end-1:end));
 results.angy.nBins = nBins;
-jumpIdcs = detectJump(results.angy.scale, 'Yscale', calibParams.fwTable.jumpDet, false, true, runParams);
-if ~isempty(jumpIdcs)
-    fprintff('Error: angy scale jump detected - failing unit.\n')
-    table = [];
-    return;
-end
-jumpIdcs = detectJump(results.angy.offset, 'Yoffset', calibParams.fwTable.jumpDet, false, true, runParams);
+jumpIdcs = detectJump(results.angy.offset, 'Yoffset', calibParams.fwTable.jumpDet, false, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angy offset jump detected - failing unit.\n')
     table = [];
@@ -214,13 +213,7 @@ end
 results.angx.p0 = p0;
 results.angx.p1 = p1;
 results.angx.nBins = nBins;
-jumpIdcs = detectJump(results.angx.scale, 'Xscale', calibParams.fwTable.jumpDet, false, true, runParams);
-if ~isempty(jumpIdcs)
-    fprintff('Error: angx scale jump detected - failing unit.\n')
-    table = [];
-    return;
-end
-jumpIdcs = detectJump(results.angx.offset, 'Xoffset', calibParams.fwTable.jumpDet, false, true, runParams);
+jumpIdcs = detectJump(results.angx.offset, 'Xoffset', calibParams.fwTable.jumpDet, false, runParams);
 if ~isempty(jumpIdcs)
     fprintff('Error: angx offset jump detected - failing unit.\n')
     table = [];
@@ -570,7 +563,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function jumpIdcs = detectJump(dataVec, paramName, jumpDetParams, doSmooth, doDetrend, runParams)
+function jumpIdcs = detectJump(dataVec, paramName, jumpDetParams, doSmooth, runParams)
 % smooth differentiation
 if doSmooth
     nSmooth = jumpDetParams.nSmooth;
@@ -582,23 +575,17 @@ dataVecSmooth = dataVecSmooth(ceil(nSmooth/2):nSmooth:end);
 smoothDiff = diff(dataVecSmooth);
 nPts = length(smoothDiff);
 % detrending
-smoothDiffDetrended = smoothDiff;
-if doDetrend
-    minPosDiff2 = max(0,min(diff([smoothDiff;0]), diff([0;smoothDiff])));
-    minNegDiff2 = min(0,max(diff([smoothDiff;0]), diff([0;smoothDiff])));
-    trend = cumsum(minPosDiff2) + cumsum(minNegDiff2); % only one diff2 can be different than 0 simultaneously
-    trend = trend+(median(smoothDiff)-median(trend));
-    smoothDiffDetrended = smoothDiffDetrended - trend;
-else
-    trend = smoothDiffDetrended*0;
-end
+sdRightNeighbor = smoothDiff([2:end,end]);
+sdLeftNeighbor = smoothDiff([1,1:end-1]);
+rightWeight = abs(smoothDiff-sdLeftNeighbor)./(abs(smoothDiff-sdLeftNeighbor)+abs(smoothDiff-sdRightNeighbor));
+sdTrend = sdRightNeighbor.*rightWeight + sdLeftNeighbor.*(1-rightWeight);
+sdDetrended = smoothDiff - sdTrend;
 % jump detection
-absDeviation = abs(smoothDiffDetrended - median(smoothDiffDetrended));
+absDeviation = abs(sdDetrended);
 deviationPerc = min(jumpDetParams.deviationPerc, 100*(nPts-jumpDetParams.minNumOutliers)/nPts);
 jumpDetThreshold = jumpDetParams.thFactor * prctile(absDeviation, deviationPerc);
 isOutlier = (absDeviation >= jumpDetThreshold);
 isJump = isOutlier;
-isJump([1:find(~isJump,1,'first'), find(~isJump,1,'last'):end]) = false; % ignoring leading/trailing large slopes
 jumpIdcsSmooth = find(isJump);
 if ~isempty(jumpIdcsSmooth)
     jumpIdcs = ceil(nSmooth/2)+((jumpIdcsSmooth+1)-1)*nSmooth;
@@ -608,15 +595,42 @@ end
 % visualization
 if ~isempty(runParams) && ~isempty(jumpIdcs)
     ff = Calibration.aux.invisibleFigure;
-    subplot(121), hold all
-    plot(dataVec, 'b.-'),               plot(ceil(nSmooth/2):nSmooth:length(dataVec), dataVecSmooth, 'c-o')
+    subplot(131), hold all
+    plot(dataVec, 'b.-'),       plot(ceil(nSmooth/2):nSmooth:length(dataVec), dataVecSmooth, 'c-o')
     grid on, legend('raw', 'smooth'), title(paramName)
-    subplot(122), hold all
-    plot(smoothDiff, 'b.-'),            plot(trend, 'c-')
-    plot(smoothDiffDetrended, 'k-o'),   plot([1,length(smoothDiffDetrended)], median(smoothDiffDetrended)+ones(2,1)*[-1,1]*jumpDetThreshold, 'm--')
-    plot(find(isOutlier), smoothDiffDetrended(isOutlier), 'ro')
-    plot(jumpIdcsSmooth, smoothDiffDetrended(jumpIdcsSmooth), 'ro', 'markerfacecolor', 'm')
-    grid on, legend('smooth diff', 'trend', 'detrended', 'low threshold', 'high threshold', 'outliers', 'jump detected')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'JumpDetection',paramName);
+    subplot(132), hold all
+    plot(smoothDiff, 'b.-'),    plot(sdTrend, 'c-o')
+    grid on, legend('smooth diff', 'trend')
+    subplot(133), hold all
+    plot(sdDetrended, 'k-o'),   plot([1,length(sdDetrended)], ones(2,1)*[-1,1]*jumpDetThreshold, 'm--')
+    plot(jumpIdcsSmooth, sdDetrended(jumpIdcsSmooth), 'ro', 'markerfacecolor', 'm')
+    grid on, legend('detrended', 'low threshold', 'high threshold', 'jump detected')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'JumpDetection',paramName,1);
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function isValid = checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
+isValid = true;
+if (max(ldd)==min(ldd))
+    isValid = false;
+    fprintff('Error in temperature reading: LDD temperature is constant over frames.\n');
+    return
+end
+if (max(ma)==min(ma))
+    isValid = false;
+    fprintff('Error in temperature reading: MA temperature is constant over frames.\n');
+    return
+end
+if (max(tsense)==min(tsense))
+    isValid = false;
+    fprintff('Error in temperature reading: TSense temperature is constant over frames.\n');
+    return
+end
+if (max(shtw2)==min(shtw2))
+    isValid = false;
+    fprintff('Error in temperature reading: SHTW2 temperature is constant over frames.\n');
+    return
 end
 end

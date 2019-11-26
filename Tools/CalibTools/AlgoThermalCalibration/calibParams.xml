@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <struct>
    <sparkParams>
         <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
@@ -11,11 +12,11 @@
        <maTKill>[]</maTKill>
        <apdTKill>65</apdTKill>
        <cbSquareSz>30</cbSquareSz>
-       
+       <!--<cbGridSz>[9,13]</cbGridSz>-->
        <cbGridSz>[]</cbGridSz>
        <presetMode>1</presetMode>
        <sphericalMode>1</sphericalMode>
-       <sphericalScaleFactors>[1,1]</sphericalScaleFactors>
+       <sphericalScaleFactors>[1,1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
        <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
        <cropFactors>[0.15,0.15]</cropFactors>
        <nonRectangleFlag>0</nonRectangleFlag>
@@ -31,13 +32,13 @@
    </gnrl>
    <warmUp>
        <nFramesForZStd>10</nFramesForZStd>
-       <warmUpTh>0.1</warmUpTh>
-       <warmUpSP>1</warmUpSP>
-       <maxWarmUpTime>30</maxWarmUpTime>
-       <timeBetweenFrames>0.5</timeBetweenFrames>
-       <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp>
-       <requiredTmptrRange>[45 45]</requiredTmptrRange>
-       <apdTempRange>[20 30]</apdTempRange>
+       <warmUpTh>0.1</warmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+       <warmUpSP>1</warmUpSP><!-- Time between samples in minutes-->
+       <maxWarmUpTime>30</maxWarmUpTime><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
+       <timeBetweenFrames>0.5</timeBetweenFrames><!-- Time between frames in seconds-->
+       <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
+       <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
+       <apdTempRange>[20 30]</apdTempRange><!-- for proper estimation based on humidity sensor -->
    </warmUp>
    <errRange>
       <delayIR>[0 100000]</delayIR>
@@ -116,8 +117,8 @@
       <rtdShit>[0 inf]</rtdShit>
    </validationErrRange>
    <dataDelay>
-      
-      
+      <!--<fastDelayInitVal>98488</fastDelayInitVal> -->
+      <!--<slowDelayInitVal>98488</slowDelayInitVal> -->
       <fastDelayInitVal>98690</fastDelayInitVal>
       <slowDelayInitVal>98583</slowDelayInitVal>
       <fastDelayInitSlope>1.0</fastDelayInitSlope>
@@ -125,7 +126,7 @@
 	  <iterFixThr>3</iterFixThr>
       <nAttempts>20</nAttempts>
       <calibrateFast>1</calibrateFast>
-      <sphericalScaleFactors>[0.7 1]</sphericalScaleFactors>
+      <sphericalScaleFactors>[0.7 1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
    </dataDelay>
    <coarseDSM>
       <nSamples>200</nSamples>  
@@ -150,7 +151,7 @@
           <nSmooth>5</nSmooth>
           <deviationPerc>95</deviationPerc>
           <minNumOutliers>2</minNumOutliers>
-          <thFactor>2</thFactor>
+          <thFactor>3</thFactor>
       </jumpDet>
       <extrap>
           <expandVbiasLims>1</expandVbiasLims>

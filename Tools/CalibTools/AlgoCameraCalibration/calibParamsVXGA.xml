@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <struct>
     <sparkParams>
         <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
@@ -6,10 +7,12 @@
     </sparkParams>
     <gnrl>
         <configCalibDirName>releaseConfigCalibVXGA</configCalibDirName>
-        
+        <!--<internalImSize>[360,640]</internalImSize>
+       <externalImSize>[360,640]</externalImSize>-->
         <irInnerRange>[0,255]</irInnerRange>
         <irOuterRange>[0,255]</irOuterRange>
-        
+        <!--<zNorm>4</zNorm>
+       <minRange>200</minRange>-->
         <cbSquareSz>30</cbSquareSz>
         <cbPtsSz>[]</cbPtsSz>
         <Nof2avg>30</Nof2avg>
@@ -24,7 +27,7 @@
         </pzrMeas>
     </gnrl>
     <warmUp>
-        <lddWarmUpTh>0.5</lddWarmUpTh>
+        <lddWarmUpTh>0.5</lddWarmUpTh><!-- Start calibration only when LDD diff 1 minute after the next is less the 1 degree-->
     </warmUp>
     <errRange>
         <geomErr>[0.01 1.61]</geomErr>
@@ -55,12 +58,12 @@
         <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
         <maxModRefDec>[0 inf]</maxModRefDec>
         <maxRangeScaleModRef_state1>[0.3 1]</maxRangeScaleModRef_state1>
-        
-        <targetDist_state1>[0 inf]</targetDist_state1> 
+        <!--<targetDist>[780 820]</targetDist>-->
+        <targetDist_state1>[0 inf]</targetDist_state1> <!--In [mm]-->
         <maxFillRate_state1>[90 100]</maxFillRate_state1>
         <maxRangeScaleModRef_state2>[0.15 1]</maxRangeScaleModRef_state2>
-        
-        <targetDist_state2>[0 inf]</targetDist_state2> 
+        <!--<targetDist>[780 820]</targetDist>-->
+        <targetDist_state2>[0 inf]</targetDist_state2> <!--In [mm]-->
         <maxFillRate_state2>[65 100]</maxFillRate_state2>
         <EXTLconLocDelaySlow>[-inf,inf]</EXTLconLocDelaySlow>
         <EXTLconLocDelayFastC>[-inf,inf]</EXTLconLocDelayFastC>
@@ -75,8 +78,8 @@
         <dfzPlaneFit>[0,inf]</dfzPlaneFit>
         <extraPixWorldPercT>[0,inf]</extraPixWorldPercT>
         <extraPixWorldPercB>[0,inf]</extraPixWorldPercB>
-        <extraPixWorldPercL>[0,inf]</extraPixWorldPercL> 
-        <extraPixWorldPercR>[0,inf]</extraPixWorldPercR>
+        <extraPixWorldPercL>[0,inf]</extraPixWorldPercL><!--2.5% from 1024 is around 25 pixels --> 
+        <extraPixWorldPercR>[0,inf]</extraPixWorldPercR><!--2.5% from 1024 is around 25 pixels -->
         <lineFitRmsErrHor2dRGB>[0 inf]</lineFitRmsErrHor2dRGB>
         <lineFitRmsErrVer2dRGB>[0 inf]</lineFitRmsErrVer2dRGB>
 	<lineFitMaxRmsErrHor2dRGB>[0 inf]</lineFitMaxRmsErrHor2dRGB>
@@ -93,14 +96,18 @@
         
     </errRange>
     <validationConfig>
-        
+        <!-- in this section the test plan is listed.available metrics:
+      sharpness, temporalNoise, delays, dfz, roi, los, dsm, coverage, (wait, debugMode).
+      For running the same metric more then once add <metric_name>_n, for example:
+      <roi_2></roi_2>
+      -->
         <validationRes>[768,1024]</validationRes>
         <cbGridSz>[]</cbGridSz>
-        <debugMode>1</debugMode>
+        <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
         <wait>
             <timeoutSec>1</timeoutSec>
         </wait>
-        <warmUp />
+        <warmUp></warmUp>
         <HVM_Val> 
             <numOfFrames>100</numOfFrames>
         </HVM_Val>
@@ -125,8 +132,8 @@
             <numOfFrames>30</numOfFrames>
             <roi>0.5</roi>
         </temporalNoise>
-        <delays />
-        <roi />
+        <delays></delays>
+        <roi></roi>
         <los>
             <numOfFrames>100</numOfFrames>
             <sphericalMode>0</sphericalMode>
@@ -136,8 +143,8 @@
              <numOfFrames>30</numOfFrames>
              <startIxRgb>6</startIxRgb>
         </rgb>
-        <dsm />
-        <cbufUnderFlowOldXGA />
+        <dsm></dsm>
+        <cbufUnderFlowOldXGA></cbufUnderFlowOldXGA>
         <readRegState>
         </readRegState>
         <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
@@ -246,12 +253,26 @@
     <dfz>
         <performRegularDFZWithoutTPS>0</performRegularDFZWithoutTPS>
         <shortRangeCompareROI>0.4</shortRangeCompareROI>
-        <sphericalScaleFactors>[1.05,1.1]</sphericalScaleFactors>
+        <sphericalScaleFactors>[1.05,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
         <cropRatios>[0.2 0.0005;0.0005 0.2]</cropRatios>
         <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
         <rtdGroupPreTPS>rtdVars</rtdGroupPreTPS>
         <captures>
-            
+            <!--<capture>
+                <target>Iv2L50</target>
+                <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.6 0 0; 0 0.6 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>
+            <capture>
+                <target>Iv2L50</target>
+                <transformation>[0.5 0 0; 0 0.5 0; 0 0 1]</transformation>
+                <type>train</type>
+            </capture>-->
             <capture>
                 <target>Iv2A1</target>
                 <transformation>[0.7 0 0; 0 0.7 0; 0 0 1]</transformation>
@@ -327,7 +348,10 @@
         <useMinimalXRangeFromATC>1</useMinimalXRangeFromATC>
         <assumeStraightLines>0</assumeStraightLines>
     </roi>
-    
+    <!--<dest>
+        <hBaseline>-31</hBaseline>
+        <vBaseline>-10</vBaseline>
+    </dest>-->
     <rgb>
         <rgbDistoration>1</rgbDistoration>
         <arePixelsSquare>0</arePixelsSquare>
@@ -360,7 +384,8 @@
                 <fillRateTh>38</fillRateTh>
                 <guessOnInterval>0.5</guessOnInterval>
             </state2>
-            
+            <!--<calibTargetReflect>0.0128</calibTargetReflect>
+            <estDistTargetReflect>0.8</estDistTargetReflect>-->
             <mask4userScale>2</mask4userScale>
             <maxMask4userROI>0.2</maxMask4userROI>
             <params>
@@ -369,23 +394,23 @@
                 <roiCropRect>0</roiCropRect>
                 <maskCenterShift>[0,0]</maskCenterShift>
             </params>
-            <JFILinvMinMax>4294903720</JFILinvMinMax> 
-            <coarseMaskingRange>[0,40]</coarseMaskingRange>
+            <JFILinvMinMax>4294903720</JFILinvMinMax> <!-- invalidate z below 500mm -->
+            <coarseMaskingRange>[0,40]</coarseMaskingRange><!-- until supported between resolutions -->
             <JFILgammaScale>67109888</JFILgammaScale>
             <JFILgammaShift>0</JFILgammaShift>
         </long>
         <short>
-            <resultScaleFactor>1</resultScaleFactor> 
-            <resultOffsetFactor>0</resultOffsetFactor> 
+            <resultScaleFactor>1</resultScaleFactor> <!-- Multiply the resulting mod ref -->
+            <resultOffsetFactor>0</resultOffsetFactor> <!-- Added to the resulting mod ref -->
             <coarseMaskingRange>[0,0]</coarseMaskingRange>
             <JFILgammaScale>171115520</JFILgammaScale>
             <JFILgammaShift>4286644224</JFILgammaShift>
-            <JFILinvMinMax>4294902520</JFILinvMinMax> 
+            <JFILinvMinMax>4294902520</JFILinvMinMax> <!-- invalidate z below  -->
         </short>
     </presets>
     <aging>
         <roi>0.5</roi>
-        <DAC>[495,1871,3199,6351]</DAC>
+        <DAC>[495,1871,3199,6351]</DAC><!-- DAC values to config before reading vdd -->
         <nFramesToAverage>30</nFramesToAverage>
         <nreadsToAverage>30</nreadsToAverage>
     </aging>

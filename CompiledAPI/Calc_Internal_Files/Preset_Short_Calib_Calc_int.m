@@ -21,49 +21,49 @@ if (isConverged==0) % wait for next iteration
     minRangeScaleModRef = NaN;
     ModRefDec = NaN;
     return
+elseif (isConverged==-1) % fatal error
+    minRangeScaleModRef = NaN;
+    ModRefDec = NaN;
+    return
 end
+
+%% convergence achieved - proceed to final operations
 p = polyfit(testedPoints, testedScores(3,:), 2);
-maxPt = -p(2)/(2*p(1));
+if (p(1)>= 0)
+    fprintff('[!] Short range preset calibration: contrast is convex. Taking maximal observed value.\n')
+    [~, maxPt] = max(testedScores(3,:));
+else
+    maxPt = -p(2)/(2*p(1));
+end
 if (maxPt < min(LaserPoints))
     nextLaserPoint = -Inf;
     fprintff('[!] Short range preset calibration: maximal contrast is always exceeded. Modulation ref set to 0.\n')
     minRangeScaleModRef = 0;
     ModRefDec = min(LaserPoints);
-    return
 elseif (maxPt > max(LaserPoints))
     nextLaserPoint = Inf;
     fprintff('[!] Short range preset calibration: maximal contrast could not be attained. Modulation ref set to 1.\n')
     minRangeScaleModRef = 1;
     ModRefDec = max(LaserPoints);
-    return
+else % optimum is within range
+    LaserDelta = LaserPoints(2)-LaserPoints(1);
+    lp = [LaserPoints,LaserPoints(end)+LaserDelta:LaserDelta:2*LaserPoints(end)];
+    fittedline = p(1)*lp.^2+p(2)*lp+p(3);
+    if (maxPt > maxMod_dec)
+        ModRefDec = maxMod_dec;
+    else
+        ModRefDec = round(maxPt);
+    end
+    minRangeScaleModRef = ModRefDec/maxMod_dec*calibParams.presets.short.resultScaleFactor + calibParams.presets.short.resultOffsetFactor;
 end
-
-%% convergence achieved - proceed to final operations
-
-LaserDelta = LaserPoints(2)-LaserPoints(1);
-lp=[LaserPoints,LaserPoints(end)+LaserDelta:LaserDelta:2*LaserPoints(end)];
-fittedline=p(1)*lp.^2+p(2)*lp+p(3);
-
-if (maxPt > maxMod_dec)
-    ModRefDec=maxMod_dec;
-else
-    ModRefDec = round(maxPt);
-end
-minRangeScaleModRef = ModRefDec/maxMod_dec*calibParams.presets.short.resultScaleFactor + calibParams.presets.short.resultOffsetFactor;
 
 %% prepare output script
 shortRangePresetFn = fullfile(PresetFolder,'shortRangePreset.csv');
-shortRangePreset=readtable(shortRangePresetFn);
-modRefInd=find(strcmp(shortRangePreset.name,'modulation_ref_factor')); 
-if (p(1)> 0)
-    warning('MinRange preset calibration failed: first parabola coefficient is possitive\n');
-    warning('min modRef already saturated'); 
-    minRangeScaleModRef = 0;
-    ModRefDec = 0;
-end 
-%assert(p(1)<0 ,'MinRange preset calibration failed: first parabola coefficient is possitive');     
+shortRangePreset = readtable(shortRangePresetFn);
+modRefInd = find(strcmp(shortRangePreset.name,'modulation_ref_factor')); 
 shortRangePreset.value(modRefInd) = minRangeScaleModRef;
-writetable(shortRangePreset,shortRangePresetFn);
+writetable(shortRangePreset, shortRangePresetFn);
+
 %% debug    
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -133,7 +133,11 @@ nextLaserPoint = NaN;
 % trivial stop condition
 availablePoints = setdiff(laserPoints, testedPoints);
 if isempty(availablePoints)
-    isConverged = 1;
+    if (length(testedPoints) < 3) % too few points, parabolic estimation impossible
+        isConverged = -1;
+    else
+        isConverged = 1;
+    end
     return
 end
 % choosing next point
