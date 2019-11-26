@@ -6,7 +6,7 @@ function [results,calibPassed , delayRegs] = calibrateDelays(hw, runParams, cali
         hw.setAlgoLoops(false, thermalLoopEn); % disabling sync loop
         Calibration.dataDelay.setAbsDelay(hw,calibParams.dataDelay.fastDelayInitVal,calibParams.dataDelay.slowDelayInitVal);
         if ~isFinalStage
-            Calibration.aux.changeCameraLocation(calibParams.robot.delays.type,calibParams.robot.delays.dist,calibParams.robot.delays.ang,calibParams,hw,1,diag([.6 .6 1]),'Delay Calibration',1);
+            Calibration.aux.changeCameraLocation(hw, false, calibParams.robot.delays.type,calibParams.robot.delays.dist,calibParams.robot.delays.ang,calibParams,hw,1,diag([.6 .6 1]),'Delay Calibration',1);
         end
         Calibration.aux.collectTempData(hw,runParams,fprintff,'Before delays calibration:');
         [delayRegs,delayCalibResults]=Calibration.dataDelay.calibrate(hw, calibParams.dataDelay, fprintff, runParams, calibParams, isFinalStage);

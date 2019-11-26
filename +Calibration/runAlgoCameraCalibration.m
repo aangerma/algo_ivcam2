@@ -164,6 +164,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
         hw.getRegsFromUnit(fullfile(runParams.outputFolder,'calibrationRegState.txt') ,0 );
         fprintff('Done\n');
     end
+
     %% Long range calibrations
     if runParams.maxRangePreset
         fprintff('Set laser to rectified FOV projection\n');
@@ -192,7 +193,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
     catch
         fprintff('failed to burn preset table\n');
     end
-    
+
     if ~calibParams.presets.compare.bypass
         % Calc diff between presets
         hw = Calibration.aux.resetCamera( hw );
@@ -200,7 +201,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
         resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
         for i = 1:2
             if i == 1
-                Calibration.aux.changeCameraLocation(calibParams.robot.presets_compare.type,calibParams.robot.presets_compare.dist,calibParams.robot.presets_compare.ang,calibParams,hw,1,diag([.6 .6 1]),'Preset Compare');
+                Calibration.aux.changeCameraLocation(hw, true, calibParams.robot.presets_compare.type,calibParams.robot.presets_compare.dist,calibParams.robot.presets_compare.ang,calibParams,hw,1,diag([.6 .6 1]),'Preset Compare');
             end
             res = resolutions{i};
             rtd2addRes = Calibration.presets.compareRtdOfShortAndLong(hw,calibParams,res,runParams);
@@ -316,7 +317,7 @@ function [results, calibPassed] = preResetDFZValidation(hw, fw, results, calibPa
         hw.shadowUpdate;
         regs=fw.get();
         %frames = Calibration.aux.CBTools.showImageRequestDialog(hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
-        Calibration.aux.changeCameraLocation(calibParams.robot.pre_dfz_valid.type,calibParams.robot.pre_dfz_valid.dist,calibParams.robot.pre_dfz_valid.ang,calibParams,hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
+        Calibration.aux.changeCameraLocation(hw, false, calibParams.robot.pre_dfz_valid.type,calibParams.robot.pre_dfz_valid.dist,calibParams.robot.pre_dfz_valid.ang,calibParams,hw,1,calibParams.dfz.preResetCapture.capture.transformation,'DFZ pre reset validation image');
         frames = hw.getFrame(45);
         
         Calibration.aux.collectTempData(hw,runParams,fprintff,'DFZ validation before reset:');
@@ -466,7 +467,7 @@ function [isConverged, results] = calibrateMinRangePreset(hw, results, runParams
         hw.setReg('JFILgammaShift',uint32(0));
         hw.shadowUpdate;
         %Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
-        Calibration.aux.changeCameraLocation(calibParams.robot.short_preset.type,calibParams.robot.short_preset.dist,calibParams.robot.short_preset.ang,calibParams,hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
+        Calibration.aux.changeCameraLocation(hw, false, calibParams.robot.short_preset.type,calibParams.robot.short_preset.dist,calibParams.robot.short_preset.ang,calibParams,hw,1,diag([.006 .0006 1]),'Short Range Calibration - 20c"m');
 
         [isConverged, results.minRangeScaleModRef, results.maxModRefDec] = Calibration.presets.calibrateMinRange(hw,calibParams,runParams,fprintff);
         Calibration.aux.switchPresetAndUpdateModRef( hw,1,calibParams,results );
@@ -498,7 +499,7 @@ function [results, calibPassed] = validateScanDirection(hw, results, runParams, 
     if runParams.scanDir
         %frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]),'Scan Direction Validation');
 
-        Calibration.aux.changeCameraLocation(calibParams.robot.scan_dir.type,calibParams.robot.scan_dir.dist,calibParams.robot.scan_dir.ang,calibParams,hw,1,diag([.6 .6 1]),'Scan Direction Validation');
+        Calibration.aux.changeCameraLocation(hw, true, calibParams.robot.scan_dir.type,calibParams.robot.scan_dir.dist,calibParams.robot.scan_dir.ang,calibParams,hw,1,diag([.6 .6 1]),'Scan Direction Validation');
         frame = hw.getFrame(45);
         
         IR = frame.i;

@@ -54,7 +54,7 @@ function [frameBytes, DFZ_regs] = capture1Scene(hw,calibParams,i,trainImages,DFZ
     end
     
     %im(i) = Calibration.aux.CBTools.showImageRequestDialog(hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
-    Calibration.aux.changeCameraLocation(calibParams.robot.dfz.type,calibParams.robot.dfz.dist(i),calibParams.robot.dfz.ang(i),calibParams,hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
+    Calibration.aux.changeCameraLocation(hw, false, calibParams.robot.dfz.type,calibParams.robot.dfz.dist(i),calibParams.robot.dfz.ang(i),calibParams,hw,1,cap.transformation,sprintf('DFZ - Image %d',nx(i)));
     im(i) = hw.getFrame(45);
     frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
     
