@@ -287,17 +287,17 @@ stem(lddGridEdges,ones(size(lddGridEdges)),'r');
 end
 
 %% Table generation
-angXscale = vec(results.angx.scale);
-angXoffset = vec(results.angx.offset);
-angYscale = vec(results.angy.scale);
-angYoffset = vec(results.angy.offset);
+angXscale       = vec(results.angx.scale);
+angXoffset      = vec(results.angx.offset);
+angYscale       = vec(results.angy.scale);
+angYoffset      = vec(results.angy.offset);
 destTmprtOffset = vec(results.rtd.tmptrOffsetValues);
     
 % Convert to dsm values
-dsmXscale = angXscale*regs.EXTL.dsmXscale;
-dsmXoffset = (regs.EXTL.dsmXoffset*dsmXscale-2048*angXscale+angXoffset+2048)./dsmXscale;
-dsmYscale = angYscale*regs.EXTL.dsmYscale;
-dsmYoffset = (regs.EXTL.dsmYoffset*dsmYscale-2048*angYscale+angYoffset+2048)./dsmYscale;
+dsmXscale   = angXscale*regs.EXTL.dsmXscale;
+dsmXoffset  = (regs.EXTL.dsmXoffset*dsmXscale-2048*angXscale+angXoffset+2048)./dsmXscale;
+dsmYscale   = angYscale*regs.EXTL.dsmYscale;
+dsmYoffset  = (regs.EXTL.dsmYoffset*dsmYscale-2048*angYscale+angYoffset+2048)./dsmYscale;
 
 % table organization
 table = [dsmXscale,...
@@ -310,21 +310,32 @@ table = fillStartNans(table);
 table = flipud(fillStartNans(flipud(table)));   
 
 % extrapolation
-vBiasLims = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
-table = extrapolateTable(table, results, vBiasLims, calibParams);
-results.rtd.origMinval = results.rtd.minval;
-results.rtd.origMaxval = results.rtd.maxval;
-results.rtd.minval = calibParams.fwTable.tempBinRange(1);
-results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
+vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
+table                   = extrapolateTable(table, results, vBiasLims, calibParams);
+results.rtd.origMinval  = results.rtd.minval;
+results.rtd.origMaxval  = results.rtd.maxval;
+results.rtd.minval      = calibParams.fwTable.tempBinRange(1);
+results.rtd.maxval      = calibParams.fwTable.tempBinRange(2);
 results.angy.origMinval = results.angy.minval;
 results.angy.origMaxval = results.angy.maxval;
-results.angy.minval = vBiasLims(2,1);
-results.angy.maxval = vBiasLims(2,2);
-results.angx.origP0 = results.angx.p0;
-results.angx.origP1 = results.angx.p1;
-results.angx.p0 = vBiasLims([1,3],1)';
-results.angx.p1 = vBiasLims([1,3],2)';
-results.table = table;
+results.angy.minval     = vBiasLims(2,1);
+results.angy.maxval     = vBiasLims(2,2);
+results.angx.origP0     = results.angx.p0;
+results.angx.origP1     = results.angx.p1;
+results.angx.p0         = vBiasLims([1,3],1)';
+results.angx.p1         = vBiasLims([1,3],2)';
+results.table           = table;
+
+if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outputRawData
+    results.raw.vbias1      = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);
+    results.raw.dsmXscale   = dsmXscale;
+    results.raw.dsmXoffset  = dsmXoffset;
+    results.raw.vbias2      = linspace(results.angy.origMinval, results.angy.origMaxval, nBins);
+    results.raw.dsmYscale   = dsmYscale;
+    results.raw.dsmYoffset  = dsmYoffset;
+    results.raw.ldd         = ldd;
+    results.raw.rtd         = -(rtdPerFrame-refRtd);
+end
 
 if ~isempty(runParams)
     v1Orig = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);

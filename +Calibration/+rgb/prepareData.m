@@ -37,6 +37,5 @@ function [cbCorners,cornersValid,params] = prepareData(im,rgbs,calibParams)
     params.LensModel.distortionNumRGB = 5*calibParams.rgb.rgbDistoration;
     params.LensModel.distortionNumLR = 0;
     params.LensModel.arePixelsSquare = logical(calibParams.rgb.arePixelsSquare);
-    params.version = calibParams.tableVersions.rgbCalib;
 end
 
