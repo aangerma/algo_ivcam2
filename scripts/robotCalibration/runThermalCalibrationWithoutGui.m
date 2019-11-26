@@ -2,7 +2,7 @@ clear
 defaultLocalPath ='C:\temp\unitCalib\';
 toolDir = fullfile(ivcam2root,'Tools\CalibTools\AlgoThermalCalibration');
 runParamsFile = 'IV2AlgoThermalCalibTool.xml';
-hw = HWinterface;       
+hw = HWinterface();       
 [info,serialStr,~] = hw.getInfo();
 runParams = xml2structWrapper(fullfile(toolDir,runParamsFile));
 app.toolName = runParams.toolName;

@@ -7,6 +7,7 @@ import os
 import os.path as path
 import xml.etree.ElementTree as et
 import glob
+import time
 
 sys.path.insert(0, r"Avv\tests")
 import a_common
@@ -156,4 +157,5 @@ def test_robot_camera_calibration_ACC():
 
 def test_ATC_ACC_robot_calib():
     test_robot_camera_calibration_ATC()
+    time.sleep(30)
     test_robot_camera_calibration_ACC()
