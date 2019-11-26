@@ -25,7 +25,9 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     hw.stopStream;
     calibParams.gnrl.sphericalMode = 0;
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0,calibParams,runParams);
-    [data.rgb] = Calibration.thermal.readDataForRgbThermalCalculation(hw,calibParams);
+    if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'fixRgbThermal') && calibParams.gnrl.rgb.fixRgbThermal
+        [data.rgb] = Calibration.thermal.readDataForRgbThermalCalculation(hw,calibParams);
+    end
     fprintff('Done(%ds)\n',round(toc(t)));
     
     %% Start stream to load the configuration
