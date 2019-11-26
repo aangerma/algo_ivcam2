@@ -28,6 +28,7 @@
            <doSave>1</doSave>
            <res>[1920,1080]</res>
            <nonRectangleFlag>1</nonRectangleFlag>
+           <fixRgbThermal>0</fixRgbThermal>
 	   </rgb>
    </gnrl>
    <warmUp>

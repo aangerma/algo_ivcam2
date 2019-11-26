@@ -386,7 +386,7 @@ for iParam = 1:length(optimizedParams)
     switch optimizedParams{iParam}
         case 'DFZ'
             fprintff('Delay/Fov/Zenith: fx=%.2f, fy=%.2f, dt=%.2f, zx=%.2f, zy=%.2f.\n',...
-                regs.FRMW.xfov(1), regs.FRMW.yfov(1), regs.DEST.txFRQpd(1), regs.FRMW.laserangleH, regs.FRMW.laserangleV)
+                regs.FRMW.xfov(1), regs.FRMW.yfov(1), regs.DEST.txFRQpd(1), regs.FRMW.laserangleH, regs.FRMW.laserangleV);
         case 'coarseUndist'
             fprintff('Coarse undistort: polyVar=%.2f, pitchFixFactor=%.2f.\n',...
                 regs.FRMW.polyVars(2), regs.FRMW.pitchFixFactor);
@@ -410,7 +410,7 @@ for iParam = 1:length(optimizedParams)
                 regs.FRMW.rtdOverY(1), regs.FRMW.rtdOverY(2), regs.FRMW.rtdOverY(3));
     end
 end
-fprintff('--> eGeom=%.2f.\n', err)
+fprintff('--> eGeom=%.2f.\n', err);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

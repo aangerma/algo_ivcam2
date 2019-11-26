@@ -58,5 +58,9 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP1x          = results.angx.p1(1);
     results.thermalAngxP1y          = results.angx.p1(2);
     results.FRMWhumidApdTempDiff    = results.temp.FRMWhumidApdTempDiff;
-    results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'rgb', 'temp'});
+    if isfield(results, 'rgb')
+        results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'rgb', 'temp'});
+    else
+        results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'temp'});
+    end
 end

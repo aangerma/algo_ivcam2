@@ -12,12 +12,14 @@ thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
 Calibration.thermal.saveThermalTable( tableShifted , thermalTableFullPath );
 fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
 
-rgbThermalTable = single(reshape(data.tableResults.rgb.thermalTable',[],1));
-rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.referenceTemp; rgbThermalTable];
-thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
-thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileName);
-Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
-fprintff('Generated algo thermal RGB table full path:\n%s\n',thermalRgbTableFullPath);
+if isfield(data.tableResults, 'rgb')
+    rgbThermalTable = single(reshape(data.tableResults.rgb.thermalTable',[],1));
+    rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.referenceTemp; rgbThermalTable];
+    thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
+    thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileName);
+    Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
+    fprintff('Generated algo thermal RGB table full path:\n%s\n',thermalRgbTableFullPath);
+end
 
 initFldr = calib_dir;
 fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir);
