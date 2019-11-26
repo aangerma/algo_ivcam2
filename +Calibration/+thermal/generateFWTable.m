@@ -48,6 +48,11 @@ else
     fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
     shtw2 = [tempData.ldd]; % temporary
 end
+if ~checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
+    results = [];
+    table = [];
+    return;
+end
 results.temp.FRMWhumidApdTempDiff = 0; % default
 if isfield(tempData, 'tsense') && isfield(tempData, 'shtw2')
     ind = find(all(tsense'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
@@ -601,5 +606,31 @@ if ~isempty(runParams) && ~isempty(jumpIdcs)
     plot(jumpIdcsSmooth, sdDetrended(jumpIdcsSmooth), 'ro', 'markerfacecolor', 'm')
     grid on, legend('detrended', 'low threshold', 'high threshold', 'jump detected')
     Calibration.aux.saveFigureAsImage(ff,runParams,'JumpDetection',paramName,1);
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function isValid = checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
+isValid = true;
+if (max(ldd)==min(ldd))
+    isValid = false;
+    fprintff('Error in temperature reading: LDD temperature is constant over frames.\n');
+    return
+end
+if (max(ma)==min(ma))
+    isValid = false;
+    fprintff('Error in temperature reading: MA temperature is constant over frames.\n');
+    return
+end
+if (max(tsense)==min(tsense))
+    isValid = false;
+    fprintff('Error in temperature reading: TSense temperature is constant over frames.\n');
+    return
+end
+if (max(shtw2)==min(shtw2))
+    isValid = false;
+    fprintff('Error in temperature reading: SHTW2 temperature is constant over frames.\n');
+    return
 end
 end
