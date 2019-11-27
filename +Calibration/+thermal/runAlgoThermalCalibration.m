@@ -1,4 +1,4 @@
-function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
+function  calibPassed = runAlgoThermalCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
     t=tic;
     
     calibPassed = 0;
