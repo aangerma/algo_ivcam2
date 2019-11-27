@@ -40,6 +40,7 @@
        <teminationTempdiffFromCalibTemp>40</teminationTempdiffFromCalibTemp><!-- terminates warmup if temperature is larger than calib temp plus this-->
        <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
        <apdTempRange>[20 30]</apdTempRange><!-- for proper estimation based on humidity sensor -->
+       <checkTmptrSensors>1</checkTmptrSensors>
    </warmUp>
    <errRange>
       <delayIR>[0 100000]</delayIR>
