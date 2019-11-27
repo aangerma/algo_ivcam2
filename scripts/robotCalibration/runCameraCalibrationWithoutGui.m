@@ -1,3 +1,4 @@
+function calibPassed = runCameraCalibrationWithoutGui()
 clear
 defaultLocalPath ='C:\temp\unitCalib\';
 toolDir = fullfile(ivcam2root,'Tools\CalibTools\AlgoCameraCalibration');
@@ -71,6 +72,7 @@ calibParams.sparkParams.resultsFolder = runparams.outputFolder;
 calibPassed = Calibration.runAlgoCameraCalibration(runparamsFn,calibfn,@fprintf,[],[]);
 hw.cmd('rst');
 clear
+end
 function strOut = replaceFirst(str,exp,replace)
     strOut = str;
     idx = strfind(str,exp);

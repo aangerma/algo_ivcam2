@@ -1,3 +1,4 @@
+function calibPassed = runThermalCalibrationWithoutGui()
 clear
 defaultLocalPath ='C:\temp\unitCalib\';
 toolDir = fullfile(ivcam2root,'Tools\CalibTools\AlgoThermalCalibration');
@@ -70,6 +71,7 @@ calibParams.sparkParams.resultsFolder = runparams.outputFolder;
 calibPassed = Calibration.thermal.runAlgoThermalCalibration(runparamsFn,calibfn,@fprintf,[],[]);
 hw.cmd('rst');
 clear
+end
 function strOut = replaceFirst(str,exp,replace)
     strOut = str;
     idx = strfind(str,exp);
