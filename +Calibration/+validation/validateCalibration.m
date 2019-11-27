@@ -103,7 +103,8 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
             elseif  strfind(enabledMetrics{i},'sharpness')
                 sharpConfig = calibParams.validationConfig.(enabledMetrics{i});
                 frames = hw.getFrame(sharpConfig.numOfFrames,0);
-                [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharp(frames, []);
+                params.target.target = 'checkerboard_Iv2A1';
+                [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharpIR(frames, params);
                 sharpRes.horizontalSharpness = allSharpRes.horizMean;
                 sharpRes.verticalSharpness = allSharpRes.vertMean;
                 valResults = Validation.aux.mergeResultStruct(valResults, sharpRes);

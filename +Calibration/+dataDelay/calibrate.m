@@ -47,13 +47,14 @@ results.delaySlowPixelVar = pixelVar;
 [imU,~]=Calibration.dataDelay.getScanDirImagesByLocTable(hw);
 frameU.i = imU; frameU.z = imU; 
 frame = hw.getFrame(10);
-[~, metricsResults] = Validation.metrics.gridEdgeSharp(frame, []);
-[~, metricsResultsU] = Validation.metrics.gridEdgeSharp(frameU, []);
-fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horizSharpnessMean',metricsResultsU.horizMean,metricsResults.horizMean);
-fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','vertSharpnessMean',metricsResultsU.vertMean,metricsResults.vertMean);
+params.target.target = 'checkerboard_Iv2A1';
+[~, metricsResults] = Validation.metrics.gridEdgeSharpIR(frame, params);
+[~, metricsResultsU] = Validation.metrics.gridEdgeSharpIR(frameU, params);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horzWidthMeanAF',metricsResultsU.horzWidthMeanAF,metricsResults.horzWidthMeanAF);
+fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','vertWidthMeanAF',metricsResultsU.vertWidthMeanAF,metricsResults.vertWidthMeanAF);
 fprintff('IR vertical pixel alignment variance [e=%g].\n',pixelVar);
-results.horizEdge =  metricsResults.horizMean;
-results.vertEdge =  metricsResults.vertMean;
+results.horizEdge =  metricsResults.horzWidthMeanAF;
+results.vertEdge =  metricsResults.vertWidthMeanAF;
 
 %% CALIBRATE DEPTH
 dataDelayParams.slowDelayInitVal = delayIR;

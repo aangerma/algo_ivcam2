@@ -30,7 +30,8 @@ function [valResults ,allResults] = HVM_Val_Calc_int(frameBytes,sz,params,runPar
     allResults.HVM.(Metrics) = allDfzRes;
 %% sharpness
     Metrics = 'sharpness';
-    [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharp(frames, []);
+    params.target.target = 'checkerboard_Iv2A1';
+    [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharpIR(frames, params);
     sharpRes.horizontalSharpness = allSharpRes.horizMean;
     sharpRes.verticalSharpness = allSharpRes.vertMean;
     valResults = Validation.aux.mergeResultStruct(valResults, sharpRes);

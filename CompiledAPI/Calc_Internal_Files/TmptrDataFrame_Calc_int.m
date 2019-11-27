@@ -192,11 +192,11 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
     
     if isempty(calibParams.gnrl.cbGridSz)
-        CB = CBTools.Checkerboard (frame.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true,'nonRectangleFlag',calibParams.gnrl.nonRectangleFlag);
+        CB = CBTools.Checkerboard (frame.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true,'nonRectangleFlag',logical(calibParams.gnrl.nonRectangleFlag));
         pts = CB.getGridPointsList;
         colors = CB.getColorMap;
         if isfield(frame,'yuy2')
-             CB = CBTools.Checkerboard (frame.yuy2, 'targetType', 'checkerboard_Iv2A1','nonRectangleFlag',calibParams.gnrl.rgb.nonRectangleFlag);
+             CB = CBTools.Checkerboard (frame.yuy2, 'targetType', 'checkerboard_Iv2A1','nonRectangleFlag',logical(calibParams.gnrl.nonRectangleFlag));
              ptsColor = CB.getGridPointsMat;
         end
     else
