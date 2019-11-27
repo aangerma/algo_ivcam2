@@ -1,5 +1,7 @@
 function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
     t=tic;
+    
+    calibPassed = 0;
     results = struct;
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
