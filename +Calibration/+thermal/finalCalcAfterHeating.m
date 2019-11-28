@@ -20,7 +20,11 @@ results = UpdateResultsStruct(results); % output single layer results struct
 data.regs.FRMW.humidApdTempDiff = results.FRMWhumidApdTempDiff;
 
 [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,0);
-[fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParams,runParams,fprintff,1);
+calibParamsFixed = calibParams;
+if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'doStream') && calibParams.gnrl.rgb.doStream
+    calibParamsFixed.gnrl.rgb.doStream = 0; %No need to plot RGB plots twice
+end
+[fixedData] = Calibration.thermal.analyzeFramesOverTemperature(data.fixedData,calibParamsFixed,runParams,fprintff,1);
 Calibration.aux.logResults(data.results, runParams);
 
 %% merge all scores outputs

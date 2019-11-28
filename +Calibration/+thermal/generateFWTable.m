@@ -48,11 +48,6 @@ else
     fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
     shtw2 = [tempData.ldd]; % temporary
 end
-if ~checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
-    results = [];
-    table = [];
-    return;
-end
 results.temp.FRMWhumidApdTempDiff = 0; % default
 if isfield(tempData, 'tsense') && isfield(tempData, 'shtw2')
     ind = find(all(tsense'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
@@ -80,6 +75,11 @@ if ~isempty(runParams)
     legend(leg,'Location','northwest')
     title('Temperature readings')
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'));
+end
+if calibParams.warmUp.checkTmptrSensors && ~checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
+    results = [];
+    table = [];
+    return;
 end
 
 %% RTD fix
@@ -335,6 +335,7 @@ if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outpu
     results.raw.dsmYoffset  = dsmYoffset;
     results.raw.ldd         = ldd;
     results.raw.rtd         = -(rtdPerFrame-refRtd);
+    results.raw.refRtd      = refRtd;
 end
 
 if ~isempty(runParams)
