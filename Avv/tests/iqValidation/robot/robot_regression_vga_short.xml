@@ -196,20 +196,20 @@
         <test name="laserFovStability_c50_200cm" metrics="laserFovStability" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
         <test name="laserFovStability_c50_250cm" metrics="laserFovStability" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		
-		<test name="zir_c50_20cm" metrics="zir" target="checkerboard_50" distance="20cm" threshold="[0:2]" extra="" />
-		<test name="zir_c50_40cm" metrics="zir" target="checkerboard_50" distance="40cm" threshold="[0:2]" extra="" />
-		<test name="zir_c50_60cm" metrics="zir" target="checkerboard_50" distance="60cm" threshold="[0:2]" extra="" />
-		<test name="zir_c50_70cm" metrics="zir" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_80cm" metrics="zir" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_90cm" metrics="zir" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_100cm" metrics="zir" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="zir_c50_110cm" metrics="zir" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_120cm" metrics="zir" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_130cm" metrics="zir" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_140cm" metrics="zir" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_150cm" metrics="zir" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_200cm" metrics="zir" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="zir_c50_250cm" metrics="zir" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test name="irZ_c50_20cm" metrics="irZ" target="checkerboard_50" distance="20cm" threshold="[0:2]" extra="" />
+		<test name="irZ_c50_40cm" metrics="irZ" target="checkerboard_50" distance="40cm" threshold="[0:2]" extra="" />
+		<test name="irZ_c50_60cm" metrics="irZ" target="checkerboard_50" distance="60cm" threshold="[0:2]" extra="" />
+		<test name="irZ_c50_70cm" metrics="irZ" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_80cm" metrics="irZ" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_90cm" metrics="irZ" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_100cm" metrics="irZ" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test name="irZ_c50_110cm" metrics="irZ" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_120cm" metrics="irZ" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_130cm" metrics="irZ" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_140cm" metrics="irZ" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_150cm" metrics="irZ" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_200cm" metrics="irZ" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_250cm" metrics="irZ" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 
  
         <test name="irFillRate_w10_70cm" metrics="irFillRate" target="wall_10Reflectivity" distance="70cm" threshold="[90 : 100]" extra=""/>
