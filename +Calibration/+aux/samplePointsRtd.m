@@ -47,7 +47,7 @@ function [rpt,pts,colorMap] = samplePointsRtd(z,pts,regs,addZ,colorMap,takeRtdVa
     
     if advancedMode
         if takeRtdValuesFromWhite
-            [rtdSampledFromWhite,ptsFromWhite1,ptsFromWhite2,pts,colorMap] = Calibration.aux.CBTools.valuesFromWhitesNonSq(rtd,pts,colorMap,1/8);
+            [rtdSampledFromWhite,ptsFromWhite1,ptsFromWhite2,pts,colorMap] = CBTools.valuesFromWhitesNonSq(rtd,pts,colorMap,1/8);
             % rtdFromWhite = nan(size(pts,1)*size(pts,2),1);
             % %rtdFromWhite(reshape(~isnan(pts(:,:,1)),size(rtdFromWhite))) = rtdSampledFromWhite;
             % rtdFromWhite(reshape(any(~isnan(pts(:,:,1)),1) & any(~isnan(pts(:,:,1)),2),size(rtdFromWhite))) = rtdSampledFromWhite;
