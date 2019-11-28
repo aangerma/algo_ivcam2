@@ -214,33 +214,24 @@ params.camera.K = [730.1642         0  541.5000; 0  711.8812  386.0000 ; 0 0 1];
 params.gridSize = gridSize;
 orderedResults = [];
 for i = 1:numel(vertices)
-    [~, results, ~] = Validation.metrics.gridInterDistance([], params, vertices{i});
+    [~, results, ~] = Validation.metrics.gridInterDistance(vertices{i}, params);
     orderedResults = mergestruct(orderedResults,results); 
-    [~, results, ~] = Validation.metrics.gridDistortion ([], params,vertices{i});
+    [~, results, ~] = Validation.metrics.gridDistortion (vertices{i}, params);
     orderedResults = mergestruct(orderedResults,results); 
-    v = vertices{i};
-    [lineFit] = Calibration.aux.calcLineDistortion({v},double(params.camera.K),gridSize);
-    orderedResults.lineFitMeanRmsErrorTotalHoriz3D = lineFit.lineFitMeanRmsErrorTotalHoriz3D;
-    orderedResults.lineFitMeanRmsErrorTotalVertic3D = lineFit.lineFitMeanRmsErrorTotalVertic3D;
-    orderedResults.lineFitMeanRmsErrorTotalHoriz3D = lineFit.lineFitMeanRmsErrorTotalHoriz3D;
-    orderedResults.lineFitMeanRmsErrorTotalVertic3D = lineFit.lineFitMeanRmsErrorTotalVertic3D;
-    orderedResults.lineFitMeanRmsErrorTotalHoriz2D = lineFit.lineFitMeanRmsErrorTotalHoriz2D;
-    orderedResults.lineFitMeanRmsErrorTotalVertic2D = lineFit.lineFitMeanRmsErrorTotalVertic2D;
-    orderedResults.rmsPlaneFitDist = Validation.metrics.planeFitOnCorners([], params, vertices{i});
+    [~, results, ~] = Validation.metrics.gridLineFit(vertices{i}, params);
+    orderedResults = mergestruct(orderedResults,results); 
+
     allRes(i) = orderedResults;
 end
-avgRes.meanError = mean([allRes.meanError]);
-avgRes.meanAbsHorzScaleError = mean([allRes.meanAbsHorzScaleError]);
-avgRes.meanAbsVertScaleError = mean([allRes.meanAbsVertScaleError]);
-avgRes.lineFitMeanRmsErrorTotalHoriz3D = mean([allRes.lineFitMeanRmsErrorTotalHoriz3D]);
-avgRes.lineFitMeanRmsErrorTotalVertic3D = mean([allRes.lineFitMeanRmsErrorTotalVertic3D]);
-avgRes.lineFitMeanRmsErrorTotalHoriz2D = mean([allRes.lineFitMeanRmsErrorTotalHoriz2D]);
-avgRes.lineFitMeanRmsErrorTotalVertic2D = mean([allRes.lineFitMeanRmsErrorTotalVertic2D]);
-avgRes.rmsPlaneFitDist = mean([allRes.rmsPlaneFitDist]);
+
+fnames = fieldnames(allRes);
+S = struct2table(allRes);
+for i=1:length(fnames)
+    avgRes.([fnames{i}]) = nanmean(S.(fnames{i}));
+end
 
 end
 function [ Ttag ] = dfzResultsToTable( results )
-
     T = struct2table(results);
     T.Properties.RowNames = T.Name;
     T.Name = [];
