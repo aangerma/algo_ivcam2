@@ -44,7 +44,7 @@ end
 
 function runRobotUnSafeMoveCommand(forward, dist, rotate)
     %targetType ,dist in cm ,ang in degrees 
-    command = ['algo_ev3/move.py -f ' forward ' -d ' num2str(dist), ' -r ' num2str(rotate)]
+    command = ['algo_ev3/move.py -f ' forward ' -d ' num2str(dist), ' -r ' num2str(rotate)];
     [status,result] = system(command);
     pause(20);
     if contains(result,'Host does not exist')

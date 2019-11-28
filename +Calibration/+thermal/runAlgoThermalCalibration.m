@@ -1,7 +1,5 @@
-function  calibPassed = runAlgoThermalCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
+function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, fprintff,spark,app)
     t=tic;
-    
-    calibPassed = 0;
     results = struct;
     if(~exist('fprintff','var'))
         fprintff=@(varargin) fprintf(varargin{:});
@@ -141,7 +139,6 @@ function  calibPassed = runAlgoThermalCalibration(runParamsFn,calibParamsFn, fpr
                 cmdstr = sprintf('WrCalibInfo %s',algoTableFullPath);
                 hw.cmd(cmdstr);
                 fprintff('Done\n');
-                calibPassed = 1;
             catch
                 fprintf('Failed to write Algo_Calibration_Info to EPROM. You are probably using an unsupported fw version.\n');
                 calibPassed = 0;
