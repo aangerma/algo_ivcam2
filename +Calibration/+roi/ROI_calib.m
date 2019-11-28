@@ -5,7 +5,7 @@ function [results,roiRegs] = ROI_calib(hw,dfzRegs, runParams, calibParams, resul
         %% capture frames
         fprintff('[-] Collecting up/down frames... ');
         %Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'ROI - Take Image From ~20cm - Board should cover the entire fov',1);
-        Calibration.aux.changeCameraLocation(calibParams.robot.roi.type,calibParams.robot.roi.dist,calibParams.robot.roi.ang,calibParams,hw,1,[],'ROI - Take Image From ~20cm - Board should cover the entire fov',1);
+        Calibration.aux.changeCameraLocation(hw, false, calibParams.robot.roi.type,calibParams.robot.roi.dist,calibParams.robot.roi.ang,calibParams,hw,1,[],'ROI - Take Image From ~20cm - Board should cover the entire fov',1);
         %% capture frames 
         frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.roi.nFrames);
         fprintff('Done.\n');

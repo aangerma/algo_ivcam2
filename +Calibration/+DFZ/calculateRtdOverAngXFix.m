@@ -17,7 +17,7 @@ if (runParams.DFZ)
     [r] = rtdOverAngXFixInit(hw,runParams,fprintff);
     
    % Calibration.aux.CBTools.showImageRequestDialog(hw,1,[],'Rtd Over AngX - Board should cover the entire fov',1);
-     Calibration.aux.changeCameraLocation(calibParams.robot.rtdOverTanX.type,calibParams.robot.rtdOverTanX.dist,calibParams.robot.rtdOverTanX.ang,calibParams,hw,1,[],'Rtd Over AngX - Board should cover the entire fov',1);
+     Calibration.aux.changeCameraLocation(hw, false, calibParams.robot.rtdOverTanX.type,calibParams.robot.rtdOverTanX.dist,calibParams.robot.rtdOverTanX.ang,calibParams,hw,1,[],'Rtd Over AngX - Board should cover the entire fov',1);
 
     [delayVecNoChange,delayVecSteps] = RtdOverAngXStateValues_Calib_Calc(calibParams,regs);
     

@@ -13,7 +13,7 @@ if isfield(maskParams4user, 'roi')
 end
 mask4user = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams4user);
 %Calibration.aux.CBTools.showImageRequestDialog(hw,3,diag([1 1 1]),'Long Range Calibration - place black target on center of checkerboard and move camera to end of rail to 800mm and center ROI ',[],uint8(1-mask4user).*uint8(255));
-Calibration.aux.changeCameraLocation(calibParams.robot.long_preset.type,calibParams.robot.long_preset.dist.(stateName),calibParams.robot.long_preset.ang,calibParams,hw,3,diag([1 1 1]),'Long Range Calibration - place black target on center of checkerboard and move camera to end of rail to 800mm and center ROI ',[],uint8(1-mask4user).*uint8(255));
+Calibration.aux.changeCameraLocation(hw, true, calibParams.robot.long_preset.type,calibParams.robot.long_preset.dist.(stateName),calibParams.robot.long_preset.ang,calibParams,hw,3,diag([1 1 1]),'Long Range Calibration - place black target on center of checkerboard and move camera to end of rail to 800mm and center ROI ',[],uint8(1-mask4user).*uint8(255));
 pause(60);
 
 %% Capture frames

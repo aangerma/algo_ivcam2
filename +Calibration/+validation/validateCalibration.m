@@ -39,7 +39,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
         z2mm = double(hw.z2mm);
         
         %frame = Calibration.aux.CBTools.showImageRequestDialog(hw,1,diag([.6 .6 1]), 'Please align checkerboard to screen');
-        Calibration.aux.changeCameraLocation(calibParams.robot.validation.type,calibParams.robot.validation.dist,calibParams.robot.validation.ang,calibParams,hw,1,diag([.6 .6 1]), 'Please align checkerboard to screen');
+        Calibration.aux.changeCameraLocation(hw, false, calibParams.robot.validation.type,calibParams.robot.validation.dist,calibParams.robot.validation.ang,calibParams,hw,1,diag([.6 .6 1]), 'Please align checkerboard to screen');
         frame = hw.getFrame(45);
         
         ff = Calibration.aux.invisibleFigure();

@@ -7,6 +7,7 @@ import os
 import os.path as path
 import xml.etree.ElementTree as et
 import glob
+import time
 
 sys.path.insert(0, r"Avv\tests")
 import a_common
@@ -96,22 +97,21 @@ def test_robot_camera_calibration_ATC():
     slash.logger.info("Starting ATC calibration- MATLAB...")
 
     try:
-        eng.s.runThermalCalibrationWithoutGui(stdout=out, stderr=err, nargout=0)
+        calibPassed = eng.s.runThermalCalibrationWithoutGui(stdout=out, stderr=err, nargout=1)
     except Exception as ex:
         slash.logger.error(ex)
         s_err = err.getvalue()
         slash.logger.error("Calibration crashed: {}".format(s_err))
+        slash.logger.info(out.getvalue())
+        raise RuntimeError
+    finally:
         robot.find('./enable').text = "0"
         CalibParams.write(CalibParamsXml)
         slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
-        slash.logger.info(out.getvalue())
-        raise RuntimeError
-
-    robot.find('./enable').text = "0"
-    CalibParams.write(CalibParamsXml)
-    slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
 
     slash.logger.info(out.getvalue())
+    if ~calibPassed:
+        raise RuntimeError
 
 
 def test_robot_camera_calibration_ACC():
@@ -136,22 +136,22 @@ def test_robot_camera_calibration_ACC():
 
     slash.logger.info("Starting ACC calibration- MATLAB...")
     try:
-        eng.s.runCameraCalibrationWithoutGui(stdout=out, stderr=err, nargout=0)
+        calibPassed = eng.s.runCameraCalibrationWithoutGui(stdout=out, stderr=err, nargout=1)
     except Exception as ex:
         slash.logger.error(ex)
         s_err = err.getvalue()
         slash.logger.error("Calibration crashed: {}".format(s_err))
+        slash.logger.info(out.getvalue())
+        raise RuntimeError
+    finally:
         robot.find('./enable').text = "0"
         CalibParams.write(CalibParamsXml)
         slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
-        slash.logger.info(out.getvalue())
-        raise RuntimeError
-
-    robot.find('./enable').text = "0"
-    CalibParams.write(CalibParamsXml)
-    slash.logger.info("Disable robot calibration: {}".format(robot.find('./enable').text), extra={"highlight": True})
 
     slash.logger.info(out.getvalue())
+    if ~calibPassed:
+        raise RuntimeError
+
 
 
 def test_ATC_ACC_robot_calib():
