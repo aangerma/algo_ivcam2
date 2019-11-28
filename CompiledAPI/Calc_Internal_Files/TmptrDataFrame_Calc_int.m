@@ -53,6 +53,10 @@ if ~finishedHeating % heating stage
     zForStd(repmat(binLargest,1,1,nFrames)) = framesNoAvg.z(repmat(binLargest,1,1,nFrames));
     lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
+    if all(isnan(FrameData.ptsWithZ(:,1)))
+        fprintff('Error: checkerboard not detected in IR image.\n');
+        calibPassed = -1;
+    end
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
     [FrameData.minMaxMemsAngX,FrameData.minMaxMemsAngY] = minMaxDSMAngles(regs,lastZFrames,calibParams,diskObject);
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));

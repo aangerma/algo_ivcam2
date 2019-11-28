@@ -335,6 +335,7 @@ if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outpu
     results.raw.dsmYoffset  = dsmYoffset;
     results.raw.ldd         = ldd;
     results.raw.rtd         = -(rtdPerFrame-refRtd);
+    results.raw.refRtd      = refRtd;
 end
 
 if ~isempty(runParams)
