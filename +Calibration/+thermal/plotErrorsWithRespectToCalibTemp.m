@@ -6,8 +6,9 @@ function [  ] = plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdge
 % Plots RMS X/Y/RTD diff in respect to calib temp
 %%
 [meanRtdXYOffset,rmsRtdXYOffset,maxRtdXYOffset] = calcDataOffsets(framesPerTemperature,refBinIndex,[1,4,5]);
-if exist('plotRGB','var') && plotRGB
-    [meanXYOffset_rgb,rmsXYOffset_rgb,maxXYOffset_rgb] = calcDataOffsets(framesPerTemperature,refBinIndex,[9,10]);
+if exist('plotRGB','var') && plotRGB && size(framesPerTemperature,3)>5
+    numOfRows = size(framesPerTemperature,3);
+    [meanXYOffset_rgb,rmsXYOffset_rgb,maxXYOffset_rgb] = calcDataOffsets(framesPerTemperature,refBinIndex,[numOfRows-1,numOfRows]);
 end
 %%
 sq = @squeeze;
@@ -76,7 +77,7 @@ if ~isempty(runParams)
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_corners_movement'),1);
     
     
-    if exist('plotRGB','var') && plotRGB
+    if exist('plotRGB','var') && plotRGB && size(framesPerTemperature,3)>5
         ff = Calibration.aux.invisibleFigure;
         subplot(131);
         plot(tmpBinEdges,sq(meanXYOffset_rgb(:,1,:)))
@@ -101,12 +102,13 @@ if ~isempty(runParams)
         title('Heating Stage Y Max Diff RGB'); grid on;xlabel('degrees');ylabel('Y diff [pixels]');legend(legends);axis square;
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating_rgb',sprintf('Yim_Errors'),1);
         
+        numOfRows = size(framesPerTemperature,3);
         ff = Calibration.aux.invisibleFigure;
         iWithTemps = find(~isnan(meanXYOffset_rgb(:,1)));
-        xRgbLow = framesPerTemperature(iWithTemps(1),:,9);
-        yRgbLow = framesPerTemperature(iWithTemps(1),:,10);
-        xRgbHigh = framesPerTemperature(iWithTemps(end),:,9);
-        yRgbHigh = framesPerTemperature(iWithTemps(end),:,10);
+        xRgbLow = framesPerTemperature(iWithTemps(1),:,numOfRows-1);
+        yRgbLow = framesPerTemperature(iWithTemps(1),:,numOfRows);
+        xRgbHigh = framesPerTemperature(iWithTemps(end),:,numOfRows-1);
+        yRgbHigh = framesPerTemperature(iWithTemps(end),:,numOfRows);
         plot(xRgbLow,yRgbLow,'+g');
         hold on;
         plot(xRgbHigh,yRgbHigh,'+b');

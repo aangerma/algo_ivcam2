@@ -25,7 +25,7 @@
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>
-           <doSave>1</doSave>
+           <doStream>1</doStream>
            <res>[1920,1080]</res>
            <nonRectangleFlag>1</nonRectangleFlag>
            <fixRgbThermal>0</fixRgbThermal>

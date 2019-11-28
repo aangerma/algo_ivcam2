@@ -47,7 +47,7 @@ stdVals = nanmean(nanstd(validFramesData));
 
 metrics = Calibration.thermal.calcThermalScores(data,calibParams,runParams.calibRes);
 %%
-if plotRGB
+if plotRGB && isfield(data,'camerasParams')
     [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,ldds,calibParams,runParams,metrics,inValidationStage,fprintff);
     %%
 end
