@@ -214,8 +214,8 @@ params.camera.K = [730.1642         0  541.5000; 0  711.8812  386.0000 ; 0 0 1];
 params.gridSize = gridSize;
 
 for i = 1:numel(vertices)
-    [~, results, ~] = Validation.metrics.gridInterDist([], params, vertices{i});
-    orderedResults.meanError = results.meanError;
+    [~, results, ~] = Validation.metrics.gridInterDistance([], params, vertices{i});
+    orderedResults.meanError = results.errorMeanAF;
     orderedResults.meanAbsHorzScaleError = results.meanAbsHorzScaleError;
     orderedResults.meanAbsVertScaleError = results.meanAbsVertScaleError;
     orderedResults.lineFitMeanRmsErrorTotalHoriz3D = results.lineFit.lineFitMeanRmsErrorTotalHoriz3D;

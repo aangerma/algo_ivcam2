@@ -351,7 +351,7 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
 %     params.camera.K = regs.FRMW.kRaw;
 %     params.target.squareSize = 30;
 %     params.expectedGridSize = [9,13];
-%     [frameData.eGeom, allRes,dbg] = Validation.metrics.gridInterDist(frame, params);
+%     [frameData.eGeom, allRes,dbg] = Validation.metrics.gridInterDistance(frame, params);
     
 end
 

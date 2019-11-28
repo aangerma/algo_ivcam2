@@ -4,11 +4,11 @@ dfzRes = [];
 params.isRoiRect = params.gidMaskIsRoiRect;
 if params.sampleZFromWhiteCheckers
     params.sampleZFromWhiteCheckers = 0;
-    [score1, allRes1,dbg1] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
+    [score1, allRes1,dbg1] = Validation.metrics.gridInterDistance(rotFrame180(frames), params);
     params.sampleZFromWhiteCheckers = 1;
-    [score2, allRes2,dbg2] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
+    [score2, allRes2,dbg2] = Validation.metrics.gridInterDistance(rotFrame180(frames), params);
 else
-    [score1, allRes1,dbg1] = Validation.metrics.gridInterDist(rotFrame180(frames), params);
+    [score1, allRes1,dbg1] = Validation.metrics.gridInterDistance(rotFrame180(frames), params);
 end
 
 if exist('runParams','var')

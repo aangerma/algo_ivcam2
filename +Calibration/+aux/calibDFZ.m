@@ -275,7 +275,7 @@ function [] = printPlaneAng(darr,rtlRegs,X,fprintff,useCropped,eAll,tpsUndistMod
             isValid = ~isnan(x(idxs,:));
             idxs = idxs(isValid(:));
             v = [x(idxs), y(idxs), z(idxs)];
-            [~, p, ~] = Validation.metrics.planeFitInternal(v);
+            [~, p, ~] = Validation.aux.planeFitInternal(v);
             horizAng(1,i) = 90-atan2d(p(3,:),p(1,:));
             verticalAngl(1,i) = 90-atan2d(p(3,:),p(2,:));
             fprintff('frame %3d:       %7.3g              %7.3g             %7.3g\n', i, horizAng(i), verticalAngl(i),eAll(i));

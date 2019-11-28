@@ -87,7 +87,7 @@ function [score, results,dbg] = planeFitOnVerts(v)
 dbg = [];
 results = [];
 
-[dist, p,dbg.meanZ] = Validation.metrics.planeFitInternal(v);
+[dist, p,dbg.meanZ] = Validation.aux.planeFitInternal(v);
 results.rmsPlaneFitDist = rms(dist);
 results.maxPlaneFitDist = max(abs(dist));
 planeParams = p;
