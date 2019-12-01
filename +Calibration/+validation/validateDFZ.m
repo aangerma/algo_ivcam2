@@ -5,6 +5,11 @@ function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff,calibParams,run
     params.target.name = calibParams.validationConfig.target.name;
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;
     params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
+    if params.sampleZFromWhiteCheckers
+        params.cornersReferenceDepth ='white';
+    else
+        params. cornersReferenceDepth ='corners';
+    end
     params.validateOnCenter = calibParams.validationConfig.validateOnCenter;
     params.roi = calibParams.validationConfig.roi4ValidateOnCenter;
     params.plainFitMaskIsRoiRect = calibParams.validationConfig.plainFitMaskIsRoiRect;

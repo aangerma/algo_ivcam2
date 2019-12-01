@@ -23,13 +23,18 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         results.extraImagesGeomErr = dfzresults.extraImagesGeomErr;
         results.potentialPitchFixInDegrees = dfzresults.potentialPitchFixInDegrees;
         
-        results.dfzScaleErrH = dfzresults.dfzScaleErrH;
-        results.dfzScaleErrV = dfzresults.dfzScaleErrV;
-        results.dfz3DErrH = dfzresults.dfz3DErrH;
-        results.dfz3DErrV = dfzresults.dfz3DErrV;
-        results.dfz2DErrH = dfzresults.dfz2DErrH;
-        results.dfz2DErrV = dfzresults.dfz2DErrV;
-        results.dfzPlaneFit = dfzresults.dfzPlaneFit;
+        fnames = fieldnames(dfzresults);
+        for i=1:length(fnames)
+            results.([fnames{i}]) = dfzresults.(fnames{i});
+        end
+        
+%         results.dfzScaleErrH = dfzresults.dfzScaleErrH;
+%         results.dfzScaleErrV = dfzresults.dfzScaleErrV;
+%         results.dfz3DErrH = dfzresults.dfz3DErrH;
+%         results.dfz3DErrV = dfzresults.dfz3DErrV;
+%         results.dfz2DErrH = dfzresults.dfz2DErrH;
+%         results.dfz2DErrV = dfzresults.dfz2DErrV;
+%         results.dfzPlaneFit = dfzresults.dfzPlaneFit;
         
         DFZ_calib_Output(hw, fw, r, dfzRegs, results, runParams, calibParams);
 

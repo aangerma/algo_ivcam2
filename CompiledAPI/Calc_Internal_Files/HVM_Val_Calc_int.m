@@ -21,6 +21,11 @@ function [valResults ,allResults] = HVM_Val_Calc_int(frameBytes,sz,params,runPar
     params.target.name = calibParams.validationConfig.target.name;
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;
     params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
+    if params.sampleZFromWhiteCheckers
+        params.cornersReferenceDepth = 'white';
+    else
+        params.cornersReferenceDepth = 'corners';
+    end
     params.plainFitMaskIsRoiRect = calibParams.validationConfig.plainFitMaskIsRoiRect;
     params.gidMaskIsRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;
     %average image 

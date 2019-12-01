@@ -26,7 +26,13 @@ Trgb = extr(10:12)';
 %%
 params.rgbPmat = Krgb*[Rrgb Trgb];
 params.camera = struct('zMaxSubMM',hw.z2mm,'K',hw.getIntrinsics);
+
 params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
+if params.sampleZFromWhiteCheckers
+    params.cornersReferenceDepth = 'white';
+else
+    params.cornersReferenceDepth = 'corners';
+end
 params.validateOnCenter = calibParams.validationConfig.validateOnCenter;
 params.roi = calibParams.validationConfig.roi4ValidateOnCenter;
 params.isRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;

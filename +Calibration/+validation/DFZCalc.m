@@ -1,7 +1,8 @@
 function [dfzRes,allRes,dbg1] = DFZCalc(params,frames,runParams,fprintff)
 dfzRes = [];
 params.isRoiRect = params.gidMaskIsRoiRect;
-params.sampleZFromWhiteCheckers = false;
+params.target.target = 'checkerboard_Iv2A1'; 
+params.cornersReferenceDepth = 'corners';
 allRes1 = [];
 dbg1 = [];
 [~, results,dbg] = Validation.metrics.gridInterDistance(rotFrame180(frames), params);
@@ -14,7 +15,7 @@ dbg1 = mergestruct(dbg1,dbg);
 allRes1 = mergestruct(allRes1,results);
 dbg1 = mergestruct(dbg1,dbg);
 if params.sampleZFromWhiteCheckers
-    params.sampleZFromWhiteCheckers = true;
+    params.cornersReferenceDepth = 'white'; 
     allRes2 = [];
     dbg2 = [];
     [~, results,dbg] = Validation.metrics.gridInterDistance(rotFrame180(frames), params);
@@ -56,17 +57,20 @@ end
 [allResReg] = addPostfixToStructField(allRes1, 'reg');
 [allResWht] = addPostfixToStructField(allRes2, 'Wht');
 
-params.sampleZFromWhiteCheckers = true;
+params.CB = true;
+params.cornersReferenceDepth = 'white';
+params.target.target = 'checkerboard_Iv2A1'; 
 params.isRoiRect = params.plainFitMaskIsRoiRect;
-[~, results,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
+[~, results,~] = Validation.metrics.planeFit(rotFrame180(frames), params);
 fnames = fieldnames(results);
 for i=1:length(fnames)
     allRes.([fnames{i},'Wht']) = results.(fnames{i});
 end
 
-params.sampleZFromWhiteCheckers = false;
-params.sampleZFromBlackCheckers = true;
-[~, results,~] = Validation.metrics.planeFitOnCorners(rotFrame180(frames), params);
+params.CB = true;
+params.cornersReferenceDepth = 'black';
+params.target.target = 'checkerboard_Iv2A1'; 
+[~, results,~] = Validation.metrics.planeFit(rotFrame180(frames), params);
 fnames = fieldnames(results);
 for i=1:length(fnames)
     allRes.([fnames{i},'Blck ']) = results.(fnames{i});

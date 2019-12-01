@@ -72,10 +72,10 @@ function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, cali
         results.dfzScaleErrV = resFull(3).absVertErrorMeanAF;
         results.dfz3DErrH = resFull(3).lineFitRmsErrorTotal_hAF;
         results.dfz3DErrV = resFull(3).lineFitRmsErrorTotal_vAF;
-%         results.dfz2DErrH = resFull(3).lineFitMeanRmsErrorTotalHoriz2D;
-%         results.dfz2DErrV = resFull(3).lineFitMeanRmsErrorTotalVertic2D;
+        results.dfz2DErrH = resFull(3).lineFitMeanRmsErrorTotalHoriz2D;
+        results.dfz2DErrV = resFull(3).lineFitMeanRmsErrorTotalVertic2D;
 %         results.dfzPlaneFit = resFull(3).rmsPlaneFitDist;
-%         results.geomErr = resFullFinal.geomErr;
+        results.geomErr = resFullFinal.geomErr;
 		
 		% Save the output vertices for potential RGB calibration
 		vertices = allVerticesFinal;
@@ -212,6 +212,7 @@ params.target.squareSize = 30;
 params.camera.zMaxSubMM = 4;
 params.camera.K = [730.1642         0  541.5000; 0  711.8812  386.0000 ; 0 0 1];% XGA K
 params.gridSize = gridSize;
+params.target.target = 'checkerboard_Iv2A1'; 
 orderedResults = struct;
 for i = 1:numel(vertices)
     [~, results, ~] = Validation.metrics.gridInterDistance(vertices{i}, params);
@@ -220,7 +221,10 @@ for i = 1:numel(vertices)
     orderedResults = mergestruct(orderedResults,results); 
     [~, results, ~] = Validation.metrics.gridLineFit(vertices{i}, params);
     orderedResults = mergestruct(orderedResults,results); 
-
+    results = Validation.aux.calcLineDistortion(vertices{i},params);
+    orderedResults = mergestruct(orderedResults,results); 
+    [~, results, ~] = Validation.metrics.planeFit(vertices{i},params);
+    orderedResults = mergestruct(orderedResults,results); 
     allRes(i) = orderedResults;
 end
 
