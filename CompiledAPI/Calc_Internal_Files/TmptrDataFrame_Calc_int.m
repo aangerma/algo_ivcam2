@@ -43,28 +43,39 @@ end
 % add error checking;
 
 if ~finishedHeating % heating stage
+    % frame comprehension
     framesNoAvg = Calibration.aux.convertBytesToFrames(frameBytes, [height, width], [calibParams.gnrl.rgb.res(2), calibParams.gnrl.rgb.res(1)]);
     frame.z = Calibration.aux.average_images(framesNoAvg.z);
     frame.i = Calibration.aux.average_images(framesNoAvg.i);
-    if isfield(frame,'yuy2')
+    if isfield(framesNoAvg,'yuy2')
         frame.yuy2 = Calibration.aux.average_images(framesNoAvg.yuy2);
     end
+    
+    % bananas tracking
     nFrames = size(framesNoAvg.z,3);
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
     zForStd = nan(size(framesNoAvg.z));
     zForStd(repmat(binLargest,1,1,nFrames)) = framesNoAvg.z(repmat(binLargest,1,1,nFrames));
     lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
+    
+    % corners tracking
     FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
+    results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     if all(isnan(FrameData.ptsWithZ(:,1)))
         fprintff('Error: checkerboard not detected in IR image.\n');
         FrameData.ptsWithZ = [];
         calibPassed = -1;
     end
-    [FrameData.minMaxMemsAngX,FrameData.minMaxMemsAngY] = minMaxDSMAngles(regs,lastZFrames,calibParams,diskObject);
-    results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
-    framesData = acc_FrameData(FrameData);
     
+    % ROI tracking
+    [FrameData.minMaxMemsAngX,FrameData.minMaxMemsAngY] = minMaxDSMAngles(regs,lastZFrames,calibParams,diskObject);
+    
+    % RX tracking
+    FrameData.irStat = calcIrStatistics(frame.i, FrameData.ptsWithZ(:,4:5));
+    
+    % globals/persistents handling
+    framesData = acc_FrameData(FrameData);
     if(Index == 0)
         prevTmp   = FrameData.temp.ldd;
         prevTime  = FrameData.time;
@@ -72,16 +83,15 @@ if ~finishedHeating % heating stage
     zFramesIndex = zFramesIndex + nFrames;
     Index = Index+1;
     i = Index;
-
+    
+    % heating convergence check
     if ((framesData(i).time - prevTime) >= tempSamplePeriod)
         reachedRequiredTempDiff = ((framesData(i).temp.ldd - prevTmp) < tempTh);
         reachedTimeLimit = (framesData(i).time > maxTime2WaitSec);
         reachedCloseToTKill = (framesData(i).temp.ldd > calibParams.gnrl.lddTKill-1);
-        
         finishedHeating = reachedRequiredTempDiff || ...
             reachedTimeLimit || ...
             reachedCloseToTKill; % will come into effect in next function call
-        
         prevTmp = framesData(i).temp.ldd;
         prevTime = framesData(i).time;
         fprintff(', %2.2f',prevTmp);
@@ -237,5 +247,55 @@ function ptsWithZ = applyDsmTransformation(ptsWithZ, regs, type)
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function irStat = calcIrStatistics(ir, corners)
+
+% reshaping
+cbSize = [20,28];
+if (size(corners,1) ~= prod(cbSize))
+    irStat = struct('mean',NaN,'std',NaN,'tiles',[],'nPix',0);
+    return
+end
+cornersX = reshape(corners(:,1), cbSize);
+cornersY = reshape(corners(:,2), cbSize);
+
+% defining white tiles closest to CB center
+xBorders = [14,15; % top
+            13,14; % left
+            15,16; % right
+            14,15]; % bottom
+yBorders = [9,10; % top
+            10,11; % left
+            10,11; % right
+            11,12]; % bottom
+
+% processable pixels identification
+[pixX, pixY] = meshgrid(1:size(ir,2), 1:size(ir,1));
+idcs = false(size(pixX));
+margin = 0.2; % unprocessed pixels (on each side) w.r.t. tile size
+tiles = 1:size(xBorders,1);
+for iTile = 1:size(xBorders,1)
+    tileX = cornersX(yBorders(iTile,:), xBorders(iTile,:));
+    tileY = cornersY(yBorders(iTile,:), xBorders(iTile,:));
+    if any(isnan(tileX(:))) || any(isnan(tileY(:))) % skip processing tile
+        tiles(iTile) = 0;
+        continue
+    end
+    sizeX = diff(tileX, [], 2);
+    sizeY = diff(tileY, [], 1);
+    processedX = tileX + margin*sizeX*[1,-1];
+    processedY = tileY + margin*[1;-1]*sizeY;
+    idcs = idcs | inpolygon(pixX, pixY, processedX([1,2,4,3]), processedY([1,2,4,3]));
+end
+processedIR = ir(idcs);
+tiles = tiles(tiles>0);
+
+% statistics extraction
+irStat.mean = mean(processedIR);
+irStat.std = std(processedIR);
+irStat.tiles = tiles;
+irStat.nPix = sum(idcs(:)>0);
+
+end
 

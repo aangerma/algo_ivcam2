@@ -45,9 +45,14 @@ end
 
 function [gridPointsFull,colorsMapFull] = GetSquaresCorners(ir,cornersDetectionThreshold, nonRectangleFlag,robustifyFlag)
 
-%find CB points
+gridPointsFull = NaN(20,28,2);
+colorsMapFull = NaN(20,28,1);
 
+%find CB points
 [p,bsz] = Validation.aux.findCheckerboard(ir,[],cornersDetectionThreshold, nonRectangleFlag); % p - 3 checkerboard points. bsz - checkerboard dimensions.
+if all(isnan(p(:))) || (min(bsz)<=0)
+    return
+end
 
 pmat = reshape(p,[bsz,2]);
 rows = bsz(1); cols = bsz(2);
@@ -57,8 +62,6 @@ rows = bsz(1); cols = bsz(2);
 indicesR = (1:rows) + 9 - blackCircRow;
 indicesC = (1:cols)+ 12 - blackCircCol;
 
-gridPointsFull = NaN(20,28,2);
-colorsMapFull = NaN(20,28,1);
 if all(indicesR>0) && all(indicesR<=20) && all(indicesC>0) && all(indicesC<=28)
     gridPointsFull(indicesR,indicesC,:) = pmat;
     colorsMapFull(indicesR,indicesC,:) = colorsMap;
