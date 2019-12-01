@@ -82,6 +82,25 @@ if calibParams.warmUp.checkTmptrSensors && ~checkTemperaturesValidity(ldd, ma, t
     return;
 end
 
+%% IR statistics
+if isfield(framesData, 'irStat')
+    irData = [framesData.irStat];
+    irMean = [irData.mean];
+    irStd = [irData.std];
+    irNumPix = [irData.nPix];
+    if ~isempty(runParams)
+        ff = Calibration.aux.invisibleFigure;
+        hold on
+        plot(ldd, irMean, 'b')
+        plot(ldd, irMean+irStd, 'r--')
+        plot(ldd, irMean-irStd, 'r--')
+        title(sprintf('IR in central white tiles (%.1f+-%.1f pixels)', mean(irNumPix), std(irNumPix)));
+        grid on; xlabel('LDD [deg]'); ylabel('IR');
+        legend('mean', 'STD margin')
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_statistics'));
+    end
+end
+
 %% RTD fix
 rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
 
