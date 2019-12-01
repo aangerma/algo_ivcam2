@@ -67,15 +67,15 @@ function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, cali
         Tfull  = dfzResultsToTable( resFull );
         writetable(Tfull,fullfile(runParams.outputFolder,'AlgoInternal','DFZResults.xlsx'),'WriteRowNames',true,'Sheet', 1);
         writetable(Tcropped,fullfile(runParams.outputFolder,'AlgoInternal','DFZResults.xlsx'),'WriteRowNames',true,'Sheet', 2);
-        
-        results.dfzScaleErrH = resFull(3).meanAbsHorzScaleError;
-        results.dfzScaleErrV = resFull(3).meanAbsVertScaleError;
-        results.dfz3DErrH = resFull(3).lineFitMeanRmsErrorTotalHoriz3D;
-        results.dfz3DErrV = resFull(3).lineFitMeanRmsErrorTotalVertic3D;
-        results.dfz2DErrH = resFull(3).lineFitMeanRmsErrorTotalHoriz2D;
-        results.dfz2DErrV = resFull(3).lineFitMeanRmsErrorTotalVertic2D;
-        results.dfzPlaneFit = resFull(3).rmsPlaneFitDist;
-        results.geomErr = resFullFinal.geomErr;
+
+        results.dfzScaleErrH = resFull(3).absHorzErrorMeanAF;
+        results.dfzScaleErrV = resFull(3).absVertErrorMeanAF;
+        results.dfz3DErrH = resFull(3).lineFitRmsErrorTotal_hAF;
+        results.dfz3DErrV = resFull(3).lineFitRmsErrorTotal_vAF;
+%         results.dfz2DErrH = resFull(3).lineFitMeanRmsErrorTotalHoriz2D;
+%         results.dfz2DErrV = resFull(3).lineFitMeanRmsErrorTotalVertic2D;
+%         results.dfzPlaneFit = resFull(3).rmsPlaneFitDist;
+%         results.geomErr = resFullFinal.geomErr;
 		
 		% Save the output vertices for potential RGB calibration
 		vertices = allVerticesFinal;
@@ -212,7 +212,7 @@ params.target.squareSize = 30;
 params.camera.zMaxSubMM = 4;
 params.camera.K = [730.1642         0  541.5000; 0  711.8812  386.0000 ; 0 0 1];% XGA K
 params.gridSize = gridSize;
-orderedResults = [];
+orderedResults = struct;
 for i = 1:numel(vertices)
     [~, results, ~] = Validation.metrics.gridInterDistance(vertices{i}, params);
     orderedResults = mergestruct(orderedResults,results); 
@@ -224,6 +224,7 @@ for i = 1:numel(vertices)
     allRes(i) = orderedResults;
 end
 
+allRes = rmfield(allRes,{'score','units'});
 fnames = fieldnames(allRes);
 S = struct2table(allRes);
 for i=1:length(fnames)
