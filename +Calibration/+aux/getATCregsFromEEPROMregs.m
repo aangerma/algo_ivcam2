@@ -26,6 +26,7 @@ function [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROMregs(e
     thermalRegs.FRMW.atlMaxAngYB        = eepromRegs.FRMW.atlMaxAngYB;
     thermalRegs.FRMW.atlMaCalTmp        = eepromRegs.FRMW.atlMaCalTmp;
     thermalRegs.FRMW.atlSlopeMA         = eepromRegs.FRMW.atlSlopeMA;
+    thermalRegs.FRMW.humidApdTempDiff   = eepromRegs.FRMW.humidApdTempDiff;
     
     dfzRegs.FRMW.dfzCalTmp              = eepromRegs.FRMW.dfzCalTmp;
     dfzRegs.FRMW.dfzApdCalTmp           = eepromRegs.FRMW.dfzApdCalTmp;
