@@ -23,9 +23,7 @@ if ~exist('frames','var')
     frames.LRframe=LRframe; 
     frames.SRframe=SRframe; 
 end
-
 %% roi 
-
 imgSize = size(frames.LRframe.z);
 
 params = Validation.aux.defaultMetricsParams();
