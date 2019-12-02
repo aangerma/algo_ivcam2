@@ -74,6 +74,10 @@ if ~isempty(runParams)
     plot(xIrHigh,yIrHigh,'+b');
     quiver(xIrLow,yIrLow,xIrHigh-xIrLow,yIrHigh-yIrLow,'r');
     title('IR corners movement from lowest to highest temperature');grid minor;legend('Lowest','Highest');
+    [maxVal,maxIx] = max(sqrt((xIrHigh-xIrLow).^2 +(yIrHigh-yIrLow).^2));
+    [minVal,minIx] = min(sqrt((xIrHigh-xIrLow).^2 +(yIrHigh-yIrLow).^2));
+    text(xIrLow(maxIx),yIrLow(maxIx), sprintf('Max = %3.2f',maxVal));
+    text(xIrLow(minIx),yIrLow(minIx), sprintf('Min = %3.2f',minVal));
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_corners_movement'),1);
     
     
@@ -113,6 +117,10 @@ if ~isempty(runParams)
         hold on;
         plot(xRgbHigh,yRgbHigh,'+b');
         quiver(xRgbLow,yRgbLow,xRgbHigh-xRgbLow,yRgbHigh-yRgbLow,'r');
+        [maxVal,maxIx] = max(sqrt((xRgbHigh-xRgbLow).^2 +(yRgbHigh-yRgbLow).^2));
+        [minVal,minIx] = min(sqrt((xRgbHigh-xRgbLow).^2 +(yRgbHigh-yRgbLow).^2));
+        text(xRgbLow(maxIx),yRgbLow(maxIx), sprintf('Max = %3.2f',maxVal));
+        text(xRgbLow(minIx),yRgbLow(minIx), sprintf('Min = %3.2f',minVal));
         title('RGB corners movement from lowest to highest temperature');grid minor;legend('Lowest','Highest');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating_rgb',sprintf('RGB_corners_movement'),1);
     end
