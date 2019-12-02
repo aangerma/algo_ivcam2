@@ -1,37 +1,35 @@
-function [presetCompareRes,frames] = validatePresets( hw, calibParams,runParams, fprintff,frames)
+function [presetCompareRes,frames] = validatePresets( hw, calibParams,runParams, fprintff)
 presetCompareRes=[] ;
-if ~exist('frames','var')
-    % set LR preset
-    hw.setPresetControlState(1);
-    hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
-    hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
-    hw.shadowUpdate;
 
-    pause(5);
-    LRframe=hw.getFrame(calibParams.numOfFrames);
-    % set SR preset
-    hw.setPresetControlState(2);
-    pause(5);
-    SRframe=hw.getFrame(calibParams.numOfFrames);
+% set LR preset
+hw.setPresetControlState(1);
+hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+hw.shadowUpdate;
+        
+pause(5);
+LRframe=hw.getFrame(calibParams.numOfFrames);
+% set SR preset
+hw.setPresetControlState(2);
+pause(5);
+SRframe=hw.getFrame(calibParams.numOfFrames);
 
-    hw.setPresetControlState(1);
-    hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
-    hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
-    hw.shadowUpdate;
-    %%
-    frames=[]; 
-    frames.LRframe=LRframe; 
-    frames.SRframe=SRframe; 
-end
-
+hw.setPresetControlState(1);
+hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+hw.shadowUpdate;
+%%
+frames=[]; 
+frames.LRframe=LRframe; 
+frames.SRframe=SRframe; 
 %% roi 
-
-imgSize = size(frames.LRframe.z);
+ imgSize = size(LRframe.z);
 
 params = Validation.aux.defaultMetricsParams();
-params.roi=calibParams.roi; params.isRoiRect=1; 
-mask = Validation.aux.getRoiMask(imgSize, params);
+params.mask.rectROI.flag = true;
+params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
 
+mask = Validation.aux.getMask(params,imgSize);
 %% diff image
 z2mm=double(hw.z2mm); 
 ZLR=double(frames.LRframe.z)./z2mm;

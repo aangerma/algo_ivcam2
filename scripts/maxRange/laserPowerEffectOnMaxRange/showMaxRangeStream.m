@@ -1,17 +1,15 @@
-function [fillRate,zStd,zMean]=showMaxRangeStream(hw)
-    
-    
+function [fillRate,zStd,zMean]=showMaxRangeStream(hw)   
     f=figure('NumberTitle','off','ToolBar','none','MenuBar','none','userdata',0,'KeyPressFcn',@exitOnEnter,'WindowButtonDownFcn',@(varargin) set(varargin{1},'userdata',1));
     a=axes('parent',f);
 %     maximizeFig(f);
     %%
     sz = hw.streamSize();
-    
     params = Validation.aux.defaultMetricsParams();
     params.camera.zMaxSubMM = hw.z2mm;
-    params.roi = 0.1;
-    mask = Validation.aux.getRoiMask(double(sz), params);
     
+    params.mask.circROI.flag = true;
+    params.mask.circROI.radius = 0.1;
+    mask = Validation.aux.getMask(params,sz);
     %%
     fi = 1;
     maxframes = 30;

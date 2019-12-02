@@ -1,8 +1,10 @@
 function [results] = PresetsAlignment_Calib_Calc_int(im, calibParams, runParams,z2mm,res)      
 
 params = Validation.aux.defaultMetricsParams();
-params.roi = calibParams.presets.compare.roi; params.isRoiRect=1; 
-mask = Validation.aux.getRoiMask(res, params);
+params.mask.rectROI.flag = true;
+params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
+sz = size(im);
+mask = Validation.aux.getMask(params,sz);
 
 for i = 1:size(im,1)
     diff(i) = mean(single(im(i,2).z(mask))/z2mm*2) - mean(single(im(i,1).z(mask))/z2mm*2);

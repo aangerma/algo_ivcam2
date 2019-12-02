@@ -201,6 +201,7 @@ function  [calibPassed] = runAlgoCameraCalibration(runParamsFn, calibParamsFn, f
         resolutions = {calibParams.presets.long.state1.resolution,calibParams.presets.long.state2.resolution};
         for i = 1:2
             if i == 1
+                hw.startStream(0,resolutions{i})
                 Calibration.aux.changeCameraLocation(hw, true, calibParams.robot.presets_compare.type,calibParams.robot.presets_compare.dist,calibParams.robot.presets_compare.ang,calibParams,hw,1,diag([.6 .6 1]),'Preset Compare');
             end
             res = resolutions{i};

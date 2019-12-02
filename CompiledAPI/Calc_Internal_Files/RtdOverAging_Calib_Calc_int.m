@@ -2,11 +2,12 @@ function [agingRegs,results] = RtdOverAging_Calib_Calc_int(im, calibParams, runP
  
     sampledVoltages = mean(cellfun(@vdd12BitToVoltage,vddSamples),2);
     sampledVdd12Bit = arrayfun(@voltageTo12Bits,sampledVoltages,'UniformOutput',0);
-    
-    
+   
     params = Validation.aux.defaultMetricsParams();
-    params.roi = calibParams.aging.roi; params.isRoiRect=1; 
-    mask = Validation.aux.getRoiMask(res, params);
+    params.mask.rectROI.flag = true;
+    params.mask.rectROI.allMargins = calibParams.aging.roi;
+    sz = size(im);
+    mask = Validation.aux.getMask(params,sz);
     for i = 1:numel(im)
         diffDist(i) = mean(single(im(i).z(mask))/z2mm - single(im(1).z(mask))/z2mm)*2;
     end

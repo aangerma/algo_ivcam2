@@ -315,8 +315,10 @@ pause(5);
 frameMax = hw.getFrame(30);
 
 params = Validation.aux.defaultMetricsParams();
-params.roi = calibParams.dfz.shortRangeCompareROI ; params.isRoiRect=1; 
-mask = Validation.aux.getRoiMask(size(frameLow.i), params);
+params.mask.rectROI.flag = true;
+params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
+sz = size(frameMax(1).i);
+mask = Validation.aux.getMask(params,sz);
 results.(['rtdDiffViaLaserPower_',Calstate]) = mean(frameMax.z(mask)/4*2) - mean(frameLow.z(mask)/4*2);
     
 r.reset();

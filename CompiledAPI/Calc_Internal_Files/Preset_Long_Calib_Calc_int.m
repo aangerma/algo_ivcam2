@@ -1,6 +1,6 @@
 function [isConverged, curScore, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc_int(maskParams, runParams, calibParams, LongRangestate, im, cameraInput, laserPoints, maxMod_dec, testedPoints, testedScores, fprintff)
 
-mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
+% mask = Validation.aux.getRoiCircle(cameraInput.imSize, maskParams);
 fillRateTh = calibParams.presets.long.(LongRangestate).fillRateTh; %97;
 guessOnInterval = calibParams.presets.long.(LongRangestate).guessOnInterval;
 
@@ -10,10 +10,19 @@ frames = repmat(oneFrame,size(im.z,3),1);
 for iFrame = 1:size(im.z,3)
     frames(iFrame).i = double(im.i(:,:,iFrame));
     frames(iFrame).z = double(im.z(:,:,iFrame));
-    frames(iFrame).i(~mask) = nan;
-    frames(iFrame).z(~mask) = nan;
+%     frames(iFrame).i(~mask) = nan;
+%     frames(iFrame).z(~mask) = nan;
 end
-[curScore, ~, ~] = Validation.metrics.fillRate(frames, maskParams);
+
+calibParams.mask.rectROI.flag = false;
+calibParams.mask.circROI.flag = true;
+calibParams.mask.checkerBoard.flag = false;
+calibParams.mask.detectDarkRect.flag = false;
+calibParams.presets.long.params.roi;
+calibParams.mask.circROI.radius = calibParams.presets.long.params.roi;
+mask = Validation.aux.getMask(calibParams,frames(1)); 
+
+[curScore, ~, ~] = Validation.metrics.zFillRate(frames, calibParams);
 testedScores(end) = curScore;
 
 % Plot at best fill rate

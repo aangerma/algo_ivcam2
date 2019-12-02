@@ -48,6 +48,7 @@ results.delaySlowPixelVar = pixelVar;
 frameU.i = imU; frameU.z = imU; 
 frame = hw.getFrame(10);
 params.target.target = 'checkerboard_Iv2A1';
+params.imageRotatedBy180Flag = true;
 [~, metricsResults] = Validation.metrics.gridEdgeSharpIR(frame, params);
 [~, metricsResultsU] = Validation.metrics.gridEdgeSharpIR(frameU, params);
 fprintff('%s: UpImage=%2.2g, FinalImage=%2.2g.\n','horzWidthMeanAF',metricsResultsU.horzWidthMeanAF,metricsResults.horzWidthMeanAF);
