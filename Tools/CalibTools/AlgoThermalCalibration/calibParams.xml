@@ -162,7 +162,7 @@
           <xOffsetOrder>1</xOffsetOrder>
           <yScaleOrder>2</yScaleOrder>
           <yOffsetOrder>2</yOffsetOrder>
-          <rtdOrder>3</rtdOrder>
+          <rtdOrder>1</rtdOrder>
       </extrap>
    </fwTable>
    
