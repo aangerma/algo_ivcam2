@@ -31,6 +31,7 @@
 	   <fixRgbThermal>1</fixRgbThermal>
 	   <nBinsThermal>29</nBinsThermal>
 	   </rgb>
+	   <presetNum>1</presetNum>
    </gnrl>
    <warmUp>
        <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->

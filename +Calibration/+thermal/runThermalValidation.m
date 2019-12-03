@@ -38,7 +38,7 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     data.camerasParams = getCamerasParams(hw,runParams,calibParams);
     save(fullfile(runParams.outputFolder,'validationData.mat'),'data','calibParams','runParams');
     [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,1);
-    
+    saveTemperaturesGraph(data,runParams);
     
     % Option two - partial validation, let it cool down to N degrees below calibration temperature and then compare to calibration temperature 
     
@@ -83,3 +83,18 @@ camerasParams.zMaxSubMM = hw.z2mm;
 camerasParams.Kdepth = hw.getIntrinsics;
 end
 
+function [] = saveTemperaturesGraph(data,runParams)
+
+temp = [data.framesData.temp];
+fnames = fieldnames(temp);
+times = [data.framesData.time];
+ff = Calibration.aux.invisibleFigure;
+hold on;
+for i = 1:numel(fnames)
+    plot(times,[temp.(fnames{i})]);
+end
+legend(fnames);
+grid minor;
+title('Heating Stage');xlabel('sec');ylabel('Temperatures [degrees]');
+Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'),1);
+end

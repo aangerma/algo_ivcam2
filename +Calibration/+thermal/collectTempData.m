@@ -19,6 +19,9 @@ if calibParams.gnrl.rgb.doStream && inValidationStage
     runParams.rgb = 1;
     runParams.rgbRes = calibParams.gnrl.rgb.res;
 end
+if isfield(calibParams.gnrl, 'presetNum')
+    hw.setPresetControlState(calibParams.gnrl.presetNum);
+end
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
