@@ -5,7 +5,7 @@ params.roi = calibParams.presets.compare.roi; params.isRoiRect=1;
 mask = Validation.aux.getRoiMask(res, params);
 
 for i = 1:size(im,1)
-    diff(i) = mean(single(im(i,1).z(mask))/z2mm*2) - mean(single(im(i,2).z(mask))/z2mm*2);
+    diff(i) = mean(single(im(i,2).z(mask))/z2mm*2) - mean(single(im(i,1).z(mask))/z2mm*2);
 end
 rtd2add2short = mean(diff);
 
