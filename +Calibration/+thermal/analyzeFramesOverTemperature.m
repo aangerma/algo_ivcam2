@@ -77,7 +77,7 @@ if ~isempty(calibParams.gnrl.cbGridSz)
     cbGridSz = calibParams.gnrl.cbGridSz;
     validCBPoints = ones(prod(cbGridSz),1);
 else
-    validCBPoints = all(all(~isnan(validFramesData),3),1);
+    validCBPoints = all(all(~isnan(validFramesData(:,:,1:8)),3),1); % not including RGB data
     validCBPoints = reshape(validCBPoints,20,28);
     validRows = find(any((validCBPoints),2));
     validCols = find(any((validCBPoints),1));
