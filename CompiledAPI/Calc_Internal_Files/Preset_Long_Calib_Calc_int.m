@@ -20,7 +20,7 @@ calibParams.mask.checkerBoard.flag = false;
 calibParams.mask.detectDarkRect.flag = false;
 calibParams.presets.long.params.roi;
 calibParams.mask.circROI.radius = calibParams.presets.long.params.roi;
-mask = Validation.aux.getMask(calibParams,frames(1)); 
+mask = Validation.aux.getMask(calibParams,'frame',frames(1)); 
 
 [curScore, ~, ~] = Validation.metrics.zFillRate(frames, calibParams);
 testedScores(end) = curScore;

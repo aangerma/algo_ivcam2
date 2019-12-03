@@ -4,7 +4,7 @@ params = Validation.aux.defaultMetricsParams();
 params.mask.rectROI.flag = true;
 params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
 sz = size(im);
-mask = Validation.aux.getMask(params,sz);
+mask = Validation.aux.getMask(params,'imageSize',sz);
 
 for i = 1:size(im,1)
     diff(i) = mean(single(im(i,2).z(mask))/z2mm*2) - mean(single(im(i,1).z(mask))/z2mm*2);

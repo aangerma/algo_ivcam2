@@ -7,7 +7,7 @@ function [agingRegs,results] = RtdOverAging_Calib_Calc_int(im, calibParams, runP
     params.mask.rectROI.flag = true;
     params.mask.rectROI.allMargins = calibParams.aging.roi;
     sz = size(im);
-    mask = Validation.aux.getMask(params,sz);
+    mask = Validation.aux.getMask(params,'imageSize',sz);
     for i = 1:numel(im)
         diffDist(i) = mean(single(im(i).z(mask))/z2mm - single(im(1).z(mask))/z2mm)*2;
     end

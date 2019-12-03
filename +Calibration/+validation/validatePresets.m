@@ -23,13 +23,13 @@ frames=[];
 frames.LRframe=LRframe; 
 frames.SRframe=SRframe; 
 %% roi 
- imgSize = size(LRframe.z);
+imgSize = size(LRframe.z);
 
 params = Validation.aux.defaultMetricsParams();
 params.mask.rectROI.flag = true;
 params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
 
-mask = Validation.aux.getMask(params,imgSize);
+mask = Validation.aux.getMask(params,'imageSize',imgSize);
 %% diff image
 z2mm=double(hw.z2mm); 
 ZLR=double(frames.LRframe.z)./z2mm;

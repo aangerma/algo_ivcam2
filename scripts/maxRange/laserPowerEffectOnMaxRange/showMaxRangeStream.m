@@ -9,7 +9,7 @@ function [fillRate,zStd,zMean]=showMaxRangeStream(hw)
     
     params.mask.circROI.flag = true;
     params.mask.circROI.radius = 0.1;
-    mask = Validation.aux.getMask(params,sz);
+    mask = Validation.aux.getMask(params,'imageSize',sz);
     %%
     fi = 1;
     maxframes = 30;

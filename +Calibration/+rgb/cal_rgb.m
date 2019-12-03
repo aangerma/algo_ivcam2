@@ -52,11 +52,16 @@ lineFitRmsErrVer2dRGB = nan(1,length(rgbFrames));
 lineFitMaxErrHor2dRGB = nan(1,length(rgbFrames));
 lineFitMaxErrVer2dRGB = nan(1,length(rgbFrames));
 for  k =1:length(rgbFrames)
-    [~, resultsUvMap,dbg] = Validation.metrics.uvMapping(depthFrames(k), params, rgbFrames{k},0);
-    uvMapRmse(1,k) = resultsUvMap.rmse;
-    uvMapMaxErr(1,k) = resultsUvMap.maxErr;
-    uvMapMaxErr95(1,k) = resultsUvMap.maxErr95;
-    pts = cat(3,dbg.cornersRGB(:,:,1),dbg.cornersRGB(:,:,2),zeros(size(dbg.cornersRGB,1),size(dbg.cornersRGB,2)));
+    
+    frame.i = depthFrames(k).i;
+    frame.z = depthFrames(k).z;
+    frame.rgb = rgbFrames(k);
+    [~, resultsUvMap,dbg] = Validation.metrics.geomReprojectErrorUV(frame, params);
+    uvMapRmse(1,k) = resultsUvMap.reproErrorUVPixRmsMeanAF;
+    uvMapMaxErr(1,k) = resultsUvMap.reproErrorUVPixRmsMaxAF;
+    uvMapMaxErr95(1,k) = resultsUvMap.maxErr95AF;
+
+    pts = cat(3,dbg.DAF .cornersRGB(:,:,1),dbg.DAF .cornersRGB(:,:,2),zeros(size(dbg.DAF .cornersRGB,1),size(dbg.DAF .cornersRGB,2)));
     pts = CBTools.slimNans(pts);
     invd = du.math.fitInverseDist(params.Krgbn,params.rgbDistort);
     pixsUndist = du.math.distortCam(reshape(pts(:,:,1:2),[],2)', params.Krgb, invd);

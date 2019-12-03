@@ -318,7 +318,7 @@ params = Validation.aux.defaultMetricsParams();
 params.mask.rectROI.flag = true;
 params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
 sz = size(frameMax(1).i);
-mask = Validation.aux.getMask(params,sz);
+mask = Validation.aux.getMask(params,'imageSize',sz);
 results.(['rtdDiffViaLaserPower_',Calstate]) = mean(frameMax.z(mask)/4*2) - mean(frameLow.z(mask)/4*2);
     
 r.reset();
