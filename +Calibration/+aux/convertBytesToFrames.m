@@ -6,7 +6,7 @@ frames = struct;
 if ~iscell(frameBytes)
     frameBytes = {frameBytes}; % make single pose
 end
-for iPose = 1:length(frameBytes)
+for iPose = 1:5;%length(frameBytes)
     if isfield(frameBytes{iPose}, 'i')
         frames(iPose).i = convertBytesToFramesSingleType(frameBytes{iPose}.i, frameSize, 'uint8', doAverage);
     end
