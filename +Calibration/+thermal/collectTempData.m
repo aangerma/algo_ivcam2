@@ -304,6 +304,8 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
     frameData.ptsWithZ = cornersData(frame,regs,calibParams);
     frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
     frameData.maVoltage = hw.getMaVoltagee();
+    % RX tracking
+    frameData.irStat = Calibration.aux.calcIrStatistics(frame.i, frameData.ptsWithZ(:,4:5));
 %     params.camera.zMaxSubMM = 4;
 %     params.camera.K = regs.FRMW.kRaw;
 %     params.target.squareSize = 30;

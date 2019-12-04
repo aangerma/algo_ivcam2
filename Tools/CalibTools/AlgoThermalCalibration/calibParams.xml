@@ -165,7 +165,10 @@
           <rtdOrder>1</rtdOrder>
       </extrap>
    </fwTable>
-   
+   <yFovDegredation>
+       <fitToPoly>1</fitToPoly>
+       <polyOrdersY>[2,1]</polyOrdersY>
+   </yFovDegredation>
    <bananas>
        <doExtrapolationInX>1</doExtrapolationInX>
        <extrapolationLddRange>[10,65]</extrapolationLddRange>

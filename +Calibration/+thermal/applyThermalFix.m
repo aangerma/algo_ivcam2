@@ -107,7 +107,7 @@ data.dsmMovement.maxX = max(minMaxDSMAngX);
 data.dsmMovement.minY = min(minMaxDSMAngY);
 data.dsmMovement.maxY = max(minMaxDSMAngY);
 
-rangeRatio = (data.dsmMovement.maxY(2) - data.dsmMovement.minY(1))/(data.dsmMovement.minY(2)-data.dsmMovement.maxY(1));
+rangeRatio = max(diff(minMaxDSMAngY'))/min(diff(minMaxDSMAngY'));
 data.tableResults.yDsmLosDegredation = 100*(abs(rangeRatio-1));
 
 if calibParams.bananas.doExtrapolationInX
@@ -134,7 +134,37 @@ if calibParams.bananas.doExtrapolationInX
     plot(lddGrid,minMaxDSMAngXExtrap(:,2),'-');
     xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of upper DSM values');
     grid on
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DSM_Extreme_Values'));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DSM_X_Extreme_Values'));
+
+    
+end
+if calibParams.yFovDegredation.fitToPoly
+    lddGrid = linspace(lddTemp(1),lddTemp(end),100)';
+    for i = 1:2
+        c = polyfit(lddTemp(~isnan(minMaxDSMAngY(:,i)))',minMaxDSMAngY(~isnan(minMaxDSMAngY(:,i)),i),calibParams.yFovDegredation.polyOrdersY(i));
+        minMaxDSMAngYExtrap(:,i) = polyval(c,lddGrid);
+    end
+    
+    data.dsmMovement.Y = minMaxDSMAngYExtrap;
+    data.dsmMovement.minY = min(minMaxDSMAngYExtrap);
+    data.dsmMovement.maxY = max(minMaxDSMAngYExtrap);
+    rangeRatio = max(diff(minMaxDSMAngYExtrap'))/min(diff(minMaxDSMAngYExtrap'));
+    data.tableResults.yDsmLosDegredation = 100*(abs(rangeRatio-1));
+    
+    ff = Calibration.aux.invisibleFigure;
+    subplot(121);
+    plot(lddTemp,minMaxDSMAngY(:,1),'o');
+    hold on
+    plot(lddGrid,minMaxDSMAngYExtrap(:,1),'-');
+    xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of lower DSM values');
+    grid on
+    subplot(122);
+    plot(lddTemp,minMaxDSMAngY(:,2),'o');
+    hold on
+    plot(lddGrid,minMaxDSMAngYExtrap(:,2),'-');
+    xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of upper DSM values');
+    grid on
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DSM_Y_Extreme_Values'));
 
     
 end
