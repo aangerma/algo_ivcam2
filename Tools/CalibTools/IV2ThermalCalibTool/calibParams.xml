@@ -6,6 +6,8 @@
         <testMode>ATP</testMode>
     </sparkParams>
    <gnrl>
+       <saveFrames>0</saveFrames>
+       <saveRGB>0</saveRGB>
        <Nof2avg>30</Nof2avg>
        <skipCoolingStage>1</skipCoolingStage>
        <lddTKill>75</lddTKill>
@@ -25,11 +27,11 @@
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>
-	   <doStream>1</doStream>
-	   <res>[1920,1080]</res>
-	   <startIxRgb>6</startIxRgb>
-	   <fixRgbThermal>1</fixRgbThermal>
-	   <nBinsThermal>29</nBinsThermal>
+           <doStream>1</doStream>
+           <res>[1920,1080]</res>
+           <startIxRgb>6</startIxRgb>
+           <fixRgbThermal>1</fixRgbThermal>
+           <nBinsThermal>29</nBinsThermal>
 	   </rgb>
 	   <presetNum>1</presetNum>
    </gnrl>

@@ -142,8 +142,14 @@ if ~isempty(runParams)
     
     ff = Calibration.aux.invisibleFigure;
     plot(tmpBinEdges,uvResults(:,1));
+    
     title('UV mapping RMSE vs Temperature'); grid on;xlabel('degrees');ylabel('UV RMSE [rgb pixels]'); axis square;
     if ~fixRgbThermal || ~sum(data.rgb.thermalTable(:))
+        if isfield(data,'rgb')
+            hold on;
+            plot([data.rgb.rgbCalTemp,data.rgb.rgbCalTemp],[0,max(uvResults(:,1))],'k--','linewidth',2);
+            legends{end+1} = 'Cal Ldd Temp';
+        end
         legend(legends);
         Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
     end
@@ -175,6 +181,11 @@ if fixRgbThermal && sum(data.rgb.thermalTable(:))
             end
             
             hold on; plot(tmpBinEdges,uvCorrectedResults(:,1));
+            if isfield(data,'rgb')
+                hold on;
+                plot([data.rgb.rgbCalTemp,data.rgb.rgbCalTemp],[0,max(uvResults(:,1))],'k--','linewidth',2);
+                legends{end+1} = 'Cal Ldd Temp';
+            end
             legend(legends);
             Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
         end

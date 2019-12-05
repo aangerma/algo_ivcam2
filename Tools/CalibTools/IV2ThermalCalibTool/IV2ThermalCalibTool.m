@@ -345,7 +345,7 @@ function statrtButton_callback(varargin)
         calibPassed = Calibration.thermal.runThermalCalibration(runparamsFn,calibfn,fprintffS,app);
         validPassed = 1;
         if calibPassed~=0 && runparams.performValidation
-            waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
+%             waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
             [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS,s,app);
         end
         
