@@ -19,6 +19,9 @@ if calibParams.gnrl.rgb.doStream && inValidationStage
     runParams.rgb = 1;
     runParams.rgbRes = calibParams.gnrl.rgb.res;
 end
+if isfield(calibParams.gnrl, 'presetNum')
+    hw.setPresetControlState(calibParams.gnrl.presetNum);
+end
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
@@ -67,6 +70,7 @@ plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degree
 while ~finishedHeating
     i = i + 1;
     [tmpData,frame] = getFrameData(hw,regs,calibParams);
+    saveFrames(frame,calibParams,runParams,i);
     if i == 1
         firstFrame = frame;
     end
@@ -197,7 +201,36 @@ end
 
 
 end
+function saveFrames(frame,calibParams,runParams,idx)
+if calibParams.gnrl.saveFrames
+    if isfield(frame,'c')
+        frame = rmfield(frame,'c');
+    end
+    if isfield(frame,'color')
+        frame = rmfield(frame,'color');
+    end
+    framesDir = fullfile(runParams.outputFolder,'frames');
+    mkdirSafe(framesDir);
+    framePath = fullfile(framesDir,sprintf('frame_%02d',idx));
+    save(framePath,'frame');
+end
+if calibParams.gnrl.saveRGB
+    if isfield(frame,'c')
+        frame = rmfield(frame,'c');
+    end
+    if isfield(frame,'i')
+        frame = rmfield(frame,'i');
+    end
+    if isfield(frame,'z')
+        frame = rmfield(frame,'z');
+    end
+    framesDir = fullfile(runParams.outputFolder,'framesRGB');
+    mkdirSafe(framesDir);
+    framePath = fullfile(framesDir,sprintf('frame_%02d',idx));
+    save(framePath,'frame');
+end
 
+end
 function [ptsWithZ] = cornersData(frame,regs,calibParams)
 if isempty(calibParams.gnrl.cbGridSz)
     [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1);
@@ -301,6 +334,8 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
     frameData.ptsWithZ = cornersData(frame,regs,calibParams);
     frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
     frameData.maVoltage = hw.getMaVoltagee();
+    % RX tracking
+    frameData.irStat = Calibration.aux.calcIrStatistics(frame.i, frameData.ptsWithZ(:,4:5));
 %     params.camera.zMaxSubMM = 4;
 %     params.camera.K = regs.FRMW.kRaw;
 %     params.target.squareSize = 30;

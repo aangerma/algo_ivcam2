@@ -77,7 +77,11 @@ if ~isempty(calibParams.gnrl.cbGridSz)
     cbGridSz = calibParams.gnrl.cbGridSz;
     validCBPoints = ones(prod(cbGridSz),1);
 else
-    validCBPoints = all(all(~isnan(validFramesData(:,:,1:8)),3),1); % not including RGB data
+    if isDataWithXYZ
+        validCBPoints = all(all(~isnan(validFramesData(:,:,1:8)),3),1); % not including RGB data
+    else
+        validCBPoints = all(all(~isnan(validFramesData(:,:,1:5)),3),1); % not including RGB data
+    end
     validCBPoints = reshape(validCBPoints,20,28);
     validRows = find(any((validCBPoints),2));
     validCols = find(any((validCBPoints),1));
@@ -138,8 +142,14 @@ if ~isempty(runParams)
     
     ff = Calibration.aux.invisibleFigure;
     plot(tmpBinEdges,uvResults(:,1));
+    
     title('UV mapping RMSE vs Temperature'); grid on;xlabel('degrees');ylabel('UV RMSE [rgb pixels]'); axis square;
     if ~fixRgbThermal || ~sum(data.rgb.thermalTable(:))
+        if isfield(data,'rgb')
+            hold on;
+            plot([data.rgb.rgbCalTemp,data.rgb.rgbCalTemp],[0,max(uvResults(:,1))],'k--','linewidth',2);
+            legends{end+1} = 'Cal Ldd Temp';
+        end
         legend(legends);
         Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
     end
@@ -171,6 +181,11 @@ if fixRgbThermal && sum(data.rgb.thermalTable(:))
             end
             
             hold on; plot(tmpBinEdges,uvCorrectedResults(:,1));
+            if isfield(data,'rgb')
+                hold on;
+                plot([data.rgb.rgbCalTemp,data.rgb.rgbCalTemp],[0,max(uvResults(:,1))],'k--','linewidth',2);
+                legends{end+1} = 'Cal Ldd Temp';
+            end
             legend(legends);
             Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
         end
