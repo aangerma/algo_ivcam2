@@ -11,6 +11,9 @@ function [table,results,Invalid_Frames] = generateFWTable(data,calibParams,runPa
 % •	In case table does not exist, continue working with old thermal loop
 
 framesData = data.framesData;
+timeVec = [framesData.time];
+
+
 regs = data.regs;
 invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ),1:numel(framesData));
 fprintff('Invalid frames: %.0f/%.0f\n',sum(invalidFrames),numel(invalidFrames));
@@ -164,7 +167,8 @@ if ~isempty(runParams)
 end
 
 %% Y Fix - groupByVBias2
-vbias2 = vBias(2,:);
+validYFixFrames = timeVec >= calibParams.fwTable.yFix.ignoreNSeconds;
+vbias2 = vBias(2,validYFixFrames);
 minMaxVBias2 = minmax(vbias2);
 maxVBias2 = minMaxVBias2(2);
 minVBias2 = minMaxVBias2(1);
@@ -172,7 +176,7 @@ binEdges = linspace(minVBias2,maxVBias2,N);
 dbin = binEdges(2)-binEdges(1);
 binIndices = max(1,min(nBins,floor((vbias2-minVBias2)/dbin)+1));
 refBinIndex = max(1,min(nBins,floor((regs.FRMW.dfzVbias(2)-minVBias2)/dbin)+1));
-framesPerVBias2 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binIndices);
+framesPerVBias2 = Calibration.thermal.medianFrameByTemp(framesData(validYFixFrames),nBins,binIndices);
 if all(all(isnan(framesPerVBias2(refBinIndex,:,:))))
     fprintff('Self heat didn''t reach algo calibration vBias2. \n');
     table = [];
@@ -372,7 +376,7 @@ if ~isempty(runParams)
     set(gca, 'xticklabel', arrayfun(@(x) sprintf('(%.2f,%.2f)', v1(x), v3(x)), tickIdcs, 'UniformOutput', false))
     grid on, xlabel('(Vbias1,Vbias3) [V]'), ylabel('DSM X scale [1/deg]'), title('DSM X scale vs. (vBias1,vBias3)');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_scale_table'));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_scale_table'),1);
     % angY scale
     ff = Calibration.aux.invisibleFigure;
     hold all
@@ -381,7 +385,7 @@ if ~isempty(runParams)
     plot(linspace(results.angy.minval, results.angy.maxval, nBins), table(:,2), '.-', 'linewidth', 2)
     grid on, xlabel('Vbias2 [V]'), ylabel('DSM Y scale [1/deg]'), title('DSM Y scale vs. vBias2');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_scale'));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_scale'),1);
     % angX offset
     ff = Calibration.aux.invisibleFigure;
     hold all
@@ -392,7 +396,7 @@ if ~isempty(runParams)
     set(gca, 'xticklabel', arrayfun(@(x) sprintf('(%.2f,%.2f)', v1(x), v3(x)), tickIdcs, 'UniformOutput', false))
     grid on, xlabel('(Vbias1,Vbias3) [V]'), ylabel('DSM X offset [deg]'), title('DSM X offset vs. (vBias1,vBias3)');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_offset'));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_offset'),1);
     % angY offset
     ff = Calibration.aux.invisibleFigure;
     hold all
@@ -401,7 +405,7 @@ if ~isempty(runParams)
     plot(linspace(results.angy.minval, results.angy.maxval, nBins), table(:,4), '.-', 'linewidth', 2)
     grid on, xlabel('Vbias2 [V]'), ylabel('DSM Y offset [deg]'), title('DSM Y offset vs. vBias2');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_offset'));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_offset'),1);
     % RTD
     ff = Calibration.aux.invisibleFigure;
     hold all
@@ -410,7 +414,7 @@ if ~isempty(runParams)
     plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
     grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');
     legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('RTD'));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('RTD'),1);
 end
 assert(~any(isnan(table(:))),'Thermal table contains nans \n');
 

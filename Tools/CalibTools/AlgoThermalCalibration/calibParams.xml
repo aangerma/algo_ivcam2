@@ -144,6 +144,9 @@
         <zSTDTh>50</zSTDTh>  
     </roi>
    <fwTable>
+      <yFix>
+          <ignoreNSeconds>50</ignoreNSeconds>
+      </yFix>
       <nFramesToIgnore>5</nFramesToIgnore>
       <tempBinRange>[0 94]</tempBinRange> 
       <nRows>48</nRows> 
