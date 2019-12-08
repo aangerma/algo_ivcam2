@@ -1,9 +1,11 @@
 function [data, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = finalCalcAfterHeating(data, eepromRegs, calibParams, fprintff, calib_dir, runParams)
 
-invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
+invalidFrames = arrayfun(@(x) isempty(x.ptsWithZ), data.framesData');
+Invalid_Frames = sum(invalidFrames);
+fprintff('Invalid frames: %.0f/%.0f\n', Invalid_Frames, numel(invalidFrames));
 data.framesData = data.framesData(~invalidFrames);
 data.dfzRefTmp = data.regs.FRMW.dfzCalTmp;
-[table, results, Invalid_Frames] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
+[table, results] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
 
 if isempty(table)
     calibPassed = -1;
