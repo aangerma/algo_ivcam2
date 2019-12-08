@@ -8,6 +8,8 @@ load('X:\Users\mkiperwa\projection\F9340671\Cal TM2 3.9.2.0\Matlab\AlgoInternal\
 load('X:\Users\mkiperwa\projection\F9340671\rectData.mat')
  
 verbose = 1; 
+topMargin = 100;
+bottomMargin = 100;
 %% X,Y to angle using scatteredInterpolant from ang to x,y (using udist tps model relevant to unit)
 anglesRng = 2047;
 [angx,angy] = meshgrid(linspace(-anglesRng,anglesRng,100));
@@ -39,12 +41,12 @@ if verbose
     axis ij;
 end
 
-vmin=angRect.VTang.y+anglesRng; 
+vmin=fliplr(4095-angRect.VBang.y+anglesRng); 
 upsample = @(x,n)(vec(repmat(x(:),1,4)'));
 vmin = upsample((vmin))';
 vmin(1:round(lmargin)-1)=0;
 %%
-vmax=(angRect.VBang.y+anglesRng); 
+vmax=fliplr(4095-angRect.VTang.y+anglesRng); 
 vmax = upsample((vmax))';
 vmax(1:round(lmargin))=0;
 if verbose
@@ -60,10 +62,7 @@ vminOrig = vmin;
 vmin = 4095-vmax;
 vmax = 4095-vminOrig;
 %}
-vminOrig = vmin;
-vmaxOrig = vmax;
-vmin = fliplr(4095-vmaxOrig);
-vmax = fliplr(4095-vminOrig);
+
 vs =double(vec([round(vmin);round(vmax)]));
 vs8 = reshape(vs,8,[]);
 vsh = reshape(vec(dec2hex(bitand(vs8,4095),3)'),8,[])';
