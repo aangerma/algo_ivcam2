@@ -335,7 +335,7 @@ end
 
 % extrapolation
 vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
-table                   = extrapolateTable(table, results, vBiasLims, calibParams);
+[table, results]        = extrapolateTable(table, results, vBiasLims, calibParams, runParams);
 results.rtd.origMinval  = results.rtd.minval;
 results.rtd.origMaxval  = results.rtd.maxval;
 results.rtd.minval      = calibParams.fwTable.tempBinRange(1);
@@ -546,7 +546,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function table = extrapolateTable(table, results, vBiasLims, calibParams)
+function [table, results] = extrapolateTable(table, results, vBiasLims, calibParams, runParams)
 
 extrapParams = calibParams.fwTable.extrap;
 
@@ -568,7 +568,38 @@ extrapXOffset = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOf
 % rtd extrap
 origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
 extrapGridRtd = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
-extrapRtd = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, extrapParams.rtdOrder);
+rtdFitRef = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.refOrder); % default model
+rtdFixedRef = table(:,5)-rtdFitRef;
+rmsRef = rms(rtdFixedRef);
+[rtdFitTest, polyCoefTest] = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.testOrder); % test model
+rtdFixedTest = table(:,5)-rtdFitTest;
+rmsTest = rms(rtdFixedTest);
+rmsRatio = rmsTest/rmsRef;
+if extrapParams.rtdModel.failPosLeadCoef && (polyCoefTest(1) > 0) % test model doesn't fit empirical knowledge
+    validTestFit = 0; % ignore test model
+else
+    validTestFit = 1; % accept test model
+end
+if validTestFit && (rmsRatio < extrapParams.rtdModel.rmsRatioThreshold) % test model significantly better than ref model
+    rtdModelOrder = extrapParams.rtdModel.altOrder; % alternative model
+else
+    rtdModelOrder = extrapParams.rtdModel.refOrder; % default model
+end
+extrapRtd = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, rtdModelOrder);
+
+% debug
+if ~isempty(runParams)
+    polyOrdLeg = {'linear', 'quadratic', 'cubic', 'quartic'};
+    validTestLeg = {'p(1)>0, ', ''};
+    ff = Calibration.aux.invisibleFigure; hold all
+    plot(origGridRtd', table(:,5), '-o')
+	plot(origGridRtd', rtdFitRef, '-')
+	plot(origGridRtd', rtdFitTest, '--')
+    grid on, xlabel('LDD [deg]'), ylabel('RTD [mm]')
+    legend('raw table', sprintf('%s (RMS %.2f)',polyOrdLeg{extrapParams.rtdModel.refOrder},rmsRef), sprintf('%s (RMS %.2f)',polyOrdLeg{extrapParams.rtdModel.testOrder},rmsTest))
+    title(sprintf('RMS ratio = %.2f, %s%s model chosen', rmsRatio, validTestLeg{validTestFit+1}, polyOrdLeg{rtdModelOrder}))
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables','rtdModel');
+end
 
 % table update
 table(:,1) = extrapXScale;
@@ -577,22 +608,22 @@ table(:,3) = extrapXOffset;
 table(:,4) = extrapYOffset;
 table(:,5) = extrapRtd;
 
+results.rtd.modelsRmsRatio = rmsRatio;
+results.rtd.modelOrder = rtdModelOrder;
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [extrapVals, extrapStr] = polyExtrap(origGrid, origVals, extrapGrid, polyOrder)
+function [extrapVals, polyCoef] = polyExtrap(origGrid, origVals, extrapGrid, polyOrder)
 polyCoef = polyfit(origGrid, origVals, polyOrder);
 switch polyOrder
     case 1
         polyFunc = @(x) polyCoef(1)*x + polyCoef(2);
-        extrapStr = sprintf('%.2f+%.2f*x', polyCoef(2), polyCoef(1));
     case 2
         polyFunc = @(x) polyCoef(1)*x.^2 + polyCoef(2)*x + polyCoef(3);
-        extrapStr = sprintf('%.2f+%.2f*x+%.2f*x^2', polyCoef(3), polyCoef(2), polyCoef(1));
     case 3
         polyFunc = @(x) polyCoef(1)*x.^3 + polyCoef(2)*x.^2 + polyCoef(3)*x + polyCoef(4);
-        extrapStr = sprintf('%.2f+%.2f*x+%.2f*x^2+%.2f*x^3', polyCoef(4), polyCoef(3), polyCoef(2), polyCoef(1));
     otherwise
         error('polyExtrap currently supports orders 1-3 only')
 end
