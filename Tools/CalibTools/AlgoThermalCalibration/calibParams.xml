@@ -145,7 +145,8 @@
     </roi>
    <fwTable>
       <yFix>
-          <ignoreNSeconds>50</ignoreNSeconds>
+          <bypass>0</bypass><!-- If 1, keep y scale and offset constant accross temperatur -->
+          <ignoreNSeconds>90</ignoreNSeconds>
       </yFix>
       <nFramesToIgnore>5</nFramesToIgnore>
       <tempBinRange>[0 94]</tempBinRange> 
@@ -160,12 +161,18 @@
       </jumpDet>
       <extrap>
           <expandVbiasLims>1</expandVbiasLims>
-          <expandFactor>0.05</expandFactor>
+          <expandFactor>0</expandFactor>
           <xScaleOrder>2</xScaleOrder>
           <xOffsetOrder>1</xOffsetOrder>
           <yScaleOrder>2</yScaleOrder>
           <yOffsetOrder>2</yOffsetOrder>
-          <rtdOrder>1</rtdOrder>
+          <rtdModel>
+              <refOrder>1</refOrder>
+              <testOrder>2</testOrder>
+              <rmsRatioThreshold>0.9</rmsRatioThreshold>
+              <failPosLeadCoef>1</failPosLeadCoef>
+              <altOrder>3</altOrder>
+          </rtdModel>
       </extrap>
    </fwTable>
    <yFovDegredation>
