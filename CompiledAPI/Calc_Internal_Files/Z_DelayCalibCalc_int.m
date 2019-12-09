@@ -69,6 +69,15 @@ function delayZ = calcDelayFromCorrelationDifference(ir, imU, imD, fResMirror)
     ns = 15; % search range (about +-700nsec, well beyond empirically observed uncertainty)
     corr1 = conv2(dIR_pos_res, rot90(dImD_pos_res(ns+1:end-ns,:),2), 'valid');
     corr2 = conv2(dIR_neg_res, rot90(dImU_neg_res(ns+1:end-ns,:),2), 'valid');  
+    % validity check
+    peaks1 = sort(findpeaks(corr1), 'descend');
+    peaks2 = sort(findpeaks(corr2), 'descend');
+    if isempty(peaks1) || ( (length(peaks1)>1) && (peaks1(2)/peaks1(1)>0.5) )
+        error('%s: Inconclusive delay in search region (image probably does not match input delay)', 'Z delay down image')
+    end
+    if isempty(peaks2) || ( (length(peaks2)>1) && (peaks2(2)/peaks2(1)>0.5) )
+        error('%s: Inconclusive delay in search region (image probably does not match input delay)', 'Z delay up image')
+    end
     % peak estimation
     [~,iMax1] = max(corr1);
     [~,iMax2] = max(corr2);

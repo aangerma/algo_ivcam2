@@ -21,8 +21,11 @@ if robustifyFlag % effective for up/down images in XGA resolution
     gaussianSigma = 2; % [pixels]
     ccAllTiles = centerColor(imgaussfilt(ir, gaussianSigma), squaresCentersList); % smooth to eliminate stripes effect
     ccAllTiles = reshape(ccAllTiles, [size(squareCenters,1), size(squareCenters,2)]);
-    ccDiff = NaN(size(ccAllTiles)); % differentiate to highlight black square
-    ccDiff(2:end-1,2:end-1) = ccAllTiles(2:end-1,2:end-1) - (ccAllTiles(1:end-2,2:end-1)+ccAllTiles(3:end,2:end-1)+ccAllTiles(2:end-1,1:end-2)+ccAllTiles(2:end-1,3:end))/4;
+    ccAllTilesPadded = zeros(size(ccAllTiles,1)+2, size(ccAllTiles,2)+2); % zero-padding for easy calculation of mean neighbor
+    ccAllTilesPadded(2:end-1,2:end-1) = ccAllTiles;
+    ccNeighbors = cat(3, ccAllTilesPadded(1:end-2,2:end-1), ccAllTilesPadded(3:end,2:end-1), ccAllTilesPadded(2:end-1,1:end-2), ccAllTilesPadded(2:end-1,3:end));
+    meanNeighbor = sum(ccNeighbors,3)./sum(ccNeighbors>0,3);
+    ccDiff = ccAllTiles - meanNeighbor; % differentiate to highlight black square
     ccOdd = ccDiff(indOneColor(:));
     ccEven = ccDiff(~indOneColor(:));
 else
