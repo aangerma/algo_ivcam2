@@ -57,6 +57,9 @@ end
 pmat = reshape(p,[bsz,2]);
 rows = bsz(1); cols = bsz(2);
 [colorsMap,blackCircRow,blackCircCol] = Calibration.aux.CBTools.calcCheckerColorMap(pmat,ir,robustifyFlag);
+if isnan(blackCircRow) || isnan(blackCircCol)
+    return
+end
 
 % locate the row and col of the black circle:
 indicesR = (1:rows) + 9 - blackCircRow;

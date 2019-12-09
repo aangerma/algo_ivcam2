@@ -37,7 +37,12 @@ end
 
 topLeftIsWhite = nanmean(ccOdd) > nanmean(ccEven);
 if topLeftIsWhite
-    [~,ind] = min(ccOdd);
+    [ccOddMin,ind] = min(ccOdd);
+    if robustifyFlag && (ccOddMin/max(ir(:)) > -0.1) % preparation for global robustifying (currently active in IR delay calibration only)
+        blackCircRow = NaN;
+        blackCircCol = NaN;
+        return
+    end
     blackCircCol = floor(((ind-1)/(rows-1)))*2+1;
     numInDuplex = mod(ind-1,rows-1)+1;
     if numInDuplex > ceil((rows-1)/2)
@@ -46,9 +51,13 @@ if topLeftIsWhite
     else
         blackCircRow = numInDuplex*2-1;
     end
-   
 else
-    [~,ind] = min(ccEven);
+    [ccEvenMin,ind] = min(ccEven);
+    if robustifyFlag && (ccEvenMin/max(ir(:)) > -0.1) % preparation for global robustifying (currently active in IR delay calibration only)
+        blackCircRow = NaN;
+        blackCircCol = NaN;
+        return
+    end
     blackCircCol = floor(((ind-1)/(rows-1)))*2+1;
     numInDuplex = mod(ind-1,rows-1)+1;
     if numInDuplex > floor((rows-1)/2)
