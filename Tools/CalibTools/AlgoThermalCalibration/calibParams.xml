@@ -145,6 +145,7 @@
     </roi>
    <fwTable>
       <yFix>
+          <bypass>0</bypass><!-- If 1, keep y scale and offset constant accross temperatur -->
           <ignoreNSeconds>50</ignoreNSeconds>
       </yFix>
       <nFramesToIgnore>5</nFramesToIgnore>

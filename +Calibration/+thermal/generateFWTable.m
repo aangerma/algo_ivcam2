@@ -328,6 +328,11 @@ table = fillInnerNans(table);
 table = fillStartNans(table);   
 table = flipud(fillStartNans(flipud(table)));   
 
+if calibParams.fwTable.yFix.bypass
+   table(:,2) = regs.EXTL.dsmYscale;
+   table(:,4) = regs.EXTL.dsmYoffset;
+end
+
 % extrapolation
 vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
 table                   = extrapolateTable(table, results, vBiasLims, calibParams);
