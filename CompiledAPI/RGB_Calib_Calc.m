@@ -37,8 +37,8 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams
     % operation
     im = Calibration.aux.convertBytesToFrames(frameBytes, irImSize, flip(calibParams.rgb.imSize), true);
     rgbs = {im.yuy2}; % extracting RGB images
-    im = rmfield(im, 'yuy2'); % disposing of RGB images
-    im = arrayfun(@(x) struct('i',rot90(x.i,2),'z',rot90(x.z,2)), im);    
+%     im = rmfield(im, 'yuy2'); % disposing of RGB images
+    im = arrayfun(@(x) struct('i',rot90(x.i,2),'z',rot90(x.z,2),'rgbI', x.yuy2), im);
     runParams.outputFolder = g_output_dir;
     
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
