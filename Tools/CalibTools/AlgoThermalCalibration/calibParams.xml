@@ -168,6 +168,7 @@
           <yOffsetOrder>2</yOffsetOrder>
           <rtdModel>
               <refOrder>1</refOrder>
+              <hypoTest>0</hypoTest>
               <testOrder>2</testOrder>
               <rmsRatioThreshold>0.9</rmsRatioThreshold>
               <failPosLeadCoef>1</failPosLeadCoef>

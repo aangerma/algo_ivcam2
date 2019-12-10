@@ -567,28 +567,34 @@ extrapXOffset = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOf
 
 % rtd extrap
 origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
+if extrapParams.rtdModel.hypoTest % use hypothesis testing
+    rtdFitRef = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.refOrder); % default model
+    rtdFixedRef = table(:,5)-rtdFitRef;
+    rmsRef = rms(rtdFixedRef);
+    [rtdFitTest, polyCoefTest] = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.testOrder); % test model
+    rtdFixedTest = table(:,5)-rtdFitTest;
+    rmsTest = rms(rtdFixedTest);
+    rmsRatio = rmsTest/rmsRef;
+    if extrapParams.rtdModel.failPosLeadCoef && (polyCoefTest(1) > 0) % test model doesn't fit empirical knowledge
+        validTestFit = 0; % ignore test model
+    else
+        validTestFit = 1; % accept test model
+    end
+    if validTestFit && (rmsRatio < extrapParams.rtdModel.rmsRatioThreshold) % test model significantly better than ref model
+        rtdModelOrder = extrapParams.rtdModel.altOrder; % alternative model
+    else
+        rtdModelOrder = extrapParams.rtdModel.refOrder; % default model
+    end
+    results.rtd.modelsRmsRatio = rmsRatio;
+    results.rtd.modelOrder = rtdModelOrder;
+else % avoid hypothesis testing - use default assumption
+    rtdModelOrder = extrapParams.rtdModel.refOrder;
+end
 extrapGridRtd = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
-rtdFitRef = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.refOrder); % default model
-rtdFixedRef = table(:,5)-rtdFitRef;
-rmsRef = rms(rtdFixedRef);
-[rtdFitTest, polyCoefTest] = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.testOrder); % test model
-rtdFixedTest = table(:,5)-rtdFitTest;
-rmsTest = rms(rtdFixedTest);
-rmsRatio = rmsTest/rmsRef;
-if extrapParams.rtdModel.failPosLeadCoef && (polyCoefTest(1) > 0) % test model doesn't fit empirical knowledge
-    validTestFit = 0; % ignore test model
-else
-    validTestFit = 1; % accept test model
-end
-if validTestFit && (rmsRatio < extrapParams.rtdModel.rmsRatioThreshold) % test model significantly better than ref model
-    rtdModelOrder = extrapParams.rtdModel.altOrder; % alternative model
-else
-    rtdModelOrder = extrapParams.rtdModel.refOrder; % default model
-end
 extrapRtd = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, rtdModelOrder);
 
 % debug
-if ~isempty(runParams)
+if ~isempty(runParams) && extrapParams.rtdModel.hypoTest
     polyOrdLeg = {'linear', 'quadratic', 'cubic', 'quartic'};
     validTestLeg = {'p(1)>0, ', ''};
     ff = Calibration.aux.invisibleFigure; hold all
@@ -607,9 +613,6 @@ table(:,2) = extrapYScale;
 table(:,3) = extrapXOffset;
 table(:,4) = extrapYOffset;
 table(:,5) = extrapRtd;
-
-results.rtd.modelsRmsRatio = rmsRatio;
-results.rtd.modelOrder = rtdModelOrder;
 
 end
 
