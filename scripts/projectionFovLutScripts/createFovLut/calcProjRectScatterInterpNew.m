@@ -6,7 +6,8 @@ fw = Pipe.loadFirmware('X:\Users\mkiperwa\projection\F9340671\Cal TM2 3.9.2.0\Ma
 regs = fw.get;
 load('X:\Users\mkiperwa\projection\F9340671\Cal TM2 3.9.2.0\Matlab\AlgoInternal\tpsUndistModel.mat')
 load('X:\Users\mkiperwa\projection\F9340671\rectData.mat')
- 
+
+
 verbose = 1; 
 topMarginPix = 100;
 bottomMarginPix = 100;
@@ -48,10 +49,34 @@ if verbose
     axis ij;
 end
 %}
-vmin = (angRect.VTang.y+(anglesRng - 100))*anglesRng/(anglesRng - 100); 
+dosStrech = 0;
+doCopy = 0;
 
+vmin = interp1(angRect.VTang.x,angRect.VTang.y, linspace(min(angRect.VTang.x),max(angRect.VTang.x),totRange+1));
+if dosStrech
+    numCells2Stretch = 500;
+    vmin = interp1(angRect.VTang.x,angRect.VTang.y, linspace(min(angRect.VTang.x),max(angRect.VTang.x),totRange+1+numCells2Stretch));
+    vmin = vmin(1:totRange+1);
+else
+    if doCopy
+        numCells2Copy = 500;
+        vmin(end-numCells2Copy:end) = vmin(end-numCells2Copy-1);
+    end
+end
+
+vmin = (vmin +(anglesRng - 100))*anglesRng/(anglesRng - 100); 
 %%
-vmax = (angRect.VBang.y+(anglesRng - 100))*anglesRng/(anglesRng - 100); 
+vmax = interp1(angRect.VBang.x,angRect.VBang.y, linspace(min(angRect.VBang.x),max(angRect.VBang.x),totRange+1));
+if dosStrech
+    vmax = interp1(angRect.VBang.x,angRect.VBang.y, linspace(min(angRect.VBang.x),max(angRect.VBang.x),totRange+1+numCells2Stretch));
+    vmax = vmax(1:totRange+1);
+else
+    if doCopy
+        vmax(end-numCells2Copy:end) = vmax(end-numCells2Copy-1);
+    end
+end
+
+vmax = (vmax +(anglesRng - 100))*anglesRng/(anglesRng - 100); 
 if verbose
     figure(); plot(vmin); hold all; plot(vmax); legend('vmin','vmax'); axis ij;
 end
@@ -61,14 +86,19 @@ end
 % vmax=zeros(1,4096);vmax(500:2000)=4090;vmax(3000:3500)=4090;
 % vmin(1:1000) = 0;
 
-vminOrig = vmin';
-vmaxOrig = vmax';
+vminOrig = vmin;
+vmaxOrig = vmax;
 vmin = fliplr(totRange-vmaxOrig);
 vmax = fliplr(totRange-vminOrig);
 % vmin = vminOrig;
 % vmax = vmaxOrig;
 
 vs =double(vec([round(vmin);round(vmax)]));
+%%
+% Clipping
+vs(vs<0)=0;
+vs(vs>totRange)=totRange;
+%%
 vs8 = reshape(vs,8,[]);
 vsh = reshape(vec(dec2hex(bitand(vs8,totRange),3)'),8,[])';
 vshFull = repmat('0',4096,8);
@@ -130,22 +160,30 @@ if verbose
     figure(151285);scatter(xFnew(:),yFnew(:));grid minor;
 end
 %}
-nPts = 100;
+nPts = 1000;
 % vertical top
-xVals = double(linspace(rectX(3),rectX(4),nPts));
-Ymid = rectY(2)/2;
-angXMiddleY = f2AngX(xVals',double(ones(numel(xVals),1)*Ymid));
-[angYgrid,angXgrid] = ndgrid(linspace(-anglesRng,anglesRng,numel(angXMiddleY)),angXMiddleY); % Creating a grid in the angle domain along the scan lines
-[xValsNew,yValsNew] = inverseAngs(angXgrid,angYgrid,regs,tpsUndistModel);
-[minVal1,ix1] = min(abs(yValsNew(1:nPts)-rectY(1)));
-[minVal2,ix2] = min(abs(yValsNew(end-nPts+1:end)-rectY(1)));
-tempX = xValsNew(1:nPts);
+nPtsPincush = sqrt(numel(pincushPts(:,1)));
+Ymid = (rectY(1) + rectY(2))/2;
+[minVal1,ix1] = min(abs(pincushPts(1:nPtsPincush,2)-Ymid));
+[minVal2,ix2] = min(abs(pincushPts(end-nPtsPincush+1:end,2)-Ymid));
+tempX = pincushPts(1:nPtsPincush,1);
 minX = tempX(ix1);
-tempX = xValsNew(end-nPts+1:end);
+tempX = pincushPts(end-nPtsPincush+1:end,1);
 maxX = tempX(ix2);
 
-angRect.VTang.x = f2AngX(double(linspace(minX,maxX,totRange+1)'),double(ones(totRange+1,1)*rectY(1)));
-angRect.VTang.y = f2AngY(double(linspace(minX,maxX,totRange+1)'),double(ones(totRange+1,1)*rectY(1)));
+xVals = double(linspace(minX,maxX,nPts));
+
+angXMiddleY = f2AngX(xVals',double(ones(numel(xVals),1)*Ymid));
+angYvec = linspace(-anglesRng,anglesRng,numel(angXMiddleY));
+[angYgrid,angXgrid] = ndgrid(angYvec,angXMiddleY); % Creating a grid in the angle domain along the scan lines
+[xValsNew,yValsNew] = inverseAngs(angXgrid,angYgrid,regs,tpsUndistModel);
+xValsNew = reshape(xValsNew,nPts,nPts);
+yValsNew = reshape(yValsNew,nPts,nPts);
+[minVal1,iy1] = min(abs(yValsNew-rectY(1)));
+
+
+angRect.VTang.x = angXMiddleY;
+angRect.VTang.y = angYvec(iy1);
 if verbose
     figure(120784);plot(angRect.VTang.x+anglesRng,angRect.VTang.y+anglesRng);
     [xFnew,yFnew] = inverseAngs(angRect.VTang.x,angRect.VTang.y,regs,tpsUndistModel);
@@ -155,14 +193,10 @@ if verbose
 end
 
 % vertical Bottom
-[minVal1,ix1] = min(abs(yValsNew(1:nPts)-rectY(2)));
-[minVal2,ix2] = min(abs(yValsNew(end-nPts+1:end)-rectY(2)));
-tempX = xValsNew(1:nPts);
-minX = tempX(ix1);
-tempX = xValsNew(end-nPts+1:end);
-maxX = tempX(ix2);
-angRect.VBang.x = f2AngX(double(linspace(minX,maxX,totRange+1)'),double(ones(totRange+1,1)*rectY(2)));
-angRect.VBang.y = f2AngY(double(linspace(minX,maxX,totRange+1)'),double(ones(totRange+1,1)*rectY(2)));
+[minVal2,iy2] = min(abs(yValsNew-rectY(2)));
+
+angRect.VBang.x = angXMiddleY;
+angRect.VBang.y = angYvec(iy2);
 if verbose
     figure(120784);plot(angRect.VBang.x+anglesRng,angRect.VBang.y+anglesRng);
     legend('H left', 'H right','V top','V Bottom');   title('angy vs angx');  grid minor;
@@ -172,5 +206,29 @@ if verbose
     figure(151285); axis ij;
     figure(120784); axis ij;
 end
+
+end
+
+function [angX,timeVec] = extractAngXfromSampledData(dataPath,hw,anglesRng)
+sampledData = load(dataPath);
+timeVec = sampledData.timeVec;
+[startMirrorAng, locs1] = findpeaks(-mirrorAng);
+[endMirrorAng, locs2] = findpeaks(mirrorAng);
+ix = [locs1(1) locs2(1)];
+scanPts = mirrorAng(ix(1):ix(2));
+
+%{
+dsmXscaleStr = hw.cmd('mrd fffe3844 fffe3848');
+dsmXscaleStr = strsplit(dsmXscaleStr,' ');
+dsmXscale = hex2single(dsmXscaleStr{end});
+dsmXoffsetStr = hw.cmd('mrd fffe3840 fffe3844');
+dsmXoffsetStr = strsplit(dsmXoffsetStr,' ');
+dsmXoffset = hex2single(dsmXoffsetStr{end});
+%}
+dsmXoffset = -scanPts(1);
+dsmXscale = 2*anglesRng/(scanPts(end)+ dsmXoffset);
+angX = (scanPts + dsmXoffset)*dsmXscale - anglesRng;
+
+% figure;plot(timeVec(ix(1):ix(2)),angX);
 
 end
