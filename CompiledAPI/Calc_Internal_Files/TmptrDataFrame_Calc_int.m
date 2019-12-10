@@ -54,8 +54,9 @@ if ~finishedHeating % heating stage
     % bananas tracking
     nFrames = size(framesNoAvg.z,3);
     binLargest = maxAreaMask(frame.i>0); % In case of small spherical scale factor that causes weird striped to appear
-    zForStd = nan(size(framesNoAvg.z));
+    zForStd = zeros(size(framesNoAvg.z));
     zForStd(repmat(binLargest,1,1,nFrames)) = framesNoAvg.z(repmat(binLargest,1,1,nFrames));
+    zForStd(zForStd == 0) = nan;
     lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
     
     % corners tracking
