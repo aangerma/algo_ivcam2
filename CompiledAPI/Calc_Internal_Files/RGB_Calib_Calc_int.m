@@ -16,7 +16,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     %%
     params.camera = struct('zMaxSubMM',z2mm,'zK',Kdepth);
     params.camera.rgbPmat = res.color.k*[res.extrinsics.r res.extrinsics.t];
-    params.camera.rgbDistort = res.color.d;
+    params.rgbDistort = res.color.d;
     params.camera.Krgb = res.color.k;
     params.camera.Krgbn = res.color.Kn;
     params.target.target = 'checkerboard_Iv2A1';
@@ -62,27 +62,18 @@ for  k =1:length(rgbFrames)
     frame.i = depthFrames(k).i;
     frame.z = depthFrames(k).z;
     frame.rgbI = rgbFrames{k};
-    try
     [~, resultsUvMap,dbg] = Validation.metrics.geomReprojectErrorUV(frame, params);
-    catch
-        frame.i = depthFrames(k-1).i;
-        frame.z = depthFrames(k-1).z;
-        frame.rgbI = rgbFrames{k-1};
-        [~, resultsUvMap,dbg] = Validation.metrics.geomReprojectErrorUV(frame, params);
-        
-    end
+    
     uvMapRmse(1,k) = resultsUvMap.reproErrorUVPixRmsMeanAF;
     uvMapMaxErr(1,k) = resultsUvMap.reproErrorUVPixRmsMaxAF;
     uvMapMaxErr95(1,k) = resultsUvMap.maxErr95AF;
 
     pts = cat(3,dbg.DAF.cornersRGB(:,:,1),dbg.DAF.cornersRGB(:,:,2),zeros(size(dbg.DAF.cornersRGB,1),size(dbg.DAF .cornersRGB,2)));
     pts = CBTools.slimNans(pts);
-    if isfield(params,'rgbDistort')
-        invd = du.math.fitInverseDist(params.camera.Krgbn,params.rgbDistort);
-        pixsUndist = du.math.distortCam(reshape(pts(:,:,1:2),[],2)', params.camera.Krgb, invd);
-        ptsUndist = cat(3,reshape(pixsUndist',size(pts,1),size(pts,2),[]),pts(:,:,3));
-        pts = ptsUndist;
-    end
+    invd = du.math.fitInverseDist(params.camera.Krgbn,params.rgbDistort);
+    pixsUndist = du.math.distortCam(reshape(pts(:,:,1:2),[],2)', params.camera.Krgb, invd);
+    ptsUndist = cat(3,reshape(pixsUndist',size(pts,1),size(pts,2),[]),pts(:,:,3));
+    pts = ptsUndist;
     [resultsLineFit] = Validation.aux.get3DlineFitErrors(pts);
     lineFitRmsErrHor2dRGB(1,k) = resultsLineFit.lineFitRmsErrorTotal_h;
     lineFitRmsErrVer2dRGB(1,k) = resultsLineFit.lineFitRmsErrorTotal_v;
