@@ -173,6 +173,8 @@
               <rmsRatioThreshold>0.9</rmsRatioThreshold>
               <failPosLeadCoef>1</failPosLeadCoef>
               <altOrder>3</altOrder>
+              <limitToTsense>1</limitToTsense>
+              <tsenseLims>[12 55]</tsenseLims>
           </rtdModel>
       </extrap>
    </fwTable>

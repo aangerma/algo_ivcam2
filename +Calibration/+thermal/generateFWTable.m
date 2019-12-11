@@ -47,13 +47,16 @@ else
     fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
     shtw2 = [tempData.ldd]; % temporary
 end
-results.temp.FRMWhumidApdTempDiff = 0; % default
 if isfield(tempData, 'tsense') && isfield(tempData, 'shtw2')
-    ind = find(all(tsense'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
-    if ~isempty(ind)
-        results.temp.FRMWhumidApdTempDiff = shtw2(ind) - tsense(ind);
-    else
-        fprintff('WARNING: no tsense measurement within range [%d,%d]. Ignoring shtw2-tsense temperature difference.\n', calibParams.warmUp.apdTempRange);
+    [~,indMin] = min(shtw2-tsense);
+    try
+        fitIdcs = abs(shtw2-shtw2(indMin))<10;
+        p = polyfit(shtw2(fitIdcs), shtw2(fitIdcs)-tsense(fitIdcs), 2);
+        humidMin = -p(2)/(2*p(1));
+        results.temp.FRMWhumidApdTempDiff = p(1)*humidMin.^2 + p(2)*humidMin + p(3); % denoised minimum
+    catch
+        fprintf('WARNING: shtw2-tsense estimation failed, resorting to minimal difference.\n');
+        results.temp.FRMWhumidApdTempDiff = shtw2(indMin)-tsense(indMin);
     end
 end
 if ~isempty(runParams)
@@ -63,13 +66,10 @@ if ~isempty(runParams)
     plot(ma, '.-')
     plot(tsense, '.-')
     plot(shtw2, '.-')
-    if (results.temp.FRMWhumidApdTempDiff~=0)
-        plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
-        leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff'};
-        text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
-    else
-        leg = {'LDD', 'MA', 'TSense', 'SHTW2'};
-    end
+    [~,ind] = min(abs(shtw2-humidMin));
+    plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
+    leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff'};
+    text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
     grid on, xlabel('#frame'), ylabel('temperature [deg]')
     legend(leg,'Location','northwest')
     title('Temperature readings')
@@ -567,12 +567,19 @@ extrapXOffset = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOf
 
 % rtd extrap
 origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
+if extrapParams.rtdModel.limitToTsense
+    validIdcs = (origGridRtd >= extrapParams.rtdModel.tsenseLims(1)) & (origGridRtd <= extrapParams.rtdModel.tsenseLims(2));
+    origGridRtd = origGridRtd(validIdcs);
+    origRtdTable = table(validIdcs,5);
+else
+    origRtdTable = table(:,5);
+end
 if extrapParams.rtdModel.hypoTest % use hypothesis testing
-    rtdFitRef = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.refOrder); % default model
-    rtdFixedRef = table(:,5)-rtdFitRef;
+    rtdFitRef = polyExtrap(origGridRtd', origRtdTable, origGridRtd', extrapParams.rtdModel.refOrder); % default model
+    rtdFixedRef = origRtdTable-rtdFitRef;
     rmsRef = rms(rtdFixedRef);
-    [rtdFitTest, polyCoefTest] = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.testOrder); % test model
-    rtdFixedTest = table(:,5)-rtdFitTest;
+    [rtdFitTest, polyCoefTest] = polyExtrap(origGridRtd', origRtdTable, origGridRtd', extrapParams.rtdModel.testOrder); % test model
+    rtdFixedTest = origRtdTable-rtdFitTest;
     rmsTest = rms(rtdFixedTest);
     rmsRatio = rmsTest/rmsRef;
     if extrapParams.rtdModel.failPosLeadCoef && (polyCoefTest(1) > 0) % test model doesn't fit empirical knowledge
@@ -591,7 +598,7 @@ else % avoid hypothesis testing - use default assumption
     rtdModelOrder = extrapParams.rtdModel.refOrder;
 end
 extrapGridRtd = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
-extrapRtd = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, rtdModelOrder);
+extrapRtd = polyExtrap(origGridRtd', origRtdTable, extrapGridRtd, rtdModelOrder);
 
 % debug
 if ~isempty(runParams) && extrapParams.rtdModel.hypoTest
