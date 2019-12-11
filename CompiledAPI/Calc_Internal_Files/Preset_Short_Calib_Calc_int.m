@@ -30,25 +30,25 @@ end
 %% convergence achieved - proceed to final operations
 p = polyfit(testedPoints, testedScores(3,:), 2);
 if (p(1)>= 0)
-    fprintff('[!] Short range preset calibration: contrast is convex. Taking maximal observed value.\n')
+    fprintff('[!] Short range preset calibration: contrast is convex. Taking maximal observed value.\n');
     [~, maxPt] = max(testedScores(3,:));
 else
     maxPt = -p(2)/(2*p(1));
 end
+LaserDelta = LaserPoints(2)-LaserPoints(1);
+lp = [LaserPoints,LaserPoints(end)+LaserDelta:LaserDelta:2*LaserPoints(end)];
+fittedline = p(1)*lp.^2+p(2)*lp+p(3);
 if (maxPt < min(LaserPoints))
     nextLaserPoint = -Inf;
-    fprintff('[!] Short range preset calibration: maximal contrast is always exceeded. Modulation ref set to 0.\n')
+    fprintff('[!] Short range preset calibration: maximal contrast is always exceeded. Modulation ref set to 0.\n');
     minRangeScaleModRef = 0;
     ModRefDec = min(LaserPoints);
 elseif (maxPt > max(LaserPoints))
     nextLaserPoint = Inf;
-    fprintff('[!] Short range preset calibration: maximal contrast could not be attained. Modulation ref set to 1.\n')
+    fprintff('[!] Short range preset calibration: maximal contrast could not be attained. Modulation ref set to 1.\n');
     minRangeScaleModRef = 1;
     ModRefDec = max(LaserPoints);
 else % optimum is within range
-    LaserDelta = LaserPoints(2)-LaserPoints(1);
-    lp = [LaserPoints,LaserPoints(end)+LaserDelta:LaserDelta:2*LaserPoints(end)];
-    fittedline = p(1)*lp.^2+p(2)*lp+p(3);
     if (maxPt > maxMod_dec)
         ModRefDec = maxMod_dec;
     else

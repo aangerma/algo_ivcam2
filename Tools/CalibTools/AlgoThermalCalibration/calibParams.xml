@@ -123,8 +123,8 @@
       <!--<slowDelayInitVal>98488</slowDelayInitVal> -->
       <fastDelayInitVal>98690</fastDelayInitVal>
       <slowDelayInitVal>98583</slowDelayInitVal>
-      <fastDelayInitSlope>1.0</fastDelayInitSlope>
-      <slowDelayInitSlope>1.1</slowDelayInitSlope>
+      <fastDelayInitSlope>1.3</fastDelayInitSlope>
+      <slowDelayInitSlope>1.3</slowDelayInitSlope>
 	  <iterFixThr>3</iterFixThr>
       <nAttempts>20</nAttempts>
       <calibrateFast>1</calibrateFast>
@@ -168,6 +168,7 @@
           <yOffsetOrder>2</yOffsetOrder>
           <rtdModel>
               <refOrder>1</refOrder>
+              <hypoTest>0</hypoTest>
               <testOrder>2</testOrder>
               <rmsRatioThreshold>0.9</rmsRatioThreshold>
               <failPosLeadCoef>1</failPosLeadCoef>

@@ -48,8 +48,10 @@ function results = UpdateResultsStruct(results)
     results.thermalRtdRefTemp       = results.rtd.refTemp;
     results.thermalMinCalTemp       = results.rtd.origMinval;
     results.thermalMaxCalTemp       = results.rtd.origMaxval;
-    results.rtdModelsRmsRatio       = results.rtd.modelsRmsRatio;
-    results.rtdModelOrder           = results.rtd.modelOrder;
+    if isfield(results.rtd, 'modelsRmsRatio')
+        results.rtdModelsRmsRatio   = results.rtd.modelsRmsRatio;
+        results.rtdModelOrder       = results.rtd.modelOrder;
+    end
     results.thermalMaSlope          = results.ma.slope;
     results.thermalAngyMinAbsScale  = min(abs(results.angy.scale));
     results.thermalAngyMaxAbsScale  = max(abs(results.angy.scale));
