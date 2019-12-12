@@ -29,35 +29,18 @@ validCB = all(validPerFrame,2);
 
 
 %% Temperatures management
-if isfield(tempData,'ma')
-    ma = [tempData.ma];
-else
-    fprintff('WARNING: ma data missing. Treating ldd as a proxy for ma temperature.\n');
-    ma = [tempData.ldd]; % temporary
-end
-if isfield(tempData, 'tsense')
-    tsense = [tempData.tsense];
-else
-    fprintff('WARNING: tsense data missing. Ignoring shtw2-tsense temperature difference.\n');
-    tsense = [tempData.ldd]; % temporary
-end
-if isfield(tempData, 'shtw2')
-    shtw2 = [tempData.shtw2];
-else
-    fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
-    shtw2 = [tempData.ldd]; % temporary
-end
-if isfield(tempData, 'tsense') && isfield(tempData, 'shtw2')
-    [~,indMin] = min(shtw2-tsense);
-    try
-        fitIdcs = abs(shtw2-shtw2(indMin))<10;
-        p = polyfit(shtw2(fitIdcs), shtw2(fitIdcs)-tsense(fitIdcs), 2);
-        humidMin = -p(2)/(2*p(1));
-        results.temp.FRMWhumidApdTempDiff = p(1)*humidMin.^2 + p(2)*humidMin + p(3); % denoised minimum
-    catch
-        fprintf('WARNING: shtw2-tsense estimation failed, resorting to minimal difference.\n');
-        results.temp.FRMWhumidApdTempDiff = shtw2(indMin)-tsense(indMin);
-    end
+ma = [tempData.ma];
+tsense = [tempData.tsense];
+shtw2 = [tempData.shtw2];
+[~,indMinDif] = min(shtw2-tsense);
+try
+    fitIdcs = abs(shtw2-shtw2(indMinDif))<10;
+    p = polyfit(shtw2(fitIdcs), shtw2(fitIdcs)-tsense(fitIdcs), 2);
+    humidMinDif = -p(2)/(2*p(1));
+    results.temp.FRMWhumidApdTempDiff = p(1)*humidMinDif.^2 + p(2)*humidMinDif + p(3); % denoised minimum
+catch
+    fprintf('WARNING: shtw2-tsense estimation failed, resorting to minimal difference.\n');
+    results.temp.FRMWhumidApdTempDiff = shtw2(indMinDif)-tsense(indMinDif); % simple minimum
 end
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -66,7 +49,7 @@ if ~isempty(runParams)
     plot(ma, '.-')
     plot(tsense, '.-')
     plot(shtw2, '.-')
-    [~,ind] = min(abs(shtw2-humidMin));
+    [~,ind] = min(abs(shtw2-humidMinDif));
     plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
     leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff'};
     text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
@@ -119,24 +102,24 @@ else % last diff outlier is the first post-jump index
 end
 
 % group by LDD
+lddForEst = ldd(ind:end);
 rtdForEst = rtdPerFrame(ind:end);
-minMaxLdd = minmax(ldd(ind:end));
+minMaxLdd = minmax(lddForEst);
 results.rtd.maxval = minMaxLdd(2);
 results.rtd.minval = minMaxLdd(1);
 results.rtd.nBins = nBins;
 lddGrid = linspace(results.rtd.minval,results.rtd.maxval,nBins);
-rtdGrid = NaN(size(lddGrid));
 lddStep = lddGrid(2)-lddGrid(1);
-for k = 1:length(lddGrid)
-    idcs = abs(ldd(ind:end) - lddGrid(k)) <= lddStep/2;
-    if any(idcs)
-        rtdGrid(k) = median(rtdForEst(idcs));
-    end
-end
+rtdGrid = arrayfun(@(x) median(rtdForEst(abs(lddForEst-x)<=lddStep/2)), lddGrid);
+tsenseGrid = arrayfun(@(x) median(tsense(abs(lddForEst-x)<=lddStep/2)), lddGrid);
 results.rtd.refTemp = data.dfzRefTmp;
 [~, ind] = min(abs(results.rtd.refTemp - lddGrid));
 refRtd = rtdGrid(ind);
 results.rtd.tmptrOffsetValues = -(rtdGrid-refRtd); % aligning to reference temperature
+% TSense possible consideration
+results.rtd.tsenseGrid = tsenseGrid;
+rtdModelParams = calibParams.fwTable.extrap.rtdModel;
+validIdcsByTSense = ~rtdModelParams.limitToTsense | ((results.rtd.tsenseGrid >= rtdModelParams.tsenseLims(1)) & (results.rtd.tsenseGrid <= rtdModelParams.tsenseLims(2)));
 
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -412,7 +395,8 @@ if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     hold all
     plot(ldd, -(rtdPerFrame-refRtd),'*');
-    plot(lddGrid, -(rtdGrid-refRtd),'-o');
+    hPlot = plot(lddGrid(validIdcsByTSense), -(rtdGrid(validIdcsByTSense)-refRtd),'-o','markersize',3);
+    set(hPlot, 'markerfacecolor', sqrt(get(hPlot,'color')))
     plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
     grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');
     legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)')
@@ -568,7 +552,7 @@ extrapXOffset = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOf
 % rtd extrap
 origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
 if extrapParams.rtdModel.limitToTsense
-    validIdcs = (origGridRtd >= extrapParams.rtdModel.tsenseLims(1)) & (origGridRtd <= extrapParams.rtdModel.tsenseLims(2));
+    validIdcs = (results.rtd.tsenseGrid >= extrapParams.rtdModel.tsenseLims(1)) & (results.rtd.tsenseGrid <= extrapParams.rtdModel.tsenseLims(2));
     origGridRtd = origGridRtd(validIdcs);
     origRtdTable = table(validIdcs,5);
 else

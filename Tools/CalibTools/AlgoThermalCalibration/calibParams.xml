@@ -174,7 +174,7 @@
               <failPosLeadCoef>1</failPosLeadCoef>
               <altOrder>3</altOrder>
               <limitToTsense>1</limitToTsense>
-              <tsenseLims>[12 55]</tsenseLims>
+              <tsenseLims>[12 52]</tsenseLims>
           </rtdModel>
       </extrap>
    </fwTable>
