@@ -32,6 +32,7 @@ r.set();
 delay = 0;
 val_mode = true;
 [~, d,imIR,pixVar] = Calibration.dataDelay.IR_DelayCalib(hw,delay ,calibParams,val_mode, false);
+                                           %IR_DelayCalib(hw, delay, calibParams, Val_mode, isFinalStage, fResMirror)
 if (isnan(d))%CB was not found, throw delay forward to find a good location
     d = 3000;
 end
