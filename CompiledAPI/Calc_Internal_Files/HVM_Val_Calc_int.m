@@ -40,12 +40,12 @@ function [valResults ,allResults] = HVM_Val_Calc_int(frameBytes,sz,params,runPar
 %% sharpness
     Metrics = 'sharpness';
     params.target.target = 'checkerboard_Iv2A1';
-%     [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharpIR(frames, params);
-%     sharpRes.horizontalSharpness = allSharpRes.horzWidthMeanAF;
-%     sharpRes.verticalSharpness = allSharpRes.vertWidthMeanAF;
-%     valResults = Validation.aux.mergeResultStruct(valResults, sharpRes);
-%     saveValidationData(dbg,frames,Metrics,outFolder,debugMode);
-%     allResults.HVM.(Metrics) = allSharpRes;
+    [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharpIR(frames, params);
+    sharpRes.horizontalSharpness = allSharpRes.horzWidthMeanAF;
+    sharpRes.verticalSharpness = allSharpRes.vertWidthMeanAF;
+    valResults = Validation.aux.mergeResultStruct(valResults, sharpRes);
+    saveValidationData(dbg,frames,Metrics,outFolder,debugMode);
+    allResults.HVM.(Metrics) = allSharpRes;
 %% temporalNoise
     Metrics = 'temporalNoise';
     tempNConfig = calibParams.validationConfig.(Metrics);
