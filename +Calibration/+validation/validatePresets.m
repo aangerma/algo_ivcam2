@@ -27,7 +27,7 @@ imgSize = size(LRframe.z);
 
 params = Validation.aux.defaultMetricsParams();
 params.mask.rectROI.flag = true;
-params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
+params.mask.rectROI.allMargins = calibParams.roi;
 
 mask = Validation.aux.getMask(params,'imageSize',imgSize);
 %% diff image

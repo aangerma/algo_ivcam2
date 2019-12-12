@@ -1,42 +1,41 @@
 function [dfzRes,allRes,dbg1] = DFZCalc(params,frames,runParams,fprintff)
 dfzRes = [];
-params.isRoiRect = params.gidMaskIsRoiRect;
+params.mask.rectROI.flag  = logical(params.gidMaskIsRoiRect);
 params.target.target = 'checkerboard_Iv2A1'; 
 params.cornersReferenceDepth = 'corners';
-allRes1 = [];
-dbg1 = [];
+allRes1 = struct();
+dbg1 = struct();
 [~, results,dbg] = Validation.metrics.gridInterDistance(rotFrame180(frames), params);
 allRes1 = mergestruct(allRes1,results);
 dbg1 = mergestruct(dbg1,dbg);
-[~, results,dbg] = Validation.metrics.gridDistortion;
+[~, results,dbg] = Validation.metrics.gridDistortion(rotFrame180(frames), params);
 allRes1 = mergestruct(allRes1,results);
 dbg1 = mergestruct(dbg1,dbg);
-[~, results,dbg] = Validation.metrics.gridLineFit;
+[~, results,dbg] = Validation.metrics.gridLineFit(rotFrame180(frames), params);
 allRes1 = mergestruct(allRes1,results);
 dbg1 = mergestruct(dbg1,dbg);
 if params.sampleZFromWhiteCheckers
     params.cornersReferenceDepth = 'white'; 
-    allRes2 = [];
-    dbg2 = [];
+    allRes2 = struct();
+    dbg2 = struct();
     [~, results,dbg] = Validation.metrics.gridInterDistance(rotFrame180(frames), params);
     allRes2 = mergestruct(allRes2,results);
     dbg2 = mergestruct(dbg2,dbg);
-    [~, results,dbg] = Validation.metrics.gridDistortion;
+    [~, results,dbg] = Validation.metrics.gridDistortion(rotFrame180(frames), params);
     allRes2 = mergestruct(allRes2,results);
     dbg2 = mergestruct(dbg2,dbg);
-    [~, results,dbg] = Validation.metrics.gridLineFit;
+    [~, results,dbg] = Validation.metrics.gridLineFit(rotFrame180(frames), params);
     allRes2 = mergestruct(allRes2,results);
     dbg2 = mergestruct(dbg2,dbg);
 end
 
-
-if exist('runParams','var')
-    imSize  = fliplr(size(frames(1).i));
-    saveFigs(dbg1,runParams,params,imSize, 'SampleZFromCorners'); 
-    if params.sampleZFromWhiteCheckers
-        saveFigs(dbg2,runParams,params,imSize,'SampleZFromWhiteCheckers');
-    end
-end
+% if exist('runParams','var')
+%     imSize  = fliplr(size(frames(1).i));
+%     saveFigs(dbg1,runParams,params,imSize, 'SampleZFromCorners'); 
+%     if params.sampleZFromWhiteCheckers
+%         saveFigs(dbg2,runParams,params,imSize,'SampleZFromWhiteCheckers');
+%     end
+% end
 
 [~, results,~] = Validation.metrics.geomReprojectError(rotFrame180(frames), params);
 fnames = fieldnames(results);
@@ -60,7 +59,7 @@ end
 params.CB = true;
 params.cornersReferenceDepth = 'white';
 params.target.target = 'checkerboard_Iv2A1'; 
-params.isRoiRect = params.plainFitMaskIsRoiRect;
+params.mask.rectROI.flag = logical(params.plainFitMaskIsRoiRect);
 [~, results,~] = Validation.metrics.planeFit(rotFrame180(frames), params);
 fnames = fieldnames(results);
 for i=1:length(fnames)
@@ -73,7 +72,7 @@ params.target.target = 'checkerboard_Iv2A1';
 [~, results,~] = Validation.metrics.planeFit(rotFrame180(frames), params);
 fnames = fieldnames(results);
 for i=1:length(fnames)
-    allRes.([fnames{i},'Blck ']) = results.(fnames{i});
+    allRes.([fnames{i},'Blck']) = results.(fnames{i});
 end
 
 % fprintff('%s: %2.4g\n','eGeomReg',score1);

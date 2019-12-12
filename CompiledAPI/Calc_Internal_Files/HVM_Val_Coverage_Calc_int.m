@@ -15,7 +15,7 @@ function [valResults ,allCovRes] = HVM_Val_Coverage_Calc_int(frameBytes,sz,runPa
     Metrics = 'coverage';
 %    covConfig = calibParams.validationConfig.(Metrics);
     %calculate ir coverage metric
-    [covScore,allCovRes, dbg] = Validation.metrics.irCoverage(frames);
+    [covScore,allCovRes, dbg] = Validation.metrics.irFillRate(frames);
     dbg.probIm;
     covRes.irCoverage = covScore;
     fprintff('ir Coverage:  %2.2g\n',covScore);

@@ -28,6 +28,10 @@ function [valResults ,allResults] = HVM_Val_Calc_int(frameBytes,sz,params,runPar
     end
     params.plainFitMaskIsRoiRect = calibParams.validationConfig.plainFitMaskIsRoiRect;
     params.gidMaskIsRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;
+    params.mask.circROI.flag = false;
+    params.mask.checkerBoard.flag = false;
+    params.mask.detectDarkRect.flag = false; 
+
     %average image 
     [dfzRes,allDfzRes,dbg] = Calibration.validation.DFZCalc(params,AvgIm,runParams,fprintff);
     valResults = Validation.aux.mergeResultStruct(valResults, dfzRes);
@@ -36,18 +40,18 @@ function [valResults ,allResults] = HVM_Val_Calc_int(frameBytes,sz,params,runPar
 %% sharpness
     Metrics = 'sharpness';
     params.target.target = 'checkerboard_Iv2A1';
-    [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharpIR(frames, params);
-    sharpRes.horizontalSharpness = allSharpRes.horizMean;
-    sharpRes.verticalSharpness = allSharpRes.vertMean;
-    valResults = Validation.aux.mergeResultStruct(valResults, sharpRes);
-    saveValidationData(dbg,frames,Metrics,outFolder,debugMode);
-    allResults.HVM.(Metrics) = allSharpRes;
+%     [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharpIR(frames, params);
+%     sharpRes.horizontalSharpness = allSharpRes.horzWidthMeanAF;
+%     sharpRes.verticalSharpness = allSharpRes.vertWidthMeanAF;
+%     valResults = Validation.aux.mergeResultStruct(valResults, sharpRes);
+%     saveValidationData(dbg,frames,Metrics,outFolder,debugMode);
+%     allResults.HVM.(Metrics) = allSharpRes;
 %% temporalNoise
     Metrics = 'temporalNoise';
     tempNConfig = calibParams.validationConfig.(Metrics);
     params = Validation.aux.defaultMetricsParams();
     params.(Metrics) = tempNConfig.roi;
-    [tns,allTnsResults] = Validation.metrics.zStd(frames, params);
+    [tns,allTnsResults] = Validation.metrics.zTempNoise(frames, params);
     tnsRes.temporalNoise = tns;
     valResults = Validation.aux.mergeResultStruct(valResults, tnsRes);
     saveValidationData(allTnsResults,frames,Metrics,outFolder,debugMode);

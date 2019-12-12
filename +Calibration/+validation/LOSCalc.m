@@ -3,8 +3,8 @@ function [losResults,allResults,dbgData] = LOSCalc(frames,runParams,expectedGrid
     params.verbose = 0;
     params.expectedGridSize = expectedGridSize;
     params.calibrationTargetIV2 = 1;
-    
-    [score, allResults,dbgData] = Validation.metrics.losGridDrift(frames, params);
+    params.target.target = 'checkerboard_Iv2A1';
+    [score, allResults,dbgData] = Validation.metrics.losGridStability(frames, params);
     if isnan(score) % Failed to perform the metric
         if ~isempty(fprintff)
             fprintff('Max drift - Didn''t detect checkerboard.\n');
@@ -15,17 +15,17 @@ function [losResults,allResults,dbgData] = LOSCalc(frames,runParams,expectedGrid
         Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Max_Drift_Input');
         return
     else
-        losResults.losMaxP2p = allResults.maxP2p;
-        losResults.losMeanStdX = allResults.meanStdX;
-        losResults.losMeanStdY = allResults.meanStdY;
+        losResults.losMaxP2p = allResults.p2pMaxTS;
+        losResults.losMeanStdX = allResults.pStdXTSMean;
+        losResults.losMeanStdY = allResults.pStdYTSMean;
     end
-    ff = Calibration.aux.invisibleFigure();
-    imagesc(frames(1).i),colormap gray;
-    hold on;
-    quiver(dbgData.gridPoints(:,1),dbgData.gridPoints(:,2),dbgData.driftX',dbgData.driftY','r');
-    hold off;
-    title('Drifts');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Drifts');
+%     ff = Calibration.aux.invisibleFigure();
+%     imagesc(frames(1).i),colormap gray;
+%     hold on;
+%     quiver(dbgData.gridPoints(:,1),dbgData.gridPoints(:,2),dbgData.driftX',dbgData.driftY','r');
+%     hold off;
+%     title('Drifts');
+%     Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','Drifts');
     
 %     ff = Calibration.aux.invisibleFigure();
 %     imagesc(frames(1).i),colormap gray;

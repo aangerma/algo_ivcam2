@@ -1,10 +1,16 @@
 function [ dfzRes,allRes,dbg ] = validateDFZ( hw,frames,fprintff,calibParams,runParams)
-    params.camera.K = getKMat(hw);
+    params.camera.zK = getKMat(hw);
     params.camera.zMaxSubMM = 2^double(hw.read('GNRLzMaxSubMMExp'));
     params.target.squareSize = calibParams.validationConfig.target.cbSquareSz;
     params.target.name = calibParams.validationConfig.target.name;
     params.expectedGridSize = calibParams.validationConfig.cbGridSz;
     params.sampleZFromWhiteCheckers = calibParams.validationConfig.sampleZFromWhiteCheckers;
+    
+    params.mask.circROI.flag = false;
+    params.mask.RectROI.flag = false;
+    params.mask.checkerBoard.flag = false;
+    params.mask.detectDarkRect.flag = false;
+
     if params.sampleZFromWhiteCheckers
         params.cornersReferenceDepth ='white';
     else

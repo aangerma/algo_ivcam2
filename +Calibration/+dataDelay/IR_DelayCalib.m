@@ -1,4 +1,4 @@
-function [res, d,im,pixVar] = IR_DelayCalib(hw, delay, runParams, calibParams, Val_mode, isFinalStage, fResMirror)
+function [res, d,im,pixVar] = IR_DelayCalib(hw, delay, calibParams, Val_mode, isFinalStage, fResMirror)
     if(~exist('Val_mode','var'))
        Val_mode  = false;
     end

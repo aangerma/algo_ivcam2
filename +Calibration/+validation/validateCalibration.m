@@ -105,8 +105,8 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 frames = hw.getFrame(sharpConfig.numOfFrames,0);
                 params.target.target = 'checkerboard_Iv2A1';
                 [~, allSharpRes,dbg] = Validation.metrics.gridEdgeSharpIR(frames, params);
-                sharpRes.horizontalSharpness = allSharpRes.horizMean;
-                sharpRes.verticalSharpness = allSharpRes.vertMean;
+                sharpRes.horizontalSharpness = allSharpRes.horzWidthMeanAF;
+                sharpRes.verticalSharpness = allSharpRes.vertWidthMeanAF;
                 valResults = Validation.aux.mergeResultStruct(valResults, sharpRes);
                 saveValidationData(dbg,frames,enabledMetrics{i},outFolder,debugMode);
                 allResults.Validation.(enabledMetrics{i}) = allSharpRes;
@@ -116,12 +116,12 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
                 params = Validation.aux.defaultMetricsParams();
                 params.camera.zMaxSubMM = z2mm;
                 params.enabledMetrics{i} = tempNConfig.roi;
-                [tns,allTnsResults,zstdDbg] = Validation.metrics.zStd(frames, params);
+                [tns,allTnsResults,zstdDbg] = Validation.metrics.zTempNoise(frames, params);
                 tnsRes.temporalNoise = tns;
-                tnsRes.tempNoise95 = allTnsResults.tempNoise95;
+                tnsRes.tempNoise95 = allTnsResults.tempNoiseFS95prc;
                 
                 ff = Calibration.aux.invisibleFigure;
-                imagesc(zstdDbg.noiseStd,[0,allTnsResults.tempNoise95]); colorbar;
+                imagesc(zstdDbg.noiseStd,[0,allTnsResults.tempNoiseFS95prc]); colorbar;
                 title('zSTD Map'); colorbar;
                 Calibration.aux.saveFigureAsImage(ff,runParams,'Validation',sprintf('zSTD'));
 
@@ -280,7 +280,7 @@ function [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,
     frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', nof_frames);
 
 %% get K zMaxSubMM
-    params.camera.K          = getKMat(hw);
+    params.camera.zK          = getKMat(hw);
     params.camera.zMaxSubMM  = 2^double(hw.read('GNRLzMaxSubMMExp'));
     sz = hw.streamSize();
     [valResults ,allResults] = HVM_Val_Calc(frameBytes,sz,params,calibParams,valResults);
