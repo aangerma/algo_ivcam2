@@ -6,12 +6,6 @@ sys.path.insert(0, r"..\algo_automation\tests")
 import runIqValidation
 
 
-def test_validation_regression():
-    filePath = r'Avv/tests/iqValidation/from_data/regression.xml'
-    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
-
-
 @slash.tag('turn_in')
 def test_validation_turn_in():
     filePath = r'Avv/tests/iqValidation/from_data/turn_in.xml'
