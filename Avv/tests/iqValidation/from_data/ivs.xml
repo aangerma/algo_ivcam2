@@ -14,6 +14,6 @@
         <test name="gridInterDistance_40cm" metrics="gridInterDistance" target="checkerboard_30" distance="40cm" threshold="[0:0.7]" extra=''/>
         <test name="mos" metrics="mos" target="mos" distance="30cm" threshold="[0 : 11.5]" extra=''/>
         <test name="gridMaxRect_40cm" metrics="gridMaxRect" target="checkerboard_30" distance="40cm" threshold="[-0.5:-0.4]" extra=''/>
-        <test name="gridMaxRect_1m" metrics="gridMaxRect" target="checkerboard_30" distance="1m" threshold="[0:0.3]" extra=''/>
+        <test name="gridMaxRect_1m" metrics="gridMaxRect" target="checkerboard_30" distance="1m" threshold="[2:3]" extra=''/>
     </tests>
 </root>
