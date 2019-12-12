@@ -175,6 +175,12 @@
               <altOrder>3</altOrder>
               <limitToTsense>1</limitToTsense>
               <tsenseLims>[12 52]</tsenseLims>
+              <interpolationParams>
+                  <bypass>0</bypass>
+                  <refOrderLow>1</refOrderLow>
+                  <refOrderHigh>1</refOrderHigh>
+                  <degreesToUseFromEdge>15</degreesToUseFromEdge>
+              </interpolationParams>
           </rtdModel>
       </extrap>
    </fwTable>

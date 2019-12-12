@@ -101,6 +101,7 @@ else % last diff outlier is the first post-jump index
     fprintff('Warning: RTD jump detected - excluding measurements below %.2f[deg].\n', ldd(ind))
 end
 
+
 % group by LDD
 lddForEst = ldd(ind:end);
 rtdForEst = rtdPerFrame(ind:end);
@@ -333,6 +334,8 @@ results.angx.p0         = vBiasLims([1,3],1)';
 results.angx.p1         = vBiasLims([1,3],2)';
 results.table           = table;
 
+
+
 if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outputRawData
     results.raw.vbias1      = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);
     results.raw.dsmXscale   = dsmXscale;
@@ -344,6 +347,12 @@ if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outpu
     results.raw.rtd         = -(rtdPerFrame-refRtd);
     results.raw.refRtd      = refRtd;
     results.raw.frameTime   = timev;
+end
+
+if ~calibParams.fwTable.extrap.rtdModel.interpolationParams.bypass
+    [rtdTableCol,res] = calcRtdFixWithoutInterpolation(rtdPerFrame,ldd,data,calibParams,runParams);
+    table(:,5) = rtdTableCol;
+    results.table = table;
 end
 
 if ~isempty(runParams)
@@ -696,4 +705,49 @@ if (max(shtw2)==min(shtw2))
     fprintff('Error in temperature reading: SHTW2 temperature is constant over frames.\n');
     return
 end
+end
+function [rtdTableCol,results] = calcRtdFixWithoutInterpolation(rtdPerFrame,ldd,data,calibParams,runParams)
+% jump detection
+jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, true, runParams);
+if isempty(jumpIdcs) % no jump detected
+    ind = 1;
+else % last diff outlier is the first post-jump index
+    ind = jumpIdcs(end);
+    fprintff('Warning: RTD jump detected - excluding measurements below %.2f[deg].\n', ldd(ind))
+end
+lddForEst = ldd(ind:end);
+rtdForEst = rtdPerFrame(ind:end);
+results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
+results.rtd.minval = calibParams.fwTable.tempBinRange(1);
+results.rtd.nBins = calibParams.fwTable.nRows;
+lddGrid = linspace(results.rtd.minval,results.rtd.maxval,results.rtd.nBins);
+lddStep = lddGrid(2)-lddGrid(1);
+rtdGrid = arrayfun(@(x) median(rtdForEst(abs(lddForEst-x)<=lddStep/2)), lddGrid);
+results.rtd.refTemp = data.dfzRefTmp;
+[~, ind] = min(abs(results.rtd.refTemp - lddGrid));
+refRtd = rtdGrid(ind);
+results.rtd.tmptrOffsetValues = -(rtdGrid-refRtd); % aligning to reference temperature
+% Fill inner gaps in temperature with linear interpolation
+results.rtd.tmptrOffsetValues = fillInnerNans(results.rtd.tmptrOffsetValues')';
+% extrapolation on each side by calibParams
+
+% extrapolate lower side
+if isnan(results.rtd.tmptrOffsetValues(1))
+    ni = find(~isnan(results.rtd.tmptrOffsetValues),1);
+    idx = ni:ni+calibParams.fwTable.extrap.rtdModel.interpolationParams.degreesToUseFromEdge-1;
+    coef = polyfit(idx,results.rtd.tmptrOffsetValues(idx),calibParams.fwTable.extrap.rtdModel.interpolationParams.refOrderLow);
+    results.rtd.tmptrOffsetValues(1:ni-1) = polyval(coef,1:ni-1);
+end
+% extrapolate higher side
+if isnan(results.rtd.tmptrOffsetValues(end))
+    results.rtd.tmptrOffsetValues = fliplr(results.rtd.tmptrOffsetValues);
+    
+    ni = find(~isnan(results.rtd.tmptrOffsetValues),1);
+    idx = ni:ni+calibParams.fwTable.extrap.rtdModel.interpolationParams.degreesToUseFromEdge-1;
+    coef = polyfit(idx,results.rtd.tmptrOffsetValues(idx),calibParams.fwTable.extrap.rtdModel.interpolationParams.refOrderHigh);
+    results.rtd.tmptrOffsetValues(1:ni-1) = polyval(coef,1:ni-1);
+    
+    results.rtd.tmptrOffsetValues = fliplr(results.rtd.tmptrOffsetValues);
+end
+rtdTableCol = results.rtd.tmptrOffsetValues;
 end
