@@ -65,6 +65,4 @@ def test_robot_Run():
 
 
 def test_validation_Run():
-    filePath = r'X:/Data/robot/12121715/testXml.xml'
-    slash.logger.info("running data validation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.runMatlabValidation(filePath)
+    runIqValidation.runMatlabValidation()
