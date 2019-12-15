@@ -148,7 +148,8 @@ end
 function [angX,timeVec] = extractAngXfromSampledData(dataPath,hw,anglesRng)
 sampledData = load(dataPath);
 % Calculating angle x data from the output we get into the DSM per current
-% unit, sampled using: Z:\Omri\forVladik\AsyncLogger\forMaya.m
+% unit, sampled using: Z:\Omri\forVladik\AsyncLogger\forMaya.m and also
+% backup here: X:\Users\mkiperwa\projection\sampleFromControl
 [~, locs1] = findpeaks(-sampledData.mirrorAng); % Get one scan
 [~, locs2] = findpeaks(sampledData.mirrorAng);
 ix = [locs1(1) locs2(1)];
