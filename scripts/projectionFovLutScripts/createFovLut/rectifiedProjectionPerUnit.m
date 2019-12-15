@@ -13,8 +13,8 @@ topMarginPix = 100;
 bottomMarginPix = 100;
 totRange = 4095;
 anglesRng = 2047;
-rectY = [-10,458];
-rectX = [0,1024];
+rectY = [-10,485];
+rectX = [0,1034];
 xF = []; yF = [];f2AngX = []; f2AngY = [];
 %%
 if verbose
@@ -28,8 +28,8 @@ if verbose
     
     figure();scatter(xF(:),yF(:));grid minor;
     hold on;
-    plot(double(ones(regs.GNRL.imgVsize,1)*rectX(3)),double((1:regs.GNRL.imgVsize)'),'LineWidth',2);
-    plot(double(ones(regs.GNRL.imgVsize,1)*rectX(4)),double((1:regs.GNRL.imgVsize)'),'LineWidth',2);
+    plot(double(ones(regs.GNRL.imgVsize,1)*rectX(1)),double((1:regs.GNRL.imgVsize)'),'LineWidth',2);
+    plot(double(ones(regs.GNRL.imgVsize,1)*rectX(2)),double((1:regs.GNRL.imgVsize)'),'LineWidth',2);
     plot(double((1:regs.GNRL.imgHsize)'),double(ones(regs.GNRL.imgHsize,1)*rectY(1)),'LineWidth',2);
     plot(double((1:regs.GNRL.imgHsize)'),double(ones(regs.GNRL.imgHsize,1)*rectY(2)),'LineWidth',2);
     axis ij;
@@ -52,7 +52,7 @@ vmin = fliplr(totRange-vmaxOrig);
 vmax = fliplr(totRange-vminOrig);
 %%
 % Fix sine table bug:
-[vmin,vmax] = fixV2BugInSineTable(vmin,vmax);
+[vmin,vmax] = fixV2BugInSineTable(vmin,vmax,totRange);
 %% write FOV LUT table 
 
 vs =double(vec([round(vmin);round(vmax)]));
@@ -130,12 +130,12 @@ end
 
 %{
 % Horizontal left
-angRect.HLang.x=f2AngX(double(ones(regs.GNRL.imgVsize,1)*rectX(3)),double((1:regs.GNRL.imgVsize)'));
-angRect.HLang.y=f2AngY(double(ones(regs.GNRL.imgVsize,1)*rectX(3)),double((1:regs.GNRL.imgVsize)'));
+angRect.HLang.x=f2AngX(double(ones(regs.GNRL.imgVsize,1)*rectX(1)),double((1:regs.GNRL.imgVsize)'));
+angRect.HLang.y=f2AngY(double(ones(regs.GNRL.imgVsize,1)*rectX(1)),double((1:regs.GNRL.imgVsize)'));
 
 % Horizontal right
-angRect.HRang.x=f2AngX(double(ones(regs.GNRL.imgVsize,1)*rectX(4)),double((1:regs.GNRL.imgVsize)'));
-angRect.HRang.y=f2AngY(double(ones(regs.GNRL.imgVsize,1)*rectX(4)),double((1:regs.GNRL.imgVsize)'));
+angRect.HRang.x=f2AngX(double(ones(regs.GNRL.imgVsize,1)*rectX(2)),double((1:regs.GNRL.imgVsize)'));
+angRect.HRang.y=f2AngY(double(ones(regs.GNRL.imgVsize,1)*rectX(2)),double((1:regs.GNRL.imgVsize)'));
 if verbose
     figure(120784);plot(angRect.HLang.x+anglesRng,angRect.HLang.y+anglesRng);
     plot(angRect.HRang.x+anglesRng,angRect.HRang.y+anglesRng);
@@ -188,7 +188,7 @@ function [xPix,yPix] = inverseAngs(angX,angY,regs,tpsUndistModel,luts)
 % [ xPix,yPix] = Calibration.aux.vec2xy(vNew, regs);
 end
 
-function [vmin,vmax] = fixV2BugInSineTable(vmin,vmax)
+function [vmin,vmax] = fixV2BugInSineTable(vmin,vmax,totRange)
 %%
 % Cos table fix:
 cosData = load('X:\Users\hila\L515\projectionByRoiLut\scanDirDIFF\anlyzeYloc\dupTable\data.mat');
