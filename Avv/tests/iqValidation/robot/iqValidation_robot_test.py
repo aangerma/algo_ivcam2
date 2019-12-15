@@ -56,3 +56,15 @@ def test_validation_DEBUG():
     filePath = r'Avv/tests/iqValidation/debug.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validation_test(filePath)
+
+
+def test_robot_Run():
+    filePath = r'X:/Avv/sources/robot/robotNew.xml'
+    slash.logger.info("running data collection test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.robotRun(filePath)
+
+
+def test_validation_Run():
+    filePath = r'X:/Data/robot/12121715/testXml.xml'
+    slash.logger.info("running data validation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.runMatlabValidation(filePath)
