@@ -734,7 +734,7 @@ results.rtd.tmptrOffsetValues = fillInnerNans(results.rtd.tmptrOffsetValues')';
 % extrapolate lower side
 if isnan(results.rtd.tmptrOffsetValues(1))
     ni = find(~isnan(results.rtd.tmptrOffsetValues),1);
-    idx = ni:ni+calibParams.fwTable.extrap.rtdModel.interpolationParams.degreesToUseFromEdge-1;
+    idx = ni:ni+ceil(calibParams.fwTable.extrap.rtdModel.interpolationParams.degreesToUseFromEdge/lddStep)-1;
     coef = polyfit(idx,results.rtd.tmptrOffsetValues(idx),calibParams.fwTable.extrap.rtdModel.interpolationParams.refOrderLow);
     results.rtd.tmptrOffsetValues(1:ni-1) = polyval(coef,1:ni-1);
 end
@@ -743,7 +743,7 @@ if isnan(results.rtd.tmptrOffsetValues(end))
     results.rtd.tmptrOffsetValues = fliplr(results.rtd.tmptrOffsetValues);
     
     ni = find(~isnan(results.rtd.tmptrOffsetValues),1);
-    idx = ni:ni+calibParams.fwTable.extrap.rtdModel.interpolationParams.degreesToUseFromEdge-1;
+    idx = ni:ni+ceil(calibParams.fwTable.extrap.rtdModel.interpolationParams.degreesToUseFromEdge/lddStep)-1;
     coef = polyfit(idx,results.rtd.tmptrOffsetValues(idx),calibParams.fwTable.extrap.rtdModel.interpolationParams.refOrderHigh);
     results.rtd.tmptrOffsetValues(1:ni-1) = polyval(coef,1:ni-1);
     
