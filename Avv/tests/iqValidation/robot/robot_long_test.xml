@@ -5,15 +5,17 @@
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
+	</params>
+	<camera>
         <stableTemp>false</stableTemp>
         <numberOfPics>12</numberOfPics>
         <delayPicsInSec>300</delayPicsInSec>
         <tag>time_drift</tag>
-    </params>
-    <cameraConfig_beforeStartStream>
-        <cmd>DIRTYBITGET</cmd>
-    </cameraConfig_beforeStartStream>
-    <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
+		<cameraConfig_beforeStartStream>
+			<cmd>DIRTYBITGET</cmd>
+		</cameraConfig_beforeStartStream>
+		<cameraConfig_afterStartStream></cameraConfig_afterStartStream>
+	</camera>
     <tests>
         <test name="losGridDrift_150cm" metrics="losGridDrift" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra=''/>
         <test name="fillRate_150cm" metrics="fillRate" target="checkerboard_50" distance="150cm" threshold="[99.8 : 100]" extra='' />

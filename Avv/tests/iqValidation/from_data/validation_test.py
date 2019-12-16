@@ -10,34 +10,38 @@ import runIqValidation
 def test_validation_turn_in():
     filePath = r'Avv/tests/iqValidation/from_data/turn_in.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
+    runIqValidation.validationExecution(filePath)
 
 
 def test_validation_es2():
     filePath = r'Avv/tests/iqValidation/from_data/es2.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
+    runIqValidation.validationExecution(filePath)
 
 
 @slash.tag('turn_in')
 def test_validation_ivs():
     filePath = r'Avv/tests/iqValidation/from_data/ivs.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
+    runIqValidation.validationExecution(filePath)
 
 
 @slash.tag('ds')
 def test_validation_ds5u_camera():
     filePath = r'Avv/tests/iqValidation/from_data/ds5u_camera.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
+    runIqValidation.validationExecution(filePath)
 
 
 @slash.tag('ds')
 def test_validation_d4m_camera():
     filePath = r'Avv/tests/iqValidation/from_data/d4m_camera.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.validation_test(filePath)
+    runIqValidation.validationExecution(filePath)
+
+
+def test_validation_Run():
+    runIqValidation.runMatlabValidation()
 
 
 if __name__ == "__main__":
