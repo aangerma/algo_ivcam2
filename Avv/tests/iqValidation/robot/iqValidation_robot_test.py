@@ -58,6 +58,6 @@ def test_validation_DEBUG():
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.robotRun(filePath)
 
-
+@slash.tag('analsys')
 def test_validation_Run():
     runIqValidation.runMatlabValidation()
