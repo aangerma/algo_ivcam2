@@ -1,27 +1,18 @@
 function [table, results] = generateFWTable(data, calibParams, runParams, fprintff)
 % Bin frames according to fw loop requirment.
-% Generate a linear fix for angles and an offset for rtd
+% Generate a fix for angles and an offset for rtd
 
-% •	All values are fixed point 8.8
-% •	Range is [32,79] degrees – row for every 1 degree of Ldd for
-% temperature offset fix
-% •	Linear interpolation
-% •	Averaging of 10 last LDD temperature measurements every second. Temperature sample rate is 10Hz. Same for vBias and Ibias 
-% •	Replace “Reserved_512_Calibration_1_CalibData_Ver_20_00.txt” with ~“Algo_Thermal_Loop_512_ 1_CalibInfo_Ver_21_00.bin” 
-% •	In case table does not exist, continue working with old thermal loop
 
+%% Preparations
 framesData = data.framesData;
 timeVec = [framesData.time];
-
-
+tempData = [framesData.temp];
+ldd = [tempData.ldd];
+vBias = reshape([framesData.vBias],3,[]);
 regs = data.regs;
 
 nBins = calibParams.fwTable.nRows;
 N = nBins+1;
-tempData = [framesData.temp];
-vBias = reshape([framesData.vBias],3,[]);
-ldd = [tempData.ldd];
-timev = [framesData.time];
 
 validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
 validPerFrame = cell2mat(validPerFrame);
@@ -29,32 +20,18 @@ validCB = all(validPerFrame,2);
 
 
 %% Temperatures management
-if isfield(tempData,'ma')
-    ma = [tempData.ma];
-else
-    fprintff('WARNING: ma data missing. Treating ldd as a proxy for ma temperature.\n');
-    ma = [tempData.ldd]; % temporary
-end
-if isfield(tempData, 'tsense')
-    tsense = [tempData.tsense];
-else
-    fprintff('WARNING: tsense data missing. Ignoring shtw2-tsense temperature difference.\n');
-    tsense = [tempData.ldd]; % temporary
-end
-if isfield(tempData, 'shtw2')
-    shtw2 = [tempData.shtw2];
-else
-    fprintff('WARNING: shtw2 data missing. Ignoring shtw2-tsense temperature difference.\n');
-    shtw2 = [tempData.ldd]; % temporary
-end
-results.temp.FRMWhumidApdTempDiff = 0; % default
-if isfield(tempData, 'tsense') && isfield(tempData, 'shtw2')
-    ind = find(all(tsense'*[1,-1] > calibParams.warmUp.apdTempRange.*[1,-1], 2), 1, 'first'); % within range
-    if ~isempty(ind)
-        results.temp.FRMWhumidApdTempDiff = shtw2(ind) - tsense(ind);
-    else
-        fprintff('WARNING: no tsense measurement within range [%d,%d]. Ignoring shtw2-tsense temperature difference.\n', calibParams.warmUp.apdTempRange);
-    end
+ma = [tempData.ma];
+tsense = [tempData.tsense];
+shtw2 = [tempData.shtw2];
+[~,indMinDif] = min(shtw2-tsense);
+try
+    fitIdcs = abs(shtw2-shtw2(indMinDif))<10;
+    p = polyfit(shtw2(fitIdcs), shtw2(fitIdcs)-tsense(fitIdcs), 2);
+    humidMinDif = -p(2)/(2*p(1));
+    results.temp.FRMWhumidApdTempDiff = p(1)*humidMinDif.^2 + p(2)*humidMinDif + p(3); % denoised minimum
+catch
+    fprintf('WARNING: shtw2-tsense estimation failed, resorting to minimal difference.\n');
+    results.temp.FRMWhumidApdTempDiff = shtw2(indMinDif)-tsense(indMinDif); % simple minimum
 end
 if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
@@ -63,13 +40,10 @@ if ~isempty(runParams)
     plot(ma, '.-')
     plot(tsense, '.-')
     plot(shtw2, '.-')
-    if (results.temp.FRMWhumidApdTempDiff~=0)
-        plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
-        leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff'};
-        text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
-    else
-        leg = {'LDD', 'MA', 'TSense', 'SHTW2'};
-    end
+    [~,ind] = min(abs(shtw2-humidMinDif));
+    plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
+    leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff'};
+    text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
     grid on, xlabel('#frame'), ylabel('temperature [deg]')
     legend(leg,'Location','northwest')
     title('Temperature readings')
@@ -80,6 +54,7 @@ if calibParams.warmUp.checkTmptrSensors && ~checkTemperaturesValidity(ldd, ma, t
     table = [];
     return;
 end
+
 
 %% IR statistics
 if isfield(framesData, 'irStat')
@@ -100,6 +75,7 @@ if isfield(framesData, 'irStat')
     end
 end
 
+
 %% RTD fix
 rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
 
@@ -119,20 +95,20 @@ else % last diff outlier is the first post-jump index
 end
 
 % group by LDD
+lddForEst = ldd(ind:end);
 rtdForEst = rtdPerFrame(ind:end);
-minMaxLdd = minmax(ldd(ind:end));
-results.rtd.maxval = minMaxLdd(2);
-results.rtd.minval = minMaxLdd(1);
+if calibParams.fwTable.extrap.rtdModel.skipInterpolation % use final grid from start
+    results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
+    results.rtd.minval = calibParams.fwTable.tempBinRange(1);
+else % use finer grid prior to extrapolation (as in angX & angY)
+    minMaxLdd = minmax(lddForEst);
+    results.rtd.maxval = minMaxLdd(2);
+    results.rtd.minval = minMaxLdd(1);
+end
 results.rtd.nBins = nBins;
 lddGrid = linspace(results.rtd.minval,results.rtd.maxval,nBins);
-rtdGrid = NaN(size(lddGrid));
 lddStep = lddGrid(2)-lddGrid(1);
-for k = 1:length(lddGrid)
-    idcs = abs(ldd(ind:end) - lddGrid(k)) <= lddStep/2;
-    if any(idcs)
-        rtdGrid(k) = median(rtdForEst(idcs));
-    end
-end
+rtdGrid = arrayfun(@(x) median(rtdForEst(abs(lddForEst-x)<=lddStep/2)), lddGrid);
 results.rtd.refTemp = data.dfzRefTmp;
 [~, ind] = min(abs(results.rtd.refTemp - lddGrid));
 refRtd = rtdGrid(ind);
@@ -161,6 +137,7 @@ if ~isempty(runParams)
     title('Frames Per Ldd Temperature Histogram'); grid on;xlabel('Ldd Temperature');ylabel('count');
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Histogram_Frames_Per_Temp'));
 end
+
 
 %% Y Fix - groupByVBias2
 validYFixFrames = timeVec >= calibParams.fwTable.yFix.ignoreNSeconds;
@@ -196,12 +173,13 @@ if ~isempty(runParams)
     plot((binEdges(1:end-1)+binEdges(2:end))*0.5,results.angy.scale);
     title('AngYScale per vBias2'); xlabel('vBias2 (V)'); ylabel('AngYScale'); grid on;
     subplot(132)
-    plot(timev,vBias(2,:));title('vBias2(t)'); xlabel('time [sec]'); ylabel('vBias2[v]'); grid on;
+    plot(timeVec,vBias(2,:));title('vBias2(t)'); xlabel('time [sec]'); ylabel('vBias2[v]'); grid on;
     subplot(133)
     plot((binEdges(1:end-1)+binEdges(2:end))*0.5,results.angy.offset);
     title('AngYOffset per vBias2'); xlabel('vBias2 (V)'); ylabel('AngYOffset'); grid on;
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Scale and Offset Per vBias2'));
 end
+
 
 %% X Fix - groupByVBias1+3
 vbias1 = vBias(1,:);
@@ -283,7 +261,7 @@ stem(lddGridEdges,ones(size(lddGridEdges)),'r');
     scaleSineParam = nan(nBinsRgb,1);
     transXparam = nan(nBinsRgb,1);
     transYparam = nan(nBinsRgb,1);
-    %%
+    %
     for k = 1:nBinsRgb
         matchedPoints2 = referencePts;
         matchedPoints1 = rgbGrid(:,:,k);
@@ -305,6 +283,7 @@ stem(lddGridEdges,ones(size(lddGridEdges)),'r');
     results.rgb.minTemp = minMaxLdd4RGB(1);
 end
 
+
 %% Table generation
 angXscale       = vec(results.angx.scale);
 angXoffset      = vec(results.angx.offset);
@@ -325,8 +304,10 @@ table = [dsmXscale,...
             dsmYoffset,...
             destTmprtOffset];
 table = fillInnerNans(table);   
-table = fillStartNans(table);   
-table = flipud(fillStartNans(flipud(table)));   
+if ~calibParams.fwTable.extrap.rtdModel.skipInterpolation % table is expected to be NaN free
+    table = fillStartNans(table);
+    table = flipud(fillStartNans(flipud(table)));
+end
 
 if calibParams.fwTable.yFix.bypass
    table(:,2) = regs.EXTL.dsmYscale;
@@ -350,6 +331,7 @@ results.angx.p0         = vBiasLims([1,3],1)';
 results.angx.p1         = vBiasLims([1,3],2)';
 results.table           = table;
 
+% debug
 if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outputRawData
     results.raw.vbias1      = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);
     results.raw.dsmXscale   = dsmXscale;
@@ -360,7 +342,7 @@ if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outpu
     results.raw.ldd         = ldd;
     results.raw.rtd         = -(rtdPerFrame-refRtd);
     results.raw.refRtd      = refRtd;
-    results.raw.frameTime   = timev;
+    results.raw.frameTime   = timeVec;
 end
 
 if ~isempty(runParams)
@@ -412,7 +394,8 @@ if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     hold all
     plot(ldd, -(rtdPerFrame-refRtd),'*');
-    plot(lddGrid, -(rtdGrid-refRtd),'-o');
+    hPlot = plot(lddGrid, -(rtdGrid-refRtd),'-o','markersize',3);
+    set(hPlot, 'markerfacecolor', sqrt(get(hPlot,'color')))
     plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
     grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');
     legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)')
@@ -422,65 +405,9 @@ assert(~any(isnan(table(:))),'Thermal table contains nans \n');
 
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [anga,angb] = linearTransformToRef(framesPerTemperature,refBinIndex)
 
-nFrames = size(framesPerTemperature,1);  
-target = framesPerTemperature(refBinIndex,:);
-validT = ~isnan(target);
-for i = 1:nFrames
-    source = framesPerTemperature(i,:);
-    valid = logical((~isnan(source)) .* validT);
-    
-    if any(valid)
-        [anga(i),angb(i)] = linearTrans(vec(source(valid)),vec(target(valid)));
-    else
-        anga(i) = nan;
-        angb(i) = nan;
-    end
-    
-end
 
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [a,b] = linearTrans(x1,x2)
-A = [x1,ones(size(x1))];
-res = inv(A'*A)*A'*x2;
-a = res(1);
-b = res(2);
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function table = fillStartNans(table)
-    for i = 1:size(table,2)
-        ni = find(~isnan(table(:,i)),1);
-        if ni>1
-            table(1:ni-1,i) = table(ni,i);
-        end
-    end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function tableNoInnerNans = fillInnerNans(table)
-    tableNoInnerNans = table;
-    
-    for i = 1:size(table,2)
-        col = table(:,i);
-        nanRows = isnan(col);
-        rowId = (1:size(table,1))';
-        tableValid = col(~nanRows);
-        rowValid = rowId(~nanRows);
-        rowInvalid = rowId(nanRows);
-        newVals = interp1q(rowValid,tableValid,rowInvalid);
-        tableNoInnerNans(nanRows,i) = newVals;
-    end
-
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -497,140 +424,28 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function vBiasLims = extrapolateVBiasLimits(results, ldd, vBias, calibParams, runParams)
-
-vBiasLims = zeros(3,2);
-
-% vBias2
-coef2 = polyfit(ldd, vBias(2,:), 2);
-fit2 = @(x) coef2(1)*x.^2 + coef2(2)*x + coef2(3);
-vBiasLims(2,:) = fit2(calibParams.fwTable.tempBinRange);
-
-% vBias1/3
-p0 = results.angx.p0;
-p1 = results.angx.p1;
-tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBias([1,3],:)'-p0)';
-coef13 = polyfit(ldd, tgal, 2);
-fit13 = @(x) coef13(1)*x.^2 + coef13(2)*x + coef13(3);
-tgalExtrapLims = fit13(calibParams.fwTable.tempBinRange);
-vBiasLims([1,3],:) = p0' + (p1-p0)'*tgalExtrapLims;
-
-if calibParams.fwTable.extrap.expandVbiasLims
-    vBiasSpan = diff(vBiasLims,[],2);
-    vBiasLims = vBiasLims + calibParams.fwTable.extrap.expandFactor*vBiasSpan*[-1,1];
+function isValid = checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
+isValid = true;
+if (max(ldd)==min(ldd))
+    isValid = false;
+    fprintff('Error in temperature reading: LDD temperature is constant over frames.\n');
+    return
 end
-
-if ~isempty(runParams)
-    ff = Calibration.aux.invisibleFigure; hold all
-    lddExt = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), 48);
-    plot(ldd, vBias(1,:), 'b.-'), plot(lddExt, p0(1)+(p1(1)-p0(1))*fit13(lddExt), 'c-o')
-    plot(ldd, vBias(2,:), '.-', 'color', [0,0.5,0]),  plot(lddExt, fit2(lddExt), 'g-o')
-    plot(ldd, vBias(3,:), 'r.-'),  plot(lddExt, p0(2)+(p1(2)-p0(2))*fit13(lddExt), 'm-o')
-    plot(calibParams.fwTable.tempBinRange, vBiasLims(1,:), 'bp')
-    plot(calibParams.fwTable.tempBinRange, vBiasLims(2,:), 'p', 'color', [0,0.5,0])
-    plot(calibParams.fwTable.tempBinRange, vBiasLims(3,:), 'rp')
-    grid on, xlabel('LDD [deg]'), ylabel('vBias [V]'), legend('vBias1','extrap','vBias2','extrap','vBias3','extrap','vBias1Lims','vBias2Lims','vBias3Lims')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables','vBiasLimExtrap');
+if (max(ma)==min(ma))
+    isValid = false;
+    fprintff('Error in temperature reading: MA temperature is constant over frames.\n');
+    return
 end
-
+if (max(tsense)==min(tsense))
+    isValid = false;
+    fprintff('Error in temperature reading: TSense temperature is constant over frames.\n');
+    return
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function x = linspaceCanonicalCenters(n)
-% generates grid for which bin centers are evenly-spaced between 0 and 1
-xMin = -(2*n-2)/((2*n-3)^2-1);
-xMax = (2*n-2)*(2*n-3)/((2*n-3)^2-1);
-x = linspace(xMin, xMax, n);
+if (max(shtw2)==min(shtw2))
+    isValid = false;
+    fprintff('Error in temperature reading: SHTW2 temperature is constant over frames.\n');
+    return
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [table, results] = extrapolateTable(table, results, vBiasLims, calibParams, runParams)
-
-extrapParams = calibParams.fwTable.extrap;
-
-% angy extrapolation
-origGridY = linspace(results.angy.minval, results.angy.maxval, results.angy.nBins);
-extrapGridY = linspace(vBiasLims(2,1), vBiasLims(2,2), results.angy.nBins);
-extrapYScale = polyExtrap(origGridY', table(:,2), extrapGridY, extrapParams.yScaleOrder);
-extrapYOffset = polyExtrap(origGridY', table(:,4), extrapGridY, extrapParams.yOffsetOrder);
-
-% angx extrapolation
-p0 = results.angx.p0;
-p1 = results.angx.p1;
-tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBiasLims([1,3],:)'-p0)';
-origGridX = linspace(0, 1, results.angx.nBins);
-extrapGridX = linspace(tgal(1), tgal(2), results.angx.nBins);
-extrapXScale = polyExtrap(origGridX', table(:,1), extrapGridX, extrapParams.xScaleOrder);
-extrapXOffset = polyExtrap(origGridX', table(:,3), extrapGridX, extrapParams.xOffsetOrder);
-
-% rtd extrap
-origGridRtd = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
-if extrapParams.rtdModel.hypoTest % use hypothesis testing
-    rtdFitRef = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.refOrder); % default model
-    rtdFixedRef = table(:,5)-rtdFitRef;
-    rmsRef = rms(rtdFixedRef);
-    [rtdFitTest, polyCoefTest] = polyExtrap(origGridRtd', table(:,5), origGridRtd', extrapParams.rtdModel.testOrder); % test model
-    rtdFixedTest = table(:,5)-rtdFitTest;
-    rmsTest = rms(rtdFixedTest);
-    rmsRatio = rmsTest/rmsRef;
-    if extrapParams.rtdModel.failPosLeadCoef && (polyCoefTest(1) > 0) % test model doesn't fit empirical knowledge
-        validTestFit = 0; % ignore test model
-    else
-        validTestFit = 1; % accept test model
-    end
-    if validTestFit && (rmsRatio < extrapParams.rtdModel.rmsRatioThreshold) % test model significantly better than ref model
-        rtdModelOrder = extrapParams.rtdModel.altOrder; % alternative model
-    else
-        rtdModelOrder = extrapParams.rtdModel.refOrder; % default model
-    end
-    results.rtd.modelsRmsRatio = rmsRatio;
-    results.rtd.modelOrder = rtdModelOrder;
-else % avoid hypothesis testing - use default assumption
-    rtdModelOrder = extrapParams.rtdModel.refOrder;
-end
-extrapGridRtd = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
-extrapRtd = polyExtrap(origGridRtd', table(:,5), extrapGridRtd, rtdModelOrder);
-
-% debug
-if ~isempty(runParams) && extrapParams.rtdModel.hypoTest
-    polyOrdLeg = {'linear', 'quadratic', 'cubic', 'quartic'};
-    validTestLeg = {'p(1)>0, ', ''};
-    ff = Calibration.aux.invisibleFigure; hold all
-    plot(origGridRtd', table(:,5), '-o')
-	plot(origGridRtd', rtdFitRef, '-')
-	plot(origGridRtd', rtdFitTest, '--')
-    grid on, xlabel('LDD [deg]'), ylabel('RTD [mm]')
-    legend('raw table', sprintf('%s (RMS %.2f)',polyOrdLeg{extrapParams.rtdModel.refOrder},rmsRef), sprintf('%s (RMS %.2f)',polyOrdLeg{extrapParams.rtdModel.testOrder},rmsTest))
-    title(sprintf('RMS ratio = %.2f, %s%s model chosen', rmsRatio, validTestLeg{validTestFit+1}, polyOrdLeg{rtdModelOrder}))
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables','rtdModel');
-end
-
-% table update
-table(:,1) = extrapXScale;
-table(:,2) = extrapYScale;
-table(:,3) = extrapXOffset;
-table(:,4) = extrapYOffset;
-table(:,5) = extrapRtd;
-
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [extrapVals, polyCoef] = polyExtrap(origGrid, origVals, extrapGrid, polyOrder)
-polyCoef = polyfit(origGrid, origVals, polyOrder);
-switch polyOrder
-    case 1
-        polyFunc = @(x) polyCoef(1)*x + polyCoef(2);
-    case 2
-        polyFunc = @(x) polyCoef(1)*x.^2 + polyCoef(2)*x + polyCoef(3);
-    case 3
-        polyFunc = @(x) polyCoef(1)*x.^3 + polyCoef(2)*x.^2 + polyCoef(3)*x + polyCoef(4);
-    otherwise
-        error('polyExtrap currently supports orders 1-3 only')
-end
-extrapVals = polyFunc(extrapGrid);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -683,26 +498,260 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function isValid = checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
-isValid = true;
-if (max(ldd)==min(ldd))
-    isValid = false;
-    fprintff('Error in temperature reading: LDD temperature is constant over frames.\n');
-    return
+function [anga,angb] = linearTransformToRef(framesPerTemperature,refBinIndex)
+
+nFrames = size(framesPerTemperature,1);  
+target = framesPerTemperature(refBinIndex,:);
+validT = ~isnan(target);
+for i = 1:nFrames
+    source = framesPerTemperature(i,:);
+    valid = logical((~isnan(source)) .* validT);
+    
+    if any(valid)
+        [anga(i),angb(i)] = linearTrans(vec(source(valid)),vec(target(valid)));
+    else
+        anga(i) = nan;
+        angb(i) = nan;
+    end
+    
 end
-if (max(ma)==min(ma))
-    isValid = false;
-    fprintff('Error in temperature reading: MA temperature is constant over frames.\n');
-    return
+
 end
-if (max(tsense)==min(tsense))
-    isValid = false;
-    fprintff('Error in temperature reading: TSense temperature is constant over frames.\n');
-    return
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [a,b] = linearTrans(x1,x2)
+A = [x1,ones(size(x1))];
+res = inv(A'*A)*A'*x2;
+a = res(1);
+b = res(2);
 end
-if (max(shtw2)==min(shtw2))
-    isValid = false;
-    fprintff('Error in temperature reading: SHTW2 temperature is constant over frames.\n');
-    return
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function x = linspaceCanonicalCenters(n)
+% generates grid for which bin centers are evenly-spaced between 0 and 1
+xMin = -(2*n-2)/((2*n-3)^2-1);
+xMax = (2*n-2)*(2*n-3)/((2*n-3)^2-1);
+x = linspace(xMin, xMax, n);
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function table = fillStartNans(table)
+for i = 1:size(table,2)
+    ni = find(~isnan(table(:,i)),1);
+    if ni>1
+        table(1:ni-1,i) = table(ni,i);
+    end
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function tableNoInnerNans = fillInnerNans(table)
+tableNoInnerNans = table;
+for i = 1:size(table,2)
+    col = table(:,i);
+    nanRows = isnan(col);
+    rowId = (1:size(table,1))';
+    tableValid = col(~nanRows);
+    rowValid = rowId(~nanRows);
+    rowInvalid = rowId(nanRows);
+    newVals = interp1q(rowValid,tableValid,rowInvalid);
+    tableNoInnerNans(nanRows,i) = newVals;
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function vBiasLims = extrapolateVBiasLimits(results, ldd, vBias, calibParams, runParams)
+
+vBiasLims = zeros(3,2);
+
+% vBias2
+coef2 = polyfit(ldd, vBias(2,:), 2);
+fit2 = @(x) coef2(1)*x.^2 + coef2(2)*x + coef2(3);
+vBiasLims(2,:) = fit2(calibParams.fwTable.tempBinRange);
+
+% vBias1/3
+p0 = results.angx.p0;
+p1 = results.angx.p1;
+tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBias([1,3],:)'-p0)';
+coef13 = polyfit(ldd, tgal, 2);
+fit13 = @(x) coef13(1)*x.^2 + coef13(2)*x + coef13(3);
+tgalExtrapLims = fit13(calibParams.fwTable.tempBinRange);
+vBiasLims([1,3],:) = p0' + (p1-p0)'*tgalExtrapLims;
+
+if calibParams.fwTable.extrap.expandVbiasLims
+    vBiasSpan = diff(vBiasLims,[],2);
+    vBiasLims = vBiasLims + calibParams.fwTable.extrap.expandFactor*vBiasSpan*[-1,1];
+end
+
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure; hold all
+    lddExt = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), 48);
+    plot(ldd, vBias(1,:), 'b.-'), plot(lddExt, p0(1)+(p1(1)-p0(1))*fit13(lddExt), 'c-o')
+    plot(ldd, vBias(2,:), '.-', 'color', [0,0.5,0]),  plot(lddExt, fit2(lddExt), 'g-o')
+    plot(ldd, vBias(3,:), 'r.-'),  plot(lddExt, p0(2)+(p1(2)-p0(2))*fit13(lddExt), 'm-o')
+    plot(calibParams.fwTable.tempBinRange, vBiasLims(1,:), 'bp')
+    plot(calibParams.fwTable.tempBinRange, vBiasLims(2,:), 'p', 'color', [0,0.5,0])
+    plot(calibParams.fwTable.tempBinRange, vBiasLims(3,:), 'rp')
+    grid on, xlabel('LDD [deg]'), ylabel('vBias [V]'), legend('vBias1','extrap','vBias2','extrap','vBias3','extrap','vBias1Lims','vBias2Lims','vBias3Lims')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables','vBiasLimExtrap');
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [table, results] = extrapolateTable(table, results, vBiasLims, calibParams, runParams)
+
+extrapParams = calibParams.fwTable.extrap;
+
+% angy extrapolation
+origVb2Grid = linspace(results.angy.minval, results.angy.maxval, results.angy.nBins);
+extrapVb2Grid = linspace(vBiasLims(2,1), vBiasLims(2,2), results.angy.nBins);
+extrapYScale = polyExtrap(origVb2Grid, table(:,2)', extrapVb2Grid, extrapParams.yScaleOrder);
+extrapYOffset = polyExtrap(origVb2Grid, table(:,4)', extrapVb2Grid, extrapParams.yOffsetOrder);
+
+% angx extrapolation
+p0 = results.angx.p0;
+p1 = results.angx.p1;
+tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBiasLims([1,3],:)'-p0)';
+origVb13Grid = linspace(0, 1, results.angx.nBins);
+extrapVb13Grid = linspace(tgal(1), tgal(2), results.angx.nBins);
+extrapXScale = polyExtrap(origVb13Grid, table(:,1)', extrapVb13Grid, extrapParams.xScaleOrder);
+extrapXOffset = polyExtrap(origVb13Grid, table(:,3)', extrapVb13Grid, extrapParams.xOffsetOrder);
+
+% rtd extrapolation
+origLddGrid = linspace(results.rtd.minval, results.rtd.maxval, results.rtd.nBins);
+extrapLddGrid = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), results.rtd.nBins);
+lddStep = extrapLddGrid(2)-extrapLddGrid(1);
+if extrapParams.rtdModel.skipInterpolation % use smoothed measurements within calibrated region, and limit extrapolation to non-calibrated regions
+    extrapRtd = extrapOutsideCalibRegionOnly(table(:,5)', lddStep, extrapParams.rtdModel.outsideCal);
+else % use extrapolation for entire range
+    [rtdModelOrder, results] = chooseRtdModelOrder(origLddGrid, table(:,5), runParams, extrapParams.rtdModel, results);
+    extrapRtd = polyExtrap(origLddGrid, table(:,5)', extrapLddGrid, rtdModelOrder);
+end
+
+% table update
+table(:,1) = extrapXScale;
+table(:,2) = extrapYScale;
+table(:,3) = extrapXOffset;
+table(:,4) = extrapYOffset;
+table(:,5) = extrapRtd;
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [extrapVals, polyCoef] = polyExtrap(origGrid, origVals, extrapGrid, polyOrder)
+polyCoef = polyfit(origGrid, origVals, polyOrder);
+switch polyOrder
+    case 1
+        polyFunc = @(x) polyCoef(1)*x + polyCoef(2);
+    case 2
+        polyFunc = @(x) polyCoef(1)*x.^2 + polyCoef(2)*x + polyCoef(3);
+    case 3
+        polyFunc = @(x) polyCoef(1)*x.^3 + polyCoef(2)*x.^2 + polyCoef(3)*x + polyCoef(4);
+    otherwise
+        error('polyExtrap currently supports orders 1-3 only')
+end
+extrapVals = polyFunc(extrapGrid);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function rtdTable = extrapOutsideCalibRegionOnly(rtdTable, lddStep, outsideExtrapParams)
+
+numIdcsForExtrap = ceil(outsideExtrapParams.degreesToUseFromEdge/lddStep);
+
+if isnan(rtdTable(1)) % lower region extrapolation is needed
+    firstValidInd = find(~isnan(rtdTable),1);
+    idcsForExtrap = firstValidInd+(0:numIdcsForExtrap-1);
+    % ref model
+    [refSlope, refOffset] = getExtrapSlopeAndOffset(idcsForExtrap, rtdTable, outsideExtrapParams.refOrderLow, firstValidInd);
+    refExtrapVals = refSlope*(1:firstValidInd-1) + refOffset;
+    % test model
+    [testSlope, testOffset] = getExtrapSlopeAndOffset(idcsForExtrap, rtdTable, outsideExtrapParams.testOrderLow, firstValidInd);
+    testExtrapVals = testSlope*(1:firstValidInd-1) + testOffset;
+    % blend
+    rtdTable(1:firstValidInd-1) = outsideExtrapParams.testPortionLow*testExtrapVals + (1-outsideExtrapParams.testPortionLow)*refExtrapVals;
+end
+
+if isnan(rtdTable(end)) % higher region extrapolation is needed
+    rtdTable = fliplr(rtdTable); % for ease (use same algorithm as in lower region)
+    firstValidInd = find(~isnan(rtdTable),1);
+    idcsForExtrap = firstValidInd+(0:numIdcsForExtrap-1);
+    % ref model
+    [refSlope, refOffset] = getExtrapSlopeAndOffset(idcsForExtrap, rtdTable, outsideExtrapParams.refOrderHigh, firstValidInd);
+    refExtrapVals = refSlope*(1:firstValidInd-1) + refOffset;
+    % test model
+    [testSlope, testOffset] = getExtrapSlopeAndOffset(idcsForExtrap, rtdTable, outsideExtrapParams.testOrderHigh, firstValidInd);
+    testExtrapVals = testSlope*(1:firstValidInd-1) + testOffset;
+    % blend
+    rtdTable(1:firstValidInd-1) = outsideExtrapParams.testPortionHigh*testExtrapVals + (1-outsideExtrapParams.testPortionHigh)*refExtrapVals;
+    rtdTable = fliplr(rtdTable);
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [slope, offset] = getExtrapSlopeAndOffset(idcsForExtrap, tableForExtrap, polyOrd, ind)
+
+coef = polyfit(idcsForExtrap,tableForExtrap(idcsForExtrap), polyOrd);
+slope = 0;
+for k = 1:polyOrd
+    slope = slope + (polyOrd-(k-1))*coef(k)*(ind^(polyOrd-k));
+end
+
+if (polyOrd==1)
+    offset = coef(2); % continuity is implied
+else
+    offset = tableForExtrap(ind) - slope*ind; % continuity should be maintained
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [rtdModelOrder, results] = chooseRtdModelOrder(lddGrid, rtdGrid, runParams, rtdModelParams, results)
+
+if rtdModelParams.hypoTest.enable % use hypothesis testing
+    rtdFitRef = polyExtrap(lddGrid, rtdGrid', lddGrid, rtdModelParams.refOrder); % default model
+    rmsRef = rms(rtdGrid-rtdFitRef);
+    [rtdFitTest, polyCoefTest] = polyExtrap(lddGrid, rtdGrid', lddGrid, rtdModelParams.hypoTest.testOrder); % test model
+    rmsTest = rms(rtdGrid-rtdFitTest);
+    rmsRatio = rmsTest/rmsRef;
+    if rtdModelParams.hypoTest.failPosLeadCoef && (polyCoefTest(1) > 0) % test model doesn't fit empirical knowledge
+        validTestFit = 0; % ignore test model
+    else
+        validTestFit = 1; % accept test model
+    end
+    if validTestFit && (rmsRatio < rtdModelParams.hypoTest.rmsRatioThreshold) % test model significantly better than ref model
+        rtdModelOrder = rtdModelParams.hypoTest.altOrder; % alternative model
+    else
+        rtdModelOrder = rtdModelParams.refOrder; % default model
+    end
+    results.rtd.modelsRmsRatio = rmsRatio;
+    results.rtd.modelOrder = rtdModelOrder;
+    % debug
+    if ~isempty(runParams)
+        polyOrdLeg = {'linear', 'quadratic', 'cubic', 'quartic'};
+        validTestLeg = {'p(1)>0, ', ''};
+        ff = Calibration.aux.invisibleFigure; hold all
+        plot(origLddGrid, rtdGrid', '-o')
+        plot(origLddGrid, rtdFitRef', '-')
+        plot(origLddGrid, rtdFitTest', '--')
+        grid on, xlabel('LDD [deg]'), ylabel('RTD [mm]')
+        legend('raw table', sprintf('%s (RMS %.2f)',polyOrdLeg{rtdModelParams.refOrder},rmsRef), sprintf('%s (RMS %.2f)',polyOrdLeg{rtdModelParams.testOrder},rmsTest))
+        title(sprintf('RMS ratio = %.2f, %s%s model chosen', rmsRatio, validTestLeg{validTestFit+1}, polyOrdLeg{rtdModelOrder}))
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Tables','rtdModel');
+    end
+else % avoid hypothesis testing - use default assumption
+    rtdModelOrder = rtdModelParams.refOrder;
+end
+
 end

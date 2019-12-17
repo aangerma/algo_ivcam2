@@ -1,12 +1,13 @@
 clear all
 clc
 
-%atcPath = 'W:\BIG PBS\HENG-2820\20-60 linear non gradual\F9340536\ATC 20-60\';
-%atcPath = 'W:\BIG PBS\HENG-2820\F9340068\ATC 20-60 polynomial ex\';
-%atcPath = 'W:\BIG PBS\HENG-2820\20-60 linear non gradual\F9340536\ATC 20-60\';
-%atcPath = 'W:\BIG PBS\HENG-2820\20-60 linear non gradual\F9340833\';
-%atcPath = 'W:\BIG PBS\HENG-2820\20-60 linear non gradual\F9340026\ATC9\';
-atcPath = 'W:\BIG PBS\HENG-2820\New_DLL_20-60\F9340284\ATC 20-60\ATC13\';
+atcPath = 'W:\BIG PBS\HENG-2837\F9340026\ATC12\';
+% atcPath = 'W:\BIG PBS\HENG-2837\F9340254\ATC3\';
+% atcPath = 'W:\BIG PBS\HENG-2837\F9340423\ATC6\';
+% atcPath = 'W:\BIG PBS\HENG-2837\F9340713\ATC16\';
+% atcPath = 'W:\BIG PBS\HENG-2837\F9340789\ATC5\';
+% atcPath = 'W:\BIG PBS\HENG-2837\F9340833\ATC6\';
+% atcPath = 'W:\BIG PBS\HENG-2837\F9340876\ATC2\';
 atcFolder = [atcPath, 'Matlab\mat_files\'];
 calibDir = [atcPath, 'Matlab\AlgoInternal'];
 

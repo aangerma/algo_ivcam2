@@ -168,11 +168,23 @@
           <yOffsetOrder>2</yOffsetOrder>
           <rtdModel>
               <refOrder>1</refOrder>
-              <hypoTest>0</hypoTest>
-              <testOrder>2</testOrder>
-              <rmsRatioThreshold>0.9</rmsRatioThreshold>
-              <failPosLeadCoef>1</failPosLeadCoef>
-              <altOrder>3</altOrder>
+              <hypoTest>
+                  <enable>0</enable>
+                  <testOrder>2</testOrder>
+                  <rmsRatioThreshold>0.9</rmsRatioThreshold>
+                  <failPosLeadCoef>1</failPosLeadCoef>
+                  <altOrder>3</altOrder>
+              </hypoTest>
+              <skipInterpolation>1</skipInterpolation>
+              <outsideCal>
+                  <refOrderLow>1</refOrderLow>
+                  <testOrderLow>3</testOrderLow>
+                  <testPortionLow>0.5</testPortionLow>
+                  <refOrderHigh>1</refOrderHigh>
+                  <testOrderHigh>3</testOrderHigh>
+                  <testPortionHigh>0.5</testPortionHigh>
+                  <degreesToUseFromEdge>15</degreesToUseFromEdge>
+              </outsideCal>
           </rtdModel>
       </extrap>
    </fwTable>

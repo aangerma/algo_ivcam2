@@ -23,7 +23,7 @@
        <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
        <cropFactors>[0.15,0.15]</cropFactors>
        <pzrMeas>
-           <nVals2avg>10</nVals2avg>
+           <nVals2avg>1</nVals2avg>
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>

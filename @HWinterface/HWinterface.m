@@ -650,7 +650,7 @@ classdef HWinterface <handle
         end
         function vdd = getMaVoltagee(obj,N)
             if ~exist('N','var')
-                N = 5;
+                N = 1;
             end
             data = zeros(N,1);
             for i = 1:N
@@ -663,7 +663,7 @@ classdef HWinterface <handle
         end
         function [tempr,humidity]=getHumidityTemperature(obj,N)
             if ~exist('N','var')
-                N = 5;
+                N = 1;
             end
             data = zeros(N,2);
             for i = 1:N
@@ -682,7 +682,7 @@ classdef HWinterface <handle
         end
         function [lddTmptr,mcTmptr,maTmptr,apdTmptr ]=getLddTemperature(obj,N)
             if ~exist('N','var')
-                N = 10;
+                N = 1;
             end
             getTmptr = zeros(N,3);
             

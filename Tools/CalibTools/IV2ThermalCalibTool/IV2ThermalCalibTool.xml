@@ -4,7 +4,7 @@
    <cb_performValidation>1</cb_performValidation>
    <cb_manualCaptures>0</cb_manualCaptures>
    <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
-   <calibRes>[480,640]</calibRes>
+   <calibRes>[480,1024]</calibRes>
    <configurationFolder>releaseConfigCalibVXGA</configurationFolder>
    <toolName>IV2 Thermal Calibration Tool</toolName>
 </struct>

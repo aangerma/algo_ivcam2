@@ -26,6 +26,9 @@ end
 if isfield(framesData,'ptsWithZ')
     vectorFramesData.ptsWithZ = reshape([framesData.ptsWithZ],size(framesData(end).ptsWithZ,1),size(framesData(end).ptsWithZ,2),numel(framesData));
 end
-
+if isfield(framesData,'irStat')
+    irStat = [framesData.irStat];
+    vectorFramesData.irStatMean = [irStat.mean];
+end
 end
 

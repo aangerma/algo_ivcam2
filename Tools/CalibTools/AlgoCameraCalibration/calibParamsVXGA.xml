@@ -414,6 +414,14 @@
         <nFramesToAverage>30</nFramesToAverage>
         <nreadsToAverage>30</nreadsToAverage>
     </aging>
+    <fillRate>
+        <params>
+            <roi>0.09</roi>
+            <isRoiRect>0</isRoiRect>
+            <roiCropRect>0</roiCropRect>
+            <maskCenterShift>[0,0]</maskCenterShift>
+        </params>
+    </fillRate>
    <tableVersions>
         <algoCalib>4</algoCalib>
         <algoRtdOverAngX>3</algoRtdOverAngX>
