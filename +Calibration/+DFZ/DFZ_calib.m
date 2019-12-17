@@ -34,7 +34,7 @@ function [results,calibPassed, dfzRegs] = DFZ_calib(hw, runParams, calibParams, 
         DFZ_calib_Output(hw, fw, r, dfzRegs, results, runParams, calibParams);
 
         if calibParams.dfz.zenith.useEsTilt && ((DFZ_regs.FRMWsaTiltFromEs==65535) || (DFZ_regs.FRMWfaTiltFromEs==65535))
-            fprintff('WARNING: 0xFFFF found in SPOT TILT -> failing DFZ calibration\n')
+            fprintff('WARNING: 0xFFFF found in SPOT TILT -> failing DFZ calibration\n');
             calibPassed = 0;
         end
     else
