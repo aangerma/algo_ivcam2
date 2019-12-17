@@ -43,7 +43,7 @@
     <Parameter1 Name="Offset" />
     <Parameter2 Name="End Address" />
   </Command>
-  <Command Name="MWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x02" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write Tensilica memory ( 32bit )">
+  <Command Name="MWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x02" I2cRegOffset="0x3014" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write Tensilica memory ( 32bit )">
     <Parameter1 Name="Start Address" />
     <Parameter2 Name="End Address" />
     <Data Name="Data" IsReverseBytes="true" FormatLength="8" />
@@ -66,7 +66,7 @@
     <Parameter3 Name="Size">
     </Parameter3>
   </Command>
-  <Command Name="IWB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x06" I2cRegOffset="0x3024" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write to i2c ( 8x8 )">
+  <Command Name="IWB" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x06" I2cRegOffset="0x3024" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 8x8 )">
     <Parameter1 Name="Device ID">
     </Parameter1>
     <Parameter2 Name="Offset">
@@ -75,7 +75,7 @@
     </Parameter3>
     <Data FormatLength="2" />
   </Command>
-  <Command Name="IWW" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x07" I2cRegOffset="0x3028" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write to i2c ( 16x8 )">
+  <Command Name="IWW" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x07" I2cRegOffset="0x3028" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 16x8 )">
     <Parameter1 Name="Device ID">
     </Parameter1>
     <Parameter2 Name="Offset">
@@ -84,7 +84,7 @@
     </Parameter3>
     <Data IsReverseBytes="false" FormatLength="2" />
   </Command>
-  <Command Name="IWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x08" I2cRegOffset="0x302C" I2cCmdType="WriteOnly" CmdPermission="Public" Description="Write to i2c ( 32x8 )">
+  <Command Name="IWD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x08" I2cRegOffset="0x302C" I2cCmdType="WriteOnly" CmdPermission="Private" Description="Write to i2c ( 32x8 )">
     <Parameter1 Name="Device ID">
     </Parameter1>
     <Parameter2 Name="Offset">
@@ -99,7 +99,7 @@
     <Parameter2 Name="Size">
     </Parameter2>
   </Command>
-  <Command Name="FWB" CmdPipe="WinUsb" Opcode="0x0A" CmdPermission="Public" Description="Write to flash">
+  <Command Name="FWB" CmdPipe="WinUsb" Opcode="0x0A" CmdPermission="Private" Description="Write to flash">
     <Parameter1 Name="StartIndex">
     </Parameter1>
     <Parameter2 Name="Size">
@@ -112,13 +112,13 @@
     <Parameter2 Name="Number of Sectors">
     </Parameter2>
   </Command>
-  <Command Name="FEF" CmdPipe="WinUsb" Opcode="0x0C" CmdPermission="Public" Description="Erase flash full">
+  <Command Name="FEF" CmdPipe="WinUsb" Opcode="0x0C" CmdPermission="Private" Description="Erase flash full">
     <Parameter1 Name="0xACE">
     </Parameter1>
   </Command>
-  <Command Name="FSRU" CmdPipe="WinUsb" Opcode="0x0D" CmdPermission="Private" Description="Flash status register unlock">
+  <Command Name="FSRU" CmdPipe="WinUsb" Opcode="0x0D" CmdPermission="Public" Description="Flash status register unlock">
   </Command>
-  <Command Name="FPLOCK" CmdPipe="WinUsb" Opcode="0x0E" CmdPermission="Private" Description="Permanent lock on lower Quarter region of the flash.">
+  <Command Name="FPLOCK" CmdPipe="WinUsb" Opcode="0x0E" CmdPermission="Public" Description="Permanent lock on lower Quarter region of the flash.">
     <Parameter1 Name="Password" />
   </Command>
   <Command Name="GLD" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0x0F" I2cRegOffset="0xA00" I2cCmdType="ReadOnly" CmdPermission="Public" IsReadCommand="true" Description="LoggerCoreGetDataParams">
@@ -452,6 +452,7 @@
       <Section Name="MA_Temperature" Title="MA (PVT) Temperature" Offset="16" Size="8" FormatType="Double" />
       <Section Name="APD_Temperature" Title="APD Temperature" Offset="24" Size="8" FormatType="Double" />
       <Section Name="HUM_Temperature" Title="HUM Temperature" Offset="32" Size="8" FormatType="Double" />
+      <Section Name="AlgoTermalLddAvg_Temperature" Title="Algo Therm LDD Avg Temperature" Offset="0" Size="8" FormatType="Double" />
     </ReadData>
   </Command>
   <Command Name="PZR_POWER_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x6B" IsReadCommand="true" CmdPermission="Public" Description="Get PZR vBias and iBias">
@@ -832,11 +833,11 @@
     <Parameter1 Name="cmd_index" />
   </Command>
   
-  <Command Name="FALL_DETECT_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9D" CmdPermission="Private" Description="FALL_DETECT_ENABLE">
+  <Command Name="FALL_DETECT_ENABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9D" CmdPermission="Public" Description="FALL_DETECT_ENABLE">
     <Parameter1 Name="enable" />
   </Command>
   
-  <Command Name="FALL_DETECT_CONFIG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9E" CmdPermission="Private" Description="FALL_DETECT_CONFIG">
+  <Command Name="FALL_DETECT_CONFIG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9E" CmdPermission="Public" Description="FALL_DETECT_CONFIG">
     <Parameter1 Name="cntThr1" />
     <Parameter2 Name="cntThr2" />
     <Parameter3 Name="ampThr1" />
