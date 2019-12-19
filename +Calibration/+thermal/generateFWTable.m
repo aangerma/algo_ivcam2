@@ -1,9 +1,10 @@
-function [table, results] = generateFWTable(data, calibParams, runParams, fprintff)
+function [table, results, errorCode] = generateFWTable(data, calibParams, runParams, fprintff)
 % Bin frames according to fw loop requirment.
 % Generate a fix for angles and an offset for rtd
 
 
 %% Preparations
+errorCode = NaN; % default
 framesData = data.framesData;
 timeVec = [framesData.time];
 tempData = [framesData.temp];
@@ -52,6 +53,7 @@ end
 if calibParams.warmUp.checkTmptrSensors && ~checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
     results = [];
     table = [];
+    errorCode = -1;
     return;
 end
 
@@ -72,6 +74,34 @@ if isfield(framesData, 'irStat')
         grid on; xlabel('LDD [deg]'); ylabel('IR');
         legend('mean', 'STD margin')
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_statistics'));
+    end
+    % check for malfunctioning flyback
+    if calibParams.fwTable.flybackTest.enable
+        lddRes = calibParams.fwTable.flybackTest.lddRes;
+        smoothIrMean = arrayfun(@(x) median(irMean(abs(ldd-x)<lddRes)), ldd);
+        localIrStd = arrayfun(@(x) std(irMean(abs(ldd-x)<lddRes)-smoothIrMean(abs(ldd-x)<lddRes)), ldd);
+        invalidIdcs = (localIrStd < calibParams.fwTable.flybackTest.threshold);
+        if (sum(invalidIdcs) >= calibParams.fwTable.flybackTest.minNumBadIdcs)
+            if ~isempty(runParams)
+                ff = Calibration.aux.invisibleFigure;
+                subplot(211)
+                hold on
+                plot(ldd, irMean, '.-')
+                plot(ldd, smoothIrMean, '.-')
+                grid on; xlabel('LDD [deg]'); ylabel('IR'); legend('mean', 'smooth mean'); title('IR in central white tiles');
+                subplot(212)
+                hold on
+                plot(ldd, localIrStd, '.-')
+                plot(ldd, calibParams.fwTable.flybackTest.threshold*ones(size(ldd)), '.-')
+                plot(ldd(invalidIdcs), localIrStd(invalidIdcs), 'k-x')
+                grid on; xlabel('LDD [deg]'); ylabel('IR local STD'); legend('local STD', 'threshold', 'bad indices'); title(sprintf('IR STD within %.2f[deg] window', calibParams.fwTable.flybackTest.lddRes));
+                Calibration.aux.saveFigureAsImage(ff,runParams,'Flyback','failure');
+            end
+            results = [];
+            table = [];
+            errorCode = -2;
+            return
+        end
     end
 end
 
@@ -153,6 +183,7 @@ framesPerVBias2 = Calibration.thermal.medianFrameByTemp(framesData(validYFixFram
 if all(all(isnan(framesPerVBias2(refBinIndex,:,:))))
     fprintff('Self heat didn''t reach algo calibration vBias2. \n');
     table = [];
+    errorCode = -4;
     return;
 end
 
@@ -164,6 +195,7 @@ jumpIdcs = detectJump(results.angy.offset, 'Yoffset', calibParams.fwTable.jumpDe
 if ~isempty(jumpIdcs)
     fprintff('Error: angy offset jump detected - failing unit.\n')
     table = [];
+    errorCode = -3;
     return;
 end
 
@@ -203,6 +235,7 @@ framesPerVBias13 = Calibration.thermal.medianFrameByTemp(framesData,nBins,binInd
 if all(all(isnan(framesPerVBias13(refBinIndex,:,:))))
     fprintff('Self heat didn''t reach algo calibration vbias1/3.\n');
     table = [];
+    errorCode = -4;
     return;
 end
 
@@ -214,6 +247,7 @@ jumpIdcs = detectJump(results.angx.offset, 'Xoffset', calibParams.fwTable.jumpDe
 if ~isempty(jumpIdcs)
     fprintff('Error: angx offset jump detected - failing unit.\n')
     table = [];
+    errorCode = -3;
     return;
 end
 

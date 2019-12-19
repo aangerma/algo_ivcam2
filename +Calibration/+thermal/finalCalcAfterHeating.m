@@ -5,10 +5,10 @@ Invalid_Frames = sum(invalidFrames);
 fprintff('Invalid frames: %.0f/%.0f\n', Invalid_Frames, numel(invalidFrames));
 data.framesData = data.framesData(~invalidFrames);
 data.dfzRefTmp = data.regs.FRMW.dfzCalTmp;
-[table, results] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
+[table, results, errorCode] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
 
-if isempty(table)
-    calibPassed = -1;
+if isempty(table) || ~isnan(errorCode)
+    calibPassed = errorCode;
     metrics = [];
     metricsWithTheoreticalFix = [];
     fprintff('Error: table is empty (generateFWTable aborted)\n');
