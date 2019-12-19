@@ -14,7 +14,7 @@ fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
 
 if isfield(data.tableResults, 'rgb')
     rgbThermalTable = single(reshape(data.tableResults.rgb.thermalTable',[],1));
-    rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.maxTemp; data.tableResults.rgb.referenceTemp; rgbThermalTable];
+    rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.maxTemp; data.tableResults.rgb.referenceTemp; data.tableResults.rgb.isValid; rgbThermalTable];
     thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
     thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileName);
     Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );

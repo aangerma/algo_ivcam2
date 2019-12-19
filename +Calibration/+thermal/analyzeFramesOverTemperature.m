@@ -150,7 +150,7 @@ if ~isempty(runParams)
     plot(tmpBinEdges,uvResults(:,1));
     
     title('UV mapping RMSE vs Temperature'); grid on;xlabel('degrees');ylabel('UV RMSE [rgb pixels]'); axis square;
-    if ~fixRgbThermal || ~sum(data.rgb.thermalTable(:))
+    if ~fixRgbThermal || ~data.rgb.isValid
         if isfield(data,'rgb')
             hold on;
             plot([data.rgb.rgbCalTemp,data.rgb.rgbCalTemp],[0,max(uvResults(:,1))],'k--','linewidth',2);
@@ -161,7 +161,7 @@ if ~isempty(runParams)
     end
 end
 %%
-if fixRgbThermal && sum(data.rgb.thermalTable(:))
+if fixRgbThermal && data.rgb.isValid
     crnrsData = nan(numel(ldds),size(data.framesData(1).ptsWithZ,1),2);
     for iTemps = 1:numel(ldds)
         crnrsData(iTemps,:,:) = data.framesData(iTemps).ptsWithZ(:,end-1:end);

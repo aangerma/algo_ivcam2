@@ -251,29 +251,30 @@ if (size(framesData(1).ptsWithZ,2) == 7) % RGB frames captures during heating st
     ptsWithZ = reshape([framesData.ptsWithZ],560,7,[]);
     rgbCrnrsPerFrame = ptsWithZ(:,6:7,:);
     
-    minMaxLdd4RGB = minmax(ldd);
-    lddGridEdges = linspace(minMaxLdd4RGB(1),minMaxLdd4RGB(2),nBinsRgb+2);
-    lddStepRgb = lddGridEdges(2)-lddGridEdges(1);
-    lddGridRgb = lddStepRgb/2 + lddGridEdges(1:end-1);
+    humid = [tempData.shtw2];
+    minMaxHum4RGB = [calibParams.fwTable.tempBinRangeRGB(1) calibParams.fwTable.tempBinRangeRGB(2)];
+    humGridEdges = linspace(minMaxHum4RGB(1),minMaxHum4RGB(2),nBinsRgb+2);
+    humStepRgb = humGridEdges(2)-humGridEdges(1);
+    humGridRgb = humStepRgb/2 + humGridEdges(1:end-1);
     %{
 % Debug
-figure; stem(lddGridRgb,ones(size(lddGridRgb)),'g')
+figure; stem(humGridRgb,ones(size(humGridRgb)),'g')
 hold on;
-stem(lddGridEdges,ones(size(lddGridEdges)),'r');
+stem(humGridEdges,ones(size(humGridEdges)),'r');
     %}
     rgbGrid = NaN(size(rgbCrnrsPerFrame,1),size(rgbCrnrsPerFrame,2),nBinsRgb+1);
-    for k = 1:length(lddGridRgb)
-        idcs = abs(ldd - lddGridRgb(k)) <= lddStepRgb/2;
+    for k = 1:length(humGridRgb)
+        idcs = abs(humid - humGridRgb(k)) <= humStepRgb/2;
         if ~sum(idcs)
             continue;
         end
         rgbGrid(:,:,k) = nanmedian(rgbCrnrsPerFrame(:,:,idcs),3);
     end
     referencePts = rgbGrid(:,:,end);
-    scaleCosParam = nan(nBinsRgb,1);
-    scaleSineParam = nan(nBinsRgb,1);
-    transXparam = nan(nBinsRgb,1);
-    transYparam = nan(nBinsRgb,1);
+    scaleCosParam = ones(nBinsRgb,1);
+    scaleSineParam = zeros(nBinsRgb,1);
+    transXparam = zeros(nBinsRgb,1);
+    transYparam = zeros(nBinsRgb,1);
     %
     for k = 1:nBinsRgb
         matchedPoints2 = referencePts;
@@ -292,9 +293,10 @@ stem(lddGridEdges,ones(size(lddGridEdges)),'r');
     end
     
     results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
-    results.rgb.minTemp = minMaxLdd4RGB(1);
-    results.rgb.maxTemp = minMaxLdd4RGB(2);
-    results.rgb.referenceTemp = lddGridRgb(end);
+    results.rgb.minTemp = minMaxHum4RGB(1);
+    results.rgb.maxTemp = minMaxHum4RGB(2);
+    results.rgb.referenceTemp = humGridRgb(end);
+    results.rgb.isValid = 1;
 end
 
 

@@ -157,6 +157,7 @@
       <tempBinRange>[0 94]</tempBinRange> 
       <nRows>48</nRows> 
 	  <nRowsRGB>29</nRowsRGB>
+	  <tempBinRangeRGB>[0 75]</tempBinRangeRGB> 
       <name>Algo_Thermal_Loop_CalibInfo</name> 
       <jumpDet>
           <nSmooth>5</nSmooth>

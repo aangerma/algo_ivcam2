@@ -5,10 +5,11 @@ fclose(fileID);
 rgbThermalData.minTemp = A(1);
 rgbThermalData.maxTemp = A(2);
 rgbThermalData.referenceTemp = A(3);
+rgbThermalData.isValid = A(4);
 if ~exist('nBins','var')
     nBins = 29;
 end
-thermalTable = reshape(A(4:end),[],nBins)';
+thermalTable = reshape(A(5:end),[],nBins)';
 rgbThermalData.thermalTable = thermalTable;
 end
 
