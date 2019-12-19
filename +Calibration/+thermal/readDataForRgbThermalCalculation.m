@@ -15,10 +15,11 @@ function [rgbThermalData] = getRgbThermalData(hw,calibParams)
 vals = typecast(binData(17:end),'single');
 rgbThermalData.minTemp = vals(1);
 rgbThermalData.maxTemp = vals(2);
+rgbThermalData.referenceTemp = vals(3);
 if isfield(calibParams.gnrl,'rgb') && isfield(calibParams.gnrl.rgb,'nBinsThermal')
     nBins = calibParams.gnrl.rgb.nBinsThermal;
 else
     nBins = 29;
 end
-rgbThermalData.thermalTable = reshape(vals(3:end),[],nBins)';
+rgbThermalData.thermalTable = reshape(vals(4:end),[],nBins)';
 end

@@ -1,4 +1,4 @@
-function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm,rgbCalTemperature)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm,rgbCalTemperature,rgbThermalBinData)
     results = struct;
     rgbTable = [];
     rgbPassed = 0;
@@ -26,6 +26,22 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
     rgbTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rgbTableFileName);
     writeAllBytes(rgbTable.data, rgbTableFullPath);
+    
+    %%
+    % Correct thermal table to RGB calibration temperature
+    if isfield(calibParams.gnrl,'rgb') && isfield(calibParams.gnrl.rgb,'nBinsThermal')
+        nBinsRgb = calibParams.gnrl.rgb.nBinsThermal;
+    else
+        nBinsRgb = 29;
+    end
+    rgbThermalData = Calibration.aux.convertRgbThermalBytesToData(rgbThermalBinData,nBinsRgb);
+    [rgbThermalData] = Calibration.rgb.adjustRgbThermal2NewRefTemp(rgbThermalData,rgbCalTemperature,fprintff);
+    rgbThermalTable = single(reshape(rgbThermalData.thermalTable',[],1));
+    rgbThermalTable = [rgbThermalData.minTemp; rgbThermalData.rgb.maxTemp; rgbThermalData.referenceTemp; rgbThermalTable];
+    thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
+    thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileName);
+    Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
+    fprintff('Generated algo thermal RGB table full path:\n%s\n',thermalRgbTableFullPath);
 end
 
 

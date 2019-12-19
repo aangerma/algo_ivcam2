@@ -5,3 +5,4 @@ function rgbThermalData = convertRgbThermalBytesToData(rgbThermalBinData,nBinsRg
 %     rgbThermalData.referenceTemp = vals(3); %For future use when the refernce will be saved in ATC as well
     rgbThermalData.thermalTable = reshape(vals(3:end),[],nBinsRgb)';
 end
+
