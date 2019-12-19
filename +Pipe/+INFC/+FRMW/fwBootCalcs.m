@@ -62,7 +62,7 @@ regs = Firmware.mergeRegs(regs,autogenRegs);
 if(regs.DEST.hbaseline==1) % demo-board
     autogenRegs.FRMW.depthOffset=single(5.7);
 else % ID
-    autogenRegs.FRMW.depthOffset=single(2);    
+    autogenRegs.FRMW.depthOffset=single(4.5);
 end
 regs = Firmware.mergeRegs(regs,autogenRegs);
 
