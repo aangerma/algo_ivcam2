@@ -118,8 +118,8 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         DFZRegs.DESTtxFRQpd         = hw.read('DESTtxFRQpd');
         DFZRegs.GNRLimgHsize        = hw.read('GNRLimgHsize');
         DFZRegs.GNRLimgVsize        = hw.read('GNRLimgVsize');
-        saTiltText                  = hw.cmd('ERB 0x4a0 2');
-        faTiltText                  = hw.cmd('ERB 0x49e 2');
+        saTiltText                  = hw.cmd('ERB 0x4a2 2');
+        faTiltText                  = hw.cmd('ERB 0x4a0 2');
         
         DFZRegs.FRMWmirrorMovmentMode       = regs.FRMW.mirrorMovmentMode; % uint16         (1)
         DFZRegs.FRMWxfov(mode)              = regs.FRMW.xfov(mode);        % single         (65)
