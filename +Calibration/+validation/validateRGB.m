@@ -1,16 +1,17 @@
-function [results,frames,dbgReg] = validateRGB( hw, calibParams,runParams, fprintff)
-% set LR preset
-hw.setPresetControlState(1);
-hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
-hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
-hw.shadowUpdate;
+function [results,frames,dbgReg] = validateRGB( hw, calibParams,runParams, fprintff,depthFrame,rgbFrame)
+if ~exist('depthFrame','var') || ~exist('rgbFrame','var')
+        % set LR preset
+    hw.setPresetControlState(1);
+    hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+    hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+    hw.shadowUpdate;
 
-pause(5);
-% hw.startStream([],[],calibParams.rgb.imSize);
+    pause(5);
+    % hw.startStream([],[],calibParams.rgb.imSize);
 
-depthFrame = hw.getFrame(calibParams.validationConfig.rgb.numOfFrames);
-rgbFrame  = hw.getColorFrame();
-
+    depthFrame = hw.getFrame(calibParams.validationConfig.rgb.numOfFrames);
+    rgbFrame  = hw.getColorFrame();
+end
 [ ~,b] = hw.cmd('RGB_INTRINSICS_GET');
 intr = typecast(b,'single');
 Krgb = eye(3);
@@ -31,7 +32,7 @@ params.roi = calibParams.validationConfig.roi4ValidateOnCenter;
 params.isRoiRect = calibParams.validationConfig.gidMaskIsRoiRect;
 params.rgbDistort = drgb;
 params.Krgb = Krgb;
-params.Krgbn = du.math.normalizeK(Krgb,calibParams.rgb.imSize);
+params.Krgbn = du.math.normalizeK(Krgb,flip(size(rgbFrame.color)));
 %%
 if params.sampleZFromWhiteCheckers
     [resultsWht,dbgWht] = runUVandLF( depthFrame, params, rgbFrame.color, 'Wht');

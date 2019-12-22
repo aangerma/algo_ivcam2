@@ -1,31 +1,32 @@
-function [presetCompareRes,frames] = validatePresets( hw, calibParams,runParams, fprintff)
+function [presetCompareRes,frames] = validatePresets( hw, calibParams,runParams, fprintff,frames)
 presetCompareRes=[] ;
+if ~exist('frames','var')
+    % set LR preset
+    hw.setPresetControlState(1);
+    hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+    hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+    hw.shadowUpdate;
 
-% set LR preset
-hw.setPresetControlState(1);
-hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
-hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
-hw.shadowUpdate;
-        
-pause(5);
-LRframe=hw.getFrame(calibParams.numOfFrames);
-% set SR preset
-hw.setPresetControlState(2);
-pause(5);
-SRframe=hw.getFrame(calibParams.numOfFrames);
+    pause(5);
+    LRframe=hw.getFrame(calibParams.numOfFrames);
+    % set SR preset
+    hw.setPresetControlState(2);
+    pause(5);
+    SRframe=hw.getFrame(calibParams.numOfFrames);
 
-hw.setPresetControlState(1);
-hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
-hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
-hw.shadowUpdate;
-%%
-frames=[]; 
-frames.LRframe=LRframe; 
-frames.SRframe=SRframe; 
+    hw.setPresetControlState(1);
+    hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
+    hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');
+    hw.shadowUpdate;
+    %%
+    frames=[]; 
+    frames.LRframe=LRframe; 
+    frames.SRframe=SRframe; 
+end
 
 %% roi 
 
-imgSize = size(LRframe.z);
+imgSize = size(frames.LRframe.z);
 
 params = Validation.aux.defaultMetricsParams();
 params.roi=calibParams.roi; params.isRoiRect=1; 
@@ -33,8 +34,8 @@ mask = Validation.aux.getRoiMask(imgSize, params);
 
 %% diff image
 z2mm=double(hw.z2mm); 
-ZLR=double(LRframe.z)./z2mm;
-ZSR=double(SRframe.z)./z2mm;
+ZLR=double(frames.LRframe.z)./z2mm;
+ZSR=double(frames.SRframe.z)./z2mm;
 ZLR(ZLR==0)=nan; ZSR(ZSR==0)=nan; 
 LRroi=nan(size(ZLR)); LRroi(mask)=ZLR(mask); 
 SRroi=nan(size(ZSR)); SRroi(mask)=ZSR(mask); 
@@ -44,7 +45,7 @@ presetCompareRes.presetCompareMeanDiff=nanmean(diffImage(:));
 presetCompareRes.presetCompareStdDiff=nanstd(diffImage(:)); 
 
 ff = Calibration.aux.invisibleFigure();
-subplot(1,2,1); imagesc(SRframe.i);colorbar; title('SR ir'); subplot(1,2,2); imagesc(LRframe.i); colorbar; title('LR ir');
+subplot(1,2,1); imagesc(frames.SRframe.i);colorbar; title('SR ir'); subplot(1,2,2); imagesc(frames.LRframe.i); colorbar; title('LR ir');
 Calibration.aux.saveFigureAsImage(ff,runParams,'Validation','IR_PresetsComparison',1);
 
 ff = Calibration.aux.invisibleFigure();
