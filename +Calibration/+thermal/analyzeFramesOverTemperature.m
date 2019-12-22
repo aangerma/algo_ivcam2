@@ -13,6 +13,12 @@ data.framesData = data.framesData(~invalidFrames);
 validFrames = arrayfun(@(x) Calibration.thermal.validFrame(x.ptsWithZ,calibParams), data.framesData);
 data.framesData = data.framesData(validFrames);
 
+
+if ~isempty(runParams)
+    cornersRtdVsIRFigure(data,runParams);
+    
+end
+
 tempVec = [data.framesData.temp];
 tempVec = [tempVec.ldd];
 
@@ -196,4 +202,83 @@ if fixRgbThermal && sum(data.rgb.thermalTable(:))
         end
     end
 end
+end
+function cornersRtdVsIRFigure(data,runParams)
+    fd = Calibration.thermal.framesDataVectors(data.framesData);
+    validCB = reshape(fd.validCB,20,28);
+    vCols = find(any(validCB,1));
+    vRows = find(any(validCB,2));
+    centerIdx = round([mean(vRows),mean(vCols)]) - [vRows(1),vCols(1)]+1;
+    centerIdx = sub2ind([numel(vRows),numel(vCols)],centerIdx(1),centerIdx(2));
+    
+    rtdvalid = squeeze(fd.ptsWithZ(validCB,1,:));
+    ptsWithZValid = squeeze(fd.ptsWithZ(validCB,:,:));
+    idx = [1,size(rtdvalid,1),centerIdx];
+    
+    ff = Calibration.aux.invisibleFigure;
+    plot(fd.ptsWithZ(validCB,4,1),fd.ptsWithZ(validCB,5,1),'r*')
+    hold on
+    plot(ptsWithZValid(idx,4,1),ptsWithZValid(idx,5,1),'bo')
+    rectangle('position',[0,0,data.regs.GNRL.imgHsize,data.regs.GNRL.imgVsize],'linewidth',2);
+    axis tight
+    grid on
+    title('Valid Corners Locations')
+    legend({'Corners';'3 Corners For IR/RTD Plot '})
+    axis ij
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('AlwaysValidCorners'));
+
+
+    
+    ff = Calibration.aux.invisibleFigure;
+    yyaxis left
+    plot(fd.ldd,rtdvalid(idx,:),'linewidth',1.5)
+    xlabel('ldd degrees')
+    ylabel('mm')
+
+    yyaxis right
+    plot(fd.ldd,fd.irStatMean,'linewidth',1.5)
+    ylabel('IR')
+    legend({'topLeft';'bottomRight';'center';'IR'})
+
+    grid minor
+    title('IR vs RTD 3 corners')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_vs_Rtd_3_corners'),1);
+
+    
+    if isfield(data,'dutyCycle2Conf')
+        first15 = find(data.dutyCycle2Conf.confidence == 15,1);
+        conf = data.dutyCycle2Conf.confidence(1:first15);
+        dc = data.dutyCycle2Conf.dutyCycle(1:first15);
+        [conf,uIds] = unique(conf);
+        dc = dc(uIds);
+        dcMean = interp1(conf,dc,fd.cStatMean);
+
+        ff = Calibration.aux.invisibleFigure;
+        plot(fd.ldd,dcMean);
+        xlabel('ldd [deg]');
+        ylabel('Duty Cycle');
+        title('Mean DC(ldd)');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('ConfMeanVal'),1);
+
+        confPtsValid = interp1(conf,dc,squeeze(fd.confPts(validCB,:,:)));
+        ff = Calibration.aux.invisibleFigure;
+        yyaxis left
+        plot(fd.ldd,confPtsValid(idx(1),:),'*','linewidth',1.5)
+        hold on
+        plot(fd.ldd,confPtsValid(idx(2),:),'*','linewidth',1.5)
+        plot(fd.ldd,confPtsValid(idx(3),:),'*','linewidth',1.5)
+        ylim([0,1]);
+        xlabel('ldd degrees')
+        ylabel('DC')
+
+        yyaxis right
+        plot(fd.ldd,fd.irStatMean,'*','linewidth',1.5)
+        ylabel('IR')
+        legend({'topLeft';'bottomRight';'center';'IR'})
+
+        grid minor
+        title('IR vs DC 3 corners')
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_vs_DC_3_corners'),1);
+    end
+    
 end

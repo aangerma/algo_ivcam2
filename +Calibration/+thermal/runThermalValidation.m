@@ -24,6 +24,12 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     hw.startStream(0,runParams.calibRes);
     hw.stopStream;
     calibParams.gnrl.sphericalMode = 0;
+    internalFolder = fullfile(runParams.outputFolder,'AlgoInternal');
+    mkdirSafe(internalFolder);
+    confScriptFolder = fullfile(fileparts(mfilename('fullpath')),'+confidenceScipt');
+    copyfile(fullfile(confScriptFolder,'*.*'),  internalFolder);
+    
+    
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0,calibParams,runParams);
     if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'fixRgbThermal') && calibParams.gnrl.rgb.fixRgbThermal
         [data.rgb] = Calibration.thermal.readDataForRgbThermalCalculation(hw,calibParams);
@@ -36,6 +42,7 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     runParams.manualCaptures = 0;
     data = Calibration.thermal.collectSelfHeatData(hw,data,calibParams,runParams,fprintff,calibParams.validation.maximalCoolingAndHeatingTimes,app,1);
     data.camerasParams = getCamerasParams(hw,runParams,calibParams);
+    data.dutyCycle2Conf = readtable(fullfile(confScriptFolder,'dutyCycle2Conf.csv'));
     save(fullfile(runParams.outputFolder,'validationData.mat'),'data','calibParams','runParams');
     [data] = Calibration.thermal.analyzeFramesOverTemperature(data,calibParams,runParams,fprintff,1);
     saveTemperaturesGraph(data,runParams);

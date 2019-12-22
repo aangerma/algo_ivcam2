@@ -3,7 +3,7 @@ nBins = size(rgbThermalData.thermalTable,1);
 % temps = [data.framesData.temp];
 % temps = [temps.ldd];
 fixedCrnrsData = crnrsData;
-tempRange = [rgbThermalData.minTemp rgbThermalData.referenceTemp];
+tempRange = [rgbThermalData.minTemp rgbThermalData.maxTemp];
 ixInRange = temps >= tempRange(1) & temps <= tempRange(2);
 isFixed = 0;
 if ~sum(ixInRange)

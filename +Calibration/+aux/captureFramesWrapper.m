@@ -20,6 +20,11 @@ if contains(type, 'Z')
         frameBytes.z(iFrame,:) = typecast(imDepth(iFrame).z(:), 'uint8');
     end
 end
+if contains(type, 'C')
+    for iFrame = 1:nFrames
+        frameBytes.c(iFrame,:) = typecast(imDepth(iFrame).c(:), 'uint8');
+    end
+end
 if contains(type, 'rgb')
     frameBytes.yuy2(1,:) = typecast(imRgb.color(:), 'uint8');
 end

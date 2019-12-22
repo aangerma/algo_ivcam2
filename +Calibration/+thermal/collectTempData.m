@@ -33,7 +33,9 @@ if calibParams.gnrl.sphericalMode
 end
 hw.cmd('mwd a00e1890 a00e1894 00000001 // JFILinvBypass');
 hw.cmd('mwd a00e18b8 a00e18bc ffff0000 // JFILinvMinMax');
-hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002');    
+hw.cmd('mwd a0020834 a0020838 ffffffff // DCORcoarseMasking_002'); 
+confScriptFldr = fullfile(runParams.outputFolder,'AlgoInternal','confAsDC.txt');
+hw.runScript(confScriptFldr);
 hw.shadowUpdate;
 
 prevTmp = hw.getLddTemperature();
@@ -332,10 +334,12 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
     frameData.ptsWithZ = cornersData(frame,regs,calibParams);
+    frameData.confPts = interp2(single(frame.c),frameData.ptsWithZ(:,4),frameData.ptsWithZ(:,5));
     frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
     frameData.maVoltage = hw.getMaVoltagee();
     % RX tracking
     frameData.irStat = Calibration.aux.calcIrStatistics(frame.i, frameData.ptsWithZ(:,4:5));
+    frameData.cStat = Calibration.aux.calcConfStatistics(frame.c, frameData.ptsWithZ(:,4:5));
 %     params.camera.zMaxSubMM = 4;
 %     params.camera.K = regs.FRMW.kRaw;
 %     params.target.squareSize = 30;
