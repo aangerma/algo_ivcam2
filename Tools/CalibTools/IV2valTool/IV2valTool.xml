@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+   <outputdirectorty>C:\temp\unitCalib\</outputdirectorty>
+   <configurationFolder>releaseConfigCalibVXGA</configurationFolder>
+   <presetsDefFolder>defaultValues</presetsDefFolder>
+   <calibParamsFile>valParamsXGA.xml</calibParamsFile>
+   <disableAdvancedOptions>0</disableAdvancedOptions>
+   <toolName>IV2 Validation Tool</toolName>
+</struct>
