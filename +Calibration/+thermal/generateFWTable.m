@@ -76,32 +76,11 @@ if isfield(framesData, 'irStat')
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_statistics'));
     end
     % check for malfunctioning flyback
-    if calibParams.fwTable.flybackTest.enable
-        lddRes = calibParams.fwTable.flybackTest.lddRes;
-        smoothIrMean = arrayfun(@(x) median(irMean(abs(ldd-x)<lddRes)), ldd);
-        localIrStd = arrayfun(@(x) std(irMean(abs(ldd-x)<lddRes)-smoothIrMean(abs(ldd-x)<lddRes)), ldd);
-        invalidIdcs = (localIrStd < calibParams.fwTable.flybackTest.threshold);
-        if (sum(invalidIdcs) >= calibParams.fwTable.flybackTest.minNumBadIdcs)
-            if ~isempty(runParams)
-                ff = Calibration.aux.invisibleFigure;
-                subplot(211)
-                hold on
-                plot(ldd, irMean, '.-')
-                plot(ldd, smoothIrMean, '.-')
-                grid on; xlabel('LDD [deg]'); ylabel('IR'); legend('mean', 'smooth mean'); title('IR in central white tiles');
-                subplot(212)
-                hold on
-                plot(ldd, localIrStd, '.-')
-                plot(ldd, calibParams.fwTable.flybackTest.threshold*ones(size(ldd)), '.-')
-                plot(ldd(invalidIdcs), localIrStd(invalidIdcs), 'k-x')
-                grid on; xlabel('LDD [deg]'); ylabel('IR local STD'); legend('local STD', 'threshold', 'bad indices'); title(sprintf('IR STD within %.2f[deg] window', calibParams.fwTable.flybackTest.lddRes));
-                Calibration.aux.saveFigureAsImage(ff,runParams,'Flyback','failure');
-            end
-            results = [];
-            table = [];
-            errorCode = -2;
-            return
-        end
+    if ~validFlyback(ldd, irMean, calibParams.fwTable.flyback, runParams)
+        results = [];
+        table = [];
+        errorCode = -2;
+        return
     end
 end
 
@@ -132,8 +111,8 @@ if calibParams.fwTable.extrap.rtdModel.skipInterpolation % use final grid from s
     results.rtd.minval = calibParams.fwTable.tempBinRange(1);
 else % use finer grid prior to extrapolation (as in angX & angY)
     minMaxLdd = minmax(lddForEst);
-    results.rtd.maxval = minMaxLdd(2);
-    results.rtd.minval = minMaxLdd(1);
+    results.rtd.maxval = max(lddForEst);
+    results.rtd.minval = min(lddForEst);
 end
 results.rtd.nBins = nBins;
 lddGrid = linspace(results.rtd.minval,results.rtd.maxval,nBins);
@@ -351,8 +330,8 @@ end
 % extrapolation
 vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
 [table, results]        = extrapolateTable(table, results, vBiasLims, calibParams, runParams);
-results.rtd.origMinval  = results.rtd.minval;
-results.rtd.origMaxval  = results.rtd.maxval;
+results.rtd.origMinval  = min(lddForEst);
+results.rtd.origMaxval  = max(lddForEst);
 results.rtd.minval      = calibParams.fwTable.tempBinRange(1);
 results.rtd.maxval      = calibParams.fwTable.tempBinRange(2);
 results.angy.origMinval = results.angy.minval;
@@ -479,6 +458,64 @@ if (max(shtw2)==min(shtw2))
     isValid = false;
     fprintff('Error in temperature reading: SHTW2 temperature is constant over frames.\n');
     return
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function isValid = validFlyback(ldd, irMean, fbParams, runParams)
+isValid = true; % defualt
+if fbParams.offTest.enable
+    lddRes = fbParams.offTest.lddRes;
+    lddNoEdges = ldd(ldd>=min(ldd)+lddRes/2 & ldd<=max(ldd)-lddRes/2);
+    smoothIrMean = arrayfun(@(x) median(irMean(abs(ldd-x)<lddRes)), lddNoEdges);
+    localIrStd = arrayfun(@(x) std(irMean(abs(ldd-lddNoEdges(x))<lddRes)-smoothIrMean(x)), 1:length(lddNoEdges));
+    irWeightedDrift = cumsum(diff(smoothIrMean)./mean([localIrStd(1:end-1); localIrStd(2:end)],1));
+    lddDiff = diff(lddNoEdges([1,end]));
+    if (irWeightedDrift(end) < -fbParams.offTest.thrFactor*lddDiff)
+        if ~isempty(runParams)
+            ff = Calibration.aux.invisibleFigure;
+            subplot(121)
+            hold on
+            plot(ldd, irMean-smoothIrMean(1), 'b-')
+            plot(lddNoEdges, smoothIrMean-smoothIrMean(1), 'c--')
+            plot([lddNoEdges, NaN, lddNoEdges], [smoothIrMean+localIrStd, NaN, smoothIrMean-localIrStd]-smoothIrMean(1), 'r--')
+            grid on; xlabel('LDD [deg]'); ylabel('IR drift'); legend('mean', 'smooth', 'STD margin'); title('IR in central white tiles');
+            subplot(122)
+            hold on
+            plot(lddNoEdges(1:end-1), irWeightedDrift, 'b.-')
+            plot(lddNoEdges([1,end-1]), -fbParams.offTest.thrFactor*lddDiff*ones(1,2), 'k--')
+            grid on; xlabel('LDD [deg]'); ylabel('IR drift'); legend('weighted drift', 'threshold'); title('IR drift');
+            Calibration.aux.saveFigureAsImage(ff,runParams,'Flyback','failure');
+        end
+        isValid = false;
+        return
+    end
+end
+if fbParams.stopTest.enable
+    lddRes = fbParams.stopTest.lddRes;
+    smoothIrMean = arrayfun(@(x) median(irMean(abs(ldd-x)<lddRes)), ldd);
+    localIrStd = arrayfun(@(x) std(irMean(abs(ldd-x)<lddRes)-smoothIrMean(abs(ldd-x)<lddRes)), ldd);
+    invalidIdcs = (localIrStd < fbParams.stopTest.threshold);
+    if (sum(invalidIdcs) >= fbParams.stopTest.minNumBadIdcs)
+        if ~isempty(runParams)
+            ff = Calibration.aux.invisibleFigure;
+            subplot(211)
+            hold on
+            plot(ldd, irMean, '.-')
+            plot(ldd, smoothIrMean, '.-')
+            grid on; xlabel('LDD [deg]'); ylabel('IR'); legend('mean', 'smooth mean'); title('IR in central white tiles');
+            subplot(212)
+            hold on
+            plot(ldd, localIrStd, '.-')
+            plot(ldd, fbParams.stopTest.threshold*ones(size(ldd)), '.-')
+            plot(ldd(invalidIdcs), localIrStd(invalidIdcs), 'k-x')
+            grid on; xlabel('LDD [deg]'); ylabel('IR local STD'); legend('local STD', 'threshold', 'bad indices'); title(sprintf('IR STD within %.2f[deg] window', fbParams.stopTest.lddRes));
+            Calibration.aux.saveFigureAsImage(ff,runParams,'Flyback','failure');
+        end
+        isValid = false;
+        return
+    end
 end
 end
 

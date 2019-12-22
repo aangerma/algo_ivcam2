@@ -192,12 +192,19 @@
               </outsideCal>
           </rtdModel>
       </extrap>
-      <flybackTest>
-          <enable>1</enable>
-          <lddRes>1.5</lddRes>
-          <threshold>0.5</threshold>
-          <minNumBadIdcs>2</minNumBadIdcs>
-      </flybackTest>
+      <flyback>
+          <offTest>
+              <enable>1</enable>
+              <lddRes>1.5</lddRes>
+              <thrFactor>0.5</thrFactor>
+          </offTest>
+          <stopTest>
+              <enable>0</enable>
+              <lddRes>1.5</lddRes>
+              <threshold>0.5</threshold>
+              <minNumBadIdcs>2</minNumBadIdcs>
+          </stopTest>
+      </flyback>
    </fwTable>
    <yFovDegredation>
        <fitToPoly>1</fitToPoly>
