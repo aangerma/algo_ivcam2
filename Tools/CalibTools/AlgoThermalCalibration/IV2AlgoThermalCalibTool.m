@@ -412,10 +412,11 @@ function statrtButton_callback(varargin)
         calibPassed = Calibration.thermal.runAlgoThermalCalibration(runparamsFn,calibfn,fprintffS,s,app);
         validPassed = 1;
         % validation is currently disabled (DFZ is not optimized yet)
-%         if calibPassed~=0 && runparams.performValidation
-%             waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
+        if calibPassed~=0 && runparams.performValidation
+            waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
 %             [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS,s,app);
-%         end
+            [validPassed] = Calibration.thermal.runAlgoThermalValidation(runparamsFn,calibfn,fprintffS,s,app);
+        end
         
         if calibPassed == 1 || calibPassed == -1
             if validPassed || ~runparams.performValidation 

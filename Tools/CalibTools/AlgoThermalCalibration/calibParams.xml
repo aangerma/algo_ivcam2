@@ -28,7 +28,7 @@
            <doStream>1</doStream>
            <res>[1920,1080]</res>
            <nonRectangleFlag>1</nonRectangleFlag>
-           <fixRgbThermal>0</fixRgbThermal>
+           <fixRgbThermal>1</fixRgbThermal>
 	   </rgb>
    </gnrl>
    <warmUp>
@@ -98,6 +98,11 @@
    </errRange>
    <validation>
        <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>
+       <bananas>
+           <lddInterVals>3</lddInterVals>
+           <zSTDTh>50</zSTDTh>
+           <diskSz>60</diskSz>
+       </bananas>
    </validation>
    <validationErrRange>
       <stdRtd>[0 inf]</stdRtd>

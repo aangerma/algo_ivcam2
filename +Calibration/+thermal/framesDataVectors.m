@@ -25,10 +25,18 @@ if isfield(framesData,'flyback')
 end
 if isfield(framesData,'ptsWithZ')
     vectorFramesData.ptsWithZ = reshape([framesData.ptsWithZ],size(framesData(end).ptsWithZ,1),size(framesData(end).ptsWithZ,2),numel(framesData));
+    vectorFramesData.validCB = all(~isnan(vectorFramesData.ptsWithZ(:,1,:)),3);
 end
 if isfield(framesData,'irStat')
     irStat = [framesData.irStat];
     vectorFramesData.irStatMean = [irStat.mean];
+end
+if isfield(framesData,'cStat')
+    cStat = [framesData.cStat];
+    vectorFramesData.cStatMean = [cStat.mean];
+end
+if isfield(framesData,'confPts')
+    vectorFramesData.confPts = reshape([framesData.confPts],size(framesData(end).confPts,1),size(framesData(end).confPts,2),numel(framesData));
 end
 end
 

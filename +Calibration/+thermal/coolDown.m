@@ -1,5 +1,8 @@
 function [ info ] = coolDown(hw,calibParams,runParams,fprintff,maxTime2Wait)
-
+if ~runParams.coolDown
+   info = [];
+   return; 
+end
 startTime = tic;
 finishedCooling = 0;
 coolTimeVec(1) = toc(startTime);

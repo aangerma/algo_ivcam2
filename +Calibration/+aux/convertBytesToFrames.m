@@ -13,6 +13,9 @@ for iPose = 1:length(frameBytes)
     if isfield(frameBytes{iPose}, 'z')
         frames(iPose).z = convertBytesToFramesSingleType(frameBytes{iPose}.z, frameSize, 'uint16', doAverage);
     end
+    if isfield(frameBytes{iPose}, 'c')
+        frames(iPose).c = convertBytesToFramesSingleType(frameBytes{iPose}.c, frameSize, 'uint8', doAverage);
+    end
     if isfield(frameBytes{iPose}, 'yuy2')
         frames(iPose).yuy2 = convertBytesToFramesSingleType(frameBytes{iPose}.yuy2, rgbFrameSize, 'uint16', doAverage, true); 
     end

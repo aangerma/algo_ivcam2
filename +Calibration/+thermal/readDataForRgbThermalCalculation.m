@@ -14,7 +14,7 @@ function [rgbThermalData] = getRgbThermalData(hw,calibParams)
 [~,binData] = hw.cmd('READ_TABLE 17 0');
 vals = typecast(binData(17:end),'single');
 rgbThermalData.minTemp = vals(1);
-rgbThermalData.referenceTemp = vals(2);
+rgbThermalData.maxTemp = vals(2);
 if isfield(calibParams.gnrl,'rgb') && isfield(calibParams.gnrl.rgb,'nBinsThermal')
     nBins = calibParams.gnrl.rgb.nBinsThermal;
 else

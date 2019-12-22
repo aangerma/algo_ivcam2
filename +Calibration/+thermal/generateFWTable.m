@@ -279,8 +279,8 @@ stem(lddGridEdges,ones(size(lddGridEdges)),'r');
     end
     
     results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
-    results.rgb.referenceTemp = lddGridRgb(end);
-    results.rgb.minTemp = minMaxLdd4RGB(1);
+    results.rgb.maxTemp = lddGridRgb(end);
+    results.rgb.minTemp = lddGridRgb(1);
 end
 
 

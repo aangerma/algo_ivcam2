@@ -7,7 +7,6 @@ function [fitresult, gof,vcmdTrgtTemp] = ControlTeamLineFit_Calc(tempDegC, vCmd,
 %         calibParams - Acc calib params. Used for 
 %         res - stream resolution (so it would know how to reshape the frameBytes)
 %     results - A struct that contains the average fill rate (amount of pixels with z>0) within the mask defined in calibParams accross the frames.
-        
     t0 = tic;
     global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_save_internal_input_flag;
     
