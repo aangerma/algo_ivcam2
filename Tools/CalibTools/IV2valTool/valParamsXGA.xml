@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<struct>
+    <sparkParams>
+        <reserveFolder>E:\IVCAM20_SPARK_Results</reserveFolder>
+        <azureFolder>E:\SPARK\iv2-cal-01 (azure.spark@intel.com)</azureFolder>
+        <testMode>ATP</testMode>
+    </sparkParams>
+    <gnrl>
+        <depthRes>[768 1024]</depthRes>
+        <rgbRes>[1280 720]</rgbRes>
+        <dirtybitBypass>0</dirtybitBypass>
+        <enableAllRange>1</enableAllRange>
+        <debugMode>1</debugMode><!-- bit mask: 1 - save debug data, 2 save frames-->
+        <readRegState>0</readRegState>
+        <wait>0</wait>
+        <warmUp>
+            <enable>0</enable>
+            <cadenceSec>60</cadenceSec>
+            <threshold>0.5</threshold>
+        </warmUp>
+        <manualCapture>0</manualCapture>
+    </gnrl>
+    <validationConfig>
+        <!-- in this section the test plan is listed.available metrics:
+      sharpness, temporalNoise, delays, dfz, roi, los, dsm, coverage, (wait).
+      For running the same metric more then once add <metric_name>_n, for example:
+      <roi_2></roi_2>
+      -->
+        <rgb>
+             <numOfFrames>30</numOfFrames>
+             <startIxRgb>6</startIxRgb>
+        </rgb>
+        <HVM_Val> 
+            <numOfFrames>100</numOfFrames>
+        </HVM_Val>
+        <coverage>
+            <numOfFrames>100</numOfFrames>
+        </coverage>
+        <dfz>
+            <numOfFrames>30</numOfFrames>
+        </dfz>
+        <sharpness>
+            <numOfFrames>30</numOfFrames>
+        </sharpness>
+        <presetsCompare>
+            <numOfFrames>30</numOfFrames>
+            <roi>0.4</roi>
+        </presetsCompare>   
+        <temporalNoise>
+            <numOfFrames>30</numOfFrames>
+            <roi>0.5</roi>
+        </temporalNoise>
+        <sampleZFromWhiteCheckers>1</sampleZFromWhiteCheckers>
+        <validateOnCenter>1</validateOnCenter>
+        <roi4ValidateOnCenter>0.7</roi4ValidateOnCenter>
+        <target>
+            <type>Iv2A1</type>
+            <name>Iv2A1</name>
+            <cbSquareSz>30</cbSquareSz>
+            <distance>70</distance>
+            <angle>0</angle>
+        </target>
+        <cbGridSz>[]</cbGridSz>
+        <gidMaskIsRoiRect>1</gidMaskIsRoiRect>
+        <plainFitMaskIsRoiRect>1</plainFitMaskIsRoiRect>
+    </validationConfig>
+    <validationErrRange>
+        <irFillRate>[99.99,100]</irFillRate>
+        <horizontalSharpness>[1 4.8]</horizontalSharpness>
+        <verticalSharpness>[1 4.8]</verticalSharpness>
+        <temporalNoise>[0.2 10]</temporalNoise>
+        <DelaySlowOffest>[0 inf]</DelaySlowOffest>
+        <DelaySlowPixVar>[0 0.4]</DelaySlowPixVar>
+        <DelayFastOffest>[0 inf]</DelayFastOffest>
+        <GeometricError>[0 3]</GeometricError>
+        <reprojRmsPix>[0 10]</reprojRmsPix>
+        <reprojZRms>[0 10]</reprojZRms>
+        <irDistanceDrift>[-5 5]</irDistanceDrift>
+        <roiHorizontalLoss>[0 10]</roiHorizontalLoss>
+        <roiVerticalLoss>[0 4]</roiVerticalLoss>
+        <losMaxP2p>[0 3.2]</losMaxP2p>
+        <losMeanStdX>[0 0.48] </losMeanStdX>
+        <losMeanStdY>[0 0.32]</losMeanStdY>
+        <MirrorRestAngX>[-30 30]</MirrorRestAngX>
+        <MirrorRestAngY>[-30 30]</MirrorRestAngY>
+        <irCoverage>[80 100]</irCoverage>
+        <presetCompareMeanDiff>[-2 2]</presetCompareMeanDiff>
+        <presetCompareStdDiff>[0 7]</presetCompareStdDiff>
+        <lineFitMeanRmsErrHor3dReg>[0 inf]</lineFitMeanRmsErrHor3dReg>
+        <lineFitMeanRmsErrVer3dReg>[0 inf]</lineFitMeanRmsErrVer3dReg>
+        <lineFitMaxRmsErrHor3dReg>[0 inf]</lineFitMaxRmsErrHor3dReg>
+        <lineFitMaxRmsErrVer3dReg>[0 inf]</lineFitMaxRmsErrVer3dReg>
+        <lineFitMaxErrHor3dReg>[0 inf]</lineFitMaxErrHor3dReg>
+        <lineFitMaxErrVer3dReg>[0 inf]</lineFitMaxErrVer3dReg>
+        <lineFitMeanRmsErrHor2dReg>[0 inf]</lineFitMeanRmsErrHor2dReg>
+        <lineFitMeanRmsErrVer2dReg>[0 inf]</lineFitMeanRmsErrVer2dReg>
+        <lineFitMaxRmsErrHor2dReg>[0 inf]</lineFitMaxRmsErrHor2dReg>
+        <lineFitMaxRmsErrVer2dReg>[0 inf]</lineFitMaxRmsErrVer2dReg>
+        <lineFitMaxErrHor2dReg>[0 inf]</lineFitMaxErrHor2dReg>
+        <lineFitMaxErrVer2dReg>[0 inf]</lineFitMaxErrVer2dReg>
+        <lineFitMeanRmsErrHor3dWht>[0 inf]</lineFitMeanRmsErrHor3dWht>
+        <lineFitMeanRmsErrVer3dWht>[0 inf]</lineFitMeanRmsErrVer3dWht>
+        <lineFitMaxRmsErrHor3dWht>[0 inf]</lineFitMaxRmsErrHor3dWht>
+        <lineFitMaxRmsErrVer3dWht>[0 inf]</lineFitMaxRmsErrVer3dWht>
+        <lineFitMaxErrHor3dWht>[0 inf]</lineFitMaxErrHor3dWht>
+        <lineFitMaxErrVer3dWht>[0 inf]</lineFitMaxErrVer3dWht>
+        <lineFitMeanRmsErrHor2dWht>[0 inf]</lineFitMeanRmsErrHor2dWht>
+        <lineFitMeanRmsErrVer2dWht>[0 inf]</lineFitMeanRmsErrVer2dWht>
+        <lineFitMaxRmsErrHor2dWht>[0 inf]</lineFitMaxRmsErrHor2dWht>
+        <lineFitMaxRmsErrVer2dWht>[0 inf]</lineFitMaxRmsErrVer2dWht>
+        <lineFitMaxErrHor2dWht>[0 inf]</lineFitMaxErrHor2dWht>
+        <lineFitMaxErrVer2dWht>[0 inf]</lineFitMaxErrVer2dWht>
+        <planeFitMeanRmsErrWht>[0 inf]</planeFitMeanRmsErrWht>
+        <planeFitMaxErrWht>[0 inf]</planeFitMaxErrWht>
+        <planeFitMeanRmsErrBlck>[0 inf]</planeFitMeanRmsErrBlck>
+        <planeFitMaxErrBlck>[0 inf]</planeFitMaxErrBlck>
+        <meanHorzScaleErrorReg>[-inf inf]</meanHorzScaleErrorReg>
+        <meanAbsHorzScaleErrorReg>[0 inf]</meanAbsHorzScaleErrorReg>
+        <meanVertScaleErrorReg>[-inf inf]</meanVertScaleErrorReg>
+        <meanAbsVertScaleErrorReg>[0 inf]</meanAbsVertScaleErrorReg>
+        <meanHorzScaleErrorWht>[-inf inf]</meanHorzScaleErrorWht>
+        <meanAbsHorzScaleErrorWht>[0 inf]</meanAbsHorzScaleErrorWht>
+        <meanVertScaleErrorWht>[-inf inf]</meanVertScaleErrorWht>
+        <meanAbsVertScaleErrorWht>[0 inf]</meanAbsVertScaleErrorWht>
+    </validationErrRange>
+    <robot>
+        <enable>0</enable>
+    </robot>
+    <roi>
+        <useExtraMargins>1</useExtraMargins>  
+        <extraMarginL>0</extraMarginL>  
+        <extraMarginR>0</extraMarginR>  
+        <extraMarginT>0.1</extraMarginT>  
+        <extraMarginB>0.1</extraMarginB>   
+    </roi>
+</struct>
