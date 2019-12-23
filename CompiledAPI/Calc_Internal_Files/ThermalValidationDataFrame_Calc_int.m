@@ -74,6 +74,9 @@ if ~finishedHeating % heating stage
     if all(isnan(FrameData.ptsWithZ(:,1)))
         fprintff('Error: checkerboard not detected in IR image.\n');
         FrameData.ptsWithZ = [];
+        FrameData.confPts = [];
+        FrameData.irStat = [];
+        FrameData.cStat = [];
         calibPassed = -1;
     else
         % RX tracking
@@ -128,7 +131,7 @@ else % steady-state stage
     S.runParams = runParams;
     save(fullfile(output_dir, 'mat_files', 'validationCalcAfterHeating_in.mat'), '-struct', 'S');
     [data, results] = Calibration.thermal.validationCalcAfterHeating(data,calibParams, fprintff, algoInternalDir, runParams);
-    save(fullfile(output_dir, 'mat_files', 'validationCalcAfterHeating_out.mat'), 'data', 'calibPassed', 'results', 'metrics', 'metricsWithTheoreticalFix', 'Invalid_Frames');
+    save(fullfile(output_dir, 'mat_files', 'validationCalcAfterHeating_out.mat'), 'data', 'results');
 end
     
 % update ptsWithZ per frame
@@ -310,11 +313,12 @@ function [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir,nBinsRg
 
 eepromRegs = extractEepromRegs(unitData.eepromBin, algoInternalDir);
 
-fw = Pipe.loadFirmware(algoInternalDir,'tablesFolder',algoInternalDir);
-fw.setRegs(eepromRegs,'');
-fw.setRegs(unitData.regs,'');
-[regs,luts] = fw.get();
-
+% fw = Pipe.loadFirmware(algoInternalDir,'tablesFolder',algoInternalDir);
+% fw.setRegs(eepromRegs,'');
+% fw.setRegs(unitData.regs,'');
+% [regs,luts] = fw.get();
+fw = Firmware;
+regs = fw.mergeRegs(eepromRegs,unitData.regs);
 luts.DIGG.undistModel = typecast(unitData.diggUndistBytes(:),'int32');
 regs.FRMW.mirrorMovmentMode = 1;
 regs.MTLB.fastApprox = ones(1,8,'logical');
