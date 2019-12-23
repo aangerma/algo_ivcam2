@@ -68,7 +68,7 @@ function [calibParams, result] = cal_init(output_dir, calib_dir, calib_params_fn
     if exist(calib_params_fn, 'file') % load calib params from.XML  
         calibParams = xml2structWrapper(calib_params_fn);
         [~,tail] = fileparts(calib_params_fn);
-        struct2xmlWrapper(calibParams,fullfile(output_dir,[tail,'.xml']));
+        copyfile(calib_params_fn, fullfile(output_dir,[tail,'.xml']));
     else
         calibParams = 0;
         result = 0;
