@@ -43,7 +43,7 @@ def test_validation_robot_algonas():
 def test_validation_robot_grid_angle():
     filePath = r'Avv/tests/iqValidation/robot/robot_grid_angle.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.robotRun(filePath)
+    runIqValidation.iq_validation_test(filePath)
 
 
 @slash.tag('robot')
