@@ -1,6 +1,6 @@
 debug = false;
-baseFoldr = 'C:\temp\torture';
-testFolderName = datestr(now,'mmddHHMM');
+baseFoldr = 'X:\Data\IvCam2\TortureTest';
+testFolderName = datestr(now,'dd_mmm_YYYY-HH_MM');
 testFolder = fullfile(baseFoldr, testFolderName);
 mkdirSafe(testFolder);
 if exist('log', 'var')
