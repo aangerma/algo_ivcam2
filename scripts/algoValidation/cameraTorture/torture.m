@@ -7,7 +7,8 @@ if exist('log', 'var')
     log.closeLogger();
 end
 log= Log.getLogger(testFolder);
-
+initialFrameCapture = 900;
+framesPerMinute = 5;
 zResolution = [480 640];
 rgbResolution = [1920 1080];
 streamRange = [2 30];
@@ -64,14 +65,16 @@ while toContinue
     tempStrat.humTmpr = hw.getHumidityTemperature();
     log.info(sprintf('temp (stratStream): lddTmptr: %f, mcTmptr: %f, maTmptr: %f, apdTmptr: %f, humTmpr: %f',tempStrat.lddTmptr,tempStrat.mcTmptr,tempStrat.maTmptr,tempStrat.apdTmptr,tempStrat.humTmpr) ,location);
     hw.startStream(false, zResolution, rgbResolution);
-    frames = hw.getFrame(900, false);
-    if debug
+    if ~debug
+        frames = hw.getFrame(initialFrameCapture, false);
+        rgbFrames = hw.getColorFrame(initialFrameCapture);
+    else
         frames = hw.getFrame(30, false);
         rgbFrames = hw.getColorFrame(30);
     end
     while streamTime > toc/60
-        frames = [frames hw.getFrame(5, false)];
-        rgbFrames =[rgbFrames hw.getColorFrame(5)];
+        frames = [frames hw.getFrame(framesPerMinute, false)];
+        rgbFrames =[rgbFrames hw.getColorFrame(framesPerMinute)];
         pause(60);
     end
     tempEnd=struct();
@@ -81,7 +84,7 @@ while toContinue
     for i = 1:length(frames)
         frames(i).rgb = rgbFrames(i).color;
     end
-    save(fullfile(testFolder, sprintf('itaretion_%0.5d',counter)), 'frames','tempStrat', 'tempEnd');
+    save(fullfile(testFolder, sprintf('itaretion_%0.5d',counter)), 'frames','tempStrat', 'tempEnd','-v7.3');
     hw.stopStream();
     hw.cmd('rst');
     pause(restTime*60);
