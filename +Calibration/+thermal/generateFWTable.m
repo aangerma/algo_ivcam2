@@ -296,7 +296,7 @@ stem(humGridEdges,ones(size(humGridEdges)),'r');
     results.rgb.minTemp = minMaxHum4RGB(1);
     results.rgb.maxTemp = minMaxHum4RGB(2);
     results.rgb.referenceTemp = humGridRgb(end);
-    results.rgb.isValid = 1;
+    results.rgb.isValid = 0;
 end
 
 

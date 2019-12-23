@@ -1,7 +1,8 @@
 function [newThermalData] = adjustRgbThermal2NewRefTemp(rgbThermalData,rgbCalibTemp,fprintff)
     newThermalData = rgbThermalData;
-    if ~newThermalData.isValid
+    if ~sum(rgbThermalData.thermalTable(:))
         fprintff('Thermal RGB table is not valid, no fix done');
+         newThermalData.isValid = 0;
         return;
     end
     nBins = size(rgbThermalData.thermalTable,1);
@@ -34,5 +35,6 @@ function [newThermalData] = adjustRgbThermal2NewRefTemp(rgbThermalData,rgbCalibT
         newThermalData.thermalTable(k,4) = newMat(3,2);
     end
     newThermalData.referenceTemp = rgbCalibTemp;
+    newThermalData.isValid = 1;
 end
 
