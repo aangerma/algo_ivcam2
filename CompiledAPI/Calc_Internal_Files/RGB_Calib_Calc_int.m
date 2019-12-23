@@ -36,10 +36,13 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     end
     rgbThermalData = Calibration.aux.convertRgbThermalBytesToData(rgbThermalBinData,nBinsRgb);
     [rgbThermalData] = Calibration.rgb.adjustRgbThermal2NewRefTemp(rgbThermalData,rgbCalTemperature,fprintff);
+    if ~rgbThermalData.isValid
+        rgbPassed = false;
+    end        
     rgbThermalTable = single(reshape(rgbThermalData.thermalTable',[],1));
     rgbThermalTable = [rgbThermalData.minTemp; rgbThermalData.rgb.maxTemp; rgbThermalData.referenceTemp; rgbThermalTable];
     thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
-    thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileName);
+    thermalRgbTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', thermalRgbTableFileName);
     Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
     fprintff('Generated algo thermal RGB table full path:\n%s\n',thermalRgbTableFullPath);
 end

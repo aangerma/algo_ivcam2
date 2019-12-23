@@ -31,7 +31,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams
     % input save
     if g_save_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'frameBytes', 'calibParams', 'irImSize', 'Kdepth', 'z2mm', 'rgbCalTemperature');
+        save(fn, 'frameBytes', 'calibParams', 'irImSize', 'Kdepth', 'z2mm', 'rgbCalTemperature','rgbThermalBinData');
     end
     
     % operation

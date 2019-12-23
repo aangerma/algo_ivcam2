@@ -11,7 +11,7 @@ if runParams.rgb
     captures = captures(~strcmp(captures,'shortRange'));
     tmpcalibParams.dfz.captures.capture = calibParams.dfz.captures.capture(~strcmp(captures,'shortRange'));
     fprintff('Collecting images for RGB calibration: ');
-    rgbCalTemperature = hw.getLddTemperature();
+    rgbCalTemperature = hw.getHumidityTemperature();
     for i=1:length(captures)
         fprintff('%s',num2str(i));
         cap = tmpcalibParams.dfz.captures.capture(i);

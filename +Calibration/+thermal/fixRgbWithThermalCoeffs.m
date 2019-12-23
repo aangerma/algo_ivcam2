@@ -1,4 +1,4 @@
-function [fixedCrnrsData,isFixed] = fixRgbWithThermalCoeffs(crnrsData,temps,rgbThermalData,rgbCalibTemp,fprintff)
+function [fixedCrnrsData,isFixed] = fixRgbWithThermalCoeffs(crnrsData,temps,rgbThermalData,fprintff)
 nBins = size(rgbThermalData.thermalTable,1);
 % temps = [data.framesData.temp];
 % temps = [temps.ldd];
@@ -22,17 +22,6 @@ for k = 1:numel(tempGrid)-1
 end
 % referenceTempMedian = squeeze(median(crnrsDataInRng(ixPerTemp{end},:,:),1));
 %%
-iForInverseTrans = find(abs(rgbCalibTemp-tempGrid) <= tempStep/2);
-if isempty(iForInverseTrans)
-    fprintff('RGB calibration temperature is not in thermal fix range. RGB calibration temperature: %2.2f, thermal RGB table range: [%2.2f,%2.2f]',rgbCalibTemp,tempRange(1),tempRange(2));
-    return;
-end
-transMatFromCalibTemp =  [rgbThermalData.thermalTable(iForInverseTrans,1), -rgbThermalData.thermalTable(iForInverseTrans,2),0;...
-    rgbThermalData.thermalTable(iForInverseTrans,2), rgbThermalData.thermalTable(iForInverseTrans,1), 0;...
-    rgbThermalData.thermalTable(iForInverseTrans,3), rgbThermalData.thermalTable(iForInverseTrans,4), 1];
-% transMatFromCalibTemp =  [rgbThermalData.thermalTable(iForInverseTrans,1), 0,0;...
-%              0, 1, 0;...
-%              rgbThermalData.thermalTable(iForInverseTrans,3), 0, 1];
 
 for ixTempGroup = 1:numel(ixPerTemp)-1 %Running on nBins (29) temperature groups
     frameIx = ixPerTemp{ixTempGroup};
@@ -42,14 +31,9 @@ for ixTempGroup = 1:numel(ixPerTemp)-1 %Running on nBins (29) temperature groups
     transMat = [rgbThermalData.thermalTable(ixTempGroup,1), -rgbThermalData.thermalTable(ixTempGroup,2),0;...
         rgbThermalData.thermalTable(ixTempGroup,2), rgbThermalData.thermalTable(ixTempGroup,1), 0;...
         rgbThermalData.thermalTable(ixTempGroup,3), rgbThermalData.thermalTable(ixTempGroup,4),1];
-    %  transMat = [rgbThermalData.thermalTable(ixTempGroup,1), 0,0;...
-    %                 0, 1, 0;...
-    %                 rgbThermalData.thermalTable(ixTempGroup,3), 0,1];
-    for ixFrameInTempGroup = 1:numel(ixPerTemp{ixTempGroup}) %Running on the corners that belong to the current bin (temperatue range)
+    for ixFrameInTempGroup = 1:numel(ixPerTemp{ixTempGroup}) %Running on the corners that belong to the current bin (temperature range)
         xyCurrentFrame = squeeze(crnrsDataInRng(frameIx(ixFrameInTempGroup),:,:));
         fixedPtsInRefTemp = [xyCurrentFrame,ones(size(xyCurrentFrame,1),1)]*transMat; %All corners in current bin are transformed with the same transformation to the thermal reference temperature
-        xyCurrentFrame = fixedPtsInRefTemp(:,1:2)./fixedPtsInRefTemp(:,3);
-        fixedPtsInRefTemp = [xyCurrentFrame,ones(size(xyCurrentFrame,1),1)]/transMatFromCalibTemp; %Now inverse to the RGB calibration temperature
         crnrsDataInRng(frameIx(ixFrameInTempGroup),:,:) = fixedPtsInRefTemp(:,1:2)./fixedPtsInRefTemp(:,3);
     end
 end

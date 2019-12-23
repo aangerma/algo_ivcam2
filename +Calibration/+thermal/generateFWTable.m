@@ -256,12 +256,6 @@ if (size(framesData(1).ptsWithZ,2) == 7) % RGB frames captures during heating st
     humGridEdges = linspace(minMaxHum4RGB(1),minMaxHum4RGB(2),nBinsRgb+2);
     humStepRgb = humGridEdges(2)-humGridEdges(1);
     humGridRgb = humStepRgb/2 + humGridEdges(1:end-1);
-    %{
-% Debug
-figure; stem(humGridRgb,ones(size(humGridRgb)),'g')
-hold on;
-stem(humGridEdges,ones(size(humGridEdges)),'r');
-    %}
     rgbGrid = NaN(size(rgbCrnrsPerFrame,1),size(rgbCrnrsPerFrame,2),nBinsRgb+1);
     for k = 1:length(humGridRgb)
         idcs = abs(humid - humGridRgb(k)) <= humStepRgb/2;
@@ -269,13 +263,19 @@ stem(humGridEdges,ones(size(humGridEdges)),'r');
             continue;
         end
         rgbGrid(:,:,k) = nanmedian(rgbCrnrsPerFrame(:,:,idcs),3);
+        indexOfMaxTemp = k;
     end
-    referencePts = rgbGrid(:,:,end);
-    scaleCosParam = ones(nBinsRgb,1);
-    scaleSineParam = zeros(nBinsRgb,1);
-    transXparam = zeros(nBinsRgb,1);
-    transYparam = zeros(nBinsRgb,1);
-    %
+    if isempty(indexOfMaxTemp)
+        fprintff('Error: no points within temperature range in RGB thermal fix - failing unit.\n');
+        errorCode = -5;
+        return;
+    end
+    referencePts = rgbGrid(:,:,indexOfMaxTemp);
+    scaleCosParam = NaN(nBinsRgb,1);
+    scaleSineParam = NaN(nBinsRgb,1);
+    transXparam = NaN(nBinsRgb,1);
+    transYparam = NaN(nBinsRgb,1);
+
     for k = 1:nBinsRgb
         matchedPoints2 = referencePts;
         matchedPoints1 = rgbGrid(:,:,k);
@@ -291,11 +291,13 @@ stem(humGridEdges,ones(size(humGridEdges)),'r');
         transXparam(k,1) = tform.T(3,1);
         transYparam(k,1) = tform.T(3,2);
     end
-    
-    results.rgb.thermalTable = [scaleCosParam,scaleSineParam,transXparam,transYparam];
+    rgbTable = fillInnerNans([scaleCosParam,scaleSineParam,transXparam,transYparam]);
+    rgbTable = fillStartNans(rgbTable);
+    rgbTable = flipud(fillStartNans(flipud(rgbTable)));
+    results.rgb.thermalTable = rgbTable;
     results.rgb.minTemp = minMaxHum4RGB(1);
     results.rgb.maxTemp = minMaxHum4RGB(2);
-    results.rgb.referenceTemp = humGridRgb(end);
+    results.rgb.referenceTemp = humGridRgb(indexOfMaxTemp);
     results.rgb.isValid = 0;
 end
 
