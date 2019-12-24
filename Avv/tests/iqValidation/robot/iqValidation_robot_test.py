@@ -34,7 +34,7 @@ def test_validation_robot_regression_xga_short():
 
 @slash.tag('robot')
 def test_validation_robot_algonas():
-       filePath = r'X:/Avv/sources/robot/robot.xml'
+    filePath = r'X:/Avv/sources/robot/robot.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.robotRun(filePath)
 
