@@ -790,15 +790,21 @@ classdef HWinterface <handle
         end
         
         function shutDownLaser(obj)
+            %{
             obj.cmd('iwb e2 06 01 00'); % Remove bias
             obj.cmd('iwb e2 08 01 0'); % modulation amp is 0
             obj.cmd('iwb e2 03 01 10');% internal modulation (from register)
+            %}
+            obj.cmd('MWD a00504b4 a00504b8 1'); %RegsProjLdOnFwShut
         end
         
         function openLaser(obj)
+            %{
             obj.cmd('iwb e2 03 01 9a');% internal modulation (from register)
             obj.cmd('iwb e2 08 01 0'); % modulation amp is 0
             obj.cmd('iwb e2 06 01 70'); % Add bias
+            %}
+            obj.cmd('MWD a00504b4 a00504b8 0'); %RegsProjLdOnFwShut
         end
         
         
