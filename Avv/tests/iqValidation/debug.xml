@@ -1,15 +1,32 @@
 <?xml version="1.0"?>
 <root>
-    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <db saveData="yes">X:\Avv\dbValidation_metricsTest.csv</db>
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
         <dataSource>robot</dataSource>
-        <stableTemp>false</stableTemp>
-        <tag>regression</tag>
-        <preset>short</preset>
     </params>
+    <camera>
+        <stableTemp>false</stableTemp>
+        <tag>default</tag>
+        <preset>long</preset>
+        <zImage>
+            <xRes>640</xRes>
+            <yRes>480</yRes>
+            <frameRate>30</frameRate>
+        </zImage>
+        <rgbImage>
+            <xRes>1920</xRes>
+            <yRes>1080</yRes>
+            <frameRate>30</frameRate>
+        </rgbImage>
+        <cameraConfig_beforeStartStream></cameraConfig_beforeStartStream>
+        <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
+    </camera>
     <tests>
-        <test name="fillRate_3m" metrics="fillRate" target="wall_80Reflectivity" distance="3m" threshold="[99.8 : 100]" extra="stdFillRate[0:1]" />
+        <test target="back" distance="50cm"/>
+        <test target="front" distance="200cm"/>
+        <test target="close_wall" distance="50cm"/>
+        <test target="far_wall" distance="50cm"/>
     </tests>
 </root>

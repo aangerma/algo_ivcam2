@@ -26,7 +26,8 @@
     <tests>
         <test name="white_Full_planeFit" metrics="planeFit" target="white_wall" distance="120cm" threshold="[0:2]" extra="" />
         <test name="white_40Roi_planeFit" metrics="planeFit" target="white_wall_40roi" distance="120cm" threshold="[0:2]" extra="" />
-		
+		<test name="mos" metrics="mos" target="mos_const_dist" distance="120cm" threshold="[0:2]" extra="" />
+
 		<test name="FovFromCheckers_c50_80cm" metrics="fovFromCheckers" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
 		<test name="FovFromCheckers_c50_250cm" metrics="fovFromCheckers" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		<test name="irFillRate_c50_250cm" metrics="irFillRate" target="checkerboard_50" distance="250cm" threshold="[99.5:100]" extra="" />

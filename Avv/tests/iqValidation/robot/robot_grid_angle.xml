@@ -15,9 +15,17 @@
 		<cameraConfig_afterStartStream></cameraConfig_afterStartStream>
 	</camera>
     <tests>
-        <test name="gridInterDist_150cm_Deg" metrics="gridInterDist" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:3]" extra=''/>
+        <test name="gridInterDistance_150cm_Deg" metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:2]" extra=''/>
         <test name="losGridDrift_150cm_Deg" metrics="losGridDrift" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:3]" extra=''/>
-        <!--<test name="gridInterDist_150cm_side" metrics="gridInterDist" target="checkerboard_50" distance="100cm:110cm" angle_offset="0" threshold="[0:3]" extra=''/>-->
-        <!--<test name="gridInterDist_20cm" metrics="gridInterDist" target="checkerboard_50" distance="20cm" angle_offset="0" threshold="[0:3]" extra=''/>-->
+		<test name="planeFit_150cm_DEG" metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:3]" extra=''/>
+		<test name="FovFromCheckers_150cm_DEG" metrics="fovFromCheckers" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:2]" extra="" />
+		<test name="geomReprojectError_150cm_DEG" metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:2]" extra="" />
+        <test name="geomReprojectErrorUV_150cm_DEG" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:2]" extra="" />
+        <test name="gridEdgeSharpIR_150cm_DEG" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:2]" extra="" />
+        <test name="gridMaxRect_150cm_DEG" metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:2]" extra="" />
+        <test name="gridLineFit_150cm_DEG" metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="-30:20" threshold="[0:2]" extra="" />
+        <test name="gridDistortion_150cm_DEG" metrics="gridDistortion" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test name="irZ_c50_150cm_DEG" metrics="irZ" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+
     </tests>
 </root>
