@@ -40,9 +40,5 @@ def test_validation_d4m_camera():
     runIqValidation.validationExecution(filePath)
 
 
-def test_validation_Run():
-    runIqValidation.runMatlabValidation()
-
-
 if __name__ == "__main__":
     test_validation_turn_in()
