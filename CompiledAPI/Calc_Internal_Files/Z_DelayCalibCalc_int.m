@@ -49,7 +49,8 @@ function delayZ = calcDelayFromCorrelationDifference(ir, imU, imD, fResMirror)
     dIR_pos = max(0, dIR); % for correlating with down image derivative
     [nPixY, nPixX] = size(dIR);
     % resampling in linear time
-    linT = linspace(1e-6, 23e-6, nPixY); %TODO: derive lims as a function of freq
+    scanTime = (1/fResMirror)/2;
+    linT = linspace(0.05*scanTime, 0.95*scanTime, nPixY);
     dImU_neg_res = NaN(nPixY, nPixX);
     dImD_pos_res = NaN(nPixY, nPixX);
     dIR_neg_res = NaN(nPixY, nPixX);

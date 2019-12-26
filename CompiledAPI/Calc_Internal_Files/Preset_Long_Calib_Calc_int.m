@@ -34,16 +34,22 @@ if (isConverged==0) % wait for next iteration
 end
 
 % Plot at last iteration
-ff1 = Calibration.aux.invisibleFigure;
-plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
-hold on;
-plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
-Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
-ff1 = Calibration.aux.invisibleFigure;
-plot(testedPoints,testedScores); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
-hold on;
-plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
-Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
+if ~isempty(runParams)
+    [sortedPoints, sortIdcs] = sort(testedPoints);
+    sortedScores = testedScores(sortIdcs);
+    ff1 = Calibration.aux.invisibleFigure;
+    hold on;
+    plot(testedPoints, testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+    plot(sortedPoints, sortedScores, 'c--')
+    plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
+    Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
+    ff1 = Calibration.aux.invisibleFigure;
+    hold on;
+    plot(testedPoints,testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+    plot(sortedPoints, sortedScores, 'c--')
+    plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
+    Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
+end
 
 % convergence check
 if (isConverged==-1) % fatal error
