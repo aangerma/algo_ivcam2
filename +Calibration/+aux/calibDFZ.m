@@ -415,10 +415,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [laserAngleH, laserAngleV] = getLaserAngleFromEsTilt(saTiltFromEs, faTiltFromEs, params)
-% interpreting as int16 and converting from mdeg to deg
-saTilt = single( typecast(uint16(saTiltFromEs),'int16') )/1e3; % [deg]
-faTilt = single( typecast(uint16(faTiltFromEs),'int16') )/1e3; % [deg]
+function [laserAngleH, laserAngleV] = getLaserAngleFromEsTilt(saTilt, faTilt, params)
 % fixing angles to spot
 if params.applyCorrection
     saTilt = params.correctionCoefsHorz(1)*saTilt + params.correctionCoefsHorz(2);

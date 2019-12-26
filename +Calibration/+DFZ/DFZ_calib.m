@@ -154,8 +154,8 @@ function [r,DFZRegs] = DFZ_calib_Init(hw,fw,runParams,calibParams,results )
         DFZRegs.FRMWfovexCenter             = regs.FRMW.fovexCenter;
         DFZRegs.FRMWrtdOverY                = regs.FRMW.rtdOverY;
         DFZRegs.FRMWrtdOverX                = regs.FRMW.rtdOverX;
-        DFZRegs.FRMWsaTiltFromEs            = hex2dec(saTiltText([end-1:end, end-4:end-3]));
-        DFZRegs.FRMWfaTiltFromEs            = hex2dec(faTiltText([end-1:end, end-4:end-3]));
+        DFZRegs.FRMWsaTiltFromEs            = single(typecast(uint16(hex2dec(saTiltText([end-1:end, end-4:end-3]))),'int16'))/1e3;
+        DFZRegs.FRMWfaTiltFromEs            = single(typecast(uint16(hex2dec(faTiltText([end-1:end, end-4:end-3]))),'int16'))/1e3;
 end
 
 
