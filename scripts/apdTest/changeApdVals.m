@@ -2,14 +2,31 @@ minApd = 8;
 maxApd = 18;
 apdVal = [minApd:maxApd]';
 numVals = numel(apdVal);
-imDir = fullfile('X:\Data\APD\longXga',datestr(now,'dd_mmm_YYYY-HH_MM'));
+preset = 'long';
+switch preset
+case 'long'
+        baseFolder = 'X:\Data\APD\longXga';
+        presetNum = 1;
+    case 'short'
+        baseFolder = 'X:\Data\APD\shortXga';
+        presetNum = 2;
+    otherwise
+        error('No Such Preset')
+end
+imDir = fullfile(baseFolder,datestr(now,'dd_mmm_YYYY-HH_MM'));
 
 setCmd = 'amcset 4 ';
 getCmd = 'amcget 4 0';
 
 hw = HWinterface;
-hw.setPresetControlState(1);
+hw.cmd('DIRTYBITBYPASS');
+hw.setPresetControlState(presetNum);
 hw.startStream;
+hw.setReg('DESTdepthAsRange',1);
+hw.setReg('DESTbaseline$',single(0));
+hw.setReg('DESTbaseline2',single(0)); 
+hw.shadowUpdate;
+pause(10);
 
 
 mkdirSafe(imDir);
@@ -28,7 +45,9 @@ for k = 1:numVals
     temp2 = hw.getHumidityTemperature;
     temps(k,1) = (temp1+temp2)*0.5;
     disp(['Finished iteration ' num2str(k) '/' num2str(numVals)]);
-    disp(['Mean average between consecutive APD values:' num2str(mean(frames(1).z(:)./4-frames(11).z(:)./4)) 'mm']);
+    if k >1
+        disp(['Mean average RTD diff between consecutive APD values:' num2str(mean(frames(k-1).z(:)./2-frames(k).z(:)./2)) 'mm']);
+    end
 end
-hw.stopStream;
+% hw.stopStream;
 save([imDir '\data.mat'],'frames','temps','apdVal');
