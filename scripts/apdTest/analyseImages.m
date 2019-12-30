@@ -27,19 +27,19 @@ for idir = 3:numel(dirData)
     depthVal = nan(numel(apdVal),1);
     for k=1:numel(apdVal)
         if k > 1
-            frameDiff = frames(k-1).z./2-frames(k).z./2;
+            frameDiff = double(frames(k).z)./2-double(frames(k-1).z)./2;
             frameDiff = frameDiff(mask);
             deltaDepth(k) = mean(frameDiff(:));
         end
-        currentFrame = frames(k).z./2;
+        currentFrame = double(frames(k).z)./2;
         currentFrame = currentFrame(mask);
         depthVal(k,1) = mean(currentFrame(:));
     end
     
     figure(resultsFigNum);
     subplot(311); plot(apdVal,depthVal); title(myTitle); xlabel('APD values'); ylabel('RTD values [mm]'); grid minor;hold on;
-    subplot(312); plot(apdVal,deltaDepth); title(myTitle); xlabel('APD values'); ylabel('RTD difference [mm]'); grid minor;hold on;
-    subplot(313); plot(apdVal,temps); title(myTitle); xlabel('APD values'); ylabel('Humidity temperature [deg]'); grid minor;hold on;
+    subplot(312); plot(apdVal,deltaDepth); title(myTitle); xlabel('APD values'); ylabel('RTD difference [mm]'); grid minor; xlim([apdVal(1),apdVal(end)]);hold on;
+    subplot(313); plot(apdVal,temps); title(myTitle); xlabel('APD values'); ylabel('APD temperature [deg]'); grid minor;hold on;
 end
 figure(resultsFigNum+10); imagesc(imfuse(mask,frames(1).i));
 
