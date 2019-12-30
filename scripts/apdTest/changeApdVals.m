@@ -2,7 +2,7 @@ minApd = 8;
 maxApd = 18;
 apdVal = [minApd:maxApd]';
 numVals = numel(apdVal);
-preset = 'long';
+preset = 'short';
 switch preset
 case 'long'
         baseFolder = 'X:\Data\APD\longXga';
@@ -40,9 +40,11 @@ for k = 1:numVals
     if valFromUnit ~= apdVal(k)
         error('Value was not updated');
     end
-    temp1 = hw.getHumidityTemperature;
+%     temp1 = hw.getHumidityTemperature;
+    temp1 = getApdTemp(hw);
     frames(k) = hw.getFrame(30);
-    temp2 = hw.getHumidityTemperature;
+%     temp2 = hw.getHumidityTemperature;
+    temp2 = getApdTemp(hw);
     temps(k,1) = (temp1+temp2)*0.5;
     disp(['Finished iteration ' num2str(k) '/' num2str(numVals)]);
     if k >1
@@ -51,3 +53,10 @@ for k = 1:numVals
 end
 % hw.stopStream;
 save([imDir '\data.mat'],'frames','temps','apdVal');
+
+function [apdTemp] = getApdTemp(hw)
+s = hw.cmd('TEMPERATURES_GET');
+s = strsplit(s,'APD_Temperature: ');
+s = strsplit(s{end},'HUM_Temperature: ');
+apdTemp = str2double(s{1});
+end
