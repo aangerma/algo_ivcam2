@@ -1,4 +1,4 @@
-function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams, irImSize, Kdepth, z2mm, rgbCalTemperature,rgbThermalBinData)
+function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams, irImSize, Kdepth, z2mm, rgbCalTemperature, rgbThermalBinData)
 % description: calculates the calibration between the IR/Depth images and
 % the RGB images
 %regs_reff
@@ -31,21 +31,20 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc(frameBytes, calibParams
     % input save
     if g_save_input_flag && exist(g_output_dir,'dir')~=0
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_in.mat']);
-        save(fn, 'frameBytes', 'calibParams', 'irImSize', 'Kdepth', 'z2mm', 'rgbCalTemperature','rgbThermalBinData');
+        save(fn, 'frameBytes', 'calibParams', 'irImSize', 'Kdepth', 'z2mm', 'rgbCalTemperature', 'rgbThermalBinData');
     end
     
     % operation
     im = Calibration.aux.convertBytesToFrames(frameBytes, irImSize, flip(calibParams.rgb.imSize), true);
     rgbs = {im.yuy2}; % extracting RGB images
-%     im = rmfield(im, 'yuy2'); % disposing of RGB images
-    im = arrayfun(@(x) struct('i',rot90(x.i,2),'z',rot90(x.z,2),'rgbI', x.yuy2), im);
+    im = arrayfun(@(x) struct('i',rot90(x.i,2),'z',rot90(x.z,2)), im);
     runParams.outputFolder = g_output_dir;
     
     if g_save_internal_input_flag && exist(g_output_dir,'dir')~=0 
         fn = fullfile(g_output_dir, 'mat_files' , [func_name '_int_in.mat']);
-        save(fn, 'im', 'rgbs', 'calibParams', 'Kdepth', 'fprintff', 'runParams', 'z2mm', 'rgbCalTemperature');
+        save(fn, 'im', 'rgbs', 'calibParams', 'Kdepth', 'fprintff', 'runParams', 'z2mm', 'rgbCalTemperature', 'rgbThermalBinData');
     end
-    [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm, rgbCalTemperature,rgbThermalBinData);
+    [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibParams, Kdepth, fprintff, runParams, z2mm, rgbCalTemperature, rgbThermalBinData);
 
     % output save
     if g_save_output_flag && exist(g_output_dir,'dir')~=0 

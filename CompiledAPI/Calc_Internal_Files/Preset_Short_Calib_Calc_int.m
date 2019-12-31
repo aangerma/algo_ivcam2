@@ -69,10 +69,8 @@ if ~isempty(runParams)
     ff = Calibration.aux.invisibleFigure;
     subplot(1,3,1);
     plot(testedPoints,testedScores(1,:),testedPoints,testedScores(2,:)); title('IR values- white patch');xlabel('laser modulation [dec]'); legend('max', 'mean');grid minor;
-    if exist('lp','var')
-        subplot(1,3,2);hold all;
-        plot(lp,fittedline);plot(testedPoints, testedScores(3,:)); title('DR: Wmax-Bmin');xlabel('laser modulation [dec]');grid minor
-    end
+    subplot(1,3,2);hold all;
+    plot(lp,fittedline);plot(testedPoints, testedScores(3,:)); title('DR: Wmax-Bmin');xlabel('laser modulation [dec]');grid minor
     subplot(1,3,3);
     plot(testedPoints,double(testedScores(1,:))-testedScores(2,:)); title(' Wmax-Wmean white patch');xlabel('laser modulation [dec]');grid minor;
     subplot(1,3,2);scatter(ModRefDec,p(1)*ModRefDec.^2+p(2)*ModRefDec+p(3));
