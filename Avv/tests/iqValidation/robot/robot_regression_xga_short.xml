@@ -24,7 +24,18 @@
         <cameraConfig_afterStartStream></cameraConfig_afterStartStream>
     </camera>
     <tests>
-
+	    <test name="planeFit_w10_150cm_m20deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test name="planeFit_w10_150cm_m10deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test name="planeFit_w10_150cm_0deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" threshold="[0:2]" extra="" />
+        <test name="planeFit_w10_150cm_10deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test name="planeFit_w10_150cm_20deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+		
+		<test name="irZ_c50_150cm_m20deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+		<test name="irZ_c50_150cm_m10deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+		<test name="irZ_c50_150cm_0deg"  metrics="irZ" target="checkerboard_50" distance="150cm"  threshold="[0:2]" extra="" />
+		<test name="irZ_c50_150cm_10deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+		<test name="irZ_c50_150cm_20deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+		
 		<test name="mos_m20deg" metrics="mos" target="mos_const_dist" distance="120cm" angle_offset="-20" threshold="[0:2]" extra="" />
 		<test name="mos_m0deg" metrics="mos" target="mos_const_dist" distance="120cm" angle_offset="-10" threshold="[0:2]" extra="" />
 		<test name="mos_10deg" metrics="mos" target="mos_const_dist" distance="120cm" angle_offset="10" threshold="[0:2]" extra="" />
