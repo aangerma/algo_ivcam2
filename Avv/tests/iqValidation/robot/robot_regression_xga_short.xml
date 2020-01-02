@@ -33,7 +33,7 @@
 		<test name="FovFromCheckers_c50_150cm_m20deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="-20" distance="150cm" threshold="[0:2]" extra="" />		
 		<test name="FovFromCheckers_c50_150cm_m10deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="10" distance="150cm" threshold="[0:2]" extra="" />
 		<test name="FovFromCheckers_c50_150cm_10deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="10" distance="150cm" threshold="[0:2]" extra="" />
-		<test name="FovFromCheckers_c50_150cm_20" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="20" distance="150cm" threshold="[0:2]" extra="" />
+		<test name="FovFromCheckers_c50_150cm_20deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="20" distance="150cm" threshold="[0:2]" extra="" />
 
         <test name="planeFit_c50_150cm_m20deg" metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
         <test name="planeFit_c50_150cm_m10deg" metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
