@@ -31,7 +31,7 @@ else
     [score, coverageRes,dbg] = Validation.metrics.irCoverage(frames);
     dbg.probIm;
     % Save image 
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
 		ff = Calibration.aux.invisibleFigure;
 		imagesc(dbg.probIm);
 

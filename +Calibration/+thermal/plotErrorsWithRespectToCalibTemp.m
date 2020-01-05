@@ -12,7 +12,7 @@ if exist('plotRGB','var') && plotRGB && size(framesPerTemperature,3)>5
 end
 %%
 sq = @squeeze;
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     % RTD error
     if ~inValidationStage
         legends = {'Pre Fix (cal)'};

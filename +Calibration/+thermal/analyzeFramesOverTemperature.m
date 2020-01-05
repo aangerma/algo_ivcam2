@@ -14,7 +14,7 @@ validFrames = arrayfun(@(x) Calibration.thermal.validFrame(x.ptsWithZ,calibParam
 data.framesData = data.framesData(validFrames);
 
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     cornersRtdVsIRFigure(data,runParams);
     
 end
@@ -109,7 +109,7 @@ if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (po
         legends = {'Pre Fix (cal)'};
     end
     
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure;
         plot(tmpBinEdges,eGeomOverTemp)
         title('Heating Stage EGeom'); grid on;xlabel('degrees');ylabel('eGeom [mm]');legend(legends);
@@ -139,7 +139,7 @@ metrics.uvMeanRmse = nanmean(uvResults(:,1));
 metrics.uvMaxErr = max(uvResults(:,2));
 metrics.uvMaxErr95 = max(uvResults(:,3));
 metrics.uvMinErr = min(uvResults(:,4));
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     if ~params.inValidationStage
         legends = {'Pre Fix (cal)'};
     else
@@ -179,7 +179,7 @@ if fixRgbThermal && data.rgb.isValid
         metrics.uvMaxErrFixed = max(uvCorrectedResults(:,2));
         metrics.uvMaxErr95Fixed = max(uvCorrectedResults(:,3));
         metrics.uvMinErrFixed = min(uvCorrectedResults(:,4));
-        if ~isempty(runParams)
+        if ~isempty(runParams) && isfield(runParams, 'outputFolder')
             if ~params.inValidationStage
                 legends = {'UV mapping (cal)','UV mapping after Theoretical Fix(cal)'};
             else
@@ -196,7 +196,7 @@ if fixRgbThermal && data.rgb.isValid
             Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
         end
     else
-        if ~isempty(runParams)
+        if ~isempty(runParams) && isfield(runParams, 'outputFolder')
             legend(legends);
             Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
         end

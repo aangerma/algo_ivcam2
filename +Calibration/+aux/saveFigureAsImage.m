@@ -10,7 +10,7 @@ end
 if ~exist('addNumericPostFix','var')
     addNumericPostFix = 0;
 end
-if isempty(runParams)
+if isempty(runParams) || ~isfield(runParams, 'outputFolder')
     close(f);
     return
 end

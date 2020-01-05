@@ -46,7 +46,7 @@ tableValues = fillStartNans(tableValues);
 tableValues = flipud(fillStartNans(flipud(tableValues)));  
 tablefn = generateRtdOverAngXTable(runParams, tableValues, calibParams.tableVersions.algoRtdOverAngX);
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure; 
     imagesc(areas);
     hold on,

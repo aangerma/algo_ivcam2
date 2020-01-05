@@ -65,7 +65,7 @@ shortRangePreset.value(modRefInd) = minRangeScaleModRef;
 writetable(shortRangePreset, shortRangePresetFn);
 
 %% debug    
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     subplot(1,3,1);
     plot(testedPoints,testedScores(1,:),testedPoints,testedScores(2,:)); title('IR values- white patch');xlabel('laser modulation [dec]'); legend('max', 'mean');grid minor;

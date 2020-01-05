@@ -43,7 +43,7 @@ if (isConverged==0) % wait for next iteration
 end
 
 % Plot at last iteration
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     [sortedPoints, sortIdcs] = sort(testedPoints);
     sortedScores = testedScores(sortIdcs);
     ff1 = Calibration.aux.invisibleFigure;

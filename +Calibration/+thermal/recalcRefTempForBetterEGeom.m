@@ -16,7 +16,7 @@ candEg = eg;
 candEg(1:round(max(M,numel(eg)/10))) = nan;
 [~,minI] = min(candEg);
 % Ignore first 10% of frames
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     plot(lddTemp,[data.framesData.eGeom]);
     hold on

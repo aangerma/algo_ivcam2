@@ -21,7 +21,7 @@ badRoiAtStart = badRoiCalibration(framesWorldStart,fprintff);
 if badRoiAtStart
     fprintff('Unit suffers from bad ROI calibration at warmup start...\n');
 end
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     subplot(121);
     imagesc(framesWorldStart(1).i);
@@ -151,7 +151,7 @@ else
     fprintff('[-] Passed - Percent FOV change from start to end vertical = %3.1f%%. Fov range=[%2g,%2g]. Th=[%2g,%2g]...\n',percentFovVer,minFovY,maxFovY,calibParams.errRange.fovPercTmpChangeRangeV);
 end
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     subplot(121);
     plot(lastTemp4FrameCollect,dbg.fovX); grid minor;
@@ -180,7 +180,7 @@ if badRoiAtEnd || badRoiAtStart
 else
     fprintff('No visible roi issues at start and end of warmup...\n');
 end
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     subplot(121);
     imagesc(framesWorld(1).i);
@@ -210,7 +210,7 @@ heatTimeVec = [framesData.time];
 tempVec = [framesData.temp];
 LddTempVec = [tempVec.ldd];
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     plot(heatTimeVec,LddTempVec)
     title('Heating Stage'); grid on;xlabel('sec');ylabel('ldd temperature [degrees]');

@@ -157,7 +157,7 @@ function [bananasExist,validFillRatePrc] = captureBananaFigure(frame,calibParams
     bananasExist = ~all(notNoiseImClosed(:));
     validFillRatePrc = mean(notNoiseImClosed(:))*100;
     
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure;
         subplot(311);
         imagesc(frame.i);

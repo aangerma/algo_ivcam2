@@ -131,7 +131,7 @@ fprintf('\n')
 %% RGB_Calib_Calc
 fprintf('\nrunning RGB_Calib_Calc... ');
 dataIn = load([inputPath, 'RGB_Calib_Calc_in.mat']);
-[dataRes.rgbPassed, dataRes.rgbTable, dataRes.results] = RGB_Calib_Calc(dataIn.frameBytes, dataIn.calibParams, dataIn.irImSize, dataIn.Kdepth, dataIn.z2mm, dataIn.rgbCalTemperature);
+[dataRes.rgbPassed, dataRes.rgbTable, dataRes.results] = RGB_Calib_Calc(dataIn.frameBytes, dataIn.calibParams, dataIn.irImSize, dataIn.Kdepth, dataIn.z2mm, dataIn.rgbCalTemperature, dataIn.rgbThermalBinData);
 dataOut = load([inputPath, 'RGB_Calib_Calc_out.mat']);
 checkOutputEquality(dataOut, dataRes)
 fprintf('\n')

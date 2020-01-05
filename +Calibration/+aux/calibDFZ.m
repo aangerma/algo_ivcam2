@@ -434,7 +434,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function saveRtdFixOverAngX(regs,runParams)
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     angXVec = linspace(-2047,2047,100);
     angX = (angXVec-regs.FRMW.rtdOverX(6))/2047;
     rtd2add = regs.FRMW.rtdOverX(1)*angX.^2 + ...

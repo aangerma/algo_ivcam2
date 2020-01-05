@@ -149,7 +149,7 @@ heatTimeVec = [framesData.time];
 tempVec = [framesData.temp];
 LddTempVec = [tempVec.ldd];
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     plot(heatTimeVec,LddTempVec)
     title('Heating Stage'); grid on;xlabel('sec');ylabel('ldd temperature [degrees]');

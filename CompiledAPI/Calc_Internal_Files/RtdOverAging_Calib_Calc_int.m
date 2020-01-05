@@ -23,7 +23,7 @@ function [agingRegs,results] = RtdOverAging_Calib_Calc_int(im, calibParams, runP
     results.vddDistanceRange = max(diffDist) - min(diffDist);
     
 
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure();
         plot(sampledVoltages,diffDist);title('Range Over Vdd'); ylabel('mm'); xlabel('vdd voltage');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Aging','RangeOverVdd',1); 

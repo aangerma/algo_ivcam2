@@ -20,7 +20,7 @@ tpsUndistModel = tpaps(points1,points2);
 % fprintf('Done\n');
 % avals = fnval(st,points1);
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     dirname = fullfile(runParams.outputFolder,'AlgoInternal');
     mkdirSafe(dirname)
     save(fullfile(dirname,'tpsUndistModel.mat'),'tpsUndistModel');

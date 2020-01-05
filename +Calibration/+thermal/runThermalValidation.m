@@ -115,7 +115,7 @@ if isfield(framesData, 'irStat')
     irMean = [irData.mean];
     irStd = [irData.std];
     irNumPix = [irData.nPix];
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure;
         hold on
         plot(ldd, irMean, 'b')

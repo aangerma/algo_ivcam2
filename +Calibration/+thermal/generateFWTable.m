@@ -34,7 +34,7 @@ catch
     fprintf('WARNING: shtw2-tsense estimation failed, resorting to minimal difference.\n');
     results.temp.FRMWhumidApdTempDiff = shtw2(indMinDif)-tsense(indMinDif); % simple minimum
 end
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     hold all
     plot(ldd, '.-')
@@ -64,7 +64,7 @@ if isfield(framesData, 'irStat')
     irMean = [irData.mean];
     irStd = [irData.std];
     irNumPix = [irData.nPix];
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure;
         hold on
         plot(ldd, irMean, 'b')
@@ -123,7 +123,7 @@ results.rtd.refTemp = data.dfzRefTmp;
 refRtd = rtdGrid(ind);
 results.rtd.tmptrOffsetValues = -(rtdGrid-refRtd); % aligning to reference temperature
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     plot(ldd, rtdPerFrame,'*');
     title('RTD(ldd) and Fitted line');
@@ -140,7 +140,7 @@ if ~isempty(runParams)
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_MA_Temp'));
 end
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     histogram(ldd,0:80.5)
     title('Frames Per Ldd Temperature Histogram'); grid on;xlabel('Ldd Temperature');ylabel('count');
@@ -178,7 +178,7 @@ if ~isempty(jumpIdcs)
     return;
 end
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     subplot(131)
     plot((binEdges(1:end-1)+binEdges(2:end))*0.5,results.angy.scale);
@@ -230,7 +230,7 @@ if ~isempty(jumpIdcs)
     return;
 end
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     subplot(132);
     pEdges = p0+t'.*(p1-p0);
@@ -363,7 +363,7 @@ if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outpu
     results.raw.frameTime   = timeVec;
 end
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     v1Orig = linspace(results.angx.origP0(1), results.angx.origP1(1), nBins);
     v1 = linspace(results.angx.p0(1), results.angx.p1(1), nBins);
     v3 = linspace(results.angx.p0(2), results.angx.p1(2), nBins);
@@ -478,7 +478,7 @@ if fbParams.offTest.enable
     irWeightedDrift = cumsum(diff(smoothIrMean)./mean([localIrStd(1:end-1); localIrStd(2:end)],1));
     lddDiff = diff(lddNoEdges([1,end]));
     if (irWeightedDrift(end) < -fbParams.offTest.thrFactor*lddDiff)
-        if ~isempty(runParams)
+        if ~isempty(runParams) && isfield(runParams, 'outputFolder')
             ff = Calibration.aux.invisibleFigure;
             subplot(121)
             hold on
@@ -503,7 +503,7 @@ if fbParams.stopTest.enable
     localIrStd = arrayfun(@(x) std(irMean(abs(ldd-x)<lddRes)-smoothIrMean(abs(ldd-x)<lddRes)), ldd);
     invalidIdcs = (localIrStd < fbParams.stopTest.threshold);
     if (sum(invalidIdcs) >= fbParams.stopTest.minNumBadIdcs)
-        if ~isempty(runParams)
+        if ~isempty(runParams) && isfield(runParams, 'outputFolder')
             ff = Calibration.aux.invisibleFigure;
             subplot(211)
             hold on
@@ -556,7 +556,7 @@ else
     jumpIdcs = [];
 end
 % visualization
-if ~isempty(runParams) && ~isempty(jumpIdcs)
+if ~isempty(jumpIdcs) && ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     subplot(131), hold all
     plot(dataVec, 'b.-'),       plot(ceil(nSmooth/2):nSmooth:length(dataVec), dataVecSmooth, 'c-o')
@@ -664,7 +664,7 @@ if calibParams.fwTable.extrap.expandVbiasLims
     vBiasLims = vBiasLims + calibParams.fwTable.extrap.expandFactor*vBiasSpan*[-1,1];
 end
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure; hold all
     lddExt = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), 48);
     plot(ldd, vBias(1,:), 'b.-'), plot(lddExt, p0(1)+(p1(1)-p0(1))*fit13(lddExt), 'c-o')
@@ -814,7 +814,7 @@ if rtdModelParams.hypoTest.enable % use hypothesis testing
     results.rtd.modelsRmsRatio = rmsRatio;
     results.rtd.modelOrder = rtdModelOrder;
     % debug
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         polyOrdLeg = {'linear', 'quadratic', 'cubic', 'quartic'};
         validTestLeg = {'p(1)>0, ', ''};
         ff = Calibration.aux.invisibleFigure; hold all

@@ -242,7 +242,7 @@ marginsTBLR(1:2) = marginsTBLR([2,1]); % marginT actually refers to the bottom o
 plotEdges(edgesXY,regs,runParams,rectX,rectY,xATC)
 end
 function plotEdges(edgesXY,regs,runParams,rectX,rectY,xATC)
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure; 
         plot(edgesXY.T(:,1),edgesXY.T(:,2),'linewidth',2),hold on
         plot(edgesXY.B(:,1),edgesXY.B(:,2),'linewidth',2),hold on

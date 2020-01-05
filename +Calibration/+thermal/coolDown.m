@@ -26,7 +26,7 @@ while ~finishedCooling
     end
 end
 fprintff('\n');
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     plot(coolTimeVec,coolTmpVec(:,1))
     title('Cooling Stage'); grid on;xlabel('sec');ylabel('ldd temperature [degrees]');

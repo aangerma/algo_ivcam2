@@ -36,7 +36,7 @@ e = sum(emat(:))*2./(sum(valid))^2; % division by (N^2)/2 instead of N*(N-1)/2 -
 ptsOut=[];
 [e_dist,fitP] = Calibration.aux.rigidFit(p(valid,:),pts3d(valid,:));
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
 %     subplot(131);
 %     imagesc(emat);
 %     axis square

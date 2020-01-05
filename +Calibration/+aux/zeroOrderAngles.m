@@ -38,7 +38,7 @@ function [angxRaw,angyRaw,restFailed] = zeroOrderAngles(hw,fprintff,runParams,nu
     
     angxRaw = median(angxRawVec);
     angyRaw = median(angyRawVec);
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff=Calibration.aux.invisibleFigure();
         plot(angxRawVec,angyRawVec,'r*');
 

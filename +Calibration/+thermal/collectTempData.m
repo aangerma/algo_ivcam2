@@ -154,7 +154,7 @@ heatTimeVec = [framesData.time];
 tempVec = [framesData.temp];
 LddTempVec = [tempVec.ldd];
 
-if ~isempty(runParams)
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
     plot(heatTimeVec,LddTempVec)
     hold on    
@@ -369,7 +369,7 @@ function [bananasExist,validFillRatePrc] = hasBananas(frames,calibParams,runPara
     bananasExist = ~all(notNoiseImClosed(:));
     validFillRatePrc = mean(notNoiseImClosed(:))*100;
     
-    if ~isempty(runParams)
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure;
         subplot(311);
         imagesc(frames(1).i);
