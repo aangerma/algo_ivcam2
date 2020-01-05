@@ -9,3 +9,4 @@ Version,Notes
 3,Min Max angles from ATC to ACC
 4,Ma Slope and Ref Tmp
 5,Zero Order Autogen fix
+6,JFILgrad1thrSpike was changed from  hffff to h00ff to deal with false depth -  in XGA and in XGA upscale Y
