@@ -14,7 +14,7 @@
         <test name="zTempNoise" metrics="zTempNoise" target="checkerboard_30" distance="50cm" threshold="[0 : 2.5]" />
         <test name="gridLineFit" metrics="gridLineFit" target="checkerboard_30" distance="50cm" threshold="[1.5 : 2]" />
         <test name="irFillRate" metrics="irFillRate" target="checkerboard_30" distance="50cm" threshold="[99.9 : 100]" />
-        <test name="irZ" metrics="irZ" target="checkerboard_30" distance="50cm" threshold="[37 : 40" />
+        <test name="irZ" metrics="irZ" target="checkerboard_30" distance="50cm" threshold="[3.7 : 4]" />
         <test name="gridMaxRect" metrics="gridMaxRect" target="checkerboard_30" distance="50cm" threshold="[6.2:6.6]" />
         <test name="gridInterDistance" metrics="gridInterDistance" target="checkerboard_30" distance="50cm" threshold="[0 : 1.8]" />
 
