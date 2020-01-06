@@ -26,6 +26,6 @@
 		<cameraConfig_afterStartStream></cameraConfig_afterStartStream>
 	</camera>
    <tests>
-		<test name="irZ_c50_70cm_m10deg"  metrics="irZ" target="checkerboard_50" distance="70cm" angle_offset="-10" threshold="[0:2]" extra="" />
+		<test  metrics="irZ" target="checkerboard_50" threshold="[0:2]" extra="" />
     </tests>
 </root>

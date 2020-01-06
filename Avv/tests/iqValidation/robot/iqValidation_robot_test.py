@@ -56,7 +56,7 @@ def test_validation_Run():
     runIqValidation.runMatlabValidation()
 
 @slash.tag('FW')
-def test_validation_FW ():
+def test_validation_FW():
     filePath = r'Avv/tests/iqValidation/FW/FW_regression_vga_long.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.robotRun(filePath, robotFlag=False)
