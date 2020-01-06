@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="yes">X:\Avv\dbValidation.csv</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>X:\Data\FW\$</dataFolder>
+        <dataSource>robot</dataSource>
+	</params>
+	<camera>
+        <stableTemp>false</stableTemp>
+        <tag>FWregression</tag>
+        <preset>long</preset>
+        <zImage>
+            <xRes>640</xRes>
+            <yRes>480</yRes>
+            <frameRate>30</frameRate>
+        </zImage>
+        <rgbImage>
+            <xRes>1920</xRes>
+            <yRes>1080</yRes>
+            <frameRate>30</frameRate>
+        </rgbImage>
+		<cameraConfig_beforeStartStream>
+			<cmd>DIRTYBITGET</cmd>
+		</cameraConfig_beforeStartStream>
+		<cameraConfig_afterStartStream></cameraConfig_afterStartStream>
+	</camera>
+   <tests>
+		<test name="irZ_c50_70cm_m10deg"  metrics="irZ" target="checkerboard_50" distance="70cm" angle_offset="-10" threshold="[0:2]" extra="" />
+    </tests>
+</root>
