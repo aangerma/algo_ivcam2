@@ -313,7 +313,7 @@ function [ptsWithZ] = cornersData(frame,regs,luts,calibParams)
         grd = [9,13];
     end
     [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
-    fprintf('eGeom - %2.2f\n',eGeom);
+    fprintf('eGeom - %2.2f\n',eGeom.absErrorMean);
 %     if isnan(eGeom)
 %        eGeom 
 %     end

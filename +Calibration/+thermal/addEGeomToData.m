@@ -13,8 +13,8 @@ for i = 1:numel(data.framesData)
     else
         grd = [9,13];
     end
-    [data.framesData(i).eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
-    
+    res = Validation.aux.gridError(v, grd, 30);
+    data.framesData(i).eGeom = res.absErrorMean;
 end
 
 end
