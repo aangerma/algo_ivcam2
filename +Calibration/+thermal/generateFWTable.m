@@ -104,8 +104,8 @@ results.ma.slope = aMA;
 % end
 
 % group by LDD
-lddForEst = ldd(ind:end);
-rtdForEst = rtdPerFrame(ind:end);
+lddForEst = ldd;
+rtdForEst = rtdPerFrame;
 if calibParams.fwTable.extrap.rtdModel.skipInterpolation % use final grid from start
     results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
     results.rtd.minval = calibParams.fwTable.tempBinRange(1);
