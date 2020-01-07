@@ -4,7 +4,7 @@
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\robot\$</dataFolder>
-        <dataSource>robot</dataSource>
+        <dataSource>bin</dataSource>
 	</params>
 	<camera>
         <stableTemp>false</stableTemp>
@@ -26,290 +26,288 @@
 		<cameraConfig_afterStartStream></cameraConfig_afterStartStream>
 	</camera>
     <tests>
-	    <test name="planeFit_w10_150cm_m20deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="planeFit_w10_150cm_m10deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="planeFit_w10_150cm_0deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_w10_150cm_10deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="planeFit_w10_150cm_20deg" metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+	    	
+	    <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
 		
-		<test name="irZ_c50_150cm_m20deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-		<test name="irZ_c50_150cm_m10deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-		<test name="irZ_c50_150cm_0deg"  metrics="irZ" target="checkerboard_50" distance="150cm"  threshold="[0:2]" extra="" />
-		<test name="irZ_c50_150cm_10deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-		<test name="irZ_c50_150cm_20deg" metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
-		
-		<test name="mos_m20deg" metrics="mos" target="mos_const_dist" distance="120cm" angle_offset="-20" threshold="[0:2]" extra="" />
-		<test name="mos_m0deg" metrics="mos" target="mos_const_dist" distance="120cm" angle_offset="-10" threshold="[0:2]" extra="" />
-		<test name="mos_10deg" metrics="mos" target="mos_const_dist" distance="120cm" angle_offset="10" threshold="[0:2]" extra="" />
-		<test name="mos_20deg" metrics="mos" target="mos_const_dist" distance="120cm" angle_offset="20" threshold="[0:2]" extra="" />
-		
-		<test name="FovFromCheckers_c50_150cm_m20deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="-20" distance="150cm" threshold="[0:2]" extra="" />		
-		<test name="FovFromCheckers_c50_150cm_m10deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="10" distance="150cm" threshold="[0:2]" extra="" />
-		<test name="FovFromCheckers_c50_150cm_10deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="10" distance="150cm" threshold="[0:2]" extra="" />
-		<test name="FovFromCheckers_c50_150cm_20deg" metrics="fovFromCheckers" target="checkerboard_50" angle_offset="20" distance="150cm" threshold="[0:2]" extra="" />
-
-        <test name="planeFit_c50_150cm_m20deg" metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_150cm_m10deg" metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_150cm_10deg" metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_150cm_20deg" metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
-		
-		<test name="gridInterDistance_c50_150cm_m20deg" metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_150cm_m10deg" metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_150cm_10deg" metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_150cm_20deg" metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
-		
-		<test name="geomReprojectError_c50_150cm_m20deg" metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_150cm_m10deg" metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_150cm_10deg" metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_150cm_20deg" metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
-		
-		<test name="gridEdgeSharpIR_c50_150cm_m20deg" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_150cm_m10deg" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_150cm_10deg" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_150cm_20deg" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
-		
-		<test name="gridMaxRect_c50_150cm_m20deg" metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_150cm_m10deg" metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_150cm_10deg" metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_150cm_20deg" metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
-
-		<test name="gridDistortion_c50_150cm_m20deg" metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_150cm_m10deg" metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_150cm_10deg" metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_150cm_20deg" metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
-
-		<test name="gridLineFit_c50_150cm_m20deg" metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_150cm_m10deg" metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_150cm_10deg" metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_150cm_20deg" metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />	
-		
+		<test metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+		<test metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+		<test metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+		<test metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
 	
+		<test metrics="mos" target="mos_const_dist" angle_offset="-20" threshold="[0:2]" extra="" />
+		<test metrics="mos" target="mos_const_dist"  angle_offset="-10" threshold="[0:2]" extra="" />
+		<test metrics="mos" target="mos_const_dist"  angle_offset="10" threshold="[0:2]" extra="" />
+		<test metrics="mos" target="mos_const_dist"  angle_offset="20" threshold="[0:2]" extra="" />
+		
+		<test metrics="fovFromCheckers" target="checkerboard_50" angle_offset="-20" distance="150cm" threshold="[0:2]" extra="" />		
+		<test metrics="fovFromCheckers" target="checkerboard_50" angle_offset="10" distance="150cm" threshold="[0:2]" extra="" />
+		<test metrics="fovFromCheckers" target="checkerboard_50" angle_offset="10" distance="150cm" threshold="[0:2]" extra="" />
+		<test metrics="fovFromCheckers" target="checkerboard_50" angle_offset="20" distance="150cm" threshold="[0:2]" extra="" />
+
+        <test metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+		
+		<test metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+		
+		<test metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+		
+		<test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+		
+		<test metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+
+		<test metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
+
+		<test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />	
 	
-        <test name="white_Full_planeFit" metrics="planeFit" target="white_wall" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="white_40Roi_planeFit" metrics="planeFit" target="white_wall_40roi" distance="120cm" threshold="[0:2]" extra="" />
-		<test name="mos" metrics="mos" target="mos_const_dist" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="white_wall" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="white_wall_40roi" threshold="[0:2]" extra="" />		
+		<test metrics="mos" target="mos_const_dist" threshold="[0:2]" extra="" />
 		
-		<test name="FovFromCheckers_c50_80cm" metrics="fovFromCheckers" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-		<test name="FovFromCheckers_c50_250cm" metrics="fovFromCheckers" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
-		<test name="irFillRate_c50_250cm" metrics="irFillRate" target="checkerboard_50" distance="250cm" threshold="[99.5:100]" extra="" />
+		<test metrics="fovFromCheckers" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+		<test metrics="fovFromCheckers" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="irFillRate" target="checkerboard_50" distance="250cm" threshold="[99.5:100]" extra="" />
 	
-		<test name="planeFit_c50_70cm" metrics="planeFit" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_80cm" metrics="planeFit" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_90cm" metrics="planeFit" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_100cm" metrics="planeFit" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="planeFit_c50_110cm" metrics="planeFit" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_120cm" metrics="planeFit" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_130cm" metrics="planeFit" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_140cm" metrics="planeFit" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_150cm" metrics="planeFit" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_200cm" metrics="planeFit" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="planeFit_c50_250cm" metrics="planeFit" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="planeFit" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 
-		<test name="zTempNoise_c50_70cm" metrics="zTempNoise" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_80cm" metrics="zTempNoise" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_90cm" metrics="zTempNoise" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_100cm" metrics="zTempNoise" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="zTempNoise_c50_110cm" metrics="zTempNoise" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_120cm" metrics="zTempNoise" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_130cm" metrics="zTempNoise" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_140cm" metrics="zTempNoise" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_150cm" metrics="zTempNoise" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_200cm" metrics="zTempNoise" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="zTempNoise_c50_250cm" metrics="zTempNoise" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="zTempNoise" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="zTempNoise" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		
-		<test name="gridInterDistance_c50_70cm" metrics="gridInterDistance" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_80cm" metrics="gridInterDistance" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_90cm" metrics="gridInterDistance" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_100cm" metrics="gridInterDistance" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="gridInterDistance_c50_110cm" metrics="gridInterDistance" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_120cm" metrics="gridInterDistance" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_130cm" metrics="gridInterDistance" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_140cm" metrics="gridInterDistance" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_150cm" metrics="gridInterDistance" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_200cm" metrics="gridInterDistance" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="gridInterDistance_c50_250cm" metrics="gridInterDistance" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="gridInterDistance" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="gridInterDistance" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 
-		<test name="geomReprojectError_c50_70cm" metrics="geomReprojectError" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_80cm" metrics="geomReprojectError" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_90cm" metrics="geomReprojectError" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_100cm" metrics="geomReprojectError" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="geomReprojectError_c50_110cm" metrics="geomReprojectError" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_120cm" metrics="geomReprojectError" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_130cm" metrics="geomReprojectError" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_140cm" metrics="geomReprojectError" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_150cm" metrics="geomReprojectError" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_200cm" metrics="geomReprojectError" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectError_c50_250cm" metrics="geomReprojectError" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="geomReprojectError" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectError" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		
-		<test name="geomReprojectErrorUV_c50_70cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_80cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_90cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_100cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="geomReprojectErrorUV_c50_110cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_120cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_130cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_140cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_150cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_200cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="geomReprojectErrorUV_c50_250cm" metrics="geomReprojectErrorUV" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="geomReprojectErrorUV" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		
-		<test name="gridEdgeSharpIR_c50_70cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_80cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_90cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_100cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="gridEdgeSharpIR_c50_110cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_120cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_130cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_140cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_150cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_200cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="gridEdgeSharpIR_c50_250cm" metrics="gridEdgeSharpIR" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="gridEdgeSharpIR" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		
-		<test name="gridMaxRect_c50_70cm" metrics="gridMaxRect" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_80cm" metrics="gridMaxRect" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_90cm" metrics="gridMaxRect" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_100cm" metrics="gridMaxRect" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="gridMaxRect_c50_110cm" metrics="gridMaxRect" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_120cm" metrics="gridMaxRect" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_130cm" metrics="gridMaxRect" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_140cm" metrics="gridMaxRect" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_150cm" metrics="gridMaxRect" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_200cm" metrics="gridMaxRect" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="gridMaxRect_c50_250cm" metrics="gridMaxRect" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="gridMaxRect" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="gridMaxRect" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		
-		<test name="gridLineFit_c50_70cm" metrics="gridLineFit" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_80cm" metrics="gridLineFit" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_90cm" metrics="gridLineFit" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_100cm" metrics="gridLineFit" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="gridLineFit_c50_110cm" metrics="gridLineFit" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_120cm" metrics="gridLineFit" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_130cm" metrics="gridLineFit" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_140cm" metrics="gridLineFit" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_150cm" metrics="gridLineFit" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_200cm" metrics="gridLineFit" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="gridLineFit_c50_250cm" metrics="gridLineFit" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="gridLineFit" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="gridLineFit" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 
-		<test name="gridDistortion_c50_70cm" metrics="gridDistortion" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_80cm" metrics="gridDistortion" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_90cm" metrics="gridDistortion" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_100cm" metrics="gridDistortion" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="gridDistortion_c50_110cm" metrics="gridDistortion" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_120cm" metrics="gridDistortion" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_130cm" metrics="gridDistortion" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_140cm" metrics="gridDistortion" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_150cm" metrics="gridDistortion" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_200cm" metrics="gridDistortion" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="gridDistortion_c50_250cm" metrics="gridDistortion" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="gridDistortion" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="gridDistortion" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 	
-		<test name="losGridStability_c50_70cm" metrics="losGridStability" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_80cm" metrics="losGridStability" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_90cm" metrics="losGridStability" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_100cm" metrics="losGridStability" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="losGridStability_c50_110cm" metrics="losGridStability" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_120cm" metrics="losGridStability" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_130cm" metrics="losGridStability" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_140cm" metrics="losGridStability" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_150cm" metrics="losGridStability" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_200cm" metrics="losGridStability" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="losGridStability_c50_250cm" metrics="losGridStability" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="losGridStability" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="losGridStability" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 	
-		<test name="laserFovStability_c50_70cm" metrics="laserFovStability" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_80cm" metrics="laserFovStability" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_90cm" metrics="laserFovStability" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_100cm" metrics="laserFovStability" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="laserFovStability_c50_110cm" metrics="laserFovStability" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_120cm" metrics="laserFovStability" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_130cm" metrics="laserFovStability" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_140cm" metrics="laserFovStability" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_150cm" metrics="laserFovStability" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_200cm" metrics="laserFovStability" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="laserFovStability_c50_250cm" metrics="laserFovStability" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="laserFovStability" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="laserFovStability" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 		
-		<test name="irZ_c50_70cm" metrics="irZ" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_80cm" metrics="irZ" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_90cm" metrics="irZ" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_100cm" metrics="irZ" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
-        <test name="irZ_c50_110cm" metrics="irZ" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_120cm" metrics="irZ" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_130cm" metrics="irZ" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_140cm" metrics="irZ" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_150cm" metrics="irZ" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_200cm" metrics="irZ" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
-        <test name="irZ_c50_250cm" metrics="irZ" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
+		<test metrics="irZ" target="checkerboard_50" distance="70cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="80cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="90cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="100cm" threshold="[0:3]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="110cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="120cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="130cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="140cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="150cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="200cm" threshold="[0:2]" extra="" />
+        <test metrics="irZ" target="checkerboard_50" distance="250cm" threshold="[0:2]" extra="" />
 
-        <test name="irFillRate_w10_80cm" metrics="irFillRate" target="wall_10Reflectivity" distance="80cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_90cm" metrics="irFillRate" target="wall_10Reflectivity" distance="90cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_100cm" metrics="irFillRate" target="wall_10Reflectivity" distance="100cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_120cm" metrics="irFillRate" target="wall_10Reflectivity" distance="120cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_140cm" metrics="irFillRate" target="wall_10Reflectivity" distance="140cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_160cm" metrics="irFillRate" target="wall_10Reflectivity" distance="160cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_180cm" metrics="irFillRate" target="wall_10Reflectivity" distance="180cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_190cm" metrics="irFillRate" target="wall_10Reflectivity" distance="190cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_200cm" metrics="irFillRate" target="wall_10Reflectivity" distance="200cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_210cm" metrics="irFillRate" target="wall_10Reflectivity" distance="210cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_220cm" metrics="irFillRate" target="wall_10Reflectivity" distance="220cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_240cm" metrics="irFillRate" target="wall_10Reflectivity" distance="240cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_260cm" metrics="irFillRate" target="wall_10Reflectivity" distance="260cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_280cm" metrics="irFillRate" target="wall_10Reflectivity" distance="280cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_300cm" metrics="irFillRate" target="wall_10Reflectivity" distance="300cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_310cm" metrics="irFillRate" target="wall_10Reflectivity" distance="310cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_320cm" metrics="irFillRate" target="wall_10Reflectivity" distance="320cm" threshold="[90 : 100]" extra=""/>
-        <test name="irFillRate_w10_340cm" metrics="irFillRate" target="wall_10Reflectivity" distance="340cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="80cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="90cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="100cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="120cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="140cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="160cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="180cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="190cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="200cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="210cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="220cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="240cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="260cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="280cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="300cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="310cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="320cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="irFillRate" target="wall_10Reflectivity" distance="340cm" threshold="[90 : 100]" extra=""/>
 
-		<test name="zFillRate_w10_80cm" metrics="zFillRate" target="wall_10Reflectivity" distance="80cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_90cm" metrics="zFillRate" target="wall_10Reflectivity" distance="90cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_100cm" metrics="zFillRate" target="wall_10Reflectivity" distance="100cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_120cm" metrics="zFillRate" target="wall_10Reflectivity" distance="120cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_140cm" metrics="zFillRate" target="wall_10Reflectivity" distance="140cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_160cm" metrics="zFillRate" target="wall_10Reflectivity" distance="160cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_180cm" metrics="zFillRate" target="wall_10Reflectivity" distance="180cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_190cm" metrics="zFillRate" target="wall_10Reflectivity" distance="190cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_200cm" metrics="zFillRate" target="wall_10Reflectivity" distance="200cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_210cm" metrics="zFillRate" target="wall_10Reflectivity" distance="210cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_220cm" metrics="zFillRate" target="wall_10Reflectivity" distance="220cm" threshold="[90 : 100]" extra=""/>
-		<test name="zFillRate_w10_230cm" metrics="zFillRate" target="wall_10Reflectivity" distance="230cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_240cm" metrics="zFillRate" target="wall_10Reflectivity" distance="240cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_260cm" metrics="zFillRate" target="wall_10Reflectivity" distance="260cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_280cm" metrics="zFillRate" target="wall_10Reflectivity" distance="280cm" threshold="[90 : 100]" extra=""/>
-        <test name="zFillRate_w10_300cm" metrics="zFillRate" target="wall_10Reflectivity" distance="300cm" threshold="[90 : 100]" extra=""/>
-		<test name="zFillRate_w10_320cm" metrics="zFillRate" target="wall_10Reflectivity" distance="320cm" threshold="[90 : 100]" extra=""/>
-		<test name="zFillRate_w10_340cm" metrics="zFillRate" target="wall_10Reflectivity" distance="340cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="90cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="100cm" threshold="[90 : 100]" extra=""/>
+		<test metrics="zFillRate" target="wall_10Reflectivity" distance="80cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="120cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="140cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="160cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="180cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="190cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="200cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="210cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="220cm" threshold="[90 : 100]" extra=""/>
+		<test metrics="zFillRate" target="wall_10Reflectivity" distance="230cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="240cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="260cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="280cm" threshold="[90 : 100]" extra=""/>
+        <test metrics="zFillRate" target="wall_10Reflectivity" distance="300cm" threshold="[90 : 100]" extra=""/>
+		<test metrics="zFillRate" target="wall_10Reflectivity" distance="320cm" threshold="[90 : 100]" extra=""/>
+		<test metrics="zFillRate" target="wall_10Reflectivity" distance="340cm" threshold="[0 : 5]" extra=""/>
 		
-        <test name="planeFit_w10_80cm" metrics="planeFit" target="wall_10Reflectivity" distance="80cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_90cm" metrics="planeFit" target="wall_10Reflectivity" distance="90cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_100cm" metrics="planeFit" target="wall_10Reflectivity" distance="100cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_120cm" metrics="planeFit" target="wall_10Reflectivity" distance="120cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_140cm" metrics="planeFit" target="wall_10Reflectivity" distance="140cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_160cm" metrics="planeFit" target="wall_10Reflectivity" distance="160cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_180cm" metrics="planeFit" target="wall_10Reflectivity" distance="180cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_190cm" metrics="planeFit" target="wall_10Reflectivity" distance="190cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_200cm" metrics="planeFit" target="wall_10Reflectivity" distance="200cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_210cm" metrics="planeFit" target="wall_10Reflectivity" distance="210cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_220cm" metrics="planeFit" target="wall_10Reflectivity" distance="220cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_240cm" metrics="planeFit" target="wall_10Reflectivity" distance="240cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_260cm" metrics="planeFit" target="wall_10Reflectivity" distance="260cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_280cm" metrics="planeFit" target="wall_10Reflectivity" distance="280cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_300cm" metrics="planeFit" target="wall_10Reflectivity" distance="300cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_310cm" metrics="planeFit" target="wall_10Reflectivity" distance="310cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_320cm" metrics="planeFit" target="wall_10Reflectivity" distance="320cm" threshold="[0 : 5]" extra=""/>
-        <test name="planeFit_w10_340cm" metrics="planeFit" target="wall_10Reflectivity" distance="340cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="80cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="90cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="100cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="120cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="140cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="160cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="180cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="190cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="200cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="210cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="220cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="240cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="260cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="280cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="300cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="310cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="320cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="340cm" threshold="[0 : 5]" extra=""/>
 
-        <test name="zTempNoise_w10_80cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="80cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_90cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="90cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_100cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="100cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_120cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="120cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_140cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="140cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_160cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="160cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_180cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="180cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_190cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="190cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_200cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="200cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_210cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="210cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_220cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="220cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_240cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="240cm" threshold="[0 : 50]" extra=""/>
-		<test name="zTempNoise_w10_260cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="260cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_280cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="280cm" threshold="[0 : 50]" extra=""/>
-        <test name="zTempNoise_w10_300cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="300cm" threshold="[0 : 50]" extra=""/>
-		<test name="zTempNoise_w10_320cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="320cm" threshold="[90 : 100]" extra=""/>
-		<test name="zTempNoise_w10_340cm" metrics="zTempNoise" target="wall_10Reflectivity" distance="340cm" threshold="[0 : 5]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="80cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="90cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="100cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="120cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="140cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="160cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="180cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="190cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="200cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="210cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="220cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="240cm" threshold="[0 : 50]" extra=""/>
+		<test metrics="zTempNoise" target="wall_10Reflectivity" distance="260cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="280cm" threshold="[0 : 50]" extra=""/>
+        <test metrics="zTempNoise" target="wall_10Reflectivity" distance="300cm" threshold="[0 : 50]" extra=""/>
+		<test metrics="zTempNoise" target="wall_10Reflectivity" distance="320cm" threshold="[0 : 50]" extra=""/>
+		<test metrics="zTempNoise" target="wall_10Reflectivity" distance="340cm" threshold="[0 : 50]" extra=""/>
     </tests>
 </root>

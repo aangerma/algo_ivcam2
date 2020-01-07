@@ -4,7 +4,7 @@
     <params>
         <outputFolder>c:\temp\valTest</outputFolder>
         <dataFolder>X:\Data\FW\$</dataFolder>
-        <dataSource>robot</dataSource>
+        <dataSource>bin</dataSource>
 	</params>
 	<camera>
         <stableTemp>false</stableTemp>
