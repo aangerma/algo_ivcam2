@@ -96,8 +96,9 @@ else
 end
 if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (pointsWithZ(6:8)) in ATC
     eGeoms = @(i) Validation.aux.gridError(squeeze(validFramesData(i,:,6:8)), cbGridSz, calibParams.gnrl.cbSquareSz);
+    getGid = @(x) x.absErrorMean;
     eGeomOverTemp = nan(1,numel(tmpBinEdges));
-    eGeomOverTemp(validTemps) = arrayfun(@(i) eGeoms(i), 1:nTemps);
+    eGeomOverTemp(validTemps) = arrayfun(@(i) getGid(eGeoms(i)), 1:nTemps);
     
     metrics.meanEGeom = nanmean(eGeomOverTemp);
     metrics.maxEGeom = max(eGeomOverTemp);

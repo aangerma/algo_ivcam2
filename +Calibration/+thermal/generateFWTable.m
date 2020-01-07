@@ -94,14 +94,14 @@ verifyThermalSweepValidity(ldd, startI, calibParams.warmUp)
 [aMA,bMA] = linearTrans(vec(ma(startI:end)),vec(rtdPerFrame(startI:end)));
 results.ma.slope = aMA;
 
-% jump detection
-jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, true, runParams);
-if isempty(jumpIdcs) % no jump detected
-    ind = 1;
-else % last diff outlier is the first post-jump index
-    ind = jumpIdcs(end);
-    fprintff('Warning: RTD jump detected - excluding measurements below %.2f[deg].\n', ldd(ind))
-end
+% % jump detection
+% jumpIdcs = detectJump(rtdPerFrame, 'RTD', calibParams.fwTable.jumpDet, true, runParams);
+% if ~isempty(jumpIdcs)
+%     fprintff('Error: RTD offset jump detected - failing unit.\n')
+%     table = [];
+%     errorCode = -3;
+%     return;
+% end
 
 % group by LDD
 lddForEst = ldd(ind:end);
@@ -110,7 +110,6 @@ if calibParams.fwTable.extrap.rtdModel.skipInterpolation % use final grid from s
     results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
     results.rtd.minval = calibParams.fwTable.tempBinRange(1);
 else % use finer grid prior to extrapolation (as in angX & angY)
-    minMaxLdd = minmax(lddForEst);
     results.rtd.maxval = max(lddForEst);
     results.rtd.minval = min(lddForEst);
 end
