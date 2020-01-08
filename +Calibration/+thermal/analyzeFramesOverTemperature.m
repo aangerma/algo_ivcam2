@@ -122,8 +122,8 @@ end
 
 function [params] = prepareParams4UvMap(camerasParams)
 params.depthRes = camerasParams.depthRes;
-params.rgbPmat = camerasParams.rgbPmat;
-params.Krgb = camerasParams.Krgb;
+params.camera.rgbPmat = camerasParams.rgbPmat;
+params.camera.rgbK = camerasParams.Krgb;
 params.rgbDistort = camerasParams.rgbDistort;
 end
 
