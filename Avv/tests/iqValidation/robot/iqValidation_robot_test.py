@@ -19,6 +19,7 @@ def test_validation_robot_regression_vga_short():
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.robotRun(filePath)
 
+
 @slash.tag('robot')
 def test_validation_robot_regression_xga_long():
     filePath = r'Avv/tests/iqValidation/robot/robot_regression_xga_long.xml'
@@ -32,18 +33,12 @@ def test_validation_robot_regression_xga_short():
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.robotRun(filePath)
 
+
 @slash.tag('robot')
 def test_validation_robot_algonas():
     filePath = r'X:/Avv/sources/robot/robot.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.robotRun(filePath)
-
-
-@slash.tag('robot')
-def test_validation_robot_grid_angle():
-    filePath = r'Avv/tests/iqValidation/robot/robot_grid_angle.xml'
-    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
-    runIqValidation.iq_validation_test(filePath)
 
 
 @slash.tag('robot')
@@ -58,6 +53,14 @@ def test_validation_DEBUG():
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.robotRun(filePath)
 
+
 @slash.tag('analsys')
 def test_validation_Run():
     runIqValidation.runMatlabValidation()
+
+
+@slash.tag('FW')
+def test_validation_FW():
+    filePath = r'Avv/tests/iqValidation/FW/FW_regression_vga_long.xml'
+    slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
+    runIqValidation.robotRun(filePath, robotFlag=False)
