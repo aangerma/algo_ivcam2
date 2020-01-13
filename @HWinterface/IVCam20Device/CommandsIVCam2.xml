@@ -33,7 +33,7 @@
     <KVP Key="0" Value="NO" />
     <KVP Key="1" Value="YES" />
   </CustomFormatter>
-  <CustomFormatter Name="FlashStatus" KeySize="Byte">
+  <CustomFormatter Name="LockStatus" KeySize="Byte">
     <KVP Key="0" Value="Unlocked" />
     <KVP Key="1" Value="Locked" />
   </CustomFormatter>
@@ -131,16 +131,17 @@
       <Section Name="ProductType" Title="Product type" Offset="3" Size="1" FormatType="productType" />
       <Section Name="ProductID" Title="Product ID" Offset="4" Size="1" FormatType="HexNumber" />
       <Section Name="EventsLoggerVerMajor" Title="EventsLoggerVerMajor" Offset="5" Size="1" FormatType="HexNumber" />
+      <Section Name="eyeSafety" Title="EyeSafety is On" Offset="6" Size="1" FormatType="Boolean" />
       <Section Name="FunctionalPayloadVersion" Title="FunctionalPayloadVersion" Offset="12" Size="4" FormatType="ChangeSetVersion" />
       <Section Name="EyeSafetyPayloadVersion" Title="EyeSafety payload version" Offset="16" Size="4" FormatType="MajorMinorVersion" />
       <Section Name="DfuPayloadVersion" Title="DFU payload version" Offset="20" Size="4" FormatType="MajorMinorVersion" />
-      <Section Name="McPayloadVersion" Title="MC payload version" Offset="24" Size="4" FormatType="ChangeSetVersion" />
+      <Section Name="McPayloadVersion" Title="MC payload version" Offset="24" Size="4" FormatType="MajorMinorVersion" />
       <Section Name="SecCtrlPayloadVersion" Title="SECCTRL payload version" Offset="28" Size="4" FormatType="MajorMinorVersion" />
       
       <Section Name="FlashRoVersion" Title="Flash RO version" Offset="32" Size="1" FormatType="DecByte" />
-      <Section Name="FlashStatus" Title="Flash is locked" Offset="33" Size="1" FormatType="FlashStatus" />
+      <Section Name="FlashStatus" Title="Flash is locked" Offset="33" Size="1" FormatType="LockStatus" />
       <Section Name="FlashRwVersion" Title="Flash RW version" Offset="34" Size="1" FormatType="DecByte" />
-         
+      <Section Name="eepromStatus" Title="EEPROM is locked" Offset="35" Size="1" FormatType="LockStatus" />   
       <Section Name="StrapState" Title="Strap state" Offset="36" Size="4" FormatType="HexNumber" />
       <Section Name="OemId" Title="OEM ID" Offset="40" Size="4" FormatType="HexNumber" />
       <Section Name="ControlVendor" Title="Control vendor" Offset="44" Size="4" FormatType="HexNumber" />
@@ -149,6 +150,7 @@
       <Section Name="AsicModuleSerial" Title="AsicModuleSerial" Offset="74" Size="6" FormatType="BarCodeSerial12Char" />
       <Section Name="AsicModuleChipID" Title="Asic module chip ID" Offset="80" Size="8" FormatType="BarCodeSerial12Char" />
       <Section Name="AsicModuleVersion" Title="Asic module version" Offset="88" Size="1" FormatType="HexNumber" />
+      <Section Name="asicStatus" Title="Asic is locked" Offset="89" Size="1" FormatType="LockStatus" />
       <Section Name="ID_MM" Title="ID_MM" Offset="90" Size="6" FormatType="Ascii" />
       <Section Name="McAsicType" Title="Mc Asic Type" Offset="96" Size="1" FormatType="HexNumber" />      
       <Section Name="ImuModuleID" Title="Imu module ID" Offset="128" Size="2" FormatType="HexNumber" />
@@ -188,6 +190,12 @@
       <Section Name="Apd_Voltage" Title="Apd Voltage" Offset="8" Size="4" FormatType="Float" />
     </ReadData>
   </Command>  
+  <Command Name="FEB" CmdPipe="WinUsb" Opcode="0x16" CmdPermission="Private" Description="Erase flash block">
+    <Parameter1 Name="Block Index">
+    </Parameter1>
+    <Parameter2 Name="Number of Blocks">
+    </Parameter2>
+  </Command>
   <Command Name="ERB" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x17" CmdPermission="Public" IsReadCommand="true" ReadFormat="Bytes" Description="Read from eeprom">
     <Parameter1 Name="StartIndex">
     </Parameter1>
@@ -206,7 +214,16 @@
   </Command>
   <Command Name="RST" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x20" CmdPermission="Public" Description="HW Reset">
   </Command>
-
+  <Command Name="AMCGETVER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x26" IsReadCommand="true" CmdPermission="Public" Description="Get adavanced mode command version">
+  </Command>
+  <Command Name="AMCSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2B" CmdPermission="Public" Description="AMC_SET">
+    <Parameter1 Name="opcode" />
+    <Parameter2 Name="value" />
+  </Command>
+  <Command Name="AMCGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2C" IsReadCommand="true" CmdPermission="Public" Description="AMC_GET">
+    <Parameter1 Name="opcode" />
+    <Parameter2 Name="dataType" />
+  </Command>
   <Command Name="RGB_INTRINSICS_UNDIST_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x39" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get rgb undist intrinsic">
      <ReadData> 
       <Section Name="-----------Common-------------" Title="Common" Offset="0" Size="1" FormatType="DecByte" />
@@ -362,6 +379,7 @@
   <Command Name="DIRTYBITBYPASS" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x51" CmdPermission="Public" Description="Bypass eye safety dirty bit indication">
   </Command>
   <Command Name="DIRTYBITCLEAR" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x52" CmdPermission="Private" Description="Clear eye safety dirty bit indication (tester only)">
+      <Parameter1 Name="Password" />
   </Command>
   <Command Name="DIRTYBITGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x53" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get eye safety dirty bit indication 2B_FLASH/ 2B_EEPROM">
   </Command>
@@ -452,7 +470,7 @@
       <Section Name="MA_Temperature" Title="MA (PVT) Temperature" Offset="16" Size="8" FormatType="Double" />
       <Section Name="APD_Temperature" Title="APD Temperature" Offset="24" Size="8" FormatType="Double" />
       <Section Name="HUM_Temperature" Title="HUM Temperature" Offset="32" Size="8" FormatType="Double" />
-      <Section Name="AlgoTermalLddAvg_Temperature" Title="Algo Therm LDD Avg Temperature" Offset="0" Size="8" FormatType="Double" />
+      <Section Name="AlgoTermalLddAvg_Temperature" Title="Algo Therm LDD Avg Temperature" Offset="40" Size="8" FormatType="Double" />
     </ReadData>
   </Command>
   <Command Name="PZR_POWER_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x6B" IsReadCommand="true" CmdPermission="Public" Description="Get PZR vBias and iBias">
