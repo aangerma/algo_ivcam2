@@ -5,6 +5,7 @@ function [data ] = analyzeFramesOverTemperature(data, calibParams,runParams,fpri
 
 tmps = [data.framesData.temp];
 ldds = [tmps.ldd];
+hum = [tmps.shtw2];
 data.dfzRefTmp = max(ldds);
 
 invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
@@ -54,7 +55,7 @@ stdVals = nanmean(nanstd(validFramesData));
 metrics = Calibration.thermal.calcThermalScores(data,calibParams,runParams.calibRes);
 %%
 if plotRGB && isfield(data,'camerasParams')
-    [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,ldds,calibParams,runParams,metrics,inValidationStage,fprintff);
+    [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,hum,calibParams,runParams,metrics,inValidationStage,fprintff);
     %%
 end
 
@@ -127,7 +128,7 @@ params.camera.rgbK = camerasParams.Krgb;
 params.rgbDistort = camerasParams.rgbDistort;
 end
 
-function [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,ldds,calibParams,runParams,metrics,inValidationStage,fprintff)
+function [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,hum,calibParams,runParams,metrics,inValidationStage,fprintff)
 if isfield(calibParams.gnrl.rgb, 'fixRgbThermal') && calibParams.gnrl.rgb.fixRgbThermal
     fixRgbThermal = 1;
 else
@@ -155,7 +156,7 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         if isfield(data,'rgb')
             hold on;
             plot([data.rgb.rgbCalTemp,data.rgb.rgbCalTemp],[0,max(uvResults(:,1))],'k--','linewidth',2);
-            legends{end+1} = 'Cal Ldd Temp';
+            legends{end+1} = 'Cal Humidity Temp';
         end
         legend(legends);
         Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);
@@ -163,14 +164,14 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
 end
 %%
 if fixRgbThermal && data.rgb.isValid
-    crnrsData = nan(numel(ldds),size(data.framesData(1).ptsWithZ,1),2);
-    for iTemps = 1:numel(ldds)
+    crnrsData = nan(numel(hum),size(data.framesData(1).ptsWithZ,1),2);
+    for iTemps = 1:numel(hum)
         crnrsData(iTemps,:,:) = data.framesData(iTemps).ptsWithZ(:,end-1:end);
     end
-    [fixedCrnrsData,isFixed] = Calibration.thermal.fixRgbWithThermalCoeffs(crnrsData,ldds,data.rgb,data.rgb.rgbCalTemp,fprintff);
+    [fixedCrnrsData,isFixed] = Calibration.thermal.fixRgbWithThermalCoeffs(crnrsData,hum,data.rgb,data.rgb.rgbCalTemp,fprintff);
     if isFixed
         framesDataFixed = data.framesData;
-        for iTemps = 1:numel(ldds)
+        for iTemps = 1:numel(hum)
             framesDataFixed(iTemps).ptsWithZ(:,end-1:end) = fixedCrnrsData(iTemps,:,:);
         end
         nBins = calibParams.fwTable.nRows;
