@@ -11,6 +11,7 @@
        <mcTKill>[]</mcTKill>
        <maTKill>[]</maTKill>
        <apdTKill>65</apdTKill>
+       <pzrCtKill>[0 70]</pzrCtKill>
        <cbSquareSz>30</cbSquareSz>
        <!--<cbGridSz>[9,13]</cbGridSz>-->
        <cbGridSz>[]</cbGridSz>

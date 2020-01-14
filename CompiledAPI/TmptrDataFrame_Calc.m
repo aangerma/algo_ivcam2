@@ -1,4 +1,4 @@
-function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz, frameBytes, calibParams, maxTime2Wait)
+function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, FrameData, sz, frameBytes, calibParams, maxTime2Wait, ctKillThr)
 
 %function [result, data ,table]  = TemDataFrame_Calc(regs, FrameData, sz ,InputPath,calibParams, maxTime2Wait)
 % description: initiale set of the DSM scale and offset 
@@ -43,7 +43,7 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     % input save
     if ~g_skip_thermal_iterations_save && g_save_input_flag && exist(output_dir,'dir')~=0 
         fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-        save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait');
+        save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait', 'ctKillThr');
     end
     
     % operation
@@ -56,17 +56,17 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     origFinishedHeating = finishedHeating;
     
     try
-        [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir);
+        [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir, ctKillThr);
         if (calibPassed==-1) % save input for debugging
             if g_save_input_flag && exist(output_dir,'dir')~=0
                 fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-                save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait');
+                save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait', 'ctKillThr');
             end
         end
     catch ME % save input for debugging
         if g_save_input_flag && exist(output_dir,'dir')~=0
             fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
-            save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait');
+            save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait', 'ctKillThr');
         end
         rethrow(ME)
     end

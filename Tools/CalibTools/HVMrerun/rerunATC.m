@@ -74,7 +74,7 @@ files = dir([inputPath, 'TmptrDataFrame_Calc_in*']);
 for iFile = 1:length(files)-1
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sTmptrDataFrame_Calc_in%d.mat', inputPath, iFile-1));
-    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.metricsWithTheoreticalFix, dataRes.Invalid_Frames] = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz, dataIn.frameBytes, dataIn.calibParams, dataIn.maxTime2Wait);
+    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.metricsWithTheoreticalFix, dataRes.Invalid_Frames] = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz, dataIn.frameBytes, dataIn.calibParams, dataIn.maxTime2Wait, dataIn.ctKillThr);
     dataOut = load(sprintf('%sTmptrDataFrame_Calc_out%d.mat', inputPath, iFile-1));
     checkOutputEquality(dataOut, dataRes)
 end
@@ -118,7 +118,7 @@ files = dir([inputPath, 'TmptrDataFrame_Calc_in*']);
 for iFile = length(files)
     fprintf('\ncycle #%d... ', iFile);
     dataIn = load(sprintf('%sTmptrDataFrame_Calc_in%d.mat', inputPath, iFile-1));
-    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.metricsWithTheoreticalFix, dataRes.Invalid_Frames] = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz, dataIn.frameBytes, dataIn.calibParams, dataIn.maxTime2Wait);
+    [dataRes.finishedHeating, dataRes.calibPassed, dataRes.results, dataRes.metrics, dataRes.metricsWithTheoreticalFix, dataRes.Invalid_Frames] = TmptrDataFrame_Calc(dataIn.finishedHeating, dataIn.regs, dataIn.eepromRegs, dataIn.eepromBin, dataIn.FrameData, dataIn.sz, dataIn.frameBytes, dataIn.calibParams, dataIn.maxTime2Wait, dataIn.ctKillThr);
     dataOut = load(sprintf('%sTmptrDataFrame_Calc_out%d.mat', inputPath, iFile-1));
     checkOutputEquality(dataOut, dataRes)
 end
