@@ -45,6 +45,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function results = UpdateResultsStruct(results)
+    % RTD results
     results.thermalRtdRefTemp       = results.rtd.refTemp;
     results.thermalMinCalTemp       = results.rtd.origMinval;
     results.thermalMaxCalTemp       = results.rtd.origMaxval;
@@ -53,6 +54,7 @@ function results = UpdateResultsStruct(results)
         results.rtdModelOrder       = results.rtd.modelOrder;
     end
     results.thermalMaSlope          = results.ma.slope;
+    % LOS results
     results.thermalAngyMinAbsScale  = min(abs(results.angy.scale));
     results.thermalAngyMaxAbsScale  = max(abs(results.angy.scale));
     results.thermalAngyMinAbsOffset = min(abs(results.angy.offset));
@@ -67,10 +69,22 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP0y          = results.angx.p0(2);
     results.thermalAngxP1x          = results.angx.p1(1);
     results.thermalAngxP1y          = results.angx.p1(2);
+    % PZR results
+    results.pzr1x2Coef              = results.pzr(1).coef(1);
+    results.pzr1x1Coef              = results.pzr(1).coef(2);
+    results.pzr1x0Coef              = results.pzr(1).coef(3);
+    results.pzr2x2Coef              = results.pzr(2).coef(1);
+    results.pzr2x1Coef              = results.pzr(2).coef(2);
+    results.pzr2x0Coef              = results.pzr(2).coef(3);
+    results.pzr3x2Coef              = results.pzr(3).coef(1);
+    results.pzr3x1Coef              = results.pzr(3).coef(2);
+    results.pzr3x0Coef              = results.pzr(3).coef(3);
+    % Tmptr results
     results.FRMWhumidApdTempDiff    = results.temp.FRMWhumidApdTempDiff;
+    % Struct cleaning
     if isfield(results, 'rgb')
-        results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'rgb', 'temp'});
+        results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'pzr', 'rgb', 'temp'});
     else
-        results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'temp'});
+        results = rmfield(results, {'rtd', 'ma', 'angy', 'angx', 'table', 'pzr', 'temp'});
     end
 end

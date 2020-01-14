@@ -9,7 +9,9 @@ framesData = data.framesData;
 timeVec = [framesData.time];
 tempData = [framesData.temp];
 ldd = [tempData.ldd];
+hum = [tempData.shtw2];
 vBias = reshape([framesData.vBias],3,[]);
+iBias = reshape([framesData.iBias],3,[]);
 regs = data.regs;
 
 nBins = calibParams.fwTable.nRows;
@@ -332,6 +334,7 @@ if calibParams.fwTable.yFix.bypass
 end
 
 % extrapolation
+results.pzr             = estHumFromPzrRes(hum(startI:end), vBias(:,startI:end)./iBias(:,startI:end), runParams, data.ctKillThr);
 vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
 [table, results]        = extrapolateTable(table, results, vBiasLims, calibParams, runParams);
 results.rtd.origMinval  = min(lddForEst);
@@ -640,22 +643,55 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function pzrResults = estHumFromPzrRes(hum, pzrRes, runParams, ctKillThr)
+
+pzrRes = pzrRes/1e3; % [Kohm]
+pzrResults = repmat(struct('coef', zeros(1,3)), [1,3]);
+for iPzr = 1:3
+    pzrResults(iPzr).coef = single(polyfit(pzrRes(iPzr,:), hum, 2));
+end
+
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
+    ff = Calibration.aux.invisibleFigure; hold all
+    clrs = {'b', 'c'; [0,0.5,0], 'g'; 'r', 'm'};
+    signsStr = {'','+','+'};
+    lgnd = cell(1,7);
+    resAx = linspace(0,10,1000);
+    pzrResLims = minmax(pzrRes(:));
+    for iPzr = 1:3
+        coef = pzrResults(iPzr).coef;
+        humAx = polyval(coef, resAx);
+        idcs = find(humAx>=ctKillThr(1),1,'first')-1:find(humAx>=ctKillThr(2),1,'first');
+        pzrResLims = [min(pzrResLims(1),resAx(idcs(1))), max(pzrResLims(2),resAx(idcs(end)))];
+        plot(pzrRes(iPzr,:), hum, '.', 'color', clrs{iPzr,1})
+        lgnd{2*iPzr-1} = sprintf('PZR%d', iPzr);
+        plot(resAx(idcs), polyval(coef, resAx(idcs)), '-', 'color', clrs{iPzr,2})
+        lgnd{2*iPzr} = sprintf('%.1f*x^2%s%.1f*x%s%.1f', coef(1), signsStr{sign(coef(2))+2}, coef(2), signsStr{sign(coef(3))+2}, coef(3));
+    end
+    plot(pzrResLims([1,2,1,1,2]), [ctKillThr(1)*ones(1,2), NaN, ctKillThr(2)*ones(1,2)], 'k--', 'linewidth', 2)
+    lgnd{7} = 'CT kill threshold';
+    grid on, xlabel('PZR resistance [Kohm]'), ylabel('Humidity temperature [deg]'), legend(lgnd,'Location','SouthEast')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'PZR','TmptrResistanceModel');
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function vBiasLims = extrapolateVBiasLimits(results, ldd, vBias, calibParams, runParams)
 
 vBiasLims = zeros(3,2);
 
 % vBias2
 coef2 = polyfit(ldd, vBias(2,:), 2);
-fit2 = @(x) coef2(1)*x.^2 + coef2(2)*x + coef2(3);
-vBiasLims(2,:) = fit2(calibParams.fwTable.tempBinRange);
+vBiasLims(2,:) = polyval(coef2, calibParams.fwTable.tempBinRange);
 
 % vBias1/3
 p0 = results.angx.p0;
 p1 = results.angx.p1;
 tgal = (1/norm(p1-p0)^2)*(p1-p0)*(vBias([1,3],:)'-p0)';
 coef13 = polyfit(ldd, tgal, 2);
-fit13 = @(x) coef13(1)*x.^2 + coef13(2)*x + coef13(3);
-tgalExtrapLims = fit13(calibParams.fwTable.tempBinRange);
+tgalExtrapLims = polyval(coef13, calibParams.fwTable.tempBinRange);
 vBiasLims([1,3],:) = p0' + (p1-p0)'*tgalExtrapLims;
 
 if calibParams.fwTable.extrap.expandVbiasLims
@@ -666,9 +702,9 @@ end
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure; hold all
     lddExt = linspace(calibParams.fwTable.tempBinRange(1), calibParams.fwTable.tempBinRange(2), 48);
-    plot(ldd, vBias(1,:), 'b.-'), plot(lddExt, p0(1)+(p1(1)-p0(1))*fit13(lddExt), 'c-o')
-    plot(ldd, vBias(2,:), '.-', 'color', [0,0.5,0]),  plot(lddExt, fit2(lddExt), 'g-o')
-    plot(ldd, vBias(3,:), 'r.-'),  plot(lddExt, p0(2)+(p1(2)-p0(2))*fit13(lddExt), 'm-o')
+    plot(ldd, vBias(1,:), 'b.-'), plot(lddExt, p0(1)+(p1(1)-p0(1))*polyval(coef13, lddExt), 'c-o')
+    plot(ldd, vBias(2,:), '.-', 'color', [0,0.5,0]),  plot(lddExt, polyval(coef2, lddExt), 'g-o')
+    plot(ldd, vBias(3,:), 'r.-'),  plot(lddExt, p0(2)+(p1(2)-p0(2))*polyval(coef13, lddExt), 'm-o')
     plot(calibParams.fwTable.tempBinRange, vBiasLims(1,:), 'bp')
     plot(calibParams.fwTable.tempBinRange, vBiasLims(2,:), 'p', 'color', [0,0.5,0])
     plot(calibParams.fwTable.tempBinRange, vBiasLims(3,:), 'rp')
@@ -723,17 +759,7 @@ end
 
 function [extrapVals, polyCoef] = polyExtrap(origGrid, origVals, extrapGrid, polyOrder)
 polyCoef = polyfit(origGrid, origVals, polyOrder);
-switch polyOrder
-    case 1
-        polyFunc = @(x) polyCoef(1)*x + polyCoef(2);
-    case 2
-        polyFunc = @(x) polyCoef(1)*x.^2 + polyCoef(2)*x + polyCoef(3);
-    case 3
-        polyFunc = @(x) polyCoef(1)*x.^3 + polyCoef(2)*x.^2 + polyCoef(3)*x + polyCoef(4);
-    otherwise
-        error('polyExtrap currently supports orders 1-3 only')
-end
-extrapVals = polyFunc(extrapGrid);
+extrapVals = polyval(polyCoef, extrapGrid);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
