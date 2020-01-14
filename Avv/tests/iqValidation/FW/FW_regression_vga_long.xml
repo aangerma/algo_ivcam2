@@ -27,6 +27,9 @@
 		<cameraConfig_afterStartStream></cameraConfig_afterStartStream>
 	</camera>
    <tests>
-		<test  metrics="irZ" target="checkerboard_50" threshold="[0:2]" extra="" />
+		<test metrics="irFillRate" target="wall_10Reflectivity" dthreshold="[0:2]" extra="" />
+		<test metrics="zFillRate" target="wall_10Reflectivity" dthreshold="[0:2]" extra="" />
+		<test metrics="planeFit" target="wall_10Reflectivity" dthreshold="[0:2]" extra="" />
+		<test metrics="zTempNoise" target="wall_10Reflectivity" dthreshold="[0:2]" extra="" />
     </tests>
 </root>
