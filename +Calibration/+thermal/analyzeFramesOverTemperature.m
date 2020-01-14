@@ -5,7 +5,11 @@ function [data ] = analyzeFramesOverTemperature(data, calibParams,runParams,fpri
 
 tmps = [data.framesData.temp];
 ldds = [tmps.ldd];
-hum = [tmps.shtw2];
+if isfield(tmps,'shtw2') 
+    hum = [tmps.shtw2];
+else
+    hum = [tmps.humidity];
+end
 data.dfzRefTmp = max(ldds);
 
 invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
