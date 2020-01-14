@@ -25,10 +25,10 @@
     </camera>
     <tests>
 	    	
-	    <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
-        <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
+	    <!--<test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
+        <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />-->
         <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" threshold="[0:2]" extra="" />
-        <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
+       <!-- <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
         <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
 		
 		<test metrics="irZ" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
@@ -74,7 +74,7 @@
 		<test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
         <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />
         <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
-        <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />	
+        <test metrics="gridLineFit" target="checkerboard_50" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />	-->
 	
         <test metrics="planeFit" target="white_wall" threshold="[0:2]" extra="" />
         <test metrics="planeFit" target="white_wall_40roi" threshold="[0:2]" extra="" />		
