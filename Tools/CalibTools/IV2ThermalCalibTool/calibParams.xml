@@ -67,6 +67,13 @@
       <rtdShit>[0 inf]</rtdShit>
       <fovPercTmpChangeRangeH>[-5.0 5.0]</fovPercTmpChangeRangeH>
       <yDsmLosDegredation>[0,2]</yDsmLosDegredation>
+      <bestVerticalSharpness>[0 5]</bestVerticalSharpness>
+      <worstVerticalSharpness>[0 5]</worstVerticalSharpness>
+      <thermalMaxRmsErrRtd>[0 3]</thermalMaxRmsErrRtd>
+      <thermalMaxRmsErrX>[0 3]</thermalMaxRmsErrX>
+      <thermalMaxRmsErrY>[0 1.5]</thermalMaxRmsErrY>
+      <thermalMaxRmsErrRgbX>[0 5]</thermalMaxRmsErrRgbX>
+      <thermalMaxRmsErrRgbY>[0 5]</thermalMaxRmsErrRgbY>
    </errRange>
    <validation>
        <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>
