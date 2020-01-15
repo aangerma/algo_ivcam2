@@ -122,6 +122,18 @@ if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (po
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('EGeomOverTemp'),1);
     end
 end
+if isfield(data.framesData, 'verticalSharpness')
+    verticalSharpness = [data.framesData.verticalSharpness];
+    metrics.bestVerticalSharpness = min(verticalSharpness);
+    metrics.worstVerticalSharpness = max(verticalSharpness);
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        plot(tempVec, verticalSharpness,'.-')
+        title('Heating Stage Vertical Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('VerticalSharpness'),1);
+    end
+end
+
 data.results = metrics;
 end
 

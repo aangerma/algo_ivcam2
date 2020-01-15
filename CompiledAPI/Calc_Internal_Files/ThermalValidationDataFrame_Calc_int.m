@@ -77,11 +77,14 @@ if ~finishedHeating % heating stage
         FrameData.confPts = [];
         FrameData.irStat = [];
         FrameData.cStat = [];
+        FrameData.verticalSharpness = [];
         calibPassed = -1;
     else
         % RX tracking
         FrameData.irStat = Calibration.aux.calcIrStatistics(frame.i, FrameData.ptsWithZ(:,4:5));
         FrameData.cStat = Calibration.aux.calcConfStatistics(frame.c, FrameData.ptsWithZ(:,4:5));
+        % Sharpness tracking
+        FrameData.verticalSharpness = Validation.metrics.gridEdgeSharpIR(frame, struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
     end
     acc_FrameData(FrameData);
     if(Index == 0)

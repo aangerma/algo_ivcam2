@@ -352,7 +352,7 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
 %     params.target.squareSize = 30;
 %     params.expectedGridSize = [9,13];
 %     [frameData.eGeom, allRes,dbg] = Validation.metrics.gridInterDistance(frame, params);
-    
+    frameData.verticalSharpness = Validation.metrics.gridEdgeSharpIR(frame, struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
 end
 
 
