@@ -44,7 +44,7 @@ else
     plotRGB = 0;
 end
 
-Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB);
+thermalResults = Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB);
 
 validTemps = ~all(any(isnan(framesPerTemperature(:,:,:,1)),3),2);
 assert(sum(validTemps)>1, 'Thermal sweep occupies less than 2 bins - this is incompatible with code later on')
@@ -132,6 +132,13 @@ if isfield(data.framesData, 'verticalSharpness')
         title('Heating Stage Vertical Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('VerticalSharpness'),1);
     end
+end
+metrics.thermalMaxRmsErrRtd = thermalResults.thermalMaxRmsErrRtd;
+metrics.thermalMaxRmsErrX = thermalResults.thermalMaxRmsErrX;
+metrics.thermalMaxRmsErrY = thermalResults.thermalMaxRmsErrY;
+if plotRGB
+    metrics.thermalMaxRmsErrRgbX = thermalResults.thermalMaxRmsErrRgbX;
+    metrics.thermalMaxRmsErrRgbY = thermalResults.thermalMaxRmsErrRgbY;
 end
 
 data.results = metrics;
