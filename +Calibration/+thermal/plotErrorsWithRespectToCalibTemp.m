@@ -1,4 +1,4 @@
-function [  ] = plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB)
+function results = plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB)
 
 % ptsWithZ = [rtd,angx,angy,pts,verts];
 
@@ -6,9 +6,14 @@ function [  ] = plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdge
 % Plots RMS X/Y/RTD diff in respect to calib temp
 %%
 [meanRtdXYOffset,rmsRtdXYOffset,maxRtdXYOffset] = calcDataOffsets(framesPerTemperature,refBinIndex,[1,4,5]);
+results.thermalMaxRmsErrRtd = max(vec(rmsRtdXYOffset(:,1,:)));
+results.thermalMaxRmsErrX = max(vec(rmsRtdXYOffset(:,2,:)));
+results.thermalMaxRmsErrY = max(vec(rmsRtdXYOffset(:,3,:)));
 if exist('plotRGB','var') && plotRGB && size(framesPerTemperature,3)>5
     numOfRows = size(framesPerTemperature,3);
     [meanXYOffset_rgb,rmsXYOffset_rgb,maxXYOffset_rgb] = calcDataOffsets(framesPerTemperature,refBinIndex,[numOfRows-1,numOfRows]);
+    results.thermalMaxRmsErrRgbX = max(vec(rmsXYOffset_rgb(:,1,:)));
+    results.thermalMaxRmsErrRgbY = max(vec(rmsXYOffset_rgb(:,2,:)));
 end
 %%
 sq = @squeeze;

@@ -96,6 +96,13 @@
       <thermalAngxP0y>[0 5]</thermalAngxP0y>
       <thermalAngxP1x>[0 5]</thermalAngxP1x>
       <thermalAngxP1y>[0 5]</thermalAngxP1y>
+      <bestVerticalSharpness>[0 10]</bestVerticalSharpness>
+      <worstVerticalSharpness>[0 10]</worstVerticalSharpness>
+      <thermalMaxRmsErrRtd>[0 inf]</thermalMaxRmsErrRtd>
+      <thermalMaxRmsErrX>[0 inf]</thermalMaxRmsErrX>
+      <thermalMaxRmsErrY>[0 inf]</thermalMaxRmsErrY>
+      <thermalMaxRmsErrRgbX>[0 inf]</thermalMaxRmsErrRgbX>
+      <thermalMaxRmsErrRgbY>[0 inf]</thermalMaxRmsErrRgbY>
    </errRange>
    <validation>
        <maximalCoolingAndHeatingTimes>[inf, inf]</maximalCoolingAndHeatingTimes>

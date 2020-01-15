@@ -5,8 +5,8 @@ Steps for resleasing a new calibration gui:
 3. Look for differences in outputFiles in respect to previous version and verify only things that was supposed to change actually did.
 %}
 
-if isempty(strfind(version, 'R2017a')) %#ok
-    error('build_IV2calibTool() must be ran with Matlab R2017a!');
+if isempty(strfind(version, 'R2018b')) %#ok
+    error('build_IV2calibTool() must be run with Matlab R2018b!');
 end
 
 %%

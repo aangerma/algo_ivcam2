@@ -44,7 +44,7 @@ else
     plotRGB = 0;
 end
 
-Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB);
+thermalResults = Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB);
 
 validTemps = ~all(any(isnan(framesPerTemperature(:,:,:,1)),3),2);
 assert(sum(validTemps)>1, 'Thermal sweep occupies less than 2 bins - this is incompatible with code later on')
@@ -122,6 +122,25 @@ if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (po
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('EGeomOverTemp'),1);
     end
 end
+if isfield(data.framesData, 'verticalSharpness')
+    verticalSharpness = [data.framesData.verticalSharpness];
+    metrics.bestVerticalSharpness = min(verticalSharpness);
+    metrics.worstVerticalSharpness = max(verticalSharpness);
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        plot(tempVec, verticalSharpness,'.-')
+        title('Heating Stage Vertical Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('VerticalSharpness'),1);
+    end
+end
+metrics.thermalMaxRmsErrRtd = thermalResults.thermalMaxRmsErrRtd;
+metrics.thermalMaxRmsErrX = thermalResults.thermalMaxRmsErrX;
+metrics.thermalMaxRmsErrY = thermalResults.thermalMaxRmsErrY;
+if plotRGB
+    metrics.thermalMaxRmsErrRgbX = thermalResults.thermalMaxRmsErrRgbX;
+    metrics.thermalMaxRmsErrRgbY = thermalResults.thermalMaxRmsErrRgbY;
+end
+
 data.results = metrics;
 end
 
