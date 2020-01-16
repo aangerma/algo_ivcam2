@@ -1,7 +1,10 @@
 function [fixedCrnrsData,isFixed] = fixRgbWithThermalCoeffs(crnrsData,temps,rgbThermalData,fprintff)
 nBins = size(rgbThermalData.thermalTable,1);
-% temps = [data.framesData.temp];
-% temps = [temps.ldd];
+rgbCalTemp = rgbThermalData.rgbCalTemp;
+if rgbThermalData.referenceTemp ~= rgbThermalData.rgbCalTemp
+    [rgbThermalData] = Calibration.rgb.adjustRgbThermal2NewRefTemp(rgbThermalData,rgbCalTemp,fprintff);
+    rgbThermalData.rgbCalTemp = rgbCalTemp;
+end
 fixedCrnrsData = crnrsData;
 tempRange = [rgbThermalData.minTemp rgbThermalData.maxTemp];
 ixInRange = temps >= tempRange(1) & temps <= tempRange(2);
