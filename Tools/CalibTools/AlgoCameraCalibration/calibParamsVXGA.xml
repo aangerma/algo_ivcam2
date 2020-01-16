@@ -326,7 +326,7 @@
         <rtdOverTanYrange>[-10,-10,-10;10,10,10]</rtdOverTanYrange>
         <rtdOverAngXrange>[-30,-30,-30,-30,-30,0;30,30,30,30,30,0]</rtdOverAngXrange>
         <zenith>
-            <useEsTilt>0</useEsTilt>
+            <useEsTilt>1</useEsTilt>
             <applyCorrection>0</applyCorrection>
             <correctionCoefsHorz>[1,0.33]</correctionCoefsHorz>
             <correctionCoefsVert>[1,-0.32]</correctionCoefsVert>
