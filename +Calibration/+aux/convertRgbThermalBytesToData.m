@@ -5,11 +5,11 @@ function rgbThermalData = convertRgbThermalBytesToData(rgbThermalBinData,nBinsRg
     
     if numel(vals(5:end))/4 ~= nBinsRgb %Backwards compatibility
         rgbThermalData.referenceTemp = rgbThermalData.maxTemp;
-        rgbThermalData.isVlid = 1;
+        rgbThermalData.isValid = 1;
         rgbThermalData.thermalTable = reshape(vals(3:end),[],nBinsRgb)';
     else
         rgbThermalData.referenceTemp = vals(3);
-        rgbThermalData.isVlid = vals(4);
+        rgbThermalData.isValid = vals(4);
         rgbThermalData.thermalTable = reshape(vals(5:end),[],nBinsRgb)';
     end
 end
