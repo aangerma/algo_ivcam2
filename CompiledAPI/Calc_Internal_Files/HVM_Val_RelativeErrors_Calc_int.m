@@ -103,6 +103,8 @@ for c = 1:numel(fnames)
     
     data.(fnames{c}).distMat = distMat;
     data.(fnames{c}).movmentVector = movmentVector;
+    data.(fnames{c}).movmentVectorAngX = atand(movmentVector(1)/movmentVector(3));
+    data.(fnames{c}).movmentVectorAngY = atand(movmentVector(2)/movmentVector(3));
     data.(fnames{c}).movementAxisPixel = movementAxisPixel;
     
     

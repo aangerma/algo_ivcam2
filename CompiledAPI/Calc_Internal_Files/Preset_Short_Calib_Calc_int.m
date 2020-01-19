@@ -60,7 +60,7 @@ end
 %% prepare output script
 shortRangePresetFn = fullfile(PresetFolder,'shortRangePreset.csv');
 shortRangePreset = readtable(shortRangePresetFn);
-modRefInd = find(strcmp(shortRangePreset.name,'modulation_ref_factor')); 
+modRefInd = find(contains(shortRangePreset.name,'modulation_ref_factor')); 
 shortRangePreset.value(modRefInd) = minRangeScaleModRef;
 writetable(shortRangePreset, shortRangePresetFn);
 
