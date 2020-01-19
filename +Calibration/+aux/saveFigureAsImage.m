@@ -1,4 +1,7 @@
-function saveFigureAsImage(f,runParams,block,name,addNumericPostFix,saveAsFig)
+function saveFigureAsImage(f,runParams,block,name,addNumericPostFix,saveAsFig,closeFigure)
+if ~exist('closeFigure','var')
+    closeFigure = 1;
+end
 if ~exist('saveAsFig','var')
     saveAsFig = 0;
 end
@@ -36,6 +39,8 @@ if ~saveAsFig
 elseif f.isvalid
     savefig(f,impath);
 end
-close(f);
+if closeFigure
+    close(f);
+end
 
 end

@@ -4,6 +4,7 @@ function [losResults,allResults,dbgData] = LOSCalc(frames,runParams,expectedGrid
     params.expectedGridSize = expectedGridSize;
     params.calibrationTargetIV2 = 1;
     params.target.target = 'checkerboard_Iv2A1';
+    params.imageRotatedBy180Flag = true;
     [score, allResults,dbgData] = Validation.metrics.losGridStability(frames, params);
     if isnan(score) % Failed to perform the metric
         if ~isempty(fprintff)
