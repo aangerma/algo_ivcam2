@@ -13,13 +13,14 @@ for i = 1:nFrames
 end
 
 params = calibParams.fillRate.params;
-[score, results, dbg] = Validation.metrics.fillRate(frames,params);
+[score, results, dbg] = Validation.metrics.zFillRate(frames,params);
 
 mask = Validation.aux.getRoiCircle(size(frames(1).z), params);
 
-ff = Calibration.aux.invisibleFigure;
-subplot(2,1,1);imagesc(imfuse(frames(1).i,mask));title('IR image with ROI mask');
-subplot(2,1,2);imagesc(imfuse(frames(1).z>0,mask));title(sprintf('Valid depth image with ROI mask FR = %3.2f',score));
-Calibration.aux.saveFigureAsImage(ff,runParams,'FillRates','IR_And_Z_Masked',1,0);
-
+if ~isempty(runParams)
+    ff = Calibration.aux.invisibleFigure;
+    subplot(2,1,1);imagesc(imfuse(frames(1).i,mask));title('IR image with ROI mask');
+    subplot(2,1,2);imagesc(imfuse(frames(1).z>0,mask));title(sprintf('Valid depth image with ROI mask FR = %3.2f',score));
+    Calibration.aux.saveFigureAsImage(ff,runParams,'FillRates','IR_And_Z_Masked',1,0);
+end
 end

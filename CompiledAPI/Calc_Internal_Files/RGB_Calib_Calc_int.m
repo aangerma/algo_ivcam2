@@ -13,6 +13,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     rgbTable = Calibration.rgb.buildRGBTable(res,params,rgbCalTemperature);
     results.rgbIntReprojRms = res.color.rms;
     results.rgbExtReprojRms = res.extrinsics.rms;
+    results.rgbYawDeg = Calibration.rgb.getYawFromRotationMat(res.extrinsics.r);
     %%
     params.camera = struct('zMaxSubMM',z2mm,'zK',Kdepth);
     params.camera.rgbPmat = res.color.k*[res.extrinsics.r res.extrinsics.t];

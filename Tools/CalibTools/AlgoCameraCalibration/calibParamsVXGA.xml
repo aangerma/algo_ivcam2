@@ -55,6 +55,7 @@
         <potentialPitchFixInDegrees>[-1.5,1.5]</potentialPitchFixInDegrees>
         <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
         <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
+        <rgbYawDeg>[-2,2]</rgbYawDeg>
         <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
         <maxModRefDec>[0 inf]</maxModRefDec>
         <maxRangeScaleModRef_state1>[0.3 1]</maxRangeScaleModRef_state1>
@@ -416,10 +417,27 @@
     </aging>
     <fillRate>
         <params>
+            <mask>
+                <rectROI>
+                    <flag>0</flag>
+                </rectROI>
+                <circROI>
+                    <flag>1</flag>
+                    <offset>[0,0]</offset>
+                    <radius>0.09</radius>
+                </circROI>
+                <checkerBoard>
+                    <flag>0</flag>
+                </checkerBoard>
+                <detectDarkRect>
+                    <flag>0</flag>
+                </detectDarkRect>
+            </mask>
             <roi>0.09</roi>
+            <!-- <roi>0.09</roi>
             <isRoiRect>0</isRoiRect>
             <roiCropRect>0</roiCropRect>
-            <maskCenterShift>[0,0]</maskCenterShift>
+            <maskCenterShift>[0,0]</maskCenterShift> -->
         </params>
     </fillRate>
    <tableVersions>
