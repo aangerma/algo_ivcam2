@@ -14,6 +14,13 @@ dbg1 = mergestruct(dbg1,dbg);
 [~, results,dbg] = Validation.metrics.gridLineFit(rotFrame180(frames), params);
 allRes1 = mergestruct(allRes1,results);
 dbg1 = mergestruct(dbg1,dbg);
+[~, results,dbg] = Validation.metrics.grid2DLineFit(rotFrame180(frames),params);
+allRes1 = mergestruct(allRes1,results);
+dbg1 = mergestruct(dbg1,dbg);
+[~, results,~] = Validation.metrics.geomReprojectError(rotFrame180(frames), params);
+allRes1 = mergestruct(allRes1,results);
+dbg1 = mergestruct(dbg1,dbg);
+
 if params.sampleZFromWhiteCheckers
     params.cornersReferenceDepth = 'white'; 
     allRes2 = struct();
@@ -27,6 +34,13 @@ if params.sampleZFromWhiteCheckers
     [~, results,dbg] = Validation.metrics.gridLineFit(rotFrame180(frames), params);
     allRes2 = mergestruct(allRes2,results);
     dbg2 = mergestruct(dbg2,dbg);
+    [~, results,dbg] = Validation.metrics.grid2DLineFit(rotFrame180(frames),params);
+    allRes2 = mergestruct(allRes2,results);
+    dbg2 = mergestruct(dbg2,dbg);
+    [~, results,~] = Validation.metrics.geomReprojectError(rotFrame180(frames), params);
+    allRes2 = mergestruct(allRes2,results);
+    dbg2 = mergestruct(dbg2,dbg);
+
 end
 
 % if exist('runParams','var')
@@ -37,7 +51,6 @@ end
 %     end
 % end
 
-[~, results,~] = Validation.metrics.geomReprojectError(rotFrame180(frames), params);
 fnames = fieldnames(results);
 for i=1:length(fnames)
     allRes.([fnames{i}]) = results.(fnames{i});
@@ -75,7 +88,48 @@ for i=1:length(fnames)
     allRes.([fnames{i},'Blck']) = results.(fnames{i});
 end
 
-% fprintff('%s: %2.4g\n','eGeomReg',score1);
+dfzRes.GeometricErrorWht = allRes.errorMeanAFWht;
+dfzRes.lineFitMeanRmsErrHor3dWht = allRes.lineFitHorizontalErrorRmsAFWht;
+dfzRes.lineFitMeanRmsErrVer3dWht = allRes.lineFitVerticalErrorRmsAFWht;
+dfzRes.lineFitMaxRmsErrHor3dWht = allRes.lineFitRmsErrorTotal_hAFWht;
+dfzRes.lineFitMaxRmsErrVer3dWht = allRes.lineFitRmsErrorTotal_vAFWht;
+dfzRes.lineFitMaxErrHor3dWht = allRes.lineFitMaxErrorTotal_hAFWht;
+dfzRes.lineFitMaxErrVer3dWht = allRes.lineFitMaxErrorTotal_vAFWht;
+dfzRes.lineFitMeanRmsErrHor2dWht = allRes.lineFit2DHorizontalErrorRmsAFWht;
+dfzRes.lineFitMeanRmsErrVer2dWht = allRes.lineFit2DVerticalErrorRmsAFWht;
+dfzRes.lineFitMaxRmsErrHor2dWht = allRes.lineFit2DRmsErrorTotal_hAFWht;
+dfzRes.lineFitMaxRmsErrVer2dWht = allRes.lineFit2DRmsErrorTotal_vAFWht;
+dfzRes.lineFitMaxErrHor2dWht = allRes.lineFit2DMaxErrorTotal_hAFWht;
+dfzRes.lineFitMaxErrVer2dWht = allRes.lineFit2DMaxErrorTotal_vAFWht;
+dfzRes.meanHorzScaleErrorWht = allRes.horzErrorMeanAFWht;
+dfzRes.meanAbsHorzScaleErrorWht = allRes.absHorzErrorMeanAFWht;
+dfzRes.meanVertScaleErrorWht = allRes.vertErrorMeanAFWht;
+dfzRes.meanAbsVertScaleErrorWht = allRes.absVertErrorMeanAFWht;
+dfzRes.planeFitMeanRmsErrWht = allRes.planeFitErrorRmsAFWht;
+dfzRes.planeFitMaxErrWht = allRes.planeFitErrorMaxAFWht;
+dfzRes.planeFitMeanRmsErrBlck = allRes.planeFitErrorRmsAFBlck;
+dfzRes.planeFitMaxErrBlck = allRes.planeFitErrorMaxAFBlck;
+dfzRes.GeometricErrorReg = allRes.errorMeanAFReg;
+dfzRes.lineFitMeanRmsErrHor3dReg = allRes.lineFitHorizontalErrorRmsAFReg;
+dfzRes.lineFitMeanRmsErrVer3dReg = allRes.lineFitVerticalErrorRmsAFReg;
+dfzRes.lineFitMaxRmsErrHor3dReg = allRes.lineFitRmsErrorTotal_hAFReg;
+dfzRes.lineFitMaxRmsErrVer3dReg = allRes.lineFitRmsErrorTotal_vAFReg;
+dfzRes.lineFitMaxErrHor3dReg = allRes.lineFitMaxErrorTotal_hAFReg;
+dfzRes.lineFitMaxErrVer3dReg = allRes.lineFitMaxErrorTotal_vAFReg;
+dfzRes.lineFitMeanRmsErrHor2dReg = allRes.lineFit2DHorizontalErrorRmsAFReg;
+dfzRes.lineFitMeanRmsErrVer2dReg = allRes.lineFit2DVerticalErrorRmsAFReg;
+dfzRes.lineFitMaxRmsErrHor2dReg = allRes.lineFit2DRmsErrorTotal_hAFReg;
+dfzRes.lineFitMaxRmsErrVer2dReg = allRes.lineFit2DRmsErrorTotal_vAFReg;
+dfzRes.lineFitMaxErrHor2dReg = allRes.lineFit2DMaxErrorTotal_hAFReg;
+dfzRes.lineFitMaxErrVer2dReg = allRes.lineFit2DMaxErrorTotal_vAFReg;
+dfzRes.meanHorzScaleErrorReg = allRes.horzErrorMeanAFReg;
+dfzRes.meanAbsHorzScaleErrorReg = allRes.absHorzErrorMeanAFReg;
+dfzRes.meanVertScaleErrorReg = allRes.vertErrorMeanAFReg;
+dfzRes.meanAbsVertScaleErrorReg = allRes.absVertErrorMeanAFReg;
+dfzRes.planeFitMeanRmsErrReg = allRes.planeFitErrorRmsAFBlck;
+dfzRes.planeFitMaxErrReg = allRes.planeFitErrorMaxAFBlck;
+
+
 end
 
 function rotFrame = rotFrame180(frame)
