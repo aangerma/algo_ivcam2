@@ -1,5 +1,5 @@
 function rgbThermalData = convertRgbThermalBytesToData(rgbThermalBinData,nBinsRgb)
-    vals = typecast(rgbThermalBinData(17:end),'single');
+    vals = typecast(uint8(rgbThermalBinData(17:end)),'single');
     rgbThermalData.minTemp = vals(1);
     rgbThermalData.maxTemp = vals(2);
     

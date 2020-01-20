@@ -3,7 +3,7 @@ function [results] = PresetsAlignment_Calib_Calc_int(im, calibParams, runParams,
 params = Validation.aux.defaultMetricsParams();
 params.mask.rectROI.flag = true;
 params.mask.rectROI.allMargins = calibParams.presets.compare.roi;
-sz = size(im);
+sz = size(im(1).z);
 mask = Validation.aux.getMask(params,'imageSize',sz);
 
 for i = 1:size(im,1)

@@ -42,7 +42,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
         rgbPassed = false;
     end        
     rgbThermalTable = single(reshape(rgbThermalData.thermalTable',[],1));
-    rgbThermalTable = [rgbThermalData.minTemp; rgbThermalData.rgb.maxTemp; rgbThermalData.referenceTemp; rgbThermalTable];
+    rgbThermalTable = [rgbThermalData.minTemp; rgbThermalData.maxTemp; rgbThermalData.referenceTemp; rgbThermalTable];
     thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
     thermalRgbTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', thermalRgbTableFileName);
     Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
