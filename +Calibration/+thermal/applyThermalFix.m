@@ -115,23 +115,11 @@ if calibParams.bananas.doExtrapolationInX
 
     sampleSize = calibParams.bananas.ransac.sampleSize; % number of points to sample per trial
     maxDistance = calibParams.bananas.ransac.maxDistance; % max allowable distance for inliers
-        
+    valueFunc = {@max; @(x) -min(x)};    
     for i = 1:2 
-        fitPolyFcn = @(points) polyfit(points(:,1),points(:,2),calibParams.bananas.extrapolationPolyOrdersX(i)); % fit function using polyfit
         points = [lddTemp(~isnan(minMaxDSMAngX(:,i)))',minMaxDSMAngX(~isnan(minMaxDSMAngX(:,i)),i)];
-        evalLineFcn = @(model, points) sqrt(sum((points(:, 2) - polyval(model, points(:,1))).^2,2));% distance evaluation function
-                     
-        [~,inlierIdx] = ransac(points,fitPolyFcn,evalLineFcn,sampleSize,maxDistance);
-        modelInliers = polyfit(points(inlierIdx,1),points(inlierIdx,2),calibParams.bananas.extrapolationPolyOrdersX(i));
-        
-        
-        minMaxDSMAngXExtrap(:,i) = polyval(modelInliers,lddGrid);
-        
-        inlierPts = points(inlierIdx,:);
-        
-        plotData(i).points = points;
-        plotData(i).inlierPts = inlierPts;
-
+        res(i) = Calibration.thermal.biPolyRansac(points,calibParams.bananas.extrapolationPolyOrdersX(i),sampleSize,maxDistance,lddGrid,valueFunc{i});
+        minMaxDSMAngXExtrap(:,i) = res(i).minMaxDSMAngExtrap;
     end
     
     data.dsmMovement.X = minMaxDSMAngXExtrap;
@@ -142,14 +130,14 @@ if calibParams.bananas.doExtrapolationInX
     subplot(121);
     plot(lddTemp,minMaxDSMAngX(:,1),'o');
     hold on
-    plot(plotData(1).inlierPts(:,1), plotData(1).inlierPts(:,2),'g+')
+    plot(res(1).inlierPts(:,1), res(1).inlierPts(:,2),'g+')
     plot(lddGrid,minMaxDSMAngXExtrap(:,1),'-');
     xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of lower DSM values');
     grid on
     subplot(122);
     plot(lddTemp,minMaxDSMAngX(:,2),'o');
     hold on
-    plot(plotData(2).inlierPts(:,1), plotData(2).inlierPts(:,2),'g+')
+    plot(res(2).inlierPts(:,1), res(2).inlierPts(:,2),'g+')
     plot(lddGrid,minMaxDSMAngXExtrap(:,2),'-');
     xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of upper DSM values');
     grid on
@@ -161,22 +149,11 @@ if calibParams.yFovDegredation.fitToPoly
     lddGrid = linspace(lddTemp(1),lddTemp(end),100)';
     sampleSize = calibParams.yFovDegredation.ransac.sampleSize; % number of points to sample per trial
     maxDistance = calibParams.yFovDegredation.ransac.maxDistance; % max allowable distance for inliers
-
+    valueFunc = {@max; @(x) -min(x)};    
     for i = 1:2 
-        fitPolyFcn = @(points) polyfit(points(:,1),points(:,2),calibParams.yFovDegredation.polyOrdersY(i)); % fit function using polyfit
         points = [lddTemp(~isnan(minMaxDSMAngY(:,i)))',minMaxDSMAngY(~isnan(minMaxDSMAngY(:,i)),i)];
-        evalLineFcn = @(model, points) sqrt(sum((points(:, 2) - polyval(model, points(:,1))).^2,2));% distance evaluation function
-                     
-        [~,inlierIdx] = ransac(points,fitPolyFcn,evalLineFcn,sampleSize,maxDistance);
-        modelInliers = polyfit(points(inlierIdx,1),points(inlierIdx,2),calibParams.yFovDegredation.polyOrdersY(i));
-        
-        minMaxDSMAngYExtrap(:,i) = polyval(modelInliers,lddGrid);
-        
-        inlierPts = points(inlierIdx,:);
-        
-        plotData(i).points = points;
-        plotData(i).inlierPts = inlierPts;
-
+        res(i) = Calibration.thermal.biPolyRansac(points,calibParams.yFovDegredation.polyOrdersY(i),sampleSize,maxDistance,lddGrid,valueFunc{i});
+        minMaxDSMAngYExtrap(:,i) = res(i).minMaxDSMAngExtrap;
     end
     
     
@@ -190,14 +167,14 @@ if calibParams.yFovDegredation.fitToPoly
     subplot(121);
     plot(lddTemp,minMaxDSMAngY(:,1),'o');
     hold on
-    plot(plotData(1).inlierPts(:,1), plotData(1).inlierPts(:,2),'g+')
+    plot(res(1).inlierPts(:,1), res(1).inlierPts(:,2),'g+')
     plot(lddGrid,minMaxDSMAngYExtrap(:,1),'-');
     xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of lower DSM values');
     grid on
     subplot(122);
     plot(lddTemp,minMaxDSMAngY(:,2),'o');
     hold on
-    plot(plotData(2).inlierPts(:,1), plotData(2).inlierPts(:,2),'g+')
+    plot(res(2).inlierPts(:,1), res(2).inlierPts(:,2),'g+')
     plot(lddGrid,minMaxDSMAngYExtrap(:,2),'-');
     xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of upper DSM values');
     grid on
