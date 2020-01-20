@@ -326,6 +326,8 @@ function statrtButton_callback(varargin)
         app.m_logfid = fopen(logFn,'wt');
         fprintffS=@(varargin) fprintff(app,varargin{:});
 
+        fprintffS('<< Algo2 version: %.2f >>\n\n', thermalCalibToolVersion);
+    
         s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
         s.addTestProperty('CalibToolVersion',runparams.version)
         s.addTestProperty('CalibToolSubVersion',runparams.subVersion)
