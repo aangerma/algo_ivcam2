@@ -51,10 +51,10 @@ end
 %     end
 % end
 
-fnames = fieldnames(results);
-for i=1:length(fnames)
-    allRes.([fnames{i}]) = results.(fnames{i});
-end
+% fnames = fieldnames(results);
+% for i=1:length(fnames)
+%     allRes.([fnames{i}]) = results.(fnames{i});
+% end
 
 fnames = fieldnames(allRes1);
 for i=1:length(fnames)
@@ -62,7 +62,7 @@ for i=1:length(fnames)
 end
 if params.sampleZFromWhiteCheckers
     for i=1:length(fnames)
-        allRes.([fnames{i},'Wht']) = allRes1.(fnames{i});
+        allRes.([fnames{i},'Wht']) = allRes2.(fnames{i});
     end
 end
 
@@ -128,7 +128,8 @@ dfzRes.meanVertScaleErrorReg = allRes.vertErrorMeanAFReg;
 dfzRes.meanAbsVertScaleErrorReg = allRes.absVertErrorMeanAFReg;
 dfzRes.planeFitMeanRmsErrReg = allRes.planeFitErrorRmsAFBlck;
 dfzRes.planeFitMaxErrReg = allRes.planeFitErrorMaxAFBlck;
-
+dfzRes.reprojZRms = allRes.reprojZRmsAFWht;
+dfzRes.reprojRmsPix = allRes.reprojRmsAFWht;
 
 end
 
