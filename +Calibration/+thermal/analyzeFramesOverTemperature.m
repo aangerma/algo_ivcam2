@@ -97,6 +97,7 @@ else
     validRows = find(any((validCBPoints),2));
     validCols = find(any((validCBPoints),1));
     cbGridSz = [numel(validRows),numel(validCols)];
+    validCBPoints(validRows, validCols) = true; % validating the entire blocking rectangle for the sake of grid calculations only
     validFramesData = validFramesData(:,validCBPoints(:),:);
 end
 if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (pointsWithZ(6:8)) in ATC

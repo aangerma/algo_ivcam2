@@ -11,7 +11,9 @@ calFolders = {'FW 1.3.8.51\F9441209\ATC1',...
 % calFolders = {'FW 1.3.8.51\F9441294\ATC1',...
 %               'FW 1.3.8.251\F9441294\ATC3'};
 % calFolders = {'FW 1.3.8.51\F9441298\ATC1',...
-%               'FW 1.3.8.251\F9441298\ATC2'};
+%               'FW 1.3.8.251\F9441298\ATC2'};        
+% calFolders = {'FW 1.3.8.251\F9340254\ATC2',...
+%               'FW 1.3.8.251\F9340254\ATC2'};       
 commonFile = '\Matlab\mat_files\finalCalcAfterHeating_in.mat';
 
 units = cellfun(@(x) (x(strfind(x,'F9')+(0:7))), calFolders, 'UniformOutput', false);
@@ -37,7 +39,7 @@ for iCal = 1:nCal
     dataIn.calibParams.fwTable.extrap.rtdModel.refOrder = 2;
     dataIn.calibParams.fwTable.extrap.rtdModel.skipInterpolation = 0;
     tempData = [dataIn.data.framesData.temp];
-    validIdcs = [tempData.shtw2]>=15 & [tempData.shtw2]<=50;
+    validIdcs = [tempData.shtw2]>=15 & [tempData.shtw2]<=55;
     % rerun
     invalidFrames           = arrayfun(@(x) isempty(x.ptsWithZ), dataIn.data.framesData');
     dataIn.data.framesData  = dataIn.data.framesData(~invalidFrames);
@@ -69,40 +71,55 @@ toc
 
 %% data visualization
 
-figure
-hold on
-for iCal = 1:nCal
-    h(iCal) = plot(res(iCal).raw.ldd, res(iCal).raw.rtd, '.');
-end
-for iCal = 1:nCal
-    plot(res(iCal).grids(1,:), res(iCal).table(:,5), '-', 'color', get(h(iCal),'color'))
-    plot(res2(iCal).grids(1,:), res2(iCal).table(:,5), '--', 'color', get(h(iCal),'color'))
-    err = interp1(res(iCal).grids(1,:), res(iCal).table(:,5)', res(iCal).raw.ldd)' - res(iCal).raw.rtd;
-    errExtrap = res2(iCal).table(:,5) - res(iCal).table(:,5);
-%     fprintf('Cal #%d: rms = %.2f[mm], max = %.2f[mm]\n', iCal, rms(err), max(abs(err)));
-    fprintf('Cal #%d extrap: %.2f[mm] @ 10C, %.2f[mm] @ 70C\n', iCal, errExtrap(6), errExtrap(36));
-end
-grid on, xlabel('LDD [deg]'), ylabel('RTD fix [mm]'), xlim([0,75]), legend(leg), title(ttl)
+% figure
+% hold on
+% for iCal = 1:nCal
+%     h(iCal) = plot(res(iCal).raw.ldd, res(iCal).raw.rtd, '.');
+% end
+% for iCal = 1:nCal
+%     plot(res(iCal).grids(1,:), res(iCal).table(:,5), '-', 'color', get(h(iCal),'color'))
+%     plot(res2(iCal).grids(1,:), res2(iCal).table(:,5), '--', 'color', get(h(iCal),'color'))
+%     err = interp1(res(iCal).grids(1,:), res(iCal).table(:,5)', res(iCal).raw.ldd)' - res(iCal).raw.rtd;
+%     errExtrap = res2(iCal).table(:,5) - res(iCal).table(:,5);
+% %     fprintf('Cal #%d: rms = %.2f[mm], max = %.2f[mm]\n', iCal, rms(err), max(abs(err)));
+%     fprintf('Cal #%d extrap: %.2f[mm] @ 10C, %.2f[mm] @ 70C\n', iCal, errExtrap(6), errExtrap(36));
+% end
+% grid on, xlabel('LDD [deg]'), ylabel('RTD fix [mm]'), xlim([0,75]), legend(leg), title(ttl)
+% 
+% xRawFields = {'vbias1', 'vbias1', 'vbias2', 'vbias2'};
+% yRawFields = {'dsmXscale', 'dsmXoffset', 'dsmYscale', 'dsmYoffset'};
+% xFitIdcs = [2, 2, 3, 3];
+% yFitIdcs = [1, 3, 2, 4];
+% xLabels = {'vBias1 [V]', 'vBias1 [V]', 'vBias2 [V]', 'vBias2 [V]'};
+% yLabels = {'X scale [1/deg]', 'X offset [deg]', 'Y scale [1/deg]', 'Y offset [deg]'};
+% 
+% figure
+% for iParam = 1:4
+%     subplot(2,2,iParam)
+%     hold on
+%     for iCal = 1:nCal
+%         plot(res(iCal).raw.(xRawFields{iParam}), res(iCal).raw.(yRawFields{iParam}), '.', 'color', get(h(iCal),'color'));
+%     end
+%     for iCal = 1:nCal
+%         plot(res(iCal).grids(xFitIdcs(iParam),:), res(iCal).table(:,yFitIdcs(iParam)), '-', 'color', get(h(iCal),'color'))
+%     end
+%     grid on, xlabel(xLabels{iParam}), ylabel(yLabels{iParam}), legend(leg)
+% end
+% sgtitle(ttl)
 
-xRawFields = {'vbias1', 'vbias1', 'vbias2', 'vbias2'};
-yRawFields = {'dsmXscale', 'dsmXoffset', 'dsmYscale', 'dsmYoffset'};
-xFitIdcs = [2, 2, 3, 3];
-yFitIdcs = [1, 3, 2, 4];
-xLabels = {'vBias1 [V]', 'vBias1 [V]', 'vBias2 [V]', 'vBias2 [V]'};
-yLabels = {'X scale [1/deg]', 'X offset [deg]', 'Y scale [1/deg]', 'Y offset [deg]'};
+%% re-writing table
 
-figure
-for iParam = 1:4
-    subplot(2,2,iParam)
-    hold on
-    for iCal = 1:nCal
-        plot(res(iCal).raw.(xRawFields{iParam}), res(iCal).raw.(yRawFields{iParam}), '.', 'color', get(h(iCal),'color'));
-    end
-    for iCal = 1:nCal
-        plot(res(iCal).grids(xFitIdcs(iParam),:), res(iCal).table(:,yFitIdcs(iParam)), '-', 'color', get(h(iCal),'color'))
-    end
-    grid on, xlabel(xLabels{iParam}), ylabel(yLabels{iParam}), legend(leg)
-end
-sgtitle(ttl)
+% fidIn = fopen([commonPath, calFolders{2}, '\Matlab\Algo_Thermal_Loop_CalibInfo_Ver_04_30.bin'],'rb');
+% x = uint8(fread(fidIn));
+% fclose(fidIn);
+% origTable = reshape(typecast(x, 'int16'), [5, 48])';
+% 
+% res2(2).table(:,5) = res2(2).table(:,5)-res2(2).table(origTable(:,5)==0,5);
+% newTable = [origTable(:,1:4), int16(res2(2).table(:,5)*2^8)];
+% y = typecast(vec(newTable'), 'uint8');
+% mkdir([commonPath, calFolders{2}, '\ExtrapTable']);
+% fidOut = fopen([commonPath, calFolders{2}, '\ExtrapTable\Algo_Thermal_Loop_CalibInfo_Ver_04_30.bin'],'wb');
+% fwrite(fidOut,y);
+% fclose(fidOut);
 
 

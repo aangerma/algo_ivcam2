@@ -73,6 +73,11 @@ while ~finishedHeating
     i = i + 1;
     [tmpData,frame] = getFrameData(hw,regs,calibParams);
     saveFrames(frame,calibParams,runParams,i);
+    if isempty(tmpData.ptsWithZ)
+        calibParams.gnrl.saveFrames = 1;
+        saveFrames(frame,calibParams,runParams,i);
+        error('Checkerboard detection failure -> saving frame for debug');
+    end
     if i == 1
         firstFrame = frame;
     end
@@ -340,19 +345,23 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
     for j = 1:3
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
-    frameData.ptsWithZ = cornersData(frame,regs,calibParams);
-    frameData.confPts = interp2(single(frame.c),frameData.ptsWithZ(:,4),frameData.ptsWithZ(:,5));
-    frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
-    frameData.maVoltage = hw.getMaVoltagee();
-    % RX tracking
-    frameData.irStat = Calibration.aux.calcIrStatistics(frame.i, frameData.ptsWithZ(:,4:5));
-    frameData.cStat = Calibration.aux.calcConfStatistics(frame.c, frameData.ptsWithZ(:,4:5));
-%     params.camera.zMaxSubMM = 4;
-%     params.camera.K = regs.FRMW.kRaw;
-%     params.target.squareSize = 30;
-%     params.expectedGridSize = [9,13];
-%     [frameData.eGeom, allRes,dbg] = Validation.metrics.gridInterDistance(frame, params);
-    frameData.verticalSharpness = Validation.metrics.gridEdgeSharpIR(frame, struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
+    try
+        frameData.ptsWithZ = cornersData(frame,regs,calibParams);
+        frameData.confPts = interp2(single(frame.c),frameData.ptsWithZ(:,4),frameData.ptsWithZ(:,5));
+        frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
+        frameData.maVoltage = hw.getMaVoltagee();
+        % RX tracking
+        frameData.irStat = Calibration.aux.calcIrStatistics(frame.i, frameData.ptsWithZ(:,4:5));
+        frameData.cStat = Calibration.aux.calcConfStatistics(frame.c, frameData.ptsWithZ(:,4:5));
+        %     params.camera.zMaxSubMM = 4;
+        %     params.camera.K = regs.FRMW.kRaw;
+        %     params.target.squareSize = 30;
+        %     params.expectedGridSize = [9,13];
+        %     [frameData.eGeom, allRes,dbg] = Validation.metrics.gridInterDistance(frame, params);
+        frameData.verticalSharpness = Validation.metrics.gridEdgeSharpIR(frame, struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
+    catch
+        frameData.ptsWithZ = [];
+    end
 end
 
 
