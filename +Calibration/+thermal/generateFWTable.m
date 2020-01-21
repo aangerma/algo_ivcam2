@@ -363,6 +363,7 @@ if ~isempty(runParams) && isfield(runParams, 'outputRawData') && runParams.outpu
     results.raw.rtd         = -(rtdPerFrame-refRtd);
     results.raw.refRtd      = refRtd;
     results.raw.frameTime   = timeVec;
+    results.raw.hum         = shtw2;
 end
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
