@@ -152,6 +152,10 @@ for c = 1:2
     results.(fnames{c}).zAccPrcntMeanError = mean(abs(distDiff./distanceVector(:))*100);
     results.(fnames{c}).zAccPrcntMaxError = max(abs(distDiff./distanceVector(:))*100);
     results.(fnames{c}).zAccPrcntMinError = min(abs(distDiff./distanceVector(:))*100);
+    
+    results.(fnames{c}).planeFitFirstImg = pf(1).planeFitErrorRms;
+    results.(fnames{c}).gidFirstImg = data.(fnames{c}).frameData(1).gid;
+    
 end
 
 
