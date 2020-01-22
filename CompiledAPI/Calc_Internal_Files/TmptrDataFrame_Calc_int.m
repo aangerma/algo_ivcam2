@@ -60,7 +60,7 @@ if ~finishedHeating % heating stage
     lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
     
     % corners tracking
-    FrameData.ptsWithZ = cornersData(frame,regs,calibParams);
+    [FrameData.ptsWithZ, gridSize] = cornersData(frame,regs,calibParams);
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     if all(isnan(FrameData.ptsWithZ(:,1)))
@@ -76,7 +76,7 @@ if ~finishedHeating % heating stage
     FrameData.irStat = Calibration.aux.calcIrStatistics(frame.i, FrameData.ptsWithZ(:,4:5));
     
     % Sharpness tracking
-    FrameData.verticalSharpness = Validation.metrics.gridEdgeSharpIR(frame, struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
+    FrameData.verticalSharpness = Calibration.aux.CBTools.fastGridEdgeSharpIR(frame, gridSize, FrameData.ptsWithZ(:,4:5), struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
     
     % globals/persistents handling
     framesData = acc_FrameData(FrameData);
@@ -189,7 +189,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [ptsWithZ] = cornersData(frame,regs,calibParams)
+function [ptsWithZ, gridSize] = cornersData(frame,regs,calibParams)
     sz = size(frame.i);
     pixelCropWidth = sz.*calibParams.gnrl.cropFactors;
     frame.i([1:pixelCropWidth(1),round(sz(1)-pixelCropWidth(1)):sz(1)],:) = 0;
@@ -197,6 +197,7 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
     
     if isempty(calibParams.gnrl.cbGridSz)
         CB = CBTools.Checkerboard (frame.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true,'nonRectangleFlag',logical(calibParams.gnrl.nonRectangleFlag));
+        gridSize = CB.getGridSize;
         pts = CB.getGridPointsList;
         colors = CB.getColorMap;
         if isfield(frame,'yuy2')
@@ -216,8 +217,8 @@ function [ptsWithZ] = cornersData(frame,regs,calibParams)
         if isfield(frame,'yuy2')
             CB = CBTools.Checkerboard (frame.yuy2,'expectedGridSize',calibParams.gnrl.cbGridSz);
             ptsColor = CB.getGridPointsList;
-            gridSize = CB.getGridSize;
-            if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
+            gridSizeRgb = CB.getGridSize;
+            if ~isequal(gridSizeRgb, calibParams.gnrl.cbGridSz)
                 warning('Checkerboard not detected in color image. All of the target must be included in the image');
                 ptsWithZ = [];
                 return;

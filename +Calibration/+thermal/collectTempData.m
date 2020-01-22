@@ -238,10 +238,11 @@ if calibParams.gnrl.saveRGB
 end
 
 end
-function [ptsWithZ] = cornersData(frame,regs,calibParams)
+function [ptsWithZ, gridSize] = cornersData(frame,regs,calibParams)
 if isempty(calibParams.gnrl.cbGridSz)
    
     CB = CBTools.Checkerboard (frame.i,'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);  
+    gridSize = CB.getGridSize;
     pts = CB.getGridPointsList;
     colors = CB.getColorMap;
     if calibParams.gnrl.rgb.doStream
@@ -259,9 +260,9 @@ else
     end
      if calibParams.gnrl.rgb.doStream
          CB = CBTools.Checkerboard (frame.color,'expectedGridSize',calibParams.gnrl.cbGridSz);
-         gridSize = CB.getGridSize;
+         gridSizeRgb = CB.getGridSize;
          pts = CB.getGridPointsList;
-        if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
+        if ~isequal(gridSizeRgb, calibParams.gnrl.cbGridSz)
             ptsWithZ = [];
             return;
         end
@@ -346,7 +347,7 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
     try
-        frameData.ptsWithZ = cornersData(frame,regs,calibParams);
+        [frameData.ptsWithZ, gridSize] = cornersData(frame,regs,calibParams);
         frameData.confPts = interp2(single(frame.c),frameData.ptsWithZ(:,4),frameData.ptsWithZ(:,5));
         frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
         frameData.maVoltage = hw.getMaVoltagee();
@@ -358,7 +359,7 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
         %     params.target.squareSize = 30;
         %     params.expectedGridSize = [9,13];
         %     [frameData.eGeom, allRes,dbg] = Validation.metrics.gridInterDistance(frame, params);
-        frameData.verticalSharpness = Validation.metrics.gridEdgeSharpIR(frame, struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
+        frameData.verticalSharpness = Calibration.aux.CBTools.fastGridEdgeSharpIR(frame, gridSize, FrameData.ptsWithZ(:,4:5), struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
     catch
         frameData.ptsWithZ = [];
     end
