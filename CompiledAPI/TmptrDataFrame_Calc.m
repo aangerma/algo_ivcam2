@@ -22,6 +22,7 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
 %
     t0 = tic;
     global g_output_dir g_save_input_flag g_save_output_flag g_countRuntime g_fprintff g_LogFn g_calib_dir g_skip_thermal_iterations_save g_temp_count;
+    persistent internalEepromRegs
     
     % auto-completions
     if isempty(g_temp_count)
@@ -50,7 +51,10 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     height = sz(1);
     width  = sz(2);
     if (isempty(eepromRegs) || ~isstruct(eepromRegs))
-        eepromRegs = extractEepromRegs(eepromBin, g_calib_dir);
+        if (g_temp_count==0) % first call
+            internalEepromRegs = extractEepromRegs(eepromBin, g_calib_dir);
+        end
+        eepromRegs = internalEepromRegs;
         regs = struct_merge(eepromRegs, regs);
     end
     origFinishedHeating = finishedHeating;

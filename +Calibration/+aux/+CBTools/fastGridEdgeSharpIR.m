@@ -104,11 +104,7 @@ try
     xRange = ceil(real(p0)+pix_shift):floor(real(p1)-pix_shift);
     yCenters = polyval(hLine, xRange);
     yInterpRange = -tunnelWidth/2:(1/subSamples):tunnelWidth/2;
-    yTransImg = zeros(length(yInterpRange), length(xRange));
-    for ix=1:length(xRange)
-        x = xRange(ix);
-        yTransImg(:,ix) = ir(round(yInterpRange+yCenters(ix)),x); % approximation of interpolation
-    end
+    yTransImg = ir(round(yInterpRange'+yCenters)+(xRange-1)*size(ir,1)); % fast one-shot sampling
     yTrans = mean(yTransImg,2);
     % approximation of rise fitting
     fitCurve = smooth(yTrans,3);
