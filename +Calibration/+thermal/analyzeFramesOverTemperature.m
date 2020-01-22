@@ -56,7 +56,7 @@ isDataWithXYZ = (size(validFramesData,3)>=8); % hack for dealing with missing XY
 stdVals = nanmean(nanstd(validFramesData));
 
 
-metrics = Calibration.thermal.calcThermalScores(data,calibParams,runParams.calibRes);
+metrics = Calibration.thermal.calcThermalScores(data,calibParams,[data.regs.GNRL.imgVsize,data.regs.GNRL.imgHsize]);
 %%
 if plotRGB && isfield(data,'camerasParams')
     [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,hum,calibParams,runParams,metrics,inValidationStage,fprintff);
@@ -123,6 +123,7 @@ if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (po
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('EGeomOverTemp'),1);
     end
 end
+plotRtdOfShortVsLongPostFix(data,runParams);
 if isfield(data.framesData, 'verticalSharpness')
     verticalSharpness = [data.framesData.verticalSharpness];
     metrics.bestVerticalSharpness = min(verticalSharpness);
@@ -143,6 +144,25 @@ if plotRGB
 end
 
 data.results = metrics;
+end
+function plotRtdOfShortVsLongPostFix(data,runParams)
+if ~isfield(data,'framesDataShort')
+   return; 
+end
+fdLong = Calibration.thermal.framesDataVectors(data.framesData);
+fdShort = Calibration.thermal.framesDataVectors(data.framesDataShort);
+valid = fdLong.validCB & fdShort.validCB;
+ff = Calibration.aux.invisibleFigure;
+plot(fdLong.ldd,squeeze(nanmean(fdLong.ptsWithZ(valid,1,:),1)),'*')
+hold on
+plot(fdShort.ldd,squeeze(nanmean(fdShort.ptsWithZ(valid,1,:),1)),'*')
+grid minor;
+xlabel('ldd');
+ylabel('mm');
+title('Rtd Per frame Long/Short');
+legend({'Long';'Short'});
+Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Rtd_Short_Vs_Long'),1);
+
 end
 
 function [params] = prepareParams4UvMap(camerasParams)

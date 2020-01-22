@@ -4,8 +4,10 @@ function generateTableForBurning(eepromRegs, table,calibParams,runParams,fprintf
 % Thermal loop table
 dsmTable = table(:,1:4);
 rtdTable = table(:,5);
+rtdTableShort = data.tableResults.rtd.tmptrOffsetValuesShort;
 dsmTable = uint16(dsmTable*2^8);
 rtdTable = typecast(int16(rtdTable*2^8),'uint16');
+rtdTableShort = typecast(int16(rtdTableShort*2^8),'uint16');
 tableShifted = [dsmTable,rtdTable]; % FW expected format
 
 thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', calibParams.tableVersions.algoThermal);
@@ -13,7 +15,12 @@ thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
 Calibration.thermal.saveThermalTable( tableShifted , thermalTableFullPath );
 fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
 
-% RGB thermal table
+extraThermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_Extra_CalibInfo', calibParams.tableVersions.algoThermalExtras);
+extraThermalTableFullPath = fullfile(runParams.outputFolder, extraThermalTableFileName);
+Calibration.thermal.saveExtraThermalTable( rtdTableShort , extraThermalTableFullPath );
+fprintff('Generated extra algo thermal table full path:\n%s\n',extraThermalTableFullPath);
+
+
 if isfield(data.tableResults, 'rgb')
     rgbThermalTable = single(reshape(data.tableResults.rgb.thermalTable',[],1));
     rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.maxTemp; data.tableResults.rgb.referenceTemp; data.tableResults.rgb.isValid; rgbThermalTable];
@@ -24,7 +31,7 @@ if isfield(data.tableResults, 'rgb')
 end
 
 % MEMS table
-data.tableResults.ctKillThr = int8(data.ctKillThr);
+data.tableResults.ctKillThr = int8(data.ctKillThr); %% 
 memsFile = dir(fullfile(calib_dir, 'MEMS_Electro_Optics_Calibration_Info_CalibInfo_Ver*.bin'));
 assert(length(memsFile)==1, sprintf('Expecting 1 MEMS BIN file, found %d', length(memsFile)))
 memsTableFileName = memsFile.name;

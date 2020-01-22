@@ -17,6 +17,10 @@ regs = data.regs;
 nBins = calibParams.fwTable.nRows;
 N = nBins+1;
 
+validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),data.framesDataShort,'UniformOutput',false)';
+validPerFrame = cell2mat(validPerFrame);
+validCBShort = all(validPerFrame,2);
+
 validPerFrame = arrayfun(@(x) ~isnan(x.ptsWithZ(:,1)),framesData,'UniformOutput',false)';
 validPerFrame = cell2mat(validPerFrame);
 validCB = all(validPerFrame,2);
@@ -89,6 +93,7 @@ end
 
 %% RTD fix
 rtdPerFrame = arrayfun(@(x) nanmean(x.ptsWithZ(validCB,1)),framesData);
+rtdPerFrameAlignedWithShortCorners = arrayfun(@(x) nanmean(x.ptsWithZ(validCB & validCBShort,1)),framesData);
 
 % legacy
 startI = calibParams.fwTable.nFramesToIgnore+1;
@@ -108,6 +113,7 @@ results.ma.slope = aMA;
 % group by LDD
 lddForEst = ldd;
 rtdForEst = rtdPerFrame;
+rtdForEstWithShortCorners = rtdPerFrameAlignedWithShortCorners;
 if calibParams.fwTable.extrap.rtdModel.skipInterpolation % use final grid from start
     results.rtd.maxval = calibParams.fwTable.tempBinRange(2);
     results.rtd.minval = calibParams.fwTable.tempBinRange(1);
@@ -119,10 +125,15 @@ results.rtd.nBins = nBins;
 lddGrid = linspace(results.rtd.minval,results.rtd.maxval,nBins);
 lddStep = lddGrid(2)-lddGrid(1);
 rtdGrid = arrayfun(@(x) median(rtdForEst(abs(lddForEst-x)<=lddStep/2)), lddGrid);
+rtdGridWithShortCorners = arrayfun(@(x) median(rtdForEstWithShortCorners(abs(lddForEst-x)<=lddStep/2)), lddGrid);
 results.rtd.refTemp = data.dfzRefTmp;
 [~, ind] = min(abs(results.rtd.refTemp - lddGrid));
 refRtd = rtdGrid(ind);
+refLdd = lddGrid(ind);
+refRtdForShortCal = rtdGridWithShortCorners(ind);
 results.rtd.tmptrOffsetValues = -(rtdGrid-refRtd); % aligning to reference temperature
+
+[results.rtd.tmptrOffsetValuesShort,lddGrid,rtdInterpolated,lddShort,rtdShort] = rtdFixForShort(data,calibParams,validCB & validCBShort,refLdd,refRtdForShortCal);
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
@@ -131,6 +142,10 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     grid on; xlabel('ldd Temperature'); ylabel('mean rtd');
     hold on
     plot(lddGrid, rtdGrid, '-o');
+    
+    plot(lddShort,rtdShort,'*');
+    plot(lddGrid, rtdInterpolated, '-o');
+
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_LDD_Temp'));
     ff = Calibration.aux.invisibleFigure;
     plot(ma,rtdPerFrame,'*');
@@ -334,7 +349,7 @@ if calibParams.fwTable.yFix.bypass
 end
 
 % extrapolation
-results.pzr             = estHumFromPzrRes(hum(startI:end), vBias(:,startI:end)./iBias(:,startI:end), runParams, data.ctKillThr);
+results.pzr             = estHumFromPzrRes(hum(startI:end),vBias(:,startI:end)./iBias(:,startI:end), runParams, data.ctKillThr); 
 vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
 [table, results]        = extrapolateTable(table, results, vBiasLims, calibParams, runParams);
 results.rtd.origMinval  = min(lddForEst);
@@ -418,8 +433,10 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     hPlot = plot(lddGrid, -(rtdGrid-refRtd),'-o','markersize',3);
     set(hPlot, 'markerfacecolor', sqrt(get(hPlot,'color')))
     plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
-    grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');
-    legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)')
+    grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');    
+    plot(lddGrid, results.rtd.tmptrOffsetValuesShort,'-');
+    plot(lddShort, interp1(lddGrid,results.rtd.tmptrOffsetValuesShort,lddShort),'*');
+    legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)','rtd short table','raw short (w.r.t. reference)')
     Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('RTD'),1);
 end
 assert(~any(isnan(table(:))),'Thermal table contains nans \n');
@@ -856,4 +873,36 @@ else % avoid hypothesis testing - use default assumption
     rtdModelOrder = rtdModelParams.refOrder;
 end
 
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [tmptrOffsetVector,lddGrid,rtdVectorForShortPreset,ldds,rtds] = rtdFixForShort(data,calibParams,validCB,refLddLong,refRtdLong)
+    fd = Calibration.thermal.framesDataVectors(data.framesDataShort);
+    ldds = fd.ldd;
+    assert(all(sort(ldds)==ldds),'Ldd temperatures of short preset frames are not monitonically increasing!')
+    rtds = squeeze(mean(fd.ptsWithZ(validCB,1,:),1));
+    N = numel(ldds);
+    lddGrid = linspace(calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2),calibParams.fwTable.nRows);
+    polyOrder = 2;
+    
+    rtdPWParab = nan(N-2,numel(lddGrid));
+    for k = 2:N-1
+        c = polyfit(vec(ldds(k-1:k+1)),vec(rtds(k-1:k+1)),polyOrder);
+        if k == 2
+            lddGridInd = lddGrid <= ldds(k+1);
+        elseif k == N-1
+            lddGridInd = lddGrid >= ldds(k-1);
+        else
+            lddGridInd = lddGrid >= ldds(k-1) & lddGrid <= ldds(k+1);
+        end
+        rtdPWParab(k-1,lddGridInd) = polyval(c,lddGrid(lddGridInd));
+    end
+    rtdVectorForShortPreset = nanmean(rtdPWParab,1);
+    rtdVectorForShortPreset = rtdVectorForShortPreset(:);
+    
+    rtdShortAtRef = interp1(lddGrid,rtdVectorForShortPreset,refLddLong);
+    
+    tmptrOffsetVector = -(rtdVectorForShortPreset - rtdShortAtRef) + (refRtdLong-rtdShortAtRef);
+    
+    
+    
 end

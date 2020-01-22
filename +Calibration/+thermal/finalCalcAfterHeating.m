@@ -4,7 +4,24 @@ invalidFrames = arrayfun(@(x) isempty(x.ptsWithZ), data.framesData');
 Invalid_Frames = sum(invalidFrames);
 fprintff('Invalid frames: %.0f/%.0f\n', Invalid_Frames, numel(invalidFrames));
 data.framesData = data.framesData(~invalidFrames);
-data.dfzRefTmp = data.regs.FRMW.dfzCalTmp;
+% data.dfzRefTmp = data.regs.FRMW.dfzCalTmp;
+
+% Seperate the short preset frames
+longPreset = [data.framesData.presetMode] == 1;
+data.framesDataShort = data.framesData(~longPreset);
+data.framesData = data.framesData(longPreset);
+if isempty(data.framesData) % To prevent confusion when running ATC with only short range preset
+    data.framesData = data.framesDataShort;
+end
+data.dfzRefTmp =  data.framesData(end).temp.ldd;
+% Generate short range table using long range data (better than default)
+numberOfShortFrames = numel(data.framesDataShort);
+if numberOfShortFrames ~= 4 % Required number of short preset frames
+    nLong = numel(data.framesData);
+    data.framesDataShort = data.framesData(round(linspace(1,nLong,4)));
+end
+
+
 [table, results, errorCode] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
 
 if isempty(table) || ~isnan(errorCode)

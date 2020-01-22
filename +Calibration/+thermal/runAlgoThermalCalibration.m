@@ -132,6 +132,18 @@ function  [calibPassed] = runAlgoThermalCalibration(runParamsFn,calibParamsFn, f
                 fprintf('Failed to write Algo_Thermal_Table to EPROM. You are probably using an unsupported fw version.\n');
                 calibPassed = 0;
             end
+            
+            extraThermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_Extra_CalibInfo', calibParams.tableVersions.algoThermalExtras);
+            extraThermalTableFullPath = fullfile(runParams.outputFolder, extraThermalTableFileName);
+            try
+                cmdstr = sprintf('WrCalibInfo %s',extraThermalTableFullPath);
+                hw.cmd(cmdstr);
+                fprintff('Done\n');
+            catch
+                fprintf('Failed to write Extra_Algo_Thermal_Table to EPROM. You are probably using an unsupported fw version.\n');
+                calibPassed = 0;
+            end
+            
             fprintff('Burning algo calibration table...');
             algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', calibParams.tableVersions.algoCalib);
             algoTableFullPath = fullfile(runParams.outputFolder, algoTableFileName);
