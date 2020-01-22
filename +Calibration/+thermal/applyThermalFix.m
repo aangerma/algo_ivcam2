@@ -58,6 +58,18 @@ dsmKeyRtd = 5;
 for k = 1:length(data.framesData)
     newData.framesData(k).ptsWithZ(:,1) = newData.framesData(k).ptsWithZ(:,1) + dsmValuesRtd(k);
 end
+% Fix RTD Short
+lddTempShort = [data.framesDataShort.temp];
+lddTempShort = [lddTempShort.ldd];
+rowI = (lddTempShort - calibParams.fwTable.tempBinRange(1))/(calibParams.fwTable.tempBinRange(2)-calibParams.fwTable.tempBinRange(1));
+rowI = 1+(nBins-1)*min(max(rowI,0),1);
+dsmKeyRtd = 5;
+tmpTable = table;
+tmpTable(:,5) = data.tableResults.rtd.tmptrOffsetValuesShort;
+[dsmValuesRtd] = calcDsmValues(dsmKeyRtd,rowI,tmpTable,nBins);
+for k = 1:length(data.framesDataShort)
+    newData.framesDataShort(k).ptsWithZ(:,1) = newData.framesDataShort(k).ptsWithZ(:,1) + dsmValuesRtd(k);
+end
 
 %%
  % Calculate coordinates in image plane

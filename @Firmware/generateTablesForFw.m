@@ -66,6 +66,9 @@ if(exist('outputFldr','var'))
     if ~skip_algo_thermal_calib
         thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', versions.algoThermal);
         obj.writeAlgoThermalBin(fullfile(outputFldr,filesep, thermalTableFileName))
+       
+        extraThermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_Extra_CalibInfo', versions.algoThermalExtras);
+        obj.writeAlgoExtraThermalBin(fullfile(outputFldr,filesep, extraThermalTableFileName))
     end
 end
 end

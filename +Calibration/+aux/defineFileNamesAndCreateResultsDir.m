@@ -10,6 +10,7 @@ function [fnCalib,fnUndsitLut] = defineFileNamesAndCreateResultsDir(internalFold
     copyfile(fullfile(initPresetsFolder,'*.csv'),  internalFolder);
     copyfile(fullfile(ivcam2root ,'+Pipe' ,'tables','*.frmw'), internalFolder);
     copyfile(fullfile(eepromStructureFn,'*.csv'),  internalFolder);
+    copyfile(fullfile(eepromStructureFn,'*.bin'),  internalFolder);
     copyfile(fullfile(eepromStructureFn,'*.mat'),  internalFolder);
     copyfile(fullfile(confScriptFolder,'*.*'),  internalFolder);
     

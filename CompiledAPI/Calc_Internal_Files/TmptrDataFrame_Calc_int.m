@@ -57,8 +57,10 @@ if ~finishedHeating % heating stage
     zForStd = zeros(size(framesNoAvg.z));
     zForStd(repmat(binLargest,1,1,nFrames)) = framesNoAvg.z(repmat(binLargest,1,1,nFrames));
     zForStd(zForStd == 0) = nan;
-    lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
-    
+    if ~(calibParams.gnrl.calibrateShortPreset.enable && FrameData.presetMode == 2) % For z STD we don't want to mix short and long preset values
+        lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
+        zFramesIndex = zFramesIndex + nFrames;
+    end
     % corners tracking
     [FrameData.ptsWithZ, gridSize] = cornersData(frame,regs,calibParams);
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
@@ -84,7 +86,7 @@ if ~finishedHeating % heating stage
         prevTmp   = FrameData.temp.ldd;
         prevTime  = FrameData.time;
     end
-    zFramesIndex = zFramesIndex + nFrames;
+    
     Index = Index+1;
     i = Index;
     

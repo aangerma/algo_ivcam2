@@ -360,7 +360,7 @@
     </rgb>
     <presets>
         <compare>
-            <bypass>0</bypass>
+            <bypass>1</bypass>
             <nTrials>3</nTrials>
             <roi>0.4</roi>
             <nFrames>30</nFrames>
@@ -444,6 +444,7 @@
         <algoCalib>4</algoCalib>
         <algoRtdOverAngX>3</algoRtdOverAngX>
         <algoThermal>4</algoThermal>
+        <algoThermalExtras>4</algoThermalExtras>
         <algoRgbThermal>4</algoRgbThermal>
         <cbufCalib>3</cbufCalib>
         <destTxPwrPd>3</destTxPwrPd>

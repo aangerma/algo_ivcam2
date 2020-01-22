@@ -16,6 +16,15 @@ if isXGA
 end
 runParams.rgb = calibParams.gnrl.rgb.doStream;
 runParams.rgbRes = calibParams.gnrl.rgb.res;
+
+if calibParams.gnrl.calibrateShortPreset.enable
+    hw.setPresetControlState(2);
+    currPresetMode = 2;
+    sampleLddTempsShort = calibParams.gnrl.calibrateShortPreset.sampleLddTemps;
+else
+    currPresetMode = 1;
+end
+
 Calibration.aux.startHwStream(hw,runParams);
 if calibParams.gnrl.sphericalMode
     hw.setReg('DIGGsphericalEn',1);
@@ -62,7 +71,8 @@ end
 while ~finishedHeating
     % collect data without performing any calibration
     i = i + 1;
-    [frameBytes, framesData(i)] = prepareFrameData(hw,startTime,calibParams);  %
+    [frameBytes, framesData(i)] = prepareFrameData(hw,startTime,calibParams);  
+    assert(framesData(i).presetMode == currPresetMode,'Different preset mode than expected');
     [finishedHeating,~, ~,~,~] = TmptrDataFrame_Calc(finishedHeating, regs, eepromRegs, eepromBin, framesData(i),sz, frameBytes, calibParams, maxTime2Wait, calibParams.gnrl.pzrCtKill);
     
     if tempFig.isvalid
@@ -77,6 +87,36 @@ while ~finishedHeating
         imshow(rot90(hw.getFrame().i,2));
         title('Scene Image');
     end
+    if calibParams.gnrl.calibrateShortPreset.enable && currPresetMode == 2 % We always only take 1 short preset image
+        hw.setPresetControlState(1);
+        currPresetMode = 1;
+        sampleLddTempsShort(sampleLddTempsShort<framesData(i).temp.ldd) = [];
+        pause(calibParams.gnrl.calibrateShortPreset.timeBetweenPresets);
+        
+    end
+    
+    if calibParams.gnrl.calibrateShortPreset.enable && currPresetMode == 1 && ~isempty(sampleLddTempsShort)
+        [minTemp, minI] = min(sampleLddTempsShort);
+        if framesData(i).temp.ldd > minTemp
+            sampleLddTempsShort(minI) = [];
+            hw.setPresetControlState(2);
+            currPresetMode = 2;
+            pause(calibParams.gnrl.calibrateShortPreset.timeBetweenPresets);
+        end
+    end
+    
+    % if finished heating, take another short image
+    if calibParams.gnrl.calibrateShortPreset.enable && currPresetMode == 1 && finishedHeating
+        hw.setPresetControlState(2);
+        currPresetMode = 2;
+        pause(calibParams.gnrl.calibrateShortPreset.timeBetweenPresets);
+        i = i + 1;
+        [frameBytes, framesData(i)] = prepareFrameData(hw,startTime,calibParams);  %
+        framesData(i).presetMode = currPresetMode;
+        TmptrDataFrame_Calc(0, regs, eepromRegs, eepromBin, framesData(i),sz, frameBytes, calibParams, maxTime2Wait, calibParams.gnrl.pzrCtKill);
+
+    end
+        
 end
 if finishedHeating % always true at this point
     t = tic;
@@ -200,6 +240,7 @@ function [frameBytes, frameData] = prepareFrameData(hw,startTime,calibParams)
         frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', calibParams.gnrl.Nof2avg);
     end
     frameData.time = toc(startTime);
+    frameData.presetMode = hw.getPresetControlState;
 end
 
 function dsmRegs = calibrateDSM(hw,fw, runParams, calibParams, fnCalib, fprintff, t)

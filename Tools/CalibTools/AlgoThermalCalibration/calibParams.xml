@@ -31,6 +31,11 @@
            <nonRectangleFlag>1</nonRectangleFlag>
            <fixRgbThermal>1</fixRgbThermal>
 	   </rgb>
+       <calibrateShortPreset>
+           <enable>1</enable>
+           <timeBetweenPresets>10</timeBetweenPresets>
+           <sampleLddTemps>[40,45]</sampleLddTemps>
+       </calibrateShortPreset>
    </gnrl>
    <warmUp>
        <nFramesForZStd>10</nFramesForZStd>
@@ -236,6 +241,7 @@
         <algoCalib>4</algoCalib>
         <algoRtdOverAngX>3</algoRtdOverAngX>
         <algoThermal>4</algoThermal>
+        <algoThermalExtras>4</algoThermalExtras>
         <algoRgbThermal>4</algoRgbThermal>
         <cbufCalib>3</cbufCalib>
         <destTxPwrPd>3</destTxPwrPd>
