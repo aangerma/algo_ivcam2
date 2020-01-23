@@ -1,7 +1,7 @@
 function generateTableForBurning(eepromRegs, table,calibParams,runParams,fprintff,calibPassed,data,calib_dir)
 % Creates a binary table as requested
 
-% Thermal loop table
+% Thermal loop tables
 dsmTable = table(:,1:4);
 rtdTable = table(:,5);
 rtdTableShort = data.tableResults.rtd.tmptrOffsetValuesShort;
@@ -20,7 +20,7 @@ extraThermalTableFullPath = fullfile(runParams.outputFolder, extraThermalTableFi
 Calibration.thermal.saveExtraThermalTable( rtdTableShort , extraThermalTableFullPath );
 fprintff('Generated extra algo thermal table full path:\n%s\n',extraThermalTableFullPath);
 
-
+% RGB thermal table
 if isfield(data.tableResults, 'rgb')
     rgbThermalTable = single(reshape(data.tableResults.rgb.thermalTable',[],1));
     rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.maxTemp; data.tableResults.rgb.referenceTemp; data.tableResults.rgb.isValid; rgbThermalTable];

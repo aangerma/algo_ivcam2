@@ -49,7 +49,12 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     plot(shtw2, '.-')
     [~,ind] = min(abs(shtw2-humidMinDif));
     plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
-    leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff'};
+    if isfield(data.framesData, 'thermostream')
+        tsData = [data.framesData.thermostream];
+        plot([tsData.target],'.--')
+        plot([tsData.temperature],'.--')
+    end
+    leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff', 'TS target', 'TS actual'};
     text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
     grid on, xlabel('#frame'), ylabel('temperature [deg]')
     legend(leg,'Location','northwest')
@@ -166,6 +171,7 @@ end
 
 %% Y Fix - groupByVBias2
 validYFixFrames = timeVec >= calibParams.fwTable.yFix.ignoreNSeconds;
+assert(any(validYFixFrames), sprintf('Test is too short (%.0f[sec]), left without Y samples after ignoring first %d[sec]', max(timeVec), calibParams.fwTable.yFix.ignoreNSeconds));
 vbias2 = vBias(2,validYFixFrames);
 minMaxVBias2 = minmax(vbias2);
 maxVBias2 = minMaxVBias2(2);
