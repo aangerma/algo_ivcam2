@@ -2,7 +2,7 @@ function [regs,luts,eepromRegs,eepromBin] = readDFZRegsForThermalCalculation(hw,
    
     [regs,eepromBin] = hw.readAlgoEEPROMtable();
     eepromRegs = regs;
-
+    
     initFldr = fullfile(fileparts(mfilename('fullpath')),'..',runParams.configurationFolder);
     fw = Pipe.loadFirmware(initFldr); % use default path of table folder
     fw.setRegs(eepromRegs,'');

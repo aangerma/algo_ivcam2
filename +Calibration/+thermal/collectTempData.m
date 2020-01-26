@@ -359,8 +359,8 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
         %     params.target.squareSize = 30;
         %     params.expectedGridSize = [9,13];
         %     [frameData.eGeom, allRes,dbg] = Validation.metrics.gridInterDistance(frame, params);
-        frameData.verticalSharpness = Calibration.aux.CBTools.fastGridEdgeSharpIR(frame, gridSize, FrameData.ptsWithZ(:,4:5), struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
-    catch
+        frameData.verticalSharpness = Calibration.aux.CBTools.fastGridEdgeSharpIR(frame, gridSize, frameData.ptsWithZ(:,4:5), struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
+    catch er
         frameData.ptsWithZ = [];
     end
 end

@@ -31,6 +31,10 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
     
     
     data.regs = Calibration.thermal.readDFZRegsForThermalCalculation(hw,0,calibParams,runParams);
+    if calibParams.gnrl.verifyDFZCalibration
+       assert(data.regs.FRMW.calMarginB ~= 0 || data.regs.FRMW.calMarginT ~= 0 || data.regs.FRMW.calMarginL ~= 0 || data.regs.FRMW.calMarginR ~= 0 ...
+       ,'Unit didnt pass ACC');
+    end
     if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'fixRgbThermal') && calibParams.gnrl.rgb.fixRgbThermal
         [data.rgb] = Calibration.thermal.readDataForRgbThermalCalculation(hw,calibParams);
     end
