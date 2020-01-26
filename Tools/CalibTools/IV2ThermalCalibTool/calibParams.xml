@@ -27,13 +27,14 @@
            <sampIntervalMsec>10</sampIntervalMsec>
        </pzrMeas>
 	   <rgb>
-           <doStream>1</doStream>
+           <doStream>0</doStream>
            <res>[1920,1080]</res>
            <startIxRgb>6</startIxRgb>
            <fixRgbThermal>1</fixRgbThermal>
            <nBinsThermal>29</nBinsThermal>
 	   </rgb>
 	   <presetNum>1</presetNum>
+       <verifyDFZCalibration>1</verifyDFZCalibration>
    </gnrl>
    <warmUp>
        <requiredTmptrRange>[45 45]</requiredTmptrRange><!-- Obligatory LDD temperature range that thermal sweep must contain-->
@@ -60,6 +61,10 @@
       <meanEGeom>[0 7]</meanEGeom>
       <minEGeom>[0 1.2]</minEGeom>
       <maxEGeom>[0 30]</maxEGeom>
+      <meanTiltH>[-2,2]</meanTiltH>
+      <meanTiltV>[-2,2]</meanTiltV>
+      <relativeTiltH>[0,0.3]</relativeTiltH>
+      <relativeTiltV>[0,0.3]</relativeTiltV>
       <xScale>[0 0.03]</xScale>
       <yScale>[0 0.008]</yScale>
       <xShift>[0 5]</xShift>

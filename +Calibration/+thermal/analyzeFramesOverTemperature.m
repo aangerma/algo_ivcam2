@@ -122,6 +122,28 @@ if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (po
         title('Heating Stage EGeom'); grid on;xlabel('degrees');ylabel('eGeom [mm]');legend(legends);
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('EGeomOverTemp'),1);
     end
+    
+    fd = Calibration.thermal.framesDataVectors(data.framesData);
+    planeFits = @(i) planeFitData(squeeze(fd.ptsWithZ(fd.validCB,6:8,i)));
+    fdPf = arrayfun(@(i) planeFits(i), 1:size(fd.ptsWithZ,3));
+    
+    metrics.meanTiltH = nanmean([fdPf.horizAngle]);
+    metrics.meanTiltV = nanmean([fdPf.verticalAngle]);
+    metrics.relativeTiltH = max([fdPf.horizAngle])-min([fdPf.horizAngle]);
+    metrics.relativeTiltV = max([fdPf.verticalAngle])-min([fdPf.verticalAngle]);
+    
+    if ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        subplot(1,2,1);
+        plot(fd.ldd,[fdPf.horizAngle])
+        title('Horizontal Tilt Over Ldd Temp'); grid on;xlabel('degrees');ylabel('tilt angle [deg]');legend(legends);
+        subplot(1,2,2);
+        plot(fd.ldd,[fdPf.verticalAngle])
+        title('Vertical Tilt Over Ldd Temp'); grid on;xlabel('degrees');ylabel('tilt angle [deg]');legend(legends);
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TiltOverTemp'),1);
+    end
+    
+    
 end
 plotRtdOfShortVsLongPostFix(data,runParams);
 if isfield(data.framesData, 'verticalSharpness')
@@ -144,6 +166,13 @@ if plotRGB
 end
 
 data.results = metrics;
+end
+
+function s = planeFitData(vertices)
+    [distError, p, ~] = Validation.aux.planeFitInternal(vertices(~isnan(vertices(:,1)),:));
+    s.planeFitErrorRms = rms(distError);
+    s.horizAngle = (90-atan2d(p(3),p(1)));
+    s.verticalAngle = (90-atan2d(p(3),p(2)));
 end
 function plotRtdOfShortVsLongPostFix(data,runParams)
 if ~isfield(data,'framesDataShort')
