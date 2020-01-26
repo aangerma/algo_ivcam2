@@ -22,6 +22,7 @@
         </rgbImage>
 		<cameraConfig_beforeStartStream>
 			<cmd>DIRTYBITGET</cmd>
+			<cmd>DIRTYBITBYPASS</cmd>
 		</cameraConfig_beforeStartStream>
 		<cameraConfig_afterStartStream></cameraConfig_afterStartStream>
 	</camera>
