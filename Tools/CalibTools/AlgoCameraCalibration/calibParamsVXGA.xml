@@ -375,6 +375,7 @@
                 <framesNum>10</framesNum>
                 <fillRateTh>74</fillRateTh>
                 <guessOnInterval>0.5</guessOnInterval>
+				<modRefScaleClipping>[0.44 1]</modRefScaleClipping>
             </state1>
             <state2>
                 <ModRefPresetState>modulation_ref_factor_2</ModRefPresetState>
@@ -384,6 +385,7 @@
                 <framesNum>10</framesNum>
                 <fillRateTh>38</fillRateTh>
                 <guessOnInterval>0.5</guessOnInterval>
+				<modRefScaleClipping>[0.2 1]</modRefScaleClipping>
             </state2>
             <!--<calibTargetReflect>0.0128</calibTargetReflect>
             <estDistTargetReflect>0.8</estDistTargetReflect>-->

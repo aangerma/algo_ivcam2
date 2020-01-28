@@ -98,6 +98,16 @@ startIx = max(ix-1,1); endIx = min(ix+1,length(testedScores));
 bestIx = startIx:endIx;
 [~,ix_min]= min(abs(testedScores(bestIx) - fillRateTh));
 maxRangeScaleModRef = round(testedPoints(bestIx(ix_min)))/maxMod_dec;
+% Clip maxRangeScaleModRef according to modRefScaleClipping in calibParams
+if isfield(calibParams.presets.long.(LongRangestate), 'modRefScaleClipping')
+    if maxRangeScaleModRef < calibParams.presets.long.(LongRangestate).modRefScaleClipping(1)
+        maxRangeScaleModRef = calibParams.presets.long.(LongRangestate).modRefScaleClipping(1);
+    else
+        if maxRangeScaleModRef > calibParams.presets.long.(LongRangestate).modRefScaleClipping(2)
+            maxRangeScaleModRef = calibParams.presets.long.(LongRangestate).modRefScaleClipping(2);
+        end
+    end
+end
 
 % prepare output script
 if calibParams.presets.long.updateCalibVal
