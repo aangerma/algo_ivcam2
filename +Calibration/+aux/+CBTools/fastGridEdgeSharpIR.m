@@ -108,7 +108,7 @@ try
     yTrans = mean(yTransImg,2);
     % approximation of rise fitting
     fitCurve = smooth(yTrans,3);
-    mM = minmax(fitCurve);
+    mM = minmax(fitCurve');
     testPoints = mM(1)+[0.1,0.9]*diff(mM);
     testPointsX = zeros(1,2);
     for k = 1:2
