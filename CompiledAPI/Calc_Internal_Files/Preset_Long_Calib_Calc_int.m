@@ -78,6 +78,10 @@ end
 maxFillRate = max(testedScores);
 
 % analyze target distance
+for iFrame = 1:size(im.z,3)
+    frames(iFrame).i(~mask) = nan;
+    frames(iFrame).z(~mask) = nan;
+end
 zIm = {frames.z};
 zIm = cellfun(@(x) x(:)./double(cameraInput.z2mm), zIm,'UniformOutput',false);
 zIm_mean = cellfun(@(x) x(x(:)~=0), zIm,'UniformOutput', false);
