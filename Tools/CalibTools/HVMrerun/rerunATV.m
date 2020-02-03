@@ -2,7 +2,7 @@ clear all
 clc
 
 generalPath = [pwd, '\'];
-curTestDir = 'ACC32\';
+curTestDir = 'ACC36\';
 
 inputPath = [generalPath, curTestDir, 'Matlab\mat_files\'];
 

@@ -1,4 +1,6 @@
 function [ gridPointsFull,colorsMapFull ] = findCheckerboardFullMatrix( ir,imageRotatedBy180 ,isRgbImage,cornersDetectionThreshold, nonRectangleFlag, robustifyFlag)
+%FINDCHECKERBOARDFULLMATRIX is obsolete and was replaced by CBTools.Checkerboard!
+
 %FINDCHECKERBOARDFULLMATRIX detects the calibration chart with the black circle within the white square as an anchor.
 % Gets an IR image of the checkerboard
 % Returns a 20x28x2 matrix where the last 2 dimensions are the xy location

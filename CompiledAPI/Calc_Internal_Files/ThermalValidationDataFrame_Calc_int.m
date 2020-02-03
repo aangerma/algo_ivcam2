@@ -60,7 +60,7 @@ if ~finishedHeating % heating stage
     lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
     
     % corners tracking
-    [FrameData.ptsWithZ, gridSize] = cornersData(frame,regs,calibParams);
+    [FrameData.ptsWithZ, gridSize] = Calibration.thermal.getCornersDataFromThermalFrame(frame, regs, calibParams, false);
     FrameData.confPts = interp2(single(frame.c),FrameData.ptsWithZ(:,4),FrameData.ptsWithZ(:,5));
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     
@@ -148,7 +148,9 @@ function a = acc_FrameData(a)
     acc = [acc; a] ;
     a = acc;
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [bananasExist,validFillRatePrc] = captureBananaFigure(frame,calibParams,runParams,lddTemp,lastZFrames,diskObject)
     z = lastZFrames;
     z(z==0) = nan;%randi(9000,size(zCopy(z==0)));
@@ -174,46 +176,6 @@ function [bananasExist,validFillRatePrc] = captureBananaFigure(frame,calibParams
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating','Bananas',1);
     end
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [minMaxMemsAngX,minMaxMemsAngY] = minMaxDSMAngles(regs,lastZFrames,calibParams,diskObject)
-%% Calculates the min and max DSM angles along the center axis of the image (middle row,middle col)
-% The purpose is to follow accros the degredation in vertical fov for eye safety concerns, and the horizontal fov for ROI cropping in ACC.
-% 
-% 1. Target only the largest fully connected component, in case a small
-% spherical scale factor causes stripes at the side of image.
-% 2. Take the min and max valid pixels for the center row and col and
-% return theirDSM values. Use pixels with low STD as "valid pixels"
-z2mm = single(regs.GNRL.zNorm);
-irrelevantPixels = sum(~isnan(lastZFrames),3) < calibParams.warmUp.nFramesForZStd;
-zStd = nanstd(lastZFrames,[],3)/z2mm;
-zStd(irrelevantPixels) = nan;
-zStd(isnan(zStd)) = inf;
-notNoiseIm = zStd<calibParams.roi.zSTDTh;
-notNoiseIm = imclose(notNoiseIm,diskObject);
-
-if ~any(notNoiseIm(:))
-   % No valid point
-    minMaxMemsAngX = [nan,nan];
-    minMaxMemsAngY = [nan,nan];
-    return;
-end
-
-minMaxX = minmax(find(notNoiseIm(round(size(notNoiseIm,1)/2),:)));
-minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2)))');
-
-xx = (minMaxX-0.5)*4 - double(regs.DIGG.sphericalOffset(1));
-yy = minMaxY - double(regs.DIGG.sphericalOffset(2));
-
-xx = xx*2^10;
-yy = yy*2^12;
-
-minMaxAngX = xx/double(regs.DIGG.sphericalScale(1));
-minMaxAngY = yy/double(regs.DIGG.sphericalScale(2));
-
-minMaxMemsAngX = (minMaxAngX+2047)/regs.EXTL.dsmXscale - regs.EXTL.dsmXoffset;
-minMaxMemsAngY = (minMaxAngY+2047)/regs.EXTL.dsmYscale - regs.EXTL.dsmYoffset;
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -223,87 +185,6 @@ numPixels = cellfun(@numel,CC.PixelIdxList);
 [~,idx] = max(numPixels);
 binLargest = zeros(size(binaryIm),'logical');
 binLargest(CC.PixelIdxList{idx}) = 1;
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [ptsWithZ, gridSize] = cornersData(frame,regs,calibParams)
-    sz = size(frame.i);
-    pixelCropWidth = sz.*calibParams.gnrl.cropFactors;
-    frame.i([1:pixelCropWidth(1),round(sz(1)-pixelCropWidth(1)):sz(1)],:) = 0;
-    frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
-    
-    if isempty(calibParams.gnrl.cbGridSz)
-        [pts,colors] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.i, 1, [], [], calibParams.gnrl.nonRectangleFlag);
-%         if all(isnan(pts(:)))
-%             Calibration.aux.CBTools.interpretFailedCBDetection(frame.i, 'Heating IR image');
-%         end
-        pts = reshape(pts,[],2);
-        gridSize = [size(pts,1),size(pts,2),1];
-        if isfield(frame,'yuy2')
-            [ptsColor,~] = Calibration.aux.CBTools.findCheckerboardFullMatrix(frame.yuy2, 0, [], [], calibParams.gnrl.rgb.nonRectangleFlag);
-%             if all(isnan(ptsColor(:)))
-%                 Calibration.aux.CBTools.interpretFailedCBDetection(frame.yuy2, 'Heating RGB image');
-%             end
-        end
-    else
-        colors = [];
-        [pts,gridSize] = Validation.aux.findCheckerboard(frame.i,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-        if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
-            warning('Checkerboard not detected in IR image. All of the target must be included in the image');
-            ptsWithZ = [];
-            return;
-        end
-        if isfield(frame,'yuy2')
-            [ptsColor,gridSizeRgb] = Validation.aux.findCheckerboard(frame.yuy2,calibParams.gnrl.cbGridSz); % p - 3 checkerboard points. bsz - checkerboard dimensions.
-            if ~isequal(gridSizeRgb, calibParams.gnrl.cbGridSz)
-                warning('Checkerboard not detected in color image. All of the target must be included in the image');
-                ptsWithZ = [];
-                return;
-            end
-        end
-    end
-    
-    
-    
-    
-%     if isempty(colors)
-%         rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
-%     else
-%         rpt = Calibration.aux.samplePointsRtd(frame.z,reshape(pts,20,28,2),regs,0,colors,calibParams.gnrl.sampleRTDFromWhiteCheckers);
-%     end
-%     rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
-%     ptsWithZ = [rpt,reshape(pts,[],2)]; % without XYZ which is not calibrated well at this stage
-%     ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
-    zIm = single(frame.z)/single(regs.GNRL.zNorm);
-    if calibParams.gnrl.sampleRTDFromWhiteCheckers && isempty(calibParams.gnrl.cbGridSz)
-        [zPts,~,~,pts,~] = Calibration.aux.CBTools.valuesFromWhitesNonSq(zIm,reshape(pts,20,28,2),colors,1/8);
-        pts = reshape(pts,[],2);
-    else
-        zPts = interp2(zIm,pts(:,1),pts(:,2));
-    end
-    matKi=(regs.FRMW.kRaw)^-1;
-    
-    u = pts(:,1)-1;
-    v = pts(:,2)-1;
-    
-    tt=zPts'.*[u';v';ones(1,numel(v))];
-    verts=(matKi*tt)';
-    
-    %% Get r,angx,angy
-    if regs.DEST.hbaseline
-        rxLocation = [regs.DEST.baseline,0,0];
-    else
-        rxLocation = [0,regs.DEST.baseline,0];
-    end
-    rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
-    angx = rtd*0;% All nan will cause the analysis to fail
-    angy = rtd*0;% All nan will cause the analysis to fail
-    ptsWithZ = [rtd,angx,angy,pts,verts];
-    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
-    if isfield(frame,'yuy2')
-        ptsWithZ = [ptsWithZ,reshape(ptsColor,[],2)];
-    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -334,6 +215,7 @@ regs.FRMW.kRaw(8) = single(regs.GNRL.imgVsize) - 1 - regs.FRMW.kRaw(8);
 [rgbData] = parseRgbData(unitData,nBinsRgb);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [rgbData] = parseRgbData(unitData,nBinsRgb)
 rgbData = Calibration.aux.convertRgbThermalBytesToData(unitData.rgbThermalData,nBinsRgb);
