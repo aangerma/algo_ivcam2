@@ -1,4 +1,4 @@
-function [finishedHeating,calibPassed,results] = ThermalValidationDataFrame_Calc(finishedHeating, unitData, FrameData,sz, frameBytes, calibParams)
+function [finishedHeating,calibPassed,results] = ThermalValidationDataFrame_Calc(finishedHeating, unitData, FrameData, sz, frameBytes, calibParams)
 
 
 
