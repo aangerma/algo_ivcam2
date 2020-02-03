@@ -359,6 +359,9 @@
         <imSize>[1920,1080]</imSize>
     </rgb>
     <presets>
+		<general>
+			<laserValInPercent>1</laserValInPercent>
+		</general>
         <compare>
             <bypass>1</bypass>
             <nTrials>3</nTrials>

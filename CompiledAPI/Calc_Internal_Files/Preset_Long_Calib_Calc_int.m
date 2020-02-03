@@ -48,13 +48,23 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     sortedScores = testedScores(sortIdcs);
     ff1 = Calibration.aux.invisibleFigure;
     hold on;
-    plot(testedPoints, testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+    plot(testedPoints, testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); ylabel('Fill rate');
+    if isfield(calibParams.presets, 'general') && isfield(calibParams.presets.general, 'laserValInPercent') && calibParams.presets.general.laserValInPercent
+        xlabel('ModRef values (percent from Max ModRef)');
+    else
+        xlabel('ModRef values (decimal)'); 
+    end
     plot(sortedPoints, sortedScores, 'c--')
     plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
     Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
     ff1 = Calibration.aux.invisibleFigure;
     hold on;
-    plot(testedPoints,testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+    plot(testedPoints,testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); ylabel('Fill rate');
+    if isfield(calibParams.presets, 'general') && isfield(calibParams.presets.general, 'laserValInPercent') && calibParams.presets.general.laserValInPercent
+        xlabel('ModRef values (percent from Max ModRef)');
+    else
+        xlabel('ModRef values (decimal)');
+    end
     plot(sortedPoints, sortedScores, 'c--')
     plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
     Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
