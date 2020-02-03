@@ -13,7 +13,7 @@ if (LaserPoints(end)~=maxMod_dec)
 end
 if exist('laserValInPercent','var') && laserValInPercent
     if laserValInPercent
-        LaserPoints = LaserPoints./maxMod_dec * 100;
+        LaserPoints = round(LaserPoints./maxMod_dec * 100);
     else
         laserValInPercent = 0;
     end

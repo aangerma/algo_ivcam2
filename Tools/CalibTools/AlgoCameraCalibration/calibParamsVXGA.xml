@@ -360,7 +360,7 @@
     </rgb>
     <presets>
 		<general>
-			<laserValInPercent>1</laserValInPercent>
+			<laserValInPercent>0</laserValInPercent>
 		</general>
         <compare>
             <bypass>1</bypass>
