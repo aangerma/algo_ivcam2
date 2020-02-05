@@ -9,7 +9,6 @@ framesData = data.framesData;
 timeVec = [framesData.time];
 tempData = [framesData.temp];
 ldd = [tempData.ldd];
-hum = [tempData.shtw2];
 vBias = reshape([framesData.vBias],3,[]);
 iBias = reshape([framesData.iBias],3,[]);
 regs = data.regs;
@@ -355,7 +354,7 @@ if calibParams.fwTable.yFix.bypass
 end
 
 % extrapolation
-results.pzr             = estHumFromPzrRes(hum(startI:end),vBias(:,startI:end)./iBias(:,startI:end), runParams, data.ctKillThr); 
+results.pzr             = estHumFromPzrRes(shtw2(startI:end),vBias(:,startI:end)./iBias(:,startI:end), runParams, data.ctKillThr); 
 vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
 [table, results]        = extrapolateTable(table, results, vBiasLims, calibParams, runParams);
 results.rtd.origMinval  = min(lddForEst);
@@ -880,7 +879,9 @@ else % avoid hypothesis testing - use default assumption
 end
 
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [tmptrOffsetVector,lddGrid,rtdVectorForShortPreset,ldds,rtds] = rtdFixForShort(data,calibParams,validCB,refLddLong,refRtdLong)
     fd = Calibration.thermal.framesDataVectors(data.framesDataShort);
     ldds = fd.ldd;
@@ -908,7 +909,4 @@ function [tmptrOffsetVector,lddGrid,rtdVectorForShortPreset,ldds,rtds] = rtdFixF
     rtdShortAtRef = interp1(lddGrid,rtdVectorForShortPreset,refLddLong);
     
     tmptrOffsetVector = -(rtdVectorForShortPreset - rtdShortAtRef) + (refRtdLong-rtdShortAtRef);
-    
-    
-    
 end
