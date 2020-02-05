@@ -265,7 +265,7 @@ if fixRgbThermal && data.rgb.isValid
             if isfield(data,'rgb')
                 hold on;
                 plot([data.rgb.rgbCalTemp,data.rgb.rgbCalTemp],[0,max(uvResults(:,1))],'k--','linewidth',2);
-                legends{end+1} = 'Cal Ldd Temp';
+                legends{end+1} = 'Cal Humidity Temp';
             end
             legend(legends);
             Calibration.aux.saveFigureAsImage(ff,runParams,'UVmapping',sprintf('RMSE'),1);

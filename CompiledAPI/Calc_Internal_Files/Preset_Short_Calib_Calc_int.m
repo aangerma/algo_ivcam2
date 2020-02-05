@@ -72,7 +72,12 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     subplot(1,3,2);hold all;
     plot(lp,fittedline);plot(testedPoints, testedScores(3,:)); title('DR: Wmax-Bmin');xlabel('laser modulation [dec]');grid minor
     subplot(1,3,3);
-    plot(testedPoints,double(testedScores(1,:))-testedScores(2,:)); title(' Wmax-Wmean white patch');xlabel('laser modulation [dec]');grid minor;
+    plot(testedPoints,double(testedScores(1,:))-testedScores(2,:)); title(' Wmax-Wmean white patch');grid minor;
+    if isfield(calibParams.presets, 'general') && isfield(calibParams.presets.general, 'laserValInPercent') && calibParams.presets.general.laserValInPercent
+        xlabel('ModRef values (percent from Max ModRef)');
+    else
+        xlabel('laser modulation [dec]');
+    end
     subplot(1,3,2);scatter(ModRefDec,p(1)*ModRefDec.^2+p(2)*ModRefDec+p(3));
     Calibration.aux.saveFigureAsImage(ff,runParams,'SRpresetLaserCalib','PresetDir');
 end

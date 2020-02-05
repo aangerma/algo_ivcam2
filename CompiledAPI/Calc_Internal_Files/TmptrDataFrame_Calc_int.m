@@ -62,7 +62,7 @@ if ~finishedHeating % heating stage
         zFramesIndex = zFramesIndex + nFrames;
     end
     % corners tracking
-    [FrameData.ptsWithZ, gridSize] = cornersData(frame,regs,calibParams);
+    [FrameData.ptsWithZ, gridSize] = Calibration.thermal.getCornersDataFromThermalFrame(frame, regs, calibParams, true);
     FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     if all(isnan(FrameData.ptsWithZ(:,1)))
@@ -187,58 +187,6 @@ numPixels = cellfun(@numel,CC.PixelIdxList);
 [~,idx] = max(numPixels);
 binLargest = zeros(size(binaryIm),'logical');
 binLargest(CC.PixelIdxList{idx}) = 1;
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function [ptsWithZ, gridSize] = cornersData(frame,regs,calibParams)
-    sz = size(frame.i);
-    pixelCropWidth = sz.*calibParams.gnrl.cropFactors;
-    frame.i([1:pixelCropWidth(1),round(sz(1)-pixelCropWidth(1)):sz(1)],:) = 0;
-    frame.i(:,[1:pixelCropWidth(2),round(sz(2)-pixelCropWidth(2)):sz(2)]) = 0;
-    
-    if isempty(calibParams.gnrl.cbGridSz)
-        CB = CBTools.Checkerboard (frame.i, 'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true,'nonRectangleFlag',logical(calibParams.gnrl.nonRectangleFlag));
-        gridSize = CB.getGridSize;
-        pts = CB.getGridPointsList;
-        colors = CB.getColorMap;
-        if isfield(frame,'yuy2')
-             CB = CBTools.Checkerboard (frame.yuy2, 'targetType', 'checkerboard_Iv2A1','nonRectangleFlag',logical(calibParams.gnrl.nonRectangleFlag));
-             ptsColor = CB.getGridPointsMat;
-        end
-    else
-        colors = [];
-        CB = CBTools.Checkerboard (frame.i,'expectedGridSize',calibParams.gnrl.cbGridSz);
-        pts = CB.getGridPointsList;
-        gridSize = CB.getGridSize;
-        if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
-            warning('Checkerboard not detected in IR image. All of the target must be included in the image');
-            ptsWithZ = [];
-            return;
-        end
-        if isfield(frame,'yuy2')
-            CB = CBTools.Checkerboard (frame.yuy2,'expectedGridSize',calibParams.gnrl.cbGridSz);
-            ptsColor = CB.getGridPointsList;
-            gridSizeRgb = CB.getGridSize;
-            if ~isequal(gridSizeRgb, calibParams.gnrl.cbGridSz)
-                warning('Checkerboard not detected in color image. All of the target must be included in the image');
-                ptsWithZ = [];
-                return;
-            end
-        end
-    end
-    assert(regs.DIGG.sphericalEn==1, 'Frames for ATC must be captured in spherical mode')
-    if isempty(colors)
-        rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
-    else
-        rpt = Calibration.aux.samplePointsRtd(frame.z,reshape(pts,20,28,2),regs,0,colors,calibParams.gnrl.sampleRTDFromWhiteCheckers);
-    end
-    rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
-    ptsWithZ = [rpt,reshape(pts,[],2)]; % without XYZ which is not calibrated well at this stage
-    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
-    if isfield(frame,'yuy2')
-        ptsWithZ = [ptsWithZ,reshape(ptsColor,[],2)];
-    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

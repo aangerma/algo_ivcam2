@@ -17,10 +17,15 @@ Calibration.aux.changeCameraLocation(hw, true, calibParams.robot.long_preset.typ
 pause(60);
 
 %% Capture frames
-[frameBytes,laserPoints,maxMod_dec,laserPoint0] = Calibration.presets.captureVsLaserMod(hw,minModprc,laserDelta,framesNum);
+if isfield(calibParams.presets, 'general') && isfield(calibParams.presets.general, 'laserValInPercent')
+    laserValInPercent = calibParams.presets.general.laserValInPercent;
+else
+    laserValInPercent = 0;
+end
+[frameBytes,laserPoints,maxMod_dec,laserPoint0] = Calibration.presets.captureVsLaserMod(hw,minModprc,laserDelta,framesNum,laserValInPercent);
 [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(frameBytes,cameraInput,laserPoints,maxMod_dec,laserPoint0,calibParams);
 while (isConverged==0)
-    Calibration.aux.RegistersReader.setModRef(hw, nextLaserPoint);
+    Calibration.aux.RegistersReader.setModRef(hw, nextLaserPoint,laserValInPercent);
     frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', framesNum);
     [isConverged, nextLaserPoint, maxRangeScaleModRef, maxFillRate, targetDist] = Preset_Long_Calib_Calc(frameBytes,cameraInput,laserPoints,maxMod_dec,nextLaserPoint,calibParams);
 end

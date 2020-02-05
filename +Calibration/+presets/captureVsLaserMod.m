@@ -1,4 +1,4 @@
-function [frameBytes,LaserPoints,maxMod_dec,laserPoint0] = captureVsLaserMod(hw,minModprc,laserDelta,framesNum)
+function [frameBytes,LaserPoints,maxMod_dec,laserPoint0] = captureVsLaserMod(hw,minModprc,laserDelta,framesNum,laserValInPercent)
 % minModprc=percent from max to be minimum value,  laserDelta=laser loop
 % interval (decimal)
 %% read max modulation
@@ -11,11 +11,18 @@ LaserPoints=[startPoint:laserDelta:maxMod_dec];
 if (LaserPoints(end)~=maxMod_dec)
     LaserPoints(end+1)=maxMod_dec;
 end
+if exist('laserValInPercent','var') && laserValInPercent
+    if laserValInPercent
+        LaserPoints = round(LaserPoints./maxMod_dec * 100);
+    else
+        laserValInPercent = 0;
+    end
+end
 
 %% capture with maximal mod ref as an initial guess
 hw.getFrame(framesNum,false); 
 laserPoint0 = max(LaserPoints);
-Calibration.aux.RegistersReader.setModRef(hw, laserPoint0);
+Calibration.aux.RegistersReader.setModRef(hw, laserPoint0,laserValInPercent);
 frameBytes = Calibration.aux.captureFramesWrapper(hw, 'ZI', framesNum);
 
 end

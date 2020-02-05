@@ -48,13 +48,23 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     sortedScores = testedScores(sortIdcs);
     ff1 = Calibration.aux.invisibleFigure;
     hold on;
-    plot(testedPoints, testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+    plot(testedPoints, testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); ylabel('Fill rate');
+    if isfield(calibParams.presets, 'general') && isfield(calibParams.presets.general, 'laserValInPercent') && calibParams.presets.general.laserValInPercent
+        xlabel('ModRef values (percent from Max ModRef)');
+    else
+        xlabel('ModRef values (decimal)'); 
+    end
     plot(sortedPoints, sortedScores, 'c--')
     plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
     Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,1);
     ff1 = Calibration.aux.invisibleFigure;
     hold on;
-    plot(testedPoints,testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); xlabel('ModRef values (decimal)'); ylabel('Fill rate');
+    plot(testedPoints,testedScores, '--o'); title('Mean fill rate Vs. modulation ref'); ylabel('Fill rate');
+    if isfield(calibParams.presets, 'general') && isfield(calibParams.presets.general, 'laserValInPercent') && calibParams.presets.general.laserValInPercent
+        xlabel('ModRef values (percent from Max ModRef)');
+    else
+        xlabel('ModRef values (decimal)');
+    end
     plot(sortedPoints, sortedScores, 'c--')
     plot(testedPoints, repelem(fillRateTh,length(testedPoints)), 'r'); grid minor; hold off;
     Calibration.aux.saveFigureAsImage(ff1,runParams,'Presets','Long_Range_Laser_Calib_FR',1,0);
@@ -78,6 +88,10 @@ end
 maxFillRate = max(testedScores);
 
 % analyze target distance
+for iFrame = 1:size(im.z,3)
+    frames(iFrame).i(~mask) = nan;
+    frames(iFrame).z(~mask) = nan;
+end
 zIm = {frames.z};
 zIm = cellfun(@(x) x(:)./double(cameraInput.z2mm), zIm,'UniformOutput',false);
 zIm_mean = cellfun(@(x) x(x(:)~=0), zIm,'UniformOutput', false);
@@ -98,6 +112,16 @@ startIx = max(ix-1,1); endIx = min(ix+1,length(testedScores));
 bestIx = startIx:endIx;
 [~,ix_min]= min(abs(testedScores(bestIx) - fillRateTh));
 maxRangeScaleModRef = round(testedPoints(bestIx(ix_min)))/maxMod_dec;
+% Clip maxRangeScaleModRef according to modRefScaleClipping in calibParams
+if isfield(calibParams.presets.long.(LongRangestate), 'modRefScaleClipping')
+    if maxRangeScaleModRef < calibParams.presets.long.(LongRangestate).modRefScaleClipping(1)
+        maxRangeScaleModRef = calibParams.presets.long.(LongRangestate).modRefScaleClipping(1);
+    else
+        if maxRangeScaleModRef > calibParams.presets.long.(LongRangestate).modRefScaleClipping(2)
+            maxRangeScaleModRef = calibParams.presets.long.(LongRangestate).modRefScaleClipping(2);
+        end
+    end
+end
 
 % prepare output script
 if calibParams.presets.long.updateCalibVal
