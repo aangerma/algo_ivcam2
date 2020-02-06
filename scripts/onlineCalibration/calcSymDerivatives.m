@@ -56,7 +56,7 @@ y1 = (y_in-Krgb(2,3))/Krgb(2,2);
 dX1_dXin = diff(x1,x_in);
 dY1_dYin = diff(y1,y_in);
 %%
-syms Rc R2
+syms Rc
 
 dXout_dXin = dXout_dX3*(dX3_dX1+dX2_dX1)*dX1_dXin;
 dYout_dYin = dYout_dY3*(dY3_dY1+dY2_dY1)*dY1_dYin;
