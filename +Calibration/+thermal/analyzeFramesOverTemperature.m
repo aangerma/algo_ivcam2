@@ -281,17 +281,24 @@ end
 function cornersRtdVsIRFigure(data,runParams)
     fd = Calibration.thermal.framesDataVectors(data.framesData);
     validCB = reshape(fd.validCB,20,28);
-    vCols = find(any(validCB,1));
-    vRows = find(any(validCB,2));
+    % extract sub-checkerboard for the purpose of choosing 2 opposite corners
+    fullBoard = single(validCB);
+    fullBoard(fullBoard==0) = NaN;
+    [~, validRows, validCols] = CBTools.extractSubRectangleCheckerboard(fullBoard);
+    validSubCB = false(size(validCB));
+    validSubCB(validRows, validCols) = true;
+    
+    vCols = find(any(validSubCB,1));
+    vRows = find(any(validSubCB,2));
     centerIdx = round([mean(vRows),mean(vCols)]) - [vRows(1),vCols(1)]+1;
     centerIdx = sub2ind([numel(vRows),numel(vCols)],centerIdx(1),centerIdx(2));
     
-    rtdvalid = squeeze(fd.ptsWithZ(validCB,1,:));
-    ptsWithZValid = squeeze(fd.ptsWithZ(validCB,:,:));
+    rtdvalid = squeeze(fd.ptsWithZ(validSubCB,1,:));
+    ptsWithZValid = squeeze(fd.ptsWithZ(validSubCB,:,:));
     idx = [1,size(rtdvalid,1),centerIdx];
     
     ff = Calibration.aux.invisibleFigure;
-    plot(fd.ptsWithZ(validCB,4,1),fd.ptsWithZ(validCB,5,1),'r*')
+    plot(fd.ptsWithZ(validCB,4,1),fd.ptsWithZ(validCB,5,1),'r*') % here the full (possibly non-rectangular) checkerbord is plotted intentionally
     hold on
     plot(ptsWithZValid(idx,4,1),ptsWithZValid(idx,5,1),'bo')
     rectangle('position',[0,0,data.regs.GNRL.imgHsize,data.regs.GNRL.imgVsize],'linewidth',2);
@@ -302,23 +309,18 @@ function cornersRtdVsIRFigure(data,runParams)
     axis ij
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('AlwaysValidCorners'));
 
-
-    
     ff = Calibration.aux.invisibleFigure;
     yyaxis left
     plot(fd.ldd,rtdvalid(idx,:),'linewidth',1.5)
     xlabel('ldd degrees')
     ylabel('mm')
-
     yyaxis right
     plot(fd.ldd,fd.irStatMean,'linewidth',1.5)
     ylabel('IR')
     legend({'topLeft';'bottomRight';'center';'IR'})
-
     grid minor
     title('IR vs RTD 3 corners')
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('IR_vs_Rtd_3_corners'),1);
-
     
     if isfield(data,'dutyCycle2Conf')
         first15 = find(data.dutyCycle2Conf.confidence == 15,1);
