@@ -139,26 +139,25 @@ results.rtd.tmptrOffsetValues = -(rtdGrid-refRtd); % aligning to reference tempe
 
 [results.rtd.tmptrOffsetValuesShort,lddGrid,rtdInterpolated,lddShort,rtdShort] = rtdFixForShort(data,calibParams,validCB & validCBShort,refLdd,refRtdForShortCal);
 
-if ~isempty(runParams) && isfield(runParams, 'outputFolder')
-    ff = Calibration.aux.invisibleFigure;
-    plot(ldd, rtdPerFrame,'*');
-    title('RTD(ldd) and Fitted line');
-    grid on; xlabel('ldd Temperature'); ylabel('mean rtd');
-    hold on
-    plot(lddGrid, rtdGrid, '-o');
-    
-    plot(lddShort,rtdShort,'*');
-    plot(lddGrid, rtdInterpolated, '-o');
-
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_LDD_Temp'));
-    ff = Calibration.aux.invisibleFigure;
-    plot(ma,rtdPerFrame,'*');
-    title('RTD(ma) and Fitted line');
-    grid on;xlabel('ma Temperature');ylabel('mean rtd');
-    hold on
-    plot(ma,aMA*ma+bMA);
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_MA_Temp'));
-end
+% if ~isempty(runParams) && isfield(runParams, 'outputFolder')
+%     ff = Calibration.aux.invisibleFigure;
+%     plot(ldd, rtdPerFrame,'*');
+%     title('RTD(ldd) and Fitted line');
+%     grid on; xlabel('ldd Temperature'); ylabel('mean rtd');
+%     hold on
+%     plot(lddGrid, rtdGrid, '-o');
+%     plot(lddShort,rtdShort,'*');
+%     plot(lddGrid, rtdInterpolated, '-o');
+% 
+%     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_LDD_Temp'));
+%     ff = Calibration.aux.invisibleFigure;
+%     plot(ma,rtdPerFrame,'*');
+%     title('RTD(ma) and Fitted line');
+%     grid on;xlabel('ma Temperature');ylabel('mean rtd');
+%     hold on
+%     plot(ma,aMA*ma+bMA);
+%     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('MeanRtd_Per_MA_Temp'));
+% end
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure;
@@ -391,8 +390,10 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     v1 = linspace(results.angx.p0(1), results.angx.p1(1), nBins);
     v3 = linspace(results.angx.p0(2), results.angx.p1(2), nBins);
     tickIdcs = [1,9,17,25,32,40,48];
-    % angX scale
+    % LOS
     ff = Calibration.aux.invisibleFigure;
+    % angX scale
+    subplot(221)
     hold all
     plot(v1Orig, dsmXscale, '*')
     plot(v1Orig, dsmXscale, '-o')
@@ -401,18 +402,16 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     set(gca, 'xticklabel', arrayfun(@(x) sprintf('(%.2f,%.2f)', v1(x), v3(x)), tickIdcs, 'UniformOutput', false))
     grid on, xlabel('(Vbias1,Vbias3) [V]'), ylabel('DSM X scale [1/deg]'), title('DSM X scale vs. (vBias1,vBias3)');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_scale_table'),1);
     % angY scale
-    ff = Calibration.aux.invisibleFigure;
+    subplot(223)
     hold all
     plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYscale, '*')
     plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYscale, '-o')
     plot(linspace(results.angy.minval, results.angy.maxval, nBins), table(:,2), '.-', 'linewidth', 2)
     grid on, xlabel('Vbias2 [V]'), ylabel('DSM Y scale [1/deg]'), title('DSM Y scale vs. vBias2');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_scale'),1);
     % angX offset
-    ff = Calibration.aux.invisibleFigure;
+    subplot(222)
     hold all
     plot(v1Orig, dsmXoffset, '*')
     plot(v1Orig, dsmXoffset, '-o')
@@ -421,16 +420,15 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     set(gca, 'xticklabel', arrayfun(@(x) sprintf('(%.2f,%.2f)', v1(x), v3(x)), tickIdcs, 'UniformOutput', false))
     grid on, xlabel('(Vbias1,Vbias3) [V]'), ylabel('DSM X offset [deg]'), title('DSM X offset vs. (vBias1,vBias3)');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('X_offset'),1);
     % angY offset
-    ff = Calibration.aux.invisibleFigure;
+    subplot(224)
     hold all
     plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYoffset, '*')
     plot(linspace(results.angy.origMinval, results.angy.origMaxval, nBins), dsmYoffset, '-o')
     plot(linspace(results.angy.minval, results.angy.maxval, nBins), table(:,4), '.-', 'linewidth', 2)
     grid on, xlabel('Vbias2 [V]'), ylabel('DSM Y offset [deg]'), title('DSM Y offset vs. vBias2');
     legend('raw', 'table (orig)', 'table (extrapolated)')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('Y_offset'),1);
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('LOS'),1);
     % RTD
     ff = Calibration.aux.invisibleFigure;
     hold all
@@ -439,9 +437,9 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     set(hPlot, 'markerfacecolor', sqrt(get(hPlot,'color')))
     plot(linspace(results.rtd.minval, results.rtd.maxval, nBins), table(:,5), '.-', 'linewidth', 2)
     grid on, xlabel('Ldd Temperature [deg]'), ylabel('RTD [mm]'), title('RTD vs. LDD');    
+    plot(lddShort, interp1(lddGrid,results.rtd.tmptrOffsetValuesShort,lddShort),'o');
     plot(lddGrid, results.rtd.tmptrOffsetValuesShort,'-');
-    plot(lddShort, interp1(lddGrid,results.rtd.tmptrOffsetValuesShort,lddShort),'*');
-    legend('raw (w.r.t. reference)', 'table (orig)', 'table (extrapolated)','rtd short table','raw short (w.r.t. reference)')
+    legend('raw long (w.r.t. reference)', 'table long (orig)', 'table long (extrapolated)', 'raw short (w.r.t. reference)', 'table short')
     Calibration.aux.saveFigureAsImage(ff,runParams,'Tables',sprintf('RTD'),1);
 end
 assert(~any(isnan(table(:))),'Thermal table contains nans \n');

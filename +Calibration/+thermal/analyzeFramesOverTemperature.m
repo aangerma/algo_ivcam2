@@ -184,7 +184,7 @@ valid = fdLong.validCB & fdShort.validCB;
 ff = Calibration.aux.invisibleFigure;
 plot(fdLong.ldd,squeeze(nanmean(fdLong.ptsWithZ(valid,1,:),1)),'*')
 hold on
-plot(fdShort.ldd,squeeze(nanmean(fdShort.ptsWithZ(valid,1,:),1)),'*')
+plot(fdShort.ldd,squeeze(nanmean(fdShort.ptsWithZ(valid,1,:),1)),'o')
 grid minor;
 xlabel('ldd');
 ylabel('mm');
