@@ -1,4 +1,4 @@
-function [finishedHeating,calibPassed, results]  = ThermalValidationDataFrame_Calc_int(finishedHeating,unitData,FrameData, sz, frameBytes, calibParams, output_dir, fprintff, algoInternalDir)
+function [finishedHeating,calibPassed, results]  = ThermalValidationDataFrame_Calc_int(finishedHeating, unitData, FrameData, sz, frameBytes, calibParams, output_dir, fprintff, algoInternalDir)
 
 
 calibPassed = 0;
@@ -20,7 +20,7 @@ persistent diskObject
 persistent regs
 persistent luts
 persistent rgbData
-
+persistent dacModelFunc
 
 if isempty(Index) || (g_temp_count == 0)
     Index     = 0;
@@ -36,9 +36,20 @@ if isempty(Index) || (g_temp_count == 0)
         nBinsRgb = 29;
     end
     [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir,nBinsRgb);
-    
-    
 end
+
+if isempty(dacModelFunc) % FrameData.dac expected to include model parameters
+    bytesToDecimal          = @(x) double(typecast(x,'uint16'))/100;
+    dacModel.m1             = FrameData.dac.m1;
+    dacModel.m2             = FrameData.dac.m2;
+    dacModel.calPower       = bytesToDecimal(FrameData.dac.calPower);
+    dacModel.calPowerDac0   = bytesToDecimal(FrameData.dac.calPowerDac0);
+    dacModel.calTemp        = bytesToDecimal(FrameData.dac.calTemp);
+    dacModel.calDac         = double(FrameData.dac.calDac);
+    dacModel.modRefPct      = double(FrameData.dac.modRefPctBytes);
+    dacModelFunc            = @(t) round(((dacModel.calPower-dacModel.calPowerDac0)*dacModel.modRefPct/100 - dacModel.m2*(t-dacModel.calTemp)) ./ ((dacModel.calPower-dacModel.calPowerDac0)/dacModel.calDac+dacModel.m1*(t-dacModel.calTemp)));
+end
+
 % add error checking;
 
 if ~finishedHeating % heating stage
@@ -58,6 +69,9 @@ if ~finishedHeating % heating stage
     zForStd(repmat(binLargest,1,1,nFrames)) = framesNoAvg.z(repmat(binLargest,1,1,nFrames));
     zForStd(zForStd == 0) = nan;
     lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
+
+    % DAC model tracking
+    FrameData.dac.predicted = uint8(dacModelFunc(FrameData.temp.ldd));
     
     % corners tracking
     [FrameData.ptsWithZ, gridSize] = Calibration.thermal.getCornersDataFromThermalFrame(frame, regs, calibParams, false);
@@ -69,8 +83,7 @@ if ~finishedHeating % heating stage
         prevTmpForBananas = FrameData.temp.ldd;
         captureBananaFigure(frame,calibParams,runParams,prevTmpForBananas,lastZFrames,diskObject);
     end
-    % globals/persistents handling
-    
+
     if all(isnan(FrameData.ptsWithZ(:,1)))
         fprintff('Error: checkerboard not detected in IR image.\n');
         FrameData.ptsWithZ = [];

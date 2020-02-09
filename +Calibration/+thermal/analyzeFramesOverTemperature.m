@@ -157,6 +157,20 @@ if isfield(data.framesData, 'verticalSharpness')
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('VerticalSharpness'),1);
     end
 end
+if isfield(data.framesData, 'dac')
+    dacData = [data.framesData.dac];
+    dacPredicted = single([dacData.predicted]);
+    dacActual = single([dacData.actual]);
+    metrics.maxDacModelError = max(abs(dacActual-dacPredicted));
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        hold on
+        plot(tempVec, dacPredicted, '.--')
+        plot(tempVec, dacActual, '.-')
+        title('Heating Stage DAC Model'); grid on; xlabel('LDD [deg]'); ylabel('DAC value (modulation ref)'); legend('predicted', 'actual')
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DacModel'),1);
+    end
+end
 metrics.thermalMaxRmsErrRtd = thermalResults.thermalMaxRmsErrRtd;
 metrics.thermalMaxRmsErrX = thermalResults.thermalMaxRmsErrX;
 metrics.thermalMaxRmsErrY = thermalResults.thermalMaxRmsErrY;

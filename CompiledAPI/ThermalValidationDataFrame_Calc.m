@@ -1,4 +1,4 @@
-function [finishedHeating,calibPassed,results] = ThermalValidationDataFrame_Calc(finishedHeating, unitData, FrameData, sz, frameBytes, calibParams)
+function [finishedHeating, calibPassed, results] = ThermalValidationDataFrame_Calc(finishedHeating, unitData, FrameData, sz, frameBytes, calibParams)
 
 
 
@@ -32,7 +32,7 @@ function [finishedHeating,calibPassed,results] = ThermalValidationDataFrame_Calc
     origFinishedHeating = finishedHeating;
     
     try
-        [finishedHeating, calibPassed ,results] = ThermalValidationDataFrame_Calc_int(finishedHeating,unitData,FrameData, sz, frameBytes, calibParams, output_dir, fprintff, g_calib_dir);
+        [finishedHeating, calibPassed ,results] = ThermalValidationDataFrame_Calc_int(finishedHeating, unitData, FrameData, sz, frameBytes, calibParams, output_dir, fprintff, g_calib_dir);
         if (calibPassed==-1) % save input for debugging
             if g_save_input_flag && exist(output_dir,'dir')~=0
                 fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);

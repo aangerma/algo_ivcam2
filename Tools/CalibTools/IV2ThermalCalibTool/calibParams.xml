@@ -22,6 +22,7 @@
        <sphericalScaleFactors>[1,1.1]</sphericalScaleFactors><!-- Used to equalize the data per pixel-->
        <sampleRTDFromWhiteCheckers>1</sampleRTDFromWhiteCheckers>
        <cropFactors>[0.15,0.15]</cropFactors>
+       <nonRectangleFlag>1</nonRectangleFlag>
        <pzrMeas>
            <nVals2avg>1</nVals2avg>
            <sampIntervalMsec>10</sampIntervalMsec>
