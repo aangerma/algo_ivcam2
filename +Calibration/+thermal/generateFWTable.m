@@ -39,27 +39,6 @@ catch
     fprintf('WARNING: shtw2-tsense estimation failed, resorting to minimal difference.\n');
     results.temp.FRMWhumidApdTempDiff = shtw2(indMinDif)-tsense(indMinDif); % simple minimum
 end
-if ~isempty(runParams) && isfield(runParams, 'outputFolder')
-    ff = Calibration.aux.invisibleFigure;
-    hold all
-    plot(ldd, '.-')
-    plot(ma, '.-')
-    plot(tsense, '.-')
-    plot(shtw2, '.-')
-    [~,ind] = min(abs(shtw2-humidMinDif));
-    plot([ind,ind], [tsense(ind),shtw2(ind)], '.-')
-    if isfield(data.framesData, 'thermostream')
-        tsData = [data.framesData.thermostream];
-        plot([tsData.target],'.--')
-        plot([tsData.temperature],'.--')
-    end
-    leg = {'LDD', 'MA', 'TSense', 'SHTW2', 'humidApdTempDiff', 'TS target', 'TS actual'};
-    text(ind, mean([tsense(ind),shtw2(ind)]), sprintf('%.2f', results.temp.FRMWhumidApdTempDiff))
-    grid on, xlabel('#frame'), ylabel('temperature [deg]')
-    legend(leg,'Location','northwest')
-    title('Temperature readings')
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'));
-end
 if calibParams.warmUp.checkTmptrSensors && ~checkTemperaturesValidity(ldd, ma, tsense, shtw2, fprintff)
     results = [];
     table = [];

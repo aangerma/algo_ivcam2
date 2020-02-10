@@ -177,16 +177,6 @@ tempVec = [framesData.temp];
 LddTempVec = [tempVec.ldd];
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
-%     ff = Calibration.aux.invisibleFigure;
-%     plot(heatTimeVec,LddTempVec)
-%     hold on    
-%     plot(heatTimeVec,[tempVec.ma])
-%     plot(heatTimeVec,[tempVec.mc])
-%     plot(heatTimeVec,[tempVec.apdTmptr])
-%     legend({'ldd';'ma';'mc';'apd'});
-%     title('Heating Stage'); grid on;xlabel('sec');ylabel('Temperatures [degrees]');
-%     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'),1);
-    
     if calibParams.gnrl.rgb.doStream && inValidationStage
         ff = Calibration.aux.invisibleFigure;
         subplot(321)
