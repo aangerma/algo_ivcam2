@@ -1,5 +1,5 @@
 syms X Y Z
-deriveBVar = 'Krgb';
+deriveBVar = 'thetaR';
 Krgb = sym('krgb',[3,3]);
 d = sym('d',[1,5]);
 switch deriveBVar
@@ -9,11 +9,11 @@ switch deriveBVar
         R = sym('r',[3,3]);
         T = sym('t',[3,1]);
         A = Krgb*[R T];
-    case 'alphaR'
+    case 'T'
         R = sym('r',[3,3]);
         T = sym('t',[3,1]);
         A = Krgb*[R T];
-    case 'T'
+    case 'thetaR'
         syms theta
         R = [cos(theta) -sin(theta) 0; sin(theta) cos(theta) 0; 0 0 1];
         T = sym('t',[3,1]);
@@ -43,13 +43,18 @@ switch deriveBVar
             diff(x_in,Krgb(2,1)) , diff(x_in,Krgb(2,2)) , diff(x_in,Krgb(2,3));...
             diff(x_in,Krgb(3,1)) , diff(x_in,Krgb(3,2)) , diff(x_in,Krgb(3,3))]);
         
-         dYin_dKrgb = simplify([ diff(y_in,Krgb(1,1)),diff(y_in,Krgb(1,2)) , diff(y_in,Krgb(1,3));...
+        dYin_dKrgb = simplify([ diff(y_in,Krgb(1,1)),diff(y_in,Krgb(1,2)) , diff(y_in,Krgb(1,3));...
             diff(y_in,Krgb(2,1)) , diff(y_in,Krgb(2,2)) , diff(y_in,Krgb(2,3));...
             diff(y_in,Krgb(3,1)) , diff(y_in,Krgb(3,2)) , diff(y_in,Krgb(3,3))]);
-    case 'alphaR'
-        
     case 'T'
+        dXin_dT = simplify([ diff(x_in,T(1,1)),diff(x_in,T(2,1)) , diff(x_in,T(3,1))]);
         
+        dYin_dT = simplify([ diff(y_in,T(1,1)),diff(y_in,T(2,1)) , diff(y_in,T(3,1))]);
+        
+    case 'thetaR'
+        dXin_dThetaR = simplify(diff(x_in,theta));
+        
+        dYin_dThetaR = simplify(diff(y_in,theta));
     otherwise
         error('No such option!!!');
 end
@@ -113,10 +118,12 @@ switch deriveBVar
     case 'Krgb'
         xCoeff = simplify(dXout_dXin*dXin_dKrgb + dXout_dYin*dYin_dKrgb);
         ycoeff = simplify(dYout_dXin*dXin_dKrgb + dYout_dYin*dYin_dKrgb);
-    case 'alphaR'
-        
     case 'T'
-        
+        xCoeff = simplify(dXout_dXin*dXin_dT + dXout_dYin*dYin_dT);
+        ycoeff = simplify(dYout_dXin*dXin_dT + dYout_dYin*dYin_dT);
+    case 'thetaR'
+        xCoeff = simplify(dXout_dXin*dXin_dThetaR + dXout_dYin*dYin_dThetaR);
+        ycoeff = simplify(dYout_dXin*dXin_dThetaR + dYout_dYin*dYin_dThetaR);
     otherwise
         error('No such option!!!');
 end
