@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<root>
+    <db saveData="no">X:\Avv\dbValidation.txt</db>
+    <params>
+        <outputFolder>c:\temp\valTest</outputFolder>
+        <dataFolder>X:\Avv\sources\validation_turn_in\Turn_in_IVS</dataFolder>
+        <dataSource>ivs</dataSource>
+    </params>
+    <tests>
+        <test name="zFillRate_50cm" metrics="zFillRate" target="wall_80Reflectivity" distance="50cm" threshold="[99.8 : 100]" extra='' />
+        <test name="palneFit_1m" metrics="planeFit" target="wall_80Reflectivity" distance="1m" threshold="[0:0.5]" extra=''/>
+        <test name="minDistance" metrics="zFillRate" target="wall_80Reflectivity" distance="20cm" threshold="[99:100]" extra=''/>
+        <test name="zTempNoise_1m" metrics="zTempNoise" target="checkerboard_30" distance="1m" threshold="[0:0.5]" extra=''/>
+        <test name="gridInterDistance_40cm" metrics="gridInterDistance" target="checkerboard_30" distance="40cm" threshold="[0:0.7]" extra=''/>
+        <test name="mos" metrics="mos" target="mos" distance="30cm" threshold="[0 : 11.5]" extra=''/>
+        <test name="gridMaxRect_40cm" metrics="gridMaxRect" target="checkerboard_30" distance="40cm" threshold="[-1.3:-1.1]" extra=''/>
+        <test name="gridMaxRect_1m" metrics="gridMaxRect" target="checkerboard_30" distance="1m" threshold="[0.1:0.3]" extra=''/>
+    </tests>
+</root>
