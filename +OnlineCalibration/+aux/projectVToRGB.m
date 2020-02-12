@@ -15,5 +15,5 @@ if exist('rgbDistort','var')
 end
 
 time = toc;
-fprintf('Projecting vertices to rgb image took %3.2f seconds\n',time);
+% fprintf('Projecting vertices to rgb image took %3.2f seconds\n',time);
 end

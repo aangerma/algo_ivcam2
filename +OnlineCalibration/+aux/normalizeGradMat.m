@@ -5,7 +5,7 @@ function [gradNormMat] = normalizeGradMat(camerasParams,frames)
 gradNormMat = zeros(3,4);
 dist = 1500;
 Z = single(camerasParams.zMaxSubMM)*ones(size(frames.z(:,:,1)))*dist;
-V = z2vertices(Z,ones(numel(Z),1),camerasParams);
+V = OnlineCalibration.aux.z2vertices(Z,ones(numel(Z),1),camerasParams);
   
 for i = 1:12
     i
@@ -21,13 +21,13 @@ desiredStep = 0.1;
 acc = 0.001;
 diff = 0;
 
-uvMapOrig = projectVToRGB(V,camerasParams.rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
+uvMapOrig = OnlineCalibration.aux.projectVToRGB(V,camerasParams.rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
 stepLow = 0;
 stepHigh = 1000;
 step(1:2) = [0,1000];
 rgbPmat = camerasParams.rgbPmat;
 rgbPmat(i) = rgbPmat(i) + step(end);
-uv = projectVToRGB(V,rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
+uv = OnlineCalibration.aux.projectVToRGB(V,rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
 e(1:2) = [0,mean(sum((uv-uvMapOrig).^2,2))];
 
 while abs(e(end)-desiredStep) > acc
@@ -35,7 +35,7 @@ while abs(e(end)-desiredStep) > acc
     step(end+1) = 0.5*(stepLow + stepHigh);
     rgbPmat = camerasParams.rgbPmat;
     rgbPmat(i) = rgbPmat(i) + step(end);
-    uv = projectVToRGB(V,rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
+    uv = OnlineCalibration.aux.projectVToRGB(V,rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
     e(end+1) = mean(sum((uv-uvMapOrig).^2,2));
     
     if e(end) > desiredStep
