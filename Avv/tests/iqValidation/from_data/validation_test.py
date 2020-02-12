@@ -9,21 +9,21 @@ import runIqValidation
 # IVCAM 2.0 turn in tests - mat, ivs, bin extensions supported.
 @slash.tag('turn_in_mat')
 def test_validation_turn_in_mat():
-    filePath = r'Avv\sources\validation_turn_in\Turn_in_mat\turn_in_mat.xml'
+    filePath = r'x:\Avv\sources\validation_turn_in\Turn_in_mat\turn_in_mat.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validationExecution(filePath)
 
 
 @slash.tag('turn_in_IVS')
 def test_validation_turn_in_ivs():
-    filePath = r'Avv\sources\validation_turn_in\Turn_in_IVS\turn_in_ivs.xml'
+    filePath = r'x:\Avv\sources\validation_turn_in\Turn_in_IVS\turn_in_ivs.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validationExecution(filePath)
 
 
 @slash.tag('turn_in_bin')
 def test_validation_turn_in_bin():
-    filePath = r'Avv\sources\validation_turn_in\Turn_in_bin\turn_in_bin.xml'
+    filePath = r'x:\Avv\sources\validation_turn_in\Turn_in_bin\turn_in_bin.xml'
     slash.logger.info("running iqValidation test, xml: {}".format(filePath), extra={"highlight": True})
     runIqValidation.validationExecution(filePath)
 
