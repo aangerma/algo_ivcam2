@@ -1,6 +1,6 @@
 %% During streaming in IPDEV - run this script and it will save a mat file with the needed parameters of the depth and RGB frames
 
-savePath = 'C:\temp\onlineRGB\F9340892\camerasParams.mat';
+savePath = 'X:\Data\IvCam2\OnlineCalibration\F9440842\camerasParams.mat';
 
 res = [480,640];
 RGBRes = [1920 ,1080];
@@ -23,5 +23,7 @@ camerasParams.Krgb = Krgb;
 camerasParams.depthRes = res;
 camerasParams.zMaxSubMM = hw.z2mm;
 camerasParams.Kdepth = hw.getIntrinsics;
+camerasParams.Trgb = Trgb;
+camerasParams.Rrgb = Rrgb;
 
 save(savePath, 'camerasParams');
