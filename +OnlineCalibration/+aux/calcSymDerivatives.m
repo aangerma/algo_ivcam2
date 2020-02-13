@@ -14,9 +14,12 @@ switch deriveByVar
         R = sym('r',[3,3]);
         T = sym('t',[3,1]);
         A = Krgb*[R T];
-    case 'thetaR'
-        syms theta
-        R = [cos(theta) -sin(theta) 0; sin(theta) cos(theta) 0; 0 0 1];
+    case 'R'
+        syms xAlpha yBeta zGamma
+        Rx = [1 0 0; 0 cos(xAlpha) -sin(xAlpha); 0 sin(xAlpha) cos(xAlpha)];
+        Ry = [cos(yBeta) 0 sin(yBeta); 0 1 0; -sin(yBeta) 0 cos(yBeta) ];
+        Rz = [cos(zGamma) -sin(zGamma) 0; sin(zGamma) cos(zGamma) 0; 0 0 1];
+        R = Rx*Ry*Rz;
         T = sym('t',[3,1]);
         A = Krgb*[R T];
     otherwise
@@ -50,10 +53,18 @@ switch deriveByVar
         
         dYin_dT = simplify([ diff(y_in,T(1,1)),diff(y_in,T(2,1)) , diff(y_in,T(3,1))]);
         
-    case 'thetaR'
-        dXin_dThetaR = simplify(diff(x_in,theta));
+    case 'R'
+        df1x_dxAlpha = diff(f1(1,1),xAlpha);
+        df1z_dxAlpha = diff(f1(3,1),xAlpha);
+        dXin_dxAlpha = (df1x_dxAlpha*f1(3,1)-df1z_dxAlpha*f1(1,1))/f1(3,1)^2;
+        df1y_dxAlpha = diff(f1(2,1),xAlpha);
+        dYin_dxAlpha = (df1y_dxAlpha*f1(3,1)-df1z_dxAlpha*f1(2,1))/f1(3,1)^2;
+%         Continue here
+        df1x_dyBeta = diff(f1(1,1),yBeta);
         
-        dYin_dThetaR = simplify(diff(y_in,theta));
+        df1x_dzGamma = diff(f1(1,1),zGamma);
+        
+        dXin_dxAlpha
     otherwise
         error('No such option!!!');
 end
@@ -126,7 +137,7 @@ switch deriveByVar
         yCoeff = simplify(dYout_dXin.*dXin_dT + dYout_dYin.*dYin_dT);
         dXin_dDeriveBy = dXin_dT;
         dYin_dDeriveBy = dYin_dT;
-    case 'thetaR'
+    case 'R'
         xCoeff = simplify(dXout_dXin.*dXin_dThetaR + dXout_dYin.*dYin_dThetaR);
         yCoeff = simplify(dYout_dXin.*dXin_dThetaR + dYout_dYin.*dYin_dThetaR);
         dXin_dDeriveBy = dXin_dThetaR;
