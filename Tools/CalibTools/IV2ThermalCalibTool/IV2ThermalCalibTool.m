@@ -283,6 +283,7 @@ function statrtButton_callback(varargin)
         end
         calibfn =  fullfile(toolDir,'calibParams.xml');
         calibParams = xml2structWrapper(calibfn);
+        
         %temporary until we have valid log file
         app.m_logfid = 1;
         fprintffS=@(varargin) fprintff(app,varargin{:});
@@ -327,7 +328,15 @@ function statrtButton_callback(varargin)
         fprintffS=@(varargin) fprintff(app,varargin{:});
 
         fprintffS('<< Algo2 version: %.2f >>\n\n', thermalCalibToolVersion);
-    
+
+        % retrieving the tester's SPARK folder
+        sparkDir = 'E:\SPARK\';
+        sparkFolders = dir([sparkDir, '*@intel.com)']);
+        sparkFolder = sparkFolders(arrayfun(@(x) ~contains(x.name, 'installer', 'IgnoreCase', true), sparkFolders));
+        if (length(sparkFolder)==1)
+            calibParams.sparkParams.azureFolder = [sparkDir, sparkFolder.name];
+        end
+        
         s=Spark(app.operatorName.String,app.workOrder.String,calibParams.sparkParams,fprintffS);
         s.addTestProperty('CalibToolVersion',runparams.version)
         s.addTestProperty('CalibToolSubVersion',runparams.subVersion)
