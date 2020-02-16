@@ -54,17 +54,9 @@ switch deriveByVar
         dYin_dT = simplify([ diff(y_in,T(1,1)),diff(y_in,T(2,1)) , diff(y_in,T(3,1))]);
         
     case 'R'
-        df1x_dxAlpha = diff(f1(1,1),xAlpha);
-        df1z_dxAlpha = diff(f1(3,1),xAlpha);
-        dXin_dxAlpha = (df1x_dxAlpha*f1(3,1)-df1z_dxAlpha*f1(1,1))/f1(3,1)^2;
-        df1y_dxAlpha = diff(f1(2,1),xAlpha);
-        dYin_dxAlpha = (df1y_dxAlpha*f1(3,1)-df1z_dxAlpha*f1(2,1))/f1(3,1)^2;
-%         Continue here
-        df1x_dyBeta = diff(f1(1,1),yBeta);
-        
-        df1x_dzGamma = diff(f1(1,1),zGamma);
-        
-        dXin_dxAlpha
+        [dXin_dxAlpha,dYin_dxAlpha] = dXYindRotAng(xAlpha, f1);
+        [dXin_dyBeta,dYin_dyBeta] = dXYindRotAng(yBeta, f1);
+        [dXin_dzGamma,dYin_dzGamma] = dXYindRotAng(zGamma, f1);        
     otherwise
         error('No such option!!!');
 end
@@ -138,12 +130,30 @@ switch deriveByVar
         dXin_dDeriveBy = dXin_dT;
         dYin_dDeriveBy = dYin_dT;
     case 'R'
-        xCoeff = simplify(dXout_dXin.*dXin_dThetaR + dXout_dYin.*dYin_dThetaR);
-        yCoeff = simplify(dYout_dXin.*dXin_dThetaR + dYout_dYin.*dYin_dThetaR);
-        dXin_dDeriveBy = dXin_dThetaR;
-        dYin_dDeriveBy = dYin_dThetaR;
+        xCoeff.xAlpha = simplify(dXout_dXin.*dXin_dxAlpha + dXout_dYin.*dYin_dxAlpha);
+        yCoeff.xAlpha = simplify(dYout_dXin.*dXin_dxAlpha + dYout_dYin.*dYin_dxAlpha);
+        dXin_dDeriveBy.xAlpha = dXin_dxAlpha;
+        dYin_dDeriveBy.xAlpha = dYin_dxAlpha;
+        
+        xCoeff.yBeta = simplify(dXout_dXin.*dXin_dyBeta + dXout_dYin.*dYin_dyBeta);
+        yCoeff.yBeta = simplify(dYout_dXin.*dXin_dyBeta + dYout_dYin.*dYin_dyBeta);
+        dXin_dDeriveBy.yBeta = dXin_dxAlpha;
+        dYin_dDeriveBy.yBeta = dYin_dxAlpha;
+        
+        xCoeff.zGamma = simplify(dXout_dXin.*dXin_dzGamma + dXout_dYin.*dYin_dzGamma);
+        yCoeff.zGamma = simplify(dYout_dXin.*dXin_dzGamma + dYout_dYin.*dYin_dzGamma);
+        dXin_dDeriveBy.zGamma = dXin_dxAlpha;
+        dYin_dDeriveBy.zGamma = dYin_dxAlpha;
     otherwise
         error('No such option!!!');
 end
 
+end
+
+function [dXin_drotAng,dYin_drotAng] = dXYindRotAng(rotAng, ptVec)
+dptVecX_drotAng = diff(ptVec(1,1),rotAng);
+dptVecz_drotAng = diff(ptVec(3,1),rotAng);
+dXin_drotAng = (dptVecX_drotAng*ptVec(3,1)-dptVecz_drotAng*ptVec(1,1))/ptVec(3,1)^2;
+dptVecY_drotAng = diff(ptVec(2,1),rotAng);
+dYin_drotAng = (dptVecY_drotAng*ptVec(3,1)-dptVecz_drotAng*ptVec(2,1))/ptVec(3,1)^2;
 end
