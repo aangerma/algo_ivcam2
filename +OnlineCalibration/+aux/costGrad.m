@@ -48,6 +48,10 @@ function [C,gradSym,dbg] = costGrad(rgbPmat,D,Dx,Dy,W,V,Krgb,rgbDistort,derivVar
             subsParams.R = R;
             subsParams.T = T;
         end
+        if ~exist('derivVar','var')
+            derivVar = 'A';
+        end
+        
         if contains(derivVar,'A')
             [xCoeffVal,yCoeffVal,dbg.dXin_dA,dbg.dYin_dA] = OnlineCalibration.aux.calcValFromExpressions('A',subsParams);
             rad_fast_sym_A = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
