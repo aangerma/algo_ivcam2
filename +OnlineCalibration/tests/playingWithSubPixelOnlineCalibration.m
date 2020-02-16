@@ -77,7 +77,8 @@ origParams = params;
 uvRMS(1) = OnlineCalibration.Metrics.calcUVMappingErr(frame,params,0);
 for k = 1:20
 initRgbPmat = camerasParams.rgbPmat;
-[C,grad] = OnlineCalibration.aux.costGrad(initRgbPmat,frame.D,frame.Dx,frame.Dy,frame.W,frame.V,camerasParams.Krgb,camerasParams.rgbDistort);
+[C,gradStruct] = OnlineCalibration.aux.costGrad(initRgbPmat,frame.D,frame.Dx,frame.Dy,frame.W,frame.V,camerasParams.Krgb,camerasParams.rgbDistort);
+grad = gradStruct.A;
 grad(3,:) = 0;
 grad = grad.*gradNormMat;
 
