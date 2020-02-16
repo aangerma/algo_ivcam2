@@ -1,4 +1,4 @@
-function [C,grad,dbg] = costGrad(rgbPmat,D,Dx,Dy,W,V,Krgb,rgbDistort)
+function [C,gradSym,dbg] = costGrad(rgbPmat,D,Dx,Dy,W,V,Krgb,rgbDistort,derivVar,R,T)
     tic;
     d = rgbDistort;
     [uvMap,xin,yin] = OnlineCalibration.aux.projectVToRGB(V,rgbPmat,Krgb,rgbDistort);
@@ -43,7 +43,48 @@ function [C,grad,dbg] = costGrad(rgbPmat,D,Dx,Dy,W,V,Krgb,rgbDistort)
         grad_fast = W.*(DxVals.*(dXout_dXin.*dXin_dA_fast + dXout_dYin.*dYin_dA_fast) + ...
                           DyVals.*(dYout_dXin.*dXin_dA_fast + dYout_dYin.*dYin_dA_fast));
         grad = reshape(nanmean(grad_fast),4,3)';
-       
+               subsParams = struct('V',V,'d',d,'Krgb',Krgb,'rgbPmat',rgbPmat);
+        if exist('R','var') && exist('T','var')
+            subsParams.R = R;
+            subsParams.T = T;
+        end
+        if contains(derivVar,'A')
+            [xCoeffVal,yCoeffVal,dbg.dXin_dA,dbg.dYin_dA] = OnlineCalibration.aux.calcValFromExpressions('A',subsParams);
+            rad_fast_sym_A = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
+            gradSym.A = reshape(nanmean(rad_fast_sym_A),4,3)';
+        end
+        if contains(derivVar,'R')
+            [xCoeffVal,yCoeffVal,dbg.dXin_dR,dbg.dYin_dR] = OnlineCalibration.aux.calcValFromExpressions('R',subsParams);
+            rad_fast_sym_alpha = W.*(DxVals.*xCoeffVal.xAlpha' + DyVals.*yCoeffVal.xAlpha');
+            gradSym.xAlpha = nanmean(rad_fast_sym_alpha);
+            rad_fast_sym_beta = W.*(DxVals.*xCoeffVal.yBeta' + DyVals.*yCoeffVal.yBeta');
+            gradSym.yBeta = nanmean(rad_fast_sym_beta);
+            rad_fast_sym_gamma = W.*(DxVals.*xCoeffVal.zGamma' + DyVals.*yCoeffVal.zGamma');
+            gradSym.zGamma = nanmean(rad_fast_sym_gamma);
+        end
+        if contains(derivVar,'T')
+            [xCoeffVal,yCoeffVal,dbg.dXin_dT,dbg.dYin_dT] = OnlineCalibration.aux.calcValFromExpressions('T',subsParams);
+            rad_fast_sym_T = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
+            gradSym.T = reshape(nanmean(rad_fast_sym_T),1,3)';
+        end
+        
+        %{
+        %Debug
+        disp('grad abs diff: ');
+        disp(num2str(abs(grad_sym-grad)));
+        disp('grad abs diff/grad: ');
+        disp(num2str(abs(grad_sym-grad)./grad))
+        figure; subplot(211);imagesc(dXin_dA'-dXin_dA_fast)
+        title('dXin/dA-dXin/dA_f_a_s_t');impixelinfo; colorbar;
+        subplot(212);imagesc((dXin_dA'-dXin_dA_fast)./dXin_dA_fast)
+        title('(dXin/dA-dXin/dA_f_a_s_t)/(dXin/dA_f_a_s_t)');impixelinfo; colorbar;
+        linkaxes;
+        figure; subplot(211);imagesc(dYin_dA'-dYin_dA_fast)
+        title('dYin/dA-dYin/dA_f_a_s_t');impixelinfo; colorbar;
+        subplot(212);imagesc((dYin_dA'-dYin_dA_fast)./dYin_dA_fast)
+        title('(dYin/dA-dYin/dA_f_a_s_t)/(dYin/dA_f_a_s_t)');impixelinfo; colorbar;
+        linkaxes;
+        %}
     else
         % For loop implementation
         for i = 1:size(V,1)
@@ -64,7 +105,7 @@ function [C,grad,dbg] = costGrad(rgbPmat,D,Dx,Dy,W,V,Krgb,rgbDistort)
             dbg.dYin_dA(i,:,:) = dYin_dA;
             dbg.dXh_dA1 = V(i,:);
         end
-        grad = squeeze(nanmean(gradi,1));
+        gradSym = squeeze(nanmean(gradi,1));
         dbg.dXout_dA = squeeze(nanmean(dbg.dXout_dA,1));
         dbg.dYout_dA = squeeze(nanmean(dbg.dYout_dA,1));
         dbg.dXin_dA = squeeze(nanmean(dbg.dXin_dA,1));
