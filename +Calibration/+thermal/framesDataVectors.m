@@ -38,5 +38,12 @@ end
 if isfield(framesData,'confPts')
     vectorFramesData.confPts = reshape([framesData.confPts],size(framesData(end).confPts,1),size(framesData(end).confPts,2),numel(framesData));
 end
+if isfield(framesData,'verticalSharpnessRGB')
+    vectorFramesData.verticalSharpnessRGB = [framesData.verticalSharpnessRGB];
+end
+if isfield(framesData,'horizontalSharpnessRGB')
+    vectorFramesData.horizontalSharpnessRGB = [framesData.horizontalSharpnessRGB];
+end
+
 end
 

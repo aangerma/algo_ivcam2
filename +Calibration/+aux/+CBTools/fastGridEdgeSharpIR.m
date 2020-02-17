@@ -1,5 +1,9 @@
-function [score, results] = fastGridEdgeSharpIR(frames, gridSize, gridPointsList, params)
+function [score, results] = fastGridEdgeSharpIR(frames, gridSize, gridPointsList, params,frameFieldName)
 % Slim version of gridEdgeSharpIR (for description - see original metric)
+
+if ~exist('frameFieldName','var')
+    frameFieldName = 'i';
+end
 
 if ~exist('params','var')
     params = Validation.aux.defaultMetricsParams();
@@ -16,7 +20,7 @@ if ~isfield(params,'imageRotatedBy180Flag')
 end
 
 meanFrame = struct();
-meanFrame.i = Validation.aux.meanImage(frames, 'i');
+meanFrame.i = Validation.aux.meanImage(frames, frameFieldName);
 res1 = edgeTrans(meanFrame, gridSize, gridPointsList);
 
 fnames = fieldnames(res1);
@@ -95,6 +99,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function width = analyzeHorizontalEdge(ir, p0, p1, tunnelWidth,pix_shift)
+% Uncomment this section to plot the edges that participiate in the
+% calculation
+% figure(1);
+% hold on;
+% plot([real(p0),real(p1)],[imag(p0),imag(p1)],'r','linewidth',2)
 try
     subSamples = 4;
     % manual polyfit

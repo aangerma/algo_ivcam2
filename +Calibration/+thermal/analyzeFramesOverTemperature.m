@@ -3,35 +3,32 @@ function [data ] = analyzeFramesOverTemperature(data, calibParams,runParams,fpri
 % ,minEGeom,maxeGeom,meaneGeom
 % stdX,stdY,p2pY,p2pX
 
-tmps = [data.framesData.temp];
-ldds = [tmps.ldd];
-if isfield(tmps,'shtw2') 
-    hum = [tmps.shtw2];
-else
-    hum = [tmps.humidity];
-end
-data.dfzRefTmp = max(ldds);
-
 invalidFrames = arrayfun(@(j) isempty(data.framesData(j).ptsWithZ),1:numel(data.framesData));
 data.framesData = data.framesData(~invalidFrames);
 
 validFrames = arrayfun(@(x) Calibration.thermal.validFrame(x.ptsWithZ,calibParams), data.framesData);
 data.framesData = data.framesData(validFrames);
 
+tempData = [data.framesData.temp];
+ldd = [tempData.ldd];
+if isfield(tempData, 'shtw2') % ATC / ATV
+    hum = [tempData.shtw2];
+    tsense = [tempData.tsense];
+else % Algo2Val
+    hum = [tempData.humidity];
+    tsense = [tempData.apdTmptr];
+end
+data.dfzRefTmp = max(ldd);
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     cornersRtdVsIRFigure(data,runParams);
-    
 end
-
-tempVec = [data.framesData.temp];
-tempVec = [tempVec.ldd];
 
 nBins = calibParams.fwTable.nRows;
 dLdd = (calibParams.fwTable.tempBinRange(2) - calibParams.fwTable.tempBinRange(1))/(nBins-1);
 tmpBinEdges = linspace(calibParams.fwTable.tempBinRange(1),calibParams.fwTable.tempBinRange(2),nBins) - dLdd*0.5;
 refBinIndex = 1+floor((data.dfzRefTmp-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
-tmpBinIndices = 1+floor((tempVec-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
+tmpBinIndices = 1+floor((ldd-tmpBinEdges(1))/(tmpBinEdges(2)-tmpBinEdges(1)));
 
 
 framesPerTemperature = Calibration.thermal.medianFrameByTemp(data.framesData,nBins,tmpBinIndices);
@@ -43,6 +40,39 @@ if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'doStream')
 else
     plotRGB = 0;
 end
+
+%% Temperature readings
+if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+    ma = [tempData.ma];
+    timeVec = [data.framesData.time];
+    nFrames = length(timeVec);
+    lgnd = {'LDD', 'MA', 'TSense (APD)', 'SHTW2 (HUM)', 'humidApdTempDiff', 'TS target', 'TS actual'};
+    ff = Calibration.aux.invisibleFigure;
+    hold all
+    plot(timeVec, ldd, '.-')
+    plot(timeVec, ma, '.-')
+    plot(timeVec, tsense, '.-')
+    plot(timeVec, hum, '.-')
+    if isfield(tempData, 'humidity') % Algo2Val
+        mc = [tempData.mc];
+        plot(timeVec, mc, '.-')
+        lgnd{5} = 'MC';
+    else % ATC / ATV
+        [~, indMinDiff] = min(hum-tsense); %TODO: obsolete?
+        plot(timeVec(indMinDiff)*ones(1,2), [tsense(indMinDiff), hum(indMinDiff)], '.-')
+        text(timeVec(indMinDiff), mean([tsense(indMinDiff), hum(indMinDiff)]), sprintf('%.2f', data.regs.FRMW.humidApdTempDiff))
+    end
+    if isfield(data.framesData, 'thermostream')
+        tsData = [data.framesData.thermostream];
+        plot([tsData.target], '.--')
+        plot([tsData.temperature], '.--')
+    end
+    grid on, xlabel('time [sec]'), ylabel('temperature [deg]')
+    legend(lgnd, 'Location', 'northwest')
+    title(sprintf('Temperature readings (%d frames in total)', nFrames))
+    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'));
+end
+%%
 
 thermalResults = Calibration.thermal.plotErrorsWithRespectToCalibTemp(framesPerTemperature,tmpBinEdges,refBinIndex,runParams,inValidationStage,plotRGB);
 
@@ -57,10 +87,8 @@ stdVals = nanmean(nanstd(validFramesData));
 
 
 metrics = Calibration.thermal.calcThermalScores(data,calibParams,[data.regs.GNRL.imgVsize,data.regs.GNRL.imgHsize]);
-%%
 if plotRGB && isfield(data,'camerasParams')
     [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,hum,calibParams,runParams,metrics,inValidationStage,fprintff);
-    %%
 end
 
 
@@ -146,17 +174,56 @@ if isDataWithXYZ % hack for dealing with missing XYZ data in validFramesData (po
     
 end
 plotRtdOfShortVsLongPostFix(data,runParams);
+
 if isfield(data.framesData, 'verticalSharpness')
     verticalSharpness = [data.framesData.verticalSharpness];
     metrics.bestVerticalSharpness = min(verticalSharpness);
     metrics.worstVerticalSharpness = max(verticalSharpness);
     if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
         ff = Calibration.aux.invisibleFigure;
-        plot(tempVec, verticalSharpness,'.-')
+        plot(ldd, verticalSharpness,'.-')
         title('Heating Stage Vertical Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('VerticalSharpness'),1);
     end
 end
+
+if isfield(data.framesData, 'verticalSharpnessRGB')
+    verticalSharpnessRGB = [data.framesData.verticalSharpnessRGB];
+    metrics.bestRGBVerticalSharpness = min(verticalSharpnessRGB);
+    metrics.worstRGBVerticalSharpness = max(verticalSharpnessRGB);
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        plot(ldd(~isnan(verticalSharpnessRGB)), verticalSharpnessRGB(~isnan(verticalSharpnessRGB)),'.-')
+        title('Heating Stage RGB Vertical Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('RGB_VerticalSharpness'),1);
+    end
+    
+    horizontalSharpnessRGB = [data.framesData.horizontalSharpnessRGB];
+    metrics.bestRGBHorizontalSharpness = min(horizontalSharpnessRGB);
+    metrics.worstRGBHorizontalSharpness = max(horizontalSharpnessRGB);
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        plot(ldd(~isnan(horizontalSharpnessRGB)), horizontalSharpnessRGB(~isnan(horizontalSharpnessRGB)),'.-')
+        title('Heating Stage RGB Horizontal Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('RGB_HorizontalSharpness'),1);
+    end
+end
+
+if isfield(data.framesData, 'dac')
+    dacData = [data.framesData.dac];
+    dacPredicted = single([dacData.predicted]);
+    dacActual = single([dacData.actual]);
+    metrics.maxDacModelError = max(abs(dacActual-dacPredicted));
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        hold on
+        plot(ldd, dacPredicted, '.--')
+        plot(ldd, dacActual, '.-')
+        title('Heating Stage DAC Model'); grid on; xlabel('LDD [deg]'); ylabel('DAC value (modulation ref)'); legend('predicted', 'actual')
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DacModel'),1);
+    end
+end
+
 metrics.thermalMaxRmsErrRtd = thermalResults.thermalMaxRmsErrRtd;
 metrics.thermalMaxRmsErrX = thermalResults.thermalMaxRmsErrX;
 metrics.thermalMaxRmsErrY = thermalResults.thermalMaxRmsErrY;
@@ -168,12 +235,17 @@ end
 data.results = metrics;
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function s = planeFitData(vertices)
     [distError, p, ~] = Validation.aux.planeFitInternal(vertices(~isnan(vertices(:,1)),:));
     s.planeFitErrorRms = rms(distError);
     s.horizAngle = (90-atan2d(p(3),p(1)));
     s.verticalAngle = (90-atan2d(p(3),p(2)));
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function plotRtdOfShortVsLongPostFix(data,runParams)
 if ~isfield(data,'framesDataShort')
    return; 
@@ -194,12 +266,16 @@ Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('Rtd_Short_Vs_L
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [params] = prepareParams4UvMap(camerasParams)
 params.depthRes = camerasParams.depthRes;
 params.camera.rgbPmat = camerasParams.rgbPmat;
 params.camera.rgbK = camerasParams.Krgb;
 params.rgbDistort = camerasParams.rgbDistort;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [metrics] = analyzeNplotRgb(data,framesPerTemperature,tmpBinEdges,tmpBinIndices,hum,calibParams,runParams,metrics,inValidationStage,fprintff)
 if isfield(calibParams.gnrl.rgb, 'fixRgbThermal') && calibParams.gnrl.rgb.fixRgbThermal
@@ -278,6 +354,9 @@ if fixRgbThermal && data.rgb.isValid
     end
 end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function cornersRtdVsIRFigure(data,runParams)
     fd = Calibration.thermal.framesDataVectors(data.framesData);
     validCB = reshape(fd.validCB,20,28);

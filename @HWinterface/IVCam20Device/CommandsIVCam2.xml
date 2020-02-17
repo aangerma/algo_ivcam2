@@ -209,6 +209,20 @@
     </Parameter2>
     <Data />
   </Command>
+    <Command Name="HW_SYNC_EX_TRIGGER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x19" CmdPermission="Private" Description="HW External trigger">
+    <Parameter1 Name="1 - Enable, 0 - Disable" />
+  </Command>  
+  <Command Name="CLOSE_OBJ_DETECT_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1A" CmdPermission="Public" Description="Enable\Disable close object detect feature">
+    <Parameter1 Name="0 - Disable, 1 - Enable" />
+  </Command>
+  <Command Name="CLOSE_OBJ_DETECT_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1B" IsReadCommand="true" CmdPermission="Public" Description="Get close object detect feature status">
+  </Command>
+  <Command Name="CLOSE_OBJ_DETECT_CONFIGURE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1C" CmdPermission="Public" Description="Configure close object detect">
+    <Parameter1 Name="Sample Rate - After how many frames to sample. Default value:15" IsDecimal="true" />
+	<Parameter2 Name="Sample length - Window length, how many samples to average. Default value:10" IsDecimal="true" />
+	<Parameter3 Name="ISense threshold. Default value:30 " IsDecimal="true"/>
+	<Parameter4 Name="Black Threshold. Default value:2 " IsDecimal="true"/>
+  </Command>
   <Command Name="DFU" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1E" CmdPermission="Public" Description="Go to DFU">
     <Parameter1 Name="Reset Type" />
   </Command>
@@ -223,6 +237,7 @@
   <Command Name="AMCGET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2C" IsReadCommand="true" CmdPermission="Public" Description="AMC_GET">
     <Parameter1 Name="opcode" />
     <Parameter2 Name="dataType" />
+    <Parameter3 Name="resolution" />
   </Command>
   <Command Name="RGB_INTRINSICS_UNDIST_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x39" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get rgb undist intrinsic">
      <ReadData> 
@@ -355,7 +370,15 @@
       <Section Name="RgbThreadUnused" Title="Depth Thread Stack Unused" Offset="18" Size="2" FormatType="HexNumberTwoBytes" />
     </ReadData>
   </Command>
-  
+ <Command Name="BM_LICENSE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x4B" CmdPermission="Private" Description="Set Box Measurement License">
+    <Parameter1 Name="0=OFF, 1=ON" />
+    <Parameter2 Name="Password (0x1234) for OFF, (0x????) for ON" />
+ </Command>  
+ <Command Name="BM_LICENSE_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x4C" IsReadCommand="true" CmdPermission="Public"  Description="Get Box Measurement License (0-OFF, 1-ON">
+    <ReadData>
+    <Section Name="Box Measurement License" Title="bmLicense" Offset="0" Size="1" FormatType="DecByte" />
+    </ReadData>
+ </Command>    
   <Command Name="IMU_CALIBRATION_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x4F" IsReadCommand="true" CmdPermission="Public" Description="Get IMU Calibration data">
     <ReadData>
       <Section Name="data1" Title="data1" Offset="0" Size="1" FormatType="DecByte" />
@@ -410,7 +433,7 @@
 	<Parameter2 Name="Index" />
   </Command>
   <Command Name="ALGO_THERMLOOP_MODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x59" CmdPermission="Public" ReadFormat="Bytes" Description="Algo Thermal Loop Mode Set">
-    <Parameter1 Name="Mode (0 for disable,bit Mask  bit1 for dstOffsetOnly, bit2 rtdEnable bi3 SyncEnable)" />
+    <Parameter1 Name="Mode (0 for disable,bit Mask:  bit0 for dstOffsetOnly, bit1 rtdEnable, bit2 SyncEnable, bit3 DynamicGainUpdate)" />
     <Parameter2 Name="Update Frequency (times per seconds, 0 for disable)" />
   </Command>
   <Command Name="DPT_INTRINSICS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x5A" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get Depth Intrinsics Coefs">
@@ -420,9 +443,6 @@
       <Section Name="principalPointX" Title="Principal Point X" Offset="8" Size="4" FormatType="HexNumber" />
       <Section Name="principalPointY" Title="Principal Point Y" Offset="12" Size="4" FormatType="HexNumber" />
     </ReadData>
-  </Command>
-  <Command Name="APD_ISENSEREAD_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x5B" CmdPermission="Public" Description="Enable\Disable APD Isense read">
-    <Parameter1 Name="0=OFF, 1=ON" />
   </Command>
   <Command Name="DIDT_CONTROL" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x5C" CmdPermission="Public" Description="Control di/dt runtime calculation">
     <Parameter1 Name="1 - enable, 0 - disable" />
@@ -547,12 +567,16 @@
   </Command>
   <Command Name="LASER_PWR_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7D" IsReadCommand="true" CmdPermission="Public" Description="Get Laser Power">
     <ReadData>
-      <Section Name="Laser Power Actual Max" Title="LDPWRAMAX" Offset="0"  Size="1" FormatType="DecByte" />
-      <Section Name="Laser Power Actual Ref" Title="LDPWRAREF" Offset="4"  Size="1" FormatType="DecByte" />
-      <Section Name="Laser Power Stored Max" Title="LDPWRSMAX" Offset="8"  Size="1" FormatType="DecByte" />
-      <Section Name="Laser Power Stored Ref" Title="LDPWRSREF" Offset="12" Size="1" FormatType="DecByte" />
-      <Section Name="Laser Power Config Per" Title="LDPWRCPER" Offset="16" Size="1" FormatType="DecByte" />
-      <Section Name="Laser Power Config Ref" Title="LDPWRCREF" Offset="20" Size="1" FormatType="DecByte" />
+      <Section Name="Laser Power Actual Mod Max" Title="LDPWRAMAXPWR" Offset="0"  Size="1" FormatType="DecByte" />
+      <Section Name="Laser Power Actual Mod Ref" Title="LDPWRAMODREF" Offset="4"  Size="1" FormatType="DecByte" />
+      <Section Name="Laser Power Configured Ratio" Title="LDPWRCRATIO" Offset="8"  Size="1" FormatType="DecByte" />
+      <Section Name="Laser Power Calculated Mod Ref" Title="LDPWRCMODREF" Offset="12"  Size="1" FormatType="DecByte" />
+      <Section Name="Laser Power Current Temperature That Was Used" Title="LDPWRCTEMP" Offset="16" Size="4" FormatType="Float" />
+      <Section Name="Laser Power ES Calibration Mod Max" Title="LDPWRESMODMAC" Offset="20" Size="1" FormatType="DecByte" />
+      <Section Name="Laser Power ES Calibration Power Max" Title="LDPWRESMAXPWR" Offset="24" Size="4" FormatType="Float" />
+      <Section Name="Laser Power ES Calibration Mod Min" Title="LDPWRESMODMIN" Offset="28" Size="1" FormatType="DecByte" />
+      <Section Name="Laser Power ES Calibration Power Min" Title="LDPWRESPWRMIN" Offset="32" Size="4" FormatType="Float" />
+      <Section Name="Laser Power ES Calibration Temperature" Title="LDPWRESTEMP" Offset="36" Size="4" FormatType="Float" />      
     </ReadData>
   </Command>    
   <Command Name="MA_BASED_STREAMING_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x7E" CmdPermission="Private" Description="Set MA based streaming">
@@ -843,11 +867,11 @@
     <Data Name="Data" IsReverseBytes="false" FormatLength="8" />
   </Command>
   
-  <Command Name="ONE_DIRECTION_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x99" CmdPermission="Public" Description="ONE_DIRECTION_PROJECTION <param1>: 0->default 1->Downward 2->Upward">
+  <Command Name="ONE_DIRECTION_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x99" CmdPermission="Public" Description="ONE_DIRECTION_PROJECTION {param1}: 0->default 1->Downward 2->Upward">
 	<Parameter1 Name="Index" />
   </Command>
   
-  <Command Name="MEMS_CMD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9A" CmdPermission="Public" Description="MEMS_CMD <param1> 0->Enable_Mems_Driver 1->Disable_Mems_Driver 2->Open_Mems 3->Close_Mems">
+  <Command Name="MEMS_CMD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9A" CmdPermission="Public" Description="MEMS_CMD {param1} 0->Enable_Mems_Driver 1->Disable_Mems_Driver 2->Open_Mems 3->Close_Mems">
     <Parameter1 Name="cmd_index" />
   </Command>
   
@@ -862,13 +886,9 @@
     <Parameter4 Name="ampThr2" />
   </Command>
 
-
-
-
-
-
-
-
+  <Command Name="PROFILER_RUN" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9F" CmdPermission="Private" Description="PROFILER RUN start=1, stop=0, (default=1)">
+      <Parameter1 Name="RunOrNot" />
+  </Command>
 
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Private" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
   </Command>

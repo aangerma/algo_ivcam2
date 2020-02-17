@@ -69,9 +69,26 @@ i = 0;
 tempFig = figure(190789);
 plot(timesForPlot,tempsForPlot); xlabel('time(minutes)');ylabel('ldd temp(degrees)');title(sprintf('Heating Progress - %2.2fdeg',tempsForPlot(plotDataI)));
 
+% DAC model
+isXgaOrVxga             = runParams.calibRes(2)==1024;
+[~, calPowerBytes]      = hw.cmd('erb 496 2');
+[~, calPowerDac0Bytes]  = hw.cmd('erb 4a5 2');
+[~, calTempBytes]       = hw.cmd('erb 498 2');
+[~, calDacBytes]        = hw.cmd('irb e2 09 01');
+[~, modRefPctBytes]     = hw.cmd(sprintf('AMCGET 5 0 %d', isXgaOrVxga)); % control #5, current value, current resolution
+bytesToDecimal          = @(x) double(typecast(x,'uint16'))/100;
+dacModel.m1             = -0.004737587503384; %TODO: extract from unit!!!
+dacModel.m2             = -0.344397996792963; %TODO: extract from unit!!!
+dacModel.calPower       = bytesToDecimal(calPowerBytes);
+dacModel.calPowerDac0   = bytesToDecimal(calPowerDac0Bytes);
+dacModel.calTemp        = bytesToDecimal(calTempBytes);
+dacModel.calDac         = double(calDacBytes);
+dacModel.modRefPct      = double(modRefPctBytes);
+dacModelFunc            = @(t) round(((dacModel.calPower-dacModel.calPowerDac0)*dacModel.modRefPct/100 - dacModel.m2*(t-dacModel.calTemp)) ./ ((dacModel.calPower-dacModel.calPowerDac0)/dacModel.calDac+dacModel.m1*(t-dacModel.calTemp)));
+
 while ~finishedHeating
     i = i + 1;
-    [tmpData,frame] = getFrameData(hw,regs,calibParams);
+    [tmpData,frame] = getFrameData(hw, regs, calibParams, dacModelFunc);
     saveFrames(frame,calibParams,runParams,i);
     if isempty(tmpData.ptsWithZ)
         calibParams.gnrl.saveFrames = 1;
@@ -160,16 +177,6 @@ tempVec = [framesData.temp];
 LddTempVec = [tempVec.ldd];
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
-    ff = Calibration.aux.invisibleFigure;
-    plot(heatTimeVec,LddTempVec)
-    hold on    
-    plot(heatTimeVec,[tempVec.ma])
-    plot(heatTimeVec,[tempVec.mc])
-    plot(heatTimeVec,[tempVec.apdTmptr])
-    legend({'ldd';'ma';'mc';'apd'});
-    title('Heating Stage'); grid on;xlabel('sec');ylabel('Temperatures [degrees]');
-    Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('TemperatureReadings'),1);
-    
     if calibParams.gnrl.rgb.doStream && inValidationStage
         ff = Calibration.aux.invisibleFigure;
         subplot(321)
@@ -238,103 +245,9 @@ if calibParams.gnrl.saveRGB
 end
 
 end
-function [ptsWithZ, gridSize] = cornersData(frame,regs,calibParams)
-if isempty(calibParams.gnrl.cbGridSz)
-   
-    CB = CBTools.Checkerboard (frame.i,'targetType', 'checkerboard_Iv2A1','imageRotatedBy180',true);  
-    gridSize = CB.getGridSize;
-    pts = CB.getGridPointsList;
-    colors = CB.getColorMap;
-    if calibParams.gnrl.rgb.doStream
-        CB = CBTools.Checkerboard (frame.color,'targetType', 'checkerboard_Iv2A1');  
-        ptsColor = CB.getGridPointsList;
-    end
-else
-    CB = CBTools.Checkerboard (frame.i,'expectedGridSize',calibParams.gnrl.cbGridSz); 
-    gridSize = CB.getGridSize;
-    pts = CB.getGridPointsList;
-    
-    if ~isequal(gridSize, calibParams.gnrl.cbGridSz)
-        ptsWithZ = [];
-        return;
-    end
-     if calibParams.gnrl.rgb.doStream
-         CB = CBTools.Checkerboard (frame.color,'expectedGridSize',calibParams.gnrl.cbGridSz);
-         gridSizeRgb = CB.getGridSize;
-         pts = CB.getGridPointsList;
-        if ~isequal(gridSizeRgb, calibParams.gnrl.cbGridSz)
-            ptsWithZ = [];
-            return;
-        end
-    end
-end
-if ~regs.DIGG.sphericalEn
-    zIm = single(frame.z)/single(regs.GNRL.zNorm);
-    if calibParams.gnrl.sampleRTDFromWhiteCheckers && isempty(calibParams.gnrl.cbGridSz)
-        [zPts,~,~,pts,~] = CBTools.valuesFromWhitesNonSq(zIm,reshape(pts,20,28,2),colors,1/8);
-        pts = reshape(pts,[],2);
-    else
-        zPts = interp2(zIm,pts(:,1),pts(:,2));
-    end
-    matKi=(regs.FRMW.kRaw)^-1;
-    
-    u = pts(:,1)-1;
-    v = pts(:,2)-1;
-    
-    tt=zPts'.*[u';v';ones(1,numel(v))];
-    verts=(matKi*tt)';
-    
-    %% Get r,angx,angy
-    if regs.DEST.hbaseline
-        rxLocation = [regs.DEST.baseline,0,0];
-    else
-        rxLocation = [0,regs.DEST.baseline,0];
-    end
-    rtd = sqrt(sum(verts.^2,2)) + sqrt(sum((verts - rxLocation).^2,2));
-    [angx,angy] = Calibration.aux.vec2ang(normr(verts),regs);
-    [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);
-    ptsWithZ = [rtd,angx,angy,pts,verts];
-    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
-    if calibParams.gnrl.rgb.doStream
-        ptsWithZ = [ptsWithZ,ptsColor];
-    end
-%     v = ptsWithZ(:,6:8);
-%     if size(v,1) == 20*28
-%         v = reshape(v,20,28,3);
-%         rows = find(any(~isnan(v(:,:,1)),2));
-%         cols = find(any(~isnan(v(:,:,1)),1));
-%         grd = [numel(rows),numel(cols)];
-%         v = reshape(v(rows,cols,:),[],3);
-%     else
-%         grd = [9,13];
-%     end
-%     [eGeom, ~, ~] = Validation.aux.gridError(v, grd, 30);
-%     fprintf('eGeom - %2.2f\n',eGeom);
-else
-    rpt = Calibration.aux.samplePointsRtd(frame.z,pts,regs);
-    rpt(:,1) = rpt(:,1) - regs.DEST.txFRQpd(1);
-    [angxPostUndist,angyPostUndist] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),regs);
-    vUnit = Calibration.aux.ang2vec(angxPostUndist,angyPostUndist,regs)';
-    %vUnit = reshape(vUnit',size(d.rpt));
-    %vUnit(:,:,1) = vUnit(:,:,1);
-    % Update scale to take margins into acount.
-    if regs.DEST.hbaseline
-        sing = vUnit(:,1);
-    else
-        sing = vUnit(:,2);
-    end
-    rtd_=rpt(:,1);
-    r = (0.5*(rtd_.^2 - 100))./(rtd_ - 10.*sing);
-    v = double(vUnit.*r);
-    ptsWithZ = [rpt,reshape(pts,[],2),v];
-    ptsWithZ(isnan(ptsWithZ(:,1)),:) = nan;
-    if calibParams.gnrl.rgb.doStream
-        ptsWithZ = [ptsWithZ,ptsColor];
-    end
-end
-end
 
-function [frameData,frame] = getFrameData(hw,regs,calibParams)
+
+function [frameData,frame] = getFrameData(hw, regs, calibParams, dacModelFunc)
     frame = hw.getFrame();
     if calibParams.gnrl.rgb.doStream
         rgbFrame  = hw.getColorFrame();
@@ -346,8 +259,12 @@ function [frameData,frame] = getFrameData(hw,regs,calibParams)
     for j = 1:3
         [frameData.iBias(j), frameData.vBias(j)] = hw.pzrAvPowerGet(j,calibParams.gnrl.pzrMeas.nVals2avg,calibParams.gnrl.pzrMeas.sampIntervalMsec);
     end
+    % DAC loop
+    frameData.dac.predicted = uint8(dacModelFunc(frameData.temp.ldd));
+    [~, frameData.dac.actual] = hw.cmd('irb e2 0a 01');
+    % image-based detections
     try
-        [frameData.ptsWithZ, gridSize] = cornersData(frame,regs,calibParams);
+        [frameData.ptsWithZ, gridSize] = Calibration.thermal.getCornersDataFromThermalFrame(frame, regs, calibParams, false);
         frameData.confPts = interp2(single(frame.c),frameData.ptsWithZ(:,4),frameData.ptsWithZ(:,5));
         frameData.flyback = hw.cmd('APD_FLYBACK_VALUES_GET');
         frameData.maVoltage = hw.getMaVoltagee();
