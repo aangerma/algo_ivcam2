@@ -30,6 +30,7 @@
            <res>[1920,1080]</res>
            <nonRectangleFlag>1</nonRectangleFlag>
            <fixRgbThermal>1</fixRgbThermal>
+           <lddDiffBetweenSharpnessCalc>3</lddDiffBetweenSharpnessCalc>
 	   </rgb>
        <calibrateShortPreset>
            <enable>1</enable>

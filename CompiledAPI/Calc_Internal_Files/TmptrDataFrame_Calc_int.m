@@ -30,6 +30,7 @@ persistent prevTime
 persistent lastZFrames
 persistent zFramesIndex
 persistent diskObject
+persistent lastRGBSharpnessTmp
 
 if isempty(Index) || (g_temp_count == 0)
     Index     = 0;
@@ -38,7 +39,7 @@ if isempty(Index) || (g_temp_count == 0)
     prevTime  = 0;
     lastZFrames = nan([runParams.calibRes,calibParams.warmUp.nFramesForZStd]);
     diskObject = strel('disk',calibParams.roi.diskSz);
-
+    lastRGBSharpnessTmp = 0;
 end
 % add error checking;
 
@@ -80,6 +81,16 @@ if ~finishedHeating % heating stage
     % Sharpness tracking
     FrameData.verticalSharpness = Calibration.aux.CBTools.fastGridEdgeSharpIR(frame, gridSize, FrameData.ptsWithZ(:,4:5), struct('target', struct('target', 'checkerboard_Iv2A1'), 'imageRotatedBy180Flag', true));
     
+    % Track RGB Vertical and Horizontal Sharpness 
+    if isfield(frame,'yuy2')
+        if FrameData.temp.ldd - lastRGBSharpnessTmp > calibParams.gnrl.rgb.lddDiffBetweenSharpnessCalc
+            [FrameData.verticalSharpnessRGB, FrameData.horizontalSharpnessRGB] = Calibration.aux.CBTools.fastGridEdgeSharpRGB(frame.yuy2,gridSize, FrameData.ptsWithZ(:,6:7));
+            lastRGBSharpnessTmp = FrameData.temp.ldd;
+        else
+            FrameData.verticalSharpnessRGB = nan;
+            FrameData.horizontalSharpnessRGB = nan;
+        end
+    end
     % globals/persistents handling
     framesData = acc_FrameData(FrameData);
     if(Index == 0)

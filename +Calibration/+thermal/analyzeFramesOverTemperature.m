@@ -64,8 +64,8 @@ if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder'
     end
     if isfield(data.framesData, 'thermostream')
         tsData = [data.framesData.thermostream];
-        plot([tsData.target], '.--', 'MarkerIndices')
-        plot([tsData.temperature], '.--', 'MarkerIndices')
+        plot([tsData.target], '.--')
+        plot([tsData.temperature], '.--')
     end
     grid on, xlabel('time [sec]'), ylabel('temperature [deg]')
     legend(lgnd, 'Location', 'northwest')
@@ -184,6 +184,28 @@ if isfield(data.framesData, 'verticalSharpness')
         plot(ldd, verticalSharpness,'.-')
         title('Heating Stage Vertical Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
         Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('VerticalSharpness'),1);
+    end
+end
+
+if isfield(data.framesData, 'verticalSharpnessRGB')
+    verticalSharpnessRGB = [data.framesData.verticalSharpnessRGB];
+    metrics.bestRGBVerticalSharpness = min(verticalSharpnessRGB);
+    metrics.worstRGBVerticalSharpness = max(verticalSharpnessRGB);
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        plot(ldd(~isnan(verticalSharpnessRGB)), verticalSharpnessRGB(~isnan(verticalSharpnessRGB)),'.-')
+        title('Heating Stage RGB Vertical Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('RGB_VerticalSharpness'),1);
+    end
+    
+    horizontalSharpnessRGB = [data.framesData.horizontalSharpnessRGB];
+    metrics.bestRGBHorizontalSharpness = min(horizontalSharpnessRGB);
+    metrics.worstRGBHorizontalSharpness = max(horizontalSharpnessRGB);
+    if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder')
+        ff = Calibration.aux.invisibleFigure;
+        plot(ldd(~isnan(horizontalSharpnessRGB)), horizontalSharpnessRGB(~isnan(horizontalSharpnessRGB)),'.-')
+        title('Heating Stage RGB Horizontal Sharpness'); grid on; xlabel('LDD [deg]'); ylabel('mean transition length [pixels]');
+        Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('RGB_HorizontalSharpness'),1);
     end
 end
 
