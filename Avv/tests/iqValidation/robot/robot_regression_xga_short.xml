@@ -28,6 +28,7 @@
 	    <!--<test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-20" threshold="[0:2]" extra="" />
         <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="-10" threshold="[0:2]" extra="" />-->
         <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" threshold="[0:2]" extra="" />
+		<test metrics="depthStep" target="wall_10Reflectivity" distance="150cm" threshold="[0:1]" extra="" />
        <!-- <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="10" threshold="[0:2]" extra="" />
         <test metrics="planeFit" target="wall_10Reflectivity" distance="150cm" angle_offset="20" threshold="[0:2]" extra="" />
 		
