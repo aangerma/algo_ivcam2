@@ -223,8 +223,8 @@ for i = 1:numel(vertices)
     orderedResults = mergestruct(orderedResults,results); 
     results = Validation.aux.calcLineDistortion(vertices{i},params);
     orderedResults = mergestruct(orderedResults,results); 
-    [~, results, ~] = Validation.metrics.planeFit(vertices{i},params);
-    orderedResults = mergestruct(orderedResults,results); 
+%     [~, results, ~] = Validation.metrics.planeFit(vertices{i},params);
+%     orderedResults = mergestruct(orderedResults,results); 
     allRes(i) = orderedResults;
 end
 

@@ -62,10 +62,10 @@ if inValidationStage && ~isempty(runParams) && isfield(runParams, 'outputFolder'
         plot(timeVec(indMinDiff)*ones(1,2), [tsense(indMinDiff), hum(indMinDiff)], '.-')
         text(timeVec(indMinDiff), mean([tsense(indMinDiff), hum(indMinDiff)]), sprintf('%.2f', data.regs.FRMW.humidApdTempDiff))
     end
-    if isfield(data.framesData, 'thermostream')
+    if isfield(data.framesData, 'thermostream') && ~isempty([data.framesData.thermostream])
         tsData = [data.framesData.thermostream];
-        plot([tsData.target], '.--')
-        plot([tsData.temperature], '.--')
+        plot(timeVec,[tsData.target], '.--')
+        plot(timeVec,[tsData.temperature], '.--')
     end
     grid on, xlabel('time [sec]'), ylabel('temperature [deg]')
     legend(lgnd, 'Location', 'northwest')
