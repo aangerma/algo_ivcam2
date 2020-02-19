@@ -5,6 +5,8 @@ units = sheetnames(fullfname);
 P = zeros(2,1,1);
 allData = [];
 
+calTempTarget = 40;
+
 %data collection
 for i=1:length(units)
     [num,txt,raw] =xlsread(fullfname,units{i});
@@ -55,7 +57,7 @@ legend({'average on units','fitted'});
 % model testing
 
 calTempTarget = 40;
-calDac = 63;
+calDac = 60;
 
 Res = [];
 for i=1:length(units)

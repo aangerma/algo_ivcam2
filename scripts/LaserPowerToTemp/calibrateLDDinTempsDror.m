@@ -1,10 +1,10 @@
-fname = 'LddInTempDB.xlsx';
+fname = 'LddInTempDB2.xlsx';
 fullfname = fullfile(fileparts(mfilename('fullpath')),fname);
 
 %model 
 P = zeros(2,1,1);
 calTempTarget = 40;
-calDac = 63;
+calDac = 60;
 allData = [];
 Tslope = -0.65295;
 Dslope = 0.005325;
