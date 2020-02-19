@@ -1,7 +1,7 @@
 clear
 close all
 %% Load frames from IPDev
-sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
+sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\Snapshots\ShortRange 768X1024 (RGB 1920X1080)\1';
 intrinsicsExtrinsicsPath = fullfile(sceneDir,'RecordingStatus.rsc');
 outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
 
@@ -14,8 +14,8 @@ params.cbGridSz = [9,13];
 params.inverseDistParams.alpha = 1/3;
 params.inverseDistParams.gamma = 0.98;
 params.inverseDistParams.metric = 1; % Metrics norm. Currently only suppotrs L1. Should support L2.
-params.gradITh = 1.5; % Ignore pixels with IR grad of less than this
-params.gradZTh = 25; % Ignore pixels with Z grad of less than this
+params.gradITh = 2; % Ignore pixels with IR grad of less than this
+params.gradZTh = 50; % Ignore pixels with Z grad of less than this
 params.Trgb = ipdevParams.RGB_translation;
 params.Kdepth = ipdevParams.K_depth;
 params.depthRes = [ipdevParams.Depth_Vertical_resolution,ipdevParams.Depth_Horizontal_resolution];
@@ -73,7 +73,7 @@ camerasParams = params;
 uvMapOrig = OnlineCalibration.aux.projectVToRGB(frame.V,params.rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
 origParams = params;
 uvRMS(1) = OnlineCalibration.Metrics.calcUVMappingErr(frame,params,0);
-for k = 1:100
+for k = 1:30
 initRgbPmat = camerasParams.rgbPmat;
 [C,grad] = OnlineCalibration.aux.costGrad(initRgbPmat,frame.D,frame.Dx,frame.Dy,frame.W,frame.V,camerasParams.Krgb,camerasParams.rgbDistort);
 grad.A(3,:) = 0;
@@ -82,7 +82,7 @@ grad.A = grad.A.*gradNormMat;
 % grad(3,:) = 0;
 normedGrad = grad.A/norm(grad.A);
 
-alpha = (0:0.0005:0.02)*50;
+alpha = (0:0.0005:0.02)*150;
 cParams = camerasParams;
 for i = 1:numel(alpha)
     RgbPmat = initRgbPmat + alpha(i)*normedGrad;
@@ -131,6 +131,20 @@ plot(uvMapNext(:,1)+1,uvMapNext(:,2)+1,'r*')
 title('next step');
 linkaxes;
 
+
+
+figure;
+subplot(121);
+imagesc(frame.yuy2);
+hold on;
+plot(uvMapOrig(:,1)+1,uvMapOrig(:,2)+1,'r*')
+title('orig');
+subplot(122);
+imagesc(frame.yuy2);
+hold on;
+plot(uvMapNext(:,1)+1,uvMapNext(:,2)+1,'r*')
+title('next step');
+linkaxes;
 
 OnlineCalibration.Metrics.calcUVMappingErr(frame,origParams,1);
 newParams = params;
