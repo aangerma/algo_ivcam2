@@ -18,7 +18,7 @@ function resTable = aggreagateAlgo1ValRes(baseDirs)
         %for all units
         for uid = 1:length(units)
             unitDir = fullfile(baseDir,units{uid});
-            revs = du.analysis.findAllRevisions(unitDir,valReportFname,'PC'); %PC is the prefix for the revision
+            revs = du.analysis.findAllRevisions(unitDir,valReportFname,'AV'); %PC is the prefix for the revision
             
             %for all reveisions, read the report
             for rid=1:length(revs)
