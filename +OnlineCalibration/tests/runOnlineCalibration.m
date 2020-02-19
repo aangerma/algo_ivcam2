@@ -1,7 +1,7 @@
 clear
 close all
 %% Load frames from IPDev
-sceneDir = 'X:\Data\IvCam2\OnlineCalibration\F9440842_scene1';
+sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\OnlineCalibration\Data\F9440842_scene1';
 imagesSubdir = fullfile(sceneDir,'ZIRGB');
 intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
 outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
@@ -44,12 +44,13 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',single(frame.irEd
 % Preprocess Z
 [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges] = OnlineCalibration.aux.preprocessZ(frame,params);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',single(frame.zEdge),'single');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',single(frame.zEdgeSupressed),'single');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',single(frame.zEdgeSubPixel),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',single(frame.zEdgeSupressed),'single');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'single');
 
 
-
+[frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
 
 
 
