@@ -49,7 +49,8 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',single(fr
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'single');
 
 
-
+[frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
 
 
 
