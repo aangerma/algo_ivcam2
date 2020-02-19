@@ -61,7 +61,7 @@ function [finishedHeating, calibPassed, results, metrics, metricsWithTheoretical
     
     try
         [finishedHeating, calibPassed, results, metrics,metricsWithTheoreticalFix, Invalid_Frames] = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height , width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, g_calib_dir, ctKillThr);
-        if (calibPassed==-1) % save input for debugging
+        if (calibPassed==-1) || (g_temp_count==0) % save input for debugging
             if g_save_input_flag && exist(output_dir,'dir')~=0
                 fn = fullfile(output_dir, 'mat_files' ,[func_name sprintf('_in%d.mat',g_temp_count)]);
                 save(fn,'finishedHeating', 'regs', 'eepromRegs', 'eepromBin', 'FrameData', 'sz', 'frameBytes', 'calibParams', 'maxTime2Wait', 'ctKillThr');
