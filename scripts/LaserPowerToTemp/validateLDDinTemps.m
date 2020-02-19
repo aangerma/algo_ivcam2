@@ -1,4 +1,4 @@
-fname = 'LddInTempDB.xlsx';
+fname = 'ValidationDB.xlsx';
 fullfname = fullfile(fileparts(mfilename('fullpath')),fname);
 
 load(fullfile(fileparts(mfilename('fullpath')),'model.mat'));
@@ -6,7 +6,7 @@ m1 = params(1);
 m2 = params(2);
 
 calTempTarget = 40;
-calDac = 63;
+calDac = 60;
 
 % model testing
 units = sheetnames(fullfname);
