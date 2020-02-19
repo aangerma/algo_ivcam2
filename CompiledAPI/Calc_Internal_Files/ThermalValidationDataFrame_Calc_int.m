@@ -38,7 +38,7 @@ if isempty(Index) || (g_temp_count == 0)
     [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir,nBinsRgb);
 end
 
-if isempty(dacModelFunc) % FrameData.dac expected to include model parameters
+if isempty(dacModelFunc) && isfield(FrameData, 'dac')
     bytesToDecimal          = @(x) double(typecast(x,'uint16'))/100;
     dacModel.m1             = FrameData.dac.m1;
     dacModel.m2             = FrameData.dac.m2;
@@ -71,7 +71,9 @@ if ~finishedHeating % heating stage
     lastZFrames(:,:,mod(zFramesIndex:zFramesIndex+nFrames-1,calibParams.warmUp.nFramesForZStd)+1) = zForStd;
 
     % DAC model tracking
-    FrameData.dac.predicted = uint8(dacModelFunc(FrameData.temp.ldd));
+    if isfield(FrameData, 'dac')
+        FrameData.dac.predicted = uint8(dacModelFunc(FrameData.temp.ldd));
+    end
     
     % corners tracking
     [FrameData.ptsWithZ, gridSize] = Calibration.thermal.getCornersDataFromThermalFrame(frame, regs, calibParams, false);
