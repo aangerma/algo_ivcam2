@@ -11,10 +11,13 @@ frame = OnlineCalibration.aux.loadZIRGBFrames(subdir);
 % Load unitData
 % load(fullfile(dirname,'F9340892','camerasParams.mat'));
 % load(fullfile(dirname,'F9440842','camerasParams.mat'));
-load(fullfile(dirname,'F9440842_scene2','camerasParams.mat'));
+% load(fullfile(dirname,'F9440842_scene1','camerasParams.mat'));
 
 
-% load('X:\Data\IvCam2\OnlineCalibration\Simulator\simulatedCB.mat');
+load('X:\Data\IvCam2\OnlineCalibration\Simulator\simulatedCB.mat');
+
+outputBinFilesPath = '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\OnlineCalibration\Data\simulated_scene2';
+
 % camerasParams.rgbPmat(1) = camerasParams.rgbPmat(1)*1.003;
 % Take first frame
 frame.z = frame.z(:,:,1);
@@ -24,6 +27,11 @@ frame.i = frame.i(:,:,1);
 % frame.i = circshift(frame.i(:,:,1),[0,2]);
 
 frame.yuy2 = frame.yuy2(:,:,1);
+
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_input',uint16(frame.z),'uint16');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_input',uint8(frame.i),'uint8');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_input',uint8(frame.yuy2),'uint8');
+
 params = camerasParams;
 params.cbGridSz = [9,13];
 
@@ -39,12 +47,12 @@ options.gradITh = 10; % Ignore pixels with IR grad of less than this
 options.gradZTh = 200; % Ignore pixels with Z grad of less than this
 
 % Compute E image
-[frame.E] = OnlineCalibration.aux.calcEImage(frame.yuy2,options);
+[frame.E] = OnlineCalibration.aux.calcEImage(frame.yuy2,options); % Ready for LibRealSenseImplementation
 figure,imagesc(frame.E); title('RGB Edges');
 
 
 % Compute inverse distance transform 
-[frame.D] = OnlineCalibration.aux.calcInverseDistanceImage(frame.E,options.inverseDistParams);
+[frame.D] = OnlineCalibration.aux.calcInverseDistanceImage(frame.E,options.inverseDistParams);% Ready for LibRealSenseImplementation
 figure,imagesc(frame.D); title('RGB IDT');
 % Compute Dx and Dy - the gradient images of D
 [frame.Dx,frame.Dy] = imgradientxy(frame.D);% Sobel image gradients [-1,0,1;-2,0,2;-1,0,1]
@@ -77,8 +85,7 @@ origParams = params;
 uvRMS(1) = OnlineCalibration.Metrics.calcUVMappingErr(frame,params,0);
 for k = 1:20
 initRgbPmat = camerasParams.rgbPmat;
-[C,gradStruct] = OnlineCalibration.aux.costGrad(initRgbPmat,frame.D,frame.Dx,frame.Dy,frame.W,frame.V,camerasParams.Krgb,camerasParams.rgbDistort);
-grad = gradStruct.A;
+[C,grad] = OnlineCalibration.aux.costGrad(initRgbPmat,frame.D,frame.Dx,frame.Dy,frame.W,frame.V,camerasParams.Krgb,camerasParams.rgbDistort);
 grad(3,:) = 0;
 grad = grad.*gradNormMat;
 
