@@ -1,13 +1,24 @@
-function [mean_dr_dVar] = normalizeGradNew(params,frame,derivVar)
+function [meanDrDVar] = normalizeGradNew(params,frame,derivVar)
 dist = 1500;
 Z = single(params.zMaxSubMM)*ones(size(frame.z(:,:,1)))*dist;
-V = OnlineCalibration.aux.z2vertices(Z,true(size(Z)),params); %logical(ones(size(Z)))
-params.V = [V, ones(size(V,1),1)];
-params.d = params.rgbDistort;
-[~,~,dXin_dVar,dYin_dVar] = OnlineCalibration.aux.calcValFromExpressions(derivVar,params);
-r = sqrt(dXin_dVar.^2+dYin_dVar.^2);
-mean_dr_dVar = reshape(nanmean(r,2),4,3)';
-
+V3 = OnlineCalibration.aux.z2vertices(Z,true(size(Z)),params); %logical(ones(size(Z)))
+V4 = [V3, ones(size(V3,1),1)];
+[~,~,dXinDVar,dYinDVar] = OnlineCalibration.aux.calcValFromExpressions(derivVar,V4,params);
+switch derivVar
+    case 'P'
+        r = sqrt(dXinDVar.^2+dYinDVar.^2);
+        meanDrDVar = reshape(nanmean(r,2),4,3)';
+    case 'R'
+        rXalpha = sqrt(dXinDVar.xAlpha.^2+dYinDVar.xAlpha.^2);
+        rYbeta = sqrt(dXinDVar.yBeta.^2+dYinDVar.yBeta.^2);
+        rZgamma = sqrt(dXinDVar.zGamma.^2+dYinDVar.zGamma.^2);
+        meanDrDVar = [nanmean(rXalpha);nanmean(rYbeta);nanmean(rZgamma)];
+    case 'T'
+        r = sqrt(dXinDVar.^2+dYinDVar.^2);
+        meanDrDVar = reshape(nanmean(r,2),1,3)';
+    otherwise
+            error('No such case!!!');
+end
 %%
 %{
 % debug
@@ -28,6 +39,6 @@ for ix = 1:size(mean_dr_dVar,1)
         end
     end
 end
-%}
+        %}
 end
 
