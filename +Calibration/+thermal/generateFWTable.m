@@ -332,7 +332,8 @@ if calibParams.fwTable.yFix.bypass
 end
 
 % extrapolation
-results.pzr             = estHumFromPzrRes(shtw2(startI:end),vBias(:,startI:end)./iBias(:,startI:end), runParams, data.ctKillThr); 
+results.pzr             = estHumFromPzrRes(shtw2(startI:end), vBias(:,startI:end)./iBias(:,startI:end), runParams, data.ctKillThr); 
+results.pzr             = estVsenseFromPzrRes(data.vsenseData, runParams, results.pzr); 
 vBiasLims               = extrapolateVBiasLimits(results, ldd(startI:end), vBias(:,startI:end), calibParams, runParams);
 [table, results]        = extrapolateTable(table, results, vBiasLims, calibParams, runParams);
 results.rtd.origMinval  = min(lddForEst);
@@ -646,9 +647,9 @@ end
 function pzrResults = estHumFromPzrRes(hum, pzrRes, runParams, ctKillThr)
 
 pzrRes = pzrRes/1e3; % [Kohm]
-pzrResults = repmat(struct('coef', zeros(1,3)), [1,3]);
+pzrResults = repmat(struct('humEstCoef', zeros(1,3)), [1,3]);
 for iPzr = 1:3
-    pzrResults(iPzr).coef = single(polyfit(pzrRes(iPzr,:), hum, 2));
+    pzrResults(iPzr).humEstCoef = single(polyfit(pzrRes(iPzr,:), hum, 2));
 end
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
@@ -659,7 +660,7 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     resAx = linspace(0,10,1000);
     pzrResLims = minmax(pzrRes(:));
     for iPzr = 1:3
-        coef = pzrResults(iPzr).coef;
+        coef = pzrResults(iPzr).humEstCoef;
         humAx = polyval(coef, resAx);
         idcs = find(humAx>=ctKillThr(1),1,'first')-1:find(humAx>=ctKillThr(2),1,'first');
         pzrResLims = [min(pzrResLims(1),resAx(idcs(1))), max(pzrResLims(2),resAx(idcs(end)))];
@@ -670,8 +671,53 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     end
     plot(pzrResLims([1,2,1,1,2]), [ctKillThr(1)*ones(1,2), NaN, ctKillThr(2)*ones(1,2)], 'k--', 'linewidth', 2)
     lgnd{7} = 'CT kill threshold';
-    grid on, xlabel('PZR resistance [Kohm]'), ylabel('Humidity temperature [deg]'), legend(lgnd,'Location','SouthEast')
+    grid on, xlabel('PZR resistance [Kohm]'), ylabel('Humidity temperature [deg]'), legend(lgnd,'Location','SouthEast'), title('PZR resistance-based temperature model')
     Calibration.aux.saveFigureAsImage(ff,runParams,'PZR','TmptrResistanceModel');
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function pzrResults = estVsenseFromPzrRes(vsenseData, runParams, pzrResults) 
+
+iBias = cell2mat(cellfun(@(x) x.iBias, vsenseData, 'UniformOutput', false));
+vBias = cell2mat(cellfun(@(x) x.vBias, vsenseData, 'UniformOutput', false));
+pzrRes = (vBias./iBias)'/1e3; % [Kohm]
+pzrVsense = (cell2mat(cellfun(@(x) x.vSesnePZR, vsenseData, 'UniformOutput', false)))';
+
+for iPzr = 1:3
+    p = polyfit(pzrRes(iPzr,:), pzrVsense(iPzr,:), 1);
+    pzrResults(iPzr).vsenseEstSlope = single(p(1));
+    if (p(1) == 0)
+        pzrResults(iPzr).vsenseEstRefRes = single(0);
+    else
+        pzrResults(iPzr).vsenseEstRefRes = single(-p(2)/p(1));
+    end
+end
+
+if ~isempty(runParams) && isfield(runParams, 'outputFolder')
+    ff = Calibration.aux.invisibleFigure; hold all
+    clrs = {'b', 'c'; [0,0.5,0], 'g'; 'r', 'm'};
+    signsStr = {'','+','+'};
+    lgnd = cell(1,6);
+    resAx = linspace(0,10,1000);
+    for iPzr = 1:3
+        vSenseAx = pzrResults(iPzr).vsenseEstSlope*(resAx - pzrResults(iPzr).vsenseEstRefRes);
+        lastVisitedInd = find(resAx>max(pzrRes(iPzr,:)),1,'first');
+        if (vSenseAx(1)*vSenseAx(end) > 0) % line fit doesn't cross X-axis
+            signChangeInd = 0;
+        else
+            signChangeInd = find(vSenseAx*vSenseAx(1)>=0,1,'last');
+        end
+        idcs = 1:min(length(vSenseAx), max(lastVisitedInd, signChangeInd) + 1);
+        plot(pzrRes(iPzr,:), pzrVsense(iPzr,:), '.', 'color', clrs{iPzr,1})
+        lgnd{2*iPzr-1} = sprintf('PZR%d', iPzr);
+        plot(resAx(idcs), pzrResults(iPzr).vsenseEstSlope*(resAx(idcs) - pzrResults(iPzr).vsenseEstRefRes), '-', 'color', clrs{iPzr,2})
+        lgnd{2*iPzr} = sprintf('%.4f*(x%s%.1f)', pzrResults(iPzr).vsenseEstSlope, signsStr{sign(-pzrResults(iPzr).vsenseEstRefRes)+2}, -pzrResults(iPzr).vsenseEstRefRes);
+    end
+    grid on, xlabel('PZR resistance [Kohm]'), ylabel('PZR VSense [V]'), legend(lgnd,'Location','NorthEast'), title('PZR resistance-based VSense model')
+    Calibration.aux.saveFigureAsImage(ff,runParams,'PZR','VsenseResistanceModel');
 end
 
 end

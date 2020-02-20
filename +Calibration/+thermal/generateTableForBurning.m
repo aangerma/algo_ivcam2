@@ -61,6 +61,8 @@ eepromRegs.EXTL.dsmXscale               = single(data.regs.EXTL.dsmXscale);
 eepromRegs.EXTL.dsmXoffset              = single(data.regs.EXTL.dsmXoffset);
 eepromRegs.EXTL.dsmYscale               = single(data.regs.EXTL.dsmYscale);
 eepromRegs.EXTL.dsmYoffset              = single(data.regs.EXTL.dsmYoffset);
+eepromRegs.FRMW.losAtMirrorRestHorz     = single(data.regs.FRMW.losAtMirrorRestHorz);
+eepromRegs.FRMW.losAtMirrorRestVert     = single(data.regs.FRMW.losAtMirrorRestVert);
 % Reference state regs were updated in AlgoThermalCalib
 eepromRegs.FRMW.dfzCalTmp               = single(data.regs.FRMW.dfzCalTmp);
 eepromRegs.FRMW.dfzVbias                = single(data.regs.FRMW.dfzVbias);

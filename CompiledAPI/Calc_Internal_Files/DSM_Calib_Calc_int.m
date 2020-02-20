@@ -53,6 +53,8 @@ function [result, DSM_data, angxZO, angyZO] = DSM_Calib_Calc_int(im, sz, angxRaw
     angxRaw = invertDSM(angx,dsmXscale,dsmXoffset);
     angyRaw = invertDSM(angy,dsmYscale,dsmYoffset);
     
+    DSM_data.losAtMirrorRestHorz = angxRawZO;
+    DSM_data.losAtMirrorRestVert = angyRawZO;
     [DSM_data.dsmXscale,DSM_data.dsmXoffset] = calcDSMScaleAndOffset(angxRawZO,angxRaw,margin,'x');
     [DSM_data.dsmYscale,DSM_data.dsmYoffset] = calcDSMScaleAndOffset(angyRawZO,angyRaw,margin,'y');
 end

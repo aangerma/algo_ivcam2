@@ -1,4 +1,4 @@
-function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData,height, width, frameBytes, calibParams,maxTime2Wait, output_dir, fprintff, calib_dir, ctKillThr)
+function [finishedHeating, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames]  = TmptrDataFrame_Calc_int(finishedHeating, regs, eepromRegs, FrameData, height, width, frameBytes, calibParams, maxTime2Wait, output_dir, fprintff, calib_dir, ctKillThr)
 % description: initiale set of the DSM scale and offset 
 %
 % inputs:
@@ -131,6 +131,7 @@ else % steady-state stage
     data.framesData = framesData;
     data.regs = regs;
     data.ctKillThr = ctKillThr;
+    data.vsenseData = FrameData;
     
     save(fullfile(output_dir, 'mat_files', 'finalCalcAfterHeating_in.mat'), 'data', 'eepromRegs', 'calibParams', 'fprintff', 'calib_dir', 'output_dir', 'runParams');
     [data, calibPassed, results, metrics, metricsWithTheoreticalFix, Invalid_Frames] = Calibration.thermal.finalCalcAfterHeating(data, eepromRegs, calibParams, fprintff, calib_dir, runParams);
