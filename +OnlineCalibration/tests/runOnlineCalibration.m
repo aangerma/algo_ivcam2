@@ -60,14 +60,15 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',single(f
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'single');
 
 
-[frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
-frame.weights = frame.zEdgeSupressed(frame.zEdgeSupressed>0);
+[frame.vertices,frame.weights] = OnlineCalibration.aux.subedges2vertices(frame,params);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',single(frame.weights),'single');
 
 
 
 %% Perform Optimization
 newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
 
+% 
 OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
 OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
