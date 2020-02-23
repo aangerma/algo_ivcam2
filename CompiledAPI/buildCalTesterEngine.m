@@ -64,6 +64,7 @@ function res = buildCalTesterEngine(isCopyToPrebuild)
 
     configurationFolder = 'releaseConfigCalibVXGA';
     Calibration.aux.defineFileNamesAndCreateResultsDir(internalFolder, configurationFolder);
+    delete(fullfile(internalFolder,'*.bin'));
 
     % Compilation
         % .NET app, IVCAM2.Algo.CalibrationMatlab library,
