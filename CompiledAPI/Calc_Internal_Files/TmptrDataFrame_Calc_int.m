@@ -168,15 +168,15 @@ zStd(isnan(zStd)) = inf;
 notNoiseIm = zStd<calibParams.roi.zSTDTh;
 notNoiseIm = imclose(notNoiseIm,diskObject);
 
-if ~any(notNoiseIm(:))
-   % No valid point
+minMaxX = minmax(find(notNoiseIm(round(size(notNoiseIm,1)/2),:)));
+minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2)))');
+
+if isempty(minMaxX) || isempty(minMaxY)
+   % No valid point in one direction
     minMaxMemsAngX = [nan,nan];
     minMaxMemsAngY = [nan,nan];
     return;
 end
-
-minMaxX = minmax(find(notNoiseIm(round(size(notNoiseIm,1)/2),:)));
-minMaxY = minmax(find(notNoiseIm(:,round(size(notNoiseIm,2)/2)))');
 
 xx = (minMaxX-0.5)*4 - double(regs.DIGG.sphericalOffset(1));
 yy = minMaxY - double(regs.DIGG.sphericalOffset(2));

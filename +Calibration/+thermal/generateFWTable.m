@@ -687,13 +687,7 @@ pzrRes = (vBias./iBias)'/1e3; % [Kohm]
 pzrVsense = (cell2mat(cellfun(@(x) x.vSesnePZR, vsenseData, 'UniformOutput', false)))';
 
 for iPzr = 1:3
-    p = polyfit(pzrRes(iPzr,:), pzrVsense(iPzr,:), 1);
-    pzrResults(iPzr).vsenseEstSlope = single(p(1));
-    if (p(1) == 0)
-        pzrResults(iPzr).vsenseEstRefRes = single(0);
-    else
-        pzrResults(iPzr).vsenseEstRefRes = single(-p(2)/p(1));
-    end
+    pzrResults(iPzr).vsenseEstCoef = single(polyfit(pzrRes(iPzr,:), pzrVsense(iPzr,:), 2));
 end
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
@@ -703,7 +697,8 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     lgnd = cell(1,6);
     resAx = linspace(0,10,1000);
     for iPzr = 1:3
-        vSenseAx = pzrResults(iPzr).vsenseEstSlope*(resAx - pzrResults(iPzr).vsenseEstRefRes);
+        coef = pzrResults(iPzr).vsenseEstCoef;
+        vSenseAx = polyval(coef, resAx);
         lastVisitedInd = find(resAx>max(pzrRes(iPzr,:)),1,'first');
         if (vSenseAx(1)*vSenseAx(end) > 0) % line fit doesn't cross X-axis
             signChangeInd = 0;
@@ -713,8 +708,8 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
         idcs = 1:min(length(vSenseAx), max(lastVisitedInd, signChangeInd) + 1);
         plot(pzrRes(iPzr,:), pzrVsense(iPzr,:), '.', 'color', clrs{iPzr,1})
         lgnd{2*iPzr-1} = sprintf('PZR%d', iPzr);
-        plot(resAx(idcs), pzrResults(iPzr).vsenseEstSlope*(resAx(idcs) - pzrResults(iPzr).vsenseEstRefRes), '-', 'color', clrs{iPzr,2})
-        lgnd{2*iPzr} = sprintf('%.4f*(x%s%.1f)', pzrResults(iPzr).vsenseEstSlope, signsStr{sign(-pzrResults(iPzr).vsenseEstRefRes)+2}, -pzrResults(iPzr).vsenseEstRefRes);
+        plot(resAx(idcs), polyval(coef, resAx(idcs)), '-', 'color', clrs{iPzr,2})
+        lgnd{2*iPzr} = sprintf('%.3f*x^2%s%.3f*x%s%.3f', coef(1), signsStr{sign(coef(2))+2}, coef(2), signsStr{sign(coef(3))+2}, coef(3));
     end
     grid on, xlabel('PZR resistance [Kohm]'), ylabel('PZR VSense [V]'), legend(lgnd,'Location','NorthEast'), title('PZR resistance-based VSense model')
     Calibration.aux.saveFigureAsImage(ff,runParams,'PZR','VsenseResistanceModel');

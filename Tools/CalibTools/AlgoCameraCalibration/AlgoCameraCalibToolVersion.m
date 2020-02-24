@@ -4,7 +4,7 @@ function [vers,subVersion,versionBytes] = AlgoCameraCalibToolVersion()
         vers = 3.01;
         subVersion = 0;
     else
-        vers = 4.44;
+        vers = 4.45;
         subVersion = 0;
     end
     
