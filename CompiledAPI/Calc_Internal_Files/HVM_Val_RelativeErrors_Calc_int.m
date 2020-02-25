@@ -144,6 +144,11 @@ for c = 1:2
     % relative z accuracy
     if numel(diff(distanceVector(:)))== numel(diff(data.(fnames{c}).distMat(:,1)))
         results.(fnames{c}).zDiffMeanError = mean(abs(diff(data.(fnames{c}).distMat(:,1)))-abs(diff(distanceVector(:))));
+
+        
+        results.(fnames{c}).zMovement = data.(fnames{c}).movmentVector(3)*data.white.distMat(2,1);
+        results.(fnames{c}).zFromCBFirstFrame = data.(fnames{c}).frameData(1).distanceAtMovementPixel;
+        results.(fnames{c}).zFromCBLastFrame = data.(fnames{c}).frameData(2).distanceAtMovementPixel;
     end
     
     measDistances = [data.(fnames{c}).frameData.distanceAtMovementPixel];
