@@ -9,6 +9,8 @@ function [delayRegs, dsmRegs, thermalRegs, dfzRegs] = getATCregsFromEEPROMregs(e
     dsmRegs.EXTL.dsmXoffset             = eepromRegs.EXTL.dsmXoffset;
     dsmRegs.EXTL.dsmYscale              = eepromRegs.EXTL.dsmYscale;
     dsmRegs.EXTL.dsmYoffset             = eepromRegs.EXTL.dsmYoffset;
+    dsmRegs.FRMW.losAtMirrorRestHorz    = eepromRegs.FRMW.losAtMirrorRestHorz;
+    dsmRegs.FRMW.losAtMirrorRestVert    = eepromRegs.FRMW.losAtMirrorRestVert;
     
     thermalRegs.FRMW.atlMinVbias1       = eepromRegs.FRMW.atlMinVbias1;
     thermalRegs.FRMW.atlMaxVbias1       = eepromRegs.FRMW.atlMaxVbias1;
