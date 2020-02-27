@@ -56,7 +56,7 @@ for i = 1:numel(frames)
         % Generate vertices for black and white
         v = [data.(fname).frameData(i).pts,ones(size(data.(fname).frameData(i).pts,1),1)]';
         data.(fname).frameData(i).V = (matKi*v)'.*zSampled/zMaxSubMM;
-    
+        data.(fname).frameData(i).medianZ = nanmedian(data.(fname).frameData(i).V(:,3));
         % For vW and vB: perform plane fit and get the hoizontal and vertical
         % angles
         data.(fname).frameData(i).pf = planeFitData(data.(fname).frameData(i).V);
@@ -144,6 +144,14 @@ for c = 1:2
     % relative z accuracy
     if numel(diff(distanceVector(:)))== numel(diff(data.(fnames{c}).distMat(:,1)))
         results.(fnames{c}).zDiffMeanError = mean(abs(diff(data.(fnames{c}).distMat(:,1)))-abs(diff(distanceVector(:))));
+
+        
+        results.(fnames{c}).zMovement = data.(fnames{c}).movmentVector(3)*data.white.distMat(2,1);
+        results.(fnames{c}).zFromCBFirstFrame = data.(fnames{c}).frameData(1).distanceAtMovementPixel;
+        results.(fnames{c}).zFromCBLastFrame = data.(fnames{c}).frameData(2).distanceAtMovementPixel;
+        
+        results.(fnames{c}).medianZFirstFrame = data.(fnames{c}).frameData(1).medianZ;
+        results.(fnames{c}).medianZLastFrame = data.(fnames{c}).frameData(2).medianZ;
     end
     
     measDistances = [data.(fnames{c}).frameData.distanceAtMovementPixel];
