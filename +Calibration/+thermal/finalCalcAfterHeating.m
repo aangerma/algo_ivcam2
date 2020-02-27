@@ -21,8 +21,7 @@ if numberOfShortFrames ~= 4 % Required number of short preset frames
     data.framesDataShort = data.framesData(round(linspace(1,nLong,4)));
 end
 
-
-[table, results, errorCode] = Calibration.thermal.generateFWTable(data,calibParams,runParams,fprintff);
+[table, results, errorCode] = Calibration.thermal.generateFWTable(data, calibParams, runParams, fprintff);
 
 if isempty(table) || ~isnan(errorCode)
     calibPassed = errorCode;
@@ -86,16 +85,6 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP0y          = results.angx.p0(2);
     results.thermalAngxP1x          = results.angx.p1(1);
     results.thermalAngxP1y          = results.angx.p1(2);
-    % PZR results
-    results.pzr1x2Coef              = results.pzr(1).coef(1);
-    results.pzr1x1Coef              = results.pzr(1).coef(2);
-    results.pzr1x0Coef              = results.pzr(1).coef(3);
-    results.pzr2x2Coef              = results.pzr(2).coef(1);
-    results.pzr2x1Coef              = results.pzr(2).coef(2);
-    results.pzr2x0Coef              = results.pzr(2).coef(3);
-    results.pzr3x2Coef              = results.pzr(3).coef(1);
-    results.pzr3x1Coef              = results.pzr(3).coef(2);
-    results.pzr3x0Coef              = results.pzr(3).coef(3);
     % Tmptr results
     results.FRMWhumidApdTempDiff    = results.temp.FRMWhumidApdTempDiff;
     % Struct cleaning
