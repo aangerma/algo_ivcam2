@@ -2,43 +2,47 @@ function generateTableForBurning(eepromRegs, table,calibParams,runParams,fprintf
 % Creates a binary table as requested
 
 % Thermal loop tables
-dsmTable = table(:,1:4);
-rtdTable = table(:,5);
-rtdTableShort = data.tableResults.rtd.tmptrOffsetValuesShort;
-dsmTable = uint16(dsmTable*2^8);
-rtdTable = typecast(int16(rtdTable*2^8),'uint16');
-rtdTableShort = typecast(int16(rtdTableShort*2^8),'uint16');
-tableShifted = [dsmTable,rtdTable]; % FW expected format
-
+calibData = struct('table', table);
+binTable = Calibration.tables.convertCalibDataToBinTable(calibData, 'Algo_Thermal_Loop_CalibInfo');
 thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', calibParams.tableVersions.algoThermal);
 thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
-Calibration.thermal.saveThermalTable( tableShifted , thermalTableFullPath );
+writeAllBytes(binTable, thermalTableFullPath);
 fprintff('Generated algo thermal table full path:\n%s\n',thermalTableFullPath);
 
+calibData = struct('tmptrOffsetValuesShort', data.tableResults.rtd.tmptrOffsetValuesShort);
+binTable = Calibration.tables.convertCalibDataToBinTable(calibData, 'Algo_Thermal_Loop_Extra_CalibInfo');
 extraThermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_Extra_CalibInfo', calibParams.tableVersions.algoThermalExtras);
 extraThermalTableFullPath = fullfile(runParams.outputFolder, extraThermalTableFileName);
-Calibration.thermal.saveExtraThermalTable( rtdTableShort , extraThermalTableFullPath );
+writeAllBytes(binTable, extraThermalTableFullPath);
 fprintff('Generated extra algo thermal table full path:\n%s\n',extraThermalTableFullPath);
 
-% RGB thermal table
+% RGB thermal tabl
 if isfield(data.tableResults, 'rgb')
-    rgbThermalTable = single(reshape(data.tableResults.rgb.thermalTable',[],1));
-    rgbThermalTable = [data.tableResults.rgb.minTemp; data.tableResults.rgb.maxTemp; data.tableResults.rgb.referenceTemp; data.tableResults.rgb.isValid; rgbThermalTable];
+    x = data.tableResults.rgb;
+    calibData = struct('thermalTable', x.thermalTable, 'minTemp', x.minTemp, 'maxTemp', x.maxTemp, 'referenceTemp', x.referenceTemp, 'isValid', x.isValid);
+    binTable = Calibration.tables.convertCalibDataToBinTable(calibData, 'RGB_Thermal_Info_CalibInfo');
     thermalRgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Thermal_Info_CalibInfo', calibParams.tableVersions.algoRgbThermal);
     thermalRgbTableFullPath = fullfile(runParams.outputFolder, thermalRgbTableFileName);
-    Calibration.thermal.saveRgbThermalTable( rgbThermalTable , thermalRgbTableFullPath );
+    writeAllBytes(binTable, thermalRgbTableFullPath);
     fprintff('Generated algo thermal RGB table full path:\n%s\n',thermalRgbTableFullPath);
 end
 
-% MEMS table
-data.tableResults.ctKillThr = int8(data.ctKillThr); %% 
+% MEMS table (load and rewrite existing table from MEMS tester)
 memsFile = dir(fullfile(calib_dir, 'MEMS_Electro_Optics_Calibration_Info_CalibInfo_Ver*.bin'));
 assert(length(memsFile)==1, sprintf('Expecting 1 MEMS BIN file, found %d', length(memsFile)))
 memsTableFileName = memsFile.name;
-memsTableFullPathIn = fullfile(calib_dir, memsTableFileName);
-memsTableFullPathOut = fullfile(runParams.outputFolder, memsTableFileName);
-Calibration.thermal.saveMemsTable( data.tableResults , memsTableFullPathIn , memsTableFullPathOut );
-fprintff('Generated algo thermal table full path:\n%s\n',memsTableFullPathOut);
+memsTableFullPath = fullfile(calib_dir, memsTableFileName);
+calibData = Calibration.tables.readCalibDataFromTableFile(memsTableFullPath);
+for iPzr = 1:3
+    calibData.pzr(iPzr).humEstCoef = data.tableResults.pzr(iPzr).humEstCoef;
+    calibData.pzr(iPzr).vsenseEstCoef = data.tableResults.pzr(iPzr).vsenseEstCoef;
+end
+calibData.ctKillThr = data.ctKillThr;
+memsTableName = memsTableFileName(1:strfind(memsTableFileName, '_Ver')-1);
+binTable = Calibration.tables.convertCalibDataToBinTable(calibData, memsTableName);
+memsTableFullPath = fullfile(runParams.outputFolder, memsTableFileName);
+writeAllBytes(binTable, memsTableFullPath);
+fprintff('Generated MEMS table full path:\n%s\n',memsTableFullPath);
 
 % All other algo tables
 initFldr = calib_dir;
