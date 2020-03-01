@@ -61,7 +61,7 @@ switch tableName
         for iPzr = [1,3]
             calibData.pzr(iPzr).vsenseEstCoef = typecast(binTable((73:84) + double(iPzr==3)*12), 'single');
         end
-        calibData.ctKillThr = binTable(109:110);
+        calibData.ctKillThr = typecast(binTable(109:110), 'int8');
         
     case 'RGB_Calibration_Info_CalibInfo'
         metaDataUint8 = binTable(1:16);

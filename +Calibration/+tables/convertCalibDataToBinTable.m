@@ -66,7 +66,7 @@ switch tableName
             pzrData = single(calibData.pzr(iPzr).humEstCoef(3));
             binTable = [binTable; vec(typecast(pzrData, 'uint8'))];
         end
-        tempDataUint8 = [uint8(vec(calibData.ctKillThr)); zeros(2,1,'uint8')];
+        tempDataUint8 = [typecast(int8(vec(calibData.ctKillThr)), 'uint8'); zeros(2,1,'uint8')];
         binTable = [binTable; tempDataUint8];
         
     case 'RGB_Calibration_Info_CalibInfo'
