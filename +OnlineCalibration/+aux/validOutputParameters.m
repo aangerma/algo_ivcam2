@@ -2,7 +2,7 @@ function [isOutputValid,newParams,dbg] = validOutputParameters(frame,params,newP
 isOutputValid = 1;
 
 % Clip current movement by pixels
-[uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
+   [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
 [uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort);
 
 xyMovement = mean(sqrt(sum((uvMap-uvMapNew).^2,2)));

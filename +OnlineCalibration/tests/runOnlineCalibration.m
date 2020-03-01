@@ -13,7 +13,7 @@ frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame.z = frame.z(:,:,1);
 frame.i = frame.i(:,:,1);
 frame.yuy2 = frame.yuy2(:,:,1);
-
+frame.yuy2Prev = frame.yuy2;
 % Define hyperparameters
 
 params = camerasParams;
@@ -51,9 +51,10 @@ sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
 
 
 params.edgeDistributMinMaxRatio = 0.005;
-params.minWeightedEdgePerSectionDepth = 3000;
-params.minWeightedEdgePerSectionRgb = 30000;
+params.minWeightedEdgePerSectionDepth = 50;
+params.minWeightedEdgePerSectionRgb = 0.05;
 
+startParams = params;
 % Save Inputs
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_input',uint16(frame.z),'uint16');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_input',uint8(frame.i),'uint8');
@@ -85,15 +86,22 @@ frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',single(frame.weights),'single');
 
-
+%% Validate input scene
+if ~OnlineCalibration.aux.validScene(frame,params)
+    disp('Scene not valid!');
+    return;
+end
 %% Perform Optimization
 newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
 
 OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
 OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
 
-[validParams,params,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,params,1);
-
+%% Validate new parameters
+[validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
+if validParams
+    params = updatedParams;
+end
 figure; 
 subplot(421); imagesc(frame.i); impixelinfo; title('IR image');colorbar;
 subplot(422); imagesc(frame.irEdge); impixelinfo; title('IR edge');colorbar;

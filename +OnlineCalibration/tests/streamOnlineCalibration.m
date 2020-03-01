@@ -47,8 +47,8 @@ params.maxXYMovementFromOrigin = 20;
 params.numSectionsV = 2;
 params.numSectionsH = 2;
 params.edgeDistributMinMaxRatio = 0.005;
-params.minWeightedEdgePerSectionDepth = 3000;
-params.minWeightedEdgePerSectionRgb = 300000;
+params.minWeightedEdgePerSectionDepth = 50;
+params.minWeightedEdgePerSectionRgb = 0.05;
 
 
 flowParams.deltaTmptr = 3;

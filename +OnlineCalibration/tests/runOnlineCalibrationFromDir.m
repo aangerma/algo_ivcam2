@@ -55,8 +55,8 @@ params.maxXYMovementFromOrigin = 20;
 params.numSectionsV = 2;
 params.numSectionsH = 2;
 params.edgeDistributMinMaxRatio = 0.005;
-params.minWeightedEdgePerSectionDepth = 3000;
-params.minWeightedEdgePerSectionRgb = 30000;
+params.minWeightedEdgePerSectionDepth = 50;
+params.minWeightedEdgePerSectionRgb = 0.05;
 
 % Save Inputs
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_input',uint16(frame.z),'uint16');
