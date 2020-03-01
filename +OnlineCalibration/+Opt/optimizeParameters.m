@@ -6,9 +6,8 @@ while notConverged && iterCount < params.maxOptimizationIters
     iterCount = iterCount + 1;
     % Calculate gradients
     [cost,gradStruct] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);
-    gradStruct.A(3,:) = 0;
     % Find the step
-    [~,newRgbPmat,newCost] = OnlineCalibration.aux.myBacktrackingLineSearchP(frame,params,gradStruct);%pi()/180
+    [stepSize,newRgbPmat,newCost] = OnlineCalibration.aux.myBacktrackingLineSearchP(frame,params,gradStruct);%pi()/180
     % Check stopping criteria
     
     % change in rgbPMat / todo -XY
@@ -23,6 +22,9 @@ while notConverged && iterCount < params.maxOptimizationIters
         disp('Criteria - Small change in cost');
         notConverged = 0;
     end
+    
+    dbg(iterCount) = collectDebugData(frame,params,newRgbPmat,stepSize); % Collect debug for RnD, do not implement in LRS
+    
     params.rgbPmat = newRgbPmat;
     
 end
@@ -33,3 +35,9 @@ newParams = params;
 
 end
 
+function dbg = collectDebugData(frame,params,newRgbPmat,stepSize)
+    [uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
+    [uvMapPost,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newRgbPmat,params.Krgb,params.rgbDistort);
+    dbg.movement = mean(sqrt(sum((uvMapPrev-uvMapPost).^2,2)));
+    dbg.stepSize = stepSize;
+end

@@ -2,8 +2,6 @@ function [cost,grad] = calcCostAndGrad(frame,params)
 
     [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
     
-    
-    
     DVals = interp2(frame.rgbIDT,uvMap(:,1)+1,uvMap(:,2)+1);
     DxVals = interp2(frame.rgbIDTx,uvMap(:,1)+1,uvMap(:,2)+1);
     DyVals = interp2(frame.rgbIDTy,uvMap(:,1)+1,uvMap(:,2)+1);
@@ -12,9 +10,12 @@ function [cost,grad] = calcCostAndGrad(frame,params)
     W = frame.weights;
     if contains(params.derivVar,'P')
         [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
-        grad_A = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
-        grad.A = reshape(nanmean(grad_A),4,3)';
-        grad.A = grad.A.*params.rgbPmatNormalizationMat;
+        grad_P = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
+        grad.P = reshape(nanmean(grad_P),4,3)';
+        if params.zeroLastLineOfPGrad
+            grad.P(3,:) = 0;
+        end
+        grad.P = grad.P./norm(grad.P)./params.rgbPmatNormalizationMat;
     end
     if contains(params.derivVar,'T')
         [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
@@ -34,5 +35,6 @@ function [cost,grad] = calcCostAndGrad(frame,params)
     end
     cost = nanmean(DVals.*W);
 
+    
 end
 

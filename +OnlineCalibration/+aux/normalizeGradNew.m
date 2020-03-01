@@ -3,18 +3,18 @@ dist = 1500;
 Z = single(params.zMaxSubMM)*ones(size(frame.z(:,:,1)))*dist;
 V3 = OnlineCalibration.aux.z2vertices(Z,true(size(Z)),params); %logical(ones(size(Z)))
 V4 = [V3, ones(size(V3,1),1)];
-[~,~,dXinDVar,dYinDVar] = OnlineCalibration.aux.calcValFromExpressions(derivVar,V4,params);
+[dXoutDVar,dYoutDVar,dXinDVar,dYinDVar] = OnlineCalibration.aux.calcValFromExpressions(derivVar,V4,params);
 switch derivVar
     case 'P'
-        r = sqrt(dXinDVar.^2+dYinDVar.^2);
+        r = sqrt(dXoutDVar.^2+dYoutDVar.^2);
         meanDrDVar = reshape(nanmean(r,2),4,3)';
     case 'R'
-        rXalpha = sqrt(dXinDVar.xAlpha.^2+dYinDVar.xAlpha.^2);
-        rYbeta = sqrt(dXinDVar.yBeta.^2+dYinDVar.yBeta.^2);
-        rZgamma = sqrt(dXinDVar.zGamma.^2+dYinDVar.zGamma.^2);
+        rXalpha = sqrt(dXoutDVar.xAlpha.^2+dYoutDVar.xAlpha.^2);
+        rYbeta = sqrt(dXoutDVar.yBeta.^2+dYoutDVar.yBeta.^2);
+        rZgamma = sqrt(dXoutDVar.zGamma.^2+dYoutDVar.zGamma.^2);
         meanDrDVar = [nanmean(rXalpha);nanmean(rYbeta);nanmean(rZgamma)];
     case 'T'
-        r = sqrt(dXinDVar.^2+dYinDVar.^2);
+        r = sqrt(dXoutDVar.^2+dYoutDVar.^2);
         meanDrDVar = reshape(nanmean(r,2),1,3)';
     otherwise
             error('No such case!!!');

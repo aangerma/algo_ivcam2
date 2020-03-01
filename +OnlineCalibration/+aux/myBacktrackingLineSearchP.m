@@ -5,7 +5,7 @@ function [stepSize,newRgbPmat,newCost] = myBacktrackingLineSearchP(frame,params,
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
 stepSize = params.maxStepSize;
 % dfdx = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T];
-grad = gradStruct.A; 
+grad = gradStruct.P; 
 
 
 unitGrad = grad./norm(grad);
