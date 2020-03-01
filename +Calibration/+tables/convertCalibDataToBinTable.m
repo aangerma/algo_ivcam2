@@ -53,21 +53,21 @@ switch tableName
         binTable = NaN;
 
     case 'MEMS_Electro_Optics_Calibration_Info_CalibInfo'
-        binData = zeros(0, 1, 'uint8');
+        binTable = zeros(0, 1, 'uint8');
         for iPzr = 1:3
             pzrData = single([calibData.pzr(iPzr).psiDevAlpha; calibData.pzr(iPzr).s0; calibData.pzr(iPzr).humEstCoef(1); calibData.pzr(iPzr).vb0Nom; calibData.pzr(iPzr).ib0Nom; calibData.pzr(iPzr).humEstCoef(2)]);
-            binData = [binData; typecast(pzrData, 'uint8')];
+            binTable = [binTable; typecast(pzrData, 'uint8')];
         end
         for iPzr = [1,3]
             pzrData = single(vec(calibData.pzr(iPzr).vsenseEstCoef));
-            binData = [binData; typecast(pzrData, 'uint8')];
+            binTable = [binTable; typecast(pzrData, 'uint8')];
         end
         for iPzr = 1:3
             pzrData = single(calibData.pzr(iPzr).humEstCoef(3));
-            binData = [binData; vec(typecast(pzrData, 'uint8'))];
+            binTable = [binTable; vec(typecast(pzrData, 'uint8'))];
         end
         tempDataUint8 = [uint8(vec(calibData.ctKillThr)); zeros(2,1,'uint8')];
-        binData = [binData; tempDataUint8];
+        binTable = [binTable; tempDataUint8];
         
     case 'RGB_Calibration_Info_CalibInfo'
         [~, ~, versionBytes] = AlgoCameraCalibToolVersion;

@@ -48,6 +48,9 @@ switch tableName
         calibData = binTable;
 
     case 'MEMS_Electro_Optics_Calibration_Info_CalibInfo'
+        if (length(binTable)<112)
+            binTable = [binTable; zeros(112-length(binTable),1,'uint8')];
+        end
         for iPzr = 1:3
             calibData.pzr(iPzr).psiDevAlpha = typecast(binTable((1:4)+(iPzr-1)*24), 'single');
             calibData.pzr(iPzr).s0 = typecast(binTable((5:8)+(iPzr-1)*24), 'single');
