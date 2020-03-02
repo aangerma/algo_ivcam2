@@ -22,12 +22,11 @@ function [presetsTableFullPath] = GeneratePresetsTable_Calib_Calc(calibParams)
     
     % operation
     runParams.outputFolder = output_dir;
-    presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
+    calibData = struct('presetsPath', fullfile(runParams.outputFolder, 'AlgoInternal'));
+    binTable = convertCalibDataToBinTable(calibData, 'Dynamic_Range_Info_CalibInfo');
     presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
     presetsTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', presetsTableFileName);
-    initFolder = presetPath;
-    fw = Pipe.loadFirmware(initFolder, 'tablesFolder', initFolder);
-    fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
+    writeAllBytes(binTable, presetsTableFullPath);
     
     % output save
     if g_save_output_flag && exist(output_dir,'dir')~=0 

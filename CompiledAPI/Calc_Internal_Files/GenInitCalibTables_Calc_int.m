@@ -25,16 +25,19 @@ function GenInitCalibTables_Calc_int(initFolder, outFolder, calibToolVers, table
     
     % Generating tables from FW object and remaining tables which are not managed through actual FW regs
     fw.generateTablesForFw(outFolder, 0, preserveThermalCalib, tableVersions);
+    binTable = convertCalibDataToBinTable(struct('table', []), 'Algo_rtdOverAngX_CalibInfo');
     rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', tableVersions.algoRtdOverAngX);
-    fw.writeRtdOverAngXTable(fullfile(outFolder, rtdOverXTableFileName),[]);
+    writeAllbytes(binTable, fullfile(outFolder, rtdOverXTableFileName));
     presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', tableVersions.dynamicRange);
     presetsPath = fileparts(outFolder);
     temp = dbstack;
     if (length(temp)>1) && strcmp(temp(2).name, 'GenInitCalibTables_Calc') % called by GenInitCalibTables_Calc
-        fw.writeDynamicRangeTable(fullfile(outFolder, presetsTableFileName), presetsPath);
+        calibData = struct('presetsPath', presetsPath);
     else % called directly
-        fw.writeDynamicRangeTable(fullfile(outFolder, presetsTableFileName));
+        calibData = struct;
     end
+    binTable = convertCalibDataToBinTable(calibData, 'Dynamic_Range_Info_CalibInfo');
+    writeAllBytes(binTable, fullfile(outFolder, presetsTableFileName));
     rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', tableVersions.rgbCalib);
     writeAllBytes(zeros(1,112,'uint8'), fullfile(outFolder, rgbTableFileName));
     if ~preserveThermalCalib

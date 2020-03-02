@@ -131,13 +131,11 @@ if calibParams.presets.long.updateCalibVal
     longRangePreset.value(modRefInd) = maxRangeScaleModRef;
     writetable(longRangePreset,longRangePresetFn);
 end
-presetPath = fullfile(runParams.outputFolder,'AlgoInternal');
+calibData = struct('presetsPath', fullfile(runParams.outputFolder, 'AlgoInternal'));
+binTable = convertCalibDataToBinTable(calibData, 'Dynamic_Range_Info_CalibInfo');
 presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
-presetsTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', presetsTableFileName);
-
-initFolder = presetPath;
-fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
-fw.writeDynamicRangeTable(presetsTableFullPath,presetPath);
+presetsTableFullPath = fullfile(runParams.outputFolder, 'calibOutputFiles', presetsTableFileName);
+writeAllBytes(binTable, presetsTableFullPath);
 
 end
 

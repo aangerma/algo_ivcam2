@@ -1,4 +1,5 @@
 function  [calibPassed] = runCalibStream(runParamsFn,calibParamsFn, fprintff,spark,app)
+% FUNCTION IS OBSOLETE
     t=tic;
     results = struct;
     if(~exist('fprintff','var'))

@@ -1,5 +1,6 @@
-function [rgbData] = readDataForRgbThermalCalculation(hw,calibParams)
-[rgbData] = getRgbThermalData(hw,calibParams);
+function [rgbData] = readDataForRgbThermalCalculation(hw)
+%TODO: replace with a general function for reading EEPROM off unit
+[rgbData] = getRgbThermalData(hw);
 [rgbData.rgbCalTemp] = getRgbCalibTemp(hw);
 end
 
@@ -10,12 +11,7 @@ newStr = strsplit(newStr{9},' ');
 rgbCalTemp = double(hex2single([newStr{12} newStr{11} newStr{10} newStr{9}]));
 end
 
-function [rgbThermalData] = getRgbThermalData(hw,calibParams)
+function [rgbThermalData] = getRgbThermalData(hw)
 [~,binData] = hw.cmd('READ_TABLE 17 0');
-if isfield(calibParams.gnrl,'rgb') && isfield(calibParams.gnrl.rgb,'nBinsThermal')
-    nBins = calibParams.gnrl.rgb.nBinsThermal;
-else
-    nBins = 29;
-end
-rgbThermalData = Calibration.aux.convertRgbThermalBytesToData(binData,nBins);
+rgbThermalData = Calibration.tables.convertBinTableToCalibData(binData, 'RGB_Thermal_Info_CalibInfo');
 end

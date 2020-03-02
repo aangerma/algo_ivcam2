@@ -39,26 +39,11 @@ cmd = sprintf([
     ],outputFolder, toolConfig.presetsDefFolder, toolConfig.configurationFolder);
 eval(cmd);
 
-
-
 copyfile(toolConfig.calibParamsFile,outputFolder);
 copyfile(toolConfigFile,fullfile(outputFolder, 'IV2AlgoCameraCalibTool.xml'));
-fw = Pipe.loadFirmware(sprintf('../../../+Calibration/%s',toolConfig.configurationFolder));
-vregs.FRMW.calibVersion = uint32(hex2dec(single2hex(vers)));
-vregs.FRMW.configVersion = uint32(hex2dec(single2hex(vers)));
-fw.setRegs(vregs,'');
-
-presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
-rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
-rgbTableFileName = Calibration.aux.genTableBinFileName('RGB_Calibration_Info_CalibInfo', calibParams.tableVersions.rgbCalib);
-% Generate tables for old firmware
-fw.writeFirmwareFiles(fullfile(outputFolder,'configFilesNoAlgoGen'));
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFilesNoAlgoGen', presetsTableFileName));
-% Generate tables for firmware with Algo Gen
-fw.generateTablesForFw(fullfile(outputFolder,'configFiles'),[],[], calibParams.tableVersions);
-fw.writeDynamicRangeTable(fullfile(outputFolder,'configFiles', presetsTableFileName),fullfile(ivcam2root,'+Calibration','+presets',['+',toolConfig.presetsDefFolder]));
-fw.writeRtdOverAngXTable(fullfile(outputFolder,'configFiles', rtdOverXTableFileName),[]);
-writeAllBytes(zeros(1,112,'uint8'), fullfile(outputFolder,'configFiles', rgbTableFileName));
+configurationFolder = sprintf('../../../+Calibration/%s',toolConfig.configurationFolder);
+Calibration.aux.defineFileNamesAndCreateResultsDir(fullfile(outputFolder, 'AlgoInternal'), configurationFolder);
+GenInitCalibTables_Calc_int(fullfile(outputFolder, 'AlgoInternal'), fullfile(outputFolder,'configFiles'), vers, calibParams.tableVersions);
 
 % %%
 % mcc -m IV2rgbCalibTool.m ...

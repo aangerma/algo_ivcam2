@@ -1,4 +1,5 @@
 function burn2device(obj,basedir,burnCalib,burnConfig)
+% FUNCTION IS OBSOLETE
     if(~exist(basedir,'dir'))
         basedir=tempdir;
     end

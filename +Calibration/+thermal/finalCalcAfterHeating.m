@@ -52,7 +52,7 @@ calibPassed = Calibration.aux.mergeScores(data.results,calibParams.errRange,fpri
 
 %% Burn 2 device
 fprintff('Preparing thermal calibration data for burning\n');
-Calibration.thermal.generateTableForBurning(eepromRegs, data.tableResults.table,calibParams,runParams,fprintff,0,data,calib_dir);
+Calibration.thermal.generateTableForBurning(eepromRegs, calibParams, runParams, fprintff, data, calib_dir);
 fprintff('Thermal calibration finished\n');
 
 end
