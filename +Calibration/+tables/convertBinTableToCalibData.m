@@ -92,7 +92,7 @@ switch tableName
         calibData.color.Kn([1,5,7,8,4]) = typecast(binTable(17:36), 'single');
         calibData.color.d = typecast(binTable(37:56), 'single');
         calibData.extrinsics.r = reshape(typecast(binTable(57:92), 'single'), [3,3])';
-        calibData.extrinsics.t = typecast(binTable(93:104), 'single');
+        calibData.extrinsics.t = vec(typecast(binTable(93:104), 'single'));
         calibData.rgbCalTemperature = typecast(binTable(105:108), 'single');
 
     case 'RGB_Thermal_Info_CalibInfo'

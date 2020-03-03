@@ -36,7 +36,10 @@ function  [validationPassed] = runThermalValidation(runParams,calibParams, fprin
        ,'Unit didnt pass ACC');
     end
     if isfield(calibParams.gnrl, 'rgb') && isfield(calibParams.gnrl.rgb, 'fixRgbThermal') && calibParams.gnrl.rgb.fixRgbThermal
-        [data.rgb] = Calibration.thermal.readDataForRgbThermalCalculation(hw,calibParams);
+        calibDataEeprom = Calibration.tables.readCalibDataFromUnit(hw, 'RGB_Thermal_Info_CalibInfo');
+        data.rgb = calibDataEeprom.tableData;
+        calibDataEeprom = Calibration.tables.readCalibDataFromUnit(hw, 'RGB_Calibration_Info_CalibInfo');
+        data.rgb.rgbCalTemp = calibDataEeprom.tableData.rgbCalTemperature;
     end
     fprintff('Done(%ds)\n',round(toc(t)));
     
