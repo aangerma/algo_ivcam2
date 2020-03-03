@@ -228,7 +228,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [rgbData] = parseRgbData(unitData)
-rgbData = Calibration.tables.convertBinTableToCalibData(unitData.rgbThermalData, 'RGB_Thermal_Info_CalibInfo');
+rgbData = Calibration.tables.convertBinTableToCalibData(uint8(unitData.rgbThermalData(17:end)), 'RGB_Thermal_Info_CalibInfo');
 tempVar = char(join(string(flip(dec2hex(unitData.rgbCalibData(121:125))))));
 tempVar = tempVar(~isspace(tempVar));
 rgbData.rgbCalTemp = hex2single(tempVar);
