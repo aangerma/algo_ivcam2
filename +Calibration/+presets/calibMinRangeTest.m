@@ -14,5 +14,8 @@ hw = HWinterface();
 pathSR ="C:\GIT\AlgoProjects\algo_ivcam2\+Calibration\+presets\+defaultValues\shortRangePreset.csv";
 shortRangePreset=readtable(pathSR);
 modRefix=find(strcmp(shortRangePreset.name,'modulation_ref_factor')); 
-% fw=Firmware;
-% fw.writeDynamicRangeTable('C:\tmp\New folder\Dynamic_Range_CalibInfo_Ver_1.bin');
+% binTable = convertCalibDataToBinTable(struct, 'Dynamic_Range_Info_CalibInfo');
+% writeAllBytes(binTable, 'C:\tmp\New folder\Dynamic_Range_CalibInfo_Ver_1.bin');
+
+
+

@@ -45,9 +45,34 @@ switch tableName
         binTable = NaN;
         
     case 'Dynamic_Range_Info_CalibInfo'
-        %TODO: take from writeDynamicRangeTable
-        binTable = NaN;
-        
+        if ~isfield(calibData, 'presetsPath')
+            pathLR = '..\+presets\+defaultValues\longRangePreset.csv';
+            pathSR = '..\+presets\+defaultValues\shortRangePreset.csv';
+        else
+            pathLR = fullfile(calibData.presetsPath, 'longRangePreset.csv');
+            pathSR = fullfile(calibData.presetsPath, 'shortRangePreset.csv');
+        end
+        longRangePreset = readtable(pathLR);
+        shortRangePreset = readtable(pathSR);
+        % definitions
+        tableSize = 120*2;
+        resrevedLength = 33;
+        s = Stream(zeros(1, tableSize, 'uint8'));
+        for iParam = 1:size(longRangePreset, 1)
+            type = longRangePreset.type{iParam};
+            value = longRangePreset.value(iParam);
+            s.setNext(value, type);
+        end
+        for iParam = 1:resrevedLength
+            s.setNext(0, 'uint8');
+        end
+        for iParam = 1:size(shortRangePreset,1)
+            type = shortRangePreset.type{iParam};
+            value = shortRangePreset.value(iParam);
+            s.setNext(value, type);
+        end
+        binTable = s.flush();
+
     case 'FRMW_tmpTrans_Info'
         % Implemented in @Firmware\generateTablesForFw based on regsDefinitions.frmw (TransferToFW=0)
         binTable = NaN;

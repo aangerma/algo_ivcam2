@@ -290,9 +290,9 @@ if (size(framesData(1).ptsWithZ,2) == 7) % RGB frames captures during heating st
         transXparam(k,1) = tform.T(3,1);
         transYparam(k,1) = tform.T(3,2);
     end
-    rgbTable = fillInnerNans([scaleCosParam,scaleSineParam,transXparam,transYparam]);
-    rgbTable = fillStartNans(rgbTable);
-    rgbTable = flipud(fillStartNans(flipud(rgbTable)));
+    rgbTable = Calibration.tables.fillInnerNans([scaleCosParam,scaleSineParam,transXparam,transYparam]);
+    rgbTable = Calibration.tables.fillStartNans(rgbTable);
+    rgbTable = flipud(Calibration.tables.fillStartNans(flipud(rgbTable)));
     results.rgb.thermalTable = rgbTable;
     results.rgb.minTemp = minMaxHum4RGB(1);
     results.rgb.maxTemp = minMaxHum4RGB(2);
@@ -320,10 +320,10 @@ table = [dsmXscale,...
             dsmXoffset,...
             dsmYoffset,...
             destTmprtOffset];
-table = fillInnerNans(table);   
+table = Calibration.tables.fillInnerNans(table);   
 if ~calibParams.fwTable.extrap.rtdModel.skipInterpolation % table is expected to be NaN free
-    table = fillStartNans(table);
-    table = flipud(fillStartNans(flipud(table)));
+    table = Calibration.tables.fillStartNans(table);
+    table = flipud(Calibration.tables.fillStartNans(flipud(table)));
 end
 
 if calibParams.fwTable.yFix.bypass
@@ -613,33 +613,6 @@ function x = linspaceCanonicalCenters(n)
 xMin = -(2*n-2)/((2*n-3)^2-1);
 xMax = (2*n-2)*(2*n-3)/((2*n-3)^2-1);
 x = linspace(xMin, xMax, n);
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function table = fillStartNans(table)
-for i = 1:size(table,2)
-    ni = find(~isnan(table(:,i)),1);
-    if ni>1
-        table(1:ni-1,i) = table(ni,i);
-    end
-end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function tableNoInnerNans = fillInnerNans(table)
-tableNoInnerNans = table;
-for i = 1:size(table,2)
-    col = table(:,i);
-    nanRows = isnan(col);
-    rowId = (1:size(table,1))';
-    tableValid = col(~nanRows);
-    rowValid = rowId(~nanRows);
-    rowInvalid = rowId(nanRows);
-    newVals = interp1q(rowValid,tableValid,rowInvalid);
-    tableNoInnerNans(nanRows,i) = newVals;
-end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

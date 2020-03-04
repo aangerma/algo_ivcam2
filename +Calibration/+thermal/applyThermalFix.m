@@ -1,85 +1,55 @@
 function [data] = applyThermalFix(data,regs,luts,calibParams,runParams,spherical)
 
-framesData = data.framesData;
-invalidFrames = arrayfun(@(j) isempty(framesData(j).ptsWithZ),1:numel(framesData));
-framesData = framesData(~invalidFrames);
-
-nBins = calibParams.fwTable.nRows;
-N = nBins+1;
-tempData = [framesData.temp];
-vBias = reshape([framesData.vBias],3,[]);
-
-table = data.tableResults.table;
-
-newData = data;
-framesData = data.framesData;
-vBias = reshape([framesData.vBias],3,[]);
+% sensors data extraction
+vBias = reshape([data.framesData.vBias],3,[]);
 angleAdd = 2047;
 
-%%
-% Apply fix in Y
-rowI = (vBias(2,:) - data.tableResults.angy.minval)/(data.tableResults.angy.maxval-data.tableResults.angy.minval);
-rowI = 1+(nBins-1)*min(max(rowI,0),1);
-dsmKeyY = [2,4];
-[dsmValuesY] = calcDsmValues(dsmKeyY,rowI,table,nBins);
+lddTemp = [data.framesData.temp];
+lddTemp = [lddTemp.ldd];
+
+lddTempShort = [data.framesDataShort.temp];
+lddTempShort = [lddTempShort.ldd];
+
+% extraction of thermally-fixed values
+resAngX = data.tableResults.angx;
+resAngY = data.tableResults.angy;
+tempRegs.FRMW = struct('atlMinVbias1', resAngX.p0(1), 'atlMinVbias2', resAngY.minval, 'atlMinVbias3', resAngX.p0(2), 'atlMaxVbias1', resAngX.p1(1), 'atlMaxVbias2', resAngY.maxval, 'atlMaxVbias3', resAngX.p1(2));
+[dsmVals, rtdVals] = Calibration.tables.calc.calcAlgoThermalDsmRtd(data.tableResults, tempRegs, calibParams.fwTable.tempBinRange, vBias, lddTemp);
+resRtdShort.table = data.tableResults.rtd.tmptrOffsetValuesShort;
+[~, rtdValsShort] = Calibration.tables.calc.calcAlgoThermalDsmRtd(resRtdShort, [], calibParams.fwTable.tempBinRange, [], lddTempShort);
+
+%% Fix application
+newData = data;
+
+% Y fix
 for k = 1:length(data.framesData)
     newData.framesData(k).ptsWithZ = data.framesData(k).ptsWithZ;
     aMemesY = (angleAdd + data.framesData(k).ptsWithZ(:,3))./regs.EXTL.dsmYscale-regs.EXTL.dsmYoffset;
-    newAngY = (aMemesY+dsmValuesY(k,2)).*dsmValuesY(k,1)-angleAdd; % Apply the fix
+    newAngY = (aMemesY+dsmVals.yOffset(k)).*dsmVals.yScale(k)-angleAdd; % Apply the fix
     newData.framesData(k).ptsWithZ(:,3) = newAngY;
 end
 
-%%
-% Apply the fix for x
-% Handle X fix
-deltaV1 = data.tableResults.angx.p1(1)-data.tableResults.angx.p0(1);
-deltaV3 = data.tableResults.angx.p1(2)-data.tableResults.angx.p0(2);
-dV1 = vBias(1,:) - data.tableResults.angx.p0(1);
-dV3 = vBias(3,:) - data.tableResults.angx.p0(2);
-rowI = (dV1*deltaV1+dV3*deltaV3)./(deltaV1^2 + deltaV3^2);
-rowI = 1+(nBins-1)*min(max(rowI,0),1);
-
-dsmKeyX = [1,3];
-[dsmValuesX] = calcDsmValues(dsmKeyX,rowI,table,nBins);
+% X fix
 for k = 1:length(data.framesData)
     aMemesX = (angleAdd + data.framesData(k).ptsWithZ(:,2))./regs.EXTL.dsmXscale-regs.EXTL.dsmXoffset;
-    newAngX = (aMemesX+dsmValuesX(k,2)).*dsmValuesX(k,1)-angleAdd; % Apply the fix
+    newAngX = (aMemesX+dsmVals.xOffset(k)).*dsmVals.xScale(k)-angleAdd; % Apply the fix
     newData.framesData(k).ptsWithZ(:,2) = newAngX;
 end
 
-%%
-% Fix RTD
-lddTemp = [framesData.temp];
-lddTemp = [lddTemp.ldd];
-rowI = (lddTemp - calibParams.fwTable.tempBinRange(1))/(calibParams.fwTable.tempBinRange(2)-calibParams.fwTable.tempBinRange(1));
-rowI = 1+(nBins-1)*min(max(rowI,0),1);
-dsmKeyRtd = 5;
-[dsmValuesRtd] = calcDsmValues(dsmKeyRtd,rowI,table,nBins);
+% RTD fix
 for k = 1:length(data.framesData)
-    newData.framesData(k).ptsWithZ(:,1) = newData.framesData(k).ptsWithZ(:,1) + dsmValuesRtd(k);
+    newData.framesData(k).ptsWithZ(:,1) = newData.framesData(k).ptsWithZ(:,1) + rtdVals(k);
 end
-% Fix RTD Short
-lddTempShort = [data.framesDataShort.temp];
-lddTempShort = [lddTempShort.ldd];
-rowI = (lddTempShort - calibParams.fwTable.tempBinRange(1))/(calibParams.fwTable.tempBinRange(2)-calibParams.fwTable.tempBinRange(1));
-rowI = 1+(nBins-1)*min(max(rowI,0),1);
-dsmKeyRtd = 5;
-tmpTable = table;
-tmpTable(:,5) = data.tableResults.rtd.tmptrOffsetValuesShort;
-[dsmValuesRtd] = calcDsmValues(dsmKeyRtd,rowI,tmpTable,nBins);
 for k = 1:length(data.framesDataShort)
-    newData.framesDataShort(k).ptsWithZ(:,1) = newData.framesDataShort(k).ptsWithZ(:,1) + dsmValuesRtd(k);
+    newData.framesDataShort(k).ptsWithZ(:,1) = newData.framesDataShort(k).ptsWithZ(:,1) + rtdValsShort(k);
 end
 
 %%
- % Calculate coordinates in image plane
-inmin = -2074;
-inmax = 2047;
+% Calculate coordinates in image plane
 for k = 1:length(data.framesData)
     if spherical
-        
         invalid = isnan(newData.framesData(k).ptsWithZ(:,2));
-        
+
         xx = (newData.framesData(k).ptsWithZ(:,2));
         yy = (newData.framesData(k).ptsWithZ(:,3));
 
@@ -103,13 +73,12 @@ for k = 1:length(data.framesData)
     end
 end
 
-
 % Apply fix to recorded min and max data
 minMaxMemsAngX = reshape([data.framesData.minMaxMemsAngX],2,[])';
-minMaxDSMAngX = (minMaxMemsAngX+dsmValuesX(:,2)).*dsmValuesX(:,1)-angleAdd; % Apply the fix
+minMaxDSMAngX = (minMaxMemsAngX+dsmVals.xOffset).*dsmVals.xScale-angleAdd; % Apply the fix
 
 minMaxMemsAngY = reshape([data.framesData.minMaxMemsAngY],2,[])';
-minMaxDSMAngY = (minMaxMemsAngY+dsmValuesY(:,2)).*dsmValuesY(:,1)-angleAdd; % Apply the fix
+minMaxDSMAngY = (minMaxMemsAngY+dsmVals.yOffset).*dsmVals.yScale-angleAdd; % Apply the fix
 
 data.fixedData = newData;
 data.dsmMovement.X = minMaxDSMAngX;
@@ -154,9 +123,8 @@ if calibParams.bananas.doExtrapolationInX
     xlabel('ldd[deg]');ylabel('DSM Units');title('extrapolation of upper DSM values');
     grid on
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DSM_X_Extreme_Values'));
-
-    
 end
+
 if calibParams.yFovDegredation.fitToPoly
     lddGrid = linspace(lddTemp(1),lddTemp(end),100)';
     sampleSize = calibParams.yFovDegredation.ransac.sampleSize; % number of points to sample per trial
@@ -192,23 +160,10 @@ if calibParams.yFovDegredation.fitToPoly
     grid on
     Calibration.aux.saveFigureAsImage(ff,runParams,'Heating',sprintf('DSM_Y_Extreme_Values'));
 
-    
 end
 end
 
-%%
-function [dsmValues] = calcDsmValues(dsmKey,rowI,table,nBins)
-dsmValues = zeros(numel(rowI),length(dsmKey));
-dsmValues(rowI == 1,:) = ones(size(dsmValues(rowI == 1,:))) .* table(1,dsmKey);
-dsmValues(rowI == (nBins),:) = ones(size(dsmValues(rowI == (nBins),:))) .* table(end,dsmKey);
-innerIndices = ~((rowI == 1) | rowI == nBins);
-innerRows = rowI(innerIndices)';
-innerRowsLow = floor(innerRows);
-innerRowsFraq = innerRows - floor(innerRows);
-
-newValues = innerRowsFraq.* table(innerRowsLow+1,dsmKey) + (1-innerRowsFraq).* table(innerRowsLow,dsmKey);
-dsmValues(innerIndices',:) = newValues;
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [x,y] = ang2imageXy(angX,angY,regs,luts)
 ixNan = isnan(angX);

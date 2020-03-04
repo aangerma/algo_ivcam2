@@ -5,13 +5,9 @@ classdef Firmware < FirmwareBase
 
     methods (Access=public)
         
-        writeFirmwareFiles(obj,outputFldr,oldVersion);
-        writeAlgoThermalBin(obj,fname);
-        writeDynamicRangeTable(obj,fname,presetsPath);
-        writeDefaultRtdOverAngXTable(obj, fname,tableValues);
         [EPROMtable,ConfigTable,CbufXsections,DiggGammaTable]  = generateTablesForFw(obj,outputFldr,only_Algo_Calibration_Info,skip_algo_thermal_calib,versions);
-        fns=writeLUTbin(obj,d,fn,oneBaseCount); 
-        [regs]=readAlgoEpromData(obj,BinData,EPROMstructure)
+        fns = writeLUTbin(obj,d,fn,oneBaseCount); 
+        [regs] = readAlgoEpromData(obj,BinData,EPROMstructure)
             
         
         function obj = Firmware(tablesFolder)

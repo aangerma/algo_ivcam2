@@ -1,3 +1,5 @@
+% SCRIPT IS OBSOLETE
+
 %{
 Steps for resleasing a new calibration gui:
 1. Version - update in calibToolVersion()

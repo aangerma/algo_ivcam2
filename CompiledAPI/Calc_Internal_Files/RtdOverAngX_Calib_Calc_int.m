@@ -1,4 +1,4 @@
-function [tablefn] = RtdOverAngX_Calib_Calc_int(imConstant, imSteps, calibParams, regs, luts, runParams)
+function [rtdOverXTableFullPath] = RtdOverAngX_Calib_Calc_int(imConstant, imSteps, calibParams, regs, luts, runParams)
 
 diffRTD = single(imSteps-imConstant)*2/4;
 
@@ -42,9 +42,15 @@ y = single(y)/2^15+0.5;
 % The values of the fix:
 rtd2add = Calibration.DFZ.applyRtdOverAngXFix( meanAngXPerGroup(:),regs );
 tableValues = -rtd2add + regs.DEST.txFRQpd(1);
-tableValues = fillStartNans(tableValues);   
-tableValues = flipud(fillStartNans(flipud(tableValues)));  
-tablefn = generateRtdOverAngXTable(runParams, tableValues, calibParams.tableVersions.algoRtdOverAngX);
+tableValues = Calibration.tables.fillStartNans(tableValues);   
+tableValues = flipud(Calibration.tables.fillStartNans(flipud(tableValues)));  
+
+% table generation
+calibData = struct('table', tableValues);
+binTable = convertCalibDataToBinTable(calibData, 'Algo_rtdOverAngX_CalibInfo');
+rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
+rtdOverXTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rtdOverXTableFileName);
+writeAllbytes(binTable, rtdOverXTableFullPath);
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure; 
@@ -58,24 +64,6 @@ if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     imagesc(diffRTD,[0,max(abs(delayValues))]);
     title('RTD Over AngX Fix Slices and sampled locations');
     Calibration.aux.saveFigureAsImage(ff,runParams,'DFZ','Rtd_Step_Diff') 
-    
-    
-    
 end
-end
-function rtdOverXTableFullPath = generateRtdOverAngXTable(runParams, tableValues, versRtdOverX)
-rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', versRtdOverX);
-rtdOverXTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rtdOverXTableFileName);
-initFolder = fullfile(runParams.outputFolder,'AlgoInternal');
-fw = Pipe.loadFirmware(initFolder,'tablesFolder',initFolder);
-fw.writeRtdOverAngXTable(rtdOverXTableFullPath,tableValues);
 end
 
-function table = fillStartNans(table)
-    for i = 1:size(table,2)
-        ni = find(~isnan(table(:,i)),1);
-        if ni>1
-            table(1:ni-1,i) = table(ni,i);
-        end
-    end
-end

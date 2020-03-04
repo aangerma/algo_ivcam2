@@ -1,9 +1,12 @@
-function calibData = convertBinTableToCalibData(binTable, tableName)
+function calibData = convertBinTableToCalibData(binTable, tableName, plotFlag)
 % convertBinTableToCalibData:
 %   Algo tables parser.
 
 assert(isa(binTable, 'uint8'), 'Binary table at input must be of class uint8');
 binTable = vec(binTable);
+if ~exist('plotFlag', 'var')
+    plotFlag = false;
+end
 
 switch tableName
     case 'Algo_Calibration_Info_CalibInfo'
@@ -20,6 +23,24 @@ switch tableName
         dsmTable = single(tableUint16(:,1:4)) / 2^8;
         rtdTable = single(typecast(tableUint16(:,5), 'int16')) / 2^8;
         calibData.table = [dsmTable, rtdTable];
+        if plotFlag
+            figure
+            subplot(2,3,[1,4])
+            plot(rtdTable, '.-')
+            grid on, xlabel('#bin'), ylabel('table [mm]'), title('RTD correction')
+            subplot(2,3,2)
+            plot(dsmTable(:,1), '.-')
+            grid on, xlabel('#bin'), ylabel('table [1/deg]'), title('X scale')
+            subplot(2,3,3)
+            plot(dsmTable(:,3), '.-')
+            grid on, xlabel('#bin'), ylabel('table [deg]'), title('X offset')
+            subplot(2,3,5)
+            plot(dsmTable(:,2), '.-')
+            grid on, xlabel('#bin'), ylabel('table [1/deg]'), title('Y scale')
+            subplot(2,3,6)
+            plot(dsmTable(:,4), '.-')
+            grid on, xlabel('#bin'), ylabel('table [deg]'), title('Y offset')
+        end
         
     case 'Algo_Thermal_Loop_Extra_CalibInfo'
         tableUint16 = typecast(binTable, 'uint16');
@@ -71,21 +92,22 @@ switch tableName
         calibData.color.Kn([1,5,7,8,4]) = typecast(binTable(17:36), 'single');
         calibData.color.d = typecast(binTable(37:56), 'single');
         calibData.extrinsics.r = reshape(typecast(binTable(57:92), 'single'), [3,3])';
-        calibData.extrinsics.t = typecast(binTable(93:104), 'single');
+        calibData.extrinsics.t = vec(typecast(binTable(93:104), 'single'));
         calibData.rgbCalTemperature = typecast(binTable(105:108), 'single');
 
     case 'RGB_Thermal_Info_CalibInfo'
         tableWithMetaData = typecast(binTable, 'single');
         calibData.minTemp = tableWithMetaData(1);
         calibData.maxTemp = tableWithMetaData(2);
-        if (length(tableWithMetaData(5:end)) == 4*29) % new format
+        calibData.nBins = 29;
+        if (length(tableWithMetaData(5:end)) == 4*calibData.nBins) % new format
             calibData.referenceTemp = tableWithMetaData(3);
             calibData.isValid = tableWithMetaData(4);
-            calibData.thermalTable = reshape(tableWithMetaData(5:end), [], 29)';
+            calibData.thermalTable = reshape(tableWithMetaData(5:end), [], calibData.nBins)';
         else % old format
             calibData.referenceTemp = calibData.maxTemp;
             calibData.isValid = 1;
-            calibData.thermalTable = reshape(tableWithMetaData(3:end), [], 29)';
+            calibData.thermalTable = reshape(tableWithMetaData(3:end), [], calibData.nBins)';
         end
         
     otherwise

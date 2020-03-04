@@ -31,12 +31,7 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     
     %%
     % Correct thermal table to RGB calibration temperature
-    if isfield(calibParams.gnrl,'rgb') && isfield(calibParams.gnrl.rgb,'nBinsThermal')
-        nBinsRgb = calibParams.gnrl.rgb.nBinsThermal;
-    else
-        nBinsRgb = 29;
-    end
-    rgbThermalData = Calibration.aux.convertRgbThermalBytesToData(rgbThermalBinData,nBinsRgb);
+    rgbThermalData = Calibration.tables.convertBinTableToCalibData(uint8(rgbThermalBinData(17:end)), 'RGB_Thermal_Info_CalibInfo');
     [rgbThermalData] = Calibration.rgb.adjustRgbThermal2NewRefTemp(rgbThermalData,rgbCalTemperature,fprintff);
     if ~rgbThermalData.isValid
         rgbPassed = false;

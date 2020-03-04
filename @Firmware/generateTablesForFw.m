@@ -27,10 +27,11 @@ if(exist('outputFldr','var'))
         versions.diggUndist = vers;
     end
     mkdirSafe(outputFldr);
+    
+    [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
+    algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', versions.algoCalib);
+    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr, algoTableFileName));   
     if only_Algo_Calibration_Info
-        [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
-        algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', versions.algoCalib);
-        writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr, algoTableFileName));
         return
     end
     
@@ -38,10 +39,6 @@ if(exist('outputFldr','var'))
     tableVerStr = Calibration.aux.genTableBinFileName('', versions.algoCalib);
     writetable(struct2table(ConfigTable), strcat(outputFldr,sprintf('/ConfigTable%s.csv',tableVerStr(1:end-4))))
     writetable(struct2table(CbufXsections), strcat(outputFldr,'/CbufSectionsTable.csv'))
-    
-    [EPROMtableSize]=calcTableSize(struct2table(EPROMtable));
-    algoTableFileName = Calibration.aux.genTableBinFileName('Algo_Calibration_Info_CalibInfo', versions.algoCalib);
-    writeTableTobin(EPROMtableSize,EPROmaxTableSize-EPROMtableSize,struct2table(EPROMtable),fullfile(outputFldr, algoTableFileName));
     
     CBUFtableSize=EPROmaxTableSize;
     cbufTableFileName = Calibration.aux.genTableBinFileName('CBUF_Calibration_Info_CalibInfo', versions.cbufCalib);
@@ -64,15 +61,25 @@ if(exist('outputFldr','var'))
     obj.writeLUTbin(obj.getAddrData('FRMWtmpTrans'),fullfile(outputFldr,filesep,'FRMW_tmpTrans_Info.bin'),true);
     
     if ~skip_algo_thermal_calib
+        % write Algo Thermal table
+        EXTLdsmXscale = obj.getAddrData('EXTLdsmXscale');
+        EXTLdsmYscale = obj.getAddrData('EXTLdsmYscale');
+        EXTLdsmXoffset = obj.getAddrData('EXTLdsmXoffset');
+        EXTLdsmYoffset = obj.getAddrData('EXTLdsmYoffset');
+        DESTtmptrOffset = obj.getAddrData('DESTtmptrOffset');
+        table = typecast([EXTLdsmXscale{2},EXTLdsmYscale{2},EXTLdsmXoffset{2},EXTLdsmYoffset{2},DESTtmptrOffset{2}],'single');
+        calibData = struct('table', repmat(table, 48, 1));
+        binTable = Calibration.tables.convertCalibDataToBinTable(calibData, 'Algo_Thermal_Loop_CalibInfo');
         thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', versions.algoThermal);
-        obj.writeAlgoThermalBin(fullfile(outputFldr,filesep, thermalTableFileName))
-       
+        writeAllBytes(binTable, fullfile(outputFldr, thermalTableFileName));
+        % write Algo Thermal extra table
         extraThermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_Extra_CalibInfo', versions.algoThermalExtras);
-        obj.writeAlgoExtraThermalBin(fullfile(outputFldr,filesep, extraThermalTableFileName))
+        writeAllBytes(typecast(zeros(48,1,'uint16'), 'uint8'), fullfile(outputFldr, extraThermalTableFileName));
     end
 end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function d=readbin(fn)
 fid = fopen(fn,'r');
@@ -80,11 +87,16 @@ d=uint8(fread(fid,'uint8'));
 fclose(fid);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function d=writebin(fn,d)
 fid = fopen(fn,'w');
 fwrite(fid,d,'uint8');
 fclose(fid);
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [tableSize]=calcTableSize(table)
 tableSize=0;
 for i=1:size(table,1)
@@ -106,6 +118,9 @@ for i=1:size(table,1)
     tableSize=tableSize+s*table.arraySize(i);
 end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function []=writeTableTobin(TableSize,resrevedLength,DataTable,fname)
 
 %initialize the stream
@@ -155,6 +170,8 @@ fclose(fileID);
 
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [updatedEpromTable]= updateEEPROMstructure(obj,newEPROMtable)
 % read latest eeprom structure

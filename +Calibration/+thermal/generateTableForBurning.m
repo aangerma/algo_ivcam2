@@ -1,8 +1,8 @@
-function generateTableForBurning(eepromRegs, table,calibParams,runParams,fprintff,calibPassed,data,calib_dir)
+function generateTableForBurning(eepromRegs, calibParams, runParams, fprintff, data, calib_dir)
 % Creates a binary table as requested
 
 % Thermal loop tables
-calibData = struct('table', table);
+calibData = struct('table', data.tableResults.table);
 binTable = Calibration.tables.convertCalibDataToBinTable(calibData, 'Algo_Thermal_Loop_CalibInfo');
 thermalTableFileName = Calibration.aux.genTableBinFileName('Algo_Thermal_Loop_CalibInfo', calibParams.tableVersions.algoThermal);
 thermalTableFullPath = fullfile(runParams.outputFolder, thermalTableFileName);
@@ -16,7 +16,7 @@ extraThermalTableFullPath = fullfile(runParams.outputFolder, extraThermalTableFi
 writeAllBytes(binTable, extraThermalTableFullPath);
 fprintff('Generated extra algo thermal table full path:\n%s\n',extraThermalTableFullPath);
 
-% RGB thermal tabl
+% RGB thermal table
 if isfield(data.tableResults, 'rgb')
     x = data.tableResults.rgb;
     calibData = struct('thermalTable', x.thermalTable, 'minTemp', x.minTemp, 'maxTemp', x.maxTemp, 'referenceTemp', x.referenceTemp, 'isValid', x.isValid);
@@ -46,7 +46,7 @@ fprintff('Generated MEMS table full path:\n%s\n',memsTableFullPath);
 
 % All other algo tables
 initFldr = calib_dir;
-fw = Pipe.loadFirmware(initFldr,'tablesFolder',calib_dir);
+fw = Pipe.loadFirmware(initFldr, 'tablesFolder', calib_dir);
 
 eepromRegs.FRMW.atlMinVbias1            = single(data.tableResults.angx.p0(1));
 eepromRegs.FRMW.atlMaxVbias1            = single(data.tableResults.angx.p1(1));
@@ -88,6 +88,6 @@ eepromRegs.FRMW.humidApdTempDiff        = single(data.regs.FRMW.humidApdTempDiff
 
 fw.setRegs(eepromRegs,'');
 fw.get();
-fw.generateTablesForFw(runParams.outputFolder,1,[],calibParams.tableVersions);
+fw.generateTablesForFw(runParams.outputFolder, 1, [], calibParams.tableVersions);
 end
 

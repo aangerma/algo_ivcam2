@@ -30,12 +30,7 @@ if isempty(Index) || (g_temp_count == 0)
     prevTmpForBananas = 0;
     lastZFrames = nan([runParams.calibRes,calibParams.warmUp.nFramesForZStd]);
     diskObject = strel('disk',calibParams.roi.diskSz);
-    if isfield(calibParams.gnrl,'rgb') && isfield(calibParams.gnrl.rgb,'nBinsThermal')
-        nBinsRgb = calibParams.gnrl.rgb.nBinsThermal;
-    else
-        nBinsRgb = 29;
-    end
-    [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir,nBinsRgb);
+    [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir);
 end
 
 if isempty(dacModelFunc) && isfield(FrameData, 'dac')
@@ -204,7 +199,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir,nBinsRgb)
+function [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir)
 
 % It is cal
 % kWorld = unitData.regs.FRMW.kWorld;
@@ -227,13 +222,13 @@ regs.FRMW.kRaw = regs.FRMW.kWorld;
 regs.FRMW.kRaw(7) = single(regs.GNRL.imgHsize) - 1 - regs.FRMW.kRaw(7);
 regs.FRMW.kRaw(8) = single(regs.GNRL.imgVsize) - 1 - regs.FRMW.kRaw(8);
 
-[rgbData] = parseRgbData(unitData,nBinsRgb);
+[rgbData] = parseRgbData(unitData);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [rgbData] = parseRgbData(unitData,nBinsRgb)
-rgbData = Calibration.aux.convertRgbThermalBytesToData(unitData.rgbThermalData,nBinsRgb);
+function [rgbData] = parseRgbData(unitData)
+rgbData = Calibration.tables.convertBinTableToCalibData(uint8(unitData.rgbThermalData(17:end)), 'RGB_Thermal_Info_CalibInfo');
 tempVar = char(join(string(flip(dec2hex(unitData.rgbCalibData(121:125))))));
 tempVar = tempVar(~isspace(tempVar));
 rgbData.rgbCalTemp = hex2single(tempVar);

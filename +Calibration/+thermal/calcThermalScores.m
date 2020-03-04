@@ -24,11 +24,11 @@ framesPerTemperature = Calibration.thermal.medianFrameByTemp(framesData,nBins,tm
 [Yscale,Yoffset] = linearTransformToRef(framesPerTemperature(:,:,5)-single(Vres-1)/2,refBinIndex);
 [destTmprtOffset] = constantTransformToRef(framesPerTemperature(:,:,1),refBinIndex);
 
-Xscale = fillInnerNans(Xscale');
-Xoffset = fillInnerNans(Xoffset');
-Yscale = fillInnerNans(Yscale');
-Yoffset = fillInnerNans(Yoffset');
-destTmprtOffset = fillInnerNans(destTmprtOffset');
+Xscale = Calibration.tables.fillInnerNans(Xscale');
+Xoffset = Calibration.tables.fillInnerNans(Xoffset');
+Yscale = Calibration.tables.fillInnerNans(Yscale');
+Yoffset = Calibration.tables.fillInnerNans(Yoffset');
+destTmprtOffset = Calibration.tables.fillInnerNans(destTmprtOffset');
 
 valid = find(~isnan(Xscale));
 validRange = (valid(1)+2):(valid(end)-1);
@@ -40,18 +40,8 @@ errors.yShift = rms( abs(Yoffset(validRange) ) );
 errors.rtdShit = rms( abs(destTmprtOffset(validRange) ) );
 end
 
-function tableNoInnerNans = fillInnerNans(table)
-    % Find rows that are all nans:
-    nanRows = all(isnan(table),2);
-    rowId = (1:size(table,1))';
-    tableValid = table(~nanRows,:);
-    rowValid = rowId(~nanRows);
-    rowInvalid = rowId(nanRows);
-    newRows = interp1q(rowValid,tableValid,rowInvalid);
-    
-    tableNoInnerNans = table;
-    tableNoInnerNans(nanRows,:) = newRows;
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [offset] = constantTransformToRef(framesPerTemperature,refBinIndex)
 
 nFrames = size(framesPerTemperature,1);  
@@ -70,6 +60,8 @@ for i = 1:nFrames
 end
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [anga,angb] = linearTransformToRef(framesPerTemperature,refBinIndex)
 
@@ -90,6 +82,8 @@ for i = 1:nFrames
 end
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [a,b] = linearTrans(x1,x2)
 A = [x1,ones(size(x1))];
