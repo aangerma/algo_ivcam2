@@ -132,7 +132,7 @@ if calibParams.presets.long.updateCalibVal
     writetable(longRangePreset,longRangePresetFn);
 end
 calibData = struct('presetsPath', fullfile(runParams.outputFolder, 'AlgoInternal'));
-binTable = convertCalibDataToBinTable(calibData, 'Dynamic_Range_Info_CalibInfo');
+binTable = Calibration.tables.convertCalibDataToBinTable(calibData, 'Dynamic_Range_Info_CalibInfo');
 presetsTableFileName = Calibration.aux.genTableBinFileName('Dynamic_Range_Info_CalibInfo', calibParams.tableVersions.dynamicRange);
 presetsTableFullPath = fullfile(runParams.outputFolder, 'calibOutputFiles', presetsTableFileName);
 writeAllBytes(binTable, presetsTableFullPath);

@@ -47,10 +47,10 @@ tableValues = flipud(Calibration.tables.fillStartNans(flipud(tableValues)));
 
 % table generation
 calibData = struct('table', tableValues);
-binTable = convertCalibDataToBinTable(calibData, 'Algo_rtdOverAngX_CalibInfo');
+binTable = Calibration.tables.convertCalibDataToBinTable(calibData, 'Algo_rtdOverAngX_CalibInfo');
 rtdOverXTableFileName = Calibration.aux.genTableBinFileName('Algo_rtdOverAngX_CalibInfo', calibParams.tableVersions.algoRtdOverAngX);
 rtdOverXTableFullPath = fullfile(runParams.outputFolder,'calibOutputFiles', rtdOverXTableFileName);
-writeAllbytes(binTable, rtdOverXTableFullPath);
+writeAllBytes(binTable, rtdOverXTableFullPath);
 
 if ~isempty(runParams) && isfield(runParams, 'outputFolder')
     ff = Calibration.aux.invisibleFigure; 
