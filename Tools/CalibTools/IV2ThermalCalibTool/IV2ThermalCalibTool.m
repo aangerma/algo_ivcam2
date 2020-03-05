@@ -204,7 +204,7 @@ function app=createComponents()
     
     
     %checkboxes
-    cbnames = {'performCalibration','performValidation','manualCaptures'};
+    cbnames = {'performValidation','manualCaptures'};
     
     cbSz=[200 30];
     ny = floor(sz(2)/cbSz(2))-1;
@@ -318,11 +318,9 @@ function statrtButton_callback(varargin)
         fid = fopen(infoFn,'wt');
         fprintf(fid, info);
         fclose(fid);
-        runparamsFn = fullfile(runparams.outputFolder,'sessionParams.xml');
         logFn = fullfile(runparams.outputFolder,'log.log');
         outputFolderChange_callback(app.figH);
         
-        struct2xmlWrapper(runparams,runparamsFn);
         app.logarea.BackgroundColor=app.logarea.UserData;
         app.m_logfid = fopen(logFn,'wt');
         fprintffS=@(varargin) fprintff(app,varargin{:});
@@ -350,27 +348,19 @@ function statrtButton_callback(varargin)
         app.AbortButton.Enable='on';
         app.AbortButton.UserData=1;
         %%
-        %=======================================================RUN THERMAL CALIBRATION=======================================================
+        %=======================================================RUN THERMAL VALIDATION=======================================================
         
-        calibfn =  fullfile(toolDir,'calibParams.xml');
-        calibPassed = Calibration.thermal.runThermalCalibration(runparamsFn,calibfn,fprintffS,app);
         validPassed = 1;
-        if calibPassed~=0 && runparams.performValidation
+        if runparams.performValidation
 %             waitfor(msgbox('Burn table to EPROM. Then disconnect and reconnect the unit for validation. Press ok when done.'));
             [validPassed] = Calibration.thermal.runThermalValidation(runparams,calibParams,fprintffS,s,app);
         end
         
-        if calibPassed == 1 || calibPassed == -1
-            if validPassed || ~runparams.performValidation 
-                app.logarea.BackgroundColor = [0 0.8 0]; % Color green
-            else
-                app.logarea.BackgroundColor = [1 1 0]; % Color yellow 
-            end
-        elseif calibPassed == 0
-            app.logarea.BackgroundColor = [0.8 0 0]; % Color red
+        if validPassed || ~runparams.performValidation
+            app.logarea.BackgroundColor = [0 0.8 0]; % Color green
+        else
+            app.logarea.BackgroundColor = [1 1 0]; % Color yellow
         end
-        
-        
         
     catch e
         fprintf('%s',getReport(e));

@@ -18,7 +18,7 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
          if (any(contains(enabledMetrics,'presetsCompare')))
              % change pckr value for preset comparison
               newRegVal=single([1,1.5,1,1.5,1,1.5]);
-              Calibration.aux.adjustPCKRspareRegs(hw, newRegVal);             
+              adjustPCKRspareRegs(hw, newRegVal);             
          end 
         Calibration.thermal.setTKillValues(hw,calibParams,fprintff);
         fprintff('opening stream...');
@@ -239,6 +239,9 @@ function [valPassed, valResults] = validateCalibration(runParams,calibParams,fpr
     end
     
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function saveValidationData(debugData,frames,metric,outFolder,debugMode)
     
     % debug mode 1 indicates if we store the debug data of the metric
@@ -256,6 +259,8 @@ function saveValidationData(debugData,frames,metric,outFolder,debugMode)
     end
     
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,spark,app,valResults)
 % function : perform the DFZ, Sharpness, temporalNoise, roi
@@ -285,7 +290,10 @@ function [valResults ,allResults] = HVM_val_1(hw,runParams,calibParams,fprintff,
     sz = hw.streamSize();
     [valResults ,allResults] = HVM_Val_Calc(frameBytes,sz,params,calibParams,valResults);
 
-end 
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fprintff,spark,app,valResults)
 % function : perform the DFZ, Sharpness, temporalNoise, roi
 %           capturing 100 frames 
@@ -312,9 +320,54 @@ function [valResults ,allResults] = HVM_val_Coverage(hw,runParams,calibParams,fp
     r.reset();
 end 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function K = getKMat(hw)
     CBUFspare = typecast(hw.read('CBUFspare'),'single');
     K = reshape([CBUFspare;1],3,3)';
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function [changedRegs] = adjustPCKRspareRegs(hw, newRegVal)
+% newRegVal=single([1,1.5,1,1.5,1,1.5]);
+
+%% read pckr spare
+[r]=  readPckrSpare(hw);
+
+if ~any(r)
+    % set pckr spare
+    setPckrSpare(hw, newRegVal);
+    hw.cmd('mwd a00d01f4 a00d01f8 00000fff // EXTLauxShadowUpdate');
+    pause(1);
+end
+
+changedRegs=readPckrSpare(hw);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [r]=  readPckrSpare(hw)
+startAddress='a00e1bd8';
+for i=1:6
+    endaddress=dec2hex(hex2dec( startAddress)+4);
+    s=hw.cmd(['mrd ',startAddress,' ',endaddress]);
+    s2=strsplit(s,'=> ');  s2=s2{2};
+    r(i)=hex2single(s2);
+    startAddress=endaddress;
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function []=  setPckrSpare(hw, v)
+startAddress='a00e1bd8';
+for i=1:length(v)
+    endaddress=dec2hex(hex2dec( startAddress)+4);
+    value=single2hex(v(i));
+    hw.cmd(['mwd ',startAddress,' ',endaddress ' ' value{1}]);
+    startAddress=endaddress;
+end
+
+end
