@@ -1,9 +1,12 @@
 function [isOutputValid,newParams,dbg] = validOutputParameters(frame,params,newParams,originalParams,iterationFromStart)
+dbg = struct;
 isOutputValid = 1;
 
 % Clip current movement by pixels
    [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
 [uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort);
+dbg.uvMap = uvMap;
+dbg.uvMapNew = uvMapNew;
 
 xyMovement = mean(sqrt(sum((uvMap-uvMapNew).^2,2)));
 maxMovementInThisIteration = params.maxXYMovementPerIteration(min(length(params.maxXYMovementPerIteration),iterationFromStart));
@@ -32,13 +35,16 @@ scoreDiffPerVertex = costVecNew-costVecOld;
 for i = 0:(params.numSectionsH*params.numSectionsV)-1
     scoreDiffPersection(i+1) = nanmean(scoreDiffPerVertex(frame.sectionMapDepth == i));
 end
+dbg.scoreDiffPerVertex = scoreDiffPerVertex;
+dbg.scoreDiffPersection = scoreDiffPersection;
+
 if any(scoreDiffPersection<0)
     fprintf('Some image sections were hurt in the optimization. Invalidating fix.\n'); 
     isOutputValid = 0;
     newParams = params;
 end
-dbg.scoreDiffPerVertex = scoreDiffPerVertex;
-dbg.scoreDiffPersection = scoreDiffPersection;
+
+
 
 end
 

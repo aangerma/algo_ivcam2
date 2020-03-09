@@ -1,9 +1,16 @@
 function [isValidScene] = validScene(frames,params)
-isValidScene = ~OnlineCalibration.aux.isMovementInImages(frames.yuy2Prev,frames.yuy2,params);
+isValidScene = false;
+if OnlineCalibration.aux.isMovementInImages(frames.yuy2Prev,frames.yuy2,params)
+    return;
+end
 params.minWeightedEdgePerSection = params.minWeightedEdgePerSectionDepth;
-isValidScene = isValidScene & OnlineCalibration.aux.isEdgeDistributed(frames.weights,frames.sectionMapDepth,params);
+if ~OnlineCalibration.aux.isEdgeDistributed(frames.weights,frames.sectionMapDepth,params)
+    return;
+end
 params.minWeightedEdgePerSection = params.minWeightedEdgePerSectionRgb;
-isValidScene = isValidScene & OnlineCalibration.aux.isEdgeDistributed(frames.rgbIDT(:),frames.sectionMapRgb,params);
-
+if ~OnlineCalibration.aux.isEdgeDistributed(frames.rgbIDT(:),frames.sectionMapRgb,params)
+    return;
+end
+isValidScene = true;
 end
 

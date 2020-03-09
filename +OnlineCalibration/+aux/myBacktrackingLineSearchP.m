@@ -3,12 +3,13 @@ function [stepSize,newRgbPmat,newCost] = myBacktrackingLineSearchP(frame,params,
 % A search scheme based on the Armijo–Goldstein condition to determine the
 % maximum amount to move along a given search direction.
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
-stepSize = params.maxStepSize;
 % dfdx = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T];
 grad = gradStruct.P; 
 
 
 unitGrad = grad./norm(grad);
+stepSize = params.maxStepSize*norm(grad)/norm(unitGrad);
+
 t = -params.controlParam*grad(:)'*unitGrad(:);
 
 % RrgbNew = OnlineCalibration.aux.calcRmatRromAngs(params.xAlpha+alpha*p(1),params.xBeta+alpha*p(2),params.zGamma+alpha*p(3));

@@ -16,6 +16,9 @@ switch derivVar
     case 'T'
         r = sqrt(dXoutDVar.^2+dYoutDVar.^2);
         meanDrDVar = reshape(nanmean(r,2),1,3)';
+    case 'Krgb'
+        r = sqrt(dXoutDVar.^2+dYoutDVar.^2);
+        meanDrDVar = reshape(nanmean(r,2),3,3)';
     otherwise
             error('No such case!!!');
 end
