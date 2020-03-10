@@ -60,6 +60,7 @@ params.maxXYMovementPerIteration = [10,2,2];
 params.maxXYMovementFromOrigin = 20;
 params.numSectionsV = 2;
 params.numSectionsH = 2;
+params.gradDirRatio = 0.333;
 
 sectionMapDepth = OnlineCalibration.aux.sectionPerPixel(params);
 sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
@@ -87,7 +88,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',single(frame.r
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',single(frame.irEdge),'single');
 
 % Preprocess Z
-[frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges] = OnlineCalibration.aux.preprocessZ(frame,params);
+[frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(frame,params);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',single(frame.zEdge),'single');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',single(frame.zEdgeSubPixel),'single');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',single(frame.zEdgeSupressed),'single');

@@ -39,8 +39,8 @@ for k = 2:numImages
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',single(currentFrame.irEdge),'single');
     
     % Preprocess Z
-    % [currentFrame.zEdge,currentFrame.zEdgeSupressed,currentFrame.zEdgeSubPixel,currentFrame.zValuesForSubEdges] = OnlineCalibration.aux.preprocessZ(currentFrame,params);
-    [currentFrame.zEdge,currentFrame.zEdgeSupressed,currentFrame.zEdgeSubPixel,currentFrame.zValuesForSubEdges] = OnlineCalibration.aux.preprocessZAndIR(currentFrame,params);
+    % [currentFrame.zEdge,currentFrame.zEdgeSupressed,currentFrame.zEdgeSubPixel,currentFrame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(currentFrame,params);
+    [currentFrame.zEdge,currentFrame.zEdgeSupressed,currentFrame.zEdgeSubPixel,currentFrame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZAndIR(currentFrame,params);
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',single(currentFrame.zEdge),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',single(currentFrame.zEdgeSubPixel),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',single(currentFrame.zEdgeSupressed),'single');

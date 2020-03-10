@@ -57,7 +57,7 @@ params.numSectionsH = 2;
 params.edgeDistributMinMaxRatio = 0.005;
 params.minWeightedEdgePerSectionDepth = 50;
 params.minWeightedEdgePerSectionRgb = 0.05;
-
+params.gradDirRatio = 0.333;
 
 flowParams.deltaTmptr = 3;
 flowParams.deltaTimeSec = 60*10;
@@ -91,8 +91,8 @@ while true
     origParams = params;
     [frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
 %     [frame.irEdge] = OnlineCalibration.aux.preprocessIR(frame,params);
-%     [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges] = OnlineCalibration.aux.preprocessZ(frame,params);
-    [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges] = OnlineCalibration.aux.preprocessZAndIR(frame,params);
+%     [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(frame,params);
+    [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZAndIR(frame,params);
     frame.sectionMapDepth = sectionMapDepth(frame.zEdgeSupressed>0);
     frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
     [frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);

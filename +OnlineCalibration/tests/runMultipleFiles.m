@@ -31,6 +31,7 @@ params.minCostDelta = 1;
 params.maxOptimizationIters = 50;
 params.zeroLastLineOfPGrad = 1;
 params.constLastLineOfP = 0;
+
 % params.rgbPmatNormalizationMat = [0.3242,     0.4501,    0.2403,   359.3750;      0.3643,     0.5074      0.2689     402.3438;      0.0029     0.0040     0.0021     3.2043];
 % params.rgbPmatNormalizationMat = [0.35682896, 0.26685065,1.0236474,0.00068233482; 0.35521242, 0.26610452, 1.0225836, 0.00068178622; 410.60049, 318.23358, 1205.4570, 0.80363423];
 params.rgbPmatNormalizationMat = [0.35369244,0.26619774,1.0092601,0.00067320449;0.35508525,0.26627505,1.0114580,0.00067501375;414.20557,313.34106,1187.3459,0.79157025];
@@ -49,6 +50,7 @@ params.numSectionsH = 2;
 params.edgeDistributMinMaxRatio = 0.005;
 params.minWeightedEdgePerSectionDepth = 50;
 params.minWeightedEdgePerSectionRgb = 0.05;
+params.gradDirRatio = 0.333;
 
 %%
 dirData = dir(dirPath);

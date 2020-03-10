@@ -11,6 +11,10 @@ params.minWeightedEdgePerSection = params.minWeightedEdgePerSectionRgb;
 if ~OnlineCalibration.aux.isEdgeDistributed(frames.rgbIDT(:),frames.sectionMapRgb,params)
     return;
 end
+
+if ~OnlineCalibration.aux.isGradDirBalanced(frames,params)
+    return;
+end
 isValidScene = true;
 end
 

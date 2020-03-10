@@ -7,7 +7,7 @@ end
 minMaxRatio = min(meanWeightsPerSection)/max(meanWeightsPerSection);
 if minMaxRatio < params.edgeDistributMinMaxRatio
     isDistributed = false;
-    fprintf('isEdgeDistributed: Ratio between min and max is too small: %0.5f, threshold is %0.5f',minMaxRatio, params.edgeDistributMinMaxRatio);
+    fprintf('isEdgeDistributed: Ratio between min and max is too small: %0.5f, threshold is %0.5f\n',minMaxRatio, params.edgeDistributMinMaxRatio);
     return;
 end
 
