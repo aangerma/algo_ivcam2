@@ -74,7 +74,7 @@ switch tableName
         binTable = s.flush();
 
     case 'FRMW_tmpTrans_Info'
-        % Implemented in @Firmware\generateTablesForFw based on regsDefinitions.frmw (TransferToFW=0)
+        % Implemented in @Firmware\writeLUTbin)
         binTable = NaN;
 
     case 'MEMS_Electro_Optics_Calibration_Info_CalibInfo'
