@@ -232,7 +232,9 @@ if flags.los2ang
 %             shg
             [RO1xLosTrue(:,:,iLdd), RO1yLosTrue(:,:,iLdd)] = CalcTrueLos(regs, data.thermal.table, data.dfz.tpsModel.tpsUndistModel, xLos, yLos, lddVec(iLdd));
         end
-        
+%         xLosAging = t0xLosTrue - RO1xLosTrue;
+%         yLosAging = t0yLosTrue - RO1yLosTrue;
+
 %         figure(40+iUnit)
 %         subplot(121), hold on
 %         h(1) = plot(lddVec, xLos(midInd,1) - squeeze(t0xLosTrue(midInd,1,:)), '-o');
@@ -253,57 +255,45 @@ if flags.los2ang
 %         grid on, xlabel('LDD [deg]'), ylabel('error [deg]'), legend(sprintf('y=%.1f[deg]',yLosVec(1)), sprintf('y=%.1f[deg]',yLosVec(midInd)), sprintf('y=%.1f[deg]',yLosVec(nLos))), title(sprintf('Y error for x=%.1f[deg]', xLosVec(midInd)))
 %         sgtitle(sprintf('%s: LOS errors @ t0 (solid) and RO1 (dashed)', t0.units{iUnit}))
 
-%         xLosAging = t0xLosTrue - RO1xLosTrue;
-%         yLosAging = t0yLosTrue - RO1yLosTrue;
-%         figure(44+iUnit)
-%         subplot(121), hold on
-%         plot(lddVec, squeeze(xLosAging(midInd,1,:)), '-o')
-%         plot(lddVec, squeeze(xLosAging(midInd,midInd,:)), '-o')
-%         plot(lddVec, squeeze(xLosAging(midInd,nLos,:)), '-o')
-%         grid on, xlabel('LDD [deg]'), ylabel('change [deg]'), legend(sprintf('x=%.1f[deg]',xLosVec(1)), sprintf('x=%.1f[deg]',xLosVec(midInd)), sprintf('x=%.1f[deg]',xLosVec(nLos))), title(sprintf('X change for y=%.1f[deg]', yLosVec(midInd)))
-%         subplot(122), hold on
-%         plot(lddVec, squeeze(yLosAging(1,midInd,:)), '-o')
-%         plot(lddVec, squeeze(yLosAging(midInd,midInd,:)), '-o')
-%         plot(lddVec, squeeze(yLosAging(nLos,midInd,:)), '-o')
-%         grid on, xlabel('LDD [deg]'), ylabel('change [deg]'), legend(sprintf('y=%.1f[deg]',yLosVec(1)), sprintf('y=%.1f[deg]',yLosVec(midInd)), sprintf('y=%.1f[deg]',yLosVec(nLos))), title(sprintf('Y change for x=%.1f[deg]', xLosVec(midInd)))
-%         sgtitle(sprintf('LOS aging for unit %s', t0.units{iUnit}))
-        
-%         figure(48+iUnit)
-%         subplot(121), hold on
-%         plot(xLosVec, squeeze(xLosAging(1,:,midLddInd)), '-o')
-%         plot(xLosVec, squeeze(xLosAging(midInd,:,midLddInd)), '-o')
-%         plot(xLosVec, squeeze(xLosAging(nLos,:,midLddInd)), '-o')
-%         grid on, xlabel('x [deg]'), ylabel('change [deg]'), legend(sprintf('y=%.1f[deg]',yLosVec(1)), sprintf('y=%.1f[deg]',yLosVec(midInd)), sprintf('y=%.1f[deg]',yLosVec(nLos))), title(sprintf('X change for T=%.1f[deg]', lddVec(midLddInd)))
-%         subplot(122), hold on
-%         plot(yLosVec, squeeze(yLosAging(:,1,midLddInd)), '-o')
-%         plot(yLosVec, squeeze(yLosAging(:,midInd,midLddInd)), '-o')
-%         plot(yLosVec, squeeze(yLosAging(:,nLos,midLddInd)), '-o')
-%         grid on, xlabel('y [deg]'), ylabel('change [deg]'), legend(sprintf('x=%.1f[deg]',xLosVec(1)), sprintf('x=%.1f[deg]',xLosVec(midInd)), sprintf('x=%.1f[deg]',xLosVec(nLos))), title(sprintf('Y change for T=%.1f[deg]', lddVec(midLddInd)))
-%         sgtitle(sprintf('LOS aging for unit %s', t0.units{iUnit}))
-        
-%         figure(52+iUnit), hold on
-%         quiver(vec(xLos), vec(yLos), vec(xLosAging(:,:,midLddInd)), vec(yLosAging(:,:,midLddInd)))
-%         set(gca, 'xdir', 'reverse'), set(gca, 'ydir', 'reverse')
-%         grid on, xlabel('x [deg]'), ylabel('y [deg]'), title(sprintf('LOS aging for %s @ T=%.1f[deg]', t0.units{iUnit}, lddVec(midLddInd)))
-%         
-%         figure(56+iUnit), hold on
-%         contour(xLosVec, yLosVec, sqrt(xLosAging(:,:,midLddInd).^2+yLosAging(:,:,midLddInd).^2));
-%         set(gca, 'xdir', 'reverse'), set(gca, 'ydir', 'reverse'), colorbar
-%         grid on, xlabel('x [deg]'), ylabel('y [deg]'), title(sprintf('LOS aging for %s @ T=%.1f[deg]', t0.units{iUnit}, lddVec(midLddInd)))
-        
         for iLdd = 1:length(lddVec)
             xLosNew(:,:,iLdd) = reshape(griddata(vec(RO1xLosTrue(:,:,iLdd)), vec(RO1yLosTrue(:,:,iLdd)), vec(xLos), vec(t0xLosTrue(:,:,iLdd)), vec(t0yLosTrue(:,:,iLdd))), nLos, nLos);
             yLosNew(:,:,iLdd) = reshape(griddata(vec(RO1xLosTrue(:,:,iLdd)), vec(RO1yLosTrue(:,:,iLdd)), vec(yLos), vec(t0xLosTrue(:,:,iLdd)), vec(t0yLosTrue(:,:,iLdd))), nLos, nLos);
         end
         xLosAging = xLosNew-xLos;
         yLosAging = yLosNew-yLos;
+
+        figure(44+iUnit)
+        subplot(121), hold on
+        plot(lddVec, squeeze(xLosAging(midInd,1,:)), '-o')
+        plot(lddVec, squeeze(xLosAging(midInd,midInd,:)), '-o')
+        plot(lddVec, squeeze(xLosAging(midInd,nLos,:)), '-o')
+        grid on, xlabel('LDD [deg]'), ylabel('change [deg]'), legend(sprintf('x=%.1f[deg]',xLosVec(1)), sprintf('x=%.1f[deg]',xLosVec(midInd)), sprintf('x=%.1f[deg]',xLosVec(nLos))), title(sprintf('X change for y=%.1f[deg]', yLosVec(midInd)))
+        subplot(122), hold on
+        plot(lddVec, squeeze(yLosAging(1,midInd,:)), '-o')
+        plot(lddVec, squeeze(yLosAging(midInd,midInd,:)), '-o')
+        plot(lddVec, squeeze(yLosAging(nLos,midInd,:)), '-o')
+        grid on, xlabel('LDD [deg]'), ylabel('change [deg]'), legend(sprintf('y=%.1f[deg]',yLosVec(1)), sprintf('y=%.1f[deg]',yLosVec(midInd)), sprintf('y=%.1f[deg]',yLosVec(nLos))), title(sprintf('Y change for x=%.1f[deg]', xLosVec(midInd)))
+        sgtitle(sprintf('LOS aging for unit %s', t0.units{iUnit}))
         
-        figure(60+iUnit), hold on
+        figure(48+iUnit)
+        subplot(121), hold on
+        plot(xLosVec, squeeze(xLosAging(1,:,midLddInd)), '-o')
+        plot(xLosVec, squeeze(xLosAging(midInd,:,midLddInd)), '-o')
+        plot(xLosVec, squeeze(xLosAging(nLos,:,midLddInd)), '-o')
+        grid on, xlabel('x [deg]'), ylabel('change [deg]'), legend(sprintf('y=%.1f[deg]',yLosVec(1)), sprintf('y=%.1f[deg]',yLosVec(midInd)), sprintf('y=%.1f[deg]',yLosVec(nLos))), title(sprintf('X change for T=%.1f[deg]', lddVec(midLddInd)))
+        subplot(122), hold on
+        plot(yLosVec, squeeze(yLosAging(:,1,midLddInd)), '-o')
+        plot(yLosVec, squeeze(yLosAging(:,midInd,midLddInd)), '-o')
+        plot(yLosVec, squeeze(yLosAging(:,nLos,midLddInd)), '-o')
+        grid on, xlabel('y [deg]'), ylabel('change [deg]'), legend(sprintf('x=%.1f[deg]',xLosVec(1)), sprintf('x=%.1f[deg]',xLosVec(midInd)), sprintf('x=%.1f[deg]',xLosVec(nLos))), title(sprintf('Y change for T=%.1f[deg]', lddVec(midLddInd)))
+        sgtitle(sprintf('LOS aging for unit %s', t0.units{iUnit}))
+        
+        figure(52+iUnit), hold on
         quiver(vec(xLos), vec(yLos), vec(xLosAging(:,:,midLddInd)), vec(yLosAging(:,:,midLddInd)))
         set(gca, 'xdir', 'reverse'), set(gca, 'ydir', 'reverse')
         grid on, xlabel('x [deg]'), ylabel('y [deg]'), title(sprintf('LOS aging for %s @ T=%.1f[deg]', t0.units{iUnit}, lddVec(midLddInd)))
         
-        figure(64+iUnit), hold on
+        figure(56+iUnit), hold on
         contour(xLosVec, yLosVec, sqrt(xLosAging(:,:,midLddInd).^2+yLosAging(:,:,midLddInd).^2));
         set(gca, 'xdir', 'reverse'), set(gca, 'ydir', 'reverse'), colorbar
         grid on, xlabel('x [deg]'), ylabel('y [deg]'), title(sprintf('LOS aging for %s @ T=%.1f[deg]', t0.units{iUnit}, lddVec(midLddInd)))
