@@ -4,7 +4,7 @@ function [stepSize,newKRTP,newCost] = myBacktrackingLineSearchKRT(frame,params,g
 % maximum amount to move along a given search direction.
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
 grad = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T;gradStruct.Krgb(:)];
-
+grad = grad./norm(grad)./[params.RnormalizationParams;params.TmatNormalizationMat;params.KrgbMatNormalizationMat(:)];
 
 unitGrad = grad./norm(grad);
 stepSize = params.maxStepSize*norm(grad)/norm(unitGrad);
@@ -30,7 +30,7 @@ iterCount = 0;
 while cost1-cost2 >= stepSize*t && abs(stepSize) > params.minStepSize && iterCount < params.maxBackTrackIters
     
     iterCount = iterCount + 1;
-    disp(['myBacktrackingLineSearch: iteration #: ' num2str(iterCount)]);
+%     disp(['myBacktrackingLineSearch: iteration #: ' num2str(iterCount)]);
     stepSize = params.tau*stepSize;
     RrgbNew = OnlineCalibration.aux.calcRmatRromAngs(params.xAlpha+stepSize*unitGrad(1),params.yBeta+stepSize*unitGrad(2),params.zGamma+stepSize*unitGrad(3));
     TrgbNew = params.Trgb + stepSize*unitGrad(4:6);

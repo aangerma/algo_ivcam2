@@ -1,4 +1,4 @@
-function [isMovement] = isMovementInImages(im1,im2, params)
+function [isMovement,movingPixels] = isMovementInImages(im1,im2, params)
 isMovement = false;
 
 [edgeIm1,~,~] = OnlineCalibration.aux.edgeSobelXY(uint8(im1));
@@ -16,7 +16,7 @@ ixMoveSuspect = IDiffMasked > params.moveThreshPixVal;
 if sum(ixMoveSuspect(:)) > params.moveThreshPixNum
     isMovement = true;
 end
-  
+movingPixels = sum(ixMoveSuspect(:));
 disp(['isMovementInImages: # of pixels above threshold ' num2str(sum(ixMoveSuspect(:))) ', allowed #: ' num2str(params.moveThreshPixNum)]);
 end
 

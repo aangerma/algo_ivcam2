@@ -9,7 +9,7 @@ function [D,dbg] = calcInverseDistanceImage(E,params)
     D = params.alpha*E + (1-params.alpha)*D;
     
     time = toc;
-    fprintf('calcInverseDistanceImage took %3.2f seconds\n',time);
+%     fprintf('calcInverseDistanceImage took %3.2f seconds\n',time);
     
     
     Dred = uint8(zeros(size(D,1),size(D,2),3));

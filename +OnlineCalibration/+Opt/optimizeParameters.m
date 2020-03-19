@@ -13,14 +13,14 @@ while notConverged && iterCount < params.maxOptimizationIters
     
     % change in rgbPMat / todo -XY
     if norm(newRgbPmat-params.rgbPmat) < params.minRgbPmatDelta
-        disp('Optimization converged');
-        disp('Criteria - Small movement in rgbPmat');
+%         disp('Optimization converged');
+%         disp('Criteria - Small movement in rgbPmat');
         notConverged = 0;
     end
     % Change in cost
     if norm(newCost-cost) < params.minCostDelta
-        disp('Optimization converged');
-        disp('Criteria - Small change in cost');
+%         disp('Optimization converged');
+%         disp('Criteria - Small change in cost');
         notConverged = 0;
     end
     

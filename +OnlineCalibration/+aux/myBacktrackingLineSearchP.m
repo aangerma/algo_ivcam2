@@ -4,7 +4,7 @@ function [stepSize,newRgbPmat,newCost] = myBacktrackingLineSearchP(frame,params,
 % maximum amount to move along a given search direction.
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
 % dfdx = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T];
-grad = gradStruct.P; 
+grad = gradStruct.P./norm(gradStruct.P)./params.rgbPmatNormalizationMat; 
 
 
 unitGrad = grad./norm(grad);
@@ -28,7 +28,7 @@ iterCount = 0;
 while cost1-cost2 >= stepSize*t && abs(stepSize) > params.minStepSize && iterCount < params.maxBackTrackIters
 
     iterCount = iterCount + 1;
-    disp(['myBacktrackingLineSearch: iteration #: ' num2str(iterCount)]);
+%     disp(['myBacktrackingLineSearch: iteration #: ' num2str(iterCount)]);
     stepSize = params.tau*stepSize;
 %     RrgbNew = OnlineCalibration.aux.calcRmatRromAngs(params.xAlpha+alpha*p(1),params.xBeta+alpha*p(2),params.zGamma+alpha*p(3));
 %     TrgbNew = params.Trgb+alpha*p(4:end);

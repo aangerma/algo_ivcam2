@@ -1,11 +1,16 @@
 function [] = runOnlineCalibrationFromDir(sceneDir,params)
+global sceneResults;
+sceneResults = struct;
+sceneResults.sceneFullPath = sceneDir;
 outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
 
 [params] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir,params);
 [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
+[params] = OnlineCalibration.aux.getParamsForAC(params);
+
 params.moveThreshPixNum =  3e-05*prod(params.rgbRes);
 originalParams = params;
-
+sceneResults.originalParams = originalParams;
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir);
@@ -13,7 +18,13 @@ frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir);
 numImages = min([size(frame.yuy2,3),size(frame.z,3),size(frame.i,3)]);
 if numImages < 2
     disp(['Not enough RGB frames in: ' num2str(sceneDir)]);
-    return;
+    if numImages == 1
+        disp('Duplicating RGB image');
+        frame.z(:,:,2) = frame.z(:,:,1);frame.i(:,:,2) = frame.i(:,:,1);frame.yuy2(:,:,2) = frame.yuy2(:,:,1);
+        numImages = 2;
+    else
+        return;
+    end
 end
 currentFrame.yuy2Prev = frame.yuy2(:,:,1);
 for k = 2:numImages
@@ -40,7 +51,7 @@ for k = 2:numImages
     
     % Preprocess Z
     % [currentFrame.zEdge,currentFrame.zEdgeSupressed,currentFrame.zEdgeSubPixel,currentFrame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(currentFrame,params);
-    [currentFrame.zEdge,currentFrame.zEdgeSupressed,currentFrame.zEdgeSubPixel,currentFrame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZAndIR(currentFrame,params);
+    [currentFrame.zEdge,currentFrame.zEdgeSupressed,currentFrame.zEdgeSubPixel,currentFrame.zValuesForSubEdges,currentFrame.dirI] = OnlineCalibration.aux.preprocessZAndIR(currentFrame,params);
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',single(currentFrame.zEdge),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',single(currentFrame.zEdgeSubPixel),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',single(currentFrame.zEdgeSupressed),'single');
@@ -57,34 +68,42 @@ for k = 2:numImages
     
     if ~OnlineCalibration.aux.validScene(currentFrame,params)
         disp('Scene not valid!');
-        %     return;
+        if ~OnlineCalibration.Globals.getIgnoreSceneInvalidationFlag
+            continue;
+        end
     end
     %% Perform Optimization
     params.derivVar = 'KrgbRT';
     newParams = OnlineCalibration.Opt.optimizeParameters(currentFrame,params);
     params.derivVar = 'P';
     newParamsP = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
-    [validParams,newParams,dbg] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParams,originalParams,k);
-    if ~validParams
-        currentFrame.yuy2Prev = currentFrame.yuy2;
-        continue;
+    
+    [validParams,newParamsFixed,dbg] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParams,originalParams,k);
+    if ~OnlineCalibration.Globals.getIgnoreOutputValidationFlag()
+        if validParams 
+            newParams = newParamsFixed;
+        else
+            currentFrame.yuy2Prev = currentFrame.yuy2;
+            continue;
+        end
     end
     %
     try
-        OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,params,1);
-        OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
-        OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParams,1);
+        
+        sceneResults.uvErrPre = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,originalParams,1);
+        sceneResults.uvErrPostPOpt = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParamsP,1);
+        sceneResults.uvErrPostKRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParams,1);
         ax = gca;
-        title({ax.Title.String;'New R,T,Krgb optimization'});
+        title({sceneDir;ax.Title.String;'New R,T,Krgb optimization'});
     catch e
+        sceneResults.errorMessage = e.message;
+        sceneResults.uvErrPre = inf;
+        sceneResults.uvErrPostPOpt = inf;
+        sceneResults.uvErrPostKRTOpt = inf;
         disp([e.identifier ' '  e.message 'in ' sceneDir ', continuing to next image...']);
-        currentFrame.yuy2Prev = currentFrame.yuy2;
-        params = newParams;
-        continue;
+        
     end
-    h = gca;
-    origTitle = h.Title.get.String;
-    title({sceneDir;origTitle});
+    
     % figure;
     % subplot(421); imagesc(currentFrame.i); impixelinfo; title('IR image');colorbar;
     % subplot(422); imagesc(currentFrame.irEdge); impixelinfo; title('IR edge');colorbar;

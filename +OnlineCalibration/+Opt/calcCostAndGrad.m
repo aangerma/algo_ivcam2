@@ -15,13 +15,12 @@ function [cost,grad] = calcCostAndGrad(frame,params)
         if params.zeroLastLineOfPGrad
             grad.P(3,:) = 0;
         end
-        grad.P = grad.P./norm(grad.P)./params.rgbPmatNormalizationMat;
     end
     if contains(params.derivVar,'T')
         [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
         grad_T = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.T = reshape(nanmean(grad_T),1,3)';
-        grad.T = grad.T./norm(grad.T)./params.TmatNormalizationMat;
+%         grad.T = zeros(3,1);
     end
     if contains(params.derivVar,'R')
         [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('R',V,params);
@@ -32,16 +31,21 @@ function [cost,grad] = calcCostAndGrad(frame,params)
         grad_gamma = W.*(DxVals.*xCoeffVal.zGamma' + DyVals.*yCoeffVal.zGamma');
         grad.zGamma = nanmean(grad_gamma);
         angGradVec = [grad.xAlpha; grad.yBeta; grad.zGamma];
-        angGradVec = angGradVec./norm(angGradVec)./params.RnormalizationParams;
         grad.xAlpha = angGradVec(1);
         grad.yBeta = angGradVec(2);
         grad.zGamma = angGradVec(3);
+%       grad.xAlpha = 0;
+%       grad.yBeta = 0;
+%       grad.zGamma = 0;
     end
     if contains(params.derivVar,'Krgb')
         [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('Krgb',V,params);
         grad_Krgb = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.Krgb = reshape(nanmean(grad_Krgb),3,3)';
-        grad.Krgb = grad.Krgb./norm(grad.Krgb)./params.KrgbMatNormalizationMat;
+        grad.Krgb(1,2) = 0;
+        grad.Krgb(2,1) = 0;
+        grad.Krgb(3,1:3) = 0;
+%         grad.Krgb = zeros(3,3);
     end
     cost = nanmean(DVals.*W);
 

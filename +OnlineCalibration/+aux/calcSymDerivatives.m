@@ -137,13 +137,13 @@ switch deriveByVar
         
         xCoeff.yBeta = simplify(dXout_dXin.*dXin_dyBeta + dXout_dYin.*dYin_dyBeta);
         yCoeff.yBeta = simplify(dYout_dXin.*dXin_dyBeta + dYout_dYin.*dYin_dyBeta);
-        dXin_dDeriveBy.yBeta = dXin_dxAlpha;
-        dYin_dDeriveBy.yBeta = dYin_dxAlpha;
+        dXin_dDeriveBy.yBeta = dXin_dyBeta;
+        dYin_dDeriveBy.yBeta = dXin_dyBeta;
         
         xCoeff.zGamma = simplify(dXout_dXin.*dXin_dzGamma + dXout_dYin.*dYin_dzGamma);
         yCoeff.zGamma = simplify(dYout_dXin.*dXin_dzGamma + dYout_dYin.*dYin_dzGamma);
-        dXin_dDeriveBy.zGamma = dXin_dxAlpha;
-        dYin_dDeriveBy.zGamma = dYin_dxAlpha;
+        dXin_dDeriveBy.zGamma = dXin_dzGamma;
+        dYin_dDeriveBy.zGamma = dXin_dzGamma;
     otherwise
         error('No such option!!!');
 end

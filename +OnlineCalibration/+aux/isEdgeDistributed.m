@@ -1,9 +1,10 @@
-function [isDistributed] = isEdgeDistributed(weights,sectionMap,params)
+function [isDistributed,minMaxRatio,minWeightPerSection] = isEdgeDistributed(weights,sectionMap,params)
 isDistributed = true;
 meanWeightsPerSection = zeros(params.numSectionsV*params.numSectionsH,1);
 for ix = 1:params.numSectionsV*params.numSectionsH
     meanWeightsPerSection(ix) = nanmean(weights(sectionMap == ix-1));
 end
+minWeightPerSection = min(meanWeightsPerSection);
 minMaxRatio = min(meanWeightsPerSection)/max(meanWeightsPerSection);
 if minMaxRatio < params.edgeDistributMinMaxRatio
     isDistributed = false;
