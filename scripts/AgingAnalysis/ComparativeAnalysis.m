@@ -21,16 +21,6 @@ load(sprintf('cal_data_%s.mat', groupName), 'calData', 'units')
 calData = calData(calsToCompare,:);
 nUnits = length(units);
 
-% calData(iCal, iUnit).tables.rtdOverX
-% calData(iCal, iUnit).tables.rtdOverY
-% calData(iCal, iUnit).tables.rgbThermal
-% calData(iCal, iUnit).tpsUndistModel
-% calData(iCal, iUnit).rgb.int.Kn
-% calData(iCal, iUnit).rgb.int.d
-% calData(iCal, iUnit).rgb.ext.r
-% calData(iCal, iUnit).rgb.ext.t
-% calData(iCal, iUnit).rgb.humCal
-
 %% Default configurations
 
 lddGrid = 0:2:94;
@@ -440,8 +430,8 @@ if plotFlags.rgb
             K = Calibration.tables.calc.calcRgbIntrinsicMat(calData(iCal,iUnit).rgb.int.Kn, rgbImageSize);
             d = calData(iCal,iUnit).rgb.int.d;
             thermalCorrMat = getTransMat(interp1(humGrid, calData(iCal,iUnit).tables.rgbThermal, calData(1,iUnit).rgb.humCal));
-            correctedPixels = [vec(xRgb), vec(yRgb), ones(numel(xRgb),1)]*thermalCorrMat;
-            undistortedPixels = UndistortPixels(correctedPixels(:,1:2)', flip(rgbImageSize), K, d);
+            correctedPixels = [vec(xRgb), vec(yRgb), ones(numel(xRgb),1)]/thermalCorrMat; % applying inverse thermal correction
+            undistortedPixels = du.math.undistortPoints(correctedPixels(:,1:2)', K, d, true);
             vertices = K\[undistortedPixels; ones(1,nPts^2)];
             vUnit = vertices./sqrt(sum(vertices.^2,1));
             xLosRgb(:,:,iCal) = reshape(atand(vUnit(1,:)./vUnit(3,:)), nPts, nPts);
@@ -453,7 +443,7 @@ if plotFlags.rgb
     % RGB intrinsics - plotting
     for iUnit = 1:nUnits
         figure('Name', 'RgbInt', 'Position', figPos1x1)
-        contourf(xRgbVec, yRgbVec, sqrt(0*xLosRgbError(:,:,iUnit).^2+yLosRgbError(:,:,iUnit).^2))
+        contourf(xRgbVec, yRgbVec, sqrt(xLosRgbError(:,:,iUnit).^2+yLosRgbError(:,:,iUnit).^2))
         set(gca, 'ydir', 'reverse'), colorbar
         grid on, xlabel('x [pixels]'), ylabel('y [pixels]'), title(sprintf('RGB intrinsics aging for %s [\\circ]', units{iUnit}))
         
