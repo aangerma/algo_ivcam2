@@ -27,6 +27,7 @@ nUnits = length(units);
 lddGrid = 0:2:94;
 nThermalBins = length(lddGrid);
 lddLims = [5, 75];
+getVBias = @(x,iPzr) linspace(x.regs.FRMW.(sprintf('atlMinVbias%d',iPzr)), x.regs.FRMW.(sprintf('atlMaxVbias%d',iPzr)), nThermalBins);
 
 figPos1x1 = [680, 224, 515, 377];
 figPos1x2 = [680, 224, 1030, 377];
@@ -68,7 +69,6 @@ if plotFlags.algoThermal
     % DSM table - preparations
     tableIdcs = [1,3,2,4];
     params = {'X scale', 'X offset', 'Y scale', 'Y offset'};
-    getVBias = @(x,iPzr) linspace(x.regs.FRMW.(sprintf('atlMinVbias%d',iPzr)), x.regs.FRMW.(sprintf('atlMaxVbias%d',iPzr)), nThermalBins);
     xlbls = {'vBias1 [V]', 'vBias1 [V]', 'vBias2 [V]', 'vBias2 [V]'};
     ylbls = {'scale [1/\circ]', 'offset [\circ]', 'scale [1/\circ]', 'offset [\circ]'};
     plotStyles = {'.-', '.--'};
@@ -223,36 +223,53 @@ end
 
 if plotFlags.los
     
-    % Handling cal-no-burn
-    if isReCalNoBurn
-        % For second calibration: recalculate a(T) & b(T) and align to DSM coefficients of first calibration (at DFZ calibration temperature of second calibration)
+    % Handling cal-no-burn in 2nd CAL
+    if isReCalNoBurn % need to recalculate DSM table to match DSM coefficients of 1st CAL during DFZ calibration
         for iUnit = 1:nUnits
             % recalculate a(T) and b(T) for 2nd CAL (inverse of the transformation in generateFWTable)
-            dsmTable = calData(2,iUnit).tables.thermal(:,1:4);
-            extlRegs = calData(2,iUnit).regs.EXTL;
-            xa = dsmTable(:,1)/extlRegs.dsmXscale;
-            xb = dsmTable(:,1).*(dsmTable(:,3)-extlRegs.dsmXoffset) + 2048*(xa-1);
-            ya = dsmTable(:,2)/extlRegs.dsmYscale;
-            yb = dsmTable(:,2).*(dsmTable(:,4)-extlRegs.dsmYoffset) + 2048*(ya-1);
+            dsmTable = calData(2,iUnit).tables.thermal;
+            regs = calData(2,iUnit).regs;
+            xa = dsmTable(:,1)/regs.EXTL.dsmXscale;
+            xb = dsmTable(:,1).*(dsmTable(:,3)-regs.EXTL.dsmXoffset) + 2048*(xa-1);
+            ya = dsmTable(:,2)/regs.EXTL.dsmYscale;
+            yb = dsmTable(:,2).*(dsmTable(:,4)-regs.EXTL.dsmYoffset) + 2048*(ya-1);
             % align a(T) and b(T) to new refernece vBias, at DFZ calibration of 2nd CAL
-            dfzCalLdd = calData(2,iUnit).regs.FRMW.dfzCalibrationLddTemp;
-            dfzCalVBias = interp1(lddGrid, calData(2,iUnit).heating.vBias', calData(2,iUnit).regs.FRMW.dfzCalibrationLddTemp);
-            
-            getVBias = @(x,iPzr) linspace(x.regs.FRMW.(sprintf('atlMinVbias%d',iPzr)), x.regs.FRMW.(sprintf('atlMaxVbias%d',iPzr)), nThermalBins);
-            
-            % get DSM coefficients of 1st CAL, at DFZ vBias of 2nd CAL
-            dfzCalLdd = calData(2,iUnit).regs.FRMW.dfzCalibrationLddTemp;
-            dfzCalVBias = arrayfun(@(iPzr) polyval(polyfit(calData(2,iUnit).heating.ldd, calData(2,iUnit).heating.vBias(iPzr,:), 1), dfzCalLdd), 1:3);
-            dsmVals = Calibration.tables.calc.calcAlgoThermalDsmRtd(struct('table', calData(1,iUnit).tables.thermal), calData(1,iUnit).regs, lddGrid([1,end]), dfzCalLdd, dfzCalVBias);
-
+            dfzCalLdd = regs.FRMW.dfzCalibrationLddTemp;
+            vBiasGrid = [getVBias(calData(2,iUnit),1); getVBias(calData(2,iUnit),2); getVBias(calData(2,iUnit),3)];
+            dfzCalVBias = interp1(lddGrid, vBiasGrid', dfzCalLdd)';
+            dsmVals2 = Calibration.tables.calc.calcAlgoThermalDsmRtd(struct('table', dsmTable), regs, lddGrid([1,end]), dfzCalLdd, dfzCalVBias);
+            xaDfz = dsmVals2.xScale/regs.EXTL.dsmXscale;
+            xbDfz = dsmVals2.xScale.*(dsmVals2.xOffset-regs.EXTL.dsmXoffset) + 2048*(xaDfz-1);
+            yaDfz = dsmVals2.yScale/regs.EXTL.dsmYscale;
+            ybDfz = dsmVals2.yScale.*(dsmVals2.yOffset-regs.EXTL.dsmYoffset) + 2048*(yaDfz-1);
+            xa = xa/xaDfz;
+            xb = (xb-xbDfz)/xaDfz;
+            ya = ya/yaDfz;
+            yb = (yb-ybDfz)/yaDfz;
+            % apply DSM calibration of 1st CAL
+            dsmVals1 = Calibration.tables.calc.calcAlgoThermalDsmRtd(struct('table', calData(1,iUnit).tables.thermal), calData(1,iUnit).regs, lddGrid([1,end]), dfzCalLdd, dfzCalVBias);
+            newDsmXscale = xa*dsmVals1.xScale;
+            newDsmXoffset = (dsmVals1.xOffset*newDsmXscale-2048*xa+xb+2048)./newDsmXscale;
+            newDsmYscale = ya*dsmVals1.yScale;
+            newDsmYoffset = (dsmVals1.yOffset*newDsmYscale-2048*ya+yb+2048)./newDsmYscale;
+            calData(2,iUnit).tables.thermal(:,1:4) = [newDsmXscale, newDsmYscale, newDsmXoffset, newDsmYoffset];
+            % visualization (sanity check)
+            if false
+                vBiasGrid1 = [getVBias(calData(1,iUnit),1); getVBias(calData(1,iUnit),2); getVBias(calData(1,iUnit),3)];
+                params = {'xScale', 'xOffset', 'yScale', 'yOffset'};
+                tableInd = [1,3,2,4];
+                figure
+                for k = 1:4
+                    iPzr = 1+mod(tableInd(k)-1,2);
+                    subplot(2,2,k), hold on
+                    plot(vBiasGrid1(iPzr,:), calData(1,iUnit).tables.thermal(:,tableInd(k)), '--')
+                    plot(vBiasGrid(iPzr,:), dsmTable(:,tableInd(k)), '--')
+                    plot(dfzCalVBias(iPzr), dsmVals1.(params{k}), 'p')
+                    plot(vBiasGrid(iPzr,:), calData(2,iUnit).tables.thermal(:,tableInd(k)), '-')
+                    grid on, xlabel(sprintf('vBias%d [V]', iPzr)), title(params{k}), legend('CAL 1 table', 'CAL 2 orig', 'DFZ calibration', 'CAL 2 fixed')
+                end
+            end
         end
-        
-        
-        
-        scnew = dsmTable(:,2); sc=data.regs.EXTL.dsmYscale; ofnew = dsmTable(:,4); of=data.regs.EXTL.dsmYoffset;
-aa=scnew/sc;
-bb=scnew.*(ofnew-of)+2048*(aa-1);
-
     end
     
     % Mirror rest - preparations
