@@ -3,6 +3,7 @@ clear all
 clc
 
 groupName = 'PRQ_open';
+% groupName = 'QNR_1500';
 % groupName = 'ACC_repeatability';
 % groupName = 'bundle';
 
@@ -17,7 +18,7 @@ plotFlags.rgb = true;
 
 nCal = length(calsToCompare);
 assert(nCal==2, 'Only 2 calibrations can be compared each time')
-load(sprintf('cal_data_%s.mat', groupName), 'calData', 'units')
+load(sprintf('cal_data_%s.mat', groupName), 'calData', 'units', 'isReCalNoBurn')
 calData = calData(calsToCompare,:);
 nUnits = length(units);
 
@@ -221,6 +222,38 @@ end
 %% LOS errors
 
 if plotFlags.los
+    
+    % Handling cal-no-burn
+    if isReCalNoBurn
+        % For second calibration: recalculate a(T) & b(T) and align to DSM coefficients of first calibration (at DFZ calibration temperature of second calibration)
+        for iUnit = 1:nUnits
+            % recalculate a(T) and b(T) for 2nd CAL (inverse of the transformation in generateFWTable)
+            dsmTable = calData(2,iUnit).tables.thermal(:,1:4);
+            extlRegs = calData(2,iUnit).regs.EXTL;
+            xa = dsmTable(:,1)/extlRegs.dsmXscale;
+            xb = dsmTable(:,1).*(dsmTable(:,3)-extlRegs.dsmXoffset) + 2048*(xa-1);
+            ya = dsmTable(:,2)/extlRegs.dsmYscale;
+            yb = dsmTable(:,2).*(dsmTable(:,4)-extlRegs.dsmYoffset) + 2048*(ya-1);
+            % align a(T) and b(T) to new refernece vBias, at DFZ calibration of 2nd CAL
+            dfzCalLdd = calData(2,iUnit).regs.FRMW.dfzCalibrationLddTemp;
+            dfzCalVBias = interp1(lddGrid, calData(2,iUnit).heating.vBias', calData(2,iUnit).regs.FRMW.dfzCalibrationLddTemp);
+            
+            getVBias = @(x,iPzr) linspace(x.regs.FRMW.(sprintf('atlMinVbias%d',iPzr)), x.regs.FRMW.(sprintf('atlMaxVbias%d',iPzr)), nThermalBins);
+            
+            % get DSM coefficients of 1st CAL, at DFZ vBias of 2nd CAL
+            dfzCalLdd = calData(2,iUnit).regs.FRMW.dfzCalibrationLddTemp;
+            dfzCalVBias = arrayfun(@(iPzr) polyval(polyfit(calData(2,iUnit).heating.ldd, calData(2,iUnit).heating.vBias(iPzr,:), 1), dfzCalLdd), 1:3);
+            dsmVals = Calibration.tables.calc.calcAlgoThermalDsmRtd(struct('table', calData(1,iUnit).tables.thermal), calData(1,iUnit).regs, lddGrid([1,end]), dfzCalLdd, dfzCalVBias);
+
+        end
+        
+        
+        
+        scnew = dsmTable(:,2); sc=data.regs.EXTL.dsmYscale; ofnew = dsmTable(:,4); of=data.regs.EXTL.dsmYoffset;
+aa=scnew/sc;
+bb=scnew.*(ofnew-of)+2048*(aa-1);
+
+    end
     
     % Mirror rest - preparations
     defaultScaleX = 61.62;

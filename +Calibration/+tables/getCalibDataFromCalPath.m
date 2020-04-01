@@ -25,6 +25,10 @@ function data = getCalibDataFromCalPath(atcPath, accPath)
         data.pzr.vSenseModel            = zeros(3,3,'single');
     end
     % DSM
+    data.regs.EXTL.dsmXscale            = algoCalibData.EXTL.dsmXscale;
+    data.regs.EXTL.dsmXoffset           = algoCalibData.EXTL.dsmXoffset;
+    data.regs.EXTL.dsmYscale            = algoCalibData.EXTL.dsmYscale;
+    data.regs.EXTL.dsmYoffset           = algoCalibData.EXTL.dsmYoffset;
     data.regs.FRMW.losAtMirrorRestHorz  = algoCalibData.FRMW.losAtMirrorRestHorz;
     data.regs.FRMW.losAtMirrorRestVert  = algoCalibData.FRMW.losAtMirrorRestVert;
     % Projection
@@ -49,6 +53,7 @@ function data = getCalibDataFromCalPath(atcPath, accPath)
     data.regs.FRMW.dfzVbias             = algoCalibData.FRMW.dfzVbias;
     finalCalcData                       = load(fullfile(atcPath, 'Matlab\mat_files\finalCalcAfterHeating_in.mat'));
     tempData                            = [finalCalcData.data.framesData.temp];
+    data.heating.ldd                    = [tempData.ldd];
     data.heating.hum                    = [tempData.shtw2];
     data.heating.vBias                  = reshape([finalCalcData.data.framesData.vBias],3,[]);
     data.heating.iBias                  = reshape([finalCalcData.data.framesData.iBias],3,[]);
