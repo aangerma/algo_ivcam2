@@ -107,7 +107,7 @@ switch tableName
         else % old format
             calibData.referenceTemp = calibData.maxTemp;
             calibData.isValid = 1;
-            calibData.thermalTable = reshape(tableWithMetaData(3:end), [], calibData.nBins)';
+            calibData.thermalTable = reshape(tableWithMetaData(4:end), [], calibData.nBins)';
         end
         
     otherwise

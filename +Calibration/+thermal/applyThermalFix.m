@@ -14,9 +14,9 @@ lddTempShort = [lddTempShort.ldd];
 resAngX = data.tableResults.angx;
 resAngY = data.tableResults.angy;
 tempRegs.FRMW = struct('atlMinVbias1', resAngX.p0(1), 'atlMinVbias2', resAngY.minval, 'atlMinVbias3', resAngX.p0(2), 'atlMaxVbias1', resAngX.p1(1), 'atlMaxVbias2', resAngY.maxval, 'atlMaxVbias3', resAngX.p1(2));
-[dsmVals, rtdVals] = Calibration.tables.calc.calcAlgoThermalDsmRtd(data.tableResults, tempRegs, calibParams.fwTable.tempBinRange, vBias, lddTemp);
+[dsmVals, rtdVals] = Calibration.tables.calc.calcAlgoThermalDsmRtd(data.tableResults, tempRegs, calibParams.fwTable.tempBinRange, lddTemp, vBias);
 resRtdShort.table = data.tableResults.rtd.tmptrOffsetValuesShort;
-[~, rtdValsShort] = Calibration.tables.calc.calcAlgoThermalDsmRtd(resRtdShort, [], calibParams.fwTable.tempBinRange, [], lddTempShort);
+[~, rtdValsShort] = Calibration.tables.calc.calcAlgoThermalDsmRtd(resRtdShort, [], calibParams.fwTable.tempBinRange, lddTempShort);
 
 %% Fix application
 newData = data;

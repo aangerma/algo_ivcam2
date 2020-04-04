@@ -1,4 +1,4 @@
-function [dsmVals, rtdVals] = calcAlgoThermalDsmRtd(algoThermalCalibData, regs, tableLddRange, vBiasMat, lddVec)
+function [dsmVals, rtdVals] = calcAlgoThermalDsmRtd(algoThermalCalibData, regs, tableLddRange, lddVec, vBiasMat)
 
 isTableWithDsm = (size(algoThermalCalibData.table,2)==5);
 nBins = size(algoThermalCalibData.table,1);
@@ -7,6 +7,12 @@ if (size(lddVec,1) > 1)
 end
 
 if isTableWithDsm
+    if ~exist('vBiasMat', 'var')
+        tableLddGrid = linspace(tableLddRange(1), tableLddRange(2), nBins);
+        vBiasMat(1,:) = interp1(tableLddGrid, linspace(regs.FRMW.atlMinVbias1, regs.FRMW.atlMaxVbias1, nBins), lddVec);
+        vBiasMat(2,:) = interp1(tableLddGrid, linspace(regs.FRMW.atlMinVbias2, regs.FRMW.atlMaxVbias2, nBins), lddVec);
+        vBiasMat(3,:) = interp1(tableLddGrid, linspace(regs.FRMW.atlMinVbias3, regs.FRMW.atlMaxVbias3, nBins), lddVec);
+    end
     if (size(vBiasMat,1) ~= 3)
         vBiasMat = vBiasMat';
     end

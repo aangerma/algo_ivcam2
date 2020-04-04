@@ -1,7 +1,7 @@
 clear all
 clc
 
-atcPath = 'W:\BIG PBS\HENG-2837\F9340026\ATC12\';
+atcPath = 'W:\BIG PBS\HENG-3203\F0050019\ATC1\';
 % atcPath = 'W:\BIG PBS\HENG-2837\F9340254\ATC3\';
 % atcPath = 'W:\BIG PBS\HENG-2837\F9340423\ATC6\';
 % atcPath = 'W:\BIG PBS\HENG-2837\F9340713\ATC16\';

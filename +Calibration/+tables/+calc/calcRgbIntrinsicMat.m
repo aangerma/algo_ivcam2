@@ -1,8 +1,8 @@
-function Kn = calcRgbIntrinsicMat(rgbCalibData, rgbImageSize)
+function K = calcRgbIntrinsicMat(normalizedK, rgbImageSize)
 
-Kn = rgbCalibData.color.Kn;
+K = normalizedK;
 for iRow = 1:2
-    Kn(iRow,iRow) = Kn(iRow,iRow)*rgbImageSize(iRow)/2;
-    Kn(iRow,3) = (Kn(iRow,3)+1)*rgbImageSize(iRow)/2;
+    K(iRow,iRow) = K(iRow,iRow)*rgbImageSize(iRow)/2;
+    K(iRow,3) = (K(iRow,3)+1)*rgbImageSize(iRow)/2;
 end
     
