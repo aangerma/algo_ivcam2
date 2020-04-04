@@ -14,6 +14,7 @@ import a_common
 
 
 def calibration_turnin(mode='turnin'):
+	return True
     xmlPath = r'X:\Avv\sources\calibration\calibration_turnin.xml'
 
     try:
