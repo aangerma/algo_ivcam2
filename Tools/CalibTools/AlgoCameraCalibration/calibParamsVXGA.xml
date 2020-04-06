@@ -56,7 +56,22 @@
         <rgbIntReprojRms>[0 3]</rgbIntReprojRms>
         <rgbExtReprojRms>[0 5]</rgbExtReprojRms>
         <rgbYawDeg>[-2,2]</rgbYawDeg>
-        <minRangeScaleModRef>[0 1]</minRangeScaleModRef>
+		<rgbFx>[-inf,inf]</rgbFx>
+		<rgbFy>[-inf,inf]</rgbFy>
+		<rgbPx>[-inf,inf]</rgbPx>
+		<rgbPy>[-inf,inf]</rgbPy>
+		<rgbTx>[-inf,inf]</rgbTx>
+		<rgbTy>[-inf,inf]</rgbTy>
+		<rgbTz>[-inf,inf]</rgbTz>
+		<rgbRx>[-inf,inf]</rgbRx>
+		<rgbRy>[-inf,inf]</rgbRy>
+		<rgbRz>[-inf,inf]</rgbRz>
+		<rgbDistortInDist1>[-inf,inf]</rgbDistortInDist1>
+		<rgbDistortInDist2>[-inf,inf]</rgbDistortInDist2>
+		<rgbTang>[-inf,inf]</rgbTang>
+		<rgbHfov>[-inf,inf]</rgbHfov>
+		<rgbVfov>[-inf,inf]</rgbVfov>
+		<minRangeScaleModRef>[0 1]</minRangeScaleModRef>
         <maxModRefDec>[0 inf]</maxModRefDec>
         <maxRangeScaleModRef_state1>[0.3 1]</maxRangeScaleModRef_state1>
         <!--<targetDist>[780 820]</targetDist>-->
@@ -83,7 +98,7 @@
         <extraPixWorldPercR>[0,inf]</extraPixWorldPercR><!--2.5% from 1024 is around 25 pixels -->
         <lineFitRmsErrHor2dRGB>[0 inf]</lineFitRmsErrHor2dRGB>
         <lineFitRmsErrVer2dRGB>[0 inf]</lineFitRmsErrVer2dRGB>
-	<lineFitMaxRmsErrHor2dRGB>[0 inf]</lineFitMaxRmsErrHor2dRGB>
+		<lineFitMaxRmsErrHor2dRGB>[0 inf]</lineFitMaxRmsErrHor2dRGB>
         <lineFitMaxRmsErrVer2dRGB>[0 inf]</lineFitMaxRmsErrVer2dRGB>
         <lineFitMaxErrHor2dRGB>[0 inf]</lineFitMaxErrHor2dRGB>
         <lineFitMaxErrVer2dRGB>[0 inf]</lineFitMaxErrVer2dRGB>
@@ -357,6 +372,8 @@
         <rgbDistoration>1</rgbDistoration>
         <arePixelsSquare>0</arePixelsSquare>
         <imSize>[1920,1080]</imSize>
+		<distFromPP4distortion1>0.25</distFromPP4distortion1>
+		<distFromPP4distortion2>0.9</distFromPP4distortion2>
     </rgb>
     <presets>
 		<general>
