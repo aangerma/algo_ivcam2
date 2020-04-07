@@ -30,6 +30,7 @@ while notConverged && iterCount < params.maxOptimizationIters
     params.Krgb = newKRTP.Krgb;
     params.Trgb = newKRTP.Trgb;
     params.Rrgb = newKRTP.Rrgb;
+    [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
 end
 
 % Update new Params

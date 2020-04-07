@@ -12,8 +12,20 @@ xyMovement = mean(sqrt(sum((uvMap-uvMapNew).^2,2)));
 validOutputStruct.xyMovement = xyMovement;
 maxMovementInThisIteration = params.maxXYMovementPerIteration(min(length(params.maxXYMovementPerIteration),iterationFromStart));
 if xyMovement > maxMovementInThisIteration
-    pMatDiff = newParams.rgbPmat - params.rgbPmat;
-    newParams.rgbPmat = params.rgbPmat + pMatDiff*maxMovementInThisIteration/xyMovement;
+    mulFactor = maxMovementInThisIteration/xyMovement;
+    if ~strcmp(params.derivVar,'P')
+        optParams = {'xAlpha';'yBeta';'zGamma';'Trgb';'Kdepth';'Krgb'};
+        for fn = 1:numel(optParams)
+            diff = newParams.(optParams{fn}) - params.(optParams{fn});
+            newParams.(optParams{fn}) = params.(optParams{fn}) + diff*mulFactor;
+        end
+        newParams.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(newParams.xAlpha,newParams.yBeta,newParams.zGamma);
+        newParams.rgbPmat = newParams.Krgb*[newParams.Rrgb,newParams.Trgb];
+    else
+        diff = newParams.rgbPmat - params.rgbPmat;
+        newParams.rgbPmat = params.rgbPmat + diff*mulFactor;
+
+    end
     fprintf('Movement too large, clipped movement from %f to %f pixels.\n',xyMovement,maxMovementInThisIteration);
 end
 

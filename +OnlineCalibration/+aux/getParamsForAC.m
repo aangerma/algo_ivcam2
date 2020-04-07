@@ -1,8 +1,13 @@
 function [params] = getParamsForAC(params)
 params.inverseDistParams.alpha = 1/3;
-params.inverseDistParams.gamma = 0.98;
+% params.inverseDistParams.gamma = 0.98;
+params.inverseDistParams.gamma = 0.9;
+
 params.inverseDistParams.metric = 1; % Metrics norm. Currently only suppotrs L1. Should support L2.
 params.gradITh = 3.5; % Ignore pixels with IR grad of less than this
+if all(params.depthRes == [768,1024])
+    params.gradITh = 1.5; % Ignore pixels with IR grad of less than this for XGA?
+end
 params.gradZTh = 25; % Ignore pixels with Z grad of less than this
 params.gradZMax = 1000; 
 params.maxStepSize = 1;
@@ -26,15 +31,15 @@ params.seSize = 3;
 params.moveThreshPixVal = 20;
 params.moveThreshPixNum =  3e-05*prod(params.rgbRes);
 params.moveGaussSigma = 1;
-params.maxXYMovementPerIteration = [10,2,2];
-params.maxXYMovementFromOrigin = 20;
+params.maxXYMovementPerIteration = [10,2,2]*prod(params.rgbRes)/(1920*1080);
+params.maxXYMovementFromOrigin = 20*prod(params.rgbRes)/(1920*1080);
 params.numSectionsV = 2;
 params.numSectionsH = 2;
 params.gradDirRatio = 10;
 params.gradDirRatioPerp = 1.5;
 
 params.edgeDistributMinMaxRatio = 0.005;
-params.minWeightedEdgePerSectionDepth = 50;
-params.minWeightedEdgePerSectionRgb = 0.05;
+params.minWeightedEdgePerSectionDepth = 50*(480*640)/prod(params.depthRes);
+params.minWeightedEdgePerSectionRgb = 0.05*(1920*1080)/prod(params.rgbRes);
 end
 

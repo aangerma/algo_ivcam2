@@ -2,6 +2,7 @@ function [isValidScene,validSceneStruct] = validScene(frames,params)
 validSceneStruct = struct;
 validSceneStruct.invalidReason = '';
 isValidScene = true;
+validSceneStruct.isValid = 1;
 
 [isMovement,validSceneStruct.movingPixels] = OnlineCalibration.aux.isMovementInImages(frames.yuy2Prev,frames.yuy2,params);
 if isMovement
@@ -14,9 +15,9 @@ if isMovement
     isValidScene = false;
 end
 params.minWeightedEdgePerSection = params.minWeightedEdgePerSectionDepth;
-[goodEdgeDistribution,validSceneStruct.edgeDistributionMinMaxRatioDepth,validSceneStruct.edgeDistributionMinWeightPerSectionDepth] = OnlineCalibration.aux.isEdgeDistributed(frames.weights,frames.sectionMapDepth,params);
+[goodEdgeDistribution,validSceneStruct.edgeDistributionMinMaxRatioDepth,validSceneStruct.edgeWeightDistributionPerSectionDepth] = OnlineCalibration.aux.isEdgeDistributed(frames.weights,frames.sectionMapDepth,params);
 if ~goodEdgeDistribution
-    if isempty(validSceneStruct.invalidReason)
+    if ~isempty(validSceneStruct.invalidReason)
         validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'&'];
     end
     validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'EdgeDistributionDepth'];
@@ -25,9 +26,9 @@ if ~goodEdgeDistribution
     isValidScene = false;
 end
 params.minWeightedEdgePerSection = params.minWeightedEdgePerSectionRgb;
-[goodEdgeDistributionRgb,validSceneStruct.edgeDistributionMinMaxRatioRgb,validSceneStruct.edgeDistributionMinWeightPerSectionRgb] = OnlineCalibration.aux.isEdgeDistributed(frames.rgbIDT(:),frames.sectionMapRgb,params);
+[goodEdgeDistributionRgb,validSceneStruct.edgeDistributionMinMaxRatioRgb,validSceneStruct.edgeWeightDistributionPerSectionRgb] = OnlineCalibration.aux.isEdgeDistributed(frames.rgbIDT(:),frames.sectionMapRgb,params);
 if ~goodEdgeDistributionRgb
-    if isempty(validSceneStruct.invalidReason)
+    if ~isempty(validSceneStruct.invalidReason)
         validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'&'];
     end
     validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'EdgeDistributionRgb'];
@@ -35,9 +36,9 @@ if ~goodEdgeDistributionRgb
     isValidScene = false;
 end
 
-[goodEdgeDirDistribution,validSceneStruct.dirRatio1,validSceneStruct.perpRatio,validSceneStruct.dirRatio2,validSceneStruct.weightsPerDir] = OnlineCalibration.aux.isGradDirBalanced(frames,params);
+[goodEdgeDirDistribution,validSceneStruct.dirRatio1,validSceneStruct.perpRatio,validSceneStruct.dirRatio2,validSceneStruct.edgeWeightsPerDir] = OnlineCalibration.aux.isGradDirBalanced(frames,params);
 if ~goodEdgeDirDistribution
-    if isempty(validSceneStruct.invalidReason)
+    if ~isempty(validSceneStruct.invalidReason)
         validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'&'];
     end 
     validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'EdgeDirDistribution'];
