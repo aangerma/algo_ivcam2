@@ -82,12 +82,12 @@ end
 %% Perform Optimization
 params.derivVar = 'KrgbRT';
 newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
-params.derivVar = 'P';
-newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
+% params.derivVar = 'P';
+% newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 
 
 OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
-OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
+% OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
 OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
 ax = gca;
 title({ax.Title.String;'New R,T,Krgb optimization'});
