@@ -11,9 +11,9 @@ while loopCounter <= params.maxIters
     % Optimize parameters
     CurrentOrigParams = params;
     [frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
-%     [frame.irEdge] = OnlineCalibration.aux.preprocessIR(frame,params);
-%     [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(frame,params);
-    [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZAndIR(frame,params);
+    [frame.irEdge] = OnlineCalibration.aux.preprocessIR(frame,params);
+    [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(frame,params);
+%     [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZAndIR(frame,params);
     frame.sectionMapDepth = sectionMapDepth(frame.zEdgeSupressed>0);
     frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
     [frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
