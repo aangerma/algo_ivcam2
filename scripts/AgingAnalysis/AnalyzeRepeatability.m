@@ -24,7 +24,7 @@ for iCold = 1:length(coldData)
     t = tic;
     data = coldData(iCold);
     for iLdd = 1:length(lddVec)
-        [xLosTrueCold{iCold}(:,:,iLdd), yLosTrueCold{iCold}(:,:,iLdd)] = CalcTrueLos(data.regs, data.tables.thermal, data.tpsUndistModel, xLos, yLos, lddVec(iLdd));
+        [xLosTrueCold{iCold}(:,:,iLdd), yLosTrueCold{iCold}(:,:,iLdd)] = Utils.convert.MemsToTrueLos(data.regs, data.tables.thermal, data.tpsUndistModel, xLos, yLos, lddVec(iLdd));
     end
     fprintf('Done (%.1f sec)\n', toc(t));
 end
@@ -33,7 +33,7 @@ for iHot = 1:length(coldData)
     t = tic;
     data = hotData(iHot);
     for iLdd = 1:length(lddVec)
-        [xLosTrueHot{iHot}(:,:,iLdd), yLosTrueHot{iHot}(:,:,iLdd)] = CalcTrueLos(data.regs, data.tables.thermal, data.tpsUndistModel, xLos, yLos, lddVec(iLdd));
+        [xLosTrueHot{iHot}(:,:,iLdd), yLosTrueHot{iHot}(:,:,iLdd)] = Utils.convert.MemsToTrueLos(data.regs, data.tables.thermal, data.tpsUndistModel, xLos, yLos, lddVec(iLdd));
     end
     fprintf('Done (%.1f sec)\n', toc(t));
 end
@@ -282,13 +282,13 @@ dsmY = repmat(yDsmVec', [1,nDsm]);
 
 for iCold = 1:length(coldData)
     data = coldData(iCold);
-    [losX, losY] = CalcTrueLosFromDsm(data.regs, data.tpsUndistModel, dsmX, dsmY);
+    [losX, losY] = Utils.convert.DsmToTrueLos(data.regs, data.tpsUndistModel, dsmX, dsmY);
     xLosTrueCold{iCold} = double(losX);
     yLosTrueCold{iCold} = double(losY);
 end
 for iHot = 1:length(coldData)
     data = hotData(iHot);
-    [losX, losY] = CalcTrueLosFromDsm(data.regs, data.tpsUndistModel, dsmX, dsmY);
+    [losX, losY] = Utils.convert.DsmToTrueLos(data.regs, data.tpsUndistModel, dsmX, dsmY);
     xLosTrueHot{iHot} = double(losX);
     yLosTrueHot{iHot} = double(losY);
 end

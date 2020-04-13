@@ -176,6 +176,7 @@ function allVertices = calcVertices(darr,X,rtlRegs,useCropped,tpsUndistModel, re
         else
             rpt = darr(i).rpt;
         end
+        % Conversion from RPT to vertices is implemented in Utils.convert.RptToVertices, but is duplicated here with a specific time-efficient form
         if reCalcDirections % otherwise keep last known value
             [angx,angy] = Calibration.Undist.applyPolyUndistAndPitchFix(rpt(:,2),rpt(:,3),rtlRegs);
             vUnit{i} = Calibration.aux.ang2vec(angx,angy,rtlRegs)';
@@ -404,6 +405,8 @@ for iParam = 1:length(optimizedParams)
                 regs.FRMW.fovexRadialK(1), regs.FRMW.fovexRadialK(2), regs.FRMW.fovexRadialK(3),...
                 regs.FRMW.fovexTangentP(1), regs.FRMW.fovexTangentP(2), regs.FRMW.fovexCenter(1), regs.FRMW.fovexCenter(2));
         case 'rtdVars'
+            fprintff('Delay: dt=%.2f.\n',...
+                regs.DEST.txFRQpd(1));
             fprintff('RTD over X : xCoef=[%.2f,%.2f,%.2f,%.2f,%.2f,%.2f].\n',...
                 regs.FRMW.rtdOverX(1), regs.FRMW.rtdOverX(2), regs.FRMW.rtdOverX(3), regs.FRMW.rtdOverX(4), regs.FRMW.rtdOverX(5), regs.FRMW.rtdOverX(6));
             fprintff('RTD over Y : yCoef=[%.2f,%.2f,%.2f].\n',...

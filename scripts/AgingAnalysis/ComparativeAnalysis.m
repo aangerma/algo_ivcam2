@@ -331,11 +331,11 @@ if plotFlags.los
         end
         for iThermal = plotIdcs
             if plotVsLdd
-                [xLosTrue1, yLosTrue1] = CalcTrueLos(calData(1,iUnit).regs, calData(1,iUnit).tables.thermal, calData(1,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal));
-                [xLosTrue2, yLosTrue2, xOutbound, yOutbound] = CalcTrueLos(calData(2,iUnit).regs, calData(2,iUnit).tables.thermal, calData(2,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal));
+                [xLosTrue1, yLosTrue1] = Utils.convert.MemsToTrueLos(calData(1,iUnit).regs, calData(1,iUnit).tables.thermal, calData(1,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal));
+                [xLosTrue2, yLosTrue2, xOutbound, yOutbound] = Utils.convert.MemsToTrueLos(calData(2,iUnit).regs, calData(2,iUnit).tables.thermal, calData(2,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal));
             else
-                [xLosTrue1, yLosTrue1] = CalcTrueLos(calData(1,iUnit).regs, calData(1,iUnit).tables.thermal, calData(1,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal), vBiasMat(:,iThermal));
-                [xLosTrue2, yLosTrue2, xOutbound, yOutbound] = CalcTrueLos(calData(2,iUnit).regs, calData(2,iUnit).tables.thermal, calData(2,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal), vBiasMat(:,iThermal));
+                [xLosTrue1, yLosTrue1] = Utils.convert.MemsToTrueLos(calData(1,iUnit).regs, calData(1,iUnit).tables.thermal, calData(1,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal), vBiasMat(:,iThermal));
+                [xLosTrue2, yLosTrue2, xOutbound, yOutbound] = Utils.convert.MemsToTrueLos(calData(2,iUnit).regs, calData(2,iUnit).tables.thermal, calData(2,iUnit).tpsUndistModel, xLos, yLos, lddGrid(iThermal), vBiasMat(:,iThermal));
             end
             outOfFovIdcs = (abs(tand(xOutbound))>tand(fovBoundaries(1)/2)) | (abs(tand(yOutbound)./cosd(xOutbound))>tand(fovBoundaries(2)/2));
             xLosTrue1(outOfFovIdcs) = NaN;

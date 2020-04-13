@@ -1,11 +1,13 @@
-function out = ConvertSphericalToCartesian(in, regs, mode)
-
-    % Geometrical inputs are expected to be Nx1 or Nx3
+function out = SphericalToCartesian(in, regs, mode)
+    % SphericalToCartesian
+    %   Converts ideal (i.e. error-free) spherical coordinates (with RTD instead of R) to Cartesian coordinates, and vice versa.
+    %   Geometrical inputs are expected to be Nx1 (spherical) or Nx3 (Cartesian).
+        
+    angles2xyz = @(angx,angy) [cosd(angy).*sind(angx), sind(angy), cosd(angy).*cosd(angx)]';
+    laserIncidentDir = angles2xyz(regs.FRMW.laserangleH, regs.FRMW.laserangleV+180); %+180 because the vector direction is toward the mirror
     
     if strcmp(mode, 'forward') % spherical to Cartesian
         % Direction calculation
-        angles2xyz = @(angx,angy) [cosd(angy).*sind(angx), sind(angy), cosd(angy).*cosd(angx)]';
-        laserIncidentDir = [0; 0; -1];
         applyReflection = @(mirrorDir) bsxfun(@plus,laserIncidentDir, -bsxfun(@times, 2*laserIncidentDir'*mirrorDir, mirrorDir));
         applyFOVex = @(v) Calibration.aux.applyFOVex(v, regs)';
         vUnit = applyFOVex(applyReflection(angles2xyz(in.angx/2, in.angy/2))); % Nx3
@@ -24,8 +26,7 @@ function out = ConvertSphericalToCartesian(in, regs, mode)
         out.rtd = r + calcDist(in.vertices - rxPos);
         % Angular calculation
         applyFOVexInv = @(v) Calibration.aux.applyFOVexInv(v, regs);
-        laserIncidentDir = [0; 0; -1]';
-        applyReflectionInv = @(v) normr(v - laserIncidentDir);
+        applyReflectionInv = @(v) normr(v - laserIncidentDir');
         xyz2angles = @(v) [atand(v(:,1)./v(:,3)), asind(v(:,2))];
         vUnit = in.vertices./r;
         angles = xyz2angles(applyReflectionInv(applyFOVexInv(vUnit)));
