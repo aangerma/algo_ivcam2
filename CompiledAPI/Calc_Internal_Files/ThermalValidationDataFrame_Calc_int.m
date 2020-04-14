@@ -31,6 +31,8 @@ if isempty(Index) || (g_temp_count == 0)
     lastZFrames = nan([runParams.calibRes,calibParams.warmUp.nFramesForZStd]);
     diskObject = strel('disk',calibParams.roi.diskSz);
     [regs,luts,rgbData] = completeRegState(unitData,algoInternalDir);
+    assert(regs.FRMW.dfzCalTmp>0, 'Unit is not fully calibrated (missing ATC data) --> aborting ATV.')
+    assert(regs.FRMW.dfzCalibrationLddTemp>0, 'Unit is not fully calibrated (missing ACC data) --> aborting ATV.')
 end
 
 if isempty(dacModelFunc) && isfield(FrameData, 'dac')

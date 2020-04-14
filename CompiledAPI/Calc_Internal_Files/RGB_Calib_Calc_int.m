@@ -12,8 +12,27 @@ function [rgbPassed, rgbTable, results] = RGB_Calib_Calc_int(im, rgbs, calibPara
     res = Calibration.rgb.computeCal(cbCorners(cornersValid,:),Kdepth,params);
     rgbTable = Calibration.rgb.buildRGBTable(res,params,rgbCalTemperature);
     results.rgbIntReprojRms = res.color.rms;
-    results.rgbExtReprojRms = res.extrinsics.rms;
+    results.rgbExtReprojRms = res.extrinsics.rms;    
+    results.rgbTx = res.extrinsics.t(1);
+    results.rgbTy = res.extrinsics.t(2);
+    results.rgbTz = res.extrinsics.t(3);
+    
     results.rgbYawDeg = Calibration.rgb.getYawFromRotationMat(res.extrinsics.r);
+    
+    [rgbCharRes] = Calibration.rgb.calcRgbCharacter(res, params);
+    results.rgbFx = rgbCharRes.fx;
+    results.rgbFy = rgbCharRes.fy;
+    results.rgbPx = rgbCharRes.px;
+    results.rgbPy = rgbCharRes.py;
+    results.rgbDistortInDist1 = rgbCharRes.rad(1);
+    results.rgbDistortInDist2 = rgbCharRes.rad(2);
+    results.rgbTang = rgbCharRes.tang;
+    results.rgbHfov = rgbCharRes.hFov;
+    results.rgbVfov = rgbCharRes.vFov;
+    results.rgbRx = rgbCharRes.rx(1);
+    results.rgbRy = rgbCharRes.rx(2);
+    results.rgbRz = rgbCharRes.rx(3);
+    
     %%
     params.camera = struct('zMaxSubMM',z2mm,'zK',Kdepth);
     params.camera.rgbPmat = res.color.k*[res.extrinsics.r res.extrinsics.t];

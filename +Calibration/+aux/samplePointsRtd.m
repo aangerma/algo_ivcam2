@@ -24,14 +24,9 @@ function [rpt,pts,colorMap] = samplePointsRtd(z,pts,regs,addZ,colorMap,takeRtdVa
     %calc angles per pixel
     [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
     if(regs.DIGG.sphericalEn)
-        xx = (xg+0.5)*4 - double(regs.DIGG.sphericalOffset(1));
-        yy = yg + 1 - double(regs.DIGG.sphericalOffset(2));
-        
-        xx = xx*2^10;
-        yy = yy*2^12;
-        
-        angx = xx/double(regs.DIGG.sphericalScale(1));
-        angy = yy/double(regs.DIGG.sphericalScale(2));
+        dsmAngles = Utils.convert.DsmToSphericalPixel(struct('x', xg, 'y', yg), regs, 'inverse');
+        angx = dsmAngles.angx;
+        angy = dsmAngles.angy;
     else
         [angx,angy] = Calibration.aux.vec2ang(Calibration.aux.xy2vec(xg+0.5,yg+0.5,regs), regs);
         [angx,angy] = Calibration.Undist.inversePolyUndistAndPitchFix(angx,angy,regs);

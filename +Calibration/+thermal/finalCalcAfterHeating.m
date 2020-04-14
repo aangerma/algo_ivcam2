@@ -85,6 +85,10 @@ function results = UpdateResultsStruct(results)
     results.thermalAngxP0y          = results.angx.p0(2);
     results.thermalAngxP1x          = results.angx.p1(1);
     results.thermalAngxP1y          = results.angx.p1(2);
+    % PZR results
+    results.pzr1vSenseEstR2         = results.pzr(1).vsenseEstR2;
+    results.pzr2vSenseEstR2         = results.pzr(2).vsenseEstR2;
+    results.pzr3vSenseEstR2         = results.pzr(3).vsenseEstR2;
     % Tmptr results
     results.FRMWhumidApdTempDiff    = results.temp.FRMWhumidApdTempDiff;
     % Struct cleaning
