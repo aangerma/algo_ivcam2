@@ -64,7 +64,7 @@ if ~finishedHeating % heating stage
     end
     % corners tracking
     [FrameData.ptsWithZ, gridSize] = Calibration.thermal.getCornersDataFromThermalFrame(frame, regs, calibParams, true);
-    FrameData.ptsWithZ = applyDsmTransformation(FrameData.ptsWithZ, regs, 'inverse'); % avoid using soon-to-be-obsolete DSM values
+    [FrameData.ptsWithZ(:,2), FrameData.ptsWithZ(:,3)] = Utils.convert.applyDsm(FrameData.ptsWithZ(:,2), FrameData.ptsWithZ(:,3), regs.EXTL, 'inverse'); % avoid using soon-to-be-obsolete DSM values
     results.nCornersDetected = sum(~isnan(FrameData.ptsWithZ(:,1)));
     if all(isnan(FrameData.ptsWithZ(:,1)))
         fprintff('Error: checkerboard not detected in IR image.\n');
@@ -126,7 +126,7 @@ if ~finishedHeating % heating stage
 else % steady-state stage
     framesData = acc_FrameData([]); % simply reconstruct entire struct array
     for iFrame = 1:length(framesData)
-        framesData(iFrame).ptsWithZ = applyDsmTransformation(framesData(iFrame).ptsWithZ, regs, 'direct'); % recreate corners with up-to-date DSM values
+        [framesData(iFrame).ptsWithZ(:,2), framesData(iFrame).ptsWithZ(:,3)] = Utils.convert.applyDsm(framesData(iFrame).ptsWithZ(:,2), framesData(iFrame).ptsWithZ(:,3), regs.EXTL, 'direct'); % recreate corners with up-to-date DSM values
     end
     data.framesData = framesData;
     data.regs = regs;
@@ -203,16 +203,5 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function ptsWithZ = applyDsmTransformation(ptsWithZ, regs, type)
-    switch type
-        case 'direct' % convert from degrees to digital units
-            ptsWithZ(:,2) = (ptsWithZ(:,2) + double(regs.EXTL.dsmXoffset)) * double(regs.EXTL.dsmXscale) - 2047;
-            ptsWithZ(:,3) = (ptsWithZ(:,3) + double(regs.EXTL.dsmYoffset)) * double(regs.EXTL.dsmYscale) - 2047;
-        case 'inverse' % convert from digital units to degrees
-            ptsWithZ(:,2) = (ptsWithZ(:,2) + 2047)/double(regs.EXTL.dsmXscale) - double(regs.EXTL.dsmXoffset);
-            ptsWithZ(:,3) = (ptsWithZ(:,3) + 2047)/double(regs.EXTL.dsmYscale) - double(regs.EXTL.dsmYoffset);
-    end
-end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

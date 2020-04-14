@@ -54,7 +54,7 @@ end
 %% sanity check
 figure
 for iIm = 1:nPoses
-    rerunVertices = Utils.convert.RptToVertices(rpt(:,:,iIm), regs, tpsUndistModel);
+    rerunVertices = Utils.convert.RptToVertices(rpt(:,:,iIm), regs, tpsUndistModel, 'direct');
     err = rerunVertices - vertices{iIm};
     subplot(1,nPoses,iIm), hold on
     for k = 1:3, cdfplot(err(:,k)), end
@@ -74,7 +74,7 @@ iIm = 1;
 for iErr = 1:length(rtdErr)
     curRpt = rpt(:,:,iIm);
     curRpt(:,1) = curRpt(:,1) + rtdErr(iErr);
-    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel);
+    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel, 'direct');
     metrics(iErr) = GetGeomMetricsResults(in.vertices, params);
 end
 PlotMetricsVsError(metrics, rtdErr, 'RTD error [mm]')
@@ -84,13 +84,13 @@ sgtitle('Sensitivity to uniform RTD error')
 rtdErr = -4.1:0.1:3.8;
 clear metrics
 iIm = 1;
-tempVertices = Utils.convert.RptToVertices(rpt(:,:,iIm), regs, tpsUndistModel);
+tempVertices = Utils.convert.RptToVertices(rpt(:,:,iIm), regs, tpsUndistModel, 'direct');
 ang = atand(sqrt(sum(tempVertices(:,1:2).^2,2)./tempVertices(:,3)));
 %ang = atand(sqrt(tand(rpt(:,2,iIm)/2047*35).^2+tand(rpt(:,3,iIm)/2047*27).^2));
 for iErr = 1:length(rtdErr)
     curRpt = rpt(:,:,iIm);
     curRpt(:,1) = curRpt(:,1) + rtdErr(iErr)*(ang(:)/35);
-    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel);
+    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel, 'direct');
     metrics(iErr) = GetGeomMetricsResults(in.vertices, params);
 end
 PlotMetricsVsError(metrics, rtdErr, 'RTD error at HFOV edge [mm]')
@@ -103,7 +103,7 @@ iIm = 1;
 for iErr = 1:length(xScaleErr)
     curRpt = rpt(:,:,iIm);
     curRpt(:,2) = xScaleErr(iErr)*curRpt(:,2);
-    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel);
+    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel, 'direct');
     metrics(iErr) = GetGeomMetricsResults(in.vertices, params);
 end
 PlotMetricsVsError(metrics, xScaleErr, 'angx scale')
@@ -115,7 +115,7 @@ iIm = 1;
 for iErr = 1:length(yScaleErr)
     curRpt = rpt(:,:,iIm);
     curRpt(:,3) = yScaleErr(iErr)*curRpt(:,3);
-    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel);
+    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel, 'direct');
     metrics(iErr) = GetGeomMetricsResults(in.vertices, params);
 end
 PlotMetricsVsError(metrics, yScaleErr, 'angy scale')
@@ -128,7 +128,7 @@ iIm = 1;
 for iErr = 1:length(xShiftErr)
     curRpt = rpt(:,:,iIm);
     curRpt(:,2) = curRpt(:,2) + xShiftErr(iErr);
-    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel);
+    in.vertices = Utils.convert.RptToVertices(curRpt, regs, tpsUndistModel, 'direct');
     metrics(iErr) = GetGeomMetricsResults(in.vertices, params);
 end
 PlotMetricsVsError(metrics, xShiftErr, 'angx shift')

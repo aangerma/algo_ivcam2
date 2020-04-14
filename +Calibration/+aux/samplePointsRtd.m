@@ -24,7 +24,7 @@ function [rpt,pts,colorMap] = samplePointsRtd(z,pts,regs,addZ,colorMap,takeRtdVa
     %calc angles per pixel
     [yg,xg]=ndgrid(0:size(rtd,1)-1,0:size(rtd,2)-1);
     if(regs.DIGG.sphericalEn)
-        dsmAngles = Utils.convert.DsmToSphericalPixel(struct('x', xg, 'y', yg), regs, 'backward');
+        dsmAngles = Utils.convert.DsmToSphericalPixel(struct('x', xg, 'y', yg), regs, 'inverse');
         angx = dsmAngles.angx;
         angy = dsmAngles.angy;
     else

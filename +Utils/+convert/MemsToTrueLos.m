@@ -11,7 +11,7 @@ function [xLosTrue, yLosTrue, xOutbound, yOutbound] = MemsToTrueLos(regs, therma
         [dsmVals, ~] = Calibration.tables.calc.calcAlgoThermalDsmRtd(struct('table', thermalTable), regs, [0,94], ldd);
     end
     params = struct('dsmXscale', dsmVals.xScale, 'dsmXoffset', dsmVals.xOffset, 'dsmYscale', dsmVals.yScale, 'dsmYoffset', dsmVals.yOffset);
-    [dsmX, dsmY] = Calibration.aux.transform.applyDsm(vec(xLos), vec(yLos), params, 'direct');
+    [dsmX, dsmY] = Utils.convert.applyDsm(vec(xLos), vec(yLos), params, 'direct');
     
     % DSM to true LOS
     [xLosTrue, yLosTrue, xOutbound, yOutbound] = Utils.convert.DsmToTrueLos(regs, tpsUndistModel, reshape(dsmX, sz), reshape(dsmY, sz));

@@ -43,9 +43,9 @@ metrics = GetGeomMetricsResults(in.vertices, params);
 rtdErr = -10:0.2:10;
 clear metrics
 for iErr = 1:length(rtdErr)
-    out = Utils.convert.SphericalToCartesian(in, regs, 'backward');
+    out = Utils.convert.SphericalToCartesian(in, regs, 'inverse');
     out.rtd = out.rtd + rtdErr(iErr);
-    inNew = Utils.convert.SphericalToCartesian(out, regs, 'forward');
+    inNew = Utils.convert.SphericalToCartesian(out, regs, 'direct');
     metrics(iErr) = GetGeomMetricsResults(inNew.vertices, params);
 end
 PlotMetricsVsError(metrics, rtdErr, 'RTD error [mm]')
@@ -56,9 +56,9 @@ rtdErr = -4.1:0.1:4.1;
 ang = atand(sqrt(sum(in.vertices(:,1:2).^2,2)./in.vertices(:,3)));
 clear metrics
 for iErr = 1:length(rtdErr)
-    out = Utils.convert.SphericalToCartesian(in, regs, 'backward');
+    out = Utils.convert.SphericalToCartesian(in, regs, 'inverse');
     out.rtd = out.rtd + rtdErr(iErr).*(ang(:)/35);
-    inNew = Utils.convert.SphericalToCartesian(out, regs, 'forward');
+    inNew = Utils.convert.SphericalToCartesian(out, regs, 'direct');
     metrics(iErr) = GetGeomMetricsResults(inNew.vertices, params);
 end
 PlotMetricsVsError(metrics, rtdErr, 'RTD error at HFOV edge [mm]')
@@ -68,9 +68,9 @@ sgtitle('Sensitivity to radial RTD error')
 xScaleErr = 0.988:0.001:1.012;
 clear metrics
 for iErr = 1:length(xScaleErr)
-    out = Utils.convert.SphericalToCartesian(in, regs, 'backward');
+    out = Utils.convert.SphericalToCartesian(in, regs, 'inverse');
     out.angx = xScaleErr(iErr)*out.angx;
-    inNew = Utils.convert.SphericalToCartesian(out, regs, 'forward');
+    inNew = Utils.convert.SphericalToCartesian(out, regs, 'direct');
     metrics(iErr) = GetGeomMetricsResults(inNew.vertices, params);
 end
 PlotMetricsVsError(metrics, xScaleErr, 'angx scale [1/\circ]')
@@ -80,9 +80,9 @@ sgtitle('Sensitivity to LOS scaling')
 xShiftErr = -4.4:0.1:4.4;
 clear metrics
 for iErr = 1:length(xShiftErr)
-    out = Utils.convert.SphericalToCartesian(in, regs, 'backward');
+    out = Utils.convert.SphericalToCartesian(in, regs, 'inverse');
     out.angx = out.angx + xShiftErr(iErr);
-    inNew = Utils.convert.SphericalToCartesian(out, regs, 'forward');
+    inNew = Utils.convert.SphericalToCartesian(out, regs, 'direct');
     metrics(iErr) = GetGeomMetricsResults(inNew.vertices, params);
 end
 PlotMetricsVsError(metrics, xShiftErr, 'angx shift [\circ]')
