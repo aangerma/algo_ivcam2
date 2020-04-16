@@ -12,8 +12,15 @@ vertices = [x(:), y(:), ones(prod(frameSize),1)] * (inv(Kworld))';
 rpt = Utils.convert.RptToVertices(vertices, regs, data.tpsUndistModel, 'inverse');
 
 % Step 4 - apply DSM manipulation
+rptDist = [rpt(:,1), ax*rpt(:,2)+bx, ay*rpt(:,3)+by];
 
 % Step 5 - convert back to pixels
+verticesDist = Utils.convert.RptToVertices(rptDist, regs, data.tpsUndistModel, 'direct');
+pixelsDist = (verticesDist./verticesDist(:,3)) * Kworld';
+xDist = reshape(pixelsDist(:,1), size(x));
+yDist = reshape(pixelsDist(:,1), size(y));
 
 % Step 6 - resample image
-%Use methodology from du.math.imageWarp
+warpedFrame.i = du.math.imageWarp(frame.i, yDist(:), xDist(:));
+warpedFrame.z = du.math.imageWarp(frame.z, yDist(:), xDist(:));
+
