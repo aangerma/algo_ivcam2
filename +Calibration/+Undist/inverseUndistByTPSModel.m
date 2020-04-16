@@ -23,7 +23,7 @@ yInterpolant = scatteredInterpolant(tanxyGridIn(1,:)', tanxyGridIn(2,:)', tanyGr
 
 % Use LUT
 nPoints = size(vPostTps,1);
-tanVec = (vPostTps(:,1:2)./vPostTps(:,3))';
+tanVec = double(vPostTps(:,1:2)./vPostTps(:,3))';
 preTpsTanX = xInterpolant(tanVec(1,:), tanVec(2,:));
 preTpsTanY = yInterpolant(tanVec(1,:), tanVec(2,:));
 preTpsTanVec = [preTpsTanX; preTpsTanY];

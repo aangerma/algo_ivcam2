@@ -93,6 +93,9 @@ function data = getCalibDataFromCalPath(atcPath, accPath)
             data.regs.FRMW.fovexTangentP            = algoCalibData.FRMW.fovexTangentP;
             tmp                                     = load(fullfile(accPath, 'Matlab\AlgoInternal\tpsUndistModel.mat'));
             data.tpsUndistModel                     = tmp.tpsUndistModel;
+            tmp                                     = load(fullfile(accPath, 'Matlab\mat_files\DFZ_Calib_Calc_out.mat'));
+            data.regs.FRMW.rtdOverX                 = tmp.dfzRegs.FRMW.rtdOverX; % an approximation to actual calculation in FW
+            data.regs.FRMW.rtdOverY                 = tmp.dfzRegs.FRMW.rtdOverY;
             % ROI
             data.regs.FRMW.calMarginL               = algoCalibData.FRMW.calMarginL;
             data.regs.FRMW.calMarginR               = algoCalibData.FRMW.calMarginR;
