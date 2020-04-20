@@ -1,5 +1,8 @@
 function saveBinImage(folder,fname,img,type)
-    
+if ~OnlineCalibration.Globals.saveBinsFlag
+    return;
+end
+
 mkdirSafe(folder);
 sz = size(img(:,:,1));
 resStr = sprintf('%dx%d',sz);

@@ -1,10 +1,14 @@
 function [xAlpha,yBeta,zGamma] = extractAnglesFromRotMat(R)
+% [xAlpha,yBeta,zGamma] = OnlineCalibration.aux.rotationMatrixToEulerAngles(R);
+% return;
+
 epsilon = 0.00001;
 xAlpha = atan2(-R(2,3),R(3,3));
 yBeta = asin(R(1,3));
 zGamma = atan2(-R(1,2),R(1,1));
 
 if ~isExpressEqualToVal(xAlpha,yBeta,zGamma,R(2,1)) %xAlpha,yBeta,zGamma
+    error('We got into this section! Please inform Tal');
     yBeta = yBeta+pi();
     if ~isExpressEqualToVal(xAlpha,yBeta,zGamma,R(2,1)) %xAlpha,yBeta+pi(),zGamma
         zGamma = zGamma+pi()./2;

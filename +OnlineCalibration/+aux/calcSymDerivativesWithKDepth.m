@@ -1,4 +1,5 @@
-function [xCoeff, yCoeff, dXin_dDeriveBy, dYin_dDeriveBy] = calcSymDerivatives(deriveByVar)
+function [xCoeff, yCoeff, dXin_dDeriveBy, dYin_dDeriveBy] = calcSymDerivativesWithKDepth(deriveByVar)
+
 
 V = sym('v',[4,1]);
 Krgb = sym('krgb',[3,3]);
@@ -20,6 +21,12 @@ switch deriveByVar
         Ry = [cos(yBeta) 0 sin(yBeta); 0 1 0; -sin(yBeta) 0 cos(yBeta) ];
         Rz = [cos(zGamma) -sin(zGamma) 0; sin(zGamma) cos(zGamma) 0; 0 0 1];
         R = Rx*Ry*Rz;
+        T = sym('t',[3,1]);
+        A = Krgb*[R T];
+    case 'Kdepth'
+        syms xim yim z fx fy ox oy
+        V = [z*(xim-ox)/fx;z*(yim-oy)/fy;z;1];
+        R = sym('r',[3,3]);
         T = sym('t',[3,1]);
         A = Krgb*[R T];
     otherwise
@@ -56,7 +63,17 @@ switch deriveByVar
     case 'R'
         [dXin_dxAlpha,dYin_dxAlpha] = dXYindRotAng(xAlpha, f1);
         [dXin_dyBeta,dYin_dyBeta] = dXYindRotAng(yBeta, f1);
-        [dXin_dzGamma,dYin_dzGamma] = dXYindRotAng(zGamma, f1);        
+        [dXin_dzGamma,dYin_dzGamma] = dXYindRotAng(zGamma, f1);  
+    case 'Kdepth'
+        dXin_dfx = simplify(diff(x_in,fx)) ;
+        dXin_dfy = simplify(diff(x_in,fy)) ;
+        dXin_dox = simplify(diff(x_in,ox)) ;
+        dXin_doy = simplify(diff(x_in,oy)) ;
+        dYin_dfx = simplify(diff(y_in,fx)) ;
+        dYin_dfy = simplify(diff(y_in,fy)) ;
+        dYin_dox = simplify(diff(y_in,ox)) ;
+        dYin_doy = simplify(diff(y_in,oy)) ;
+       
     otherwise
         error('No such option!!!');
 end
@@ -144,6 +161,27 @@ switch deriveByVar
         yCoeff.zGamma = simplify(dYout_dXin.*dXin_dzGamma + dYout_dYin.*dYin_dzGamma);
         dXin_dDeriveBy.zGamma = dXin_dzGamma;
         dYin_dDeriveBy.zGamma = dXin_dzGamma;
+    case 'Kdepth'
+        xCoeff.fx = simplify(dXout_dXin.*dXin_dfx + dXout_dYin.*dYin_dfx);
+        xCoeff.fy = simplify(dXout_dXin.*dXin_dfy + dXout_dYin.*dYin_dfy);
+        xCoeff.ox = simplify(dXout_dXin.*dXin_dox + dXout_dYin.*dYin_dox);
+        xCoeff.oy = simplify(dXout_dXin.*dXin_doy + dXout_dYin.*dYin_doy);
+        
+        yCoeff.fx = simplify(dYout_dXin.*dXin_dfx + dYout_dYin.*dYin_dfx);
+        yCoeff.fy = simplify(dYout_dXin.*dXin_dfy + dYout_dYin.*dYin_dfy);
+        yCoeff.ox = simplify(dYout_dXin.*dXin_dox + dYout_dYin.*dYin_dox);
+        yCoeff.oy = simplify(dYout_dXin.*dXin_doy + dYout_dYin.*dYin_doy);
+        
+        dXin_dDeriveBy.fx = dXin_dfx;
+        dXin_dDeriveBy.fy = dXin_dfy;
+        dXin_dDeriveBy.ox = dXin_dox;
+        dXin_dDeriveBy.oy = dXin_doy;
+        dYin_dDeriveBy.fx = dYin_dfx;
+        dYin_dDeriveBy.fy = dYin_dfy;
+        dYin_dDeriveBy.ox = dYin_dox;
+        dYin_dDeriveBy.oy = dYin_doy;
+        
+        
     otherwise
         error('No such option!!!');
 end
