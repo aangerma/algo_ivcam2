@@ -21,9 +21,9 @@ angles2xyz = @(angx,angy) [ cosd(angy).*sind(angx)             sind(angy) cosd(a
 xyz2angles = @(v) [ atan2d(v(:,1),v(:,3))  asind(v(:,2))];
 
 % Generate LUT
-maxFOVx = 62; % [deg]
+maxFOVx = 65; % [deg]
 maxFOVy = 51; % [deg]
-nPtsX = 63; nPtsY = 52; % 2[deg] LUT resolution - leads to errors up to 2.5e-3[deg]
+nPtsX = 131; nPtsY = 103; % 1[deg] LUT resolution - leads to errors up to ~1[mdeg]
 [angxGridOut, angyGridOut] = meshgrid(linspace(-maxFOVx/2, maxFOVx/2, nPtsX), linspace(-maxFOVy/2, maxFOVy/2, nPtsY));
 vecGridOut = angles2xyz(angxGridOut(:), angyGridOut(:));
 vecGridIn = Calibration.aux.applyFOVex(vecGridOut, regs);
