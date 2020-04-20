@@ -11,7 +11,7 @@ classdef FrameDsmWarper
     %   3) obj = obj.SetDsmWarp(dsmWarpCoefX, dsmWarpCoefY)
     %       Generates the warper.
     %       dsmWarpCoefX/Y are polynomial coefficients for manipulating DSMx and DSMy (use [1,0] and [1,0] for the dummy warper).
-    %   4) warpedFrame = ApplyWarp(frame)
+    %   4) warpedFrame = obj.ApplyWarp(frame)
     %       Warps the frame.
     
     properties
@@ -39,7 +39,7 @@ classdef FrameDsmWarper
             obj.frameSize = frameSize;
             obj.Kworld = Pipe.calcIntrinsicMat(obj.calData.regs, obj.frameSize);
             [y, x] = ndgrid(1:obj.frameSize(1), 1:obj.frameSize(2));
-            vertices = [x(:), y(:), ones(prod(obj.frameSize),1)] * (inv(obj.Kworld))';
+            vertices = [x(:), y(:), ones(prod(obj.frameSize),1)] * (inv(obj.Kworld))' * 1e3;
             obj.rpt = Utils.convert.RptToVertices(vertices, obj.calData.regs, obj.calData.tpsUndistModel, 'inverse');
         end
         
@@ -61,7 +61,7 @@ classdef FrameDsmWarper
             assert(~isempty(obj.warper), 'Warper not defined. Use SetDsmWarp prior to applying the warper.')
             fnames = fieldnames(frame);
             for iField = 1:length(fnames)
-                warpedFrame.(fnames{iField}) = obj.warper(frame.(fnames{iField}));
+                warpedFrame.(fnames{iField}) = cast(obj.warper(double(frame.(fnames{iField}))), class(frame.(fnames{iField})));
             end
         end
         
