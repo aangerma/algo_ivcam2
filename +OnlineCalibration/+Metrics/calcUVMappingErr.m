@@ -3,14 +3,24 @@ if ~exist('plotFlag','var')
     plotFlag = 0;
 end
 
+if isfield(params,'cbGridSz')
+    CB = CBTools.Checkerboard (frame.i,'expectedGridSize',params.cbGridSz); 
+    ptsDepth = CB.getGridPointsList;
 
-
-CB = CBTools.Checkerboard (frame.i,'expectedGridSize',params.cbGridSz); 
-ptsDepth = CB.getGridPointsList;
-
-CB = CBTools.Checkerboard (frame.yuy2,'expectedGridSize',params.cbGridSz);
-ptsRGB = CB.getGridPointsList;
-
+    CB = CBTools.Checkerboard (frame.yuy2,'expectedGridSize',params.cbGridSz);
+    ptsRGB = CB.getGridPointsList;
+else
+    if isfield(params,'targetType')
+        CB = CBTools.Checkerboard (frame.i,'targetType',params.targetType);
+        ptsDepth = CB.getGridPointsList;
+        params.cbGridSz = CB.gridSize;
+        
+        CB = CBTools.Checkerboard (frame.yuy2,'targetType',params.targetType);
+        ptsRGB = CB.getGridPointsList;
+    else
+        error('calcUVMappingErr: Problem in params defenitions for CBTools.Checkerboard');
+    end
+end
 
 
 % Depth corners to vertices
@@ -25,7 +35,7 @@ uvMap = [u,v];
 uvMapUndist = du.math.distortCam(uvMap', params.Krgb, params.rgbDistort)' + 1;
 
 uvErr = ptsRGB - uvMapUndist;
-uvRMS = sqrt(mean(sum(uvErr.^2,2)));
+uvRMS = sqrt(nanmean(nansum(uvErr.^2,2)));
 
 if plotFlag
     figure;

@@ -1,4 +1,4 @@
-function [zEdge,zEdgeSupressed,zEdgeSubPixel,zValuesForSubEdges] = preprocessZ(frame,params)
+function [zEdge,zEdgeSupressed,zEdgeSubPixel,zValuesForSubEdges,dirI] = preprocessZ(frame,params)
 
     [zEdge,Zx,Zy] = OnlineCalibration.aux.edgeSobelXY(uint16(frame.z));
     validEdgePixels = frame.irEdge>params.gradITh & zEdge>params.gradZTh; 

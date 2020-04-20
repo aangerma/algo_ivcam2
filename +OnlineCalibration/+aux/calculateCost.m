@@ -1,4 +1,4 @@
-function [C] = calculateCost(V,W,D,camerasParams)
+function [C,scorePerVertex,uvMap] = calculateCost(V,W,D,camerasParams)
 %     [Dx,Dy] = imgradientxy(D);% Sobel image gradients [-1,0,1;-2,0,2;-1,0,1]
 %     A = camerasParams.rgbPmat;
     uvMap = OnlineCalibration.aux.projectVToRGB(V,camerasParams.rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
@@ -12,7 +12,8 @@ function [C] = calculateCost(V,W,D,camerasParams)
 %     uvMap = uvMap(validPts,:);
     
     DVals = interp2(single(D),uvMap(:,1)+1,uvMap(:,2)+1);
-    C = nanmean(W.*DVals);
+    scorePerVertex = W.*DVals;
+    C = nanmean(scorePerVertex);
 %     
 %     DxVal = interp2(single(Dx),uvVals(:,1)+1,uvVals(:,2)+1);
 %     DyVal = interp2(single(Dy),uvVals(:,1)+1,uvVals(:,2)+1);
