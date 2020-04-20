@@ -83,7 +83,6 @@ for i=1:length(fnames)
 end
 
 dfzRes.GeometricErrorWht = allRes.errorMeanAFWht;
-try
 dfzRes.lineFitMeanRmsErrHor3dWht = allRes.lineFit3DHorizontalErrorRmsAFWht;
 dfzRes.lineFitMeanRmsErrVer3dWht = allRes.lineFit3DVerticalErrorRmsAFWht;
 dfzRes.lineFitMaxRmsErrHor3dWht = allRes.lineFit3DRmsErrorTotal_hAFWht;
@@ -96,7 +95,6 @@ dfzRes.lineFitMaxRmsErrHor2dWht = allRes.lineFit2DRmsErrorTotal_hAFWht;
 dfzRes.lineFitMaxRmsErrVer2dWht = allRes.lineFit2DRmsErrorTotal_vAFWht;
 dfzRes.lineFitMaxErrHor2dWht = allRes.lineFit2DMaxErrorTotal_hAFWht;
 dfzRes.lineFitMaxErrVer2dWht = allRes.lineFit2DMaxErrorTotal_vAFWht;
-end
 dfzRes.meanHorzScaleErrorWht = allRes.horzErrorMeanAFWht;
 dfzRes.meanAbsHorzScaleErrorWht = allRes.absHorzErrorMeanAFWht;
 dfzRes.meanVertScaleErrorWht = allRes.vertErrorMeanAFWht;
@@ -106,7 +104,6 @@ dfzRes.planeFitMaxErrWht = allRes.planeFitErrorMaxAFWht;
 dfzRes.planeFitMeanRmsErrBlck = allRes.planeFitErrorRmsAFBlck;
 dfzRes.planeFitMaxErrBlck = allRes.planeFitErrorMaxAFBlck;
 dfzRes.GeometricErrorReg = allRes.errorMeanAFReg;
-try
 dfzRes.lineFitMeanRmsErrHor3dReg = allRes.lineFit3DHorizontalErrorRmsAFReg;
 dfzRes.lineFitMeanRmsErrVer3dReg = allRes.lineFit3DVerticalErrorRmsAFReg;
 dfzRes.lineFitMaxRmsErrHor3dReg = allRes.lineFit3DRmsErrorTotal_hAFReg;
@@ -119,7 +116,6 @@ dfzRes.lineFitMaxRmsErrHor2dReg = allRes.lineFit2DRmsErrorTotal_hAFReg;
 dfzRes.lineFitMaxRmsErrVer2dReg = allRes.lineFit2DRmsErrorTotal_vAFReg;
 dfzRes.lineFitMaxErrHor2dReg = allRes.lineFit2DMaxErrorTotal_hAFReg;
 dfzRes.lineFitMaxErrVer2dReg = allRes.lineFit2DMaxErrorTotal_vAFReg;
-end
 dfzRes.meanHorzScaleErrorReg = allRes.horzErrorMeanAFReg;
 dfzRes.meanAbsHorzScaleErrorReg = allRes.absHorzErrorMeanAFReg;
 dfzRes.meanVertScaleErrorReg = allRes.vertErrorMeanAFReg;
