@@ -2,6 +2,10 @@ function [xCoeff, yCoeff, dXin_dDeriveBy, dYin_dDeriveBy] = calcSymDerivatives(d
 
 V = sym('v',[4,1]);
 Krgb = sym('krgb',[3,3]);
+% Krgb(3,:) = [0,0,1];
+% Krgb(1,2) = 0;
+% Krgb(2,1) = 0;
+
 d = sym('d',[1,5]);
 switch deriveByVar
     case 'A'

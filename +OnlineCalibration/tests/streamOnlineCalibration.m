@@ -12,11 +12,10 @@ hw.startStream(0,depthRes,rgbRes);
 hw.cmd('PIXEL_INVALIDATION_BYPASS 1');
 [~,maxLP] = hw.cmd('irb e2 09 01 ');
 hw.cmd(sprintf('iwb e2 0a 01 %x',maxLP));
-cameraParams = OnlineCalibration.aux.getCameraParamsFromUnit(hw);
+cameraParams = OnlineCalibration.aux.getCameraParamsFromUnit(hw,rgbRes);
 cameraParams.rgbRes = rgbRes;
 cameraParams.depthRes = depthRes;
-calibrationRgbRes = [1920,1080];
-cameraParams.Krgb(1:2,:) = cameraParams.Krgb(1:2,:).*(rgbRes'-1)./(calibrationRgbRes'-1);
+
 %% AC Params 
 params = cameraParams;
 [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
