@@ -17,9 +17,9 @@ function metrics = GetGeomMetricsResults(vertices, params)
     metrics.lineFit2DHorzMax = allRes.lineFit2DMaxErrorTotal_hAF;
     metrics.lineFit2DVertRms = allRes.lineFit2DRmsErrorTotal_vAF;
     metrics.lineFit2DVertMax = allRes.lineFit2DMaxErrorTotal_vAF;
-    metrics.lineFit3DHorzRms = allRes.lineFit3DRmsErrorTotal_hAF;
-    metrics.lineFit3DHorzMax = allRes.lineFit3DMaxErrorTotal_hAF;
-    metrics.lineFit3DVertRms = allRes.lineFit3DRmsErrorTotal_vAF;
-    metrics.lineFit3DVertMax = allRes.lineFit3DMaxErrorTotal_vAF;
+    metrics.lineFit3DHorzRms = allRes.lineFitRmsErrorTotal_hAF;
+    metrics.lineFit3DHorzMax = allRes.lineFitMaxErrorTotal_hAF;
+    metrics.lineFit3DVertRms = allRes.lineFitRmsErrorTotal_vAF;
+    metrics.lineFit3DVertMax = allRes.lineFitMaxErrorTotal_vAF;
     
 end
