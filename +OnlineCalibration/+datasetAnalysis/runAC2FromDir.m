@@ -102,16 +102,15 @@ end
 
 function metrics = runGeometricMetrics(frame,par)
     metrics.gid = Validation.metrics.gridInterDistance(frame, par);
-    [~,results2D] = Validation.metrics.grid2DLineFit(frame, par);
-    metrics.lineFitRms2D_H = results2D.lineFit2DHorizontalErrorRmsAF;
-    metrics.lineFitRms2D_V = results2D.lineFit2DHorizontalErrorRmsAF;
-    metrics.lineFitMax2D_H = results2D.lineFit2DMaxErrorTotal_hAF;
-    metrics.lineFitMax2D_V = results2D.lineFit2DMaxErrorTotal_vAF;
-    [~,results3D] = Validation.metrics.gridLineFit(frame, par);
-    metrics.lineFitRms3D_H = results3D.lineFitHorizontalErrorRmsAF;
-    metrics.lineFitRms3D_V = results3D.lineFitVerticalErrorRmsAF;
-    metrics.lineFitMax3D_H = results3D.lineFitMaxErrorTotal_hAF;
-    metrics.lineFitMax3D_V = results3D.lineFitMaxErrorTotal_vAF;
+    [~,resultsLF] = Validation.metrics.gridLineFit(frame, par);
+    metrics.lineFitRms3D_H = resultsLF.lineFitRmsErrorTotal_hAF;
+    metrics.lineFitRms3D_V = resultsLF.lineFitRmsErrorTotal_vAF;
+    metrics.lineFitMax3D_H = resultsLF.lineFitMaxErrorTotal_hAF;
+    metrics.lineFitMax3D_V = resultsLF.lineFitMaxErrorTotal_vAF;
+    metrics.lineFitRms2D_H = resultsLF.lineFit2DRmsErrorTotal_hAF;
+    metrics.lineFitRms2D_V = resultsLF.lineFit2DRmsErrorTotal_vAF;
+    metrics.lineFitMax2D_H = resultsLF.lineFit2DMaxErrorTotal_hAF;
+    metrics.lineFitMax2D_V = resultsLF.lineFit2DMaxErrorTotal_vAF;
     [~,resultsDist] = Validation.metrics.gridDistortion(frame, par);
     metrics.lineFitRms3D_H = resultsDist.horzErrorMeanAF;
     metrics.lineFitRms3D_V = resultsDist.vertErrorMeanAF;

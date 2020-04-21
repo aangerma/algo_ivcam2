@@ -70,8 +70,8 @@ function [dfzRegs, calibPassed,results] = DFZ_Calib_Calc_int(im, OutputDir, cali
 
         results.dfzScaleErrH = resFull(3).absHorzErrorMeanAF;
         results.dfzScaleErrV = resFull(3).absVertErrorMeanAF;
-        results.dfz3DErrH = resFull(3).lineFit3DRmsErrorTotal_hAF;
-        results.dfz3DErrV = resFull(3).lineFit3DRmsErrorTotal_vAF;
+        results.dfz3DErrH = resFull(3).lineFitRmsErrorTotal_hAF;
+        results.dfz3DErrV = resFull(3).lineFitRmsErrorTotal_vAF;
         results.dfz2DErrH = resFull(3).lineFit2DRmsErrorTotal_hAF;
         results.dfz2DErrV = resFull(3).lineFit2DRmsErrorTotal_vAF;
 %         results.dfzPlaneFit = resFull(3).rmsPlaneFitDist;
