@@ -6,6 +6,7 @@ mask = zeros(size(Ix));
 mask(2:end-1,2:end-1) = 1;
 Ix(~mask) = 0;
 Iy(~mask) = 0;
-E = single(sqrt(Ix.^2+Iy.^2));
+%E = single(sqrt(Ix.^2+Iy.^2));
+E = double(sqrt(Ix.^2+Iy.^2));
 end
 

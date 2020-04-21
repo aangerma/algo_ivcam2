@@ -2,7 +2,8 @@ function [isOutputValid,newParams,dbg,validOutputStruct] = validOutputParameters
 dbg = struct;
 isOutputValid = 1;
 validOutputStruct.isValid = 1;
-% Clip current movement by pixels
+
+%% Clip current movement by pixels
    [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
 [uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort);
 dbg.uvMap = uvMap;
@@ -29,7 +30,7 @@ if xyMovement > maxMovementInThisIteration
     fprintf('Movement too large, clipped movement from %f to %f pixels.\n',xyMovement,maxMovementInThisIteration);
 end
 
-% Invalidate movement which is far away from origin
+%% Invalidate movement which is far away from origin
 [uvMapOrig,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort);
 [uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort);
 xyMovementFromOrigin = mean(sqrt(sum((uvMapOrig-uvMapNew).^2,2)));
@@ -42,7 +43,7 @@ if xyMovementFromOrigin > params.maxXYMovementFromOrigin
 end
 
 
-% Check and see that the score didn't increased by a lot in one image
+%% Check and see that the score didn't increased by a lot in one image
 % section and decreased in the others
 [c1,costVecOld] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
 [c2,costVecNew] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,newParams);
