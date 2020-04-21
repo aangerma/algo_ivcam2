@@ -14,8 +14,7 @@ function out = SphericalToCartesian(in, regs, mode)
         
         % Range calculation
         sing = vUnit(:,2);
-        baseline = regs.DEST.baseline;
-        r = 0.5 * (in.rtd.^2 - regs.DEST.baseline2) ./ (in.rtd - baseline*sing); % Nx1
+        r = 0.5 * (in.rtd.^2 - regs.DEST.baseline2) ./ (in.rtd - regs.DEST.baseline*sing); % Nx1
         
         % Cartesian representation
         out.vertices = r.*vUnit; % Nx3
