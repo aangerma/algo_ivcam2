@@ -97,6 +97,8 @@ title({ax.Title.String;'New R,T,Krgb optimization'});
 if validParams
     params = updatedParams;
 end
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
+
 % figure; 
 % subplot(421); imagesc(frame.i); impixelinfo; title('IR image');colorbar;
 % subplot(422); imagesc(frame.irEdge); impixelinfo; title('IR edge');colorbar;
