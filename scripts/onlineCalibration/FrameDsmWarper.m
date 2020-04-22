@@ -61,7 +61,11 @@ classdef FrameDsmWarper
             assert(~isempty(obj.warper), 'Warper not defined. Use SetDsmWarp prior to applying the warper.')
             fnames = fieldnames(frame);
             for iField = 1:length(fnames)
-                warpedFrame.(fnames{iField}) = cast(obj.warper(double(frame.(fnames{iField}))), class(frame.(fnames{iField})));
+                if strcmp(fnames{iField},'z') || strcmp(fnames{iField},'i') || strcmp(fnames{iField},'c')
+                    warpedFrame.(fnames{iField}) = cast(obj.warper(double(frame.(fnames{iField}))), class(frame.(fnames{iField})));
+                else
+                    warpedFrame.(fnames{iField}) = frame.(fnames{iField});
+                end
             end
         end
         
