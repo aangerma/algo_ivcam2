@@ -1,11 +1,11 @@
-function [cost,grad] = calcCostAndGrad(frame,params)
+function [cost,grad,uvMap,DVals,DxVals,DyVals] = calcCostAndGrad(frame,params)
 
     [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
     
-    DVals = interp2(frame.rgbIDT,uvMap(:,1)+1,uvMap(:,2)+1);
-    DxVals = interp2(frame.rgbIDTx,uvMap(:,1)+1,uvMap(:,2)+1);
-    DyVals = interp2(frame.rgbIDTy,uvMap(:,1)+1,uvMap(:,2)+1);
-    
+    DVals = interp2(double(frame.rgbIDT),double(uvMap(:,1)+1),double(uvMap(:,2)+1));
+    DxVals = interp2(double(frame.rgbIDTx),double(uvMap(:,1)+1),double(uvMap(:,2)+1));
+    DyVals = interp2(double(frame.rgbIDTy),double(uvMap(:,1)+1),double(uvMap(:,2)+1));
+     
     V = [frame.vertices,ones(size(frame.vertices(:,1)))];
     W = frame.weights;
     if contains(params.derivVar,'P')

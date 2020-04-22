@@ -3,14 +3,14 @@ fid = fopen(fullfile(sceneDir,'RecordingStatus.rsc'), 'rb');
 binData = uint8(fread(fid));
 fclose(fid);
 [metaDataStruct] = io.loadIpDevRscFile(binData);
-params.Rrgb = metaDataStruct.RGB_rotation;
+params.Rrgb = double(metaDataStruct.RGB_rotation);
 params.rgbRes = [metaDataStruct.RGB_Horizontal_resolution metaDataStruct.RGB_Vertical_resolution];
-params.rgbPmat = metaDataStruct.K_RGB*[metaDataStruct.RGB_rotation,metaDataStruct.RGB_translation];
-params.rgbDistort = metaDataStruct.RGB_distortion;
-params.Krgb = metaDataStruct.K_RGB;
+params.rgbPmat = double(metaDataStruct.K_RGB)*[double(metaDataStruct.RGB_rotation),double(metaDataStruct.RGB_translation)];
+params.rgbDistort = double(metaDataStruct.RGB_distortion);
+params.Krgb = double(metaDataStruct.K_RGB);
 params.depthRes = [metaDataStruct.Depth_Vertical_resolution metaDataStruct.Depth_Horizontal_resolution];
-params.zMaxSubMM = metaDataStruct.Z_scale;
-params.Kdepth = metaDataStruct.K_depth;
-params.Trgb = metaDataStruct.RGB_translation;
+params.zMaxSubMM = double(metaDataStruct.Z_scale);
+params.Kdepth = double(metaDataStruct.K_depth);
+params.Trgb = double(metaDataStruct.RGB_translation);
 end
 

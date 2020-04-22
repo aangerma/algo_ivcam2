@@ -50,7 +50,7 @@ sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
 
 % Preprocess RGB
 [frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',single(frame.rgbEdge),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',double(frame.rgbEdge),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
@@ -65,14 +65,14 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',frame.zEdge,'doub
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_dir',frame.dirI-1,'uint8');  % -1 to match C++ 0-based
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',frame.zEdgeSubPixel,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',frame.zEdgeSupressed,'double');
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'double');
 
 
 [frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
 [frame.weights,weightsT] = OnlineCalibration.aux.calculateWeights(frame,params);
 frame.sectionMapDepth = sectionMapDepth(frame.zEdgeSupressed>0);
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',weightsT,'double');
 
 %% Validate input scene
@@ -82,9 +82,13 @@ if ~OnlineCalibration.aux.validScene(frame,params)
 end
 %% Perform Optimization
 params.derivVar = 'KrgbRT';
-newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
+[newParams, newCost] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
+
+new_calib = calibAndCostToRaw(newParams, newCost);  
+
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
 
 OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);

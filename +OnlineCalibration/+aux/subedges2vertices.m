@@ -4,7 +4,7 @@ subX = frame.zEdgeSubPixel(:,:,2)-1;
 subY = frame.zEdgeSubPixel(:,:,1)-1;
 subPoints = [subX(validPixels),subY(validPixels),ones(size(subY(validPixels)))];
 zValues = frame.zValuesForSubEdges(validPixels);
-vertices = subPoints*(pinv(params.Kdepth)').*zValues/single(params.zMaxSubMM);
+vertices = subPoints*(pinv(params.Kdepth)').*zValues/double(params.zMaxSubMM);
 
 
 end
