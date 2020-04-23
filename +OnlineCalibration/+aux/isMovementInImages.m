@@ -1,9 +1,10 @@
-function [isMovement,movingPixels] = isMovementInImages(im1,im2, params)
+function [isMovement,movingPixels] = isMovementInImages(im1,im2, params, sceneDir)
 isMovement = false;
 
 [edgeIm1,~,~] = OnlineCalibration.aux.edgeSobelXY(uint8(im1));
 logicEdges = abs(edgeIm1) > params.edgeThresh4logicIm*max(edgeIm1(:));
 
+outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'logicEdges',uint8(logicEdges),'uint8');
 
 SE = strel('square', params.seSize);

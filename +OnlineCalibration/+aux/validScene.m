@@ -1,10 +1,12 @@
-function [isValidScene,validSceneStruct] = validScene(frames,params)
+function [isValidScene,validSceneStruct] = validScene(frames,params, sceneDir)
 validSceneStruct = struct;
 validSceneStruct.invalidReason = '';
 isValidScene = true;
 validSceneStruct.isValid = 1;
 
-[isMovement,validSceneStruct.movingPixels] = OnlineCalibration.aux.isMovementInImages(frames.yuy2Prev,frames.yuy2,params);
+outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
+
+[isMovement,validSceneStruct.movingPixels] = OnlineCalibration.aux.isMovementInImages(frames.yuy2Prev,frames.yuy2,params,sceneDir);
 if isMovement
     if ~isempty(validSceneStruct.invalidReason)
         validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'&'];
