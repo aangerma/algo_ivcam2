@@ -25,6 +25,10 @@ if ~goodEdgeDistribution
     validSceneStruct.isValid = false;
     isValidScene = false;
 end
+
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'depthEdgeWeightDistributionPerSectionDepth',validSceneStruct.edgeWeightDistributionPerSectionDepth,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth_trans',uint8(transpose(frames.sectionMapDepth)),'uint8');
+
 params.minWeightedEdgePerSection = params.minWeightedEdgePerSectionRgb;
 [goodEdgeDistributionRgb,validSceneStruct.edgeDistributionMinMaxRatioRgb,validSceneStruct.edgeWeightDistributionPerSectionRgb] = OnlineCalibration.aux.isEdgeDistributed(frames.rgbIDT(:),frames.sectionMapRgb,params);
 if ~goodEdgeDistributionRgb
@@ -36,6 +40,9 @@ if ~goodEdgeDistributionRgb
     isValidScene = false;
 end
 
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeWeightDistributionPerSectionRgb',validSceneStruct.edgeWeightDistributionPerSectionRgb,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapRgb_trans',uint8(transpose(frames.sectionMapRgb)),'uint8');
+
 [goodEdgeDirDistribution,validSceneStruct.dirRatio1,validSceneStruct.perpRatio,validSceneStruct.dirRatio2,validSceneStruct.edgeWeightsPerDir] = OnlineCalibration.aux.isGradDirBalanced(frames,params);
 if ~goodEdgeDirDistribution
     if ~isempty(validSceneStruct.invalidReason)
@@ -46,6 +53,7 @@ if ~goodEdgeDirDistribution
     isValidScene = false;
 end
 
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeWeightsPerDir',validSceneStruct.edgeWeightsPerDir,'double');
 
 global sceneResults;
 if isstruct(sceneResults)
