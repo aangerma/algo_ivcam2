@@ -9,6 +9,17 @@ if ~exist('plotFlag', 'var')
 end
 
 switch tableName
+    case 'Algo_AutoCalibration'
+        calibData.timestamp = typecast(binTable(1:8), 'uint64');
+        calibData.acVersion = single(binTable(9))+single(binTable(10))/100;
+        calibData.flags = binTable(11:16);
+        calibData.hFactor = typecast(binTable(17:20), 'single');
+        calibData.vFactor = typecast(binTable(21:24), 'single');
+        calibData.hOffset = typecast(binTable(25:28), 'single');
+        calibData.vOffset = typecast(binTable(29:32), 'single');
+        calibData.rtdOffset = typecast(binTable(33:36), 'single');
+        calibData.reserved = binTable(37:48);
+        
     case 'Algo_Calibration_Info_CalibInfo'
         fw = Firmware;
         calibData = fw.readAlgoEpromData(binTable); % calibData = regs
@@ -45,6 +56,47 @@ switch tableName
     case 'Algo_Thermal_Loop_Extra_CalibInfo'
         tableUint16 = typecast(binTable, 'uint16');
         calibData.tmptrOffsetValuesShort = single(typecast(tableUint16, 'int16')) / 2^8;
+        
+    case 'AutoCalibration_Depth_DB'
+        numOfEntries = double(typecast(binTable(1:2), 'int16'));
+        entrySize = double(typecast(binTable(3:4), 'uint16'));
+        calibData.activeIndex = double(typecast(binTable(5:6), 'int16'));
+        calibData.reserved = binTable(7:16);
+        for iEntry = 1:numOfEntries
+            binEntry = binTable(16+(iEntry-1)*entrySize+(1:entrySize));
+            calibData.entries(iEntry).timestamp = typecast(binEntry(1:8), 'uint64');
+            calibData.entries(iEntry).acVersion = single(binEntry(9))+single(binEntry(10))/100;
+            calibData.entries(iEntry).flags = binEntry(11:16);
+            calibData.entries(iEntry).hFactor = typecast(binEntry(17:20), 'single');
+            calibData.entries(iEntry).vFactor = typecast(binEntry(21:24), 'single');
+            calibData.entries(iEntry).hOffset = typecast(binEntry(25:28), 'single');
+            calibData.entries(iEntry).vOffset = typecast(binEntry(29:32), 'single');
+            calibData.entries(iEntry).rtdOffset = typecast(binEntry(33:36), 'single');
+            calibData.entries(iEntry).reserved = binEntry(37:48);
+        end
+        
+    case 'AutoCalibration_RGB_DB'
+        numOfEntries = double(typecast(binTable(1:2), 'int16'));
+        entrySize = double(typecast(binTable(3:4), 'uint16'));
+        calibData.activeIndex = double(typecast(binTable(5:6), 'int16'));
+        calibData.reserved = binTable(7:16);
+        for iEntry = 1:numOfEntries
+            binEntry = binTable(16+(iEntry-1)*entrySize+(1:entrySize));
+            calibData.entries(iEntry).timestamp = typecast(binEntry(1:8), 'uint64');
+            calibData.entries(iEntry).acVersion = single(binEntry(9))+single(binEntry(10))/100;
+            calibData.entries(iEntry).flags = binEntry(11:16);
+            calibData.entries(iEntry).Fx = typecast(binEntry(17:20), 'single');
+            calibData.entries(iEntry).Fy = typecast(binEntry(21:24), 'single');
+            calibData.entries(iEntry).Px = typecast(binEntry(25:28), 'single');
+            calibData.entries(iEntry).Py = typecast(binEntry(29:32), 'single');
+            calibData.entries(iEntry).Rx = typecast(binEntry(33:36), 'single');
+            calibData.entries(iEntry).Ry = typecast(binEntry(37:40), 'single');
+            calibData.entries(iEntry).Rz = typecast(binEntry(41:44), 'single');
+            calibData.entries(iEntry).Tx = typecast(binEntry(45:48), 'single');
+            calibData.entries(iEntry).Ty = typecast(binEntry(49:52), 'single');
+            calibData.entries(iEntry).Tz = typecast(binEntry(53:56), 'single');
+            calibData.entries(iEntry).reserved = binEntry(57:64);
+        end
         
     case 'CBUF_Calibration_Info_CalibInfo'
         calibData = binTable;

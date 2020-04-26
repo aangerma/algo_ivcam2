@@ -5,6 +5,11 @@ function binTable = convertCalibDataToBinTable(calibData, tableName)
 %   or post-processing.
 
 switch tableName
+    case 'Algo_AutoCalibration'
+        acVerMajorMinor = [calibData.acVersion; 100*mod(calibData.acVersion,1)];
+        correctionData = [calibData.hFactor; calibData.vFactor; calibData.hOffset; calibData.vOffset; calibData.rtdOffset];
+        binTable = [typecast(uint64(calibData.timestamp), 'uint8')'; uint8(acVerMajorMinor); uint8(calibData.flags(:)); typecast(single(correctionData), 'uint8'); uint8(calibData.reserved(:))];
+        
     case 'Algo_Calibration_Info_CalibInfo'
         % Implemented in @Firmware\generateTablesForFw based on regsDefinitions.frmw (TransferToFW=1)
         binTable = NaN;
@@ -24,6 +29,28 @@ switch tableName
         tableUint16 = typecast(int16(calibData.tmptrOffsetValuesShort * 2^8), 'uint16');
         binTable = typecast(vec(tableUint16), 'uint8');
 
+    case 'AutoCalibration_Depth_DB'
+        numOfEntries = int16(length(calibData.entries));
+        entrySize = uint16(48);
+        binTable = [typecast(numOfEntries, 'uint8')'; typecast(entrySize, 'uint8')'; typecast(int16(calibData.activeIndex), 'uint8')'; uint8(calibData.reserved(:))];
+        for iEntry = 1:numOfEntries
+            curEntry = calibData.entries(iEntry);
+            acVerMajorMinor = [curEntry.acVersion; 100*mod(curEntry.acVersion,1)];
+            correctionData = [curEntry.hFactor; curEntry.vFactor; curEntry.hOffset; curEntry.vOffset; curEntry.rtdOffset];
+            binTable = [binTable; typecast(int64(curEntry.timestamp), 'uint8')'; uint8(acVerMajorMinor); uint8(curEntry.flags(:)); typecast(single(correctionData), 'uint8'); uint8(curEntry.reserved(:))];
+        end
+        
+    case 'AutoCalibration_RGB_DB'
+        numOfEntries = int16(length(calibData.entries));
+        entrySize = uint16(64);
+        binTable = [typecast(numOfEntries, 'uint8')'; typecast(entrySize, 'uint8')'; typecast(int16(calibData.activeIndex), 'uint8')'; uint8(calibData.reserved(:))];
+        for iEntry = 1:numOfEntries
+            curEntry = calibData.entries(iEntry);
+            acVerMajorMinor = [curEntry.acVersion; 100*mod(curEntry.acVersion,1)];
+            correctionData = [curEntry.Fx; curEntry.Fy; curEntry.Px; curEntry.Py; curEntry.Rx; curEntry.Ry; curEntry.Rz; curEntry.Tx; curEntry.Ty; curEntry.Tz];
+            binTable = [binTable; typecast(int64(curEntry.timestamp), 'uint8')'; uint8(acVerMajorMinor); uint8(curEntry.flags(:)); typecast(single(correctionData), 'uint8'); uint8(curEntry.reserved(:))];
+        end
+        
     case 'CBUF_Calibration_Info_CalibInfo'
         % Implemented in @Firmware\generateTablesForFw based on regsDefinitions.frmw (TransferToFW=3)
         binTable = NaN;
