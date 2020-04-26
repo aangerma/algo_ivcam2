@@ -1,4 +1,4 @@
-function framesOut = loadZIRGBFrames(dirname)
+function framesOut = loadZIRGBFrames(dirname, LRS)
     
     if OnlineCalibration.Globals.loadSingleScene
         nDepth = 1;
@@ -8,33 +8,39 @@ function framesOut = loadZIRGBFrames(dirname)
         nRgb = inf;
     end
 
-    Ifiles = dir(fullfile(dirname,'I_*'));
-    Ifiles = Ifiles(1:min(nDepth,numel(Ifiles)));
-    splittedStr = strsplit(Ifiles(1).name,'_');
-    splittedStr = strsplit(splittedStr{3},'x');
-    for i = 1:numel(Ifiles)
-       frames.i(:,:,i) = io.readGeneralBin(fullfile(Ifiles(i).folder,Ifiles(i).name),'uint8',[str2double(splittedStr{2}),str2double(splittedStr{1})]);
+    if(LRS)
+        framesOut.i(:,:,1) = io.readGeneralBin(fullfile(fullfile(dirname,'ir.raw')), 'uint8', [768 1024]);
+        framesOut.z(:,:,1) = io.readGeneralBin(fullfile(dirname,'depth.raw'), 'uint16', [768 1024]);
+        framesOut.yuy2(:,:,1) = du.formats.readBinRGBImage(fullfile(dirname,'rgb.raw'), [1920 1080], 5);   
+    else       
+        Ifiles = dir(fullfile(dirname,'I_*'));
+        Ifiles = Ifiles(1:min(nDepth,numel(Ifiles)));
+        splittedStr = strsplit(Ifiles(1).name,'_');
+        splittedStr = strsplit(splittedStr{3},'x');
+        for i = 1:numel(Ifiles)
+           frames.i(:,:,i) = io.readGeneralBin(fullfile(Ifiles(i).folder,Ifiles(i).name),'uint8',[str2double(splittedStr{2}),str2double(splittedStr{1})]);
+        end
+        Zfiles = dir(fullfile(dirname,'Z_*'));
+        Zfiles = Zfiles(1:min(nDepth,numel(Zfiles)));
+        splittedStr = strsplit(Zfiles(1).name,'_');
+        splittedStr = strsplit(splittedStr{3},'x');
+        for i = 1:numel(Zfiles)
+           frames.z(:,:,i) = io.readGeneralBin(fullfile(Zfiles(i).folder,Zfiles(i).name),'uint16',[str2double(splittedStr{2}),str2double(splittedStr{1})]); 
+        end
+        yuy2files = dir(fullfile(dirname,'YUY2_YUY2_*'));
+        yuy2files = yuy2files(1:min(nRgb,numel(yuy2files)));
+        splittedStr = strsplit(yuy2files(1).name,'_');
+        splittedStr = strsplit(splittedStr{3},'x');
+        for i = 1:numel(yuy2files)
+           [frames.yuy2(:,:,i),~] = du.formats.readBinRGBImage(fullfile(yuy2files(i).folder,yuy2files(i).name),[str2double(splittedStr{1}),str2double(splittedStr{2})],5);
+        end
+        ixDepthMatch2Color = matchClosestDepth2ColorTime(Ifiles,Zfiles,yuy2files);
+        for k = 1:numel(yuy2files)
+            framesOut.z(:,:,k) = frames.z(:,:,ixDepthMatch2Color(k));
+            framesOut.i(:,:,k) = frames.i(:,:,ixDepthMatch2Color(k));
+        end
+        framesOut.yuy2 = frames.yuy2;
     end
-    Zfiles = dir(fullfile(dirname,'Z_*'));
-    Zfiles = Zfiles(1:min(nDepth,numel(Zfiles)));
-    splittedStr = strsplit(Zfiles(1).name,'_');
-    splittedStr = strsplit(splittedStr{3},'x');
-    for i = 1:numel(Zfiles)
-       frames.z(:,:,i) = io.readGeneralBin(fullfile(Zfiles(i).folder,Zfiles(i).name),'uint16',[str2double(splittedStr{2}),str2double(splittedStr{1})]); 
-    end
-    yuy2files = dir(fullfile(dirname,'YUY2_YUY2_*'));
-    yuy2files = yuy2files(1:min(nRgb,numel(yuy2files)));
-    splittedStr = strsplit(yuy2files(1).name,'_');
-    splittedStr = strsplit(splittedStr{3},'x');
-    for i = 1:numel(yuy2files)
-       [frames.yuy2(:,:,i),~] = du.formats.readBinRGBImage(fullfile(yuy2files(i).folder,yuy2files(i).name),[str2double(splittedStr{1}),str2double(splittedStr{2})],5);
-    end
-    ixDepthMatch2Color = matchClosestDepth2ColorTime(Ifiles,Zfiles,yuy2files);
-    for k = 1:numel(yuy2files)
-        framesOut.z(:,:,k) = frames.z(:,:,ixDepthMatch2Color(k));
-        framesOut.i(:,:,k) = frames.i(:,:,ixDepthMatch2Color(k));
-    end
-    framesOut.yuy2 = frames.yuy2;
 end
 
 function [ixDepthMatch2Color] = matchClosestDepth2ColorTime(Ifiles,Zfiles,yuy2files)

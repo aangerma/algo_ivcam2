@@ -6,22 +6,26 @@ clear
 % runParams.saveBins = 0;
 % runParams.ignoreSceneInvalidation = 1;
 % runParams.ignoreOutputInvalidation = 1;
-
+LRS = true;
 % close all
 %% Load frames from IPDev
-% sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\OnlineCalibration\Data\F9440842_scene2';
-sceneDir = 'C:\work\autocal\F9440687\Snapshots\LongRange_D_768x1024_RGB_1920x1080\2';
-
+sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\OnlineCalibration\Data\F9440842_scene2';
+if LRS
+    sceneDir = 'C:\work\autocal\data\251';
+end
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-
 outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
-
 % Load data of scene 
 % load(intrinsicsExtrinsicsPath);
-[camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
+
+if LRS
+    [camerasParams] = getCameraParamsRaw(sceneDir);
+else
+    [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
+end   
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
-frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir);
+frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir, LRS);
 
 
 % Keep only the first frame
@@ -78,7 +82,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',weightsT,'doubl
 %% Validate input scene
 if ~OnlineCalibration.aux.validScene(frame,params)
     disp('Scene not valid!');
-     return;
+     %return;
 end
 %% Perform Optimization
 params.derivVar = 'KrgbRT';
