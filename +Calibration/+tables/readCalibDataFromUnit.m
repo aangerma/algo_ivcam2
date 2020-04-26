@@ -34,6 +34,9 @@ if exist('tableName', 'var')
     end
 end
 
+calibDataEeprom = repmat(struct('tableName', '', 'tableData', []), [1,0]);
+calibDataFlash = repmat(struct('tableName', '', 'tableData', []), [1,0]);
+
 headerSize = 16; % 0x10
 for iTable = 1:size(eepromTablesInfo, 1)
     tableIdEeprom = eepromTablesInfo{iTable,2};
@@ -44,7 +47,7 @@ for iTable = 1:size(eepromTablesInfo, 1)
     [~, binData] = hw.cmd(sprintf('ReadFullTable %s', tableIdEeprom));
     binData = binData(bytesToSkip + (1:tableSize));
     calibDataEeprom(iTable).tableData = Calibration.tables.convertBinTableToCalibData(binData, calibDataEeprom(iTable).tableName);
-    if ~isPayload0
+    if ~isPayload0 % table exists also in FLASH
         tableIdFlash = dec2hex(hex2dec(tableIdEeprom) + hex2dec('300'));
         calibDataFlash(iTable).tableName = eepromTablesInfo{iTable,1};
         [~, binData] = hw.cmd(sprintf('ReadFullTable %s', tableIdFlash));
@@ -52,19 +55,20 @@ for iTable = 1:size(eepromTablesInfo, 1)
         calibDataFlash(iTable).tableData = Calibration.tables.convertBinTableToCalibData(binData, calibDataFlash(iTable).tableName);
     end
 end
+nFlashTables = length(calibDataFlash);
 for iTable = 1:size(flashTablesInfo, 1)
     tableIdFlash = flashTablesInfo{iTable,2};
     bytesToSkip = headerSize;
     tableSize = hex2dec(flashTablesInfo{iTable,3})-headerSize;
-    calibDataFlash(iTable).tableName = flashTablesInfo{iTable,1};
+    calibDataFlash(nFlashTables+iTable).tableName = flashTablesInfo{iTable,1};
     try
         [~, binData] = hw.cmd(sprintf('READ_TABLE %s 0', tableIdFlash));
         tableSize = min(tableSize, length(binData)-bytesToSkip);
         binData = binData(bytesToSkip + (1:tableSize));
-        calibDataFlash(iTable).tableData = Calibration.tables.convertBinTableToCalibData(binData, calibDataFlash(iTable).tableName);
+        calibDataFlash(nFlashTables+iTable).tableData = Calibration.tables.convertBinTableToCalibData(binData, calibDataFlash(nFlashTables+iTable).tableName);
     catch
-        warning('Unable to retrieve table %s', flashTablesInfo{iTable,1});
-        calibDataFlash(iTable).tableData = [];
+        warning('Unable to retrieve table %s (please verify that FW supports AC)', calibDataFlash(nFlashTables+iTable).tableName);
+        calibDataFlash(nFlashTables+iTable).tableData = [];
     end
 end
 
