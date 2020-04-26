@@ -80,10 +80,16 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.ve
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',weightsT,'double');
 
 %% Validate input scene
-if ~OnlineCalibration.aux.validScene(frame,params)
+if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
     disp('Scene not valid!');
      %return;
 end
+
+% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'depthEdgeWeightDistributionPerSectionDepth',validSceneStruct.edgeWeightDistributionPerSectionDepth,'double');
+% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth_trans',uint8(transpose(frames.sectionMapDepth)),'uint8');
+% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeWeightDistributionPerSectionRgb',validSceneStruct.edgeWeightDistributionPerSectionRgb,'double');
+% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapRgb_trans',uint8(transpose(frames.sectionMapRgb)),'uint8');
+
 %% Perform Optimization
 params.derivVar = 'KrgbRT';
 [newParams, newCost] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
