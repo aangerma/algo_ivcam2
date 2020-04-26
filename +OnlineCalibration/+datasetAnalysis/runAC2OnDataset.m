@@ -13,32 +13,59 @@
 % Save GID errors before and after
 clear
 close all
+testSubName = '_runAC2_OnlyScaleY';
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
-scenesList = {'\\143.185.124.250\Users\Roma R\RnD\AutoCalibration2\Scene9\F0050045\Long_Preset\768x1024'};
+sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
 rng(1);
-nAugPerScene = 10;
+nAugPerScene = 5;
 ind = 0;
-for i = 1:numel(scenesList)
-    scenePath = scenesList{i};
-    for j = 1:nAugPerScene
-        ind = ind + 1;
 
-        seed = (randi(10000));
-        params.augmentRand01Number = rand(1);
-        params.augmentationMaxMovement = 10;
-        params.augmentOne = 1;
-        params.augmentationType = 'scaleDepthX';
-        params.AC2 = 1;
-        fprintf('Scene %d Aug %d\n',i,j);
-        rng(seed);
-        results(ind) = OnlineCalibration.datasetAnalysis.runAC2FromDir(scenePath,params);
-        fprintf('UV Pre|P|Krgb|Post = %2.2g|%2.2g|%2.2g|%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostPOpt,results(ind).uvErrPostKRTOpt,results(ind).uvErrPostKdepthRTOpt);
-        fprintf('GID Pre/Post = %2.2g/%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPost.gid);
+goodScenesList = {};
+badScenesList = {};
+params.augmentRand01Number = rand(1);
+params.augmentationMaxMovement = 4;
+params.augmentOne = 1;
+params.augmentationType = 'scaleDepthY';
+params.AC2 = 1;
+
+
+sceneDirs = dir(fullfile(sceneHeadDir,'scene*'));
+for sc = 1:numel(sceneDirs)
+    serialsDirs = dir(fullfile(sceneHeadDir,sceneDirs(sc).name,'F*'));
+    for se = 1:numel(serialsDirs)
+        presetDirs = dir(fullfile(sceneHeadDir,sceneDirs(sc).name,serialsDirs(se).name,'*_Preset'));
+        for pr = 1:numel(presetDirs)
+            resDirs = dir(fullfile(sceneHeadDir,sceneDirs(sc).name,serialsDirs(se).name,presetDirs(pr).name,'*x*'));
+            for r = 1:numel(resDirs)
+                sceneFullPath = fullfile(resDirs(r).folder,resDirs(r).name);
+                for au = 1:nAugPerScene
+                    try
+                        disp(sceneFullPath)
+                        seed = (randi(10000));
+                        rng(seed);
+                        sceneResults = OnlineCalibration.datasetAnalysis.runAC2FromDir(sceneFullPath,params);
+                        if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
+                            ind = ind + 1;
+                            results(ind) = sceneResults;
+                            goodScenesList{numel(goodScenesList)+1} = sceneFullPath;
+                        else
+                            badScenesList{numel(goodScenesList)+1} = sceneFullPath;
+                        end
+                    catch e
+                        badScenesList{numel(goodScenesList)+1} = sceneFullPath;
+                        sceneFullPath
+                        e.message
+                        e.stack(1)
+                    end
+                end
+            end
+        end
     end
 end
+
 
 resultsSubDirName = fullfile(resultsHeadDir,[datestr(now,'yy_mmmm_dd___HH_MM'),testSubName]);
 mkdir(resultsSubDirName);
 resultsFileName = fullfile(resultsSubDirName,'results.mat');
 % save(resultsFileName,'results','nAugPerScene')
-save(resultsFileName,'results','nAugPerScene')
+save(resultsFileName,'results','nAugPerScene','goodScenesList','badScenesList')
