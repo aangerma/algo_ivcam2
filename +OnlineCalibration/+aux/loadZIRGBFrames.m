@@ -1,5 +1,10 @@
-function framesOut = loadZIRGBFrames(dirname, fileJump)
-
+function framesOut = loadZIRGBFrames(dirname, fileJump, LRS)
+if exist('LRS','var') && LRS
+        framesOut.i(:,:,1) = io.readGeneralBin(fullfile(fullfile(dirname,'ir.raw')), 'uint8', [768 1024]);
+        framesOut.z(:,:,1) = io.readGeneralBin(fullfile(dirname,'depth.raw'), 'uint16', [768 1024]);
+        framesOut.yuy2(:,:,1) = du.formats.readBinRGBImage(fullfile(dirname,'rgb.raw'), [1920 1080], 5); 
+        return;
+end
 if OnlineCalibration.Globals.loadSingleScene
     nDepth = 1;
     nRgb = 2;
