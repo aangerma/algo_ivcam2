@@ -12,6 +12,7 @@ Tsize = 3*8;
 PMatSize = 12*8;
 
 params.depthRes= typecast(binData(1:ResSize), 'double');
+params.depthRes = flip(params.depthRes)';
 zMaxSubMMsize = ResSize + z_MMsize;
 params.zMaxSubMM = typecast(binData(ResSize+1:zMaxSubMMsize), 'double');
 KdepthSize = zMaxSubMMsize + Ksize;
@@ -19,6 +20,7 @@ params.Kdepth = typecast(binData(zMaxSubMMsize+1:KdepthSize), 'double');
 params.Kdepth = reshape(params.Kdepth, 3,3)';
 rgbRes = KdepthSize+ResSize;
 params.rgbRes = typecast(binData(KdepthSize+1:rgbRes), 'double');
+params.rgbRes = flip(params.rgbRes)';
 KrgbSize = rgbRes+Ksize;
 params.Krgb = typecast(binData(rgbRes+1:KrgbSize), 'double');
 params.Krgb = reshape(params.Krgb, 3,3)';
