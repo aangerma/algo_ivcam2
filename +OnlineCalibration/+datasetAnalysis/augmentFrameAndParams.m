@@ -1,7 +1,9 @@
-function [frame,params] = augmentFrameAndParams(frame,params,chooseOne)
+function [frame,params] = augmentFrameAndParams(frame,params,method)
 %AUGMENTFRAMEANDPARAMS 
 % This function randomly choose and insert an error to the scene/parameters
-
+if ~exist('method','var')
+    method = 'chooseOne';
+end
 if ~isfield(params,'augmentRand01Number')
     params.augmentRand01Number = rand(1);
 end
@@ -25,7 +27,12 @@ oneParamAugmentationOption = {'KdepthFx';...
                                   'scaleDsmY';...
                                     };
 nOptions = numel(oneParamAugmentationOption);
-if chooseOne
+nParamsToAugment = nOptions-4; % Not including scale and offset in the image plane
+if ~isfield(params,'randUnitVecForAug')
+   params.randUnitVecForAug = rand(nParamsToAugment,1);
+end
+
+if strcmp(method,'chooseOne')
     if ~isfield(params,'augmentationType')
         chosenOption = randi(nOptions);
     else
@@ -133,18 +140,24 @@ if chooseOne
             frame.z(:,:,end) = z;
             frame.i(:,:,end) = ir;
         case 'scaleDsmX'
-            scaleX = params.randPixMovement/params.depthRes(2);
+            scaleX = params.randPixMovement/params.depthRes(2)*100;
             scaleY = 0;
-            warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,depthRes,scaleX,scaleY);
+            warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,scaleX,scaleY);
+            frame = warper.ApplyWarp(frame);
+        case 'scaleDsmY'
+            scaleX = 0;
+            scaleY = params.randPixMovement/params.depthRes(1)*100;
+            warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,scaleX,scaleY);
+            frame = warper.ApplyWarp(frame);
         otherwise
             error('Unknown augmentation type chosen - %s',oneParamAugmentationOption{chosenOption});
     end
-else
+elseif strcmp(method,'chooseAll')
     augmentationMaxMovement = params.augmentationMaxMovement;
 	randPixMovement = augmentationMaxMovement*params.augmentRand01Number;
     
-    nParamsToAugment = nOptions-4; % Not including scale and offset in the image plane
-    unitVec = rand(nParamsToAugment,1)-0.5;
+    
+    unitVec = params.randUnitVecForAug(1:nParamsToAugment)-0.5;
     unitVec = unitVec./norm(unitVec);
     normalizationVec = [params.KdepthMatNormalizationMat(1:2);params.KrgbMatNormalizationMat([1;5;7;8]);params.RnormalizationParams;params.TmatNormalizationMat];
     diffVec = unitVec./normalizationVec*randPixMovement;
@@ -166,6 +179,19 @@ else
     
     params.augmentationType = 'joined';
     params.randPixMovement = randPixMovement;
+elseif strcmp(method,'dsmAndRotation')
+    assert(isfield(params,'serial'),'Unknown unit serial for DSM augmentation');
+    assert(isfield(params,'randVecForDsmAndRotation'),'randVecForDsmAndRotation should be generated so it will affect both scene and CB');
+    params.dsmScaleX = params.randVecForDsmAndRotation(1)*4-2;
+    params.dsmScaleY = params.randVecForDsmAndRotation(2)*4-2;
+    rotationDiff = (vec(params.randVecForDsmAndRotation(3:5))-0.5);
+    rotationDiff = rotationDiff./norm(rotationDiff);
+    rotationDiff = rotationDiff./params.RnormalizationParams*params.augmentationMaxMovement*params.augmentRand01Number;
+    params.xAlpha = params.xAlpha + rotationDiff(1);
+    params.yBeta = params.yBeta + rotationDiff(2);
+    params.zGamma = params.zGamma + rotationDiff(3);
+    warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,params.dsmScaleX,params.dsmScaleY);
+    frame = warper.ApplyWarp(frame);
 end
 params.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(params.xAlpha,params.yBeta,params.zGamma);
 params.rgbPmat = params.Krgb*[params.Rrgb,params.Trgb];

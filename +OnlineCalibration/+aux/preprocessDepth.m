@@ -53,7 +53,7 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
         [edgeSubPixel,zValues,zGradInDirection] = subEdgesByForLoop(iEdge,frame.z,Zx,Zy,locRC,directionIndex,dirsVec);
     end
         
-    validEdgePixels = zGradInDirection > params.gradZTh & isSupressed;
+    validEdgePixels = zGradInDirection > params.gradZTh & isSupressed & zValuesForSubEdges > 0;
     
     zGradInDirection = zGradInDirection(validEdgePixels);
     edgeSubPixel = edgeSubPixel(validEdgePixels,:);

@@ -4,6 +4,7 @@ function [stepSize,newKRTP,newCost] = myBacktrackingLineSearchKRT(frame,params,g
 % maximum amount to move along a given search direction.
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
 grad = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T;gradStruct.Krgb(:)];
+grad(4:end) = 0;
 grad = grad./norm(grad)./[params.RnormalizationParams;params.TmatNormalizationMat;params.KrgbMatNormalizationMat(:)];
 
 unitGrad = grad./norm(grad);

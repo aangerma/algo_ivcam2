@@ -13,19 +13,18 @@
 % Save GID errors before and after
 clear
 close all
-testSubName = '_runAC2_OnlyScaleY';
+testSubName = '_dsmPlusrot';
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
 sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
-rng(1);
-nAugPerScene = 10;
+rng(2);
+nAugPerScene = 2;
 ind = 0;
 
 goodScenesList = {};
 badScenesList = {};
 
 params.augmentationMaxMovement = 10;
-params.augmentOne = 1;
-params.augmentationType = 'scaleDsmX';
+params.augMethod = 'dsmAndRotation';
 params.AC2 = 1;
 
 
@@ -44,6 +43,8 @@ for sc = 1:numel(sceneDirs)
                         seed = (randi(10000));
                         rng(seed);
                         params.augmentRand01Number = rand(1);
+                        params.randVecForDsmAndRotation = rand(1,5);
+                        params.randVecForDsmAndRotation(2) = 0.5;
                         sceneResults = OnlineCalibration.datasetAnalysis.runAC2FromDir(sceneFullPath,params);
                         if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
                             ind = ind + 1;
