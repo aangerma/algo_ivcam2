@@ -3,17 +3,17 @@ dbg = struct;
 isOutputValid = 1;
 validOutputStruct.isValid = 1;
 % Clip current movement by pixels
-[uvMapOrig,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort);
+[uvMapOrig,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort,originalParams);
 validUvs = isInRes(uvMapOrig,params.rgbRes);
 uvMapOrig = uvMapOrig(validUvs,:);
 if contains(params.derivVar,'Kdepth') % AC2
 	prevVertices =  ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(params.Kdepth)').*frame.vertices(:,3);
 	newVertices = ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(newParams.Kdepth)').*frame.vertices(:,3);
-	[uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(prevVertices,params.rgbPmat,params.Krgb,params.rgbDistort);
-	[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(newVertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort);
+	[uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(prevVertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
+	[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(newVertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort,newParams);
 else
-	[uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
-	[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort);
+	[uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
+	[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort,newParams);
 end
 
 dbg.uvMap = uvMapPrev;
@@ -43,7 +43,7 @@ if xyMovement > maxMovementInThisIteration
 end
 
 % Invalidate movement which is far away from origin
-[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort);
+[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort,newParams);
 uvMapNew = uvMapNew(validUvs,:);
 xyMovementFromOrigin = mean(sqrt(sum((uvMapOrig-uvMapNew).^2,2)));
 validOutputStruct.xyMovementFromOrigin = xyMovementFromOrigin;

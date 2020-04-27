@@ -57,6 +57,16 @@ params.derivVar = 'P';
 [~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,originalParams,1);
 desicionParamsP = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
 
+params.derivVar = 'Pthermal';
+inputParams.fromFile = 1;
+% inputParams.tablePath = 
+[params.rgbTmat] = OnlineCalibration.aux.getRgbThermalCorrectionMat(inputParams,params.captuteHumT);
+params.rgbTfix = 1;
+[newParamsPthermal,desicionParams.newCostPthermal] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
+[~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsPthermal,originalParams,1);
+desicionParamsPthermal = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
+params.rgbTfix = 0;
+
 % params.Kdepth([1,5]) = params.Kdepth([1,5]) ./newParamsKrgbRT.Krgb([1,5]).*params.Krgb([1,5]);
 % params.Kdepth([1,5]) = params.Kdepth([1,5]) ./newParamsP.rgbPmat([1,5]).*params.rgbPmat([1,5]);
 % params.derivVar = 'KdepthRTKrgb';
@@ -73,11 +83,30 @@ newParamsKzFromP.Kdepth([1,5]) = newParamsKzFromP.Kdepth([1,5])./newParamsKzFrom
 newParamsKzFromP.Krgb([1,5]) = originalParams.Krgb([1,5]);
 newParamsKzFromP.rgbPmat = newParamsKzFromP.Krgb*[newParamsKzFromP.Rrgb,newParamsKzFromP.Trgb];
 
+newParamsKzFromPthermal = newParamsPthermal;
+newParamsKzFromPthermal.derivVar = 'Kdepth';
+[newParamsKzFromPthermal.Krgb,newParamsKzFromPthermal.Rrgb,newParamsKzFromPthermal.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsKzFromPthermal.rgbPmat);
+newParamsKzFromPthermal.Krgb(1,2) = 0;
+newParamsKzFromPthermal.Kdepth([1,5]) = newParamsKzFromPthermal.Kdepth([1,5])./newParamsKzFromPthermal.Krgb([1,5]).*params.Krgb([1,5]);
+newParamsKzFromPthermal.Krgb([1,5]) = originalParams.Krgb([1,5]);
+newParamsKzFromPthermal.rgbPmat = newParamsKzFromPthermal.Krgb*[newParamsKzFromPthermal.Rrgb,newParamsKzFromPthermal.Trgb];
+
+
 sceneResults.uvErrPre = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,originalParams,0);
 % sceneResults.uvErrPostPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsP,0);
 % sceneResults.uvErrPostKRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKrgbRT,0);
 % sceneResults.uvErrPostKdepthRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKdepthRT,0);
 sceneResults.uvErrPostKzFromPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromP,0);
+
+
+sceneResults.uvErrPostKzFromPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromP,0);
+params.rgbTfix = 1;
+[newParamsPthermal] = OnlineCalibration.aux.getRgbThermalMatAcc(sceneDir,newParamsPthermal);
+sceneResults.uvErrPostPthermalOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsPthermal,0);
+[newParamsKzFromPthermal] = OnlineCalibration.aux.getRgbThermalMatAcc(sceneDir,newParamsKzFromPthermal);
+sceneResults.uvErrPostKzFromPthermalOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromPthermal,0);
+params.rgbTfix = 0;
+
 
 % 
 % uvMapPre = OnlineCalibration.aux.projectVToRGB(currentFrame.originalVertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort);
@@ -91,12 +120,15 @@ sceneResults.uvErrPostKzFromPOpt = OnlineCalibration.Metrics.calcUVMappingErr(fr
 
 % sceneResults.newParamsKrgbRT = newParamsKrgbRT;
 sceneResults.newParamsP = newParamsP;
+sceneResults.newParamsPthermal = newParamsPthermal;
 % sceneResults.newParamsKdepthRT = newParamsKdepthRT;
 sceneResults.newParamsKzFromP = newParamsKzFromP;
+sceneResults.newParamsKzFromPthermal = newParamsKzFromPthermal;
 
 
 % sceneResults.desicionParamsKrgbRT = desicionParamsKrgbRT;
 sceneResults.desicionParamsP = desicionParamsP;
+sceneResults.desicionParamsPthermal = desicionParamsPthermal;
 sceneResults.desicionParamsKzFromP = desicionParamsP;
 
 
@@ -109,6 +141,8 @@ sceneResults.metricsPre = runGeometricMetrics(frameCB, par);
 % sceneResults.metricsPost = runGeometricMetrics(frameCB, par);
 par.camera.zK = newParamsKzFromP.Kdepth;
 sceneResults.metricsPostKzFromP = runGeometricMetrics(frameCB, par);
+par.camera.zK = newParamsKzFromPthermal.Kdepth;
+sceneResults.metricsPostKzFromPthermal = runGeometricMetrics(frameCB, par);
 end
 
 function metrics = runGeometricMetrics(frame,par)

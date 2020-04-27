@@ -29,8 +29,8 @@ for i = 1:numel(params.rgbPmat)
     parPls = params;
     parPls.rgbPmat(i) = parPls.rgbPmat(i) + epsilon;
     
-    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort);
-    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort);
+    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort,params);
+    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort,params);
     
     dXoutDVarNumerical = (uvPls(:,1)-uvMin(:,1))/(2*epsilon);
     maxDiffX(i) = max(abs(dXoutDVarNumerical - dXoutDVar(i,:)'));
@@ -84,8 +84,8 @@ for i = 1:numel(params.Trgb)
     parPls.Trgb(i) = parPls.Trgb(i) + epsilon;
     parPls.rgbPmat = parPls.Krgb*[parPls.Rrgb,parPls.Trgb];
     
-    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort);
-    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort);
+    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort,params);
+    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort,params);
     
     dXoutDVarNumerical = (uvPls(:,1)-uvMin(:,1))/(2*epsilon);
     maxDiffX(i) = max(abs(dXoutDVarNumerical - dXoutDVar(i,:)'));
@@ -129,8 +129,8 @@ for i = 1:numel(angNames)
     parPls.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(parPls.xAlpha,parPls.yBeta,parPls.zGamma);
     parPls.rgbPmat = parPls.Krgb*[parPls.Rrgb,parPls.Trgb];
     
-    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort);
-    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort);
+    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort,params);
+    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort,params);
     
     dXoutDVarNumerical = (uvPls(:,1)-uvMin(:,1))/(2*epsilon);
     maxDiffX(i) = max(abs(dXoutDVarNumerical - dXoutDVar.(angNames{i})'));
@@ -181,8 +181,8 @@ for i = 1:numel(params.Krgb)
     parPls.Krgb(i) = parPls.Krgb(i) + epsilon;
     parPls.rgbPmat = parPls.Krgb*[parPls.Rrgb,parPls.Trgb];
     
-    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort);
-    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort);
+    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort,params);
+    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort,params);
     
     dXoutDVarNumerical = (uvPls(:,1)-uvMin(:,1))/(2*epsilon);
     maxDiffX(i) = max(abs(dXoutDVarNumerical - dXoutDVar(i,:)'));
@@ -226,8 +226,8 @@ for i = 1:numel(fNames)
     parPls.Kdepth(inds(i)) = parPls.Kdepth(inds(i)) + epsilon;
     Vpls = OnlineCalibration.aux.z2vertices(Z,true(size(Z)),parPls); %logical(ones(size(Z)))
     
-    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(Vmin,parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort);
-    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(Vpls,parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort);
+    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(Vmin,parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort,params);
+    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(Vpls,parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort,params);
     
     dXoutDVarNumerical = (uvPls(:,1)-uvMin(:,1))/(2*epsilon);
     maxDiffX(i) = max(abs(dXoutDVarNumerical - dXoutDVar.(fNames{i})'));

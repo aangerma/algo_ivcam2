@@ -1,7 +1,7 @@
 function [cost,grad] = calcCostAndGrad(frame,params)
     if contains(params.derivVar,'Kdepth')
         vertices = ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(params.Kdepth)').*frame.vertices(:,3);
-        [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
+        [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
         V = [vertices,ones(size(vertices(:,1)))];
     else
         [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);

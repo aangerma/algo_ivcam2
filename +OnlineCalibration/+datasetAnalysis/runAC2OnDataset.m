@@ -13,7 +13,9 @@
 % Save GID errors before and after
 clear
 close all
-testSubName = '_dsmPlusrot';
+
+testSubName = '_pThermalAnalysis';
+
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
 sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
 rng(2);

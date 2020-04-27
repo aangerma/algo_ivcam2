@@ -40,8 +40,8 @@ newParams = params;
 end
 
 function dbg = collectDebugData(frame,params,newRgbPmat,stepSize)
-    [uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
-    [uvMapPost,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newRgbPmat,params.Krgb,params.rgbDistort);
+    [uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
+    [uvMapPost,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newRgbPmat,params.Krgb,params.rgbDistort,params);
     dbg.movement = mean(sqrt(sum((uvMapPrev-uvMapPost).^2,2)));
     dbg.stepSize = stepSize;
 end
