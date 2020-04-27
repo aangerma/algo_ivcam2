@@ -12,5 +12,7 @@ params.depthRes = [metaDataStruct.Depth_Vertical_resolution metaDataStruct.Depth
 params.zMaxSubMM = metaDataStruct.Z_scale;
 params.Kdepth = metaDataStruct.K_depth;
 params.Trgb = metaDataStruct.RGB_translation;
+params.captuteLdd = metaDataStruct.LDD;
+params.captuteHumT = metaDataStruct.HumidityT;
 end
 

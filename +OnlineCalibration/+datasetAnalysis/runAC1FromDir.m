@@ -67,7 +67,7 @@ else
 end
 
 currentFrame.originalVertices = currentFrame.vertices;
-[~,desicionParams] = OnlineCalibration.aux.validScene(currentFrame,params);
+[~,desicionParams,isMovement] = OnlineCalibration.aux.validScene(currentFrame,params);
 
     
 
@@ -78,44 +78,61 @@ currentFrame.originalVertices = currentFrame.vertices;
 desicionParams.initialCost = OnlineCalibration.aux.calculateCost(currentFrame.vertices,currentFrame.weights,currentFrame.rgbIDT,params);
 
 params.derivVar = 'KrgbRT';
-[newParamsKrgbRT,desicionParams.newCostKrgbRT] = OnlineCalibration.Opt.optimizeParameters(currentFrame,params);
+[newParamsKrgbRT,desicionParams.newCost] = OnlineCalibration.Opt.optimizeParameters(currentFrame,params);
 [~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsKrgbRT,originalParams,1);
 desicionParamsKrgbRT = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
 
 params.derivVar = 'P';
-[newParamsP,desicionParams.newCostP] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
+[newParamsP,desicionParams.newCost] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
 [~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,originalParams,1);
 desicionParamsP = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
 
 params.derivVar = 'KdepthRT';
-[newParamsKdepthRT,desicionParams.newCostKdepthRT] = OnlineCalibration.Opt.optimizeParametersKdepthRT(currentFrame,params);
+[newParamsKdepthRT,desicionParams.newCost] = OnlineCalibration.Opt.optimizeParametersKdepthRT(currentFrame,params);
 [~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsKdepthRT,originalParams,1);
 desicionParamsKdepthRT = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
 
+newParamsPDecomposed = newParamsP;
+newParamsPDecomposed.derivVar = 'PDecomposed';
+[newParamsPDecomposed.Krgb,newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsPDecomposed.rgbPmat);
+newParamsPDecomposed.Krgb(1,2) = 0;
+newParamsPDecomposed.rgbPmat = newParamsPDecomposed.Krgb*[newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb];
+[newParamsPDecomposed.xAlpha,newParamsPDecomposed.yBeta,newParamsPDecomposed.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(newParamsPDecomposed.Rrgb);
 
+newParamsPDecomposedForKdepth = newParamsP;
+newParamsPDecomposedForKdepth.derivVar = 'PDecomposedForKdepth';
+[newParamsPDecomposedForKdepth.Krgb,newParamsPDecomposedForKdepth.Rrgb,newParamsPDecomposedForKdepth.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsPDecomposedForKdepth.rgbPmat);
+newParamsPDecomposedForKdepth.Krgb(1,2) = 0;
+newParamsPDecomposedForKdepth.Kdepth([1,5]) = newParamsPDecomposedForKdepth.Kdepth([1,5])./newParamsPDecomposedForKdepth.Krgb([1,5]).*params.Krgb([1,5]);
+newParamsPDecomposedForKdepth.Krgb([1,5]) = params.Krgb([1,5]);
+newParamsPDecomposedForKdepth.rgbPmat = newParamsPDecomposedForKdepth.Krgb*[newParamsPDecomposedForKdepth.Rrgb,newParamsPDecomposedForKdepth.Trgb];
+
+% newParamsPDecomposed.rgbPmat = newParamsPDecomposed.Krgb*[newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb];
+% [newParamsPDecomposed.xAlpha,newParamsPDecomposed.yBeta,newParamsPDecomposed.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(newParamsPDecomposed.Rrgb);
 
 
 sceneResults.uvErrPre = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,originalParams,0);
 sceneResults.uvErrPostPOpt = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParamsP,0);
 sceneResults.uvErrPostKRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParamsKrgbRT,0);
 sceneResults.uvErrPostKdepthRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParamsKdepthRT,0);
-
-% 
-% uvMapPre = OnlineCalibration.aux.projectVToRGB(currentFrame.originalVertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort);
-% uvMapPOpt = OnlineCalibration.aux.projectVToRGB(currentFrame.originalVertices,newParamsP.rgbPmat,newParamsP.Krgb,newParamsP.rgbDistort);
-% vertices = ([currentFrame.xim,currentFrame.yim,ones(size(currentFrame.yim))] * pinv(newParamsKdepthRT.Kdepth)').*currentFrame.vertices(:,3);
-% uvMapKdepthRT = OnlineCalibration.aux.projectVToRGB(vertices,newParamsKdepthRT.rgbPmat,newParamsKdepthRT.Krgb,newParamsKdepthRT.rgbDistort);
-
-
+sceneResults.uvErrPostPDecomposedOpt = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParamsPDecomposed,0);
+sceneResults.uvErrPostPDecomposedForKdepthOpt = OnlineCalibration.Metrics.calcUVMappingErr(currentFrame,newParamsPDecomposedForKdepth,0);
 
 sceneResults.newParamsKrgbRT = newParamsKrgbRT;
 sceneResults.newParamsP = newParamsP;
 sceneResults.newParamsKdepthRT = newParamsKdepthRT;
+sceneResults.newParamsPDecomposed = newParamsPDecomposed;
+sceneResults.newParamsPDecomposedForKdepth = newParamsPDecomposedForKdepth;
 
 sceneResults.desicionParamsKrgbRT = desicionParamsKrgbRT;
 sceneResults.desicionParamsP = desicionParamsP;
+sceneResults.desicionParamsPDecomposed = desicionParamsP;
+sceneResults.desicionParamsPDecomposedForKdepth = desicionParamsP;
+
 sceneResults.desicionParamsKdepthRT = desicionParamsKdepthRT;
 
+sceneResults.validFixBySVM = OnlineCalibration.aux.validBySVM(sceneResults.desicionParamsPDecomposed,newParamsPDecomposedForKdepth);
+sceneResults.validMovement = ~isMovement;
 
 par.target.target = params.targetType;
 par.camera.zK = originalParams.Kdepth;
@@ -124,7 +141,7 @@ par.target.squareSize = 30;
 sceneResults.gidPre = Validation.metrics.gridInterDistance(currentFrame, par);
 par.camera.zK = newParamsKdepthRT.Kdepth;
 sceneResults.gidPostKdepthRTOpt = Validation.metrics.gridInterDistance(currentFrame, par);
-results = sceneResults;
+
 end
 
 

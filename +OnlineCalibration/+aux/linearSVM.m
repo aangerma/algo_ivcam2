@@ -28,7 +28,7 @@ function featuresVec = extractFeatures(decisionParams)
 
     features.initialCost = decisionParams.initialCost;
     featuresVec(5) = features.initialCost;
-    features.finalCost = decisionParams.newCostKrgbRT;
+    features.finalCost = decisionParams.newCostP;
     featuresVec(6) = features.finalCost;
 
     features.xyMovement = decisionParams.xyMovement;

@@ -17,15 +17,15 @@ testSubName = '_runAC2_OnlyScaleY';
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
 sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
 rng(1);
-nAugPerScene = 5;
+nAugPerScene = 10;
 ind = 0;
 
 goodScenesList = {};
 badScenesList = {};
-params.augmentRand01Number = rand(1);
-params.augmentationMaxMovement = 4;
+
+params.augmentationMaxMovement = 10;
 params.augmentOne = 1;
-params.augmentationType = 'scaleDepthY';
+params.augmentationType = 'scaleDsmX';
 params.AC2 = 1;
 
 
@@ -43,6 +43,7 @@ for sc = 1:numel(sceneDirs)
                         disp(sceneFullPath)
                         seed = (randi(10000));
                         rng(seed);
+                        params.augmentRand01Number = rand(1);
                         sceneResults = OnlineCalibration.datasetAnalysis.runAC2FromDir(sceneFullPath,params);
                         if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
                             ind = ind + 1;
@@ -51,6 +52,8 @@ for sc = 1:numel(sceneDirs)
                         else
                             badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         end
+                        fprintf('uvPre/Post: %2.2g,%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt);
+                        fprintf('gidPre/Post: %2.2g,%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid);
                     catch e
                         badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         sceneFullPath
@@ -69,3 +72,15 @@ mkdir(resultsSubDirName);
 resultsFileName = fullfile(resultsSubDirName,'results.mat');
 % save(resultsFileName,'results','nAugPerScene')
 save(resultsFileName,'results','nAugPerScene','goodScenesList','badScenesList')
+
+%% Create a before and after table:
+uvPre = [results.uvErrPre];
+uvPost = [results.uvErrPostKzFromPOpt];
+gidPre = [results.metricsPre];
+gidPre = [gidPre.gid];
+gidPost = [results.metricsPostKzFromP];
+gidPost = [gidPost.gid];
+
+A = [uvPre',uvPost',gidPre',gidPost'];
+pt = array2table(A, 'VariableNames', {'uvPre', 'uvPost','gidPre', 'gidPost'})
+writetable(pt, fullfile(resultsSubDirName,'uvPrePostGidPrePost.xls'))

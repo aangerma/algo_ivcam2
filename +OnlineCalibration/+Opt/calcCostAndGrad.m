@@ -76,6 +76,10 @@ function [cost,grad] = calcCostAndGrad(frame,params)
 %             grad.Kdepth(1:4) = 0;
 %         end
         grad.Kdepth(3:4) = 0;
+        
+        if ~(isfield(params,'AC2') && params.AC2)
+            grad.Krgb = zeros(3);
+        end
     end
     cost = nanmean(DVals.*W);
 

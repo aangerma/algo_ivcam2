@@ -9,7 +9,7 @@ sceneResults.cbFullPath = fullfile(sceneDir,'CheckerBoard');
 [params] = OnlineCalibration.aux.getParamsForAC(params);
 [params] = OnlineCalibration.datasetAnalysis.getAugmentationParams(params);
 params.targetType = 'checkerboard_Iv2A1';
-
+params.serial = strsplit(sceneDir,'\'); params.serial = params.serial{end-2};
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.sceneFullPath);
 frameCB = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.cbFullPath);
 frameCB.yuy2 = frameCB.yuy2(:,:,end);
@@ -67,12 +67,19 @@ params.derivVar = 'KdepthRTKrgb';
 desicionParamsKdepthRT = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
 
 
-
+newParamsKzFromP = newParamsP;
+newParamsKzFromP.derivVar = 'Kdepth';
+[newParamsKzFromP.Krgb,newParamsKzFromP.Rrgb,newParamsKzFromP.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsKzFromP.rgbPmat);
+newParamsKzFromP.Krgb(1,2) = 0;
+newParamsKzFromP.Kdepth([1,5]) = newParamsKzFromP.Kdepth([1,5])./newParamsKzFromP.Krgb([1,5]).*params.Krgb([1,5]);
+newParamsKzFromP.Krgb([1,5]) = originalParams.Krgb([1,5]);
+newParamsKzFromP.rgbPmat = newParamsKzFromP.Krgb*[newParamsKzFromP.Rrgb,newParamsKzFromP.Trgb];
 
 sceneResults.uvErrPre = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,originalParams,0);
 sceneResults.uvErrPostPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsP,0);
 sceneResults.uvErrPostKRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKrgbRT,0);
 sceneResults.uvErrPostKdepthRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKdepthRT,0);
+sceneResults.uvErrPostKzFromPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromP,0);
 
 % 
 % uvMapPre = OnlineCalibration.aux.projectVToRGB(currentFrame.originalVertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort);
@@ -85,6 +92,8 @@ sceneResults.uvErrPostKdepthRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(f
 sceneResults.newParamsKrgbRT = newParamsKrgbRT;
 sceneResults.newParamsP = newParamsP;
 sceneResults.newParamsKdepthRT = newParamsKdepthRT;
+sceneResults.newParamsKzFromP = newParamsKzFromP;
+
 
 sceneResults.desicionParamsKrgbRT = desicionParamsKrgbRT;
 sceneResults.desicionParamsP = desicionParamsP;
@@ -98,6 +107,8 @@ par.target.squareSize = 30;
 sceneResults.metricsPre = runGeometricMetrics(frameCB, par);
 par.camera.zK = newParamsKdepthRT.Kdepth;
 sceneResults.metricsPost = runGeometricMetrics(frameCB, par);
+par.camera.zK = newParamsKzFromP.Kdepth;
+sceneResults.metricsPostKzFromP = runGeometricMetrics(frameCB, par);
 end
 
 function metrics = runGeometricMetrics(frame,par)

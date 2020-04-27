@@ -1,9 +1,9 @@
 clear
 close all
 % Define params = 
-analysisParams.optResultsPath = 'X:\IVCAM2_calibration _testing\analysisResults\20_April_08___17_00_comparingL1L2IDT\results.mat';
-analysisParams.optVars = 'KdepthRT';
-% analysisParams.optVars = 'P';
+analysisParams.optResultsPath = 'X:\IVCAM2_calibration _testing\analysisResults\20_April_22___23_39_bestAC1VersionSoFar\results.mat';
+% analysisParams.optVars = 'KrgbRT';
+analysisParams.optVars = 'PDecomposed';
 analysisParams.performCrossValidation = 1;
 analysisParams.successFunc = [0,2;...
                               1,2;...
@@ -14,6 +14,7 @@ analysisParams.successFunc = [0,2;...
                               12,6;...
                               100,6];
 
+
 % Load dataset optimization results
 load(analysisParams.optResultsPath);
 if size(results,2) < size(results,1) 
@@ -23,42 +24,19 @@ for i = 1:size(allResults,1)
     results = allResults(i,:);
     % Extract features
     desicionParams = [results.(['desicionParams',analysisParams.optVars])];
-
-    edgeDistribution = [desicionParams.edgeWeightDistributionPerSectionDepth];
-    features.edgeDistributionMaxOverMinDepth = max(edgeDistribution)./(min(edgeDistribution)+1e-3);
-
-    edgeDistribution = [desicionParams.edgeWeightDistributionPerSectionRgb];
-    features.edgeDistributionMaxOverMinRgb = max(edgeDistribution)./(min(edgeDistribution)+1e-3);
-
-    edgeDirDistribution = reshape([desicionParams.edgeWeightsPerDir],4,[]);
-    features.edgeDirDistributionMaxOverMinPerp = max(edgeDirDistribution([1,3],:))./(min(edgeDirDistribution([1,3],:))+1e-3);
-    features.edgeDirDistributionMaxOverMinDiag = max(edgeDirDistribution([2,4],:))./(min(edgeDirDistribution([2,4],:))+1e-3);
-
-    features.initialCost = [desicionParams.initialCost];
-    features.finalCost = [desicionParams.(['newCost',analysisParams.optVars])];
-
-    features.xyMovement = [desicionParams.xyMovement];
-    features.xyMovementFromOrigin = [desicionParams.xyMovementFromOrigin];
-
-    improvementPerSection = reshape([desicionParams.improvementPerSection]',4,[]); 
-    improvementPerSectionPositive = improvementPerSection;
-    improvementPerSectionPositive(improvementPerSectionPositive<0) = 0;
-    features.sumOfPositiveImprovement = sum(improvementPerSectionPositive);
-
-    improvementPerSectionNegative = improvementPerSection;
-    improvementPerSectionNegative(improvementPerSectionNegative>0) = 0;
-    features.sumOfNegativeImprovement = sum(improvementPerSectionNegative);
-
-    featureNames = fieldnames(features);
-    featuresMat = zeros(numel(featureNames),numel(results));
-    for f = 1:numel(featureNames)
-        featuresMat(f,:) = features.(featureNames{f});
-    end
-    featuresMat = featuresMat';
+    featuresMat = OnlineCalibration.aux.extractFeatures(desicionParams,analysisParams.optVars);
+    
     % Classifiy scenes
     uvPre = [results.uvErrPre];
-    uvPost = [results.(['uvErrPost',analysisParams.optVars,'Opt'])];
+    if strcmp(analysisParams.optVars, 'KrgbRT')
+        uvPost = [results.(['uvErrPostKRTOpt'])];
+    else
+        uvPost = [results.(['uvErrPost',analysisParams.optVars,'Opt'])];
+    end
     labels = OnlineCalibration.datasetAnalysis.succesfulOptimization(uvPre,uvPost,analysisParams.successFunc);
+    labels(any(isnan(featuresMat),2),:) = [];
+    featuresMat(any(isnan(featuresMat),2),:) = [];
+    
     % Train SVM - For all params or just one
     svmTrain = @(feature,label) fitcsvm(feature,label,'KernelFunction','rbf',...
         'Standardize',true);
@@ -66,8 +44,13 @@ for i = 1:size(allResults,1)
     [newLabels,score] = predict(SVMModel,featuresMat);
     acc = mean(newLabels == labels);
 
-
-
+    dataDir = fileparts(analysisParams.optResultsPath);
+    SVMPath = fullfile(dataDir,'SVMModel.mat');
+    save(SVMPath,'SVMModel');
+    % Predicting linear SVM 
+%     newLabels = (featuresMat-SVMModel.Mu)./SVMModel.Sigma*SVMModel.Beta+SVMModel.Bias > 0;
+    
+    
     figure,
     subplot(2,4,[1,2,5,6])
     cm = confusionchart(labels,newLabels);
@@ -94,11 +77,10 @@ for i = 1:size(allResults,1)
     %% Reference cross validation
     if analysisParams.performCrossValidation
         nOut = 0.2;
-        nAugPerFrame = 100;
         splitedData = featuresMat(1:(end - mod(end,100)),:);
-        splitedData = reshape(splitedData,[],nAugPerFrame,size(featuresMat,2));
+        splitedData = reshape(splitedData,[],nAugPerScene,size(featuresMat,2));
         splitedLabels = labels(1:(end - mod(end,100)));
-        splitedLabels = reshape(splitedLabels,[],nAugPerFrame);
+        splitedLabels = reshape(splitedLabels,[],nAugPerScene);
         nTrain = ceil((1-nOut)*size(splitedData,1));
         nTest = size(splitedData,1) - nTrain;
         for i = 1:5

@@ -21,6 +21,8 @@ oneParamAugmentationOption = {'KdepthFx';...
                                   'scaleDepthY';...
                                   'offsetDepthX';...
                                   'offsetDepthY';...
+                                  'scaleDsmX';...
+                                  'scaleDsmY';...
                                     };
 nOptions = numel(oneParamAugmentationOption);
 if chooseOne
@@ -130,6 +132,10 @@ if chooseOne
             end
             frame.z(:,:,end) = z;
             frame.i(:,:,end) = ir;
+        case 'scaleDsmX'
+            scaleX = params.randPixMovement/params.depthRes(2);
+            scaleY = 0;
+            warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,depthRes,scaleX,scaleY);
         otherwise
             error('Unknown augmentation type chosen - %s',oneParamAugmentationOption{chosenOption});
     end
