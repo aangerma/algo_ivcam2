@@ -12,16 +12,25 @@ function [cost,grad] = calcCostAndGrad(frame,params)
     DyVals = interp2(frame.rgbIDTy,uvMap(:,1)+1,uvMap(:,2)+1);
     
     W = frame.weights;
-    if contains(params.derivVar,'P')
-        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
+    if contains(params.derivVar,'Pthermal')
+        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('Pthermal',V,params);
         grad_P = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.P = reshape(nanmean(grad_P,1),4,3)';
         if params.zeroLastLineOfPGrad
             grad.P(3,:) = 0;
         end
-%         grad.P(1,1) = 0;
-%         grad.P(2,2) = 0;
-    end
+    else
+        if contains(params.derivVar,'P')
+            [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
+            grad_P = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
+            grad.P = reshape(nanmean(grad_P,1),4,3)';
+            if params.zeroLastLineOfPGrad
+                grad.P(3,:) = 0;
+            end
+            %         grad.P(1,1) = 0;
+            %         grad.P(2,2) = 0;
+        end
+    end    
     if contains(params.derivVar,'T')
         [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
         grad_T = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');

@@ -59,13 +59,14 @@ desicionParamsP = Validation.aux.mergeResultStruct(desicionParams, validOutputSt
 
 params.derivVar = 'Pthermal';
 inputParams.fromFile = 1;
-% inputParams.tablePath = 
+inputParams.tablePath = OnlineCalibration.aux.getRgbThermalTablePathAc(sceneDir);
 [params.rgbTmat] = OnlineCalibration.aux.getRgbThermalCorrectionMat(inputParams,params.captuteHumT);
 params.rgbTfix = 1;
 [newParamsPthermal,desicionParams.newCostPthermal] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
 [~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsPthermal,originalParams,1);
 desicionParamsPthermal = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
 params.rgbTfix = 0;
+
 
 % params.Kdepth([1,5]) = params.Kdepth([1,5]) ./newParamsKrgbRT.Krgb([1,5]).*params.Krgb([1,5]);
 % params.Kdepth([1,5]) = params.Kdepth([1,5]) ./newParamsP.rgbPmat([1,5]).*params.rgbPmat([1,5]);
@@ -97,15 +98,8 @@ sceneResults.uvErrPre = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,origi
 % sceneResults.uvErrPostKRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKrgbRT,0);
 % sceneResults.uvErrPostKdepthRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKdepthRT,0);
 sceneResults.uvErrPostKzFromPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromP,0);
-
-
-sceneResults.uvErrPostKzFromPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromP,0);
-params.rgbTfix = 1;
-[newParamsPthermal] = OnlineCalibration.aux.getRgbThermalMatAcc(sceneDir,newParamsPthermal);
 sceneResults.uvErrPostPthermalOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsPthermal,0);
-[newParamsKzFromPthermal] = OnlineCalibration.aux.getRgbThermalMatAcc(sceneDir,newParamsKzFromPthermal);
 sceneResults.uvErrPostKzFromPthermalOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromPthermal,0);
-params.rgbTfix = 0;
 
 
 % 

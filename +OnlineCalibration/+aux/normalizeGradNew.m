@@ -8,6 +8,9 @@ switch derivVar
     case 'P'
         r = sqrt(dXoutDVar.^2+dYoutDVar.^2);
         meanDrDVar = reshape(nanmean(r,2),4,3)';
+    case 'Pthermal'
+        r = sqrt(dXoutDVar.^2+dYoutDVar.^2);
+        meanDrDVar = reshape(nanmean(r,2),4,3)';
     case 'R'
         rXalpha = sqrt(dXoutDVar.xAlpha.^2+dYoutDVar.xAlpha.^2);
         rYbeta = sqrt(dXoutDVar.yBeta.^2+dYoutDVar.yBeta.^2);

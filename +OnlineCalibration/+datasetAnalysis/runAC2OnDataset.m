@@ -55,8 +55,8 @@ for sc = 1:numel(sceneDirs)
                         else
                             badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         end
-                        fprintf('uvPre/Post: %2.2g,%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt);
-                        fprintf('gidPre/Post: %2.2g,%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid);
+                        fprintf('uvPre/PostP/PostPthermal/PostKzFromPthermal: %2.2g,%2.2g,%2.2g,%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostPthermalOpt,results(ind).uvErrPostKzFromPthermalOpt);
+                        fprintf('gidPre/Post/PosrThermal: %2.2g,%2.2g,%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostKzFromPthermal.gid);
                     catch e
                         badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         sceneFullPath
@@ -79,11 +79,16 @@ save(resultsFileName,'results','nAugPerScene','goodScenesList','badScenesList')
 %% Create a before and after table:
 uvPre = [results.uvErrPre];
 uvPost = [results.uvErrPostKzFromPOpt];
+uvPostPthermal = [results.uvErrPostPthermalOpt];
+uvPostKzPthermal = [results.uvErrPostKzFromPthermalOpt];
+
 gidPre = [results.metricsPre];
 gidPre = [gidPre.gid];
 gidPost = [results.metricsPostKzFromP];
 gidPost = [gidPost.gid];
+gidPostPthermal = [results.metricsPostKzFromPthermal];
+gidPostPthermal = [gidPostPthermal.gid];
 
-A = [uvPre',uvPost',gidPre',gidPost'];
-pt = array2table(A, 'VariableNames', {'uvPre', 'uvPost','gidPre', 'gidPost'})
+A = [uvPre',uvPost',uvPostPthermal',uvPostKzPthermal',gidPre',gidPost',gidPostPthermal'];
+pt = array2table(A, 'VariableNames', {'uvPre', 'uvPost','uvPostPthermal','uvPostKzPthermal','gidPre', 'gidPost','gidPostPthermal'})
 writetable(pt, fullfile(resultsSubDirName,'uvPrePostGidPrePost.xls'))

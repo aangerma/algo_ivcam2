@@ -1,7 +1,7 @@
 % For each parameter:
 % Calculate the derivative of dx/dp and compare to the result
 % exampleParamsFn = fullfile(ivcam2root,'+OnlineCalibration','+Opt','exampleParams.mat');
-exampleParamsFn = "X:\Users\mkiperwa\fromtal\exampleParams.mat";
+exampleParamsFn = "X:\Users\mkiperwa\fromtal\exampleParams2.mat";
 load(exampleParamsFn)
 
 dist = 1500;
@@ -11,6 +11,7 @@ V = OnlineCalibration.aux.z2vertices(Z,true(size(Z)),params); %logical(ones(size
 V = [V, ones(size(V,1),1)];
 %% Verify P
 derivVar = 'P'; % P looks good
+params.rgbTfix = 0;
 [dXoutDVar,dYoutDVar,~,~] = OnlineCalibration.aux.calcValFromExpressions(derivVar,V,params);
 dXoutDVar = reshape(dXoutDVar,4,3,[]);
 dXoutDVar = permute(dXoutDVar,[2,1,3]);
@@ -68,6 +69,68 @@ maxDiffRelativeY = reshape(maxDiffRelativeY,3,4);
 disp('P: maxDiffRelativeY');
 maxDiffRelativeY(1:2,:) % Y has minimal effect on X and vice versa
 
+%% Verfiy Pthermal
+derivVar = 'Pthermal'; % Pthermal looks good
+params.rgbTfix = 1;
+
+[dXoutDVar,dYoutDVar,~,~] = OnlineCalibration.aux.calcValFromExpressions(derivVar,V,params);
+dXoutDVar = reshape(dXoutDVar,4,3,[]);
+dXoutDVar = permute(dXoutDVar,[2,1,3]);
+dXoutDVar = reshape(dXoutDVar,12,[]);
+dYoutDVar = reshape(dYoutDVar,4,3,[]);
+dYoutDVar = permute(dYoutDVar,[2,1,3]);
+dYoutDVar = reshape(dYoutDVar,12,[]);
+
+pixMovement = 0.01;
+figureCount = 0;
+internCount = 1;
+for i = 1:numel(params.rgbPmat)
+    epsilon = pixMovement/params.rgbPmatNormalizationMat(i);
+    parMin = params;
+    parMin.rgbPmat(i) = parMin.rgbPmat(i) - epsilon;
+    parPls = params;
+    parPls.rgbPmat(i) = parPls.rgbPmat(i) + epsilon;
+    
+    [uvMin,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parMin.rgbPmat,parMin.Krgb,parMin.rgbDistort,params);
+    [uvPls,~,~] = OnlineCalibration.aux.projectVToRGB(V(:,1:3),parPls.rgbPmat,parPls.Krgb,parPls.rgbDistort,params);
+    
+    dXoutDVarNumerical = (uvPls(:,1)-uvMin(:,1))/(2*epsilon);
+    maxDiffX(i) = max(abs(dXoutDVarNumerical - dXoutDVar(i,:)'));
+    maxDiffRelativeX(i) = max(abs(dXoutDVarNumerical - dXoutDVar(i,:)'))./mean(abs(dXoutDVar(i,:)));
+    dYoutDVarNumerical = (uvPls(:,2)-uvMin(:,2))/(2*epsilon);
+    maxDiffY(i) = max(abs(dYoutDVarNumerical - dYoutDVar(i,:)'));
+    maxDiffRelativeY(i) = max(abs(dYoutDVarNumerical - dYoutDVar(i,:)'))./mean(abs(dYoutDVar(i,:)));
+    if mod(i,3) == 1
+        internCount = 1;
+        figure('NumberTitle', 'off', 'Name', ['Pthermal' num2str(figureCount+1) '_' num2str(figureCount+3)]);
+        figureCount = figureCount + 3;
+    end
+    titleStr = {['dXoutDVarNumerical ' num2str(i)], ['dXoutDVar ' num2str(i)]};
+    plotNumerVsAnalyt(V,dXoutDVarNumerical,dXoutDVar(i,:)',titleStr,[3,4,internCount]);
+    titleStr = {['dYoutDVarNumerical ' num2str(i)], ['dYoutDVar '  num2str(i)]};
+    plotNumerVsAnalyt(V,dYoutDVarNumerical,dYoutDVar(i,:)',titleStr,[3,4,internCount+2])
+    internCount = internCount + 4;
+end
+sgtitle('Pthermal Grad Comparison');
+
+% for i = 1:numel(params.rgbPmat)
+%     tabplot(i);
+%     histogram(dXoutDVar(i,:));
+% end
+maxDiffX = reshape(maxDiffX,3,4);
+disp('Pthermal: maxDiffX');
+maxDiffX(1:2,:)
+maxDiffRelativeX = reshape(maxDiffRelativeX,3,4);
+disp('Pthermal: maxDiffRelativeX');
+maxDiffRelativeX(1:2,:)% Y has minimal effect on X and vice versa
+maxDiffY = reshape(maxDiffY,3,4);
+disp('Pthermal: maxDiffY');
+maxDiffY(1:2,:)
+maxDiffRelativeY = reshape(maxDiffRelativeY,3,4);
+disp('Pthermal: maxDiffRelativeY');
+maxDiffRelativeY(1:2,:) % Y has minimal effect on X and vice versa
+
+params.rgbTfix = 0;
 
 
 %% Verify T - Looks good
@@ -249,6 +312,8 @@ maxDiffY
 disp('Kdepth: maxDiffRelativeY');
 maxDiffRelativeY % Y has minimal effect on X and vice versa
 
+
+%%
 
 function [] = plotNumerVsAnalyt(V,numerical,analytic,titleStr,subplotNums)
 minColor = min([numerical;analytic]);
