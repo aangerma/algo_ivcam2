@@ -53,6 +53,6 @@ params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMM
 % params.affectingInvalidationSVMModel.mandatory = {'gradITh';'gradZMax';'numSectionsV';'numSectionsH';'constantWeights';'constantWeightsValue'};
 % params.affectingInvalidationSVMModel.nonmandatory = {'inverseDistParams';'maxStepSize';'tau';'controlParam';'edgeThresh4logicIm'};
 params.iterFromStart = 1;
-
+params.rgbPixelMargin = 5;
 end
 

@@ -18,14 +18,15 @@ t = -params.controlParam*grad(:)'*unitGrad(:);
 
 paramsNew = params;
 paramsNew.rgbPmat = params.rgbPmat + stepSize*unitGrad;
-[cost1,~,u1] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
-[cost2,~,u2] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,paramsNew);
+[cost1,scorePerVertex1,uv1] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
+[cost2,scorePerVertex2,uv2] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,paramsNew);
+commonVerts = ~isnan(scorePerVertex1) & ~isnan(scorePerVertex2);
 if isfield(params,'showOptProgress') && params.showOptProgress
     figure(190789)
     tabplot;
     imagesc(frame.rgbIDT);
     hold on
-    quiver(u1(:,1)+1,u1(:,2)+1,u2(:,1)-u1(:,1),u2(:,2)-u1(:,2),'r')
+    quiver(uv1(:,1)+1,uv1(:,2)+1,uv2(:,1)-uv1(:,1),uv2(:,2)-uv1(:,2),'r')
 %     plot([u1(:,1)+1],[u1(:,2)+1],'or')
 %     plot([u1(:,1)+1;u2(:,1)+1],[u1(:,2)+1;u2(:,2)+1],'r','linewidth',2)
 %     axis([u1(:,1)-30,u1(:,1)+30,u1(:,2)-30,u1(:,2)+30 ])
@@ -33,7 +34,7 @@ if isfield(params,'showOptProgress') && params.showOptProgress
     alphaDebug(1) = stepSize;
 end
 iterCount = 0;
-while cost1-cost2 >= stepSize*t && abs(stepSize) > params.minStepSize && iterCount < params.maxBackTrackIters
+while nanmean(scorePerVertex1(commonVerts))-nanmean(scorePerVertex2(commonVerts)) >= stepSize*t && abs(stepSize) > params.minStepSize && iterCount < params.maxBackTrackIters
 
     iterCount = iterCount + 1;
 %     disp(['myBacktrackingLineSearch: iteration #: ' num2str(iterCount)]);
@@ -42,13 +43,15 @@ while cost1-cost2 >= stepSize*t && abs(stepSize) > params.minStepSize && iterCou
 %     TrgbNew = params.Trgb+alpha*p(4:end);
 %     rgbPmatNew = params.Krgb*[RrgbNew,TrgbNew];
     paramsNew.rgbPmat = params.rgbPmat + stepSize*unitGrad;
-    cost2 = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,paramsNew);
+    [cost2,scorePerVertex2,uv2] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,paramsNew);
+    commonVerts = ~isnan(scorePerVertex1) & ~isnan(scorePerVertex2);
+
 %     costDebug(iterCount+1) = cost2;
 %     alphaDebug(iterCount+1) = stepSize;
     assert( ~isnan(cost2),'Cost shouldn''t be none!');
 end
 
-if cost1-cost2 >= stepSize*t
+if nanmean(scorePerVertex1(commonVerts))-nanmean(scorePerVertex2(commonVerts)) >= stepSize*t
     stepSize = 0;
     newRgbPmat = params.rgbPmat;
     newCost = cost1;
