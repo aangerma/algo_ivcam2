@@ -76,7 +76,16 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     vertices = subPoints*(pinv(params.Kdepth)').*zValuesForSubEdges/single(params.zMaxSubMM);
     
     [uv,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
-    isInside = uvIsInsideRgbImage(uv,params);
+    isInside = OnlineCalibration.aux.isInsideImage(uv,params.rgbRes);
+    
+    xim = xim(isInside);
+    yim = yim(isInside); 
+    zValuesForSubEdges = zValuesForSubEdges(isInside);
+    zGradInDirection = zGradInDirection(isInside);
+    directionIndex = directionIndex(isInside);
+    weights = weights(isInside);
+    vertices = vertices(isInside,:);
+    sectionMapDepth = sectionMapDepth(isInside);
 end
 
 function [locRCsub,zValue,zGradInDirection] = subEdgesByForLoop(iEdge,Zim,Zx,Zy,locRC,directionIndex,dirsVec)
