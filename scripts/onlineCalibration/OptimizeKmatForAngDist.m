@@ -1,11 +1,6 @@
-function Kopt = OptimizeKmatForAngDist(regs, origK, xPixInterpolant, yPixInterpolant, x, y, polyCoef)
+function Kopt = OptimizeKmatForAngDist(regs, origK, xPixInterpolant, yPixInterpolant, origPixX, origPixY, polyCoef)
     
-    %% setting original pixels
-    [yy, xx] = ndgrid(y, x);
-    origPixX = xx(:);
-    origPixY = yy(:);
-    
-    in.vertices = [origPixX, origPixY, ones(length(x)*length(y),1)] * inv(origK)';
+    in.vertices = [origPixX, origPixY, ones(length(origPixX),1)] * inv(origK)';
     out = Utils.convert.SphericalToCartesian(in, regs, 'inverse');
     origAngX = double(out.angx);
     origAngY = double(out.angy);

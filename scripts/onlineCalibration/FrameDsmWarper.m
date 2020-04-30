@@ -50,10 +50,11 @@ classdef FrameDsmWarper
             obj.dsmWarpCoefY = dsmWarpCoefY;
             rptDist = [obj.rpt(:,1), polyval(obj.dsmWarpCoefX, obj.rpt(:,2)), polyval(obj.dsmWarpCoefY, obj.rpt(:,3))];
             verticesDist = Utils.convert.RptToVertices(rptDist, obj.calData.regs, obj.calData.tpsUndistModel, 'direct');
-            pixelsDist = (verticesDist./verticesDist(:,3)) * obj.Kworld';
-            xDist = reshape(pixelsDist(:,1), obj.frameSize);
-            yDist = reshape(pixelsDist(:,2), obj.frameSize);
-            obj.xyResampling = cat(3, xDist, yDist);
+            pixelsDist = (verticesDist./verticesDist(:,3)) * double(obj.Kworld)'; % not aligned with frame's pixel grid
+            [y, x] = ndgrid(1:obj.frameSize(1), 1:obj.frameSize(2));
+            xInterpolant = scatteredInterpolant(pixelsDist(:,1), pixelsDist(:,2), x(:));
+            yInterpolant = scatteredInterpolant(pixelsDist(:,1), pixelsDist(:,2), y(:));
+            obj.xyResampling = cat(3, reshape(xInterpolant(x(:), y(:)), obj.frameSize), reshape(yInterpolant(x(:), y(:)), obj.frameSize)); % aligned with frame's pixel grid
             obj.warper = @(im) du.math.imageWarp(im, obj.xyResampling(:,:,2), obj.xyResampling(:,:,1));
         end
         

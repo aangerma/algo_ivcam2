@@ -228,6 +228,23 @@
   </Command>
   <Command Name="RST" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x20" CmdPermission="Public" Description="HW Reset">
   </Command>
+  <Command Name="PROFILER_GET_INFO" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x21" IsReadCommand="true" CmdPermission="Private" Description="Get Profiler Info">
+  <ReadData>
+      <Section Name="Profiler_Base_Address" Title="Profiler Base Address" Offset="0" Size="4" FormatType="HexNumber" />
+      <Section Name="Profiler_Size" Title="Profiler Size" Offset="4" Size="4" FormatType="Unsigned" />
+    </ReadData>
+  </Command>
+   <Command Name="FOV_RATIO_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x22" CmdPermission="Public" Description="Set field of view reduction ratio">
+    <Parameter1 Name="Axis(0-FA, 1-SA)" />
+    <Parameter2 Name="ratio (1.0 for 100%)" />
+    <Parameter3 Name="password (0x????) to apply the new ratio" />
+ </Command>  
+ <Command Name="FOV_RATIO_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x23" IsReadCommand="true" CmdPermission="Public"  Description="Get current field of view reduction ratio">
+    <ReadData>
+    <Section Name="FOV FA ratio" Title="FOV FA axis ratio" Offset="0" Size="4" FormatType="Float" />
+    <Section Name="FOV SA ratio" Title="FOV SA axis ratio" Offset="4" Size="4" FormatType="Float" />
+    </ReadData>
+ </Command>  
   <Command Name="AMCGETVER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x26" IsReadCommand="true" CmdPermission="Public" Description="Get adavanced mode command version">
   </Command>
   <Command Name="AMCSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2B" CmdPermission="Public" Description="AMC_SET">
@@ -239,6 +256,13 @@
     <Parameter2 Name="dataType" />
     <Parameter3 Name="resolution" />
   </Command>
+  <Command Name="AC_SET_PARAM" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2d" CmdPermission="Public" Description="Auto Calib Set Param <index>  <value>">
+    <Parameter1 Name="index" />
+    <Parameter2 Name="value" />
+  </Command>
+  <Command Name="DELETE_TABLE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2e" CmdPermission="Public" Description="Delete Table">
+    <Parameter1 Name="tableType" />
+  </Command>  
   <Command Name="RGB_INTRINSICS_UNDIST_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x39" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get rgb undist intrinsic">
      <ReadData> 
       <Section Name="-----------Common-------------" Title="Common" Offset="0" Size="1" FormatType="DecByte" />
@@ -862,6 +886,16 @@
     <Parameter2 Name="Value" />
   </Command> 
   
+  <Command Name="LASER_POWER_REDUCE_ENABLE_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x96" IsReadCommand="true" CmdPermission="Public"  Description="Get laser power reduce enable status">
+    <ReadData>
+      <Section Name="laser power reduce get" Title="laserPowerReduce" Offset="0" Size="1" FormatType="DecByte" />
+    </ReadData>
+  </Command>
+  <Command Name="LASER_POWER_REDUCE_ENABLE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x97" CmdPermission="Private" Description="Set laser power reduce enable status, Hard reset is required">
+    <Parameter1 Name="0=OFF, 1=ON" />
+    <Parameter2 Name="Password (0x????) for OFF, (0x1234) for ON" />
+  </Command>  
+  
   <Command Name="CONFIG_SYSDELAY_DATA" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x98" CmdPermission="Public" Description="CONFIG_SYSDELAY_DATA">
     <Parameter1 Name="size" />
     <Data Name="Data" IsReverseBytes="false" FormatLength="8" />
@@ -882,12 +916,17 @@
   <Command Name="FALL_DETECT_CONFIG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9E" CmdPermission="Public" Description="FALL_DETECT_CONFIG">
     <Parameter1 Name="cntThr1" />
     <Parameter2 Name="cntThr2" />
-    <Parameter3 Name="ampThr1" />
-    <Parameter4 Name="ampThr2" />
+    <Parameter3 Name="ampThr1*10000" />
+    <Parameter4 Name="ampThr2*10000" />
   </Command>
 
   <Command Name="PROFILER_RUN" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9F" CmdPermission="Private" Description="PROFILER RUN start=1, stop=0, (default=1)">
       <Parameter1 Name="RunOrNot" />
+  </Command>
+  
+  <Command Name="GET_SPECIAL_FRAME" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0xA0" CmdPermission="Private" Description="Get special frame for RGB to Depth dynamic calibration">
+      <Parameter1 Name="Frame type" IsDecimal="true"/>
+	  <Parameter2 Name="Number of frames" IsDecimal="true"/>
   </Command>
 
   <Command Name="MCSTART" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xA1" CmdPermission="Private" ReadFormat="Bytes" IsReadCommand="true" Description="MCSTART">
@@ -954,4 +993,13 @@
     </ReadData>
   </Command>  
   
+  <Command Name="MCMEMS_CALIBRATION" CmdPipe="WinUsb" CmdInterface="UvcAndI2c" Opcode="0xAB" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="MCMEMS_CALIBRATION">
+     <Parameter1 Name="(0 FastAxis, 1 SlowAxis, 2 PitchAxis)" />
+    <Data IsReverseBytes="false" FormatLength="8" />
+    <ReadData>
+      <Section Name="PZR1_vBias_Average" Title="PZR1 vBias Average" Offset="0" Size="4" FormatType="Float" />
+      <Section Name="PZR2_vBias_Average" Title="PZR2 vBias Average" Offset="4" Size="4" FormatType="Float" />
+      <Section Name="PZR3_vBias_Average" Title="PZR3 vBias Average" Offset="8" Size="4" FormatType="Float" />
+    </ReadData>
+  </Command> 
 </Commands>
