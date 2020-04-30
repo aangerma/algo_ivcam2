@@ -1,9 +1,9 @@
 clear
 close all
 % Define params = 
-analysisParams.optResultsPath = 'X:\IVCAM2_calibration _testing\analysisResults\20_April_22___23_39_bestAC1VersionSoFar\results.mat';
+analysisParams.optResultsPath = 'X:\IVCAM2_calibration _testing\analysisResults\20_April_29___15_13_AC2_Status\results.mat';
 % analysisParams.optVars = 'KrgbRT';
-analysisParams.optVars = 'PDecomposed';
+analysisParams.optVars = 'KzFromP';
 analysisParams.performCrossValidation = 1;
 analysisParams.successFunc = [0,2;...
                               1,2;...
@@ -17,6 +17,7 @@ analysisParams.successFunc = [0,2;...
 
 % Load dataset optimization results
 load(analysisParams.optResultsPath);
+allResults = results;
 if size(results,2) < size(results,1) 
    allResults = results'; 
 end
