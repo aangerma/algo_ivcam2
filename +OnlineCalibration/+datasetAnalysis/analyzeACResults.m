@@ -29,22 +29,29 @@ for i = 1:size(allResults,1)
     
     % Classifiy scenes
     uvPre = [results.uvErrPre];
+    gidPre = [results.metricsPre]; gidPre = [gidPre.gid];
     if strcmp(analysisParams.optVars, 'KrgbRT')
         uvPost = [results.(['uvErrPostKRTOpt'])];
     else
         uvPost = [results.(['uvErrPost',analysisParams.optVars,'Opt'])];
+        gidPost = [results.metricsPostKzFromP]; gidPost = [gidPost.gid];
     end
     labels = OnlineCalibration.datasetAnalysis.succesfulOptimization(uvPre,uvPost,analysisParams.successFunc);
-    labels(any(isnan(featuresMat),2),:) = [];
-    featuresMat(any(isnan(featuresMat),2),:) = [];
+    
+%     gidPre(any(isnan(featuresMat),2)) = [];
+%     gidPost(any(isnan(featuresMat),2)) = [];
+%     uvPre(any(isnan(featuresMat),2)) = [];
+%     uvPost(any(isnan(featuresMat),2)) = [];
+%     labels(any(isnan(featuresMat),2),:) = [];
+%     featuresMat(any(isnan(featuresMat),2),:) = [];
     
     % Train SVM - For all params or just one
     svmTrain = @(feature,label) fitcsvm(feature,label,'KernelFunction','rbf',...
         'Standardize',true);
     SVMModel = svmTrain(featuresMat,labels);
     [newLabels,score] = predict(SVMModel,featuresMat);
-    acc = mean(newLabels == labels);
-
+    OnlineCalibration.datasetAnalysis.plotResults(labels,newLabels,uvPre,uvPost,gidPre,gidPost,analysisParams);
+    
     dataDir = fileparts(analysisParams.optResultsPath);
     SVMPath = fullfile(dataDir,'SVMModel.mat');
     save(SVMPath,'SVMModel');
@@ -52,40 +59,29 @@ for i = 1:size(allResults,1)
 %     newLabels = (featuresMat-SVMModel.Mu)./SVMModel.Sigma*SVMModel.Beta+SVMModel.Bias > 0;
     
     
-    figure,
-    subplot(2,4,[1,2,5,6])
-    cm = confusionchart(labels,newLabels);
-    xlabel('Valid Optimization');
-    ylabel('"Good" UV Err');
-    title(sprintf('acc = %2.2g',acc))
-    extraTitles = {'True Negative';'False Positive';'False Negative';'True Positive'};
-    pVec = [3,4,7,8];
-    for i = 1:2
-        for j = 1:2
-            subplot(2,4,pVec(sub2ind([2, 2], i, j)));
-            validPoints = logical((newLabels==i-1) .* (labels==j-1));
-            plot(analysisParams.successFunc(:,1),analysisParams.successFunc(:,2),'linewidth',2);
-            hold on 
-            plot(uvPre(validPoints),uvPost(validPoints),'*');
-            title(sprintf('%s %3.2g%%',extraTitles{sub2ind([2, 2], i, j)},mean(validPoints)*100));
-            xlabel('UV Pre')
-            ylabel('UV Post')
-            grid on
-            legend({'Success Line';'Scene Point'});
-        end
-    end
-
+    
+    
+    
+    
     %% Reference cross validation
     if analysisParams.performCrossValidation
         nOut = 0.2;
-        splitedData = featuresMat(1:(end - mod(end,100)),:);
+        splitedData = featuresMat(1:(end - mod(end,nAugPerScene)),:);
         splitedData = reshape(splitedData,[],nAugPerScene,size(featuresMat,2));
-        splitedLabels = labels(1:(end - mod(end,100)));
+        splitedLabels = labels(1:(end - mod(end,nAugPerScene)));
         splitedLabels = reshape(splitedLabels,[],nAugPerScene);
+        uvPreCV = uvPre(1:(end - mod(end,nAugPerScene)));
+        uvPreCV = reshape(uvPreCV,[],nAugPerScene);
+        uvPostCV = uvPost(1:(end - mod(end,nAugPerScene)));
+        uvPostCV = reshape(uvPostCV,[],nAugPerScene);
+        gidPreCV = gidPre(1:(end - mod(end,nAugPerScene)));
+        gidPreCV = reshape(gidPreCV,[],nAugPerScene);
+        gidPostCV = gidPost(1:(end - mod(end,nAugPerScene)));
+        gidPostCV = reshape(gidPostCV,[],nAugPerScene);
         nTrain = ceil((1-nOut)*size(splitedData,1));
         nTest = size(splitedData,1) - nTrain;
-        for i = 1:5
-            testI = (1:nTest) + (i-1)*nTest;
+        for i = k:5
+            testI = (1:nTest) + (k-1)*nTest;
             trainI = setdiff(1:size(splitedData,1),testI);
 
             trainSc = reshape(splitedData(trainI,:,:),[],size(featuresMat,2));
@@ -95,8 +91,18 @@ for i = 1:size(allResults,1)
 
             SVMModelCV = svmTrain(trainSc,trainLabels);
             [newLabelsCV,~] = predict(SVMModelCV,testSc);
-            accCV(i) = mean(newLabelsCV == testLabels);
+            accCV(k) = mean(newLabelsCV == testLabels);
+            
+%             figure(100);tabplot(i);
+%             cm = confusionchart(testLabels,newLabelsCV);
+%             xlabel('Valid Optimization');
+%             ylabel('"Good" UV Err');
+%             title(sprintf('acc = %2.2g',accCV(i)))
+            
+            
+            OnlineCalibration.datasetAnalysis.plotResults(testLabels,newLabelsCV,vec(uvPreCV(testI,:)),vec(uvPostCV(testI,:)),vec(gidPreCV(testI,:)),vec(gidPostCV(testI,:)),analysisParams);
         end
+        
     end
     accCV
 end
