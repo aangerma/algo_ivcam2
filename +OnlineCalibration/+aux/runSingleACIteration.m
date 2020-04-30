@@ -23,7 +23,7 @@ params.derivVar = 'P';
 
 newParamsPDecomposed = newParamsP;
 newParamsPDecomposed.derivVar = 'PDecomposed';
-[newParamsPDecomposed.Krgb,newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsPDecomposed.rgbPmat);
+[newParamsPDecomposed.Krgb,newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsPDecomposed.rgbPmat);
 newParamsPDecomposed.Krgb(1,2) = 0;
 newParamsPDecomposed.rgbPmat = newParamsPDecomposed.Krgb*[newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb];
 [newParamsPDecomposed.xAlpha,newParamsPDecomposed.yBeta,newParamsPDecomposed.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(newParamsPDecomposed.Rrgb);

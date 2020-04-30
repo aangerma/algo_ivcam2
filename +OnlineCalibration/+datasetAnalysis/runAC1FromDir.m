@@ -94,14 +94,14 @@ desicionParamsKdepthRT = Validation.aux.mergeResultStruct(desicionParams, validO
 
 newParamsPDecomposed = newParamsP;
 newParamsPDecomposed.derivVar = 'PDecomposed';
-[newParamsPDecomposed.Krgb,newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsPDecomposed.rgbPmat);
+[newParamsPDecomposed.Krgb,newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsPDecomposed.rgbPmat);
 newParamsPDecomposed.Krgb(1,2) = 0;
 newParamsPDecomposed.rgbPmat = newParamsPDecomposed.Krgb*[newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb];
 [newParamsPDecomposed.xAlpha,newParamsPDecomposed.yBeta,newParamsPDecomposed.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(newParamsPDecomposed.Rrgb);
 
 newParamsPDecomposedForKdepth = newParamsP;
 newParamsPDecomposedForKdepth.derivVar = 'PDecomposedForKdepth';
-[newParamsPDecomposedForKdepth.Krgb,newParamsPDecomposedForKdepth.Rrgb,newParamsPDecomposedForKdepth.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsPDecomposedForKdepth.rgbPmat);
+[newParamsPDecomposedForKdepth.Krgb,newParamsPDecomposedForKdepth.Rrgb,newParamsPDecomposedForKdepth.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsPDecomposedForKdepth.rgbPmat);
 newParamsPDecomposedForKdepth.Krgb(1,2) = 0;
 newParamsPDecomposedForKdepth.Kdepth([1,5]) = newParamsPDecomposedForKdepth.Kdepth([1,5])./newParamsPDecomposedForKdepth.Krgb([1,5]).*params.Krgb([1,5]);
 newParamsPDecomposedForKdepth.Krgb([1,5]) = params.Krgb([1,5]);

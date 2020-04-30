@@ -78,7 +78,7 @@ params.rgbTfix = 0;
 
 newParamsKzFromP = newParamsP;
 newParamsKzFromP.derivVar = 'Kdepth';
-[newParamsKzFromP.Krgb,newParamsKzFromP.Rrgb,newParamsKzFromP.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsKzFromP.rgbPmat);
+[newParamsKzFromP.Krgb,newParamsKzFromP.Rrgb,newParamsKzFromP.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsKzFromP.rgbPmat);
 newParamsKzFromP.Krgb(1,2) = 0;
 newParamsKzFromP.Kdepth([1,5]) = newParamsKzFromP.Kdepth([1,5])./newParamsKzFromP.Krgb([1,5]).*params.Krgb([1,5]);
 newParamsKzFromP.Krgb([1,5]) = originalParams.Krgb([1,5]);
@@ -86,7 +86,7 @@ newParamsKzFromP.rgbPmat = newParamsKzFromP.Krgb*[newParamsKzFromP.Rrgb,newParam
 
 newParamsKzFromPthermal = newParamsPthermal;
 newParamsKzFromPthermal.derivVar = 'Kdepth';
-[newParamsKzFromPthermal.Krgb,newParamsKzFromPthermal.Rrgb,newParamsKzFromPthermal.Trgb] = OnlineCalibration.aux.decompose_projmtx(newParamsKzFromPthermal.rgbPmat);
+[newParamsKzFromPthermal.Krgb,newParamsKzFromPthermal.Rrgb,newParamsKzFromPthermal.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsKzFromPthermal.rgbPmat);
 newParamsKzFromPthermal.Krgb(1,2) = 0;
 newParamsKzFromPthermal.Kdepth([1,5]) = newParamsKzFromPthermal.Kdepth([1,5])./newParamsKzFromPthermal.Krgb([1,5]).*params.Krgb([1,5]);
 newParamsKzFromPthermal.Krgb([1,5]) = originalParams.Krgb([1,5]);
