@@ -12,7 +12,7 @@ else
     nDepth = inf;
     nRgb = inf;
 end
-if exist('fileJump','var')
+if ~isempty(fileJump)
     skipVal = fileJump;
 else
     skipVal  = 1;
