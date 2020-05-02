@@ -6,7 +6,7 @@ clear
 % runParams.saveBins = 0;
 % runParams.ignoreSceneInvalidation = 1;
 % runParams.ignoreOutputInvalidation = 1;
-LRS = true;
+LRS = false;
 % close all
 %% Load frames from IPDev
 sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
@@ -42,7 +42,7 @@ params = camerasParams;
 params.cbGridSz = [9,13];% not part of the optimization 
 [params] = OnlineCalibration.aux.getParamsForAC(params);
 %%
-startParams = params;
+originalParams = params;
 
 sectionMapDepth = OnlineCalibration.aux.sectionPerPixel(params);
 sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
@@ -54,60 +54,67 @@ sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
 
 % Preprocess RGB
 [frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
+frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
+
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',double(frame.rgbEdge),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
-% Preprocess IR
-[frame.irEdge] = OnlineCalibration.aux.preprocessIR(frame,params);
+% Preprocess Z and IR
+[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth] = OnlineCalibration.aux.preprocessDepth(frame,params);
+
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'double');
-
-% Preprocess Z
-[frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(frame,params);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',frame.zEdge,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_dir',frame.dirI-1,'uint8');  % -1 to match C++ 0-based
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',frame.zEdgeSubPixel,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',frame.zEdgeSupressed,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_xim',frame.xim,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_yim',frame.yim,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'double');
-
-
-[frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
-frame.weights = OnlineCalibration.aux.calculateWeights(frame,params);
-frame.sectionMapDepth = sectionMapDepth(frame.zEdgeSupressed>0);
-frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zGradInDirection',single(frame.zGradInDirection),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dirPerPixel',single(frame.dirPerPixel),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',double(frame.weights),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',double(frame.sectionMapDepth),'double');
+
 
 %% Validate input scene
 if ~OnlineCalibration.aux.validScene(frame,params)
     disp('Scene not valid!');
-%     return;
+    return;
 end
 %% Perform Optimization
-params.derivVar = 'KrgbRT';
-newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
+% params.derivVar = 'KrgbRT';
+% newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
 params.derivVar = 'P';
 newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
+newParams = newParamsP;
+[newParams.Krgb,newParams.Rrgb,newParams.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsP.rgbPmat);
+newParams.Krgb(1,2) = 0;
+newParams.Kdepth([1,5]) = newParams.Kdepth([1,5])./newParams.Krgb([1,5]).*params.Krgb([1,5]);
+newParams.Krgb([1,5]) = originalParams.Krgb([1,5]);
+newParams.rgbPmat = newParams.Krgb*[newParams.Rrgb,newParams.Trgb];
 
-
+%{
+% Debug
 OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
 OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
 OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
-ax = gca;
-title({ax.Title.String;'New R,T,Krgb optimization'});
+%}
+
 %% Validate new parameters
-[validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
+[validParams,updatedParams,dbg,~] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,originalParams,1);
 if validParams
     params = updatedParams;
 end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
 
-% figure; 
-% subplot(421); imagesc(frame.i); impixelinfo; title('IR image');colorbar;
-% subplot(422); imagesc(frame.irEdge); impixelinfo; title('IR edge');colorbar;
-% subplot(423);imagesc(frame.z./4); impixelinfo; title('Depth image');colorbar;
-% subplot(424);imagesc(frame.zEdgeSupressed>0); impixelinfo; title('zEdgeSupressed image');colorbar;
-% subplot(425);imagesc(frame.yuy2); impixelinfo; title('Color image');colorbar;
-% subplot(426);imagesc(frame.rgbEdge); impixelinfo; title('Color edge');colorbar;
-% subplot(427);imagesc(frame.rgbIDT); impixelinfo; title('Color IDT');colorbar;
+%{
+% Debug
+figure; 
+subplot(421); imagesc(frame.i); impixelinfo; title('IR image');colorbar;
+subplot(422); imagesc(frame.irEdge); impixelinfo; title('IR edge');colorbar;
+subplot(423);imagesc(frame.z./4); impixelinfo; title('Depth image');colorbar;
+subplot(424);imagesc(frame.zEdgeSupressed>0); impixelinfo; title('zEdgeSupressed image');colorbar;
+subplot(425);imagesc(frame.yuy2); impixelinfo; title('Color image');colorbar;
+subplot(426);imagesc(frame.rgbEdge); impixelinfo; title('Color edge');colorbar;
+subplot(427);imagesc(frame.rgbIDT); impixelinfo; title('Color IDT');colorbar;
+%}
