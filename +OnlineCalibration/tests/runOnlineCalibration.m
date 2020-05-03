@@ -1,7 +1,7 @@
 clear
 
-% global runParams;
-% runParams.loadSingleScene = 1;
+global runParams;
+runParams.loadSingleScene = 1;
 % runParams.verbose = 0;
 % runParams.saveBins = 0;
 % runParams.ignoreSceneInvalidation = 1;
