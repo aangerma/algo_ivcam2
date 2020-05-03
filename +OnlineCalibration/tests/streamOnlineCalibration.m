@@ -22,7 +22,7 @@ params = cameraParams;
 params.cbGridSz = [9,13];% not part of the optimization 
 [params] = OnlineCalibration.aux.getParamsForAC(params);
 
-params.derivVar = 'KrgbRT';
+params.derivVar = 'P';
 params.maxIters = 100;
 
 flowParams.deltaTmptr = 0;
