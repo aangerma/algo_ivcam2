@@ -19,7 +19,7 @@ frame.originalVertices = frame.vertices;
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
 
 params.derivVar = 'P';
-[newParamsP,decisionParams.newCost] = OnlineCalibration.Opt.optimizeParametersP(frame,params);
+[newParamsP,decisionParams.newCostP] = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 
 newParamsPDecomposed = newParamsP;
 newParamsPDecomposed.derivVar = 'PDecomposed';
@@ -38,5 +38,9 @@ sceneResults.validFixBySVM = OnlineCalibration.aux.validBySVM(sceneResults.decis
 sceneResults.validMovement = ~isMovement;
 
 validParams = sceneResults.validMovement && sceneResults.validFixBySVM;
+
+if validParams
+    params = newParamsPDecomposed;
+end
 
 end
