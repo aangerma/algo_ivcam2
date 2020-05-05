@@ -10,8 +10,8 @@ sceneResults.cbFullPath = fullfile(sceneDir,'CheckerBoard');
 [params] = OnlineCalibration.datasetAnalysis.getAugmentationParams(params);
 params.targetType = 'checkerboard_Iv2A1';
 params.serial = strsplit(sceneDir,'\'); params.serial = params.serial{end-2};
-frame = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.sceneFullPath);
-frameCB = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.cbFullPath);
+frame = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.sceneFullPath,[]);
+frameCB = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.cbFullPath,[]);
 frameCB.yuy2 = frameCB.yuy2(:,:,end);
 
 currentFrame.yuy2Prev = frame.yuy2(:,:,1);
@@ -33,13 +33,10 @@ currentFrame.sectionMapRgb = sectionMapRgb(currentFrame.rgbIDT>0);
     currentFrame.xim,currentFrame.yim,currentFrame.zValuesForSubEdges...
     ,currentFrame.zGradInDirection,currentFrame.dirPerPixel,currentFrame.weights,currentFrame.vertices,...
     currentFrame.sectionMapDepth] = OnlineCalibration.aux.preprocessDepth(currentFrame,params);
-%     figure(1);
-%     hold on
-%     plot(currentFrame.xim+1,currentFrame.yim+1,'g*');
 
 
 currentFrame.originalVertices = currentFrame.vertices;
-[~,desicionParams] = OnlineCalibration.aux.validScene(currentFrame,params);
+[~,desicionParams,isMovement] = OnlineCalibration.aux.validScene(currentFrame,params);
 
     
 
@@ -53,7 +50,7 @@ desicionParams.initialCost = OnlineCalibration.aux.calculateCost(currentFrame.ve
 % [newParamsKrgbRT,desicionParams.newCostKrgbRT] = OnlineCalibration.Opt.optimizeParameters(currentFrame,params);
 
 params.derivVar = 'P';
-[newParamsP,desicionParams.newCostP] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
+[newParamsP,desicionParams.newCost] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
 [~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,originalParams,1);
 desicionParamsP = Validation.aux.mergeResultStruct(desicionParams, validOutputStruct);
 
@@ -94,7 +91,7 @@ newParamsKzFromPthermal.rgbPmat = newParamsKzFromPthermal.Krgb*[newParamsKzFromP
 
 
 sceneResults.uvErrPre = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,originalParams,0);
-% sceneResults.uvErrPostPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsP,0);
+sceneResults.uvErrPostPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsP,0);
 % sceneResults.uvErrPostKRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKrgbRT,0);
 % sceneResults.uvErrPostKdepthRTOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKdepthRT,0);
 sceneResults.uvErrPostKzFromPOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,newParamsKzFromP,0);
@@ -125,6 +122,8 @@ sceneResults.desicionParamsP = desicionParamsP;
 sceneResults.desicionParamsPthermal = desicionParamsPthermal;
 sceneResults.desicionParamsKzFromP = desicionParamsP;
 
+sceneResults.validFixBySVM = OnlineCalibration.aux.validBySVM(sceneResults.desicionParamsKzFromP,newParamsKzFromP);
+sceneResults.validMovement = ~isMovement;
 
 par.target.target = params.targetType;
 par.camera.zK = originalParams.Kdepth;

@@ -10,7 +10,7 @@ function [featuresMat] = extractFeatures(desicionParams, optVars)
     features.edgeDirDistributionMaxOverMinDiag = max(edgeDirDistribution([2,4],:))./(min(edgeDirDistribution([2,4],:))+1e-3);
 
     features.initialCost = [desicionParams.initialCost];
-    features.finalCost = [desicionParams.(['newCostP'])];
+    features.finalCost = [desicionParams.(['newCost'])];
     
 
     features.xyMovement = [desicionParams.xyMovement];

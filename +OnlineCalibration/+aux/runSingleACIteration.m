@@ -19,22 +19,26 @@ frame.originalVertices = frame.vertices;
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
 
 params.derivVar = 'P';
-[newParamsP,decisionParams.newCostP] = OnlineCalibration.Opt.optimizeParametersP(frame,params);
+[newParamsP,decisionParams.newCost] = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 
-newParamsPDecomposed = newParamsP;
-newParamsPDecomposed.derivVar = 'PDecomposed';
-[newParamsPDecomposed.Krgb,newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsPDecomposed.rgbPmat);
-newParamsPDecomposed.Krgb(1,2) = 0;
-newParamsPDecomposed.rgbPmat = newParamsPDecomposed.Krgb*[newParamsPDecomposed.Rrgb,newParamsPDecomposed.Trgb];
-[newParamsPDecomposed.xAlpha,newParamsPDecomposed.yBeta,newParamsPDecomposed.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(newParamsPDecomposed.Rrgb);
 
-[~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsPDecomposed,originalParams,params.iterFromStart);
+newParamsKzFromP = newParamsP;
+newParamsKzFromP.derivVar = 'Kdepth';
+[newParamsKzFromP.Krgb,newParamsKzFromP.Rrgb,newParamsKzFromP.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsKzFromP.rgbPmat);
+newParamsKzFromP.Krgb(1,2) = 0;
+newParamsKzFromP.Kdepth([1,5]) = newParamsKzFromP.Kdepth([1,5])./newParamsKzFromP.Krgb([1,5]).*params.Krgb([1,5]);
+newParamsKzFromP.Krgb([1,5]) = originalParams.Krgb([1,5]);
+newParamsKzFromP.rgbPmat = newParamsKzFromP.Krgb*[newParamsKzFromP.Rrgb,newParamsKzFromP.Trgb];
+[newParamsKzFromP.xAlpha,newParamsKzFromP.yBeta,newParamsKzFromP.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(newParamsKzFromP.Rrgb);
+
+
+[~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsKzFromP,originalParams,params.iterFromStart);
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct);
 
 
-sceneResults.newParamsPDecomposed = newParamsPDecomposed;
-sceneResults.decisionParamsPDecomposed = decisionParams;
-sceneResults.validFixBySVM = OnlineCalibration.aux.validBySVM(sceneResults.decisionParamsPDecomposed,newParamsPDecomposed);
+sceneResults.newParamsKzFromP = newParamsKzFromP;
+sceneResults.decisionParamsKzFromP = decisionParams;
+sceneResults.validFixBySVM = OnlineCalibration.aux.validBySVM(sceneResults.decisionParamsKzFromP,newParamsKzFromP);
 sceneResults.validMovement = ~isMovement;
 
 validParams = sceneResults.validMovement && sceneResults.validFixBySVM;

@@ -76,7 +76,7 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     vertices = subPoints*(pinv(params.Kdepth)').*zValuesForSubEdges/single(params.zMaxSubMM);
     
     [uv,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
-    isInside = OnlineCalibration.aux.isInsideImage(uv,params.rgbRes);
+    isInside = OnlineCalibration.aux.isInsideImage(uv,flip(params.rgbRes));
     
     xim = xim(isInside);
     yim = yim(isInside); 
