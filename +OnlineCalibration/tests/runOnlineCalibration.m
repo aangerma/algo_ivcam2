@@ -31,8 +31,9 @@ frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir, LRS);
 % Keep only the first frame
 frame.z = frame.z(:,:,1);
 frame.i = frame.i(:,:,1);
+frame.yuy2Prev = frame.yuy2(:,:,2);
 frame.yuy2 = frame.yuy2(:,:,1);
-frame.yuy2Prev = frame.yuy2;
+
 
 % Define hyperparameters
 
