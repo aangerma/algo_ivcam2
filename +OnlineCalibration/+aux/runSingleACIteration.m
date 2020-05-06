@@ -44,7 +44,7 @@ sceneResults.validMovement = ~isMovement;
 validParams = sceneResults.validMovement && sceneResults.validFixBySVM;
 
 if validParams
-    params = newParamsPDecomposed;
+    params = newParamsKzFromP;
 end
 
 end
