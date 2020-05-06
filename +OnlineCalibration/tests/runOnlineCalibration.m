@@ -6,10 +6,10 @@ clear
 % runParams.saveBins = 0;
 % runParams.ignoreSceneInvalidation = 1;
 % runParams.ignoreOutputInvalidation = 1;
-LRS = true;
+LRS = false;
 % close all
 %% Load frames from IPDev
-sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\OnlineCalibration\Data\F9440842_scene2';
+sceneDir = 'C:\work\librealsense\build\unit-tests\algo\depth-to-rgb-calibration\19.2.20\F9440687\Snapshots\LongRange_D_768x1024_RGB_1920x1080\2';
 if LRS
     sceneDir = 'C:\work\autocal\data\251';
 end
@@ -92,7 +92,9 @@ end
 % OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapRgb_trans',uint8(transpose(frames.sectionMapRgb)),'uint8');
 
 %% Perform Optimization
-params.derivVar = 'KrgbRT';
+%params.derivVar = 'KrgbRT';
+params.derivVar = 'KrgbRTP';
+
 [newParams, newCost] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);

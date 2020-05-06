@@ -1,5 +1,4 @@
-function [cost,grad,uvMap,DVals,DxVals,DyVals] = calcCostAndGrad(frame,params)
-
+function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
     [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
     
     DVals = interp2(double(frame.rgbIDT),double(uvMap(:,1)+1),double(uvMap(:,2)+1));
@@ -15,11 +14,16 @@ function [cost,grad,uvMap,DVals,DxVals,DyVals] = calcCostAndGrad(frame,params)
         if params.zeroLastLineOfPGrad
             grad.P(3,:) = 0;
         end
+        iteration_data.xCoeffValP = xCoeffVal';
+        iteration_data.yCoeffValP = yCoeffVal';
     end
     if contains(params.derivVar,'T')
         [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
         grad_T = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.T = reshape(nanmean(grad_T),1,3)';
+        
+        iteration_data.xCoeffValT = xCoeffVal';
+        iteration_data.yCoeffValT = yCoeffVal';
 %         grad.T = zeros(3,1);
     end
     if contains(params.derivVar,'R')
@@ -34,6 +38,9 @@ function [cost,grad,uvMap,DVals,DxVals,DyVals] = calcCostAndGrad(frame,params)
         grad.xAlpha = angGradVec(1);
         grad.yBeta = angGradVec(2);
         grad.zGamma = angGradVec(3);
+        
+        iteration_data.xCoeffValR = xCoeffVal';
+        iteration_data.yCoeffValR = yCoeffVal';
 %       grad.xAlpha = 0;
 %       grad.yBeta = 0;
 %       grad.zGamma = 0;
@@ -46,6 +53,17 @@ function [cost,grad,uvMap,DVals,DxVals,DyVals] = calcCostAndGrad(frame,params)
         grad.Krgb(2,1) = 0;
         grad.Krgb(3,1:3) = 0;
 %         grad.Krgb = zeros(3,3);
+
+        iteration_data.xCoeffValKrgb = xCoeffVal';
+        iteration_data.yCoeffValKrgb = yCoeffVal';
+        iteration_data.uvmap = uvMap; 
+        iteration_data.DVals = DVals;
+        iteration_data.DxVals = DxVals;
+        iteration_data.DyVals = DyVals;
+        iteration_data.calib = params;
+        iteration_data.grad = grad;
+        iteration_data.grad.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(grad.xAlpha,grad.yBeta,grad.zGamma);
+     
     end
     cost = nanmean(DVals.*W);
 
