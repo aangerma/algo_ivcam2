@@ -1,4 +1,4 @@
-function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth] = preprocessDepth(frame,params)
+function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth,relevantPixelsImage] = preprocessDepth(frame,params)
 
     % Get gradient direction in IR
     % Calculate sub pixel location in IR
@@ -94,6 +94,9 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     weights = weights(isInside);
     vertices = vertices(isInside,:);
     sectionMapDepth = sectionMapDepth(isInside);
+    
+    relevantPixelsImage = false(sz);
+    relevantPixelsImage(sub2ind(sz,round(yim+1),round(xim+1))) = 1;
 end
 
 function [values] = sampleByMask(I,binMask)

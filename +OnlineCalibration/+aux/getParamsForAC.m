@@ -1,6 +1,7 @@
 function [params] = getParamsForAC(params)
-params.inverseDistParams.alpha = 1/3;
 % params.inverseDistParams.gamma = 0.98;
+params.inverseDistParams.metric = 1;
+params.inverseDistParams.alpha = 1/3;
 params.inverseDistParams.gamma = 0.9;
 
 params.inverseDistParams.metric = 1; % Metrics norm. Currently only suppotrs L1. Should support L2.

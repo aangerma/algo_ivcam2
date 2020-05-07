@@ -56,6 +56,8 @@ while true
     end
     
     % Matlab uv mapping error visualization 
+    scoreDiffPerRegion = dbg.scoreDiffPersection;
+    scoreDiffPerVertex = dbg.scoreDiffPerVertex;
     tracker(iter).uvRMS = [OnlineCalibration.Metrics.calcUVMappingErr(frame,CurrentOrigParams,0),OnlineCalibration.Metrics.calcUVMappingErr(frame,params,0)];
     tracker(iter).score = [OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,CurrentOrigParams),OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params)];
     tracker(iter).indices = [iter,iter+1];

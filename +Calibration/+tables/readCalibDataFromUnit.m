@@ -1,4 +1,4 @@
-function [calibDataEeprom, calibDataFlash] = readCalibDataFromUnit(hw, tableName)
+function [calibDataEeprom, calibDataFlash,binData] = readCalibDataFromUnit(hw, tableName)
 % readCalibDataFromUnit
 %   Retrieves calibration data of all algo tables from unit's EEPROM and FLASH.
 %   This version is compatible with TOC 109.

@@ -28,7 +28,7 @@ badScenesList = {};
 params.augmentationMaxMovement = 10;
 params.augMethod = 'dsmAndRotation';
 params.AC2 = 1;
-
+params.applyK2DSMFix = true;
 
 sceneDirs = dir(fullfile(sceneHeadDir,'scene*'));
 for sc = 1:numel(sceneDirs)
@@ -46,7 +46,8 @@ for sc = 1:numel(sceneDirs)
                         rng(seed);
                         params.augmentRand01Number = rand(1);
                         params.randVecForDsmAndRotation = rand(1,5);
-                        params.randVecForDsmAndRotation(2) = 0.5;
+%                         params.randVecForDsmAndRotation(1) = 0.5;
+%                         params.randVecForDsmAndRotation(2) = 0.5;
                         sceneResults = OnlineCalibration.datasetAnalysis.runAC2FromDir(sceneFullPath,params);
                         if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
                             ind = ind + 1;
@@ -55,8 +56,18 @@ for sc = 1:numel(sceneDirs)
                         else
                             badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         end
-                        fprintf('uvPre/PostP/PostPthermal/PostKzFromPthermal: %2.2g,%2.2g,%2.2g,%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostPthermalOpt,results(ind).uvErrPostKzFromPthermalOpt);
-                        fprintf('gidPre/Post/PosrThermal: %2.2g,%2.2g,%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostKzFromPthermal.gid);
+                        if sceneResults.validFixBySVM
+                            fprintf('[v] uv: %2.2g -> %2.2g -> %2.2g, gid: %2.2g -> %2.2g -> %2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostK2DSMOpt,results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostK2DSM.gid);
+                        else
+                            fprintf('[x] uv: %2.2g -> %2.2g -> %2.2g, gid: %2.2g -> %2.2g -> %2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostK2DSMOpt,results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostK2DSM.gid);
+                        end
+                        fprintf('DSM Scales XY: %2.2g,%2.2g\n',sceneResults.originalParams.dsmScaleX,sceneResults.originalParams.dsmScaleY)
+                        dsmFixscales = (1-sceneResults.losScaling)*100;
+                        fprintf('DSM Fix Scales: %2.2g,%2.2g\n',dsmFixscales(1),dsmFixscales(2));
+                        kFixScales = sceneResults.newParamsKzFromP.Kdepth([1,5])./sceneResults.originalParams.Kdepth([1,5]);
+                        fprintf('Kdepth Scales: %2.2g,%2.2g\n',(1-kFixScales(1))*100,(1-kFixScales(2))*100)
+                        %                         fprintf('uvPre/PostP/PostPthermal/PostKzFromPthermal: %2.2g,%2.2g,%2.2g,%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostPthermalOpt,results(ind).uvErrPostKzFromPthermalOpt);
+%                         fprintf('gidPre/Post/PosrThermal: %2.2g,%2.2g,%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostKzFromPthermal.gid);
                     catch e
                         badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         sceneFullPath

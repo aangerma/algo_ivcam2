@@ -10,6 +10,7 @@ sceneResults.cbFullPath = fullfile(sceneDir,'CheckerBoard');
 [params] = OnlineCalibration.datasetAnalysis.getAugmentationParams(params);
 params.targetType = 'checkerboard_Iv2A1';
 params.serial = strsplit(sceneDir,'\'); params.serial = params.serial{end-2};
+[params.atcPath,params.accPath,params.calPathValid] = OnlineCalibration.aux.serialToCalDirs(params.serial);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.sceneFullPath,[]);
 frameCB = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.cbFullPath,[]);
 frameCB.yuy2 = frameCB.yuy2(:,:,end);
@@ -32,7 +33,7 @@ currentFrame.sectionMapRgb = sectionMapRgb(currentFrame.rgbIDT>0);
 [currentFrame.irEdge,currentFrame.zEdge,...
     currentFrame.xim,currentFrame.yim,currentFrame.zValuesForSubEdges...
     ,currentFrame.zGradInDirection,currentFrame.dirPerPixel,currentFrame.weights,currentFrame.vertices,...
-    currentFrame.sectionMapDepth] = OnlineCalibration.aux.preprocessDepth(currentFrame,params);
+    currentFrame.sectionMapDepth,currentFrame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(currentFrame,params);
 
 
 currentFrame.originalVertices = currentFrame.vertices;
@@ -136,6 +137,49 @@ par.camera.zK = newParamsKzFromP.Kdepth;
 sceneResults.metricsPostKzFromP = runGeometricMetrics(frameCB, par);
 par.camera.zK = newParamsKzFromPthermal.Kdepth;
 sceneResults.metricsPostKzFromPthermal = runGeometricMetrics(frameCB, par);
+
+%% Apply fix in DSM instead of changing Kdepth
+if params.calPathValid && params.applyK2DSMFix
+    calData = Calibration.tables.getCalibDataFromCalPath(params.atcPath, params.accPath);
+    regsDEST.hbaseline = 0;
+    regsDEST.baseline = -10;
+    regsDEST.baseline2 = regsDEST.baseline^2;
+    regs = calData.regs;
+    regs.DEST = mergestruct(regs.DEST, regsDEST);
+
+    dsmRegs = calData.regs.EXTL;
+    newKdepth = newParamsKzFromP.Kdepth;
+    newParamsK2DSM = newParamsKzFromP;
+    newParamsK2DSM.Kdepth = params.Kdepth;
+    acDataIn = OnlineCalibration.aux.defaultACTable();
+    
+    KRaw = params.Kdepth;
+    KRaw(1,3) = single(params.depthRes(2))-1-KRaw(1,3);
+    KRaw(2,3) = single(params.depthRes(1))-1-KRaw(2,3);
+
+    newKRaw = newKdepth;
+    newKRaw(1,3) = single(params.depthRes(2))-1-newKRaw(1,3);
+    newKRaw(2,3) = single(params.depthRes(1))-1-newKRaw(2,3);
+
+    preProcData = OnlineCalibration.K2DSM.PreProcessing(regs, acDataIn, dsmRegs, params.depthRes, KRaw);
+    [losShift, losScaling] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, currentFrame.relevantPixelsImage, KRaw, newKRaw);
+    newAcDataStruct = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acDataIn, acDataIn.flags, losShift, losScaling);
+    newAcDataStruct.flags(2:6) = uint8(0);
+
+    
+    sceneResults.newAcDataStruct = newAcDataStruct;
+    sceneResults.losShift = losShift;
+    sceneResults.losScaling = losScaling;
+    dsmFixscales = (1-sceneResults.losScaling)*100;
+    warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,dsmFixscales(1),dsmFixscales(2));
+    frameCBFixed = warper.ApplyWarp(frameCB);
+    
+    sceneResults.uvErrPostK2DSMOpt = OnlineCalibration.Metrics.calcUVMappingErr(frameCBFixed,newParamsK2DSM,0);
+    par.camera.zK = newParamsK2DSM.Kdepth;
+    sceneResults.metricsPostK2DSM = runGeometricMetrics(frameCBFixed, par);
+
+end
+
 end
 
 function metrics = runGeometricMetrics(frame,par)
