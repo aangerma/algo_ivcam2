@@ -74,11 +74,11 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',sing
 
 
 [frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
-[frame.weights,weightsT] = OnlineCalibration.aux.calculateWeights(frame,params);
+[frame.weights] = OnlineCalibration.aux.calculateWeights(frame,params);
 frame.sectionMapDepth = sectionMapDepth(frame.zEdgeSupressed>0);
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',weightsT,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',frame.weights,'double');
 
 %% Validate input scene
 if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
