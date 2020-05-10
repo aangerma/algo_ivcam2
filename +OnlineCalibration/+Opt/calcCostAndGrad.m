@@ -8,7 +8,7 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
     V = [frame.vertices,ones(size(frame.vertices(:,1)))];
     W = frame.weights;
     if contains(params.derivVar,'P')
-        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
+        [xCoeffVal,yCoeffVal,~,~,x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
         grad_P = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.P = reshape(nanmean(grad_P),4,3)';
         if params.zeroLastLineOfPGrad
@@ -18,7 +18,7 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
         iteration_data.yCoeffValP = yCoeffVal';
     end
     if contains(params.derivVar,'T')
-        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
+        [xCoeffVal,yCoeffVal,~,~,x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
         grad_T = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.T = reshape(nanmean(grad_T),1,3)';
         
@@ -27,7 +27,7 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
 %         grad.T = zeros(3,1);
     end
     if contains(params.derivVar,'R')
-        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('R',V,params);
+        [xCoeffVal,yCoeffVal,~,~,x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('R',V,params);
         grad_alpha = W.*(DxVals.*xCoeffVal.xAlpha' + DyVals.*yCoeffVal.xAlpha');
         grad.xAlpha = nanmean(grad_alpha);
         grad_beta = W.*(DxVals.*xCoeffVal.yBeta' + DyVals.*yCoeffVal.yBeta');
@@ -46,7 +46,7 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
 %       grad.zGamma = 0;
     end
     if contains(params.derivVar,'Krgb')
-        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('Krgb',V,params);
+        [xCoeffVal,yCoeffVal,~,~, x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('Krgb',V,params);
         grad_Krgb = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.Krgb = reshape(nanmean(grad_Krgb),3,3)';
         grad.Krgb(1,2) = 0;
@@ -63,7 +63,9 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
         iteration_data.calib = params;
         iteration_data.grad = grad;
         iteration_data.grad.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(grad.xAlpha,grad.yBeta,grad.zGamma);
-     
+        iteration_data.x1 = x1;
+        iteration_data.y1 = y1;
+        iteration_data.rc = rc;
     end
     cost = nanmean(DVals.*W);
 

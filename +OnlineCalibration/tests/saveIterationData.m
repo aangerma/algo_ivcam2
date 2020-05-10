@@ -18,6 +18,19 @@ DyVals_nan = iteration_data.DyVals;
 DyVals_nan(isnan(DyVals_nan)) = realmax;
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, DyVals_nan,'double');
 
+f_name = sprintf('xy_iteration_%d',iteration_data.iterCount);
+x1_nan = iteration_data.x1;
+x1_nan(isnan(x1_nan)) = realmax;
+y1_nan = iteration_data.y1;
+y1_nan(isnan(y1_nan)) = realmax;
+
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, [x1_nan; y1_nan]','double');
+
+f_name = sprintf('rc_iteration_%d',iteration_data.iterCount);
+Rc_nan = iteration_data.rc;
+Rc_nan(isnan(Rc_nan)) = realmax;
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, Rc_nan','double');
+
 f_name = sprintf('xCoeff_Krgb_%d',iteration_data.iterCount);
 xCoeffValKrgb_nan = [iteration_data.xCoeffValKrgb(:,1) iteration_data.xCoeffValKrgb(:,5) iteration_data.xCoeffValKrgb(:,3)  iteration_data.xCoeffValKrgb(:,6)];
 xCoeffValKrgb_nan(isnan(xCoeffValKrgb_nan)) = realmax;

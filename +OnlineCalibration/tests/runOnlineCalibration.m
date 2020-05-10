@@ -104,11 +104,11 @@ new_calib = calibAndCostToRaw(newParams, newCost);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
 
-OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
-% OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
-OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
-ax = gca;
-title({ax.Title.String;'New R,T,Krgb optimization'});
+% OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
+% % OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
+% OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
+% ax = gca;
+% title({ax.Title.String;'New R,T,Krgb optimization'});
 %% Validate new parameters
 [validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
 if validParams
