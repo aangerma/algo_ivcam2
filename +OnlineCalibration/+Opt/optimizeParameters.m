@@ -5,15 +5,10 @@ notConverged = 1;
 while notConverged && iterCount < params.maxOptimizationIters
     iterCount = iterCount + 1;
     % Calculate gradients
-    [cost, gradStruct, uvmap, DVals,DxVals,DyVals] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);    
+    [cost, gradStruct, iteration_data] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);    
     gradStruct.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(gradStruct.xAlpha,gradStruct.yBeta,gradStruct.zGamma);
     
     iteration_data.iterCount = iterCount;
-    iteration_data.uvmap = uvmap; 
-    iteration_data.DVals = DVals;
-    iteration_data.DxVals = DxVals;
-    iteration_data.DyVals = DyVals;
-    iteration_data.calib = params;
     iteration_data.grad = gradStruct;
     iteration_data.cost = cost;
     

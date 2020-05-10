@@ -6,10 +6,10 @@ clear
 % runParams.saveBins = 0;
 % runParams.ignoreSceneInvalidation = 1;
 % runParams.ignoreOutputInvalidation = 1;
-LRS = true;
+LRS = false;
 % close all
 %% Load frames from IPDev
-sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\OnlineCalibration\Data\F9440842_scene2';
+sceneDir = 'C:\work\librealsense\build\unit-tests\algo\depth-to-rgb-calibration\19.2.20\F9440687\Snapshots\LongRange_D_768x1024_RGB_1920x1080\2';
 if LRS
     sceneDir = 'C:\work\autocal\data\251';
 end
@@ -74,11 +74,11 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',sing
 
 
 [frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
-[frame.weights,weightsT] = OnlineCalibration.aux.calculateWeights(frame,params);
-frame.sectionMapDepth = sectionMapDepth(frame.zEdgeSupressed>0);
+[frame.weights] = OnlineCalibration.aux.calculateWeights(frame,params);
+frame.sectionMapDepth = sampleByMask(sectionMapDepth,frame.zEdgeSupressed>0);
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',weightsT,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',frame.weights,'double');
 
 %% Validate input scene
 if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
@@ -92,7 +92,9 @@ end
 % OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapRgb_trans',uint8(transpose(frames.sectionMapRgb)),'uint8');
 
 %% Perform Optimization
-params.derivVar = 'KrgbRT';
+%params.derivVar = 'KrgbRT';
+params.derivVar = 'KrgbRTP';
+
 [newParams, newCost] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
@@ -102,11 +104,11 @@ new_calib = calibAndCostToRaw(newParams, newCost);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
 
-OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
-% OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
-OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
-ax = gca;
-title({ax.Title.String;'New R,T,Krgb optimization'});
+% OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
+% % OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
+% OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
+% ax = gca;
+% title({ax.Title.String;'New R,T,Krgb optimization'});
 %% Validate new parameters
 [validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
 if validParams
