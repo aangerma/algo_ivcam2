@@ -38,7 +38,7 @@ newParamsKzFromP.rgbPmat = newParamsKzFromP.Krgb*[newParamsKzFromP.Rrgb,newParam
 [newParamsKzFromP.xAlpha,newParamsKzFromP.yBeta,newParamsKzFromP.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(newParamsKzFromP.Rrgb);
 
 
-[~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsKzFromP,originalParams,params.iterFromStart);
+[~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsP,originalParams,params.iterFromStart);
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct);
 
 
