@@ -24,6 +24,8 @@ if LRS
 else
     [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
 end   
+
+saveCameraParamsRaw(outputBinFilesPath, camerasParams);
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir, LRS);
 
