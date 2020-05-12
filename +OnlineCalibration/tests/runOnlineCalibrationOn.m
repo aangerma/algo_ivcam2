@@ -23,6 +23,13 @@ frame.i = frame.i(:,:,1);
 frame.yuy2Prev = frame.yuy2(:,:,2);
 frame.yuy2 = frame.yuy2(:,:,1);
 
+% Write the filenames out, so we can easily reproduce in C++
+fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
+fprintf( fid, '%s\n%s\n%s\n%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
+fclose( fid );
+
+% Fill a metadata struct and write it out at the end:
+md = struct;
 
 % Define hyperparameters
 
@@ -77,6 +84,7 @@ frame.sectionMapDepth = sampleByMask(sectionMapDepth,frame.zEdgeSupressed>0);
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',frame.weights,'double');
+md.n_edges = size(frame.weights,1);
 
 %% Validate input scene
 if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
@@ -92,14 +100,12 @@ end
 %% Perform Optimization
 %params.derivVar = 'KrgbRT';
 params.derivVar = 'KrgbRTP';
-[newParams, newCost] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
+[newParams, newCost, md.n_iter] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 
 new_calib = calibAndCostToRaw(newParams, newCost);  
-
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
-
 
 %OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
 % % OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
@@ -112,8 +118,16 @@ if validParams
     params = updatedParams;
 end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
+md.xy_movement = dbg.xyMovement;
 
-% figure; 
+%% Write the metadata:
+fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
+fwrite( fid, md.xy_movement, 'double' );
+fwrite( fid, md.n_edges, 'uint64' );
+fwrite( fid, md.n_iter, 'uint64' );
+fclose( fid );
+
+%% figure; 
 % subplot(421); imagesc(frame.i); impixelinfo; title('IR image');colorbar;
 % subplot(422); imagesc(frame.irEdge); impixelinfo; title('IR edge');colorbar;
 % subplot(423);imagesc(frame.z./4); impixelinfo; title('Depth image');colorbar;

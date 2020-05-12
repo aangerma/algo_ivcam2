@@ -1,4 +1,4 @@
-function [newParams, newCost] = optimizeParameters(frame,params, outputBinFilesPath)
+function [newParams, newCost, iterCount] = optimizeParameters(frame,params, outputBinFilesPath)
    
 iterCount = 0;
 notConverged = 1;

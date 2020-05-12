@@ -40,6 +40,10 @@ function framesOut = loadZIRGBFrames(dirname, LRS)
             framesOut.i(:,:,k) = frames.i(:,:,ixDepthMatch2Color(k));
         end
         framesOut.yuy2 = frames.yuy2;
+        
+        framesOut.yuy_files = yuy2files;
+        framesOut.z_files = Zfiles;
+        framesOut.i_files = Ifiles;
     end
 end
 

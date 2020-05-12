@@ -10,6 +10,7 @@ dbg.uvMap = uvMap;
 dbg.uvMapNew = uvMapNew;
 
 xyMovement = mean(sqrt(sum((uvMap-uvMapNew).^2,2)));
+dbg.xyMovement = xyMovement;
 validOutputStruct.xyMovement = xyMovement;
 maxMovementInThisIteration = params.maxXYMovementPerIteration(min(length(params.maxXYMovementPerIteration),iterationFromStart));
 if xyMovement > maxMovementInThisIteration
