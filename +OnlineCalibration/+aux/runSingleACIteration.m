@@ -49,7 +49,7 @@ sceneResults.validMovement = ~isMovement;
 
 validParams = sceneResults.validMovement && sceneResults.validFixBySVM;
 
-if validParams
+if validParams || (isfield(params,'ignoreValidity') && params.ignoreValidity)
     % Take the resulting params, keep the original kdepth as 
     newKdepth = newParamsKzFromP.Kdepth;
     newParamsKzFromP.Kdepth = params.Kdepth;
