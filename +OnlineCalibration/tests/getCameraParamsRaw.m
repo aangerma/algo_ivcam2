@@ -1,5 +1,5 @@
 function [params] = getCameraParamsRaw(sceneDir,params)
-fid = fopen(fullfile(sceneDir,'camera_params.matlab'), 'rb');
+fid = fopen(fullfile(sceneDir,'camera_params'), 'rb');
 binData = uint8(fread(fid));
 fclose(fid);
 
