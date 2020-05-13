@@ -16,11 +16,18 @@ saveCameraParamsRaw(outputBinFilesPath, camerasParams);
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir, LRS);
 
+% If there's no previous frame, use the first frame (i.e., no movement)
+n_yuys = size( frame.yuy_files, 1 );
+if n_yuys < 2
+    frame.yuy2Prev = frame.yuy2;
+    frame.yuy_files(2) = frame.yuy_files(1);
+else
+    frame.yuy2Prev = frame.yuy2(:,:,2);
+end
 
-% Keep only the first frame
+% Keep only the first frame of each
 frame.z = frame.z(:,:,1);
 frame.i = frame.i(:,:,1);
-frame.yuy2Prev = frame.yuy2(:,:,2);
 frame.yuy2 = frame.yuy2(:,:,1);
 
 % Write the filenames out, so we can easily reproduce in C++
@@ -87,8 +94,10 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',frame.weights,'
 md.n_edges = size(frame.weights,1);
 
 %% Validate input scene
+md.is_scene_valid = true;
 if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
     disp('Scene not valid!');
+    md.is_scene_valid = false;
      %return;
 end
 
@@ -119,12 +128,15 @@ if validParams
 end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
 md.xy_movement = dbg.xyMovement;
+md.is_output_valid = validParams;
 
 %% Write the metadata:
 fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
 fwrite( fid, md.xy_movement, 'double' );
 fwrite( fid, md.n_edges, 'uint64' );
 fwrite( fid, md.n_iter, 'uint64' );
+fwrite( fid, md.is_scene_valid, 'uint8' );
+fwrite( fid, md.is_output_valid, 'uint8' );
 fclose( fid );
 
 %% figure; 
