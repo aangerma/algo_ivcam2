@@ -12,19 +12,20 @@ LRS = false;
 sceneDir = 'C:\work\librealsense\build\unit-tests\algo\depth-to-rgb-calibration\19.2.20\F9440687\Snapshots\LongRange_D_768x1024_RGB_1920x1080\2';
 if LRS
     sceneDir = 'C:\work\autocal\data\251';
+else
 % sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Algorithm\Releases\IVCAM2.0\OnlineCalibration\Data\F9440842_scene2';
 sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\2';%13'; %5,7,8,10 no checker %13,15 not as good by =>0.5 pix
-
+sceneDir = 'C:\Users\nyassin\Documents\realsense_all\debug_scene\LongRange 768X1024 (RGB 1920X1080)\2';
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-
+end
 outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
 
 % Load data of scene 
 % load(intrinsicsExtrinsicsPath);
 [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
-frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir);
+frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir, LRS);
 
 
 % Keep only the first frame
@@ -96,13 +97,13 @@ end
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 
 %% Validate input scene
-if ~OnlineCalibration.aux.validScene(frame,params)
+if ~OnlineCalibration.aux.validScene(frame,params,sceneDir)
     disp('Scene not valid!');
      return;
 end
 %% Perform Optimization
 params.derivVar = 'KrgbRT';
-newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
+newParams = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 
