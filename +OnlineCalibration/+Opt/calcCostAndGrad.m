@@ -16,6 +16,15 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
         end
         iteration_data.xCoeffValP = xCoeffVal';
         iteration_data.yCoeffValP = yCoeffVal';
+        iteration_data.uvmap = uvMap; 
+        iteration_data.DVals = DVals;
+        iteration_data.DxVals = DxVals;
+        iteration_data.DyVals = DyVals;
+        iteration_data.calib = params;
+        iteration_data.grad = grad;
+        iteration_data.x1 = x1;
+        iteration_data.y1 = y1;
+        iteration_data.rc = rc;
     end
     if contains(params.derivVar,'T')
         [xCoeffVal,yCoeffVal,~,~,x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
@@ -41,6 +50,15 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
         
         iteration_data.xCoeffValR = xCoeffVal';
         iteration_data.yCoeffValR = yCoeffVal';
+        iteration_data.uvmap = uvMap; 
+        iteration_data.DVals = DVals;
+        iteration_data.DxVals = DxVals;
+        iteration_data.DyVals = DyVals;
+        iteration_data.calib = params;
+        iteration_data.grad = grad;
+        iteration_data.x1 = x1;
+        iteration_data.y1 = y1;
+        iteration_data.rc = rc;
 %       grad.xAlpha = 0;
 %       grad.yBeta = 0;
 %       grad.zGamma = 0;
@@ -71,4 +89,3 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
 
     
 end
-

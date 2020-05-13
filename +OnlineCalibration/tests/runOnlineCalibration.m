@@ -107,7 +107,7 @@ newParams = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFiles
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 
-runOnlineCalibrationOn( sceneDir, LRS );
+%runOnlineCalibrationOn( sceneDir, LRS );
 
 OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
 % OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
