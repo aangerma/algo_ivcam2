@@ -2,10 +2,9 @@ function [isBalanced,dirRatio1,perpRatio,dirRatio2,weightsPerDir] = isGradDirBal
 isBalanced = false;
 dirRatio2 = nan;
 perpRatio = nan;
-iWeights = frame.zEdgeSupressed>0;
-weightIm = frame.zEdgeSupressed;
-weightIm(iWeights) = frame.weights;
-weightsPerDir = [sum(weightIm(frame.dirI == 1));sum(weightIm(frame.dirI == 2));sum(weightIm(frame.dirI == 3));sum(weightIm(frame.dirI == 4))];
+
+weightsPerDir = sum(frame.weights.*(frame.dirPerPixel==[1:4]));
+
 [maxVal,maxIx] = max(weightsPerDir);
 ixMatch = mod(maxIx+2,4);
 if ixMatch == 0
