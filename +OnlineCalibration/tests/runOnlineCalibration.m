@@ -80,7 +80,7 @@ else
     [frame.irEdge,frame.zEdge,...
     frame.xim,frame.yim,frame.zValuesForSubEdges...
     ,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,...
-    frame.sectionMapDepth,frame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(frame,params);
+    frame.sectionMapDepth] = OnlineCalibration.aux.preprocessDepth(frame,params,sceneDir);
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',single(frame.irEdge),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',single(frame.zEdge),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'xim',single(frame.xim),'single');
@@ -91,7 +91,7 @@ else
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',single(frame.weights),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',single(frame.sectionMapDepth),'single');
-    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',single(frame.relevantPixelsImage),'single');
+%     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',single(frame.relevantPixelsImage),'single');
 end
 
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
