@@ -1,6 +1,7 @@
 function [params] = getParamsForAC(params)
-params.inverseDistParams.alpha = 1/3;
 % params.inverseDistParams.gamma = 0.98;
+params.inverseDistParams.metric = 1;
+params.inverseDistParams.alpha = 1/3;
 params.inverseDistParams.gamma = 0.9;
 
 params.inverseDistParams.metric = 1; % Metrics norm. Currently only suppotrs L1. Should support L2.
@@ -26,6 +27,8 @@ params.rgbPmatNormalizationMat = [0.35369244,0.26619774,1.0092601,0.00067320449;
 params.KrgbMatNormalizationMat = [0.35417202,0.26565930,1.0017655;0.35559174,0.26570305,1.0066491;409.82886,318.79565,1182.6952];
 params.RnormalizationParams = [1508.9478;1604.9430;649.38434];
 params.TmatNormalizationMat = [0.91300839;0.91698289;0.43305457];
+params.KdepthMatNormalizationMat = [0.050563768;0.053219523;1.9998592;2.0044701];
+
 params.edgeThresh4logicIm = 0.1;
 params.seSize = 3;
 params.moveThreshPixVal = 20;
@@ -41,5 +44,16 @@ params.gradDirRatioPerp = 1.5;
 params.edgeDistributMinMaxRatio = 0.005;
 params.minWeightedEdgePerSectionDepth = 50*(480*640)/prod(params.depthRes);
 params.minWeightedEdgePerSectionRgb = 0.05*(1920*1080)/prod(params.rgbRes);
+
+params.constantWeights = 1;% All edges in the depth image has the same weights
+params.constantWeightsValue = 1000; % This value matters in the stopping criteria (cost2-cost1)<1
+
+params.moveThreshPixNum =  3e-05*prod(params.rgbRes);
+
+params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMModel.mat');
+% params.affectingInvalidationSVMModel.mandatory = {'gradITh';'gradZMax';'numSectionsV';'numSectionsH';'constantWeights';'constantWeightsValue'};
+% params.affectingInvalidationSVMModel.nonmandatory = {'inverseDistParams';'maxStepSize';'tau';'controlParam';'edgeThresh4logicIm'};
+params.iterFromStart = 1;
+params.numOptimizationToDSMIters = 3;
 end
 
