@@ -154,6 +154,8 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'isInside',double(isInside
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(vertices),'double');    
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepthInside',uint8(sectionMapDepth),'uint8');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'directionIndexInside',double(directionIndex),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zValuesForSubEdges',double(zValuesForSubEdges),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',double(weights),'double');
     end
 
 
