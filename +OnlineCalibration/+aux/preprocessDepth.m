@@ -71,7 +71,6 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'isSupressed',double(isSup
 
         locRCsub = locRC + fraqStep.*dirPerPixel;
         
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'fraqStep',round(10^6*double(fraqStep))/10^6,'double'); 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'fraqStep',double(fraqStep),'double'); 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'locRCsub',double(locRCsub),'double'); 
 
@@ -132,15 +131,15 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'xim',double(xim),'double'
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'yim',double(yim),'double');
 
     subPoints = [xim,yim,ones(size(yim))];
-    vertices = subPoints*(pinv(params.Kdepth)').*zValuesForSubEdges/single(params.zMaxSubMM);
+    vertices = subPoints*(pinv(params.Kdepth)').*zValuesForSubEdges/double(params.zMaxSubMM); %NOHA :: changed to double
     
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'subPoints',double(subPoints),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(vertices),'double');
+% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices_all',double(vertices),'double');
 
     [uv,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
     isInside = OnlineCalibration.aux.isInsideImage(uv,params.rgbRes);
 
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'uv',double(uv),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'uv',uv,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'isInside',double(isInside),'double');
 
     xim = xim(isInside);
@@ -152,6 +151,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'isInside',double(isInside
     vertices = vertices(isInside,:);
     sectionMapDepth = sectionMapDepth(isInside);
     
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(vertices),'double');    
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepthInside',uint8(sectionMapDepth),'uint8');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'directionIndexInside',double(directionIndex),'double');
     end
