@@ -3,16 +3,16 @@ dbg = struct;
 isOutputValid = 1;
 validOutputStruct.isValid = 1;
 % Clip current movement by pixels
-[uvMapOrig,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort,originalParams);
+[uvMapOrig,~,~] = OnlineCalibration.aux.projectVToRGB(frame.originalVertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort,originalParams);
 validUvs = isInRes(uvMapOrig,params.rgbRes);
 uvMapOrig = uvMapOrig(validUvs,:);
-if contains(params.derivVar,'Kdepth') % AC2
+if 0
 	prevVertices =  ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(params.Kdepth)').*frame.vertices(:,3);
 	newVertices = ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(newParams.Kdepth)').*frame.vertices(:,3);
 	[uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(prevVertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
 	[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(newVertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort,newParams);
 else
-	[uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
+	[uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.originalVertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
 	[uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParams.rgbPmat,newParams.Krgb,newParams.rgbDistort,newParams);
 end
 
@@ -26,7 +26,7 @@ validOutputStruct.xyMovement = xyMovement;
 maxMovementInThisIteration = params.maxXYMovementPerIteration(min(length(params.maxXYMovementPerIteration),iterationFromStart));
 if xyMovement > maxMovementInThisIteration
     mulFactor = maxMovementInThisIteration/xyMovement;
-    if ~strcmp(params.derivVar,'P')
+    if 0 %~strcmp(params.derivVar,'P')
         optParams = {'xAlpha';'yBeta';'zGamma';'Trgb';'Kdepth';'Krgb'};
         for fn = 1:numel(optParams)
             diff = newParams.(optParams{fn}) - params.(optParams{fn});
@@ -57,8 +57,8 @@ end
 
 % Check and see that the score didn't increased by a lot in one image
 % section and decreased in the others
-[c1,costVecOld] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
-if contains(params.derivVar,'Kdepth')
+[c1,costVecOld] = OnlineCalibration.aux.calculateCost(frame.originalVertices,frame.weights,frame.rgbIDT,params);
+if 0 %contains(params.derivVar,'Kdepth')
     vertices = ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(params.Kdepth)').*frame.vertices(:,3);
     [c2,costVecNew] = OnlineCalibration.aux.calculateCost(vertices,frame.weights,frame.rgbIDT,newParams);
 else

@@ -9,9 +9,11 @@ presetNum = 1;
 hw = HWinterface;
 hw.setPresetControlState(presetNum);
 hw.startStream(0,depthRes,rgbRes);
-hw.cmd('PIXEL_INVALIDATION_BYPASS 1');
-[~,maxLP] = hw.cmd('irb e2 09 01 ');
-hw.cmd(sprintf('iwb e2 0a 01 %x',maxLP));
+% hw.cmd('PIXEL_INVALIDATION_BYPASS 1');
+% [~,maxLP] = hw.cmd('irb e2 09 01 ');
+% hw.cmd(sprintf('iwb e2 0a 01 %x',maxLP));
+hw.cmd('AMCSET 5 64'); % Set laser gain to 100%
+hw.cmd('AMCSET 7 1');  % Set the invalidation bypass to 1
 cameraParams = OnlineCalibration.aux.getCameraParamsFromUnit(hw,rgbRes);
 cameraParams.rgbRes = rgbRes;
 cameraParams.depthRes = depthRes;

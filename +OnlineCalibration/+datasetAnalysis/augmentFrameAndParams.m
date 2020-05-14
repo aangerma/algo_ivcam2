@@ -143,12 +143,12 @@ if strcmp(method,'chooseOne')
             scaleX = params.randPixMovement/params.depthRes(2)*100;
             scaleY = 0;
             warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,scaleX,scaleY);
-            frame = warper.ApplyWarp(frame);
+            frame = warper.ApplyWarp(frame,1);
         case 'scaleDsmY'
             scaleX = 0;
             scaleY = params.randPixMovement/params.depthRes(1)*100;
             warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,scaleX,scaleY);
-            frame = warper.ApplyWarp(frame);
+            frame = warper.ApplyWarp(frame,1);
         otherwise
             error('Unknown augmentation type chosen - %s',oneParamAugmentationOption{chosenOption});
     end
@@ -190,8 +190,10 @@ elseif strcmp(method,'dsmAndRotation')
     params.xAlpha = params.xAlpha + rotationDiff(1);
     params.yBeta = params.yBeta + rotationDiff(2);
     params.zGamma = params.zGamma + rotationDiff(3);
-    warper = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,params.dsmScaleX,params.dsmScaleY);
-    frame = warper.ApplyWarp(frame);
+    [warper,dsmScaleX,dsmScaleY] = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,params.dsmScaleX,params.dsmScaleY);
+    params.dsmScaleX = str2num(dsmScaleX);
+    params.dsmScaleY = str2num(dsmScaleY);
+    frame = warper.ApplyWarp(frame,1);
 end
 params.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(params.xAlpha,params.yBeta,params.zGamma);
 params.rgbPmat = params.Krgb*[params.Rrgb,params.Trgb];

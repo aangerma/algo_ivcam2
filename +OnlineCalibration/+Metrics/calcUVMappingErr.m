@@ -1,4 +1,4 @@
-function uvRMS = calcUVMappingErr(frame,params,plotFlag)
+function [uvRMS,VDepth] = calcUVMappingErr(frame,params,plotFlag,depthVertices)
 if ~exist('plotFlag','var')
     plotFlag = 0;
 end
@@ -27,6 +27,10 @@ end
 zVals = interp2(single(frame.z)/single(params.zMaxSubMM),ptsDepth(:,1),ptsDepth(:,2));
 VDepth = (pinv(params.Kdepth)*([ptsDepth-1,ones(prod(params.cbGridSz),1)]'))'.*zVals;
 
+if exist('depthVertices','var')
+    VDepth = depthVertices';
+end
+
 % Project to RGB
 uv = params.rgbPmat * [VDepth ones(size(VDepth,1),1)]';
 u = (uv(1,:)./uv(3,:))';
@@ -34,6 +38,13 @@ v = (uv(2,:)./uv(3,:))';
 uvMap = [u,v];
 uvMapUndist = du.math.distortCam(uvMap', params.Krgb, params.rgbDistort)' + 1;
 
+if exist('params','var') && isfield(params,'rgbTfix') && params.rgbTfix
+    if ~isfield(params,'rgbTmat')
+        error('No matrix was given for RGB thermal correction!');
+    end
+    uvMap3 = params.rgbTmat\[uvMapUndist ones(size(uvMapUndist,1),1)]';
+    uvMapUndist = uvMap3(1:2,:)';
+end
 uvErr = ptsRGB - uvMapUndist;
 uvRMS = sqrt(nanmean(nansum(uvErr.^2,2)));
 

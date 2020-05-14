@@ -22,8 +22,8 @@ newKRaw = newKdepth;
 newKRaw(1,3) = single(params.depthRes(2))-1-newKRaw(1,3);
 newKRaw(2,3) = single(params.depthRes(1))-1-newKRaw(2,3);
 
-preProcData = OnlineCalibration.K2DSM.PreProcessing(regs, acDataIn, dsmRegs, params.depthRes, KRaw);
-[losShift, losScaling] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, relevantPixelsImage, KRaw, newKRaw);
+preProcData = OnlineCalibration.K2DSM.PreProcessing(regs, acDataIn, dsmRegs, params.depthRes, KRaw, relevantPixelsImage);
+[losShift, losScaling] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
 newAcDataStruct = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acDataIn, acDataIn.flags, losShift, losScaling);
 newAcDataStruct.flags(2:6) = uint8(0);
 newAcDataTable = Calibration.tables.convertCalibDataToBinTable(newAcDataStruct, 'Algo_AutoCalibration');

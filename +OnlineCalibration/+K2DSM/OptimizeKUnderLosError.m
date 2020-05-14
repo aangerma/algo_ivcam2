@@ -1,17 +1,19 @@
-function K = OptimizeKUnderLosError(vertices, xPixInterpolant, yPixInterpolant, origLos, errPolyCoef)
+function K = OptimizeKUnderLosError(data, losScaling, optLosShift)
     
-    nErrModels = size(errPolyCoef,1);
+    nErrModels = size(losScaling,1);
     K = zeros(3, 3, nErrModels);
     for iErrModel = 1:nErrModels
         % applying angular error
-        losX = polyval(errPolyCoef(iErrModel,:,1), origLos(:,1));
-        losY = polyval(errPolyCoef(iErrModel,:,2), origLos(:,2));
-        pixX = xPixInterpolant(losX, losY);
-        pixY = yPixInterpolant(losX, losY);
+        losX = losScaling(iErrModel,1)*data.losOrig(:,1) + optLosShift(1);
+        losY = losScaling(iErrModel,2)*data.losOrig(:,2) + optLosShift(2);
+        updatedVertices = OnlineCalibration.K2DSM.ConvertLosToNormVertices(data.regs, data.dsmRegs, [losX, losY]); % forward model: vertices calculation assuming LOS error, using current camera state
+        updatedPixels = updatedVertices * data.origK';
+        
         % optimizing K
-        V = [vertices(:,[1,3]), zeros(size(vertices,1),2); zeros(size(vertices,1),2), vertices(:,[2,3])];
-        P = [pixX; pixY];
-        kVec = (V'*V)\V'*P;
+        nPts = size(data.verticesOrig,1);
+        V = [data.verticesOrig(:,[1,3]), zeros(nPts,2); zeros(nPts,2), data.verticesOrig(:,[2,3])]; % ideal vertices calculation assuming error-free LOS
+        P = [updatedPixels(:,1); updatedPixels(:,2)];
+        kVec = (V'*V)\V'*P; % pseudo-inverse
         K(:,:,iErrModel) = [kVec(1), 0, kVec(2); 0, kVec(3), kVec(4); 0, 0, 1];
     end
     

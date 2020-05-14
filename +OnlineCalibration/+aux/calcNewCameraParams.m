@@ -14,11 +14,17 @@ while loopCounter <= params.maxIters
     dataForACTableGeneration = OnlineCalibration.K2DSM.readDataForK2DSM(hw);
     
     [validParams,params,newAcDataTable,~,dbg] = OnlineCalibration.aux.runSingleACIteration(frame,params,originalParams,dataForACTableGeneration);
-    if validParams
+    dbg.dataForACTableGeneration = dataForACTableGeneration;
+    if validParams 
         params.iterFromStart = params.iterFromStart + 1;
-        % Create and burn new AC table
-        tablefn = OnlineCalibration.aux.saveNewACTable(newAcDataTable,acTableHeadPath);
-        hw.cmd(sprintf('WrCalibInfo %s',tablefn));
+        if ~isfield(params, 'burnToUnit')
+            params.burnToUnit = true;
+        end
+        if params.burnToUnit
+            % Create and burn new AC table
+            tablefn = OnlineCalibration.aux.saveNewACTable(newAcDataTable,acTableHeadPath);
+            hw.cmd(sprintf('WrCalibInfo %s',tablefn));
+        end
         return;
     else
         fprintf('Invalid optimization... \n');

@@ -7,7 +7,7 @@ while notConverged && iterCount < params.maxOptimizationIters
     % Calculate gradients
     [cost,gradStruct] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);
     % Find the step
-    [stepSize,newRgbPmat,newCost] = OnlineCalibration.aux.myBacktrackingLineSearchP(frame,params,gradStruct);%pi()/180
+    [stepSize,newRgbPmat,newKrgb,newRrgb,newTrgb,newCost] = OnlineCalibration.aux.myBacktrackingLineSearchP(frame,params,gradStruct);%pi()/180
     % Check stopping criteria
     
     % change in rgbPMat / todo -XY
@@ -26,6 +26,9 @@ while notConverged && iterCount < params.maxOptimizationIters
     dbg(iterCount) = collectDebugData(frame,params,newRgbPmat,stepSize); % Collect debug for RnD, do not implement in LRS
     
     params.rgbPmat = newRgbPmat;
+    params.Krgb = newKrgb;
+    params.Rrgb = newRrgb;
+    params.Trgb = newTrgb;
 end
 
 % Update new Params

@@ -17,7 +17,7 @@ if exist('params','var') && isfield(params,'rgbTfix') && params.rgbTfix
     if ~isfield(params,'rgbTmat')
         error('No matrix was given for RGB thermal correction!');
     end
-    uvMap3 = params.rgbTmat*[uvMap ones(size(uvMap,1),1)]';
+    uvMap3 = params.rgbTmat\[uvMap ones(size(uvMap,1),1)]';
     uvMap = uvMap3(1:2,:)';
 end
 time = toc;

@@ -1,10 +1,11 @@
 clear
 close all
 % Define params = 
-analysisParams.optResultsPath = 'X:\IVCAM2_calibration _testing\analysisResults\20_April_29___15_13_AC2_Status\results.mat';
+analysisParams.optResultsPath = 'X:\IVCAM2_calibration _testing\analysisResults\\20_April_29___15_13_AC2_Status\results.mat';
 % analysisParams.optVars = 'KrgbRT';
 analysisParams.optVars = 'KzFromP';
-analysisParams.performCrossValidation = 1;
+% analysisParams.optVars = '';
+analysisParams.performCrossValidation = 0;
 analysisParams.successFunc = [0,2;...
                               1,2;...
                               3,3;...
@@ -80,7 +81,7 @@ for i = 1:size(allResults,1)
         gidPostCV = reshape(gidPostCV,[],nAugPerScene);
         nTrain = ceil((1-nOut)*size(splitedData,1));
         nTest = size(splitedData,1) - nTrain;
-        for i = k:5
+        for k = 1:5
             testI = (1:nTest) + (k-1)*nTest;
             trainI = setdiff(1:size(splitedData,1),testI);
 
@@ -102,9 +103,9 @@ for i = 1:size(allResults,1)
             
             OnlineCalibration.datasetAnalysis.plotResults(testLabels,newLabelsCV,vec(uvPreCV(testI,:)),vec(uvPostCV(testI,:)),vec(gidPreCV(testI,:)),vec(gidPostCV(testI,:)),analysisParams);
         end
-        
+        accCV;
     end
-    accCV
+    
 end
 % Train SVM - For just one
 

@@ -14,26 +14,21 @@
 clear
 close all
 
-testSubName = '_agedUnitsNoAug_decompose';
+testSubName = '_iterative';
 
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
-sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration3_Scene&CB_aged';%'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB'; 
+sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
 rng(4);
+nAugPerScene = 1;
 ind = 0;
 
 goodScenesList = {};
 badScenesList = {};
-if contains(sceneHeadDir,'aged')
-    params.augmentationMaxMovement = 0;
-    params.applyK2DSMFix = false;
-    nAugPerScene = 1;
-else
-    params.augmentationMaxMovement = 10;
-    params.applyK2DSMFix = true;
-    nAugPerScene = 2;
-end
+
+params.augmentationMaxMovement = 10;
 params.augMethod = 'dsmAndRotation';
 params.AC2 = 1;
+params.applyK2DSMFix = true;
 
 
 sceneDirs = dir(fullfile(sceneHeadDir,'scene*'));
@@ -59,7 +54,7 @@ for sc = 1:numel(sceneDirs)
                             params.randVecForDsmAndRotation(1) = 0.5;
                             params.randVecForDsmAndRotation(2) = 0.5;
                         end
-                        sceneResults = OnlineCalibration.datasetAnalysis.runAC2FromDir(sceneFullPath,params);
+                        sceneResults = OnlineCalibration.datasetAnalysis.runIterativeAC2FromDir(sceneFullPath,params);
                         if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
                             ind = ind + 1;
                             results(ind) = sceneResults;
@@ -67,22 +62,30 @@ for sc = 1:numel(sceneDirs)
                         else
                             badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         end
-                        if params.applyK2DSMFix
-                            if sceneResults.validFixBySVM
-                                fprintf('[v] uv: %2.2g -> %2.2g -> %2.2g -> %2.2g, gid: %2.2g -> %2.2g -> %2.2g -> %2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostK2DSMOptNoQuant,results(ind).uvErrPostK2DSMOptLS ,results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostK2DSMNoQuant.gid,results(ind).metricsPostK2DSMLS.gid);
-                            else
-                                fprintf('[x] uv: %2.2g -> %2.2g -> %2.2g -> %2.2g, gid: %2.2g -> %2.2g -> %2.2g -> %2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostK2DSMOptNoQuant,results(ind).uvErrPostK2DSMOptLS ,results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostK2DSMNoQuant.gid,results(ind).metricsPostK2DSMLS.gid);
-                            end
-                            fprintf('DSM Scales XY: %2.2g,%2.2g\n',sceneResults.originalParams.dsmScaleX,sceneResults.originalParams.dsmScaleY)
-                            dsmFixscales = (1-sceneResults.losScaling)*100;
-                            fprintf('DSM Fix Scales: %2.2g,%2.2g\n',dsmFixscales(1),dsmFixscales(2));
-                            kFixScales = sceneResults.newParamsKzFromP.Kdepth([1,5])./sceneResults.originalParams.Kdepth([1,5]);
-                            fprintf('Kdepth Scales: %2.2g,%2.2g\n',(1-kFixScales(1))*100,(1-kFixScales(2))*100)
+                        
+                        fprintf('cost: ');
+                        fprintf('%g ',results(ind).desicionParams.initialCost);
+                        fprintf('-> %g ',results(ind).newCost); 
+                        fprintf('\n');
+
+                        fprintf('uv: ');
+                        fprintf('%2.2g ',results(ind).uvErrPre);
+                        fprintf('-> %2.2g ',results(ind).uvErrPostK2DSM); 
+                        fprintf('\n');
+                        fprintf('uv: %2.2g -> %2.2g       (Kz From P)        \n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt(1));
+
+
+                        fprintf('gid: ');
+                        fprintf('%2.2g ',results(ind).gidPre);
+                        fprintf('-> %2.2g ',results(ind).gidPostK2DSM); 
+                        fprintf('\n');
+                        fprintf('gid: %2.2g -> %2.2g    (Kz From P)\n',results(ind).gidPre,results(ind).metricsPostKzFromP(1).gid);
+
+                        if sceneResults.validFixBySVM
+                            fprintf('[v] Valid fix\n'); 
+                        else
+                            fprintf('[x] Invalid fix\n'); 
                         end
-%                         fprintf('uvPre/PostP/PostPthermal/PostKzFromPthermal: %2.2g,%2.2g,%2.2g,%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt,results(ind).uvErrPostPthermalOpt,results(ind).uvErrPostKzFromPthermalOpt);
-%                         fprintf('gidPre/Post/PosrThermal: %2.2g,%2.2g,%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid,results(ind).metricsPostKzFromPthermal.gid);
-                        fprintf('uvPre/PostP: %2.2g,%2.2g\n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt);
-                        fprintf('gidPre/Post: %2.2g,%2.2g\n',results(ind).metricsPre.gid,results(ind).metricsPostKzFromP.gid);
                     catch e
                         badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         sceneFullPath
@@ -105,18 +108,16 @@ save(resultsFileName,'results','nAugPerScene','goodScenesList','badScenesList')
 %% Create a before and after table:
 uvPre = [results.uvErrPre];
 uvPost = [results.uvErrPostKzFromPOpt];
-% uvPostPthermal = [results.uvErrPostPthermalOpt];
-% uvPostKzPthermal = [results.uvErrPostKzFromPthermalOpt];
+uvPostPthermal = [results.uvErrPostPthermalOpt];
+uvPostKzPthermal = [results.uvErrPostKzFromPthermalOpt];
 
 gidPre = [results.metricsPre];
 gidPre = [gidPre.gid];
 gidPost = [results.metricsPostKzFromP];
 gidPost = [gidPost.gid];
-% gidPostPthermal = [results.metricsPostKzFromPthermal];
-% gidPostPthermal = [gidPostPthermal.gid];
+gidPostPthermal = [results.metricsPostKzFromPthermal];
+gidPostPthermal = [gidPostPthermal.gid];
 
-% A = [uvPre',uvPost',uvPostPthermal',uvPostKzPthermal',gidPre',gidPost',gidPostPthermal'];
-% pt = array2table(A, 'VariableNames', {'uvPre', 'uvPost','uvPostPthermal','uvPostKzPthermal','gidPre', 'gidPost','gidPostPthermal'})
-A = [uvPre',uvPost',gidPre',gidPost'];
-pt = array2table(A, 'VariableNames', {'uvPre', 'uvPost','gidPre', 'gidPost'})
+A = [uvPre',uvPost',uvPostPthermal',uvPostKzPthermal',gidPre',gidPost',gidPostPthermal'];
+pt = array2table(A, 'VariableNames', {'uvPre', 'uvPost','uvPostPthermal','uvPostKzPthermal','gidPre', 'gidPost','gidPostPthermal'})
 writetable(pt, fullfile(resultsSubDirName,'uvPrePostGidPrePost.xls'))

@@ -1,4 +1,4 @@
-function [stepSize,newRgbPmat,newCost] = myBacktrackingLineSearchP(frame,params,gradStruct)
+function [stepSize,newRgbPmat,newKrgb,newRrgb,newTrgb,newCost] = myBacktrackingLineSearchP(frame,params,gradStruct)
 % maxStepSize,tau,controlParam,gradStruct,params,V,W,D)
 % A search scheme based on the Armijo–Goldstein condition to determine the
 % maximum amount to move along a given search direction.
@@ -18,6 +18,8 @@ t = -params.controlParam*grad(:)'*unitGrad(:);
 
 paramsNew = params;
 paramsNew.rgbPmat = params.rgbPmat + stepSize*unitGrad;
+[paramsNew.Krgb,paramsNew.Rrgb,paramsNew.Trgb] = OnlineCalibration.aux.decomposePMat(paramsNew.rgbPmat);
+
 [cost1,scorePerVertex1,uv1] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
 [cost2,scorePerVertex2,uv2] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,paramsNew);
 commonVerts = ~isnan(scorePerVertex1) & ~isnan(scorePerVertex2);
@@ -43,6 +45,7 @@ while nanmean(scorePerVertex1(commonVerts))-nanmean(scorePerVertex2(commonVerts)
 %     TrgbNew = params.Trgb+alpha*p(4:end);
 %     rgbPmatNew = params.Krgb*[RrgbNew,TrgbNew];
     paramsNew.rgbPmat = params.rgbPmat + stepSize*unitGrad;
+    [paramsNew.Krgb,paramsNew.Rrgb,paramsNew.Trgb] = OnlineCalibration.aux.decomposePMat(paramsNew.rgbPmat);
     [cost2,scorePerVertex2,uv2] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,paramsNew);
     commonVerts = ~isnan(scorePerVertex1) & ~isnan(scorePerVertex2);
 
@@ -54,9 +57,15 @@ end
 if nanmean(scorePerVertex1(commonVerts))-nanmean(scorePerVertex2(commonVerts)) >= stepSize*t
     stepSize = 0;
     newRgbPmat = params.rgbPmat;
+    newKrgb = params.Krgb;
+    newRrgb = params.Rrgb;
+    newTrgb = params.Trgb;
     newCost = cost1;
 else
     newRgbPmat = paramsNew.rgbPmat;
+    newKrgb = paramsNew.Krgb;
+    newRrgb = paramsNew.Rrgb;
+    newTrgb = paramsNew.Trgb;
     newCost = cost2;
 end
 

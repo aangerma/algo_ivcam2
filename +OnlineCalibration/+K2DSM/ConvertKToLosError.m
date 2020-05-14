@@ -1,51 +1,51 @@
-function [losShift, losScaling] = ConvertKToLosError(data, isValidPix, origK, optK)
-   
+function [losShift, losScaling] = ConvertKToLosError(data, optK)
+    
     % K changes
-    fxScaling = double(optK(1,1)/origK(1,1));
-    fyScaling = double(optK(2,2)/origK(2,2));
-    pxShift = double(optK(1,3)-origK(1,3));
-    pyShift = double(optK(2,3)-origK(2,3));
+    fxScaling = double(optK(1,1)/data.origK(1,1));
+    fyScaling = double(optK(2,2)/data.origK(2,2));
+    pxShift = double(optK(1,3)-data.origK(1,3));
+    pyShift = double(optK(2,3)-data.origK(2,3));
     
     % shift reconstruction
-    shiftRatioMat = double([mean(data.Lxx(isValidPix)), mean(data.Lxy(isValidPix)); mean(data.Lyx(isValidPix)), mean(data.Lyy(isValidPix))]);
-    losShift = shiftRatioMat\[pxShift; pyShift];
-    
-    % pixel-to-LOS mapping
-    losX = data.losX(isValidPix(:));
-    losY = data.losY(isValidPix(:));
-    vertices = data.vertices(isValidPix(:),:);
+    losShift = data.shiftRatioMat\[pxShift; pyShift]; % pseudo-inverse
     
     % scaling ratio optimization
     focalScaling = [fxScaling, fyScaling];
-    coarseGrid = (-0.025:0.0125:0.025);
-    fineGrid = (-0.015:0.0075:0.015);
+    coarseGrid = [-0.0250, -0.0125, 0, 0.0125,0.0250];
+    fineGrid = [-0.0150, -0.0075, 0, 0.0075, 0.0150];
     [yScalingGrid, xScalingGrid] = ndgrid(1+coarseGrid, 1+coarseGrid);
-    optScaling = RunScalingOptimizationStep(vertices, origK, data.xPixInterpolant, data.yPixInterpolant, [losX, losY], [xScalingGrid(:), yScalingGrid(:)], losShift, focalScaling, false);
+    optScaling = RunScalingOptimizationStep(data, losShift, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     [yScalingGrid, xScalingGrid] = ndgrid(optScaling(2)+fineGrid, optScaling(1)+fineGrid);
-    losScaling = RunScalingOptimizationStep(vertices, origK, data.xPixInterpolant, data.yPixInterpolant, [losX, losY], [xScalingGrid(:), yScalingGrid(:)], losShift, focalScaling, false);
+    losScaling = RunScalingOptimizationStep(data, losShift, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function optScaling = RunScalingOptimizationStep(vertices, origK, xPixInterpolant, yPixInterpolant, origLos, scalingGrid, losShift, focalScaling, plotFlag)
+function optScaling = RunScalingOptimizationStep(data, losShift, scalingGrid, focalScaling, plotFlag)
     
-    errPolyCoef = cat(3, [scalingGrid(:,1), losShift(1)*ones(size(scalingGrid,1),1)], [scalingGrid(:,2), losShift(2)*ones(size(scalingGrid,1),1)]);
-    optK = OnlineCalibration.K2DSM.OptimizeKUnderLosError(vertices, xPixInterpolant, yPixInterpolant, origLos, errPolyCoef);
-    fxScalingOnGrid = squeeze(optK(1,1,:))/origK(1,1);
-    fyScalingOnGrid = squeeze(optK(2,2,:))/origK(2,2);
+    % calculating distance between model-based change and observed change in focal lengths
+    optK = OnlineCalibration.K2DSM.OptimizeKUnderLosError(data, scalingGrid, losShift);
+    fxScalingOnGrid = squeeze(optK(1,1,:))/data.origK(1,1);
+    fyScalingOnGrid = squeeze(optK(2,2,:))/data.origK(2,2);
     errL2 = sqrt((fxScalingOnGrid-focalScaling(1)).^2+(fyScalingOnGrid-focalScaling(2)).^2);
     
-    sf = fit(scalingGrid, double(errL2), 'poly22');
-    A = [sf.p20, sf.p11/2; sf.p11/2, sf.p02];
-    b = [sf.p10; sf.p01];
-    optScaling = -(A\b)/2;
+    % quadratic approximation
+    sgMat = double([scalingGrid(:,1).^2, scalingGrid(:,2).^2, scalingGrid(:,1).*scalingGrid(:,2), scalingGrid(:,1), scalingGrid(:,2), ones(size(scalingGrid,1),1)]);
+    quadCoef = (sgMat'*sgMat)\(sgMat'*double(errL2)); % pseudo-inverse
+    A = [quadCoef(1), quadCoef(3)/2; quadCoef(3)/2, quadCoef(2)];
+    b = [quadCoef(4); quadCoef(5)];
+    optScaling = -(A\b)/2; % pseudo-inverse
     
-    [~, indOnGrid] = min(errL2);
-    if any(eig(A)<=0) || (any([-1,1].*optScaling(1)>[-1,1].*minmax(vec(scalingGrid(:,1))')) || any([-1,1].*optScaling(2)>[-1,1].*minmax(vec(scalingGrid(:,2))'))) % non-convex or optimum out-of-bounds
+    % sanity check
+    isPosDef = (quadCoef(1)+quadCoef(2))>0 && (quadCoef(1)*quadCoef(2)-quadCoef(3)^2/4)>0;
+    isWithinLims = (optScaling(1) > min(scalingGrid(:,1))) && (optScaling(1) < max(scalingGrid(:,1))) && (optScaling(2) > min(scalingGrid(:,2))) && (optScaling(2) < max(scalingGrid(:,2)));
+    if ~isPosDef || ~isWithinLims % non-convex or optimum out-of-bounds
+        [~, indOnGrid] = min(errL2);
         optScaling = scalingGrid(indOnGrid,:);
     end
-
+    
+    % debug plot
     if plotFlag
         figure, plot(sf, scalingGrid, errL2)
         hold on, plot3(optScaling(1), optScaling(2), feval(sf, optScaling(1), optScaling(2)), 'pr', 'markerfacecolor', 'y')

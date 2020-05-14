@@ -13,12 +13,13 @@ classdef FrameDsmWarper
     %       dsmWarpCoefX/Y are polynomial coefficients for manipulating DSMx and DSMy (use [1,0] and [1,0] for the dummy warper).
     %   4) warpedFrame = obj.ApplyWarp(frame)
     %       Warps the frame.
+    %       Frame should be rotated w.r.t. world.
     
     properties
         baselineRegs    = struct('hbaseline', 0, 'baseline', -10, 'baseline2', 100);
         calData         = []; % calibration data (from specific ACC)
         frameSize       = []; % [yRes, xRes]
-        Kworld          = []; % 3x3 intrinsic matrix
+        Kraw            = []; % 3x3 intrinsic matrix, matching rotated frames
         rpt             = []; % Nx3 structure of [RTD, DSMx, DSMy]
         dsmWarpCoefX    = []; % polynomial coefficients for DSMx
         dsmWarpCoefY    = []; % polynomial coefficients for DSMy
@@ -39,9 +40,9 @@ classdef FrameDsmWarper
         function obj = SetRes(obj, frameSize) % generates pixel-to-DSM mapping
             fprintf('Mapping pixels to DSM... (wait 10 seconds)\n');
             obj.frameSize = frameSize;
-            obj.Kworld = Pipe.calcIntrinsicMat(obj.calData.regs, obj.frameSize);
-            [y, x] = ndgrid(1:obj.frameSize(1), 1:obj.frameSize(2));
-            vertices = [x(:), y(:), ones(prod(obj.frameSize),1)] * (inv(obj.Kworld))' * 1e3;
+            [~, obj.Kraw] = Pipe.calcIntrinsicMat(obj.calData.regs, obj.frameSize);
+            [y, x] = ndgrid(0:obj.frameSize(1)-1, 0:obj.frameSize(2)-1);
+            vertices = [x(:), y(:), ones(prod(obj.frameSize),1)] * (inv(obj.Kraw))' * 1e3;
             obj.rpt = Utils.convert.RptToVertices(vertices, obj.calData.regs, obj.calData.tpsUndistModel, 'inverse');
         end
         
@@ -52,20 +53,29 @@ classdef FrameDsmWarper
             obj.dsmWarpCoefY = dsmWarpCoefY;
             rptDist = [obj.rpt(:,1), polyval(obj.dsmWarpCoefX, obj.rpt(:,2)), polyval(obj.dsmWarpCoefY, obj.rpt(:,3))];
             verticesDist = Utils.convert.RptToVertices(rptDist, obj.calData.regs, obj.calData.tpsUndistModel, 'direct');
-            pixelsDist = (verticesDist./verticesDist(:,3)) * double(obj.Kworld)'; % not aligned with frame's pixel grid
-            [y, x] = ndgrid(1:obj.frameSize(1), 1:obj.frameSize(2));
+            pixelsDist = (verticesDist./verticesDist(:,3)) * double(obj.Kraw)'; % not aligned with frame's pixel grid
+            [y, x] = ndgrid(0:obj.frameSize(1)-1, 0:obj.frameSize(2)-1);
             xInterpolant = scatteredInterpolant(pixelsDist(:,1), pixelsDist(:,2), x(:));
             yInterpolant = scatteredInterpolant(pixelsDist(:,1), pixelsDist(:,2), y(:));
             obj.xyResampling = cat(3, reshape(xInterpolant(x(:), y(:)), obj.frameSize), reshape(yInterpolant(x(:), y(:)), obj.frameSize)); % aligned with frame's pixel grid
             obj.warper = @(im) du.math.imageWarp(im, obj.xyResampling(:,:,2), obj.xyResampling(:,:,1));
         end
         
-        function warpedFrame = ApplyWarp(obj, frame)
+        function warpedFrame = ApplyWarp(obj, frame, worldImage)
+            if ~exist('worldImage','var')
+                worldImage = '0';
+            end
             assert(~isempty(obj.warper), 'Warper not defined. Use SetDsmWarp prior to applying the warper.')
             fnames = fieldnames(frame);
             for iField = 1:length(fnames)
                 if strcmp(fnames{iField},'z') || strcmp(fnames{iField},'i') || strcmp(fnames{iField},'c')
+                    if worldImage
+                        frame.(fnames{iField}) = rot90(frame.(fnames{iField}),2);
+                    end
                     warpedFrame.(fnames{iField}) = cast(obj.warper(double(frame.(fnames{iField}))), class(frame.(fnames{iField})));
+                    if worldImage
+                        warpedFrame.(fnames{iField}) = rot90(warpedFrame.(fnames{iField}),2);
+                    end
                 else
                     warpedFrame.(fnames{iField}) = frame.(fnames{iField});
                 end

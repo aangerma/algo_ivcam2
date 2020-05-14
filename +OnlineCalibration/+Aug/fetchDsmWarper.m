@@ -1,4 +1,4 @@
-function [warper] = fetchDsmWarper(serial,res,scaleChangeInX,scaleChangeInY)
+function [warper,scaleX,scaleY] = fetchDsmWarper(serial,res,scaleChangeInX,scaleChangeInY)
 
 persistent  DSMWarpers;
 persistent  DSMWarpersKeys;
