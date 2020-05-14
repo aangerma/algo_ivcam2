@@ -46,15 +46,15 @@ xCoeffValR_nan = [iteration_data.xCoeffValR.xAlpha' iteration_data.xCoeffValR.yB
 xCoeffValR_nan(isnan(xCoeffValR_nan)) = realmax;
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, xCoeffValR_nan,'double');
 
-%f_name = sprintf('xCoeff_P_%d',iteration_data.iterCount);
-%xCoeffValP_nan = [iteration_data.xCoeffValP];
-%xCoeffValP_nan(isnan(xCoeffValP_nan)) = realmax;
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, xCoeffValP_nan,'double');
+f_name = sprintf('xCoeff_P_%d',iteration_data.iterCount);
+xCoeffValP_nan = [iteration_data.xCoeffValP];
+xCoeffValP_nan(isnan(xCoeffValP_nan)) = realmax;
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, xCoeffValP_nan,'double');
 
-% f_name = sprintf('yCoeff_P_%d',iteration_data.iterCount);
-% yCoeffValP_nan = [iteration_data.yCoeffValP];
-% yCoeffValP_nan(isnan(yCoeffValP_nan)) = realmax;
-% OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, yCoeffValP_nan,'double');
+f_name = sprintf('yCoeff_P_%d',iteration_data.iterCount);
+yCoeffValP_nan = [iteration_data.yCoeffValP];
+yCoeffValP_nan(isnan(yCoeffValP_nan)) = realmax;
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, yCoeffValP_nan,'double');
 
 calib = calibAndCostToRaw(iteration_data.calib, iteration_data.cost);
 f_name = sprintf('calib_iteration_%d',iteration_data.iterCount);
