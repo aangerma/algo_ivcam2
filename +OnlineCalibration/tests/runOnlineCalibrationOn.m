@@ -94,6 +94,7 @@ if  0
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',frame.weights,'double');
     
+    
 else
     [frame.irEdge,frame.zEdge,...
     frame.xim,frame.yim,frame.zValuesForSubEdges...
