@@ -52,94 +52,78 @@ sectionMapDepth = OnlineCalibration.aux.sectionPerPixel(params);
 sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
 
 % Save Inputs
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_input',uint16(frame.z),'uint16');
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_input',uint8(frame.i),'uint8');
-%OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_input',uint8(frame.yuy2),'uint8');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_input',uint16(frame.z),'uint16');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_input',uint8(frame.i),'uint8');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_input',uint8(frame.yuy2),'uint8');
 
 % Preprocess RGB
 [frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',double(frame.rgbEdge),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',single(frame.rgbEdge),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',single(frame.rgbIDT),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',single(frame.rgbIDTx),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',single(frame.rgbIDTy),'single');
 
-% Preprocess IR
-[frame.irEdge] = OnlineCalibration.aux.preprocessIR(frame,params);
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'double');
-
-% Preprocess Z
-[frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(frame,params);
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',frame.zEdge,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_dir',frame.dirI-1,'uint8');  % -1 to match C++ 0-based
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',frame.zEdgeSubPixel,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',frame.zEdgeSupressed,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'double');
-
-sectionMapDepth_trans = transpose(sectionMapDepth);
-supressed_depth_t =  transpose(frame.zEdgeSupressed);
-sectionMapDepth_trans = sectionMapDepth_trans(supressed_depth_t>0);
-sectionMapRgb_trans = transpose(sectionMapRgb);
-supressed_rgb_t =  transpose(frame.rgbIDT);
-sectionMapRgb_trans = sectionMapRgb_trans(supressed_rgb_t>0);
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth_trans',uint8(sectionMapDepth_trans),'uint8');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapRgb_trans',uint8(sectionMapRgb_trans),'uint8');
-
-
-[frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
-[frame.weights] = OnlineCalibration.aux.calculateWeights(frame,params);
-frame.sectionMapDepth = sampleByMask(sectionMapDepth,frame.zEdgeSupressed>0);
-frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weightsT',frame.weights,'double');
-md.n_edges = size(frame.weights,1);
-
-%% Validate input scene
-md.is_scene_valid = true;
-if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
-    disp('Scene not valid!');
-    md.is_scene_valid = false;
-     %return;
+if  0
+%     Old preprocessing
+    % Preprocess IR
+    [frame.irEdge] = OnlineCalibration.aux.preprocessIR(frame,params);
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',single(frame.irEdge),'single');
+    
+    % Preprocess Z
+    [frame.zEdge,frame.zEdgeSupressed,frame.zEdgeSubPixel,frame.zValuesForSubEdges,frame.dirI] = OnlineCalibration.aux.preprocessZ(frame,params);
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',single(frame.zEdge),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSubPixel',single(frame.zEdgeSubPixel),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edgeSupressed',single(frame.zEdgeSupressed),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'single');
+    [frame.vertices] = OnlineCalibration.aux.subedges2vertices(frame,params);
+    frame.weights = OnlineCalibration.aux.calculateWeights(frame,params);
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',single(frame.weights),'single');
+    frame.sectionMapDepth = sectionMapDepth(frame.zEdgeSupressed>0);
+else
+    [frame.irEdge,frame.zEdge,...
+    frame.xim,frame.yim,frame.zValuesForSubEdges...
+    ,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,...
+    frame.sectionMapDepth] = OnlineCalibration.aux.preprocessDepth(frame,params,sceneDir);
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',single(frame.irEdge),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',single(frame.zEdge),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'xim',single(frame.xim),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'yim',single(frame.yim),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'z_valuesForSubEdges',single(frame.zValuesForSubEdges),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'z_gradInDirection',single(frame.zGradInDirection),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dirPerPixel',single(frame.dirPerPixel),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',single(frame.weights),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',single(frame.vertices),'single');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',single(frame.sectionMapDepth),'single');
+%     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',single(frame.relevantPixelsImage),'single');
 end
 
-% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'depthEdgeWeightDistributionPerSectionDepth',validSceneStruct.edgeWeightDistributionPerSectionDepth,'double');
-% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth_trans',uint8(transpose(frames.sectionMapDepth)),'uint8');
-% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeWeightDistributionPerSectionRgb',validSceneStruct.edgeWeightDistributionPerSectionRgb,'double');
-% OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapRgb_trans',uint8(transpose(frames.sectionMapRgb)),'uint8');
+frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 
+%% Validate input scene
+if ~OnlineCalibration.aux.validScene(frame,params,sceneDir)
+    disp('Scene not valid!');
+     return;
+end
 %% Perform Optimization
-%params.derivVar = 'KrgbRT';
-params.derivVar = 'KrgbRTP';
-[newParams, newCost, md.n_iter] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
+params.derivVar = 'KrgbRT';
+newParams = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 
-new_calib = calibAndCostToRaw(newParams, newCost);  
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
+%runOnlineCalibrationOn( sceneDir, LRS );
 
-%OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
-% % OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
-%OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
-%ax = gca;
-%title({ax.Title.String;'New R,T,Krgb optimization'});
+OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
+% OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
+OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
+ax = gca;
+title({ax.Title.String;'New R,T,Krgb optimization'});
 %% Validate new parameters
 [validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
 if validParams
     params = updatedParams;
 end
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
-md.xy_movement = dbg.xyMovement;
-md.is_output_valid = validParams;
-
-%% Write the metadata:
-fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
-fwrite( fid, md.xy_movement, 'double' );
-fwrite( fid, md.n_edges, 'uint64' );
-fwrite( fid, md.n_iter, 'uint64' );
-fwrite( fid, md.is_scene_valid, 'uint8' );
-fwrite( fid, md.is_output_valid, 'uint8' );
-fclose( fid );
-
-%% figure; 
+% figure; 
 % subplot(421); imagesc(frame.i); impixelinfo; title('IR image');colorbar;
 % subplot(422); imagesc(frame.irEdge); impixelinfo; title('IR edge');colorbar;
 % subplot(423);imagesc(frame.z./4); impixelinfo; title('Depth image');colorbar;
@@ -147,5 +131,3 @@ fclose( fid );
 % subplot(425);imagesc(frame.yuy2); impixelinfo; title('Color image');colorbar;
 % subplot(426);imagesc(frame.rgbEdge); impixelinfo; title('Color edge');colorbar;
 % subplot(427);imagesc(frame.rgbIDT); impixelinfo; title('Color IDT');colorbar;
-
-end
