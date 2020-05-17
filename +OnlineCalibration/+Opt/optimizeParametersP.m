@@ -1,14 +1,27 @@
-function newParams = optimizeParametersP(frame,params)
+function [newParams,newCost,iterCount] = optimizeParametersP(frame,params,outputBinFilesPath)
 
 iterCount = 0;
 notConverged = 1;
 while notConverged && iterCount < params.maxOptimizationIters
     iterCount = iterCount + 1;
     % Calculate gradients
-    [cost,gradStruct] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);
+    [cost,gradStruct,iteration_data] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);
+   
     % Find the step
-    [stepSize,newRgbPmat,newCost] = OnlineCalibration.aux.myBacktrackingLineSearchP(frame,params,gradStruct);%pi()/180
+    [stepSize,newRgbPmat,newCost,unitGrad, grad, grads_norm, norma,BacktrackingLineIterCount,t] = OnlineCalibration.aux.myBacktrackingLineSearchP(frame,params,gradStruct);%pi()/180
     % Check stopping criteria
+    iteration_data.norma = norma;
+    iteration_data.iterCount = iterCount;
+    iteration_data.grad = gradStruct;
+    iteration_data.unit_grad = unitGrad;
+    iteration_data.normalized_grads = grad;
+    iteration_data.grads_norm = grads_norm;
+    iteration_data.newRgbPmat = newRgbPmat;
+    iteration_data.newCost = newCost;
+    iteration_data.BacktrackingLineIterCount = BacktrackingLineIterCount;
+    iteration_data.t = t;
+    
+    saveIterationData(outputBinFilesPath, iteration_data);
     
     % change in rgbPMat / todo -XY
     if norm(newRgbPmat-params.rgbPmat) < params.minRgbPmatDelta
@@ -35,8 +48,8 @@ newParams = params;
 end
 
 function dbg = collectDebugData(frame,params,newRgbPmat,stepSize)
-    [uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
-    [uvMapPost,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newRgbPmat,params.Krgb,params.rgbDistort);
+    [uvMapPrev,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
+    [uvMapPost,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newRgbPmat,params.Krgb,params.rgbDistort,params);
     dbg.movement = mean(sqrt(sum((uvMapPrev-uvMapPost).^2,2)));
     dbg.stepSize = stepSize;
 end

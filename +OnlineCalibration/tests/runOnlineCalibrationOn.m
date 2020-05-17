@@ -108,8 +108,8 @@ end
 
 %% Perform Optimization
 %params.derivVar = 'KrgbRT';
-params.derivVar = 'KrgbRTP';
-[newParams, newCost, md.n_iter] = OnlineCalibration.Opt.optimizeParameters(frame,params,outputBinFilesPath);
+params.derivVar = 'P';
+[newParams, newCost, md.n_iter] = OnlineCalibration.Opt.optimizeParametersP(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 

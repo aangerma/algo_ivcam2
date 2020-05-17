@@ -1,33 +1,53 @@
-function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
-    [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
+function [cost,grad, iteration_data] = calcCostAndGrad(frame,params)
+    if contains(params.derivVar,'Kdepth')
+        vertices = ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(params.Kdepth)').*frame.vertices(:,3);
+        [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
+        V = [vertices,ones(size(vertices(:,1)))];
+    else
+        [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
+        V = [frame.vertices,ones(size(frame.vertices(:,1)))];
+    end
+    DVals = interp2(frame.rgbIDT,uvMap(:,1)+1,uvMap(:,2)+1);
+    DxVals = interp2(frame.rgbIDTx,uvMap(:,1)+1,uvMap(:,2)+1);
+    DyVals = interp2(frame.rgbIDTy,uvMap(:,1)+1,uvMap(:,2)+1);
     
-    DVals = interp2(double(frame.rgbIDT),double(uvMap(:,1)+1),double(uvMap(:,2)+1));
-    DxVals = interp2(double(frame.rgbIDTx),double(uvMap(:,1)+1),double(uvMap(:,2)+1));
-    DyVals = interp2(double(frame.rgbIDTy),double(uvMap(:,1)+1),double(uvMap(:,2)+1));
-     
-    V = [frame.vertices,ones(size(frame.vertices(:,1)))];
     W = frame.weights;
-    if contains(params.derivVar,'P')
-        [xCoeffVal,yCoeffVal,~,~,x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
+    if contains(params.derivVar,'Pthermal')
+        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('Pthermal',V,params);
         grad_P = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
-        grad.P = reshape(nanmean(grad_P),4,3)';
+        grad.P = reshape(nanmean(grad_P,1),4,3)';
         if params.zeroLastLineOfPGrad
             grad.P(3,:) = 0;
         end
-        iteration_data.xCoeffValP = xCoeffVal';
-        iteration_data.yCoeffValP = yCoeffVal';
-    end
+    else
+        if contains(params.derivVar,'P')
+            [xCoeffVal,yCoeffVal,~,~,x1,y1,Rc] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
+            
+            iteration_data.xCoeffValP = xCoeffVal';
+            iteration_data.yCoeffValP = yCoeffVal';  
+            iteration_data.x1=x1;
+            iteration_data.y1=y1;
+            iteration_data.rc=Rc;
+            grad_P = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
+            grad.P = reshape(nanmean(grad_P,1),4,3)';
+            if params.zeroLastLineOfPGrad
+                grad.P(3,:) = 0;
+            end
+            %         grad.P(1,1) = 0;
+            %         grad.P(2,2) = 0;
+        end
+    end    
     if contains(params.derivVar,'T')
-        [xCoeffVal,yCoeffVal,~,~,x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
+        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('T',V,params);
         grad_T = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
-        grad.T = reshape(nanmean(grad_T),1,3)';
-        
-        iteration_data.xCoeffValT = xCoeffVal';
-        iteration_data.yCoeffValT = yCoeffVal';
+        grad.T = reshape(nanmean(grad_T,1),1,3)';
 %         grad.T = zeros(3,1);
+        if isfield(params,'AC2') && params.AC2
+            grad.T(3) = 0;
+        end
     end
     if contains(params.derivVar,'R')
-        [xCoeffVal,yCoeffVal,~,~,x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('R',V,params);
+        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('R',V,params);
         grad_alpha = W.*(DxVals.*xCoeffVal.xAlpha' + DyVals.*yCoeffVal.xAlpha');
         grad.xAlpha = nanmean(grad_alpha);
         grad_beta = W.*(DxVals.*xCoeffVal.yBeta' + DyVals.*yCoeffVal.yBeta');
@@ -38,37 +58,52 @@ function [cost, grad, iteration_data] = calcCostAndGrad(frame,params)
         grad.xAlpha = angGradVec(1);
         grad.yBeta = angGradVec(2);
         grad.zGamma = angGradVec(3);
-        
-        iteration_data.xCoeffValR = xCoeffVal';
-        iteration_data.yCoeffValR = yCoeffVal';
-%       grad.xAlpha = 0;
-%       grad.yBeta = 0;
-%       grad.zGamma = 0;
+%         grad.xAlpha = 0;
+%         grad.yBeta = 0;
+%         grad.zGamma = 0;
+        if isfield(params,'AC2') && params.AC2
+            grad.xAlpha = 0;
+            grad.yBeta = 0;
+            grad.zGamma = 0;
+        end
     end
     if contains(params.derivVar,'Krgb')
-        [xCoeffVal,yCoeffVal,~,~, x1,y1,rc] = OnlineCalibration.aux.calcValFromExpressions('Krgb',V,params);
+        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('Krgb',V,params);
         grad_Krgb = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
         grad.Krgb = reshape(nanmean(grad_Krgb),3,3)';
         grad.Krgb(1,2) = 0;
         grad.Krgb(2,1) = 0;
         grad.Krgb(3,1:3) = 0;
-%         grad.Krgb = zeros(3,3);
 
-        iteration_data.xCoeffValKrgb = xCoeffVal';
-        iteration_data.yCoeffValKrgb = yCoeffVal';
-        iteration_data.uvmap = uvMap; 
-        iteration_data.DVals = DVals;
-        iteration_data.DxVals = DxVals;
-        iteration_data.DyVals = DyVals;
-        iteration_data.calib = params;
-        iteration_data.grad = grad;
-        iteration_data.grad.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(grad.xAlpha,grad.yBeta,grad.zGamma);
-        iteration_data.x1 = x1;
-        iteration_data.y1 = y1;
-        iteration_data.rc = rc;
+        if isfield(params,'AC2') && params.AC2
+            grad.Krgb = reshape(nanmean(grad_Krgb),3,3)';
+            grad.Krgb(3,1:3) = 0;
+        end
+    end
+    if contains(params.derivVar,'Kdepth')
+        [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('Kdepth',V,params);
+        grad_fx = W.*(DxVals.*xCoeffVal.fx' + DyVals.*yCoeffVal.fx');
+        grad_fy = W.*(DxVals.*xCoeffVal.fy' + DyVals.*yCoeffVal.fy');
+        grad_ox = W.*(DxVals.*xCoeffVal.ox' + DyVals.*yCoeffVal.ox');
+        grad_oy = W.*(DxVals.*xCoeffVal.oy' + DyVals.*yCoeffVal.oy');
+        grad.Kdepth = nanmean([grad_fx,grad_fy,grad_ox,grad_oy],1)';
+%         if isfield(params,'debug') && params.debug
+%             grad.Kdepth(1:4) = 0;
+%         end
+        grad.Kdepth(3:4) = 0;
+        
+        if ~(isfield(params,'AC2') && params.AC2)
+            grad.Krgb = zeros(3);
+        end
     end
     cost = nanmean(DVals.*W);
-
+    iteration_data.uvmap = uvMap; 
+	iteration_data.DVals = DVals;
+	iteration_data.DxVals = DxVals;
+	iteration_data.DyVals = DyVals;
+	iteration_data.p_matrix = params.rgbPmat;
+    iteration_data.cost = cost;
+	iteration_data.grad = grad;
     
 end
 
