@@ -1,4 +1,4 @@
-function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth] = preprocessDepth(frame,params,sceneDir)
+function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth] = preprocessDepth(frame,params,sceneDir,md)
 
     % Get gradient direction in IR
     % Calculate sub pixel location in IR
@@ -21,6 +21,8 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zEdge',zEdge,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'iEdge',iEdge,'double');
 %OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validEdgePixelsByIR',uint8(validEdgePixelsByIR),'uint8');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validEdgePixelsByIR',double(validEdgePixelsByIR),'double');
+
+md.valid_ir_edges = size(validEdgePixelsByIR,1);
 
     sz = size(frame.i);
     [gridX,gridY] = meshgrid(1:sz(2),1:sz(1)); % gridX/Y contains the indices of the pixels
@@ -98,6 +100,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeSubPixel',double(edge
 %     end
         
     validEdgePixels = zGradInDirection > params.gradZTh & isSupressed & zValuesForSubEdges > 0;
+    md.valid_pixels = size(validEdgePixels,1);
     
     zGradInDirection = zGradInDirection(validEdgePixels);
     edgeSubPixel = edgeSubPixel(validEdgePixels,:);
