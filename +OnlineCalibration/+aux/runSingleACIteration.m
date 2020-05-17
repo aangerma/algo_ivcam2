@@ -43,14 +43,14 @@ currentFrame.sectionMapRgb = sectionMapRgb(currentFrame.rgbIDT>0);
 currentFrame.originalVertices = currentFrame.vertices;
 [~,decisionParams,isMovement] = OnlineCalibration.aux.validScene(currentFrame,params);
 
-%% Perform Optimization
+%% Calculate initial cost
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(currentFrame.vertices,currentFrame.weights,currentFrame.rgbIDT,params);
 
 %% Set initial value for some variables that change between iterations
 currentFrameCand = currentFrame;
 newParamsK2DSM = params;
 converged = false;
-iterNum = 1;
+iterNum = 0;
 lastCost = decisionParams.initialCost;
 dsmRegsCand = dsmRegs;
 acDataCand = acData;
@@ -65,7 +65,7 @@ while ~converged && iterNum < params.maxK2DSMIters
     end
     currentFrame = currentFrameCand;
     lastCost = newCostCand;
-    sceneResults.newCost(iterNum) = newCostCand;
+    sceneResults.newCost(iterNum+1) = newCostCand;
     newParamsP = newParamsPCand;
     newParamsKzFromP = newParamsKzFromPCand;
     acData = acDataCand;
@@ -107,7 +107,7 @@ end
 
 
 
-sceneResults.numberOfIteration = iterNum - 1;
+sceneResults.numberOfIteration = iterNum;
 [~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,originalParams,params.iterFromStart);
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct); 
 decisionParams.newCost = sceneResults.newCost(end);

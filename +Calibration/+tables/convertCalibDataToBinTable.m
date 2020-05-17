@@ -6,9 +6,9 @@ function binTable = convertCalibDataToBinTable(calibData, tableName)
 
 switch tableName
     case 'Algo_AutoCalibration'
-        acVerMajorMinor = [calibData.acVersion; 100*mod(calibData.acVersion,1)];
+        acVersion = bitshift(uint16(calibData.acVersion(1)),12) + bitshift(uint16(calibData.acVersion(2)),4) + bitshift(uint16(calibData.acVersion(3)),0);
         correctionData = [calibData.hFactor; calibData.vFactor; calibData.hOffset; calibData.vOffset; calibData.rtdOffset];
-        binTable = [typecast(uint64(calibData.timestamp), 'uint8')'; uint8(acVerMajorMinor); uint8(calibData.flags(:)); typecast(single(correctionData), 'uint8'); uint8(calibData.reserved(:))];
+        binTable = [typecast(uint64(calibData.timestamp), 'uint8')'; vec(typecast(acVersion, 'uint8')); uint8(calibData.flags(:)); typecast(single(correctionData), 'uint8'); uint8(2*calibData.lddTemp); uint8(calibData.reserved(:))];
         
     case 'Algo_Calibration_Info_CalibInfo'
         % Implemented in @Firmware\generateTablesForFw based on regsDefinitions.frmw (TransferToFW=1)
@@ -35,9 +35,9 @@ switch tableName
         binTable = [typecast(numOfEntries, 'uint8')'; typecast(entrySize, 'uint8')'; typecast(int16(calibData.activeIndex), 'uint8')'; uint8(calibData.reserved(:))];
         for iEntry = 1:numOfEntries
             curEntry = calibData.entries(iEntry);
-            acVerMajorMinor = [curEntry.acVersion; 100*mod(curEntry.acVersion,1)];
+            acVersion = bitshift(uint16(curEntry.acVersion(1)),12) + bitshift(uint16(curEntry.acVersion(2)),4) + bitshift(uint16(curEntry.acVersion(3)),0);
             correctionData = [curEntry.hFactor; curEntry.vFactor; curEntry.hOffset; curEntry.vOffset; curEntry.rtdOffset];
-            binTable = [binTable; typecast(int64(curEntry.timestamp), 'uint8')'; uint8(acVerMajorMinor); uint8(curEntry.flags(:)); typecast(single(correctionData), 'uint8'); uint8(curEntry.reserved(:))];
+            binTable = [binTable; typecast(int64(curEntry.timestamp), 'uint8')'; vec(typecast(acVersion, 'uint8')); uint8(curEntry.flags(:)); typecast(single(correctionData), 'uint8'); uint8(2*curEntry.lddTemp); uint8(curEntry.reserved(:))];
         end
         
     case 'AutoCalibration_RGB_DB'
@@ -46,9 +46,9 @@ switch tableName
         binTable = [typecast(numOfEntries, 'uint8')'; typecast(entrySize, 'uint8')'; typecast(int16(calibData.activeIndex), 'uint8')'; uint8(calibData.reserved(:))];
         for iEntry = 1:numOfEntries
             curEntry = calibData.entries(iEntry);
-            acVerMajorMinor = [curEntry.acVersion; 100*mod(curEntry.acVersion,1)];
+            acVersion = bitshift(uint16(curEntry.acVersion(1)),12) + bitshift(uint16(curEntry.acVersion(2)),4) + bitshift(uint16(curEntry.acVersion(3)),0);
             correctionData = [curEntry.Fx; curEntry.Fy; curEntry.Px; curEntry.Py; curEntry.Rx; curEntry.Ry; curEntry.Rz; curEntry.Tx; curEntry.Ty; curEntry.Tz];
-            binTable = [binTable; typecast(int64(curEntry.timestamp), 'uint8')'; uint8(acVerMajorMinor); uint8(curEntry.flags(:)); typecast(single(correctionData), 'uint8'); uint8(curEntry.reserved(:))];
+            binTable = [binTable; typecast(int64(curEntry.timestamp), 'uint8')'; vec(typecast(acVersion, 'uint8')); uint8(curEntry.flags(:)); typecast(single(correctionData), 'uint8'); uint8(2*curEntry.humTemp); uint8(curEntry.reserved(:))];
         end
         
     case 'CBUF_Calibration_Info_CalibInfo'
