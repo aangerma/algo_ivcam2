@@ -99,12 +99,13 @@ else
     [frame.irEdge,frame.zEdge,...
     frame.xim,frame.yim,frame.zValuesForSubEdges...
     ,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,...
-    frame.sectionMapDepth] = OnlineCalibration.aux.preprocessDepth(frame,params,sceneDir,md);
+    frame.sectionMapDepth, validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,sceneDir);
 end
 
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 md.n_edges = size(frame.weights,1);
-
+md.valid_ir_edges = validIREdgesSize;
+md.valid_pixels =  validPixelsSize;
 %% Validate input scene
 md.is_scene_valid = true;
 if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
