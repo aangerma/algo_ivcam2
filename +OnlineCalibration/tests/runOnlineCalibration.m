@@ -62,7 +62,8 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
 % Preprocess Z and IR
-[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth] = OnlineCalibration.aux.preprocessDepth(frame,params);
+[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(frame,params);
+frame.originalVertices = frame.vertices;
 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',frame.zEdge,'double');
@@ -76,16 +77,12 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.ve
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',double(frame.sectionMapDepth),'double');
 
 
-%% Validate input scene
-if ~OnlineCalibration.aux.validScene(frame,params)
-    disp('Scene not valid!');
-    return;
-end
+%% decisionParams from input scene
+[~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params);
+decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
 %% Perform Optimization
-% params.derivVar = 'KrgbRT';
-% newParams = OnlineCalibration.Opt.optimizeParameters(frame,params);
 params.derivVar = 'P';
-newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
+[newParamsP,decisionParams.newCost] = OnlineCalibration.Opt.optimizeParametersP(frame,params);
 newParams = newParamsP;
 [newParams.Krgb,newParams.Rrgb,newParams.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsP.rgbPmat);
 newParams.Krgb(1,2) = 0;
@@ -101,7 +98,16 @@ OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
 %}
 
 %% Validate new parameters
-[validParams,updatedParams,dbg,~] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,originalParams,1);
+[~,updatedParams,dbg,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,originalParams,1);
+
+
+% Merge all decision params
+decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct); 
+decisionParams = Validation.aux.mergeResultStruct(decisionParams, validInputStruct); 
+
+[validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,newParamsP);
+validParams = ~isMovement && validFixBySVM; 
+
 if validParams
     params = updatedParams;
 end
