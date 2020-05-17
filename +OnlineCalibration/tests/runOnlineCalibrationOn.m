@@ -147,6 +147,8 @@ md.is_output_valid = validParams;
 fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
 fwrite( fid, md.xy_movement, 'double' );
 fwrite( fid, md.n_edges, 'uint64' );
+fwrite( fid, md.valid_ir_edges, 'uint64' );
+fwrite( fid, md.valid_pixels, 'uint64' );
 fwrite( fid, md.n_iter, 'uint64' );
 fwrite( fid, md.is_scene_valid, 'uint8' );
 fwrite( fid, md.is_output_valid, 'uint8' );
