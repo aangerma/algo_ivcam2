@@ -1,7 +1,7 @@
 function robotAc2CameraErrorInject(hFactor, vFactor, hOffset, vOffset)
     mFile = mfilename('fullpath')
     mFileParts = strsplit(mFile, '\')
-    filePath = fullfile(mFileParts{1:end-1},'onlineCalibration\Algo_AutoCalibration_CalibInfo_Ver_01_00.bin')
+    filePath = fullfile(mFileParts{1:end-1},'Algo_AutoCalibration_CalibInfo_Ver_01_00.bin')
     if ~exist(filePath)
         sprintf('cant find file: %s', filePath)
     end
@@ -25,7 +25,7 @@ function robotAc2CameraErrorInject(hFactor, vFactor, hOffset, vOffset)
     end
     
     binTable = Calibration.tables.convertCalibDataToBinTable(acData, 'Algo_AutoCalibration');
-    binFilePath = fullfile(mFileParts{1:end-1},'onlineCalibration\Algo_AutoCalibration_CalibInfo_Ver_01_01.bin')
+    binFilePath = fullfile(mFileParts{1:end-1},'Algo_AutoCalibration_CalibInfo_Ver_01_01.bin')
     writeAllBytes(binTable, binFilePath);
     hw = HWinterface()
     hw.cmd(sprintf('WrCalibInfo %s',  binFilePath))
