@@ -104,8 +104,8 @@ end
 
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 md.n_edges = size(frame.weights,1);
-md.valid_ir_edges = validIREdgesSize;
-md.valid_pixels =  validPixelsSize;
+md.n_valid_ir_edges = validIREdgesSize;
+md.n_valid_pixels =  validPixelsSize;
 %% Validate input scene
 md.is_scene_valid = true;
 if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
@@ -147,8 +147,8 @@ md.is_output_valid = validParams;
 fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
 fwrite( fid, md.xy_movement, 'double' );
 fwrite( fid, md.n_edges, 'uint64' );
-fwrite( fid, md.valid_ir_edges, 'uint64' );
-fwrite( fid, md.valid_pixels, 'uint64' );
+fwrite( fid, md.n_valid_ir_edges, 'uint64' );
+fwrite( fid, md.n_valid_pixels, 'uint64' );
 fwrite( fid, md.n_iter, 'uint64' );
 fwrite( fid, md.is_scene_valid, 'uint8' );
 fwrite( fid, md.is_output_valid, 'uint8' );
