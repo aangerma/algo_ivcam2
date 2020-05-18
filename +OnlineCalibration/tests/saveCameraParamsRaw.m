@@ -1,5 +1,5 @@
 function saveCameraParamsRaw(outputBinFilesPath,camerasParams)
-R = camerasParams.Rrgb;
+R = camerasParams.Rrgb';
 T = camerasParams.Trgb;
 Kdepth = camerasParams.Kdepth';
 Krgb = camerasParams.Krgb';

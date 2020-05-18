@@ -46,6 +46,7 @@ params = camerasParams;
 params.cbGridSz = [9,13];% not part of the optimization 
 [params] = OnlineCalibration.aux.getParamsForAC(params);
 %%
+originalParams = params;
 startParams = params;
 
 sectionMapDepth = OnlineCalibration.aux.sectionPerPixel(params);
@@ -109,13 +110,20 @@ end
 %% Perform Optimization
 %params.derivVar = 'KrgbRT';
 params.derivVar = 'P';
-[newParams, newCost, md.n_iter] = OnlineCalibration.Opt.optimizeParametersP(frame,params,outputBinFilesPath);
+[newParamsP, newCost, md.n_iter] = OnlineCalibration.Opt.optimizeParametersP(frame,params,outputBinFilesPath);
 % params.derivVar = 'P';
 % newParamsP = OnlineCalibration.Opt.optimizeParametersP(frame,params);
+newParams = newParamsP;
+
+[newParams.Krgb,newParams.Rrgb,newParams.Trgb] = OnlineCalibration.aux.decomposePMat(newParamsP.rgbPmat);
+newParams.Krgb(1,2) = 0;
+newParams.Kdepth([1,5]) = newParams.Kdepth([1,5])./newParams.Krgb([1,5]).*params.Krgb([1,5]);
+newParams.Krgb([1,5]) = originalParams.Krgb([1,5]);
 
 new_calib = calibAndCostToRaw(newParams, newCost);  
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
+newParams.rgbPmat = newParams.Krgb*[newParams.Rrgb,newParams.Trgb];
 %OnlineCalibration.Metrics.calcUVMappingErr(frame,params,1);
 % % OnlineCalibration.Metrics.calcUVMappingErr(frame,newParamsP,1);
 %OnlineCalibration.Metrics.calcUVMappingErr(frame,newParams,1);
