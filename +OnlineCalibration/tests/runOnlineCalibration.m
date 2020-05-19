@@ -108,6 +108,7 @@ decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,
 %% Set initial value for some variables that change between iterations
 currentFrameCand = frame;
 newParamsK2DSM = params;
+newParamsK2DSMCand = params;
 converged = false;
 iterNum = 0;
 lastCost = decisionParams.initialCost;
@@ -115,30 +116,30 @@ dsmRegsCand = dsmRegs;
 acDataCand = acData;
 
 
+[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
 while ~converged && iterNum < params.maxK2DSMIters
-    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSM);
+    % K2DSM
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params);
+    % Optimize P
+    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
     if newCostCand < lastCost
+        % End iterations
         converged = 1;
-        continue;
-    end
-    
-    % Take candidate parameters
-    frame = currentFrameCand;
-    lastCost = newCostCand;
-    newCost = newCostCand;
-    newParamsP = newParamsPCand;
-    newParamsKzFromP = newParamsKzFromPCand;
-    acData = acDataCand;
-    dsmRegs = dsmRegsCand;
-    % Convert K to DSM
-    [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params);
-    
-    % Optimize
-    iterNum = iterNum + 1;
+    else
+        iterNum = iterNum + 1;
+        frame = currentFrameCand;
+        lastCost = newCostCand;
+        newCost = newCostCand;
+        newParamsP = newParamsPCand;
+        newParamsKzFromP = newParamsKzFromPCand;
+        newParamsK2DSM = newParamsK2DSMCand;
+        acData = acDataCand;
+        dsmRegs = dsmRegsCand;
+    end    
 end
 
 %% Validate new parameters
-[~,~,dbg,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsP,originalParams,params.iterFromStart);
+[finalParams,dbg,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsP,newParamsK2DSM,originalParams,params.iterFromStart);
 % Merge all decision params
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct); 
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validInputStruct); 
@@ -149,7 +150,7 @@ decisionParams.newCost = newCost(end);
 validParams = ~isMovement && validFixBySVM; 
 
 if validParams
-    params = newParamsK2DSM;
+    params = finalParams;
 end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
 

@@ -13,7 +13,7 @@ function K = OptimizeKUnderLosError(data, losScaling, optLosShift)
         nPts = size(data.verticesOrig,1);
         V = [data.verticesOrig(:,[1,3]), zeros(nPts,2); zeros(nPts,2), data.verticesOrig(:,[2,3])]; % ideal vertices calculation assuming error-free LOS
         P = [updatedPixels(:,1); updatedPixels(:,2)];
-        kVec = (V'*V)\V'*P; % pseudo-inverse
+        kVec = OnlineCalibration.K2DSM.DirectInv(V'*V)*(V'*P); % direct implementation of Matlab's solver: (V'*V)\(V'*P)
         K(:,:,iErrModel) = [kVec(1), 0, kVec(2); 0, kVec(3), kVec(4); 0, 0, 1];
     end
     

@@ -9,7 +9,7 @@ params.gradITh = 3.5; % Ignore pixels with IR grad of less than this
 if all(params.depthRes == [768,1024])
     params.gradITh = 1.5; % Ignore pixels with IR grad of less than this for XGA?
 end
-params.gradZTh = 25; % Ignore pixels with Z grad of less than this
+params.gradZTh = 0; % Ignore pixels with Z grad of less than this
 params.gradZMax = 1000; 
 params.maxStepSize = 1;
 params.tau = 0.5;
@@ -56,5 +56,7 @@ params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMM
 % params.affectingInvalidationSVMModel.nonmandatory = {'inverseDistParams';'maxStepSize';'tau';'controlParam';'edgeThresh4logicIm'};
 params.iterFromStart = 1;
 params.maxK2DSMIters = 10;
+
+params.maxLosScalingStep = 0.02;
 end
 

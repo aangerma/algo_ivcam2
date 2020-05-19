@@ -25,7 +25,6 @@ regs.FRMW.rtdOverX(1:6) = 0;
 regs.FRMW.rtdOverY(1:3) = 0;
 regs.FRMW.mirrorMovmentMode = 1;
 regs.DEST.baseline2 = regs.DEST.baseline^2;
-KRaw = OnlineCalibration.aux.rotateKMat(params.Kdepth,params.depthRes);
 sceneResults.acDataIn = acData;
 
 
@@ -48,75 +47,48 @@ decisionParams.initialCost = OnlineCalibration.aux.calculateCost(currentFrame.ve
 
 %% Set initial value for some variables that change between iterations
 currentFrameCand = currentFrame;
-newParamsK2DSM = params;
+newParamsK2DSMCand = params;
 converged = false;
 iterNum = 0;
 lastCost = decisionParams.initialCost;
-dsmRegsCand = dsmRegs;
-acDataCand = acData;
 
-
-
+[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
 while ~converged && iterNum < params.maxK2DSMIters
-    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSM);
-    if newCostCand < lastCost
-        converged = 1;
-        continue;
-    end
-    currentFrame = currentFrameCand;
-    lastCost = newCostCand;
-    sceneResults.newCost(iterNum+1) = newCostCand;
-    newParamsP = newParamsPCand;
-    newParamsKzFromP = newParamsKzFromPCand;
-    acData = acDataCand;
-    dsmRegs = dsmRegsCand;
     % K2DSM
-    newKdepth = newParamsKzFromP.Kdepth;
-    newParamsK2DSM = newParamsKzFromP;
-    newParamsK2DSM.Kdepth = params.Kdepth;
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(currentFrame,newParamsKzFromP,acData,dsmRegs,regs,params);
+    % Optimize P
+    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
+    if newCostCand < lastCost
+        % End iterations
+        converged = 1;
+    else
+        iterNum = iterNum + 1;
+        currentFrame = currentFrameCand;
+        lastCost = newCostCand;
+        sceneResults.newCost(iterNum) = newCostCand;
+        newParamsP = newParamsPCand;
+        newParamsKzFromP = newParamsKzFromPCand;
+        newParamsK2DSM = newParamsK2DSMCand;
+        acData = acDataCand;
+        dsmRegs = dsmRegsCand;
+    end
     
-    newKRaw = OnlineCalibration.aux.rotateKMat(newKdepth,params.depthRes);
-    
-    
-    dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse');
-    preProcData = OnlineCalibration.K2DSM.PreProcessing(regs, acData, dsmRegs, params.depthRes, KRaw, rot90(currentFrame.relevantPixelsImage,2));
-    [losShift, losScaling] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
-    acDataCand = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acData, acData.flags, losShift, losScaling);
-    dsmRegsCand = Utils.convert.applyAcResOnDsmModel(acDataCand, dsmRegsOrig, 'direct');
-%         acDataInCand.flags(2:6) = uint8(0);
-    % Apply the new scaling to xim and yim for next iteration
-    % Transforming pixels to LOS
-    scVertices = currentFrame.vertices;
-    scVertices(:,1:2) = -scVertices(:,1:2);
-    los = OnlineCalibration.K2DSM.ConvertNormVerticesToLos(regs, dsmRegs, scVertices);
-    newVertices = OnlineCalibration.K2DSM.ConvertLosToNormVertices(regs, dsmRegsCand, los);
-    newVertices = newVertices./newVertices(:,3).*scVertices(:,3);
-    newVertices(:,1:2) = -newVertices(:,1:2);
-    projed = newVertices*params.Kdepth';
-    ximNew = projed(:,1)./projed(:,3);
-    yimNew = projed(:,2)./projed(:,3);
-    
-    currentFrameCand = currentFrame;
-    currentFrameCand.xim = ximNew;
-    currentFrameCand.yim = yimNew;
-    currentFrameCand.vertices = newVertices;
-
-    % Optimize
-    iterNum = iterNum + 1;
 end
 
-
-
 sceneResults.numberOfIteration = iterNum;
-[~,~,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,originalParams,params.iterFromStart);
+
+
+%% Validate new parameters
+[finalParams,~,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,newParamsK2DSM,originalParams,params.iterFromStart);
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct); 
 decisionParams.newCost = sceneResults.newCost(end);
-sceneResults.desicionParams = decisionParams;
+sceneResults.decisionParams = decisionParams;
 
-sceneResults.validFixBySVM = OnlineCalibration.aux.validBySVM(sceneResults.desicionParams,newParamsK2DSM);
+sceneResults.validFixBySVM = OnlineCalibration.aux.validBySVM(sceneResults.decisionParams,finalParams);
 sceneResults.validMovement = ~isMovement;
 sceneResults.acDataOut = acData;
-
+sceneResults.newParamsK2DSM = newParamsK2DSM;
+sceneResults.finalParams = finalParams;
 
 
 acData.flags(2:6) = uint8(0);
@@ -126,7 +98,7 @@ newAcDataStruct = acData;
 validParams = sceneResults.validMovement && sceneResults.validFixBySVM;
 
 if iterNum > 2 % Else params remain the same and acdataIn is equal to ACDataout
-    params = newParamsK2DSM;
+    params = finalParams;
 end
 
 

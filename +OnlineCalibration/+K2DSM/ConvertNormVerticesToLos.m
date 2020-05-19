@@ -11,7 +11,7 @@ function los = ConvertNormVerticesToLos(regs, dsmRegs, vertices)
         angPostExp = acosd(outboundDirection(:,3)); % angle w.r.t. Z-axis [deg]
         angGrid = (0:45)';
         angOutOnGrid = angGrid + angGrid.^[1,2,3,4]*vec(regs.FRMW.fovexNominal);
-        angPreExp = interp1(angOutOnGrid, angGrid, angPostExp);
+        angPreExp = OnlineCalibration.K2DSM.DirectInterp(angOutOnGrid, angGrid, angPostExp); % direct implementation of Matlab's function: interp1(angOutOnGrid, angGrid, angPostExp)
         fovexIndicentDirection(:,3) = cosd(angPreExp);
         xyNorm = outboundDirection(:,1).^2+outboundDirection(:,2).^2; % can never be 0 in IVCAM2
         xyFactor = sqrt((1-fovexIndicentDirection(:,3).^2)./xyNorm);
@@ -33,8 +33,8 @@ function los = ConvertNormVerticesToLos(regs, dsmRegs, vertices)
     dsmGrid = (-2100:10:2100)';
     dsmXcoarseOnGrid = dsmGrid + (dsmGrid/2047).^[1,2,3]*vec(regs.FRMW.polyVars);
     dsmXcorrOnGrid = dsmXcoarseOnGrid + (dsmXcoarseOnGrid/2047).^[1,2,3,4]*vec(regs.FRMW.undistAngHorz);
-    dsmX = interp1(dsmXcorrOnGrid, dsmGrid, dsmXcorr); % Nx1
-    dsmY = dsmYcorr - (dsmX/2047)*regs.FRMW.pitchFixFactor;
+    dsmX = OnlineCalibration.K2DSM.DirectInterp(dsmXcorrOnGrid, dsmGrid, dsmXcorr); % direct implementation of Matlab's function: interp1(dsmXcorrOnGrid, dsmGrid, dsmXcorr)
+    dsmY = dsmYcorr - (dsmX/2047)*regs.FRMW.pitchFixFactor; % Nx1
 
     % Reverting DSM (taken from Utils.convert.applyDsm)
     losX = (dsmX + 2047)/double(dsmRegs.dsmXscale) - double(dsmRegs.dsmXoffset);

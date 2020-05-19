@@ -7,16 +7,21 @@ function [losShift, losScaling] = ConvertKToLosError(data, optK)
     pyShift = double(optK(2,3)-data.origK(2,3));
     
     % shift reconstruction
-    losShift = data.shiftRatioMat\[pxShift; pyShift]; % pseudo-inverse
+    losShift = OnlineCalibration.K2DSM.DirectInv(data.shiftRatioMat)*[pxShift; pyShift]; % direct implementation of Matlab's solver: data.shiftRatioMat\[pxShift; pyShift]
     
     % scaling ratio optimization
     focalScaling = [fxScaling, fyScaling];
-    coarseGrid = [-0.0250, -0.0125, 0, 0.0125,0.0250];
-    fineGrid = [-0.0150, -0.0075, 0, 0.0075, 0.0150];
-    [yScalingGrid, xScalingGrid] = ndgrid(1+coarseGrid, 1+coarseGrid);
+    coarseGrid = [-1, -0.5, 0, 0.5, 1]*data.maxScalingStep;
+    fineGrid = [-1, -0.5, 0, 0.5, 1]*0.6*data.maxScalingStep; % intentionally spans more than 1 coarse grid resolution
+    [yScalingGrid, xScalingGrid] = ndgrid(data.lastLosScaling(2)+coarseGrid, data.lastLosScaling(1)+coarseGrid); % search around last estimated scaling
     optScaling = RunScalingOptimizationStep(data, losShift, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     [yScalingGrid, xScalingGrid] = ndgrid(optScaling(2)+fineGrid, optScaling(1)+fineGrid);
     losScaling = RunScalingOptimizationStep(data, losShift, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
+    
+    % forcing maximal allowed scaling step w.r.t. last AC event
+    maxStepWithMargin = 1.01*data.maxScalingStep; % to avoid numerical issues
+    losScaling(1) = min(max(losScaling(1), data.lastLosScaling(1)-maxStepWithMargin), data.lastLosScaling(1)+maxStepWithMargin);
+    losScaling(2) = min(max(losScaling(2), data.lastLosScaling(2)-maxStepWithMargin), data.lastLosScaling(2)+maxStepWithMargin);
     
 end
 
@@ -32,10 +37,10 @@ function optScaling = RunScalingOptimizationStep(data, losShift, scalingGrid, fo
     
     % quadratic approximation
     sgMat = double([scalingGrid(:,1).^2, scalingGrid(:,2).^2, scalingGrid(:,1).*scalingGrid(:,2), scalingGrid(:,1), scalingGrid(:,2), ones(size(scalingGrid,1),1)]);
-    quadCoef = (sgMat'*sgMat)\(sgMat'*double(errL2)); % pseudo-inverse
+    quadCoef = OnlineCalibration.K2DSM.DirectInv(sgMat'*sgMat)*(sgMat'*double(errL2)); % direct implementation of Matlab's solver: (sgMat'*sgMat)\(sgMat'*double(errL2))
     A = [quadCoef(1), quadCoef(3)/2; quadCoef(3)/2, quadCoef(2)];
     b = [quadCoef(4); quadCoef(5)];
-    optScaling = -(A\b)/2; % pseudo-inverse
+    optScaling = -OnlineCalibration.K2DSM.DirectInv(A)*b/2; % direct implementation of Matlab's solver: -(A\b)/2
     
     % sanity check
     isPosDef = (quadCoef(1)+quadCoef(2))>0 && (quadCoef(1)*quadCoef(2)-quadCoef(3)^2/4)>0;

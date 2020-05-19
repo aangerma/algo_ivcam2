@@ -21,8 +21,8 @@ function [metrics,dbg] = runMetrics(frame,par)
     metrics.lineFitMax2D_H = resultsLF.lineFit2DMaxErrorTotal_hAF;
     metrics.lineFitMax2D_V = resultsLF.lineFit2DMaxErrorTotal_vAF;
     [~,resultsDist] = Validation.metrics.gridDistortion(frame, par);
-    metrics.lineFitRms3D_H = resultsDist.horzErrorMeanAF;
-    metrics.lineFitRms3D_V = resultsDist.vertErrorMeanAF;
+    metrics.scaleErr_H = resultsDist.absHorzErrorMeanAF;
+    metrics.scaleErr_V = resultsDist.absVertErrorMeanAF;
     
     
 end
