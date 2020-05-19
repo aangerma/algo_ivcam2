@@ -97,8 +97,8 @@ newAcDataStruct = acData;
 
 validParams = sceneResults.validMovement && sceneResults.validFixBySVM;
 
-if iterNum > 2 % Else params remain the same and acdataIn is equal to ACDataout
-    params = finalParams;
+if iterNum >= 1 % Else params remain the same and acdataIn is equal to ACDataout
+    params = newParamsK2DSM;% Should be final params
 end
 
 
