@@ -1,6 +1,6 @@
 function runOnlineCalibrationOn(sceneDir,LRS)
 
-outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
+outputBinFilesPath = fullfile(sceneDir,'binFiles\ac1x'); % Path for saving binary images
 % Load data of scene 
 % load(intrinsicsExtrinsicsPath);
 
