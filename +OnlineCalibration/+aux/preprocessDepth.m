@@ -1,4 +1,4 @@
-function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth, validIREdgesSize,validPixelsSize] = preprocessDepth(frame,params,sceneDir)
+function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth, validIREdgesSize,validPixelsSize] = preprocessDepth(frame,params,outputBinFilesPath)
 
     % Get gradient direction in IR
     % Calculate sub pixel location in IR
@@ -13,7 +13,6 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     [iEdge,Ix,Iy] = OnlineCalibration.aux.edgeSobelXY(uint16(frame.i),2);
     validEdgePixelsByIR = iEdge>params.gradITh; 
     
-outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Zx',Zx,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Zy',Zy,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Ix',Ix,'double');

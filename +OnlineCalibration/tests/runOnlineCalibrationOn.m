@@ -58,10 +58,10 @@ sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
 
 % Preprocess RGB
 [frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',single(frame.rgbEdge),'single');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',single(frame.rgbIDT),'single');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',single(frame.rgbIDTx),'single');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',single(frame.rgbIDTy),'single');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',double(frame.rgbEdge),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
 if  0
 %     Old preprocessing
@@ -99,7 +99,11 @@ else
     [frame.irEdge,frame.zEdge,...
     frame.xim,frame.yim,frame.zValuesForSubEdges...
     ,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,...
-    frame.sectionMapDepth, validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,sceneDir);
+    frame.sectionMapDepth, validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
+
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_xim',frame.xim,'double');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_yim',frame.yim,'double');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zGradInDirection',frame.zGradInDirection,'double');
 end
 
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
@@ -108,7 +112,7 @@ md.n_valid_ir_edges = validIREdgesSize;
 md.n_valid_pixels =  validPixelsSize;
 %% Validate input scene
 md.is_scene_valid = true;
-if ~OnlineCalibration.aux.validScene(frame,params, sceneDir)
+if ~OnlineCalibration.aux.validScene(frame,params, outputBinFilesPath)
     disp('Scene not valid!');
     md.is_scene_valid = false;
      %return;
