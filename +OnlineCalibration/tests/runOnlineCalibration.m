@@ -9,7 +9,7 @@ clear
 LRS = false;
 % close all
 %% Load frames from IPDev
-sceneDir = 'C:\work\librealsense\build\unit-tests\algo\depth-to-rgb-calibration\19.2.20\F9440687\Snapshots\LongRange_D_768x1024_RGB_1920x1080\2';
+sceneDir = 'C:\work\librealsense\build\unit-tests\algo\depth-to-rgb-calibration\19.2.20\F9440687\LongRange_D_768x1024_RGB_1920x1080\2';
 if LRS
     sceneDir = 'C:\work\autocal\data\251';
 end

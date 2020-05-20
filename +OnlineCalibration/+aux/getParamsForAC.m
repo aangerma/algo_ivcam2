@@ -41,5 +41,10 @@ params.gradDirRatioPerp = 1.5;
 params.edgeDistributMinMaxRatio = 0.005;
 params.minWeightedEdgePerSectionDepth = 50*(480*640)/prod(params.depthRes);
 params.minWeightedEdgePerSectionRgb = 0.05*(1920*1080)/prod(params.rgbRes);
+
+params.iterFromStart = 1;
+params.maxK2DSMIters = 10;
+
+params.maxLosScalingStep = 0.02;
 end
 
