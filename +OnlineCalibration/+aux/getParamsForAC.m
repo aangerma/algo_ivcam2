@@ -27,8 +27,6 @@ params.rgbPmatNormalizationMat = [0.35369244,0.26619774,1.0092601,0.00067320449;
 params.KrgbMatNormalizationMat = [0.35417202,0.26565930,1.0017655;0.35559174,0.26570305,1.0066491;409.82886,318.79565,1182.6952];
 params.RnormalizationParams = [1508.9478;1604.9430;649.38434];
 params.TmatNormalizationMat = [0.91300839;0.91698289;0.43305457];
-params.KdepthMatNormalizationMat = [0.050563768;0.053219523;1.9998592;2.0044701];
-
 params.edgeThresh4logicIm = 0.1;
 params.seSize = 3;
 params.moveThreshPixVal = 20;
@@ -55,5 +53,8 @@ params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMM
 % params.affectingInvalidationSVMModel.nonmandatory = {'inverseDistParams';'maxStepSize';'tau';'controlParam';'edgeThresh4logicIm'};
 params.iterFromStart = 1;
 params.numOptimizationToDSMIters = 3;
+params.maxK2DSMIters = 10;
+
+params.maxLosScalingStep = 0.02;
 end
 
