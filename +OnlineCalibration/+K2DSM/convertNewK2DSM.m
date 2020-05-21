@@ -9,7 +9,7 @@ function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand] = convertNewK2
     
     dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse');
     preProcData = OnlineCalibration.K2DSM.PreProcessing(regs, acData, dsmRegs, KRaw, rot90(currentFrame.relevantPixelsImage,2), params.maxLosScalingStep);
-    [losShift, losScaling] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
+    [losScaling,losShift] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
     acDataCand = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acData, acData.flags, losShift, losScaling);
     dsmRegsCand = Utils.convert.applyAcResOnDsmModel(acDataCand, dsmRegsOrig, 'direct');
 %         acDataInCand.flags(2:6) = uint8(0);

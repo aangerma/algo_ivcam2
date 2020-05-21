@@ -1,5 +1,5 @@
-function losScaling = ConvertKToLosError(data, optK)
-    
+function [losScaling,losShift] = ConvertKToLosError(data, optK)
+    losShift = [0;0];
     % K changes
     fxScaling = double(optK(1,1)/data.origK(1,1));
     fyScaling = double(optK(2,2)/data.origK(2,2));
