@@ -31,12 +31,12 @@ Rc_nan = iteration_data.rc;
 Rc_nan(isnan(Rc_nan)) = realmax;
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, Rc_nan','double');
 
-f_name = sprintf('xCoeff_P_%d',iteration_data.iterCount);
+f_name = sprintf('xCoeff_P_iteration_%d',iteration_data.iterCount);
 xCoeffValP_nan = [iteration_data.xCoeffValP];
 xCoeffValP_nan(isnan(xCoeffValP_nan)) = realmax;
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, xCoeffValP_nan,'double');
 
-f_name = sprintf('yCoeff_P_%d',iteration_data.iterCount);
+f_name = sprintf('yCoeff_P_iteration_%d',iteration_data.iterCount);
 yCoeffValP_nan = [iteration_data.yCoeffValP];
 yCoeffValP_nan(isnan(yCoeffValP_nan)) = realmax;
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, yCoeffValP_nan,'double');

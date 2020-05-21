@@ -106,4 +106,3 @@ function [cost,grad, iteration_data] = calcCostAndGrad(frame,params)
 	iteration_data.grad = grad;
     
 end
-
