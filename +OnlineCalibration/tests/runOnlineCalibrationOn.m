@@ -123,14 +123,6 @@ md.n_valid_pixels =  validPixelsSize;
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
 
 
-%% Set initial value for some variables that change between iterations
-currentFrameCand = frame;
-newParamsK2DSM = params;
-converged = false;
-iterNum = 0;
-lastCost = decisionParams.initialCost;
-dsmRegsCand = dsmRegs;
-acDataCand = acData;
 
 % OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'depthEdgeWeightDistributionPerSectionDepth',validSceneStruct.edgeWeightDistributionPerSectionDepth,'double');
 % OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth_trans',uint8(transpose(frames.sectionMapDepth)),'uint8');
