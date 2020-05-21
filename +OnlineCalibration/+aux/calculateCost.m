@@ -1,7 +1,7 @@
-function [C,scorePerVertex] = calculateCost(V,W,D,camerasParams)
+function [C,scorePerVertex,uvMap] = calculateCost(V,W,D,camerasParams)
 %     [Dx,Dy] = imgradientxy(D);% Sobel image gradients [-1,0,1;-2,0,2;-1,0,1]
 %     A = camerasParams.rgbPmat;
-    uvMap = OnlineCalibration.aux.projectVToRGB(V,camerasParams.rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort);
+    uvMap = OnlineCalibration.aux.projectVToRGB(V,camerasParams.rgbPmat,camerasParams.Krgb,camerasParams.rgbDistort,camerasParams);
 % 
 %     validPts = uvMap > 0;
 %     validPts = validPts & (uvMap(:,1) < size(D,2)-1);
