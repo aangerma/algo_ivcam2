@@ -2,7 +2,7 @@ function acDataOut = ConvertLosErrorToAcData(dsmRegs, acDataIn, modelFlag, losSh
     
     acDataOut = acDataIn;
     acDataOut.flags = modelFlag;
-    switch modelFlag
+    switch modelFlag(1)
         case 0 % none
             acDataOut.hFactor = 1;
             acDataOut.vFactor = 1;

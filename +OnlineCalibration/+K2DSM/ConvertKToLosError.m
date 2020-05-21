@@ -1,22 +1,17 @@
-function [losShift, losScaling] = ConvertKToLosError(data, optK)
+function losScaling = ConvertKToLosError(data, optK)
     
     % K changes
     fxScaling = double(optK(1,1)/data.origK(1,1));
     fyScaling = double(optK(2,2)/data.origK(2,2));
-    pxShift = double(optK(1,3)-data.origK(1,3));
-    pyShift = double(optK(2,3)-data.origK(2,3));
-    
-    % shift reconstruction
-    losShift = OnlineCalibration.K2DSM.DirectInv(data.shiftRatioMat)*[pxShift; pyShift]; % direct implementation of Matlab's solver: data.shiftRatioMat\[pxShift; pyShift]
     
     % scaling ratio optimization
     focalScaling = [fxScaling, fyScaling];
     coarseGrid = [-1, -0.5, 0, 0.5, 1]*data.maxScalingStep;
     fineGrid = [-1, -0.5, 0, 0.5, 1]*0.6*data.maxScalingStep; % intentionally spans more than 1 coarse grid resolution
     [yScalingGrid, xScalingGrid] = ndgrid(data.lastLosScaling(2)+coarseGrid, data.lastLosScaling(1)+coarseGrid); % search around last estimated scaling
-    optScaling = RunScalingOptimizationStep(data, losShift, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
+    optScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     [yScalingGrid, xScalingGrid] = ndgrid(optScaling(2)+fineGrid, optScaling(1)+fineGrid);
-    losScaling = RunScalingOptimizationStep(data, losShift, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
+    losScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     
     % forcing maximal allowed scaling step w.r.t. last AC event
     maxStepWithMargin = 1.01*data.maxScalingStep; % to avoid numerical issues
@@ -27,10 +22,10 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function optScaling = RunScalingOptimizationStep(data, losShift, scalingGrid, focalScaling, plotFlag)
+function optScaling = RunScalingOptimizationStep(data, scalingGrid, focalScaling, plotFlag)
     
     % calculating distance between model-based change and observed change in focal lengths
-    optK = OnlineCalibration.K2DSM.OptimizeKUnderLosError(data, scalingGrid, losShift);
+    optK = OnlineCalibration.K2DSM.OptimizeKUnderLosError(data, scalingGrid);
     fxScalingOnGrid = squeeze(optK(1,1,:))/data.origK(1,1);
     fyScalingOnGrid = squeeze(optK(2,2,:))/data.origK(2,2);
     errL2 = sqrt((fxScalingOnGrid-focalScaling(1)).^2+(fyScalingOnGrid-focalScaling(2)).^2);
