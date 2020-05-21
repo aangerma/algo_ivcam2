@@ -1,4 +1,4 @@
-function [isValidScene,validSceneStruct] = validScene(frames,params, outputBinFilesPath)
+function [validInputStruct,isMovement] = validScene(frames,params, outputBinFilesPath)
 validSceneStruct = struct;
 validSceneStruct.invalidReason = '';
 isValidScene = true;
