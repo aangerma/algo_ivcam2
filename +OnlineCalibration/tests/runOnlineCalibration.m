@@ -102,6 +102,9 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',doub
 
 %% decisionParams from input scene
 [~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params);
+if isMovement
+   return; 
+end
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
 
 
@@ -113,6 +116,7 @@ converged = false;
 iterNum = 0;
 lastCost = decisionParams.initialCost;
 dsmRegsCand = dsmRegs;
+acDataIn = acData;
 acDataCand = acData;
 
 
@@ -137,7 +141,8 @@ while ~converged && iterNum < params.maxK2DSMIters
         dsmRegs = dsmRegsCand;
     end    
 end
-
+%% Clip scaling movement
+acData = OnlineCalibration.K2DSM.clipACScaling(acData,acDataIn,params.maxGlobalLosScalingStep);
 %% Validate new parameters
 [finalParams,dbg,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsP,newParamsK2DSM,originalParams,params.iterFromStart);
 % Merge all decision params
@@ -147,7 +152,7 @@ decisionParams.newCost = newCost(end);
 
 
 [validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params);
-validParams = ~isMovement && validFixBySVM; 
+validParams = validFixBySVM; 
 
 if validParams
     params = finalParams;

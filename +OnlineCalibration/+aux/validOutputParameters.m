@@ -14,6 +14,9 @@ dbg = struct;
 % iterations
 [uvMapOrig,~,~] = OnlineCalibration.aux.projectVToRGB(frame.originalVertices,originalParams.rgbPmat,originalParams.Krgb,originalParams.rgbDistort,originalParams);
 [uvMapNew,~,~] = OnlineCalibration.aux.projectVToRGB(frame.vertices,newParamsK2DSM.rgbPmat,newParamsK2DSM.Krgb,newParamsK2DSM.rgbDistort,newParamsK2DSM);
+dbg.uvMapOrig = uvMapOrig;
+dbg.uvMapNew = uvMapNew;
+
 validUvs = OnlineCalibration.aux.isInsideImage(uvMapOrig,flip(params.rgbRes)) &  OnlineCalibration.aux.isInsideImage(uvMapNew,flip(params.rgbRes));
 validOutputStruct.xyMovementFromOrigin = mean(sqrt(sum((uvMapOrig(validUvs,:)-uvMapNew(validUvs,:)).^2,2)));
 if validOutputStruct.xyMovementFromOrigin > params.maxXYMovementFromOrigin

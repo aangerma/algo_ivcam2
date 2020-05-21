@@ -14,22 +14,26 @@
 clear
 close all
 
-testSubName = '_iterative';
+testSubName = '_iterativeAged';
 
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
-sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
+sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration3_Scene&CB_aged';%'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
 rng(4);
-nAugPerScene = 1;
 ind = 0;
 
 goodScenesList = {};
 badScenesList = {};
-
-params.augmentationMaxMovement = 10;
+if contains(sceneHeadDir,'aged')
+    params.augmentationMaxMovement = 0;
+    params.applyK2DSMFix = false;
+    nAugPerScene = 1;
+else
+    params.augmentationMaxMovement = 10;
+    params.applyK2DSMFix = true;
+    nAugPerScene = 1;
+end
 params.augMethod = 'dsmAndRotation';
 params.AC2 = 1;
-params.applyK2DSMFix = true;
-
 
 sceneDirs = dir(fullfile(sceneHeadDir,'scene*'));
 for sc = 1:numel(sceneDirs)
@@ -55,6 +59,7 @@ for sc = 1:numel(sceneDirs)
                             params.randVecForDsmAndRotation(2) = 0.5;
                         end
                         sceneResults = OnlineCalibration.datasetAnalysis.runIterativeAC2FromDir(sceneFullPath,params);
+                        sceneResults.randomSeed = seed;
                         if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
                             ind = ind + 1;
                             results(ind) = sceneResults;
@@ -62,24 +67,26 @@ for sc = 1:numel(sceneDirs)
                         else
                             badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         end
-                        
+                        if any(isnan(sceneResults.features))
+                            warning('Found nan in SVM features');
+                        end
                         fprintf('cost: ');
                         fprintf('%g ',results(ind).desicionParams.initialCost);
-                        fprintf('-> %g ',results(ind).newCost); 
+                        fprintf('-> %g ',results(ind).newCost);
                         fprintf('\n');
-
+                        
                         fprintf('uv: ');
                         fprintf('%2.2g ',results(ind).uvErrPre);
-                        fprintf('-> %2.2g ',results(ind).uvErrPostK2DSM); 
+                        fprintf('-> %2.2g ',results(ind).uvErrPostK2DSM);
                         fprintf('\n');
                         fprintf('uv: %2.2g -> %2.2g       (Kz From P)        \n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt(1));
-
-
+                        
+                        
                         fprintf('gid: ');
                         fprintf('%2.2g ',results(ind).gidPre);
-                        fprintf('-> %2.2g ',results(ind).gidPostK2DSM); 
+                        fprintf('-> %2.2g ',results(ind).gidPostK2DSM);
                         fprintf('\n');
-                        fprintf('gid: %2.2g -> %2.2g    (Kz From P)\n',results(ind).gidPre,results(ind).metricsPostKzFromP(1).gid);
+                        fprintf('gid: %2.2g -> %2.2g    (Kz From P)\n',results(ind).gidPre,results(ind).gidPostKzFromP);
 
                         if sceneResults.validFixBySVM
                             fprintf('[v] Valid fix\n'); 
