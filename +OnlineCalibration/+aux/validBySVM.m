@@ -6,13 +6,11 @@ featuresMat = OnlineCalibration.aux.extractFeatures(decisionParams);
 
 
 
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'featuresMat',double(featuresMat),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'featuresMat_trans',double(transpose(featuresMat)),'double');
-
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeWeightDistributionPerSectionDepth',double(decisionParams.edgeWeightDistributionPerSectionDepth),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeWeightDistributionPerSectionRgb',double(decisionParams.edgeWeightDistributionPerSectionRgb),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeWeightsPerDir',double(decisionParams.edgeWeightsPerDir),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'improvementPerSection',double(decisionParams.improvementPerSection),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'svm_featuresMat',double(featuresMat),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'svm_edgeWeightDistributionPerSectionDepth',double(decisionParams.edgeWeightDistributionPerSectionDepth),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'svm_edgeWeightDistributionPerSectionRgb',double(decisionParams.edgeWeightDistributionPerSectionRgb),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'svm_edgeWeightsPerDir',double(decisionParams.edgeWeightsPerDir),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'svm_improvementPerSection',double(decisionParams.improvementPerSection),'double');
 
 switch SVMModel.KernelParameters.Function
     case 'linear'
