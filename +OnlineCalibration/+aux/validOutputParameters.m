@@ -54,6 +54,7 @@ for i = 0:(params.numSectionsH*params.numSectionsV)-1
 end
 dbg.scoreDiffPerVertex = scoreDiffPerVertex;
 dbg.scoreDiffPersection = scoreDiffPersection;
+validOutputStruct.improvementPerSection = scoreDiffPersection;
 validOutputStruct.minImprovementPerSection = min(scoreDiffPersection);
 validOutputStruct.maxImprovementPerSection = max(scoreDiffPersection);
 if any(scoreDiffPersection<0)
