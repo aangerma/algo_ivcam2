@@ -2,7 +2,7 @@ function dsmRegsOut = applyAcResOnDsmModel(acData, dsmRegsIn, type)
    dsmRegsOut = dsmRegsIn;
     switch type
         case 'direct' % convert from original model to modified model
-            switch acData.flags
+            switch acData.flags(1)
                 case 0 % none
                     dsmRegsOut = dsmRegsIn;
                 case 1 % AOT model
@@ -19,7 +19,7 @@ function dsmRegsOut = applyAcResOnDsmModel(acData, dsmRegsIn, type)
                     error('Only {0,1,2} are supported as values for "flags"');
             end
         case 'inverse' % revert from modified model to original model
-            switch acData.flags
+            switch acData.flags(1)
                 case 0 % none
                     dsmRegsOut = dsmRegsIn;
                 case 1 % AOT model

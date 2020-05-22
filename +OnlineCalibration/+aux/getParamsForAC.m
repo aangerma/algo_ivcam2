@@ -53,7 +53,10 @@ params.moveThreshPixNum =  3e-05*prod(params.rgbRes);
 params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMModel.mat');
 % params.affectingInvalidationSVMModel.mandatory = {'gradITh';'gradZMax';'numSectionsV';'numSectionsH';'constantWeights';'constantWeightsValue'};
 % params.affectingInvalidationSVMModel.nonmandatory = {'inverseDistParams';'maxStepSize';'tau';'controlParam';'edgeThresh4logicIm'};
-params.iterFromStart = 1;
-params.numOptimizationToDSMIters = 3;
+% params.iterFromStart = 1;
+% params.numOptimizationToDSMIters = 3;
+ params.maxK2DSMIters = 10;
+
+params.maxLosScalingStep = 0.02;
 end
 
