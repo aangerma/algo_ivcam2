@@ -111,13 +111,19 @@ frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 md.n_edges = size(frame.weights,1);
 md.n_valid_ir_edges = validIREdgesSize;
 md.n_valid_pixels =  validPixelsSize;
-%% Validate input scene
-md.is_scene_valid = true;
-if ~OnlineCalibration.aux.validScene(frame,params, outputBinFilesPath)
-    disp('Scene not valid!');
-    md.is_scene_valid = false;
-     %return;
-end
+% %% Validate input scene
+% md.is_scene_valid = true;
+% if ~OnlineCalibration.aux.validScene(frame,params, outputBinFilesPath)
+%     disp('Scene not valid!');
+%     md.is_scene_valid = false;
+%      %return;
+% end
+%% decisionParams from input scene
+
+[~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params,outputBinFilesPath);
+decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
+
+md.is_scene_valid = ~isMovement;
 
 % OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'depthEdgeWeightDistributionPerSectionDepth',validSceneStruct.edgeWeightDistributionPerSectionDepth,'double');
 % OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth_trans',uint8(transpose(frames.sectionMapDepth)),'uint8');
@@ -147,10 +153,26 @@ newParams.rgbPmat = newParams.Krgb*[newParams.Rrgb,newParams.Trgb];
 %ax = gca;
 %title({ax.Title.String;'New R,T,Krgb optimization'});
 %% Validate new parameters
-[validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
+% [validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
+% if validParams
+%     params = updatedParams;
+% end
+%% Validate new parameters
+[~,~,dbg,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(frame,params,newParamsP,originalParams,params.iterFromStart);
+% Merge all decision params
+decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct); 
+decisionParams = Validation.aux.mergeResultStruct(decisionParams, validInputStruct); 
+decisionParams.newCost = newCost(end);
+
+
+[validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params,outputBinFilesPath);
+validParams = ~isMovement && validFixBySVM; 
+
 if validParams
-    params = updatedParams;
+    params = newParamsK2DSM;
 end
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
+
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
 md.xy_movement = dbg.xyMovement;
 md.is_output_valid = validParams;
