@@ -122,7 +122,7 @@ else
     [frame.irEdge,frame.zEdge,...
     frame.xim,frame.yim,frame.zValuesForSubEdges...
     ,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,...
-    frame.sectionMapDepth, validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
+    frame.sectionMapDepth, validIREdgesSize,validPixelsSize,frame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
 
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_xim',frame.xim,'double');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_yim',frame.yim,'double');
@@ -169,7 +169,7 @@ acDataCand = acData;
 [~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
 while ~converged && iterNum < params.maxK2DSMIters
     % K2DSM
-    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params);
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params);
     % Optimize P
     [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
     if newCostCand < lastCost
@@ -215,13 +215,13 @@ md.is_output_valid = validParams;
 
 %% Write the metadata:
 fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
-fwrite( fid, md.xy_movement, 'double' );
+%fwrite( fid, md.xy_movement, 'double' );
 fwrite( fid, md.n_edges, 'uint64' );
 fwrite( fid, md.n_valid_ir_edges, 'uint64' );
 fwrite( fid, md.n_valid_pixels, 'uint64' );
-fwrite( fid, md.n_iter, 'uint64' );
+fwrite( fid, iterNum, 'uint64' );
 fwrite( fid, md.is_scene_valid, 'uint8' );
-fwrite( fid, md.is_output_valid, 'uint8' );
+%fwrite( fid, md.is_output_valid, 'uint8' );
 fclose( fid );
 
 %% figure; 
