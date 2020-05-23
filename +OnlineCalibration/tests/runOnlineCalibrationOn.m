@@ -166,29 +166,31 @@ dsmRegsCand = dsmRegs;
 acDataCand = acData;
 
 
-[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
-while ~converged && iterNum < params.maxK2DSMIters
+[newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+new_calib = calibAndCostToRaw(newParamsKzFromP, newCost);  
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
+% while ~converged && iterNum < params.maxK2DSMIters
     % K2DSM
     [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params);
     % Optimize P
-    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
-    if newCostCand < lastCost
-        % End iterations
-        converged = 1;
-    else
-        iterNum = iterNum + 1;
-        frame = currentFrameCand;
-        lastCost = newCostCand;
-        newCost = newCostCand;
-        newParamsP = newParamsPCand;
-        newParamsKzFromP = newParamsKzFromPCand;
-        newParamsK2DSM = newParamsK2DSMCand;
-        acData = acDataCand;
-        dsmRegs = dsmRegsCand;
-    end    
-end
+%     [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+%     if newCostCand < lastCost
+%         % End iterations
+%         converged = 1;
+%     else
+%         iterNum = iterNum + 1;
+%         frame = currentFrameCand;
+%         lastCost = newCostCand;
+%         newCost = newCostCand;
+%         newParamsP = newParamsPCand;
+%         newParamsKzFromP = newParamsKzFromPCand;
+%         newParamsK2DSM = newParamsK2DSMCand;
+%         acData = acDataCand;
+%         dsmRegs = dsmRegsCand;
+%     end    
+% end
 
-%% Validate new parameters
+%Validate new parameters
 % [validParams,updatedParams,dbg] = OnlineCalibration.aux.validOutputParameters(frame,params,newParams,startParams,1);
 % if validParams
 %     params = updatedParams;
@@ -199,15 +201,12 @@ end
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validOutputStruct); 
 decisionParams = Validation.aux.mergeResultStruct(decisionParams, validInputStruct); 
 decisionParams.newCost = newCost(end);
-
-
 [validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params,outputBinFilesPath);
 validParams = ~isMovement && validFixBySVM; 
 
 if validParams
     params = newParamsK2DSM;
 end
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
 md.xy_movement = dbg.xyMovement;
@@ -215,7 +214,7 @@ md.is_output_valid = validParams;
 
 %% Write the metadata:
 fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
-%fwrite( fid, md.xy_movement, 'double' );
+fwrite( fid, md.xy_movement, 'double' );
 fwrite( fid, md.n_edges, 'uint64' );
 fwrite( fid, md.n_valid_ir_edges, 'uint64' );
 fwrite( fid, md.n_valid_pixels, 'uint64' );
