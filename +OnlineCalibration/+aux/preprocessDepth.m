@@ -162,10 +162,17 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'directionIndexInside',dou
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zValuesForSubEdges',double(zValuesForSubEdges),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',double(weights),'double');
 
-relevantPixelsImage = false(sz);
+round_yim = round(yim+1);
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'round_yim',double(round_yim),'double');
+round_xim = round(xim+1);
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'round_xim',double(round_xim),'double');
+    relevantPixelsImage = false(sz);
     relevantPixelsImage(sub2ind(sz,round(yim+1),round(xim+1))) = 1;
-    end
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',relevantPixelsImage,'uint8');
 
+    end
+end
+ 
 
 % function [locRCsub,zValue,zGradInDirection] = subEdgesByForLoop(iEdge,Zim,Zx,Zy,locRC,directionIndex,dirsVec)
 % 
