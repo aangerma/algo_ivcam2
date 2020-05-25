@@ -68,6 +68,7 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     hw.stopStream;
     if exist('dataPath', 'var') && exist('num', 'var')
         save(fullfile(dataPath, sprintf('%d_data.mat', num)) ,'newParams','params','frame','CurrentOrigParams','validParams','dbg','flowParams','originalParams','sectionMapDepth','sectionMapRgb','flowParams');
+        save(fullfile(dataPath, sprintf('%d_dbg.mat', num)) ,'newParams','params','CurrentOrigParams','validParams','dbg','flowParams','originalParams','sectionMapDepth','sectionMapRgb','flowParams');
     end
     try
         if exist('dataPath2', 'var') && exist('num', 'var')
