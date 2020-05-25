@@ -1,4 +1,7 @@
-function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, num, maxIters, burnToUnit, ignoreValidity, dataPath2)
+function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, num, maxIters, burnToUnit, ignoreValidity, alternateIr)
+    if ~exist('alternateIr', 'var')
+        maxIters = false;
+    end
     hFactor= -1;
     vFactor= -1;
     depthRes = [480,640];
@@ -10,6 +13,9 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     
     hw.cmd('AMCSET 5 64'); % Set laser gain to 100%
     hw.cmd('AMCSET 7 1');  % Set the invalidation bypass to 1
+    if alternateIr
+        hw.cmd('mwd a00e084c a00e0850 00000001')
+    end
     cameraParams = OnlineCalibration.aux.getCameraParamsFromUnit(hw,rgbRes);
     cameraParams.rgbRes = rgbRes;
     cameraParams.depthRes = depthRes;
