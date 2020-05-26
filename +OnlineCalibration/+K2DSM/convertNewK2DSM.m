@@ -13,6 +13,15 @@ function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand] = convertNewK2
      OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dsmRegsOrig',dsmRegsOrigVec,'single');
      
      preProcData = OnlineCalibration.K2DSM.PreProcessing(regs, acData, dsmRegs, KRaw, rot90(currentFrame.relevantPixelsImage,2), params.maxLosScalingStep);
+     
+     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImageRot', rot90(currentFrame.relevantPixelsImage,2),'uint8');
+     preProcDataVec = [preProcData.lastLosScaling(:)', preProcData.lastLosShift(:)'];
+     
+     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dsm_los_error_orig',preProcDataVec','single');
+     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'verticesOrig',preProcData.verticesOrig,'double');
+     OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'losOrig',preProcData.losOrig,'double');
+     
+    
      [losScaling,losShift] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
      acDataCand = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acData, acData.flags, losShift, losScaling);
      dsmRegsCand = Utils.convert.applyAcResOnDsmModel(acDataCand, dsmRegsOrig, 'direct');

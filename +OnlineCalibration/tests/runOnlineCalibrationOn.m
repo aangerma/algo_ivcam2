@@ -29,11 +29,10 @@ else
     dsmRegs.dsmYscale = 1116837726;
     dsmRegs.dsmXscale = 1115418352;
     
-   saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, calibDataBin, dsmRegs);
 end
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
-
+saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, regs, dsmRegs);
  
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir, LRS);
@@ -133,6 +132,7 @@ frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 md.n_edges = size(frame.weights,1);
 md.n_valid_ir_edges = validIREdgesSize;
 md.n_valid_pixels =  validPixelsSize;
+md.n_relevant_pixels = sum(frame.relevantPixelsImage(:) == 1);
 % %% Validate input scene
 % md.is_scene_valid = true;
 % if ~OnlineCalibration.aux.validScene(frame,params, outputBinFilesPath)
@@ -166,7 +166,7 @@ dsmRegsCand = dsmRegs;
 acDataCand = acData;
 
 
-[newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+[newCost,newParamsP,newParamsKzFromP,params.iterFromStart] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
 new_calib = calibAndCostToRaw(newParamsKzFromP, newCost);  
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 % while ~converged && iterNum < params.maxK2DSMIters
@@ -211,15 +211,17 @@ end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
 md.xy_movement = dbg.xyMovement;
 md.is_output_valid = validParams;
-
+md.iterNum = params.iterFromStart;
 %% Write the metadata:
 fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
 fwrite( fid, md.xy_movement, 'double' );
 fwrite( fid, md.n_edges, 'uint64' );
 fwrite( fid, md.n_valid_ir_edges, 'uint64' );
 fwrite( fid, md.n_valid_pixels, 'uint64' );
-fwrite( fid, iterNum, 'uint64' );
+fwrite( fid, md.n_relevant_pixels, 'uint64' );
+fwrite( fid, md.iterNum, 'uint64' );
 fwrite( fid, md.is_scene_valid, 'uint8' );
+
 %fwrite( fid, md.is_output_valid, 'uint8' );
 fclose( fid );
 
