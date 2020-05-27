@@ -24,14 +24,18 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     params = cameraParams;
     [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
     if exist('resFileForNextIter', 'var') && ~isempty(resFileForNextIter) % override with last optimized results
-        load(resFileForNextIter, 'lastRgbParams')
-        params.rgbPmat = lastRgbParams.rgbPmat;
-        params.Krgb = lastRgbParams.Krgb;
-        params.Rrgb = lastRgbParams.Rrgb;
-        params.Trgb = lastRgbParams.Trgb;
-        params.xAlpha = lastRgbParams.xAlpha;
-        params.yBeta = lastRgbParams.yBeta;
-        params.zGamma = lastRgbParams.zGamma;
+        try
+            load(resFileForNextIter, 'lastRgbParams')
+            params.rgbPmat = lastRgbParams.rgbPmat;
+            params.Krgb = lastRgbParams.Krgb;
+            params.Rrgb = lastRgbParams.Rrgb;
+            params.Trgb = lastRgbParams.Trgb;
+            params.xAlpha = lastRgbParams.xAlpha;
+            params.yBeta = lastRgbParams.yBeta;
+            params.zGamma = lastRgbParams.zGamma;
+        catch
+            warning('No previous RGB results to load.')
+        end
     end
     [params] = OnlineCalibration.aux.getParamsForAC(params);
     
