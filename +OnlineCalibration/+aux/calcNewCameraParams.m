@@ -22,6 +22,7 @@ while loopCounter <= params.maxIters
         end
         if params.burnToUnit
             % Create and burn new AC table
+            hw.stopStream()
             tablefn = OnlineCalibration.aux.saveNewACTable(newAcDataTable,acTableHeadPath);
             hw.cmd(sprintf('WrCalibInfo %s',tablefn));
         end
