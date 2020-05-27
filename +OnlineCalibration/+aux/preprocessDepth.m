@@ -1,4 +1,4 @@
-function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth,relevantPixelsImage] = preprocessDepth(frame,params,outputBinFilesPath)
+function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth,relevantPixelsImage,validIREdgesSize,validPixelsSize] = preprocessDepth(frame,params,outputBinFilesPath)
 
     % Get gradient direction in IR
     % Calculate sub pixel location in IR
@@ -38,6 +38,8 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validEdgePixelsByIR',doub
         IyValid = Iy(validEdgePixelsByIR);
     end
     
+validIREdgesSize = size(locRC,1);
+ 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'gridXValid',gridX(validEdgePixelsByIR),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'gridYValid',gridY(validEdgePixelsByIR),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'locRC',locRC,'double');    
@@ -108,6 +110,8 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeSubPixel',double(edge
     directionIndex = directionIndex(validEdgePixels);
     directionIndex(directionIndex>4) = directionIndex(directionIndex>4)-4;% Like taking abosoulte value on the direction
 
+    validPixelsSize = size(zGradInDirection,1);
+    
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validEdgePixels',double(validEdgePixels),'double'); 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validzGradInDirection',zGradInDirection,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validedgeSubPixel',double(edgeSubPixel),'double');

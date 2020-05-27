@@ -63,6 +63,9 @@ fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
 fprintf( fid, '%s\n%s\n%s\n%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
 fclose( fid );
 
+% Fill a metadata struct and write it out at the end:
+md = struct;
+
 % Define hyperparameters
 
 params = camerasParams;
@@ -91,7 +94,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
 % Preprocess Z and IR
-[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
+[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage,validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
 frame.originalVertices = frame.vertices;
 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'double');
@@ -106,14 +109,18 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.ve
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',double(frame.sectionMapDepth),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',double(frame.relevantPixelsImage),'double');
 
+frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
+md.n_edges = size(frame.weights,1);
+md.n_valid_ir_edges = validIREdgesSize;
+md.n_valid_pixels =  validPixelsSize;
 
 %% decisionParams from input scene
 [~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params,outputBinFilesPath);
-if isMovement
-   return; 
-end
+% if isMovement
+%    return; 
+% end
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
-
+md.is_scene_valid = ~isMovement;
 
 %% Set initial value for some variables that change between iterations
 currentFrameCand = frame;
@@ -169,7 +176,19 @@ if validParams
     params = finalParams;
 end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
+md.xy_movement = dbg.xyMovement;
+md.is_output_valid = validParams;
 
+%% Write the metadata:
+fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
+fwrite( fid, md.xy_movement, 'double' );
+fwrite( fid, md.n_edges, 'uint64' );
+fwrite( fid, md.n_valid_ir_edges, 'uint64' );
+fwrite( fid, md.n_valid_pixels, 'uint64' );
+fwrite( fid, iterNum, 'uint64' );
+fwrite( fid, md.is_scene_valid, 'uint8' );
+%fwrite( fid, md.is_output_valid, 'uint8' );
+fclose( fid );
 %{
 % Debug
 figure; 
