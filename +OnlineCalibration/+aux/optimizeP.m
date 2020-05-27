@@ -1,4 +1,4 @@
-function [newCost,newParamsP,newParamsKzFromP] = optimizeP(currentFrame,params,outputBinFilesPath)
+function [newCost,newParamsP,newParamsKzFromP,iterCount] = optimizeP(currentFrame,params,outputBinFilesPath)
 
 % Optimize P
 params.derivVar = 'P';

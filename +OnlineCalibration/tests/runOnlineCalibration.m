@@ -58,6 +58,11 @@ frame.i = frame.i(:,:,1);
 frame.yuy2 = frame.yuy2(:,:,1);
 frame.yuy2Prev = frame.yuy2;
 
+% Write the filenames out, so we can easily reproduce in C++
+fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
+fprintf( fid, '%s\n%s\n%s\n%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
+fclose( fid );
+
 % Define hyperparameters
 
 params = camerasParams;
@@ -103,7 +108,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',doub
 
 
 %% decisionParams from input scene
-[~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params);
+[~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params,outputBinFilesPath);
 if isMovement
    return; 
 end
@@ -122,7 +127,11 @@ acDataIn = acData;
 acDataCand = acData;
 
 
-[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+%[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+[newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+new_calib = calibAndCostToRaw(newParamsKzFromP, newCost);  
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
+
 while ~converged && iterNum < params.maxK2DSMIters
     % K2DSM
     [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params);

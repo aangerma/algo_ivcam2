@@ -48,9 +48,15 @@ if OnlineCalibration.Globals.loadSingleScene
     framesOut.z = frames.z;
     framesOut.i = frames.i;
     framesOut.yuy2 = frames.yuy2;
+    
+    framesOut.yuy_files = yuy2files;
+    framesOut.z_files = Zfiles;
+    framesOut.i_files = Ifiles;
+        
     return;
 end
 [ixDepthColorMatch,isColorIx] = matchClosestDepth2ColorTime(Ifiles,Zfiles,yuy2files);
+
 if isColorIx
     for k = 1:numel(Zfiles)
         framesOut.yuy2(:,:,k) =  frames.yuy2(:,:,ixDepthColorMatch(k));
