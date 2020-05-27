@@ -7,7 +7,7 @@ params.inverseDistParams.gamma = 0.9;
 params.inverseDistParams.metric = 1; % Metrics norm. Currently only suppotrs L1. Should support L2.
 params.gradITh = 3.5; % Ignore pixels with IR grad of less than this
 if all(params.depthRes == [768,1024])
-    params.gradITh = 1.5; % Ignore pixels with IR grad of less than this for XGA?
+    params.gradITh = 2.5; % Ignore pixels with IR grad of less than this for XGA?
 end
 params.gradZTh = 0; % Ignore pixels with Z grad of less than this
 params.gradZMax = 1000; 

@@ -24,6 +24,10 @@ function [data] = processSingleLut(fname,metricNames,showFig)
     data.metrics = [];
     
     if ~exist('metricNames','var') || isempty(metricNames)
+        metricNames = {'LDD_Temperature','gridInterDistance_errorRmsAF',...
+            'gridDistortion_horzErrorMeanAF','gridDistortion_vertErrorMeanAF',...
+            'geomReprojectErrorUV_rmseAF','geomReprojectErrorUV_maxErrAF'};
+    elseif ischar(metricNames) && strcmp(metricNames,'all')
         metricNames = txt(1,max([snIdx,yDsmErrorIdx,xDsmErrorIdx]):end);
     end
     
