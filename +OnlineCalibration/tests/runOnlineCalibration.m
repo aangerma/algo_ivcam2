@@ -129,6 +129,12 @@ while ~converged && iterNum < params.maxK2DSMIters
     if newCostCand < lastCost
         % End iterations
         converged = 1;
+        % No change at all (probably very good starting point)
+        if iterNum == 0 
+            newParamsK2DSM = params;
+            newParamsP = params;
+            sceneResults.newCost = lastCost;
+        end
     else
         iterNum = iterNum + 1;
         frame = currentFrameCand;
@@ -152,7 +158,7 @@ decisionParams.newCost = newCost(end);
 
 
 [validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params);
-validParams = validFixBySVM; 
+validParams = validFixBySVM && (iterNum >= 1); 
 
 if validParams
     params = finalParams;
