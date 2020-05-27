@@ -9,7 +9,8 @@ runParams.loadSingleScene = 1;
 LRS = false;
 % close all
 %% Load frames from IPDev
-sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
+%sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
+sceneDir = 'C:\Users\nyassin\Documents\realsense_all\debug_scene\LongRange 768X1024 (RGB 1920X1080)\2';
 if LRS
     sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\305';
 end
@@ -41,6 +42,7 @@ else
     dsmRegs.dsmYscale = 1116837726;
     dsmRegs.dsmXscale = 1115418352;
     
+    saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, calibDataBin, dsmRegs);
 end
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
@@ -84,7 +86,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
 % Preprocess Z and IR
-[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(frame,params);
+[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
 frame.originalVertices = frame.vertices;
 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'double');
@@ -120,12 +122,12 @@ acDataIn = acData;
 acDataCand = acData;
 
 
-[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
+[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
 while ~converged && iterNum < params.maxK2DSMIters
     % K2DSM
-    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params);
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params);
     % Optimize P
-    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
+    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
     if newCostCand < lastCost
         % End iterations
         converged = 1;
@@ -151,7 +153,7 @@ decisionParams = Validation.aux.mergeResultStruct(decisionParams, validInputStru
 decisionParams.newCost = newCost(end);
 
 
-[validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params);
+[validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params,outputBinFilesPath);
 validParams = validFixBySVM; 
 
 if validParams

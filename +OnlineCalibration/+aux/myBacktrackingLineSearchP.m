@@ -1,11 +1,12 @@
-function [stepSize,newRgbPmat,newKrgb,newRrgb,newTrgb,newCost] = myBacktrackingLineSearchP(frame,params,gradStruct)
+function [stepSize,newRgbPmat,newKrgb,newRrgb,newTrgb,newCost,unitGrad,grad,grads_norm,norma,BacktrackingLineIterCount,t] = myBacktrackingLineSearchP(frame,params,gradStruct)
 % maxStepSize,tau,controlParam,gradStruct,params,V,W,D)
 % A search scheme based on the Armijo–Goldstein condition to determine the
 % maximum amount to move along a given search direction.
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
 % dfdx = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T];
+grads_norm = gradStruct.P./norm((gradStruct.P(:)'));
 grad = gradStruct.P./norm(gradStruct.P)./params.rgbPmatNormalizationMat; 
-
+norma = norm((gradStruct.P(:)'))
 
 unitGrad = grad./norm(grad);
 stepSize = params.maxStepSize*norm(grad)/norm(unitGrad);
@@ -35,11 +36,11 @@ if isfield(params,'showOptProgress') && params.showOptProgress
     costDebug(1) = cost2;
     alphaDebug(1) = stepSize;
 end
-iterCount = 0;
-while nanmean(scorePerVertex1(commonVerts))-nanmean(scorePerVertex2(commonVerts)) >= stepSize*t && abs(stepSize) > params.minStepSize && iterCount < params.maxBackTrackIters
+BacktrackingLineIterCount = 0;
+while nanmean(scorePerVertex1(commonVerts))-nanmean(scorePerVertex2(commonVerts)) >= stepSize*t && abs(stepSize) > params.minStepSize && BacktrackingLineIterCount < params.maxBackTrackIters
 
-    iterCount = iterCount + 1;
-%     disp(['myBacktrackingLineSearch: iteration #: ' num2str(iterCount)]);
+    BacktrackingLineIterCount = BacktrackingLineIterCount + 1;
+%     disp(['myBacktrackingLineSearch: iteration #: ' num2str(BacktrackingLineIterCount)]);
     stepSize = params.tau*stepSize;
 %     RrgbNew = OnlineCalibration.aux.calcRmatRromAngs(params.xAlpha+alpha*p(1),params.xBeta+alpha*p(2),params.zGamma+alpha*p(3));
 %     TrgbNew = params.Trgb+alpha*p(4:end);
@@ -49,8 +50,8 @@ while nanmean(scorePerVertex1(commonVerts))-nanmean(scorePerVertex2(commonVerts)
     [cost2,scorePerVertex2,uv2] = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,paramsNew);
     commonVerts = ~isnan(scorePerVertex1) & ~isnan(scorePerVertex2);
 
-%     costDebug(iterCount+1) = cost2;
-%     alphaDebug(iterCount+1) = stepSize;
+%     costDebug(BacktrackingLineIterCount+1) = cost2;
+%     alphaDebug(BacktrackingLineIterCount+1) = stepSize;
     assert( ~isnan(cost2),'Cost shouldn''t be none!');
 end
 
