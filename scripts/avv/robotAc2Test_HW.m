@@ -1,4 +1,4 @@
-function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, num, maxIters, burnToUnit, ignoreValidity, alternateIr)
+function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, num, maxIters, burnToUnit, ignoreValidity, alternateIr, resFileForNextIter)
     if ~exist('alternateIr', 'var')
         maxIters = false;
     end
@@ -23,6 +23,16 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     %% AC Params
     params = cameraParams;
     [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
+    if exist('resFileForNextIter', 'var') && ~isempty(resFileForNextIter) % override with last optimized results
+        load(resFileForNextIter, 'lastRgbParams')
+        params.rgbPmat = lastRgbParams.rgbPmat;
+        params.Krgb = lastRgbParams.Krgb;
+        params.Rrgb = lastRgbParams.Rrgb;
+        params.Trgb = lastRgbParams.Trgb;
+        params.xAlpha = lastRgbParams.xAlpha;
+        params.yBeta = lastRgbParams.yBeta;
+        params.zGamma = lastRgbParams.zGamma;
+    end
     [params] = OnlineCalibration.aux.getParamsForAC(params);
     
     params.derivVar = 'P';
@@ -68,5 +78,9 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     if exist('dataPath', 'var') && exist('num', 'var')
         save(fullfile(dataPath, sprintf('%d_data.mat', num)) ,'newParams','params','frame','CurrentOrigParams','validParams','dbg','flowParams','originalParams','sectionMapDepth','sectionMapRgb','flowParams');
         save(fullfile(dataPath, sprintf('%d_dbg.mat', num)) ,'newParams','params','CurrentOrigParams','validParams','dbg','flowParams','originalParams','sectionMapDepth','sectionMapRgb','flowParams');
+    end
+    if exist('resFileForNextIter', 'var') && ~isempty(resFileForNextIter)
+        lastRgbParams = struct('rgbPmat', newParams.rgbPmat, 'Krgb', newParams.Krgb, 'Rrgb', newParams.Rrgb, 'Trgb', newParams.Trgb, 'xAlpha', newParams.xAlpha, 'yBeta', newParams.yBeta, 'zGamma', newParams.zGamma);
+        save(resFileForNextIter, 'lastRgbParams')
     end
 end
