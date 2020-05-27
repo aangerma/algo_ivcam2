@@ -56,7 +56,6 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     % Stream is running
     currTime = toc(startTime);
     currTmptr = hw.getLddTemperature;
-    params.iterFromStart = num;
     [newParams,frame,CurrentOrigParams,validParams,dbg] = OnlineCalibration.aux.calcNewCameraParams(hw,params,originalParams,sectionMapDepth,sectionMapRgb,flowParams, dataPath);
     try
         hFactor = dbg.acDataOut.hFactor;
