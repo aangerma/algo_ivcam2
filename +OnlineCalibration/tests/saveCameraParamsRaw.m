@@ -1,0 +1,23 @@
+function saveCameraParamsRaw(outputBinFilesPath,camerasParams)
+R = camerasParams.Rrgb';
+T = camerasParams.Trgb;
+Kdepth = camerasParams.Kdepth';
+Krgb = camerasParams.Krgb';
+dres = flip(camerasParams.depthRes);
+
+camera_params = [double(dres(:)') camerasParams.zMaxSubMM ...
+            Kdepth(:)' ...
+            double(camerasParams.rgbRes(:)') ...
+            Krgb(:)' ... 
+            camerasParams.rgbDistort(:)' ...
+            R(:)'  ...
+            T(:)' ...
+            camerasParams.rgbPmat(:)'];
+ 
+mkdirSafe(outputBinFilesPath);
+fullname = fullfile(outputBinFilesPath,'camera_params');
+f = fopen(fullname,'w');
+fwrite(f,(vec(camera_params)),'double');
+fclose(f);
+end
+

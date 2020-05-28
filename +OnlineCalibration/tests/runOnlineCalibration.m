@@ -25,7 +25,7 @@ if LRS
 else
     [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
 end
-
+saveCameraParamsRaw(outputBinFilesPath, camerasParams);
 if LRS
   
 else
