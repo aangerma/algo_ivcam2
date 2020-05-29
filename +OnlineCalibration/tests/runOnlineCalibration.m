@@ -10,13 +10,13 @@ LRS = false;
 % close all
 %% Load frames from IPDev
 %sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
-sceneDir = 'C:\Users\nyassin\Documents\realsense_all\debug_scene\LongRange 768X1024 (RGB 1920X1080)\2';
+sceneDir = 'C:\work\autocal\F9440687\LongRange_D_768x1024_RGB_1920x1080\2';
 if LRS
     sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\305';
 end
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
+outputBinFilesPath = fullfile(sceneDir,'binFiles\ac2'); % Path for saving binary images
 % Load data of scene 
 % load(intrinsicsExtrinsicsPath);
 
