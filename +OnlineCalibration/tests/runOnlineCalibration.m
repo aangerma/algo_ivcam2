@@ -51,12 +51,20 @@ end
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir,[],LRS);
 
+% If there's no previous frame, use the first frame (i.e., no movement)
+n_yuys = size( frame.yuy_files, 1 );
+if n_yuys < 2
+    frame.yuy2Prev = frame.yuy2;
+    frame.yuy_files(2) = frame.yuy_files(1);
+else
+    frame.yuy2Prev = frame.yuy2(:,:,2);
+end
 
 % Keep only the first frame
 frame.z = frame.z(:,:,1);
 frame.i = frame.i(:,:,1);
 frame.yuy2 = frame.yuy2(:,:,1);
-frame.yuy2Prev = frame.yuy2;
+%frame.yuy2Prev = frame.yuy2;
 
 % Write the filenames out, so we can easily reproduce in C++
 fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
@@ -93,7 +101,7 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'d
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
-% Preprocess Z and IR
+%% Preprocess Z and IR
 [frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage,validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
 frame.originalVertices = frame.vertices;
 
@@ -101,8 +109,6 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'dou
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',frame.zEdge,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_xim',frame.xim,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_yim',frame.yim,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zGradInDirection',single(frame.zGradInDirection),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dirPerPixel',single(frame.dirPerPixel),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',double(frame.weights),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');

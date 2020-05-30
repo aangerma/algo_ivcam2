@@ -14,7 +14,7 @@ diffIm = (double(im1)-double(im2));
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'diffIm_01',diffIm,'double');
 
 % diffIm = abs(im1-im2);
-diffIm = imgaussfilt(im1-im2,params.moveGaussSigma);
+diffIm = imgaussfilt(double(im1)-double(im2),params.moveGaussSigma);
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'diffIm',double(diffIm),'double');
 
 IDiffMasked = abs(diffIm);
