@@ -144,10 +144,13 @@ dsmRegsCand = dsmRegs;
 acDataIn = acData;
 acDataCand = acData;
 
+% Need this to ensure Krgb is consistent with rgbPmat -- it seems Krgb
+% loses accuracy in the .rsc...
+[params.Krgb,params.Rrgb,params.Trgb] = OnlineCalibration.aux.decomposePMat(params.rgbPmat);
 
 %[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
 [newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
-new_calib = calibAndCostToRaw(newParamsKzFromP, newCost);  
+new_calib = calibAndCostToRaw(newParamsP, newCost);  
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
 while ~converged && iterNum < params.maxK2DSMIters
