@@ -6,10 +6,10 @@ function dsmRegsOut = applyAcResOnDsmModel(acData, dsmRegsIn, type)
                 case 0 % none
                     dsmRegsOut = dsmRegsIn;
                 case 1 % AOT model
-                    dsmRegsOut.dsmXscale = dsmRegsIn.dsmXscale * acData.hFactor;
-                    dsmRegsOut.dsmYscale = dsmRegsIn.dsmYscale * acData.vFactor;
-                    dsmRegsOut.dsmXoffset = (dsmRegsIn.dsmXoffset + acData.hOffset) / acData.hFactor;
-                    dsmRegsOut.dsmYoffset = (dsmRegsIn.dsmYoffset + acData.vOffset) / acData.vFactor;
+                    dsmRegsOut.dsmXscale = double(dsmRegsIn.dsmXscale) * acData.hFactor;
+                    dsmRegsOut.dsmYscale = double(dsmRegsIn.dsmYscale) * acData.vFactor;
+                    dsmRegsOut.dsmXoffset = (double(dsmRegsIn.dsmXoffset) + acData.hOffset) / acData.hFactor;
+                    dsmRegsOut.dsmYoffset = (double(dsmRegsIn.dsmYoffset) + acData.vOffset) / acData.vFactor;
                 case 2 % TOA model
                     dsmRegsOut.dsmXscale = dsmRegsIn.dsmXscale * acData.hFactor;
                     dsmRegsOut.dsmYscale = dsmRegsIn.dsmYscale * acData.vFactor;

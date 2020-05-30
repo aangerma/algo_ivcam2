@@ -22,9 +22,10 @@ function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand] = convertNewK2
      OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'losOrig',preProcData.losOrig,'double');
      
     
-     [losScaling,losShift] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
-     acDataCand = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acData, acData.flags, losShift, losScaling);
-     dsmRegsCand = Utils.convert.applyAcResOnDsmModel(acDataCand, dsmRegsOrig, 'direct');
+    losShift = zeros(2,1); % any residual LOS shift is reflected onto RGB principle point and/or extrinsic translation
+    losScaling = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
+    acDataCand = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acData, acData.flags(1), losShift, losScaling);
+    dsmRegsCand = Utils.convert.applyAcResOnDsmModel(acDataCand, dsmRegsOrig, 'direct');
  %         acDataInCand.flags(2:6) = uint8(0);
      % Apply the new scaling to xim and yim for next iteration
      % Transforming pixels to LOS

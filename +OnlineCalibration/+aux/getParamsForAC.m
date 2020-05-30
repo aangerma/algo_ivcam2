@@ -57,6 +57,7 @@ params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMM
 % params.numOptimizationToDSMIters = 3;
  params.maxK2DSMIters = 10;
 
-params.maxLosScalingStep = 0.02;
+params.maxLosScalingStep = 0.02;% In each K2DSM call, this factor determines the search region
+params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
 end
 

@@ -1,5 +1,4 @@
-function [losScaling,losShift] = ConvertKToLosError(data, optK)
-     losShift = [0;0];
+function [losScaling] = ConvertKToLosError(data, optK)
      % K changes
      fxScaling = double(optK(1,1)/data.origK(1,1));
      fyScaling = double(optK(2,2)/data.origK(2,2));
@@ -8,7 +7,7 @@ function [losScaling,losShift] = ConvertKToLosError(data, optK)
      focalScaling = [fxScaling, fyScaling];
      coarseGrid = [-1, -0.5, 0, 0.5, 1]*data.maxScalingStep;
      fineGrid = [-1, -0.5, 0, 0.5, 1]*0.6*data.maxScalingStep; % intentionally spans more than 1 coarse grid resolution
-     [yScalingGrid, xScalingGrid] = ndgrid(data.lastLosScaling(2)+coarseGrid, data.lastLosScaling(1)+coarseGrid); % search around last estimated scaling
+     [yScalingGrid, xScalingGrid] = ndgrid_my(double(data.lastLosScaling(2))+coarseGrid, double(data.lastLosScaling(1))+coarseGrid); % search around last estimated scaling
      optScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
      [yScalingGrid, xScalingGrid] = ndgrid(optScaling(2)+fineGrid, optScaling(1)+fineGrid);
      losScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
@@ -29,9 +28,9 @@ function [losScaling,losShift] = ConvertKToLosError(data, optK)
      fxScalingOnGrid = squeeze(optK(1,1,:))/data.origK(1,1);
      fyScalingOnGrid = squeeze(optK(2,2,:))/data.origK(2,2);
      errL2 = sqrt((fxScalingOnGrid-focalScaling(1)).^2+(fyScalingOnGrid-focalScaling(2)).^2);
-     
-     % quadratic approximation
-     sgMat = double([scalingGrid(:,1).^2, scalingGrid(:,2).^2, scalingGrid(:,1).*scalingGrid(:,2), scalingGrid(:,1), scalingGrid(:,2), ones(size(scalingGrid,1),1)]);
+      % quadratic approximation
+     sgMat = double([scalingGrid(:,1).^2, scalingGrid(:,2).^2, scalingGrid(:,1).*scalingGrid(:,2), scalingGrid(:,1), scalingGrid(:,2), ones(size(scalingGrid,1),1)]);    
+     quadCoef = (sgMat'*sgMat)\(sgMat'*double(errL2)); % pseudo-inverse
      quadCoef = OnlineCalibration.K2DSM.DirectInv(sgMat'*sgMat)*(sgMat'*double(errL2)); % direct implementation of Matlab's solver: (sgMat'*sgMat)\(sgMat'*double(errL2))
      A = [quadCoef(1), quadCoef(3)/2; quadCoef(3)/2, quadCoef(2)];
      b = [quadCoef(4); quadCoef(5)];

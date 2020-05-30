@@ -6,7 +6,7 @@ function [stepSize,newRgbPmat,newCost, unitGrad, grad,grads_norm, norma, Backtra
 % dfdx = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T];
 grads_norm = gradStruct.P./norm((gradStruct.P(:)'));
 grad = gradStruct.P./norm(gradStruct.P(:))./params.rgbPmatNormalizationMat; 
-norma = norm((gradStruct.P(:)'))
+norma = norm((gradStruct.P(:)'));
 
 unitGrad = grad./norm(grad(:)');
 stepSize = params.maxStepSize*norm(grad(:)')/norm(unitGrad(:)');
