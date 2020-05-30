@@ -4,9 +4,9 @@ function [stepSize,newRgbPmat,newKrgb,newRrgb,newTrgb,newCost,unitGrad,grad,grad
 % maximum amount to move along a given search direction.
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
 % dfdx = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T];
-grads_norm = gradStruct.P./norm((gradStruct.P(:)'));
+grads_norm = gradStruct.P./norm(gradStruct.P);
 grad = gradStruct.P./norm(gradStruct.P)./params.rgbPmatNormalizationMat; 
-norma = norm((gradStruct.P(:)'))
+norma = norm((gradStruct.P(:)'));
 
 unitGrad = grad./norm(grad);
 stepSize = params.maxStepSize*norm(grad)/norm(unitGrad);

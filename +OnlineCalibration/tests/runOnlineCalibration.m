@@ -42,12 +42,12 @@ else
     dsmRegs.dsmYscale = 1116837726;
     dsmRegs.dsmXscale = 1115418352;
     
-    saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, calibDataBin, dsmRegs);
+    %saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, calibDataBin, dsmRegs);
 end
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
-
-
+saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, regs, dsmRegs);
+ 
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir,[],LRS);
 
@@ -102,7 +102,11 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
 %% Preprocess Z and IR
-[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage,validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
+[frame.irEdge,frame.zEdge,...
+frame.xim,frame.yim,frame.zValuesForSubEdges,...
+frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,...
+frame.sectionMapDepth,frame.relevantPixelsImage,...
+validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
 frame.originalVertices = frame.vertices;
 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'double');
@@ -119,6 +123,7 @@ frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 md.n_edges = size(frame.weights,1);
 md.n_valid_ir_edges = validIREdgesSize;
 md.n_valid_pixels =  validPixelsSize;
+md.n_relevant_pixels = sum(frame.relevantPixelsImage(:) == 1);
 
 %% decisionParams from input scene
 [~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params,outputBinFilesPath);
@@ -133,7 +138,7 @@ currentFrameCand = frame;
 newParamsK2DSM = params;
 newParamsK2DSMCand = params;
 converged = false;
-iterNum = 0;
+cycle = 1;
 lastCost = decisionParams.initialCost;
 dsmRegsCand = dsmRegs;
 acDataIn = acData;
@@ -141,20 +146,20 @@ acDataCand = acData;
 
 
 %[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
-[newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+[newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
 new_calib = calibAndCostToRaw(newParamsKzFromP, newCost);  
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
 while ~converged && iterNum < params.maxK2DSMIters
     % K2DSM
-    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params);
+    cycle = cycle + 1;
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params,cycle);
     % Optimize P
-    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
     if newCostCand < lastCost
         % End iterations
         converged = 1;
     else
-        iterNum = iterNum + 1;
         frame = currentFrameCand;
         lastCost = newCostCand;
         newCost = newCostCand;
@@ -191,7 +196,8 @@ fwrite( fid, md.xy_movement, 'double' );
 fwrite( fid, md.n_edges, 'uint64' );
 fwrite( fid, md.n_valid_ir_edges, 'uint64' );
 fwrite( fid, md.n_valid_pixels, 'uint64' );
-fwrite( fid, iterNum, 'uint64' );
+fwrite( fid, md.n_relevant_pixels, 'uint64' );
+fwrite( fid, cycle, 'uint64' );
 fwrite( fid, md.is_scene_valid, 'uint8' );
 %fwrite( fid, md.is_output_valid, 'uint8' );
 fclose( fid );

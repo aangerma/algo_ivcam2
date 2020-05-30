@@ -1,4 +1,4 @@
-function [newParams,newCost,iterCount] = optimizeParametersP(frame,params,outputBinFilesPath)
+function [newParams,newCost,iterCount] = optimizeParametersP(frame,params,outputBinFilesPath,cycle)
 
 iterCount = 0;
 notConverged = 1;
@@ -15,6 +15,7 @@ while notConverged && iterCount < params.maxOptimizationIters
     % Check stopping criteria
     iteration_data.norma = norma;
     iteration_data.iterCount = iterCount;
+    iteration_data.cycle = cycle;
     iteration_data.grad = gradStruct;
     iteration_data.unit_grad = unitGrad;
     iteration_data.normalized_grads = grad;
