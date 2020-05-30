@@ -1,4 +1,4 @@
-function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand] = convertNewK2DSM(currentFrame,newParamsKzFromP,acData,dsmRegs,regs,params)
+function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand] = convertNewK2DSM(outputBinFilesPath,currentFrame,newParamsKzFromP,acData,dsmRegs,regs,params)
 % This function converts the new K depth to a dsm fix via new AC table
     newKdepth = newParamsKzFromP.Kdepth;
     newParamsK2DSM = newParamsKzFromP;
@@ -8,6 +8,9 @@ function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand] = convertNewK2
     
     
     dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse');
+    dsmRegsOrigVec = [dsmRegsOrig.dsmXscale  dsmRegsOrig.dsmYscale dsmRegsOrig.dsmXoffset dsmRegsOrig.dsmYoffset];
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dsmRegsOrig',dsmRegsOrigVec,'single');
+    
     preProcData = OnlineCalibration.K2DSM.PreProcessing(regs, acData, dsmRegs, KRaw, rot90(currentFrame.relevantPixelsImage,2), params.maxLosScalingStep);
     losShift = zeros(2,1); % any residual LOS shift is reflected onto RGB principle point and/or extrinsic translation
     losScaling = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);

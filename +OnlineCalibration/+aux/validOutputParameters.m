@@ -17,6 +17,10 @@ dbg = struct;
 dbg.uvMapOrig = uvMapOrig;
 dbg.uvMapNew = uvMapNew;
 
+xyMovement = mean(sqrt(sum((uvMapOrig-uvMapNew).^2,2)));
+dbg.xyMovement = xyMovement;
+validOutputStruct.xyMovement = xyMovement;
+
 validUvs = OnlineCalibration.aux.isInsideImage(uvMapOrig,flip(params.rgbRes)) &  OnlineCalibration.aux.isInsideImage(uvMapNew,flip(params.rgbRes));
 validOutputStruct.xyMovementFromOrigin = mean(sqrt(sum((uvMapOrig(validUvs,:)-uvMapNew(validUvs,:)).^2,2)));
 if validOutputStruct.xyMovementFromOrigin > params.maxXYMovementFromOrigin
