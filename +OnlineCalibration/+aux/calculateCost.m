@@ -11,7 +11,7 @@ function [C,scorePerVertex,uvMap] = calculateCost(V,W,D,camerasParams)
 %     W = W(validPts);
 %     uvMap = uvMap(validPts,:);
     
-    DVals = interp2(single(D),uvMap(:,1)+1,uvMap(:,2)+1);
+    DVals = interp2(double(D),uvMap(:,1)+1,uvMap(:,2)+1);
     scorePerVertex = W.*DVals;
     C = nanmean(scorePerVertex);
 %     

@@ -9,13 +9,14 @@ runParams.loadSingleScene = 1;
 LRS = false;
 % close all
 %% Load frames from IPDev
-sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
+%sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
+sceneDir = 'C:\work\autocal\F9440687\LongRange_D_768x1024_RGB_1920x1080\2';
 if LRS
     sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\305';
 end
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
+outputBinFilesPath = fullfile(sceneDir,'binFiles\ac2'); % Path for saving binary images
 % Load data of scene 
 % load(intrinsicsExtrinsicsPath);
 
@@ -24,7 +25,7 @@ if LRS
 else
     [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
 end
-
+saveCameraParamsRaw(outputBinFilesPath, camerasParams);
 if LRS
   
 else
@@ -41,20 +42,37 @@ else
     dsmRegs.dsmYscale = 1116837726;
     dsmRegs.dsmXscale = 1115418352;
     
+    %saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, calibDataBin, dsmRegs);
 end
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
-
-
+saveDSMParamsRaw(outputBinFilesPath, binWithHeaders, acDataBin, regs, dsmRegs);
+ 
 % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
 frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir,[],LRS);
 
+% If there's no previous frame, use the first frame (i.e., no movement)
+n_yuys = size( frame.yuy_files, 1 );
+if n_yuys < 2
+    frame.yuy2Prev = frame.yuy2;
+    frame.yuy_files(2) = frame.yuy_files(1);
+else
+    frame.yuy2Prev = frame.yuy2(:,:,2);
+end
 
 % Keep only the first frame
 frame.z = frame.z(:,:,1);
 frame.i = frame.i(:,:,1);
 frame.yuy2 = frame.yuy2(:,:,1);
-frame.yuy2Prev = frame.yuy2;
+%frame.yuy2Prev = frame.yuy2;
+
+% Write the filenames out, so we can easily reproduce in C++
+fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
+fprintf( fid, '%s\n%s\n%s\n%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
+fclose( fid );
+
+% Fill a metadata struct and write it out at the end:
+md = struct;
 
 % Define hyperparameters
 
@@ -83,49 +101,66 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'d
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
 
-% Preprocess Z and IR
-[frame.irEdge,frame.zEdge,frame.xim,frame.yim,frame.zValuesForSubEdges,frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,frame.sectionMapDepth,frame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(frame,params);
+%% Preprocess Z and IR
+[frame.irEdge,frame.zEdge,...
+frame.xim,frame.yim,frame.zValuesForSubEdges,...
+frame.zGradInDirection,frame.dirPerPixel,frame.weights,frame.vertices,...
+frame.sectionMapDepth,frame.relevantPixelsImage,...
+validIREdgesSize,validPixelsSize] = OnlineCalibration.aux.preprocessDepth(frame,params,outputBinFilesPath);
 frame.originalVertices = frame.vertices;
 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_edge',frame.irEdge,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_edge',frame.zEdge,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_xim',frame.xim,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_yim',frame.yim,'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_valuesForSubEdges',single(frame.zValuesForSubEdges),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zGradInDirection',single(frame.zGradInDirection),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dirPerPixel',single(frame.dirPerPixel),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',double(frame.weights),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',double(frame.sectionMapDepth),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',double(frame.relevantPixelsImage),'double');
 
+frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
+md.n_edges = size(frame.weights,1);
+md.n_valid_ir_edges = validIREdgesSize;
+md.n_valid_pixels =  validPixelsSize;
+md.n_relevant_pixels = sum(frame.relevantPixelsImage(:) == 1);
 
 %% decisionParams from input scene
-[~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params);
-if isMovement
-   return; 
-end
+[~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params,outputBinFilesPath);
+% if isMovement
+%    return; 
+% end
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);
-
+md.is_scene_valid = ~isMovement;
 
 %% Set initial value for some variables that change between iterations
 currentFrameCand = frame;
+
+% Need this to ensure Krgb is consistent with rgbPmat -- it seems Krgb
+% loses accuracy in the .rsc...
+[params.Krgb,params.Rrgb,params.Trgb] = OnlineCalibration.aux.decomposePMat(params.rgbPmat);
+
 newParamsK2DSM = params;
 newParamsK2DSMCand = params;
 converged = false;
+cycle = 1;
 iterNum = 0;
 lastCost = decisionParams.initialCost;
 dsmRegsCand = dsmRegs;
 acDataIn = acData;
 acDataCand = acData;
 
+%[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
+[newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
+new_calib = calibAndCostToRaw(newParamsP, newCost);  
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
-[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
 while ~converged && iterNum < params.maxK2DSMIters
     % K2DSM
-    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params);
+    cycle = cycle + 1;
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params,cycle);
     % Optimize P
-    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand);
+    [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
     if newCostCand < lastCost
         % End iterations
         converged = 1;
@@ -157,14 +192,27 @@ decisionParams = Validation.aux.mergeResultStruct(decisionParams, validInputStru
 decisionParams.newCost = newCost(end);
 
 
-[validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params);
+[validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params,outputBinFilesPath);
 validParams = validFixBySVM && (iterNum >= 1); 
 
 if validParams
     params = finalParams;
 end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
+md.xy_movement = dbg.xyMovement;
+md.is_output_valid = validParams;
 
+%% Write the metadata:
+fid = fopen( fullfile( outputBinFilesPath, 'metadata' ), 'w' );
+fwrite( fid, md.xy_movement, 'double' );
+fwrite( fid, md.n_edges, 'uint64' );
+fwrite( fid, md.n_valid_ir_edges, 'uint64' );
+fwrite( fid, md.n_valid_pixels, 'uint64' );
+fwrite( fid, md.n_relevant_pixels, 'uint64' );
+fwrite( fid, cycle, 'uint64' );
+fwrite( fid, md.is_scene_valid, 'uint8' );
+%fwrite( fid, md.is_output_valid, 'uint8' );
+fclose( fid );
 %{
 % Debug
 figure; 

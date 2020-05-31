@@ -1,11 +1,20 @@
-function [newParams,newCost] = optimizeParameters(frame,params)
+function [newParams,newCost] = optimizeParameters(frame,params,outputBinFilesPath)
 
 iterCount = 0;
 notConverged = 1;
 while notConverged && iterCount < params.maxOptimizationIters
     iterCount = iterCount + 1;
     % Calculate gradients
-    [cost,gradStruct] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);
+    [cost,gradStruct,iteration_data] = OnlineCalibration.Opt.calcCostAndGrad(frame,params);
+    gradStruct.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(gradStruct.xAlpha,gradStruct.yBeta,gradStruct.zGamma);
+    
+    iteration_data.iterCount = iterCount;
+    iteration_data.grad = gradStruct;
+    iteration_data.cost = cost;
+    
+    saveIterationData(outputBinFilesPath, iteration_data);
+
+    fprintf('Cost = %.10d\n', cost);
     % Find the step
     [stepSize,newKRTP,newCost] = OnlineCalibration.aux.myBacktrackingLineSearchKRT(frame,params,gradStruct);
     newRgbPmat = newKRTP.P;
