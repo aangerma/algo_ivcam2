@@ -135,6 +135,11 @@ md.is_scene_valid = ~isMovement;
 
 %% Set initial value for some variables that change between iterations
 currentFrameCand = frame;
+
+% Need this to ensure Krgb is consistent with rgbPmat -- it seems Krgb
+% loses accuracy in the .rsc...
+[params.Krgb,params.Rrgb,params.Trgb] = OnlineCalibration.aux.decomposePMat(params.rgbPmat);
+
 newParamsK2DSM = params;
 newParamsK2DSMCand = params;
 converged = false;
@@ -143,10 +148,6 @@ lastCost = decisionParams.initialCost;
 dsmRegsCand = dsmRegs;
 acDataIn = acData;
 acDataCand = acData;
-
-% Need this to ensure Krgb is consistent with rgbPmat -- it seems Krgb
-% loses accuracy in the .rsc...
-[params.Krgb,params.Rrgb,params.Trgb] = OnlineCalibration.aux.decomposePMat(params.rgbPmat);
 
 %[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
 [newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
