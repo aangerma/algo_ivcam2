@@ -93,7 +93,7 @@ sceneResults.numberOfIteration = iterNum;
 
 % Clip scaling factors
 sceneResults.acDataOutPreClipping = acData;
-acData = OnlineCalibration.K2DSM.clipACScaling(acData,sceneResults.acDataIn,params.maxGlobalLosScalingStep);
+[acData, sceneResults.performedClipping]  = OnlineCalibration.K2DSM.clipACScaling(acData,sceneResults.acDataIn,params.maxGlobalLosScalingStep);
 
 %% Validate new parameters
 [finalParams,dbg,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,newParamsK2DSM,originalParams,params.iterFromStart);
