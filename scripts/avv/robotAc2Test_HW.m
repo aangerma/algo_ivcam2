@@ -1,9 +1,11 @@
-function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, num, maxIters, burnToUnit, ignoreValidity, alternateIr, resFileForNextIter)
+function [validParams, hFactor, vFactor, newParams, resFileForNextIter] = robotAc2Test_HW(dataPath, num, maxIters, burnToUnit, ignoreValidity, alternateIr, resFileForNextIter)
     if ~exist('alternateIr', 'var')
         maxIters = false;
     end
-    hFactor= -1;
-    vFactor= -1;
+    if ~exist('resFileForNextIter', 'var')
+        resFileForNextIter='';
+    end
+    
     depthRes = [480,640];
     rgbRes = [1920,1080];
     presetNum = 1;
@@ -23,16 +25,16 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     %% AC Params
     params = cameraParams;
     [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
-    if exist('resFileForNextIter', 'var') && ~isempty(resFileForNextIter) % override with last optimized results
+    if ~isempty(resFileForNextIter) % override with last optimized results
         try
-            load(resFileForNextIter, 'lastRgbParams')
-            params.rgbPmat = lastRgbParams.rgbPmat;
-            params.Krgb = lastRgbParams.Krgb;
-            params.Rrgb = lastRgbParams.Rrgb;
-            params.Trgb = lastRgbParams.Trgb;
-            params.xAlpha = lastRgbParams.xAlpha;
-            params.yBeta = lastRgbParams.yBeta;
-            params.zGamma = lastRgbParams.zGamma;
+            lastIterData = load(resFileForNextIter);
+            params.rgbPmat =lastIterData.newParams.rgbPmat;
+            params.Krgb = lastIterData.newParams.Krgb;
+            params.Rrgb = lastIterData.newParams.Rrgb;
+            params.Trgb = lastIterData.newParams.Trgb;
+            params.xAlpha = lastIterData.newParams.xAlpha;
+            params.yBeta = lastIterData.newParams.yBeta;
+            params.zGamma = lastIterData.newParams.zGamma;
         catch
             warning('No previous RGB results to load.')
         end
@@ -80,11 +82,8 @@ function [validParams, hFactor, vFactor, newParams] = robotAc2Test_HW(dataPath, 
     end
     hw.stopStream;
     if exist('dataPath', 'var') && exist('num', 'var')
-        save(fullfile(dataPath, sprintf('%d_data.mat', num)) ,'newParams','params','frame','CurrentOrigParams','validParams','dbg','flowParams','originalParams','sectionMapDepth','sectionMapRgb','flowParams');
+        resFileForNextIter = fullfile(dataPath, sprintf('%d_data.mat', num))
+        save(resFileForNextIter ,'newParams','params','frame','CurrentOrigParams','validParams','dbg','flowParams','originalParams','sectionMapDepth','sectionMapRgb','flowParams');
         save(fullfile(dataPath, sprintf('%d_dbg.mat', num)) ,'newParams','params','CurrentOrigParams','validParams','dbg','flowParams','originalParams','sectionMapDepth','sectionMapRgb','flowParams');
-    end
-    if exist('resFileForNextIter', 'var') && ~isempty(resFileForNextIter)
-        lastRgbParams = struct('rgbPmat', newParams.rgbPmat, 'Krgb', newParams.Krgb, 'Rrgb', newParams.Rrgb, 'Trgb', newParams.Trgb, 'xAlpha', newParams.xAlpha, 'yBeta', newParams.yBeta, 'zGamma', newParams.zGamma);
-        save(resFileForNextIter, 'lastRgbParams')
     end
 end
