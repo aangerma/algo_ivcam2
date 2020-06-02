@@ -7,7 +7,7 @@ params.inverseDistParams.gamma = 0.9;
 params.inverseDistParams.metric = 1; % Metrics norm. Currently only suppotrs L1. Should support L2.
 params.gradITh = 3.5; % Ignore pixels with IR grad of less than this
 if all(params.depthRes == [768,1024])
-    params.gradITh = 1.5; % Ignore pixels with IR grad of less than this for XGA?
+    params.gradITh = 2.5; % Ignore pixels with IR grad of less than this for XGA?
 end
 params.gradZTh = 0; % Ignore pixels with Z grad of less than this
 params.gradZMax = 1000; 
@@ -59,6 +59,6 @@ params.maxK2DSMIters = 10;
 
 
 params.maxLosScalingStep = 0.02;% In each K2DSM call, this factor determines the search region
-params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
+params.maxGlobalLosScalingStep = 0.002;% Clip the different between starting scale and final scale by this value
 end
 

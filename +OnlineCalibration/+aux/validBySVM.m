@@ -19,7 +19,7 @@ end
 
 % The following line verify the svmRbfPredictor function returns the same
 % output as the matlab predict function. No need to implement this in LibRealSense 
-assert(all(isValid == predict(SVMModel,featuresMat)),'Matlab implementation should be identical to our implementation');
+% assert(all(isValid == predict(SVMModel,featuresMat)),'Matlab implementation should be identical to our implementation');
 
 
 

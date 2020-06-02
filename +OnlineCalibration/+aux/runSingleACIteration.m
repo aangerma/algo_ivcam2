@@ -69,6 +69,12 @@ while ~converged && iterNum < params.maxK2DSMIters
     if newCostCand < lastCost
         % End iterations
         converged = 1;
+        % No change at all (probably very good starting point)
+        if iterNum == 0 
+            newParamsK2DSM = params;
+            newParamsP = params;
+            sceneResults.newCost = lastCost;
+        end
     else
         iterNum = iterNum + 1;
         currentFrame = currentFrameCand;
@@ -87,7 +93,7 @@ sceneResults.numberOfIteration = iterNum;
 
 % Clip scaling factors
 sceneResults.acDataOutPreClipping = acData;
-acData = OnlineCalibration.K2DSM.clipACScaling(acData,sceneResults.acDataIn,params.maxGlobalLosScalingStep);
+[acData, sceneResults.performedClipping]  = OnlineCalibration.K2DSM.clipACScaling(acData,sceneResults.acDataIn,params.maxGlobalLosScalingStep);
 
 %% Validate new parameters
 [finalParams,dbg,validOutputStruct] = OnlineCalibration.aux.validOutputParameters(currentFrame,params,newParamsP,newParamsK2DSM,originalParams,params.iterFromStart);
@@ -105,7 +111,7 @@ sceneResults.finalParams = finalParams;
 acData.flags(2:6) = uint8(0);
 newAcDataTable = Calibration.tables.convertCalibDataToBinTable(acData, 'Algo_AutoCalibration');
 
-validParams = sceneResults.validMovement && sceneResults.validFixBySVM;
+validParams = sceneResults.validMovement && sceneResults.validFixBySVM && (iterNum >= 1);
 newAcDataStruct = acData;
 
 if iterNum >= 1  % Else params remain the same and acdataIn is equal to ACDataout

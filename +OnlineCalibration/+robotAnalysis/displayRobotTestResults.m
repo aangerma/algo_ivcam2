@@ -25,7 +25,7 @@ function [] = displayRobotTestResults(acResultsFile,lutFile, hscaleMod,vscaleMod
     gidMeticId = 2;
     friendlyNames = {'Temp','GID','ScaleX','ScaleY','LUT UV RMS','LUT UV max'};
     mUnits = {'deg','mm','factor','factor','pix','pix'};
-    [data] = OnlineCalibration.robotAnalysis.processSingleLut(lutFile,metricNames);
+    [data] = OnlineCalibration.robotAnalysis.processSingleLut(lutFile,metricNames,1);
     
     [num,txt] = xlsread(acResultsFile);
     resultIdx = find( strcmp(txt(1,:),'status'));

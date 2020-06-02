@@ -144,6 +144,7 @@ newParamsK2DSM = params;
 newParamsK2DSMCand = params;
 converged = false;
 cycle = 1;
+iterNum = 0;
 lastCost = decisionParams.initialCost;
 dsmRegsCand = dsmRegs;
 acDataIn = acData;
@@ -173,7 +174,14 @@ while ~converged && cycle < params.maxK2DSMIters
     if newCostCand < lastCost
         % End iterations
         converged = 1;
+        % No change at all (probably very good starting point)
+        if iterNum == 0 
+            newParamsK2DSM = params;
+            newParamsP = params;
+            sceneResults.newCost = lastCost;
+        end
     else
+        iterNum = iterNum + 1;
         frame = currentFrameCand;
         lastCost = newCostCand;
         newCost = newCostCand;
@@ -198,7 +206,7 @@ decisionParams.newCost = newCost(end);
 
 
 [validFixBySVM,~] = OnlineCalibration.aux.validBySVM(decisionParams,params,outputBinFilesPath);
-validParams = validFixBySVM; 
+validParams = validFixBySVM && (iterNum >= 1); 
 
 if validParams
     params = finalParams;
