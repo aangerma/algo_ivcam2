@@ -69,7 +69,8 @@ else
     newTrgb = paramsNew.Trgb;
     newCost = cost2;
 end
-
+ [paramsNew.Krgb,paramsNew.Rrgb,paramsNew.Trgb] = OnlineCalibration.aux.decomposePMat(newRgbPmat);
+   
 % alphaVec = linspace(0,maxStepSize,100);
 % paramsNewDebug = params;
 % for k = 1:numel(alphaVec)
