@@ -10,7 +10,7 @@ LRS = false;
 % close all
 %% Load frames from IPDev
 %sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
-sceneDir = 'C:\work\autocal\F9440687\LongRange_D_768x1024_RGB_1920x1080\2';
+sceneDir = 'C:\work\librealsense\build\unit-tests\algo\depth-to-rgb-calibration\19.2.20\F9440687\LongRange_D_768x1024_RGB_1920x1080\2';
 if LRS
     sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\305';
 end
@@ -151,13 +151,23 @@ acDataCand = acData;
 
 %[~,~,newParamsKzFromP] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath);
 [newCost,newParamsP,newParamsKzFromP,iterNum] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
-new_calib = calibAndCostToRaw(newParamsP, newCost);  
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 
-while ~converged && iterNum < params.maxK2DSMIters
+
+while ~converged && cycle < params.maxK2DSMIters
     % K2DSM
     cycle = cycle + 1;
-    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand] = OnlineCalibration.K2DSM.convertNewK2DSM(outputBinFilesPath,frame,newParamsKzFromP,acData,dsmRegs,regs,params,cycle);
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand,dsmData] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params,cycle);
+    cycleData.cycle = cycle;
+    cycleData.dsmRegsOrig = dsmData.dsmRegsOrig;  
+    cycleData.preProcData =  dsmData.preProcData;
+    cycleData.losScaling = dsmData.losScaling;
+    cycleData.acDataCand = acDataCand;
+    cycleData.dsmRegsCand = dsmRegsCand;
+    cycleData.new_los = dsmData.new_los;
+    cycleData.dsm= dsmData.dsm;
+    cycleData.vertices = currentFrameCand.vertices;
+    saveCycleData(outputBinFilesPath, cycleData);
+
     % Optimize P
     [newCostCand,newParamsPCand,newParamsKzFromPCand] = OnlineCalibration.aux.optimizeP(currentFrameCand,newParamsK2DSMCand,outputBinFilesPath,cycle);
     if newCostCand < lastCost
@@ -174,6 +184,9 @@ while ~converged && iterNum < params.maxK2DSMIters
         dsmRegs = dsmRegsCand;
     end    
 end
+
+new_calib = calibAndCostToRaw(newParamsP, newCost);  
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'new_calib',new_calib,'double');
 %% Clip scaling movement
 acData = OnlineCalibration.K2DSM.clipACScaling(acData,acDataIn,params.maxGlobalLosScalingStep);
 %% Validate new parameters
