@@ -1,4 +1,9 @@
-clear
+function runOnlineCalibration(sceneDir,LRS)
+
+outputBinFilesPath = fullfile(sceneDir,'binFiles\ac2'); % Path for saving binaries
+
+disp('');
+disp(sceneDir);
 
 global runParams;
 runParams.loadSingleScene = 1;
@@ -8,15 +13,10 @@ runParams.loadSingleScene = 1;
 % runParams.ignoreOutputInvalidation = 1;
 LRS = false;
 % close all
+
 %% Load frames from IPDev
-%sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
-sceneDir = 'C:\work\librealsense\build\unit-tests\algo\depth-to-rgb-calibration\19.2.20\F9440687\LongRange_D_768x1024_RGB_1920x1080\2';
-if LRS
-    sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\305';
-end
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-outputBinFilesPath = fullfile(sceneDir,'binFiles\ac2'); % Path for saving binary images
 % Load data of scene 
 % load(intrinsicsExtrinsicsPath);
 
@@ -96,7 +96,7 @@ sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
 [frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
 frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
 
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',double(frame.rgbEdge),'double');
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',frame.rgbEdge,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTx',frame.rgbIDTx,'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDTy',frame.rgbIDTy,'double');
@@ -237,3 +237,5 @@ subplot(425);imagesc(frame.yuy2); impixelinfo; title('Color image');colorbar;
 subplot(426);imagesc(frame.rgbEdge); impixelinfo; title('Color edge');colorbar;
 subplot(427);imagesc(frame.rgbIDT); impixelinfo; title('Color IDT');colorbar;
 %}
+
+end
