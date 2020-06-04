@@ -35,6 +35,7 @@ function [validParams, hFactor, vFactor, newParams, resFileForNextIter] = robotA
             params.xAlpha = lastIterData.newParams.xAlpha;
             params.yBeta = lastIterData.newParams.yBeta;
             params.zGamma = lastIterData.newParams.zGamma;
+            params.zGamma.iterFromStart = lastIterData.newParams.iterFromStart;
         catch
             warning('No previous RGB results to load.')
         end
