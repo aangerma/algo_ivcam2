@@ -16,12 +16,16 @@ function out = DirectInv(in)
         out(row,:) = out(row,:)/in(row,row);
         in(row,:) = in(row,:)/in(row,row);
         factors = in(row+1:end,row)/in(row,row);
-        out(row+1:end,:) = out(row+1:end,:) - factors.*out(row,:);
-        in(row+1:end,:) = in(row+1:end,:) - factors.*in(row,:);
+        factors2 = factors.*out(row,:);
+        out(row+1:end,:) = out(row+1:end,:) - factors2;
+        factors3 = factors.*in(row,:);
+        in(row+1:end,:) = in(row+1:end,:) - factors3;
     end
-    for row = sz(1):-1:1
-        out(row,:) = out(row,:)-in(row,row+1:end)*out(row+1:end,:);
-        in(row,:) = in(row,:)-in(row,row+1:end)*in(row+1:end,:);
+    for row = sz(1)-1:-1:1
+        in1 = in(row,row+1:end);
+        out1 = out(row+1:end,:);
+        out(row,:) = out(row,:)-in1*out1;
+        in(row,:) = in(row,:)-in1*out1;
     end
 
 end

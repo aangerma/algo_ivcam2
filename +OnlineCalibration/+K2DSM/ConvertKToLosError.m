@@ -1,4 +1,4 @@
-function [losScaling] = ConvertKToLosError(data, optK)
+function [losScaling, optScaling, focalScaling, errL2, sgMat, quadCoef, sg_mat_tag_x_sg_mat, sg_mat_tag_x_err_l2] = ConvertKToLosError(data, optK)
 
     % K changes
     fxScaling = double(optK(1,1)/data.origK(1,1));
@@ -9,9 +9,9 @@ function [losScaling] = ConvertKToLosError(data, optK)
     coarseGrid = [-1, -0.5, 0, 0.5, 1]*data.maxScalingStep;
     fineGrid = [-1, -0.5, 0, 0.5, 1]*0.6*data.maxScalingStep; % intentionally spans more than 1 coarse grid resolution
     [yScalingGrid, xScalingGrid] = ndgrid(double(data.lastLosScaling(2))+coarseGrid, double(data.lastLosScaling(1))+coarseGrid); % search around last estimated scaling
-    optScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
+    [optScaling, errL2, sgMat, quadCoef, sg_mat_tag_x_sg_mat, sg_mat_tag_x_err_l2] = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     [yScalingGrid, xScalingGrid] = ndgrid(optScaling(2)+fineGrid, optScaling(1)+fineGrid);
-    losScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
+    [losScaling,~] = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     
     % forcing maximal allowed scaling step w.r.t. last AC event
     maxStepWithMargin = 1.01*data.maxScalingStep; % to avoid numerical issues
@@ -22,7 +22,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function optScaling = RunScalingOptimizationStep(data, scalingGrid, focalScaling, plotFlag)
+function [optScaling, errL2, sgMat, quadCoef, sg_mat_tag_x_sg_mat, sg_mat_tag_x_err_l2] = RunScalingOptimizationStep(data, scalingGrid, focalScaling, plotFlag)
     
     % calculating distance between model-based change and observed change in focal lengths
     optK = OnlineCalibration.K2DSM.OptimizeKUnderLosError(data, scalingGrid);
@@ -32,7 +32,10 @@ function optScaling = RunScalingOptimizationStep(data, scalingGrid, focalScaling
     
     % quadratic approximation
     sgMat = double([scalingGrid(:,1).^2, scalingGrid(:,2).^2, scalingGrid(:,1).*scalingGrid(:,2), scalingGrid(:,1), scalingGrid(:,2), ones(size(scalingGrid,1),1)]);
+    sg_mat_tag_x_sg_mat = sgMat'*sgMat;
+    sg_mat_tag_x_err_l2 = sgMat'*double(errL2);
     quadCoef = OnlineCalibration.K2DSM.DirectInv(sgMat'*sgMat)*(sgMat'*double(errL2)); % direct implementation of Matlab's solver: (sgMat'*sgMat)\(sgMat'*double(errL2))
+    quadCoef1 = (sgMat'*sgMat)\(sgMat'*double(errL2));
     A = [quadCoef(1), quadCoef(3)/2; quadCoef(3)/2, quadCoef(2)];
     b = [quadCoef(4); quadCoef(5)];
     optScaling = -OnlineCalibration.K2DSM.DirectInv(A)*b/2; % direct implementation of Matlab's solver: -(A\b)/2
