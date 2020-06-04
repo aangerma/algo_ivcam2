@@ -7,10 +7,13 @@ runParams.loadSingleScene = 1;
 % runParams.ignoreSceneInvalidation = 1;
 % runParams.ignoreOutputInvalidation = 1;
 LRS = false;
+IQData = true;
 % close all
 %% Load frames from IPDev
 sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
-if LRS
+if IQData
+    sceneDir = '\\rslabs-nas.iil.intel.com\VIDB\AC2 Field Test\Tests\Old\19_05_2020\Danielle\Scene 1\iteration15\ac_15\1';
+elseif LRS
     sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\305';
 end
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
@@ -18,51 +21,59 @@ end
 outputBinFilesPath = fullfile(sceneDir,'binFiles'); % Path for saving binary images
 % Load data of scene 
 % load(intrinsicsExtrinsicsPath);
-
-if LRS
-    [camerasParams] = getCameraParamsRaw(sceneDir);
-else
-    [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
-end
-
-if LRS
-  
-else
-    % Raw AC data from unit,
-    % acDataBin and calibDataBin are different between units, in the below
-    % example the data describes the tables without headers
-    % DSM regs change during streaming, should be read after taking special frame
-    % The below data is an example read from a unit
-    binWithHeaders = 0;
-    acDataBin = [255,255,255,255,255,255,255,255,255,255,1,0,0,0,0,0,0,0,128,63,0,0,128,63,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,255,255,255,255,255,255,255,255];
-    calibDataBin = [213,2,0,0,186,5,0,0,198,120,143,255,135,16,204,255,0,0,0,32,193,174,85,163,69,174,85,163,69,174,85,163,69,204,28,132,66,204,28,132,66,204,28,132,66,204,28,132,66,204,28,132,66,8,12,98,66,8,12,98,66,8,12,98,66,8,12,98,66,8,12,98,66,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,221,36,134,63,86,92,187,190,115,0,33,0,51,0,48,0,0,0,213,254,121,66,25,205,144,66,32,220,7,66,65,96,224,65,116,0,0,128,152,129,1,0,7,0,0,0,0,4,224,1,0,0,0,0,174,0,149,66,0,0,0,0,144,130,133,66,231,1,0,0,231,1,0,0,231,1,0,0,231,1,0,0,231,1,0,0,240,0,0,0,240,0,0,0,240,0,0,0,240,0,0,0,240,0,0,0,69,23,131,66,146,142,3,64,72,239,7,64,254,111,6,64,137,65,24,58,8,172,4,58,237,81,32,58,193,135,102,66,159,74,208,63,85,71,18,64,149,40,215,63,163,4,22,64,138,54,214,63,57,39,21,64,96,12,119,64,44,116,168,193,104,235,74,193,48,106,28,66,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,70,91,165,61,83,255,69,59,93,204,5,185,135,151,113,54,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,61,10,143,64,61,10,143,64,204,204,204,61,158,140,191,63,133,205,193,63,254,247,134,7,146,248,230,7,252,248,255,6,17,249,17,7,23,176,132,63,89,85,131,66,0,0,0,0,0,0,0,0,0,0,0,0,94,116,21,66,75,182,93,63,129,134,68,64,234,46,155,191,87,175,103,62,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-    dsmRegs.dsmYoffset = 1105140358;
-    dsmRegs.dsmXoffset = 1107488894;
-    dsmRegs.dsmYscale = 1116837726;
-    dsmRegs.dsmXscale = 1115418352;
+if IQData
+    [frame,params,acInputData] = OnlineCalibration.aux.iqFolderToAlgoInputs(sceneDir);
+    binWithHeaders = acInputData.binWithHeaders;
+    calibDataBin = [acInputData.calibDataBin{:}];
+    acDataBin = [acInputData.acDataBin{:}];
+    dsmRegs = acInputData.DSMRegs;
     
+else
+    if LRS
+        [camerasParams] = getCameraParamsRaw(sceneDir);
+    else
+        [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
+    end
+
+    if LRS
+
+    else
+        % Raw AC data from unit,
+        % acDataBin and calibDataBin are different between units, in the below
+        % example the data describes the tables without headers
+        % DSM regs change during streaming, should be read after taking special frame
+        % The below data is an example read from a unit
+        binWithHeaders = 0;
+        acDataBin = [255,255,255,255,255,255,255,255,255,255,1,0,0,0,0,0,0,0,128,63,0,0,128,63,0,0,0,0,0,0,0,0,0,0,0,0,255,255,255,255,255,255,255,255,255,255,255,255];
+        calibDataBin = [213,2,0,0,186,5,0,0,198,120,143,255,135,16,204,255,0,0,0,32,193,174,85,163,69,174,85,163,69,174,85,163,69,204,28,132,66,204,28,132,66,204,28,132,66,204,28,132,66,204,28,132,66,8,12,98,66,8,12,98,66,8,12,98,66,8,12,98,66,8,12,98,66,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,221,36,134,63,86,92,187,190,115,0,33,0,51,0,48,0,0,0,213,254,121,66,25,205,144,66,32,220,7,66,65,96,224,65,116,0,0,128,152,129,1,0,7,0,0,0,0,4,224,1,0,0,0,0,174,0,149,66,0,0,0,0,144,130,133,66,231,1,0,0,231,1,0,0,231,1,0,0,231,1,0,0,231,1,0,0,240,0,0,0,240,0,0,0,240,0,0,0,240,0,0,0,240,0,0,0,69,23,131,66,146,142,3,64,72,239,7,64,254,111,6,64,137,65,24,58,8,172,4,58,237,81,32,58,193,135,102,66,159,74,208,63,85,71,18,64,149,40,215,63,163,4,22,64,138,54,214,63,57,39,21,64,96,12,119,64,44,116,168,193,104,235,74,193,48,106,28,66,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,70,91,165,61,83,255,69,59,93,204,5,185,135,151,113,54,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,61,10,143,64,61,10,143,64,204,204,204,61,158,140,191,63,133,205,193,63,254,247,134,7,146,248,230,7,252,248,255,6,17,249,17,7,23,176,132,63,89,85,131,66,0,0,0,0,0,0,0,0,0,0,0,0,94,116,21,66,75,182,93,63,129,134,68,64,234,46,155,191,87,175,103,62,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        dsmRegs.dsmYoffset = 1105140358;
+        dsmRegs.dsmXoffset = 1107488894;
+        dsmRegs.dsmYscale = 1116837726;
+        dsmRegs.dsmXscale = 1115418352;
+
+    end
+    % frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
+    frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir,[],LRS);
+    
+    % Keep only the first frame
+    frame.z = frame.z(:,:,1);
+    frame.i = frame.i(:,:,1);
+    frame.yuy2 = frame.yuy2(:,:,1);
+    frame.yuy2Prev = frame.yuy2;
+    
+    % Define hyperparameters
+    params = camerasParams;
+    [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
+
 end
+
+[params] = OnlineCalibration.aux.getParamsForAC(params);
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
 
 
-% frame = OnlineCalibration.aux.loadZIRGBFrames(imagesSubdir);
-frame = OnlineCalibration.aux.loadZIRGBFrames(sceneDir,[],LRS);
 
 
-% Keep only the first frame
-frame.z = frame.z(:,:,1);
-frame.i = frame.i(:,:,1);
-frame.yuy2 = frame.yuy2(:,:,1);
-frame.yuy2Prev = frame.yuy2;
-
-% Define hyperparameters
-
-params = camerasParams;
-[params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
-
-params.cbGridSz = [9,13];% not part of the optimization 
-[params] = OnlineCalibration.aux.getParamsForAC(params);
 %%
 originalParams = params;
 
