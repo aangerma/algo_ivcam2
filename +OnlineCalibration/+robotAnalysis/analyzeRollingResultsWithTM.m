@@ -44,7 +44,7 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
     statusIdx = find( strcmp(resTxt(1,:),'status'));
     
     %seperate per unit and test according to iteration
-    tests =  dirFolders(baseDir,'*_hScale*',0);
+    tests =  dirFolders(baseDir,'*hScale*',0);
     if isempty(tests)
         tests = {[]};
     end
@@ -56,8 +56,9 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
     %plot each test
     for tid=1:length(tests)
         iterMats = dirFiles(fullfile(baseDir,tests{tid}),'*_data.mat',0);
-       
-        iterData = load(fullfile(baseDir,tests{tid},'1_data.mat'));
+        [~, sidx] = sort(cellfun(@(x) sscanf(x,'%d_data.mat'),iterMats));
+        iterMats = iterMats(sidx);
+        iterData = load(fullfile(baseDir,tests{tid},iterMats{1}));
         
         %first input
         hFactors = iterData.dbg.acDataIn.hFactor;
@@ -65,8 +66,10 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
         validity = 1;
         uvPre = [];
         uvPost = [];
+        lastCalRes = [];
+        lastAcData = [];
         for i=1:length(iterMats)
-            iterData = load(fullfile(baseDir,tests{tid},sprintf('%d_data.mat',i)));
+            iterData = load(fullfile(baseDir,tests{tid},iterMats{i}));
             hFactors(i+1) = iterData.dbg.acDataOut.hFactor;
             vFactors(i+1) = iterData.dbg.acDataOut.vFactor;
             validity(i+1) = iterData.validParams;
@@ -91,6 +94,14 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
                 lutCheckers,calMod.hfactor,calMod.vfactor,calMod);
             uvPost(:,i) = OnlineCalibration.robotAnalysis.calcUvMapError(...
                 lutCheckers,calRes.hfactor,calRes.vfactor,calRes);
+            if i==1
+                lastCalRes = calMod;
+                lastAcData = iterData.dbg.acDataIn;
+            end
+            if  validity(i+1)
+                lastCalRes = calRes;
+                lastAcData = iterData.dbg.acDataOut;
+            end
         end
         
         for metrixIdx=1:lastMetricIdx
@@ -118,12 +129,35 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
             xlabel('Iteration');
             grid on;
         end
+        %generate UV table
+        if ~isempty(lastAcData)
+            params.RGBImageSize =  lastCalRes.rgbRes;
+            res =[];
+            res.color.Kn = single(du.math.normalizeK(lastCalRes.Krgb,lastCalRes.rgbRes));
+            res.color.d =  single(lastCalRes.rgbDistort);
+            res.extrinsics.r = single(lastCalRes.Rrgb);
+            res.extrinsics.t = single(lastCalRes.Trgb);
+            RGBTable =  Calibration.rgb.buildRGBTable(res,params,40);
+            flags = zeros(1,6,'uint8');
+            flags(1:length(lastAcData.flags)) = lastAcData.flags;
+            lastAcData.flags = flags;
+            newAcDataTable = Calibration.tables.convertCalibDataToBinTable(lastAcData, 'Algo_AutoCalibration');
+            
+            if exist('outPath','var')
+                mkdirSafe(outPath)
+                writeAllBytes(RGBTable.data,[uID ' RGB_Calibration_Info_CalibInfo_Ver_00_48.bin']);
+                writeAllBytes(newAcDataTable,[uID ' Algo_AutoCalibration_CalibInfo_Ver_01_00']);
+            end
+            %lastValidMat =  iterMats{find(validity(2:end),1,'last')};
+            %[newAcDataTable1, RGBTable1 ] = OnlineCalibration.robotAnalysis.tablesFromDataMat(fullfile(baseDir,tests{tid},lastValidMat),[]);
+        else
+            fprintf(2,'no successfull AC iteration\n');
+        end
 
     end
     %legend(tests);
     %if required, save figure
     if exist('outPath','var')
-        mkdirSafe(outPath)
         saveas(fig,fullfile(outPath,sprintf('%s_%s_ResultPerIteration.png',uID,testName)));
     end
 end

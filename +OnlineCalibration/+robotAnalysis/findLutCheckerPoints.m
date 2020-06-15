@@ -62,7 +62,11 @@ function lutCheckers = findLutCheckerPoints(baseDir, scales)
                 lidx = lidx+1;
             end
         end
-        save(resMat,'lutCheckers');
+        try
+            save(resMat,'lutCheckers');
+        catch
+            warning('can''t  save checker file\n');
+        end
     end
     
 end
