@@ -17,8 +17,8 @@ function [ac_table,rgbTable] = tablesFromDataMat(fname, outPath)
     
     if exist('outPath','var')
         mkdirSafe(outPath)
-        writeAllBytes(rgbTable,'RGB_Calibration_Info_CalibInfo_Ver_00_48.bin');
-        writeAllBytes(ac_table,'Algo_AutoCalibration_CalibInfo_Ver_01_00');
+        writeAllBytes(rgbTable,fullfile(outPath,'RGB_Calibration_Info_CalibInfo_Ver_00_48.bin'));
+        writeAllBytes(ac_table,fullfile(outPath,'Algo_AutoCalibration_CalibInfo_Ver_01_00.bin'));
     end
 end
 
