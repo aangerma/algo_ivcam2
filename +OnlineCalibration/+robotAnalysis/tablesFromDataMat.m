@@ -1,4 +1,7 @@
-function [ac_table,rgbTable] = tablesFromDataMat(fname, outPath)
+function [ac_table,rgbTable] = tablesFromDataMat(fname, outPath, writeToUnit)
+    if ~exist('writeToUnit','var')
+        writeToUnit = false;
+    end
     testData = load(fname);   
     calTemp = 40;
     params.RGBImageSize =  testData.newParams.rgbRes;
@@ -17,8 +20,15 @@ function [ac_table,rgbTable] = tablesFromDataMat(fname, outPath)
     
     if exist('outPath','var')
         mkdirSafe(outPath)
-        writeAllBytes(rgbTable,fullfile(outPath,'RGB_Calibration_Info_CalibInfo_Ver_00_48.bin'));
-        writeAllBytes(ac_table,fullfile(outPath,'Algo_AutoCalibration_CalibInfo_Ver_01_00.bin'));
+        rgbFile = fullfile(outPath,'RGB_Calibration_Info_CalibInfo_Ver_00_48.bin');
+        acFile = fullfile(outPath,'Algo_AutoCalibration_CalibInfo_Ver_01_00.bin');
+        writeAllBytes(rgbTable,rgbFile);
+        writeAllBytes(ac_table,acFile);
+    end
+    if writeToUnit
+        hw = HWinterface;
+        hw.cmd(sprintf('WrCalibInfo "%s"',acFile));
+        hw.cmd(sprintf('WrCalibInfo "%s"',rgbFile));
     end
 end
 
