@@ -3,39 +3,37 @@ function [data] = processSingleLut(fname,metricNames,showFig)
         showFig = false;
     end
     data = struct();
-    [num,txt] = xlsread(fname);
-    xDsmErrorIdx = find( strcmp(txt(1,:),'hScale'));
-    yDsmErrorIdx = find( strcmp(txt(1,:),'vScale'));
-    snIdx = find( strcmp(txt(1,:),'sn'));
+    tbl = readtable(fname);
     
-    data.hfactors = unique(num(:,xDsmErrorIdx));
-    data.vfactors = unique(num(:,yDsmErrorIdx));
+    data.hfactors = unique(tbl.hScale);
+    data.vfactors = unique(tbl.vScale);
     sz = [length(data.vfactors),length(data.hfactors)];
-    if prod(sz) ~= size(num,1)
-        num = num(1:prod(sz),:);
+    if prod(sz) ~= size(tbl,1)
+        tbl = tbl(1:prod(sz),:);
     end
     
-    hfactor = num(:,xDsmErrorIdx);
-    vfactor = num(:,yDsmErrorIdx);
+    hfactor = tbl.hScale;
+    vfactor = tbl.vScale;
     
     data.hfactor = reshape(hfactor,sz);
     data.vfactor = reshape(vfactor,sz);
-    data.sn = txt(2,snIdx);
+    data.sn = tbl.sn{1};
     data.metrics = [];
     
+    fields = fieldnames(tbl);
     if ~exist('metricNames','var') || isempty(metricNames)
         metricNames = {'LDD_Temperature','gridInterDistance_errorRmsAF',...
             'gridDistortion_horzErrorMeanAF','gridDistortion_vertErrorMeanAF',...
             'geomReprojectErrorUV_rmseAF','geomReprojectErrorUV_maxErrAF'};
     elseif ischar(metricNames) && strcmp(metricNames,'all')
-        metricNames = txt(1,max([snIdx,yDsmErrorIdx,xDsmErrorIdx]):end);
+        metricNames = fields(find(strcmp(fields,'vScale')):end);
     end
     
     for midx=1:length(metricNames)
-        idx = find( strcmp(txt(1,:),metricNames{midx}),1,'first');
-        if ~isempty(idx) &&  idx <size(num,2)
+        curData = tbl.(metricNames{midx});
+        if isnumeric(curData)
             data.metrics(midx).name = metricNames{midx};
-            data.metrics(midx).values = reshape(num(:,idx),sz);
+            data.metrics(midx).values = reshape(curData,sz);
         end
     end
     
