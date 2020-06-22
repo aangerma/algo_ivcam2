@@ -13,10 +13,24 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
     mUnits = {'mm','factor','factor','pix','pix','factor','factor','pix','pix'};
     plotPos =[1 2 3 5 6 4 7 8 9];
     uvMetics = {'UV RMS','UV max'};
-
+    spArr = [3 3];
     %get the test data and results
-    data = OnlineCalibration.robotAnalysis.processSingleLut(lutFile,metricNames);
-    lutCheckers = OnlineCalibration.robotAnalysis.findLutCheckerPoints(lutDataPath);
+    try
+        data = OnlineCalibration.robotAnalysis.processSingleLut(lutFile,metricNames);
+    catch ex
+        fprintf(2,'can''t find LUT data,continue without it\n');
+        data.metrics = [];
+        friendlyNames = friendlyNames(length(metricNames)+1:end);
+        mUnits = mUnits(length(metricNames)+1:end);
+        spArr = [2 2];
+        plotPos =  1:prod(spArr);
+        
+    end
+    try
+        lutCheckers = OnlineCalibration.robotAnalysis.findLutCheckerPoints(lutDataPath);
+    catch ex
+        fprintf(2,'can''t parse lut checkers image data,continue without it\n');
+    end
     [resNum,resTxt] = xlsread(resultFile);
     
     %build interpolation from the lut
@@ -45,9 +59,16 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
     
     %seperate per unit and test according to iteration
     tests =  dirFolders(baseDir,'*hScale*',0);
+    if exist(fullfile(baseDir,'rolling'),'dir')
+        tests{end+1} = 'rolling';
+    end
+    if exist(fullfile(baseDir,'checker'),'dir')
+        tests{end+1} = 'checker';
+    end
     if isempty(tests)
         tests = {[]};
     end
+    
     uID = resTxt{2,snIdx};
     [~,testName] = fileparts(baseDir);
     fig = figure();
@@ -55,6 +76,7 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
     
     %plot each test
     for tid=1:length(tests)
+        
         iterMats = dirFiles(fullfile(baseDir,tests{tid}),'*_data.mat',0);
         [~, sidx] = sort(cellfun(@(x) sscanf(x,'%d_data.mat'),iterMats));
         iterMats = iterMats(sidx);
@@ -73,7 +95,7 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
             hFactors(i+1) = iterData.dbg.acDataOut.hFactor;
             vFactors(i+1) = iterData.dbg.acDataOut.vFactor;
             validity(i+1) = iterData.validParams;
-
+            
             calMod.hfactor = iterData.dbg.acDataIn.hFactor;
             calMod.vfactor = iterData.dbg.acDataIn.vFactor;
             calMod.Krgb = iterData.params.Krgb;
@@ -89,11 +111,15 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
             calRes.rgbDistort = iterData.newParams.rgbDistort;
             calRes.hfactor = iterData.dbg.acDataOut.hFactor;
             calRes.vfactor = iterData.dbg.acDataOut.vFactor;
-            
+            if exist('lutCheckers','var')
             uvPre(:,i) = OnlineCalibration.robotAnalysis.calcUvMapError(...
                 lutCheckers,calMod.hfactor,calMod.vfactor,calMod);
             uvPost(:,i) = OnlineCalibration.robotAnalysis.calcUvMapError(...
                 lutCheckers,calRes.hfactor,calRes.vfactor,calRes);
+            else
+              uvPre(1:4,i) = NaN;  
+              uvPost(1:4,i) = NaN;  
+            end
             if i==1
                 lastCalRes = calMod;
                 lastAcData = iterData.dbg.acDataIn;
@@ -108,7 +134,7 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
             metricResults = metricData(metrixIdx).intrp(hFactors,vFactors);
             metricResults(~validity) = NaN;
             metricResults = fillmissing(metricResults,'previous');
-            subplot(3,3,plotPos(metrixIdx));
+            subplot(spArr(1),spArr(2),plotPos(metrixIdx));
             hold on;
             plot(metricResults);
             title(metricData(metrixIdx).name);
@@ -121,7 +147,7 @@ function [] = analyzeRollingResultsWithTM(baseDir,outPath)
             metricResults = [uvPre(1,mid) uvPost(mid,:)];
             metricResults(~validity) = NaN;
             metricResults = fillmissing(metricResults,'previous');
-            subplot(3,3,plotPos(metrixIdx));
+            subplot(spArr(1),spArr(2),plotPos(metrixIdx));
             hold on;
             plot(metricResults);
             title(metricData(metrixIdx).name);
