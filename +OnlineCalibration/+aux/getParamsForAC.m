@@ -51,7 +51,7 @@ params.constantWeightsValue = 1000; % This value matters in the stopping criteri
 params.moveThreshPixNum =  3e-05*prod(params.rgbRes);
 
 % params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMModel.mat');
-params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMModelLinear.mat');
+params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMModelLinearTarget.mat');
 % params.affectingInvalidationSVMModel.mandatory = {'gradITh';'gradZMax';'numSectionsV';'numSectionsH';'constantWeights';'constantWeightsValue'};
 % params.affectingInvalidationSVMModel.nonmandatory = {'inverseDistParams';'maxStepSize';'tau';'controlParam';'edgeThresh4logicIm'};
 params.iterFromStart = 1;
