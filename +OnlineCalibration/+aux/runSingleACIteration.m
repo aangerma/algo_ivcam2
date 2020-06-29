@@ -124,50 +124,50 @@ if isfield(params,'outputFolder')
    subplot(121);
    imagesc(currentFrame.i);colorbar;
    hold on;
-   plot(originalFrame.xim+1,originalFrame.yim+1,'r*');
+   plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
    title('IR');
    subplot(122);
    imagesc(currentFrame.z/4);colorbar;
    hold on;
-   plot(originalFrame.xim+1,originalFrame.yim+1,'r*');
+   plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
    title('Z');
-   Calibration.aux.saveFigureAsImage(ff,params,'IRandZ','',0);
+   Calibration.aux.saveFigureAsImage(ff,params,'IRandZ','',1);
 
    %% IR & Z Edge figure
    ff = Calibration.aux.invisibleFigure; 
    subplot(121);
    imagesc(currentFrame.irEdge);colorbar;
    hold on;
-   plot(originalFrame.xim+1,originalFrame.yim+1,'r*');
+   plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
    title('IR Edge');
    subplot(122);
    imagesc(currentFrame.zEdge);colorbar;
    hold on;
-   plot(originalFrame.xim+1,originalFrame.yim+1,'r*');
+   plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
    title('Z Edge');
-   Calibration.aux.saveFigureAsImage(ff,params,'IRandZEdge','',0);
+   Calibration.aux.saveFigureAsImage(ff,params,'IRandZEdge','',1);
 
    % Initial and final uv mappin
    ff = Calibration.aux.invisibleFigure; 
    imagesc(currentFrame.yuy2);
    hold on
-   plot(dbg.uvMapOrig(:,1)+1,dbg.uvMapOrig(:,2)+1,'r*');
-   plot(dbg.uvMapNew(:,1)+1,dbg.uvMapNew(:,2)+1,'g*');
+   plot(dbg.uvMapOrig(:,1)+1,dbg.uvMapOrig(:,2)+1,'r*','markersize',1);
+   plot(dbg.uvMapNew(:,1)+1,dbg.uvMapNew(:,2)+1,'g*','markersize',1);
    title('YUY2');
    legend({'UVPre';'UVPost'});
-   Calibration.aux.saveFigureAsImage(ff,params,'UVInitAndFinal','',0,0,0);
-   Calibration.aux.saveFigureAsImage(ff,params,'UVInitAndFinal','',0,1,0);
+   Calibration.aux.saveFigureAsImage(ff,params,'UVInitAndFinal','',1,0,0);
+   Calibration.aux.saveFigureAsImage(ff,params,'UVInitAndFinal','',1,1,0);
    
    % Initial and final uv mappin
    ff = Calibration.aux.invisibleFigure; 
    imagesc(currentFrame.rgbIDT);
    hold on
-   plot(dbg.uvMapOrig(:,1)+1,dbg.uvMapOrig(:,2)+1,'r*');
-   plot(dbg.uvMapNew(:,1)+1,dbg.uvMapNew(:,2)+1,'g*');
+   plot(dbg.uvMapOrig(:,1)+1,dbg.uvMapOrig(:,2)+1,'r*','markersize',1);
+   plot(dbg.uvMapNew(:,1)+1,dbg.uvMapNew(:,2)+1,'g*','markersize',1);
    title('Inverse Distance Transform');
    legend({'UVPre';'UVPost(Pre Los Scale Clipping)'});
-   Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',0,0,0);
-   Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',0,1,0);
+   Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',1,0,0);
+   Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',1,1,0);
 
    % Isvalid, cost improvement
    
