@@ -1,4 +1,4 @@
-rerunDir = '\\syn03.iil.intel.com\VIDB\AC2 Field Test\Data Collection\16-06-20\Rolling\Tomer\T155';
+rerunDir = '\\syn03.iil.intel.com\VIDB\AC2 Field Test\Data Collection\18-06-20\Rolling_v0.9.22\Julia\J315';
 outputDir = 'X:\Users\tmund\dbgIQRolling\rerunIQT155';
 outputResFile = fullfile(outputDir,'res.mat');
 runMultiFrame = 0;

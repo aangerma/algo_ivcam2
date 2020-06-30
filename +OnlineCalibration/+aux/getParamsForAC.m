@@ -38,6 +38,7 @@ params.maxXYMovementPerIteration = [10,2,2]*prod(params.rgbRes)/(1920*1080);
 params.maxXYMovementFromOrigin = 20*prod(params.rgbRes)/(1920*1080);
 params.numSectionsV = 2;
 params.numSectionsH = 2;
+params.numSections = params.numSectionsV*params.numSectionsH;
 params.gradDirRatio = 10;
 params.gradDirRatioPerp = 1.5;
 
@@ -60,5 +61,17 @@ params.maxK2DSMIters = 10;
 
 params.maxLosScalingStep = 0.02;% In each K2DSM call, this factor determines the search region
 params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
+
+% Input validity checks
+params.gradRgbTh = 5*1280/params.rgbRes(1); % (checkEnoughRgbEdges) Should vary between resolutions as the transition takes more/less pixels
+params.rgbNumEdgeRatioTh = 0.002; % (checkEnoughRgbEdges) 
+params.pixPerSectionRgbTh = 0.015;% (checkDepthEdgesSpatialSpread)
+params.pixPerSectionDepthTh = 0.015;% (checkDepthEdgesSpatialSpread)
+params.minSectionWithEnoughEdges = 3;% (checkDepthEdgesSpatialSpread)
+params.edgesPerDirectionRatioTh = 0.004; % (checkEdgesDirSpread)
+params.minimalFullDirections = 2;% (checkEdgesDirSpread)
+params.dirStdTh = 0.12;% (checkEdgesDirSpread)
+
+
 end
 

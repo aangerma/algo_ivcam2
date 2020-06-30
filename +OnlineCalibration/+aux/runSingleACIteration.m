@@ -2,7 +2,9 @@ function [validParams,params,newAcDataTable,newAcDataStruct,sceneResults] = runS
 % dataForACTableGeneration - A struct with the fields: DSMRegs,
 % calibTableBin, acTableBin
 sceneResults.params = params;
-
+if ~isfield(currentFrame,'lastValidYuy2')
+    currentFrame.lastValidYuy2 = 0*currentFrame.yuy2;
+end
 
 %% Prepare input params for AC
 if iscell(dataForACTableGeneration.acDataBin) % got from python interface
@@ -49,7 +51,8 @@ sceneResults.acDataIn = acData;
 
 currentFrame.originalVertices = currentFrame.vertices;
 [~,decisionParams,isMovement] = OnlineCalibration.aux.validScene(currentFrame,params);
-
+[sceneResults.validInputs,directionData,sceneResults.inputValidityDbg] = OnlineCalibration.aux.inputValidityChecks(currentFrame,params);
+% currentFrame.weights = OnlineCalibration.aux.normalizeWeigthtsPerDirection(currentFrame.weights,currentFrame.dirPerPixel,directionData.validDirections,directionData.edgesPerDirection);
 %% Calculate initial cost
 [decisionParams.initialCost] = OnlineCalibration.aux.calculateCost(currentFrame.vertices,currentFrame.weights,currentFrame.rgbIDT,params);
 originalFrame = currentFrame;
@@ -111,7 +114,7 @@ sceneResults.finalParams = finalParams;
 acData.flags(2:6) = uint8(0);
 newAcDataTable = Calibration.tables.convertCalibDataToBinTable(acData, 'Algo_AutoCalibration');
 
-validParams = sceneResults.validMovement && sceneResults.validFixBySVM && (iterNum >= 1);
+validParams = sceneResults.validInputs && sceneResults.validMovement && sceneResults.validFixBySVM && (iterNum >= 1);
 newAcDataStruct = acData;
 
 if iterNum >= 1  % Else params remain the same and acdataIn is equal to ACDataout

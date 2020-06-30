@@ -8,7 +8,7 @@ SE = strel('square', params.seSize);
 dilatedIm = imdilate(logicEdges,SE);
 
 % diffIm = abs(im1-im2);
-diffIm = imgaussfilt(im1-im2,params.moveGaussSigma);
+diffIm = imgaussfilt(double(im1)-double(im2),params.moveGaussSigma);
 IDiffMasked = abs(diffIm);
 IDiffMasked(dilatedIm) = 0;
 % figure; imagesc(IDiffMasked); title('IDiffMasked');impixelinfo; colorbar;

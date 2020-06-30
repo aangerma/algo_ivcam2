@@ -49,8 +49,8 @@ iterNum = strsplit(main_dir,'iteration');
 iterNum = iterNum{end};
 mdData = loadjson(fullfile(main_dir,['md_' iterNum],'md.json'));
 splittedProfile = strsplit(mdData.profile,' ');
-di = find(strcmp(splittedProfile,'depth'));
-ri = find(strcmp(splittedProfile,'color'));
+di = find(contains(splittedProfile,'depth'));
+ri = find(contains(splittedProfile,'color'));
 params.depthRes = [str2double(splittedProfile{di+4}), str2double(splittedProfile{di+2})];%[1280 720];
 params.rgbRes = [str2double(splittedProfile{ri+2}), str2double(splittedProfile{ri+4})];%[480 640];
 
