@@ -52,7 +52,9 @@ sceneResults.acDataIn = acData;
 currentFrame.originalVertices = currentFrame.vertices;
 [~,decisionParams,isMovement] = OnlineCalibration.aux.validScene(currentFrame,params);
 [sceneResults.validInputs,directionData,sceneResults.inputValidityDbg] = OnlineCalibration.aux.inputValidityChecks(currentFrame,params);
-% currentFrame.weights = OnlineCalibration.aux.normalizeWeigthtsPerDirection(currentFrame.weights,currentFrame.dirPerPixel,directionData.validDirections,directionData.edgesPerDirection);
+if params.normalizeWeightsPerDir
+    currentFrame.weights = OnlineCalibration.aux.normalizeWeigthtsPerDirection(currentFrame.weights,currentFrame.dirPerPixel,directionData.validDirections,directionData.edgesPerDirection);
+end
 %% Calculate initial cost
 [decisionParams.initialCost] = OnlineCalibration.aux.calculateCost(currentFrame.vertices,currentFrame.weights,currentFrame.rgbIDT,params);
 originalFrame = currentFrame;

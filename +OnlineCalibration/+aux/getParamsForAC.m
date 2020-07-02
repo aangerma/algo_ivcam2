@@ -62,16 +62,14 @@ params.maxK2DSMIters = 10;
 params.maxLosScalingStep = 0.02;% In each K2DSM call, this factor determines the search region
 params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
 
-% Input validity checks
+% Input validity checks+++++++
 params.gradRgbTh = 5*1280/params.rgbRes(1); % (checkEnoughRgbEdges) Should vary between resolutions as the transition takes more/less pixels
-params.rgbNumEdgeRatioTh = 0.002; % (checkEnoughRgbEdges) 
-params.pixPerSectionRgbTh = 0.015;% (checkDepthEdgesSpatialSpread)
-params.pixPerSectionDepthTh = 0.015;% (checkDepthEdgesSpatialSpread)
-params.minSectionWithEnoughEdges = 3;% (checkDepthEdgesSpatialSpread)
-params.edgesPerDirectionRatioTh = 0.004; % (checkEdgesDirSpread)
+params.pixPerSectionRgbTh = 0.01;% (checkDepthEdgesSpatialSpread)
+params.pixPerSectionDepthTh = 0.022;% (checkDepthEdgesSpatialSpread)
+params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
+params.edgesPerDirectionRatioTh = 0.0041; % (checkEdgesDirSpread)
 params.minimalFullDirections = 2;% (checkEdgesDirSpread)
-params.dirStdTh = 0.12;% (checkEdgesDirSpread)
-
-
+params.dirStdTh = 0.126;% (checkEdgesDirSpread)
+params.normalizeWeightsPerDir = false;
 end
 
