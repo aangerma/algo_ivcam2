@@ -72,7 +72,7 @@ params.minimalFullDirections = 2;% (checkEdgesDirSpread)
 params.dirStdTh = 0.126;% (checkEdgesDirSpread)
 
 params.irSaturationRatioTh = 0.05;
-if params.presetNum == 1 || ~isfield(params,'presetNum') % Long Preset
+if ~isfield(params,'presetNum') || params.presetNum == 1  % Long Preset
     params.irSaturationValue = 230;  
 else % Short Preset
     params.irSaturationValue = 250;
