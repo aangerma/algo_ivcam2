@@ -70,6 +70,13 @@ params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
 params.edgesPerDirectionRatioTh = 0.0041; % (checkEdgesDirSpread)
 params.minimalFullDirections = 2;% (checkEdgesDirSpread)
 params.dirStdTh = 0.126;% (checkEdgesDirSpread)
+
+params.irSaturationRatioTh = 0.05;
+if params.presetNum == 1 || ~isfield(params,'presetNum') % Long Preset
+    params.irSaturationValue = 230;  
+else % Short Preset
+    params.irSaturationValue = 250;
+end
 params.normalizeWeightsPerDir = false;
 end
 

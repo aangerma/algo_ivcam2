@@ -30,9 +30,8 @@ regs.DEST.baseline2 = regs.DEST.baseline^2;
 
 
 % Preprocess RGB
-[currentFrame.rgbEdge, currentFrame.rgbIDT, currentFrame.rgbIDTx, currentFrame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(currentFrame,params);
-sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
-currentFrame.sectionMapRgb = sectionMapRgb(currentFrame.rgbIDT>0);
+[currentFrame.rgbEdge, currentFrame.rgbIDT, currentFrame.rgbIDTx, currentFrame.rgbIDTy,currentFrame.sectionMapRgb,currentFrame.sectionMapRgbEdges] = OnlineCalibration.aux.preprocessRGB(currentFrame,params);
+
 
 [currentFrame.irEdge,currentFrame.zEdge,...
     currentFrame.xim,currentFrame.yim,currentFrame.zValuesForSubEdges...

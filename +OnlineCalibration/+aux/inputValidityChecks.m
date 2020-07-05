@@ -9,11 +9,13 @@ function [validInputs,directionData,dbg] = inputValidityChecks(frame,params)
 % normalized by direction)  (Normalize by weights is done in a seperate
 % function)
 % 5. Verify there is movement in RGB between this scene and the previous
+% 6. Check for saturation in the depth
 % one in which we converged
 
 
 % 1. Enough Edges in RGB image (Lights off bug fix)
-[dbg.rgbEdgesSpread,dbg.rgbEdgesSpreadDbg] = OnlineCalibration.aux.checkEnoughRgbEdges(frame.rgbEdge,frame.sectionMapRgb,params);
+[dbg.rgbEdgesSpread,dbg.rgbEdgesSpreadDbg] = OnlineCalibration.aux.checkEdgesSpatialSpread(frame.sectionMapRgbEdges,params.rgbRes,params.pixPerSectionRgbTh,params.minSectionWithEnoughEdges,params.numSections);
+
 
 % 2. Enough Edges in enough locations (3/4 quarters)
 [dbg.depthEdgesSpread,dbg.depthEdgesSpreadDbg] = OnlineCalibration.aux.checkEdgesSpatialSpread(frame.sectionMapDepth,params.depthRes,params.pixPerSectionDepthTh,params.minSectionWithEnoughEdges,params.numSections);
@@ -26,7 +28,10 @@ function [validInputs,directionData,dbg] = inputValidityChecks(frame,params)
 % 5. Check movement between this scene and the previous good one
 [dbg.isMovementFromLastSuccess,dbg.movingPixelsFromLastSuccess] = OnlineCalibration.aux.isMovementInImages(frame.lastValidYuy2,frame.yuy2,params);
 
-validInputs = dbg.rgbEdgesSpread & dbg.depthEdgesSpread & dbg.depthEdgesDirSpread & dbg.isMovementFromLastSuccess;
+% 6. Check for saturation in the IR image
+[dbg.depthIsntSaturated,dbg.depthSaturationDbg] = OnlineCalibration.aux.checkForSaturation(frame.i,params.irSaturationValue,params.irSaturationRatioTh);
+
+validInputs = dbg.rgbEdgesSpread && dbg.depthEdgesSpread && dbg.depthEdgesDirSpread && dbg.isMovementFromLastSuccess && dbg.depthIsntSaturated;
 dbg.validInputs = validInputs;
 end
 
