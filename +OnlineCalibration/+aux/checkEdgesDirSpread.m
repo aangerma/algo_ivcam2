@@ -27,7 +27,15 @@ dbg.stdPerDir = stdPerDir;
 dbg.stdBiggerThanTh = stdPerDir > params.dirStdTh;
 directionData.validDirections = dbg.stdBiggerThanTh & dbg.directionsWithEnoughEdges;
 edgesDirSpread = sum(directionData.validDirections) >= params.minimalFullDirections;
+if params.requireOrthogonalValidDirs % If true, we need to have two valid directions that are orthogonal
+    orthogonalValidDirs = any(directionData.validDirections(1:2) & directionData.validDirections(3:4));
+    edgesDirSpread = edgesDirSpread && orthogonalValidDirs;
+end
 
 directionData.edgesPerDirection = dbg.edgesAmountPerDirections;
 end
 
+% for i = 1:4
+%    plot(xim(directions == i)+1,yim(directions == i)+1,'*') 
+%    hold on
+% end

@@ -66,8 +66,13 @@ else
     [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
 
 end
-
-[params] = OnlineCalibration.aux.getParamsForAC(params);
+% This image is the last RGB image that converged since the last play.
+% It is initialized to zeros at the start of stream for easy use in
+% the first cycle (Release AC2.1)
+frame.lastValidYuy2 = 0*frame.yuy2;
+% Auto Trigger Mode
+autoTrigger = 1;
+[params] = OnlineCalibration.aux.getParamsForAC(params,autoTrigger);
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
 
@@ -83,17 +88,13 @@ end
 %%
 originalParams = params;
 
-sectionMapDepth = OnlineCalibration.aux.sectionPerPixel(params);
-sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
-
 % Save Inputs
 %OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Z_input',uint16(frame.z),'uint16');
 %OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'I_input',uint8(frame.i),'uint8');
 %OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_input',uint8(frame.yuy2),'uint8');
 
 % Preprocess RGB
-[frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy] = OnlineCalibration.aux.preprocessRGB(frame,params);
-frame.sectionMapRgb = sectionMapRgb(frame.rgbIDT>0);
+[frame.rgbEdge, frame.rgbIDT, frame.rgbIDTx, frame.rgbIDTy, frame.sectionMapRgb,  frame.sectionMapRgbEdges] = OnlineCalibration.aux.preprocessRGB(frame,params);
 
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_edge',double(frame.rgbEdge),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'YUY2_IDT',frame.rgbIDT,'double');
@@ -113,13 +114,14 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zGradInDirection',single(
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dirPerPixel',single(frame.dirPerPixel),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',double(frame.weights),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',double(frame.vertices),'double');
-OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',double(frame.sectionMapDepth),'double');
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',double(frame.relevantPixelsImage),'double');
 
 
 %% decisionParams from input scene
 [~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params);
-if isMovement
+[validInputs,directionData,sceneResults.inputValidityDbg] = OnlineCalibration.aux.inputValidityChecks(frame,params);
+
+if isMovement || ~validInputs
    return; 
 end
 decisionParams.initialCost = OnlineCalibration.aux.calculateCost(frame.vertices,frame.weights,frame.rgbIDT,params);

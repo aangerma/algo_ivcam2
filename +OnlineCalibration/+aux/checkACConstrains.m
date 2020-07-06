@@ -6,6 +6,6 @@ dbg.validPreset = presetNum == 1 || presetNum == 2;
 % the temperature is close to calibration temp
 dbg.validTemperature = humidityTemp >= params.minHumTh && humidityTemp <= params.maxHumTh;
 
-validACConditions = dbg.validPreset && dbg.validTemp;
+validACConditions = dbg.validPreset && dbg.validTemperature;
 end
 

@@ -1,4 +1,7 @@
-function [params] = getParamsForAC(params)
+function [params] = getParamsForAC(params,manualTrigger)
+if ~exist('manualTrigger','var')
+    manualTrigger = 0;
+end
 % params.inverseDistParams.gamma = 0.98;
 params.inverseDistParams.metric = 1;
 params.inverseDistParams.alpha = 1/3;
@@ -60,22 +63,45 @@ params.maxK2DSMIters = 10;
 
 
 params.maxLosScalingStep = 0.02;% In each K2DSM call, this factor determines the search region
-params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
 
-% Input validity checks+++++++
+
+
+
+% AC actiovation confistion params
+params.minHumTh = 32;
+params.maxHumTh = 46;
+
 params.gradRgbTh = 10*1280/params.rgbRes(1); % (checkEnoughRgbEdges) Should vary between resolutions as the transition takes more/less pixels
-params.pixPerSectionRgbTh = 0.01;% (checkDepthEdgesSpatialSpread)
-params.pixPerSectionDepthTh = 0.022;% (checkDepthEdgesSpatialSpread)
-params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
-params.edgesPerDirectionRatioTh = 0.0041; % (checkEdgesDirSpread)
-params.minimalFullDirections = 2;% (checkEdgesDirSpread)
-params.dirStdTh = 0.126;% (checkEdgesDirSpread)
-
-params.irSaturationRatioTh = 0.05;
-if ~isfield(params,'presetNum') || params.presetNum == 1  % Long Preset
-    params.irSaturationValue = 230;  
-else % Short Preset
-    params.irSaturationValue = 250;
+% Difference between manual trigger and autotrigger
+if manualTrigger
+    params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
+    % Input validity checks+++++++
+    params.pixPerSectionRgbTh = 0;% (checkDepthEdgesSpatialSpread)
+    params.pixPerSectionDepthTh = 0;% (checkDepthEdgesSpatialSpread)
+    params.minSectionWithEnoughEdges = 0;% (checkDepthEdgesSpatialSpread)
+    params.edgesPerDirectionRatioTh = 0; % (checkEdgesDirSpread)
+    params.minimalFullDirections = 0;% (checkEdgesDirSpread)
+    params.requireOrthogonalValidDirs = false;% (checkEdgesDirSpread)
+    params.dirStdTh = 0;% (checkEdgesDirSpread)
+    params.irSaturationRatioTh = 1;
+    params.irSaturationValue = 256; % Larger than max IR value  
+    
+else
+    params.maxGlobalLosScalingStep = 0.004;% Clip the different between starting scale and final scale by this value
+    % Input validity checks+++++++
+    params.pixPerSectionRgbTh = 0.01;% (checkDepthEdgesSpatialSpread)
+    params.pixPerSectionDepthTh = 0.022;% (checkDepthEdgesSpatialSpread)
+    params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
+    params.edgesPerDirectionRatioTh = 0.0041; % (checkEdgesDirSpread)
+    params.minimalFullDirections = 2;% (checkEdgesDirSpread)
+    params.requireOrthogonalValidDirs = true;% (checkEdgesDirSpread)
+    params.dirStdTh = 0.126;% (checkEdgesDirSpread)
+    params.irSaturationRatioTh = 0.05;
+    if ~isfield(params,'presetNum') || params.presetNum == 1 % Long Preset
+        params.irSaturationValue = 230;  
+    else % Short Preset
+        params.irSaturationValue = 250;
+    end
 end
 params.normalizeWeightsPerDir = false;
 
