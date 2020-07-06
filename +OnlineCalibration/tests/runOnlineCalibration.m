@@ -71,9 +71,15 @@ end
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
 
-
-
-
+% AC Should be applied only when some conditions are met. We don't have the
+% apd state here (or the temperature in many of the data scenes) so I set
+% them here hard coded
+humidityTemp = 40;
+presetNum = 1;% should actually be the apd state
+[validACConditions,dbg] = OnlineCalibration.aux.checkACConstrains(presetNum,humidityTemp,params);
+if ~validACConditions
+    return;
+end
 %%
 originalParams = params;
 

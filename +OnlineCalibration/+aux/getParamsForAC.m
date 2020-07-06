@@ -78,5 +78,10 @@ else % Short Preset
     params.irSaturationValue = 250;
 end
 params.normalizeWeightsPerDir = false;
+
+
+% AC actiovation confistion params
+params.minHumTh = 32;
+params.maxHumTh = 46;
 end
 
