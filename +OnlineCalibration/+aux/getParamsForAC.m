@@ -82,7 +82,7 @@ if manualTrigger
     params.edgesPerDirectionRatioTh = 0; % (checkEdgesDirSpread)
     params.minimalFullDirections = 0;% (checkEdgesDirSpread)
     params.requireOrthogonalValidDirs = false;% (checkEdgesDirSpread)
-    params.dirStdTh = 0;% (checkEdgesDirSpread)
+    params.dirStdTh = [0,0,0,0];% (checkEdgesDirSpread)
     params.irSaturationRatioTh = 1;
     params.irSaturationValue = 256; % Larger than max IR value  
     
@@ -95,7 +95,7 @@ else
     params.edgesPerDirectionRatioTh = 0.0041; % (checkEdgesDirSpread)
     params.minimalFullDirections = 2;% (checkEdgesDirSpread)
     params.requireOrthogonalValidDirs = true;% (checkEdgesDirSpread)
-    params.dirStdTh = 0.126;% (checkEdgesDirSpread)
+    params.dirStdTh = [0.126,0.126,0.126,0.126];% (checkEdgesDirSpread)
     params.irSaturationRatioTh = 0.05;
     if ~isfield(params,'presetNum') || params.presetNum == 1 % Long Preset
         params.irSaturationValue = 230;  
