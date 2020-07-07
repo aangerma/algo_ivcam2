@@ -197,9 +197,44 @@ classdef HWinterface <handle
     
     
     methods (Access=public)
+        
         function sz = streamSize(obj)
             sz = [obj.usefullRegs.GNRL.imgVsize,obj.usefullRegs.GNRL.imgHsize];
         end
+        
+        function cameraConfig = getCameraConfig(obj)
+            if obj.m_dotnetcam.Stream.IsDepthPlaying
+                dSz = obj.streamSize();
+            else
+                dSz = [1024 768];
+                warning('Depth stream is not playing, using default intrinisc');
+            end
+            cameraConfig.zK = obj.getIntrinsics;
+            cameraConfig.zMaxSubMM = obj.z2mm;
+            
+            if obj.m_dotnetcam.Stream.IsColorPlaying
+                cSz = obj.m_colorResolution;
+            else
+                cSz = [1920 1080];
+                warning('Color stream is not playing, using default intrinisc');
+            end
+            [calibDataEeprom] = obj.getCalibTable('RGB_Calibration_Info_CalibInfo');
+            tData = calibDataEeprom.tableData;
+            cameraConfig.rgbDistortion = tData.color.d;
+            cameraConfig.rgbK = du.math.getK(tData.color.Kn,cSz);
+            cameraConfig.rgbRotation = tData.extrinsics.r;
+            cameraConfig.rgbTranslation = tData.extrinsics.t;
+        end
+        
+        function [depth,rgb] = isStreaming(obj)
+            depth = logical(obj.m_dotnetcam.Stream.IsDepthPlaying);
+            rgb = logical(obj.m_dotnetcam.Stream.IsColorPlaying);
+        end
+        
+        function [calibDataEeprom, calibDataFlash,binData] = getCalibTable(obj,tableName)
+            [calibDataEeprom, calibDataFlash,binData] = Calibration.tables.readCalibDataFromUnit(obj, tableName);
+        end
+        
         function setUsefullRegs(obj,res)
             obj.usefullRegs.PCKR.padding = obj.read('PCKRpadding');
             obj.usefullRegs.GNRL.imgVsize = res(1);
@@ -820,7 +855,24 @@ classdef HWinterface <handle
                 error(e.message);
             end
         end
-        
+        function [apdGain] = getApdGainState(obj)
+            apdGain = -1;
+            try
+                if obj.m_dotnetcam.Stream.IsDepthPlaying
+                    dSz = obj.streamSize();
+                else
+                    dSz = [768 1024];
+                    warning('Depth stream is not playing, using default intrinisc');
+                end
+                if all(dSz == [768 1024])
+                    [~,apdGain] = obj.cmd('AMCGET 4 0 1');
+                elseif all(dSz == [480 640])
+                    [~,apdGain] = obj.cmd('AMCGET 4 0 0');
+                end
+            catch e
+                error(e.message);
+            end
+        end
         function [regs,bin] = readAlgoEEPROMtable(obj,EPROMstructure)
             % EPROMstructure: deafult or from mat file of specific calibration
             % read eprom from hardware

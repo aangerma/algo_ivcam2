@@ -219,12 +219,20 @@
   </Command>
   <Command Name="CLOSE_OBJ_DETECT_CONFIGURE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1C" CmdPermission="Public" Description="Configure close object detect">
     <Parameter1 Name="Sample Rate - After how many frames to sample. Default value:15" IsDecimal="true" />
-	<Parameter2 Name="Sample length - Window length, how many samples to average. Default value:10" IsDecimal="true" />
+	<Parameter2 Name="Abort threshold - After how many continuous close frames detected abort stream. Default value:0xFFFFFFFF" IsDecimal="true" />
 	<Parameter3 Name="ISense threshold. Default value:30 " IsDecimal="true"/>
 	<Parameter4 Name="Black Threshold. Default value:2 " IsDecimal="true"/>
   </Command>
+  <Command Name="UAME" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1D" CmdPermission="Public" Description="USB Advanced Mode Enable">
+    <Parameter1 Name="USB Advanced Mode enable" />
+  </Command>
   <Command Name="DFU" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1E" CmdPermission="Public" Description="Go to DFU">
     <Parameter1 Name="Reset Type" />
+  </Command>
+  <Command Name="UAMG" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x1F" IsReadCommand="true" CmdPermission="Public" Description="USB Advanced Mode Get">
+    <ReadData>
+      <Section Name="USB_Debug_decriptors" Title="USB advanced mode descriptor status" Offset="0" Size="1" FormatType="Boolean" />
+    </ReadData>
   </Command>
   <Command Name="RST" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x20" CmdPermission="Public" Description="HW Reset">
   </Command>
@@ -244,7 +252,18 @@
     <Section Name="FOV FA ratio" Title="FOV FA axis ratio" Offset="0" Size="4" FormatType="Float" />
     <Section Name="FOV SA ratio" Title="FOV SA axis ratio" Offset="4" Size="4" FormatType="Float" />
     </ReadData>
- </Command>  
+ </Command>
+ <Command Name="ALGO_THERMLOOP_CONFIG_MODE" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x24" CmdPermission="Public" Description="Configure Algo thermal loop fast parameters">
+    <Parameter1 Name="Mode - Fast mode: 0, Slow mode: 1." IsDecimal="true" />
+	<Parameter2 Name="Interval between samples[ms] - Deafult fast - 10ms, Deafult slow - 50ms." IsDecimal="true" />
+    <Parameter3 Name="Apply rate, after how many samples apply new parameters - Deafult fast - 15 samples, Deafult slow 10 samples." IsDecimal="true" />
+    <Parameter4 Name="Algo thermal fast mode duration. Deafult 400ms. Not relevant for slow mode." IsDecimal="true" />
+  </Command>  
+  <Command Name="ALGO_THERMLOOP_STATUTS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x25" IsReadCommand="true" CmdPermission="Public" Description="Get Algo Thermal convergence status.  0 - Not converged, 1 - Converged.">
+  	<ReadData>
+	<Section Name="Algo thermal loop convergence status" Title="convergenceStatus" Offset="0" Size="1" FormatType="DecByte" />
+	</ReadData>
+  </Command>
   <Command Name="AMCGETVER" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x26" IsReadCommand="true" CmdPermission="Public" Description="Get adavanced mode command version">
   </Command>
   <Command Name="AMCSET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2B" CmdPermission="Public" Description="AMC_SET">
@@ -256,7 +275,7 @@
     <Parameter2 Name="dataType" />
     <Parameter3 Name="resolution" />
   </Command>
-  <Command Name="AC_SET_PARAM" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2d" CmdPermission="Public" Description="Auto Calib Set Param <index>  <value>">
+  <Command Name="AC_SET_PARAM" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x2d" CmdPermission="Public" Description="Auto Calib Set Param (index)  (value)">
     <Parameter1 Name="index" />
     <Parameter2 Name="value" />
   </Command>
@@ -458,7 +477,6 @@
   </Command>
   <Command Name="ALGO_THERMLOOP_MODE_SET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x59" CmdPermission="Public" ReadFormat="Bytes" Description="Algo Thermal Loop Mode Set">
     <Parameter1 Name="Mode (0 for disable,bit Mask:  bit0 for dstOffsetOnly, bit1 rtdEnable, bit2 SyncEnable, bit3 DynamicGainUpdate)" />
-    <Parameter2 Name="Update Frequency (times per seconds, 0 for disable)" />
   </Command>
   <Command Name="DPT_INTRINSICS_GET" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x5A" CmdPermission="Public" ReadFormat="Bytes" IsReadCommand="true" Description="Get Depth Intrinsics Coefs">
     <ReadData>
@@ -684,7 +702,41 @@
       <Section Name="radialK3" Title="radialK3" Offset="224" Size="4" FormatType="Float" />
       <Section Name="zoX" Title="zoX" Offset="228" Size="4" FormatType="Float" />
       <Section Name="zoY" Title="zoY" Offset="232" Size="4" FormatType="Float" />
-      <Section Name="zNorm" Title="zNorm" Offset="236" Size="4" FormatType="Float" />      
+      <Section Name="zNorm" Title="zNorm" Offset="236" Size="4" FormatType="Float" />  
+      
+      <Section Name="-----------Raw-3-------------" Title="raw" Offset="240" Size="1" FormatType="DecByte" />
+
+      <Section Name="width" Title="width" Offset="240" Size="4" FormatType="Unsigned" />
+      <Section Name="height" Title="height" Offset="244" Size="4" FormatType="Unsigned" />
+      <Section Name="focalLengthX" Title="Focal Length X" Offset="248" Size="4" FormatType="Float" />
+      <Section Name="focalLengthY" Title="Focal Length Y" Offset="252" Size="4" FormatType="Float" />
+      <Section Name="principalPointX" Title="Principal Point X" Offset="256" Size="4" FormatType="Float" />
+      <Section Name="principalPointY" Title="Principal Point Y" Offset="260" Size="4" FormatType="Float" />
+      <Section Name="radialK1" Title="radialK1" Offset="264" Size="4" FormatType="Float" />
+      <Section Name="radialK2" Title="radialK2" Offset="268" Size="4" FormatType="Float" />
+      <Section Name="tangentialP1" Title="tangentialP1" Offset="272" Size="4" FormatType="Float" />
+      <Section Name="tangentialP2" Title="tangentialP2" Offset="276" Size="4" FormatType="Float" />
+      <Section Name="radialK3" Title="radialK3" Offset="280" Size="4" FormatType="Float" />
+      <Section Name="zoX" Title="zoX" Offset="284" Size="4" FormatType="Float" />
+      <Section Name="zoY" Title="zoY" Offset="288" Size="4" FormatType="Float" />
+      <Section Name="zNorm" Title="zNorm" Offset="292" Size="4" FormatType="Float" />
+
+      <Section Name="-----------World-3-----------" Title="world" Offset="296" Size="1" FormatType="DecByte" />
+
+      <Section Name="width" Title="width" Offset="296" Size="4" FormatType="Unsigned" />
+      <Section Name="height" Title="height" Offset="300" Size="4" FormatType="Unsigned" />
+      <Section Name="focalLengthX" Title="Focal Length X" Offset="304" Size="4" FormatType="Float" />
+      <Section Name="focalLengthY" Title="Focal Length Y" Offset="308" Size="4" FormatType="Float" />
+      <Section Name="principalPointX" Title="Principal Point X" Offset="312" Size="4" FormatType="Float" />
+      <Section Name="principalPointY" Title="Principal Point Y" Offset="316" Size="4" FormatType="Float" />
+      <Section Name="radialK1" Title="radialK1" Offset="320" Size="4" FormatType="Float" />
+      <Section Name="radialK2" Title="radialK2" Offset="324" Size="4" FormatType="Float" />
+      <Section Name="tangentialP1" Title="tangentialP1" Offset="328" Size="4" FormatType="Float" />
+      <Section Name="tangentialP2" Title="tangentialP2" Offset="332" Size="4" FormatType="Float" />
+      <Section Name="radialK3" Title="radialK3" Offset="336" Size="4" FormatType="Float" />
+      <Section Name="zoX" Title="zoX" Offset="340" Size="4" FormatType="Float" />
+      <Section Name="zoY" Title="zoY" Offset="344" Size="4" FormatType="Float" />
+      <Section Name="zNorm" Title="zNorm" Offset="348" Size="4" FormatType="Float" />  
 
     </ReadData>
   </Command>  
@@ -901,11 +953,11 @@
     <Data Name="Data" IsReverseBytes="false" FormatLength="8" />
   </Command>
   
-  <Command Name="ONE_DIRECTION_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x99" CmdPermission="Public" Description="ONE_DIRECTION_PROJECTION {param1}: 0->default 1->Downward 2->Upward">
+  <Command Name="ONE_DIRECTION_PROJECTION" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x99" CmdPermission="Public" Description="ONE_DIRECTION_PROJECTION {param1}: 0(default) 1(Downward) 2(Upward)">
 	<Parameter1 Name="Index" />
   </Command>
   
-  <Command Name="MEMS_CMD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9A" CmdPermission="Public" Description="MEMS_CMD {param1} 0->Enable_Mems_Driver 1->Disable_Mems_Driver 2->Open_Mems 3->Close_Mems">
+  <Command Name="MEMS_CMD" CmdPipe="WinUsb" CmdInterface="UvcOnly" Opcode="0x9A" CmdPermission="Public" Description="MEMS_CMD {param1} 0(Enable_Mems_Driver) 1(Disable_Mems_Driver) 2(Open_Mems) 3(Close_Mems)">
     <Parameter1 Name="cmd_index" />
   </Command>
   

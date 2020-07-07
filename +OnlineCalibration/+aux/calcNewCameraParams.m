@@ -5,14 +5,23 @@ dbg = [];
 loopCounter = 0;
 while loopCounter <= params.maxIters 
     loopCounter = loopCounter + 1;
+    
+    
     frame = hw.getFrame(1,1,1);
     frame.i = double(frame.i);
     frame.z = double(frame.z);
     frame.yuy2Prev = hw.getColorFrame(1).color;
     frame.yuy2 = hw.getColorFrame(1).color;
     
+    params.apdGain = hw.getApdGainState();
+    [params.humidityTemp,~] = hw.getHumidityTemperature();
+    params = OnlineCalibration.aux.getParamsForAC(params,flowParams.manualTrigger);
+
+    [validACConditions,dbg] = OnlineCalibration.aux.checkACConstrains(params.apdGain,params.humidityTemp,params);
+    if ~validACConditions
+       return; 
+    end
     dataForACTableGeneration = OnlineCalibration.K2DSM.readDataForK2DSM(hw);
-    
     [validParams,params,newAcDataTable,~,dbg] = OnlineCalibration.aux.runSingleACIteration(frame,params,originalParams,dataForACTableGeneration);
     dbg.dataForACTableGeneration = dataForACTableGeneration;
     if validParams 

@@ -2,6 +2,7 @@ function [params] = getParamsForAC(params,manualTrigger)
 if ~exist('manualTrigger','var')
     manualTrigger = 0;
 end
+params.manualTrigger = manualTrigger;
 % params.inverseDistParams.gamma = 0.98;
 params.inverseDistParams.metric = 1;
 params.inverseDistParams.alpha = 1/3;
@@ -94,14 +95,15 @@ else
     params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
     params.edgesPerDirectionRatioTh = 0.0041; % (checkEdgesDirSpread)
     params.minimalFullDirections = 2;% (checkEdgesDirSpread)
-    params.requireOrthogonalValidDirs = true;% (checkEdgesDirSpread)
+    params.requireOrthogonalValidDirs = false;% (checkEdgesDirSpread)
     params.dirStdTh = [0.126,0.126,0.126,0.126];% (checkEdgesDirSpread)
     params.irSaturationRatioTh = 0.05;
-    if ~isfield(params,'presetNum') || params.presetNum == 1 % Long Preset
+    if ~isfield(params,'apdGain') || params.apdGain == 9 % Long Preset
         params.irSaturationValue = 230;  
-    else % Short Preset
+    elseif params.apdGain == 18 % Short Preset
         params.irSaturationValue = 250;
     end
+    assert(~isfield(params,'apdGain') || params.apdGain == 9 || params.apdGain == 18);
 end
 params.normalizeWeightsPerDir = false;
 

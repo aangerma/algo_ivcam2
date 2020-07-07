@@ -49,9 +49,7 @@ else
             fps = 10;
     	end
     %}
-    if imgVsize == 180 || imgVsize == 240
-        imgVsize = imgVsize*2;
-    elseif imgVsize == 232
+    if imgVsize == 232 % L520
         fps = int32(10);
     end
     imgVsize = int32(imgVsize);

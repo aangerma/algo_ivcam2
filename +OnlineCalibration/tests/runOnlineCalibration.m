@@ -71,8 +71,7 @@ end
 % the first cycle (Release AC2.1)
 frame.lastValidYuy2 = 0*frame.yuy2;
 % Auto Trigger Mode
-autoTrigger = 1;
-[params] = OnlineCalibration.aux.getParamsForAC(params,autoTrigger);
+manualTrigger = 0;
 % Prepare AC table data for usage
 [acData,regs,dsmRegs] = OnlineCalibration.K2DSM.parseCameraDataForK2DSM(dsmRegs,acDataBin,calibDataBin,binWithHeaders);
 
@@ -80,11 +79,14 @@ autoTrigger = 1;
 % apd state here (or the temperature in many of the data scenes) so I set
 % them here hard coded
 humidityTemp = 40;
-presetNum = 1;% should actually be the apd state
-[validACConditions,dbg] = OnlineCalibration.aux.checkACConstrains(presetNum,humidityTemp,params);
+params.apdGain = 9;% should actually be the apd state
+[params] = OnlineCalibration.aux.getParamsForAC(params,manualTrigger);
+
+[validACConditions,dbg] = OnlineCalibration.aux.checkACConstrains(params.apdGain,humidityTemp,params);
 if ~validACConditions
     return;
 end
+
 %%
 originalParams = params;
 

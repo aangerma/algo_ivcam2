@@ -26,8 +26,12 @@ function [validInputs,directionData,dbg] = inputValidityChecks(frame,params)
 [dbg.depthEdgesDirSpread,directionData,dbg.depthEdgesDirSpreadDbg] = OnlineCalibration.aux.checkEdgesDirSpread(frame.dirPerPixel,frame.xim,frame.yim,params.depthRes,params);
 
 % 5. Check movement between this scene and the previous good one
-[dbg.isMovementFromLastSuccess,dbg.movingPixelsFromLastSuccess] = OnlineCalibration.aux.isMovementInImages(frame.lastValidYuy2,frame.yuy2,params);
-
+if ~params.manualTrigger
+    [dbg.isMovementFromLastSuccess,dbg.movingPixelsFromLastSuccess] = OnlineCalibration.aux.isMovementInImages(frame.lastValidYuy2,frame.yuy2,params);
+else
+    dbg.isMovementFromLastSuccess = 1;
+    dbg.movingPixelsFromLastSuccess = 0;
+end
 % 6. Check for saturation in the IR image
 [dbg.depthIsntSaturated,dbg.depthSaturationDbg] = OnlineCalibration.aux.checkForSaturation(frame.i,params.irSaturationValue,params.irSaturationRatioTh);
 
