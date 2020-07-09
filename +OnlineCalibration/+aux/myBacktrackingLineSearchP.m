@@ -1,11 +1,12 @@
-function [stepSize,newRgbPmat,newKrgb,newRrgb,newTrgb,newCost] = myBacktrackingLineSearchP(frame,params,gradStruct)
+function [stepSize,newRgbPmat,newKrgb,newRrgb,newTrgb,newCost,unitGrad,grad,grads_norm,norma,iterCount,t] = myBacktrackingLineSearchP(frame,params,gradStruct)
 % maxStepSize,tau,controlParam,gradStruct,params,V,W,D)
 % A search scheme based on the Armijo–Goldstein condition to determine the
 % maximum amount to move along a given search direction.
 % For more details see: https://en.wikipedia.org/wiki/Backtracking_line_search
 % dfdx = [gradStruct.xAlpha;gradStruct.yBeta;gradStruct.zGamma;gradStruct.T];
+grads_norm = gradStruct.P./norm(gradStruct.P);
 grad = gradStruct.P./norm(gradStruct.P)./params.rgbPmatNormalizationMat; 
-
+norma = norm((gradStruct.P(:)'));
 
 unitGrad = grad./norm(grad);
 stepSize = params.maxStepSize*norm(grad)/norm(unitGrad);

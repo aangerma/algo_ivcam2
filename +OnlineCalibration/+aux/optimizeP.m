@@ -1,8 +1,12 @@
-function [newCost,newParamsP,newParamsKzFromP] = optimizeP(currentFrame,params)
+function [newCost,newParamsP,newParamsKzFromP,convergedReason] = optimizeP(currentFrame,params,outputBinFilesPathStruct)
 
 % Optimize P
 params.derivVar = 'P';
-[newParamsP,newCost] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params);
+if ~exist('outputBinFilesPathStruct','var')
+    outputBinFilesPathStruct = [];
+end
+
+[newParamsP,newCost,convergedReason] = OnlineCalibration.Opt.optimizeParametersP(currentFrame,params,outputBinFilesPathStruct);
 
 newParamsKzFromP = newParamsP;
 newParamsKzFromP.derivVar = 'Kdepth';

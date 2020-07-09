@@ -1,4 +1,4 @@
-function [cost,grad] = calcCostAndGrad(frame,params)
+function [cost,grad,iteration_data] = calcCostAndGrad(frame,params)
     if contains(params.derivVar,'Kdepth')
         vertices = ([frame.xim,frame.yim,ones(size(frame.yim))] * pinv(params.Kdepth)').*frame.vertices(:,3);
         [uvMap,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort,params);
@@ -21,7 +21,14 @@ function [cost,grad] = calcCostAndGrad(frame,params)
         end
     else
         if contains(params.derivVar,'P')
-            [xCoeffVal,yCoeffVal,~,~] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
+            [xCoeffVal,yCoeffVal,~,~,x1,y1,Rc] = OnlineCalibration.aux.calcValFromExpressions('P',V,params);
+            
+            iteration_data.xCoeffValP = xCoeffVal';
+            iteration_data.yCoeffValP = yCoeffVal';  
+            iteration_data.x1=x1;
+            iteration_data.y1=y1;
+            iteration_data.rc=Rc;
+            
             grad_P = W.*(DxVals.*xCoeffVal' + DyVals.*yCoeffVal');
             grad.P = reshape(nanmean(grad_P,1),4,3)';
             if params.zeroLastLineOfPGrad
@@ -91,7 +98,14 @@ function [cost,grad] = calcCostAndGrad(frame,params)
         end
     end
     cost = nanmean(DVals.*W);
-
+    
+    iteration_data.uvmap = uvMap; 
+	iteration_data.DVals = DVals;
+	iteration_data.DxVals = DxVals;
+	iteration_data.DyVals = DyVals;
+	iteration_data.p_matrix = params.rgbPmat;
+    iteration_data.cost = cost;
+	iteration_data.grad = grad;
     
 end
 

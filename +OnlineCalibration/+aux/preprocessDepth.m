@@ -1,4 +1,4 @@
-function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth,relevantPixelsImage] = preprocessDepth(frame,params)
+function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex,weights,vertices,sectionMapDepth,relevantPixelsImage,validIREdgesSize,validPixelsSize] = preprocessDepth(frame,params,outputBinFilesPath)
 
     % Get gradient direction in IR
     % Calculate sub pixel location in IR
@@ -8,10 +8,24 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     % Calculate the gradient in Z along this direction - Invalidate points
     % by the gradient in Z along this direction  
 %     
+    saveBins = false;
+    if nargin == 3 && ~isempty(outputBinFilesPath)
+        saveBins = true;
+    end
     [zEdge,Zx,Zy] = OnlineCalibration.aux.edgeSobelXY(uint16(frame.z),2);
     [iEdge,Ix,Iy] = OnlineCalibration.aux.edgeSobelXY(uint16(frame.i),2);
     validEdgePixelsByIR = iEdge>params.gradITh; 
-    
+
+    if saveBins
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Zx',Zx,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Zy',Zy,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Ix',Ix,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Iy',Iy,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zEdge',zEdge,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'iEdge',iEdge,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validEdgePixelsByIR',double(validEdgePixelsByIR),'double');
+    end
+
     sz = size(frame.i);
     [gridX,gridY] = meshgrid(1:sz(2),1:sz(1)); % gridX/Y contains the indices of the pixels
     sectionMapDepth = OnlineCalibration.aux.sectionPerPixel(params);
@@ -28,13 +42,29 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
         IxValid = Ix(validEdgePixelsByIR);
         IyValid = Iy(validEdgePixelsByIR);
     end
+    
+    validIREdgesSize = size(locRC,1);
+    if saveBins
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'gridXValid',sampleByMask(gridX,validEdgePixelsByIR),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'gridYValid',sampleByMask(gridY,validEdgePixelsByIR),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'locRC',locRC,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepth',uint8(sectionMapDepth),'uint8');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapValid',uint8(sectionMapValid),'uint8');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'IxValid',IxValid,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'IyValid',IyValid,'double');
+    end
+
     directionInDeg = atan2d(IyValid,IxValid);
     directionInDeg(directionInDeg<0) = directionInDeg(directionInDeg<0) + 360;
     [~,directionIndex] = min(abs(directionInDeg - [0:45:315]),[],2); % Quantize the direction to 4 directions (don't care about the sign)
     dirsVec = [0,1; 1,1; 1,0; 1,-1]; % These are the 4 directions
     dirsVec = [dirsVec;-dirsVec];
 
-    
+    if saveBins
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'directionInDeg',directionInDeg,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'directionIndex',directionIndex,'double');
+    end
+
     if 1
         % Take the right direction
         dirPerPixel = dirsVec(directionIndex,:);
@@ -60,7 +90,24 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     else
         [edgeSubPixel,zValues,zGradInDirection] = subEdgesByForLoop(iEdge,frame.z,Zx,Zy,locRC,directionIndex,dirsVec);
     end
-        
+    if saveBins
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'dirPerPixel',dirPerPixel,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'localRegion',localRegion,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'localEdges',localEdges,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'localRegion_x',localRegion(:,2,:),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'localRegion_y',localRegion(:,1,:),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'isSupressed',uint8(isSupressed),'uint8');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'isSupressed',double(isSupressed),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'fraqStep',double(fraqStep),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'locRCsub',double(locRCsub),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'localZx',localZx,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'localZy',localZy,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zGrad',zGrad,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zGradInDirection',zGradInDirection,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'localZvalues',localZvalues,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zValuesForSubEdges',zValuesForSubEdges,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeSubPixel',double(edgeSubPixel),'double');
+    end
     validEdgePixels = zGradInDirection > params.gradZTh & isSupressed & zValuesForSubEdges > 0;
     
     zGradInDirection = zGradInDirection(validEdgePixels);
@@ -70,7 +117,20 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     sectionMapDepth = sectionMapValid(validEdgePixels);
     directionIndex = directionIndex(validEdgePixels);
     directionIndex(directionIndex>4) = directionIndex(directionIndex>4)-4;% Like taking abosoulte value on the direction
+
+    validPixelsSize = size(zGradInDirection,1);
     
+    if saveBins
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validEdgePixels',uint8(validEdgePixels),'uint8');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validzGradInDirection',zGradInDirection,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validedgeSubPixel',double(edgeSubPixel),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validzValuesForSubEdges',zValuesForSubEdges,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validdirPerPixel',dirPerPixel,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validsectionMapDepth',uint8(sectionMapDepth),'uint8');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'validdirectionIndex',directionIndex,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'k_depth_pinv',pinv(params.Kdepth),'double');
+    end
+
     weights = min(max(zGradInDirection - params.gradZTh,0),params.gradZMax - params.gradZTh);
     if params.constantWeights
         weights(:) = params.constantWeightsValue;
@@ -81,7 +141,7 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     yim = edgeSubPixel(:,2)-1;
     
     subPoints = [xim,yim,ones(size(yim))];
-    vertices = subPoints*(pinv(params.Kdepth)').*zValuesForSubEdges/single(params.zMaxSubMM);
+    vertices = subPoints*(pinv(params.Kdepth)').*zValuesForSubEdges/double(params.zMaxSubMM);
     
     [uv,~,~] = OnlineCalibration.aux.projectVToRGB(vertices,params.rgbPmat,params.Krgb,params.rgbDistort);
     isInside = OnlineCalibration.aux.isInsideImage(uv,flip(params.rgbRes));
@@ -95,8 +155,29 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     vertices = vertices(isInside,:);
     sectionMapDepth = sectionMapDepth(isInside);
     
+    if saveBins
+        %OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'xim',double(xim),'double');
+        %OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'yim',double(yim),'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'subPoints',subPoints,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'uv',uv,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'isInside',isInside,'uint8');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'vertices',vertices,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'sectionMapDepthInside',uint8(sectionMapDepth),'uint8');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'directionIndexInside',directionIndex,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zValuesForSubEdges',zValuesForSubEdges,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'weights',weights,'double');
+    end
+    
     relevantPixelsImage = false(sz);
     relevantPixelsImage(sub2ind(sz,round(yim+1),round(xim+1))) = 1;
+    
+    if saveBins
+        round_yim = round(yim+1);
+        round_xim = round(xim+1);
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'round_yim',round_yim,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'round_xim',round_xim,'double');
+        OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'relevantPixelsImage',relevantPixelsImage,'uint8');
+    end
 end
 
 function [values] = sampleByMask(I,binMask)

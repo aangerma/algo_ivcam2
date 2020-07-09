@@ -1,4 +1,4 @@
-function [xCoeff,yCoeff,dXin_dVar,dYin_dVar] = calcValFromExpressions(deriveByVar,vertices,params)
+function [xCoeff,yCoeff,dXin_dVar,dYin_dVar,x1,y1,Rc] = calcValFromExpressions(deriveByVar,vertices,params)
 V = vertices';
 
 Krgb = params.Krgb;
