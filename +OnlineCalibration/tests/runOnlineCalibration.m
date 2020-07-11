@@ -1,6 +1,4 @@
 function runOnlineCalibration(sceneDir,runType)
-
-disp(sceneDir);
 global runParams;
 runParams.loadSingleScene = 1;
 % runParams.verbose = 0;
@@ -20,6 +18,7 @@ if isempty(sceneDir)
             sceneDir = 'X:\IVCAM2_calibration _testing\19.2.20\F9440687\Snapshots\LongRange 768X1024 (RGB 1920X1080)\1';
     end
 end
+disp(sceneDir);
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
 outputBinFilesPath = fullfile(pwd,'binFiles'); % Path for saving binary images
@@ -195,7 +194,7 @@ while ~converged && cycle-1 < params.maxK2DSMIters
     saveCycleData(outputBinFilesPath, cycleData); 
     %%
     % K2DSM
-    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand,inputs] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params);
+    [currentFrameCand,newParamsK2DSMCand,acDataCand,dsmRegsCand,dsmData,inputs] = OnlineCalibration.K2DSM.convertNewK2DSM(frame,newParamsKzFromP,acData,dsmRegs,regs,params);
     %%
     % LRS deubug
     [KtoDsmData] = prepareK2dsmStruct4LrsDebug(dsmData,cycle,inputs,acDataCand,dsmRegsCand,currentFrameCand.vertices);
@@ -256,7 +255,7 @@ if validParams
     params = finalParams;
 end
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'costDiffPerSection',dbg.scoreDiffPersection,'double');
-md.xy_movement = dbg.xyMovement;
+md.xy_movement = validOutputStruct.xyMovement;
 md.is_output_valid = validParams;
 
 %% Write the metadata:

@@ -1,4 +1,4 @@
-function [losScaling] = ConvertKToLosError(data, optK)
+function [losScaling,dbg] = ConvertKToLosError(data, optK)
 
     % K changes
     fxScaling = double(optK(1,1)/data.origK(1,1));
@@ -8,8 +8,8 @@ function [losScaling] = ConvertKToLosError(data, optK)
     focalScaling = [fxScaling, fyScaling];
     coarseGrid = [-1, -0.5, 0, 0.5, 1]*data.maxScalingStep;
     fineGrid = [-1, -0.5, 0, 0.5, 1]*0.6*data.maxScalingStep; % intentionally spans more than 1 coarse grid resolution
-    [yScalingGrid, xScalingGrid] = ndgrid(data.lastLosScaling(2)+coarseGrid, data.lastLosScaling(1)+coarseGrid); % search around last estimated scaling
-    optScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
+    [yScalingGrid, xScalingGrid] = ndgrid(double(data.lastLosScaling(2))+coarseGrid, double(data.lastLosScaling(1))+coarseGrid); % search around last estimated scaling
+    [optScaling,dbg] = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     [yScalingGrid, xScalingGrid] = ndgrid(optScaling(2)+fineGrid, optScaling(1)+fineGrid);
     losScaling = RunScalingOptimizationStep(data, [xScalingGrid(:), yScalingGrid(:)], focalScaling, false);
     
@@ -18,24 +18,32 @@ function [losScaling] = ConvertKToLosError(data, optK)
     losScaling(1) = min(max(losScaling(1), data.lastLosScaling(1)-maxStepWithMargin), data.lastLosScaling(1)+maxStepWithMargin);
     losScaling(2) = min(max(losScaling(2), data.lastLosScaling(2)-maxStepWithMargin), data.lastLosScaling(2)+maxStepWithMargin);
     
+    dbg.focalScaling = focalScaling;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function optScaling = RunScalingOptimizationStep(data, scalingGrid, focalScaling, plotFlag)
+function [optScaling,dbg] = RunScalingOptimizationStep(data, scalingGrid, focalScaling, plotFlag)
     
     % calculating distance between model-based change and observed change in focal lengths
     optK = OnlineCalibration.K2DSM.OptimizeKUnderLosError(data, scalingGrid);
     fxScalingOnGrid = squeeze(optK(1,1,:))/data.origK(1,1);
     fyScalingOnGrid = squeeze(optK(2,2,:))/data.origK(2,2);
     errL2 = sqrt((fxScalingOnGrid-focalScaling(1)).^2+(fyScalingOnGrid-focalScaling(2)).^2);
+    dbg.errL2 = errL2;
     
     % quadratic approximation
     sgMat = double([scalingGrid(:,1).^2, scalingGrid(:,2).^2, scalingGrid(:,1).*scalingGrid(:,2), scalingGrid(:,1), scalingGrid(:,2), ones(size(scalingGrid,1),1)]);
+    dbg.sgMat = sgMat;
+    dbg.sg_mat_tag_x_sg_mat = sgMat'*sgMat;
+    dbg.sg_mat_tag_x_err_l2 = sgMat'*double(errL2);
     quadCoef = OnlineCalibration.K2DSM.DirectInv(sgMat'*sgMat)*(sgMat'*double(errL2)); % direct implementation of Matlab's solver: (sgMat'*sgMat)\(sgMat'*double(errL2))
     A = [quadCoef(1), quadCoef(3)/2; quadCoef(3)/2, quadCoef(2)];
     b = [quadCoef(4); quadCoef(5)];
     optScaling = -OnlineCalibration.K2DSM.DirectInv(A)*b/2; % direct implementation of Matlab's solver: -(A\b)/2
+    dbg.optScaling = optScaling;
+    dbg.optScaling1 = -(A\b)/2;
+    dbg.quadCoef = quadCoef;
     
     % sanity check
     isPosDef = (quadCoef(1)+quadCoef(2))>0 && (quadCoef(1)*quadCoef(2)-quadCoef(3)^2/4)>0;

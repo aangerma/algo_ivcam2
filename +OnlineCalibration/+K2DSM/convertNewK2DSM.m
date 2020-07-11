@@ -1,4 +1,4 @@
-function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand,inputs] = convertNewK2DSM(currentFrame,newParamsKzFromP,acData,dsmRegs,regs,params)
+function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand,dsmData,inputs] = convertNewK2DSM(currentFrame,newParamsKzFromP,acData,dsmRegs,regs,params)
 % This function converts the new K depth to a dsm fix via new AC table
     [inputs] = createInputDebugStruct(newParamsKzFromP,acData,dsmRegs,params,currentFrame.vertices);
 
@@ -12,9 +12,9 @@ function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand,inputs] = conve
     
     dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse');
     [dsmRegs] = setStructFields2Double(dsmRegs);
-    [preProcData, ConvertNormVerticesToLos_data] = OnlineCalibration.K2DSM.PreProcessing(regs, acData, dsmRegs, KRaw, rot90(currentFrame.relevantPixelsImage,2), params.maxLosScalingStep);
+    [preProcData, first_ConvertNormVerticesToLos_data] = OnlineCalibration.K2DSM.PreProcessing(regs, acData, dsmRegs, KRaw, rot90(currentFrame.relevantPixelsImage,2), params.maxLosScalingStep);
     losShift = zeros(2,1); % any residual LOS shift is reflected onto RGB principle point and/or extrinsic translation
-    losScaling = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
+    [losScaling,dbgK2LosErr] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);
     acDataCand = OnlineCalibration.K2DSM.ConvertLosErrorToAcData(dsmRegs, acData, acData.flags(1), losShift, losScaling);
     dsmRegsCand = Utils.convert.applyAcResOnDsmModel(acDataCand, dsmRegsOrig, 'direct');
 %         acDataInCand.flags(2:6) = uint8(0);
@@ -22,8 +22,9 @@ function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand,inputs] = conve
     % Transforming pixels to LOS
     scVertices = currentFrame.vertices;
     scVertices(:,1:2) = -scVertices(:,1:2);
-    [los,ConvertNormVerticesToLos_data] = OnlineCalibration.K2DSM.ConvertNormVerticesToLos(regs, dsmRegs, scVertices);
+    [los,second_ConvertNormVerticesToLos_data] = OnlineCalibration.K2DSM.ConvertNormVerticesToLos(regs, dsmRegs, scVertices);
     [newVertices, dsmX,dsmY]  = OnlineCalibration.K2DSM.ConvertLosToNormVertices(regs, dsmRegsCand, los);
+    [dsmData] = createDsmDataStruct(dsmRegsOrig,dbgK2LosErr,first_ConvertNormVerticesToLos_data,second_ConvertNormVerticesToLos_data,preProcData,currentFrame.relevantPixelsImage,losScaling,los,dsmX,dsmY);
     newVertices = newVertices./newVertices(:,3).*scVertices(:,3);
     newVertices(:,1:2) = -newVertices(:,1:2);
     projed = newVertices*params.Kdepth';
@@ -57,4 +58,23 @@ structOut = structIn;
 for k = 1:numel(structFieldNames)
     structOut.(structFieldNames{k}) = double(structIn.(structFieldNames{k}));
 end
+end
+
+function [dsmData] = createDsmDataStruct(dsmRegsOrig,dbgK2LosErr,first_ConvertNormVerticesToLos_data,second_ConvertNormVerticesToLos_data,preProcData,relevantPixelsImage,losScaling,los,dsmX,dsmY)
+dsmData.dsmRegsOrig = dsmRegsOrig;
+dsmData.preProcData = preProcData;
+dsmData.preProcData.relevantPixelnImage_rot = rot90(relevantPixelsImage,2);
+dsmData.focalScaling = dbgK2LosErr.focalScaling;
+dsmData.errL2 = dbgK2LosErr.errL2;
+dsmData.sg_mat_tag_x_sg_mat = dbgK2LosErr.sg_mat_tag_x_sg_mat;
+dsmData.sg_mat_tag_x_err_l2 = dbgK2LosErr.sg_mat_tag_x_err_l2;
+dsmData.quadCoef = dbgK2LosErr.quadCoef;
+dsmData.sgMat = dbgK2LosErr.sgMat;
+dsmData.optScaling1 = dbgK2LosErr.optScaling1;
+dsmData.optScaling = dbgK2LosErr.optScaling;
+dsmData.newlosScaling = losScaling;
+dsmData.first_ConvertNormVerticesToLos_data = first_ConvertNormVerticesToLos_data;
+dsmData.second_ConvertNormVerticesToLos_data = second_ConvertNormVerticesToLos_data;
+dsmData.orig_los = los;
+dsmData.dsm = [ dsmX dsmY];
 end
