@@ -14,7 +14,11 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
     end
     [zEdge,Zx,Zy] = OnlineCalibration.aux.edgeSobelXY(uint16(frame.z),2);
     [iEdge,Ix,Iy] = OnlineCalibration.aux.edgeSobelXY(uint16(frame.i),2);
-    validEdgePixelsByIR = iEdge>params.gradITh; 
+    if params.useEnhancedPreprocessing
+        validEdgePixelsByIR = (iEdge>params.gradIHighTh & zEdge>params.gradZLowTh) | (iEdge>params.gradILowTh & zEdge>params.gradZHighTh); 
+    else
+        validEdgePixelsByIR = iEdge>params.gradITh;
+    end
 
     if saveBins
         OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'Zx',Zx,'double');
@@ -108,7 +112,13 @@ function [iEdge,zEdge,xim,yim,zValuesForSubEdges,zGradInDirection,directionIndex
         OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'zValuesForSubEdges',zValuesForSubEdges,'double');
         OnlineCalibration.aux.saveBinImage(outputBinFilesPath,'edgeSubPixel',double(edgeSubPixel),'double');
     end
-    validEdgePixels = zGradInDirection > params.gradZTh & isSupressed & zValuesForSubEdges > 0;
+    if params.useEnhancedPreprocessing    
+        validEdgePixels = ((zGradInDirection > params.gradZLowTh & localEdges(:,3) > params.gradIHighTh) | ...
+                          (zGradInDirection > params.gradZHighTh & localEdges(:,3) > params.gradILowTh)) & ...
+                            isSupressed & zValuesForSubEdges > 0;
+    else
+        validEdgePixels = zGradInDirection > params.gradZTh & isSupressed & zValuesForSubEdges > 0;
+    end
     
     zGradInDirection = zGradInDirection(validEdgePixels);
     edgeSubPixel = edgeSubPixel(validEdgePixels,:);

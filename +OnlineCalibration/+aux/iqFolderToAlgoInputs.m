@@ -22,7 +22,13 @@ frame.yuy_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2', 'color_*'));
 frame.yuy_files(2) = dir(fullfile(folderPath ,'\binFiles\ac2','previous_color_*'));
 frame.z_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2', 'depth_*'));
 frame.i_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2','ir_*'));
-    
+try
+    mdFile = dir(fullfile(folderPath,'../../**/md.json'));
+    md = loadjson(fullfile(mdFile.folder,mdFile.name));
+    paramsOut.preset = md.preset;
+    paramsOut.apdGain = 18*strcmp(paramsOut.preset,'low_ambient') + 9*(1-strcmp(paramsOut.preset,'low_ambient'));
+    paramsOut.mdFileContent = md;
+end   
 end
 
 

@@ -34,7 +34,7 @@ params.TmatNormalizationMat = [0.91300839;0.91698289;0.43305457];
 params.KdepthMatNormalizationMat = [0.050563768;0.053219523;1.9998592;2.0044701];
 
 params.edgeThresh4logicIm = 0.1;
-params.seSize = 3;
+params.seSize = 1;
 params.moveThreshPixVal = 20;
 params.moveThreshPixNum =  3e-05*prod(params.rgbRes);
 params.moveGaussSigma = 1;
@@ -91,25 +91,50 @@ else
     params.maxGlobalLosScalingStep = 0.004;% Clip the different between starting scale and final scale by this value
     % Input validity checks+++++++
     params.pixPerSectionRgbTh = 0.01;% (checkDepthEdgesSpatialSpread)
-    params.pixPerSectionDepthTh = 0.022;% (checkDepthEdgesSpatialSpread)
+    params.pixPerSectionDepthTh = 0.01;% (checkDepthEdgesSpatialSpread)
     params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
-    params.edgesPerDirectionRatioTh = 0.0041; % (checkEdgesDirSpread)
+    params.edgesPerDirectionRatioTh = 0.004; % (checkEdgesDirSpread)
     params.minimalFullDirections = 2;% (checkEdgesDirSpread)
     params.requireOrthogonalValidDirs = false;% (checkEdgesDirSpread)
-    params.dirStdTh = [0.126,0.126,0.126,0.126];% (checkEdgesDirSpread)
+    params.dirStdTh = [0.09,0.09,0.09,0.09];% (checkEdgesDirSpread)
     params.irSaturationRatioTh = 0.05;
-    if ~isfield(params,'apdGain') || params.apdGain == 9 % Long Preset
+    if ~isfield(params,'apdGain') || params.apdGain == 0 || params.apdGain == 9 % Long Preset
         params.irSaturationValue = 230;  
     elseif params.apdGain == 18 % Short Preset
         params.irSaturationValue = 250;
     end
-    assert(~isfield(params,'apdGain') || params.apdGain == 9 || params.apdGain == 18);
+    assert(~isfield(params,'apdGain') || params.apdGain == 0 || params.apdGain == 9 || params.apdGain == 18);
 end
 params.normalizeWeightsPerDir = false;
+% Enhanced preprocessing
+params.useEnhancedPreprocessing = true;
+if params.useEnhancedPreprocessing
+    if ~isfield(params,'apdGain') || params.apdGain == 0 || params.apdGain == 9 % Long Preset
+        if all(params.depthRes == [480,640])
+            params.gradILowTh = 1.5;
+            params.gradIHighTh = 3.5; 
+            params.gradZLowTh = 0;
+            params.gradZHighTh = 100;
+        elseif all(params.depthRes == [768,1024])
+            params.gradILowTh = 1;
+            params.gradIHighTh = 2.5; 
+            params.gradZLowTh = 0;
+            params.gradZHighTh = 80;
+        end
+    else
+        if all(params.depthRes == [480,640])
+            params.gradILowTh = inf;
+            params.gradIHighTh = 3.5; 
+            params.gradZLowTh = 0;
+            params.gradZHighTh = inf;
+        elseif all(params.depthRes == [768,1024])
+            params.gradILowTh = inf;
+            params.gradIHighTh = 2.5; 
+            params.gradZLowTh = 0;
+            params.gradZHighTh = inf;
+        end
+    end
+end
 
-
-% AC actiovation confistion params
-params.minHumTh = 32;
-params.maxHumTh = 46;
 end
 

@@ -27,6 +27,7 @@ regs.FRMW.rtdOverX(1:6) = 0;
 regs.FRMW.rtdOverY(1:3) = 0;
 regs.FRMW.mirrorMovmentMode = 1;
 regs.DEST.baseline2 = regs.DEST.baseline^2;
+sceneResults.validAcAndDsmInputs = OnlineCalibration.aux.checkInputParameters(dsmRegs,acData,params);
 
 
 % Preprocess RGB
@@ -39,7 +40,7 @@ regs.DEST.baseline2 = regs.DEST.baseline^2;
     currentFrame.sectionMapDepth,currentFrame.relevantPixelsImage] = OnlineCalibration.aux.preprocessDepth(currentFrame,params);
 
 %% Update oriignal acTable,vertices, xim and yim if a new acData is in params
-if isfield(params,'acData') % Simulate the new AC data as a starting point
+if isfield(params,'acData')  && ~isempty(params.acData) && ~isempty(currentFrame.vertices) && sceneResults.validAcAndDsmInputs % Simulate the new AC data as a starting point
     dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse');
     dsmRegsNew = Utils.convert.applyAcResOnDsmModel(params.acData, dsmRegsOrig, 'direct');
     [currentFrame.vertices,currentFrame.xim,currentFrame.yim] = OnlineCalibration.K2DSM.updateVerticesWithNewDSM(currentFrame.vertices,regs,dsmRegs,dsmRegsNew,params.Kdepth);
@@ -47,6 +48,16 @@ if isfield(params,'acData') % Simulate the new AC data as a starting point
     acData = params.acData;
 end
 sceneResults.acDataIn = acData;
+sceneResults.acDataOut = acData;
+sceneResults.acDataOutPreClipping = acData;
+if isempty(currentFrame.vertices) || ~sceneResults.validAcAndDsmInputs
+    validParams = 0;
+    newAcDataTable = [];
+    newAcDataStruct = acData;
+    return;
+end
+
+
 
 currentFrame.originalVertices = currentFrame.vertices;
 [~,decisionParams,isMovement] = OnlineCalibration.aux.validScene(currentFrame,params);
@@ -135,21 +146,21 @@ if isfield(params,'outputFolder')
    hold on;
    plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
    title('Z');
-   Calibration.aux.saveFigureAsImage(ff,params,'IRandZ','',1);
-
+   Calibration.aux.saveFigureAsImage(ff,params,'IRandZ','',1,0,0);
+   Calibration.aux.saveFigureAsImage(ff,params,'IRandZ','',1,1,0);
    %% IR & Z Edge figure
-   ff = Calibration.aux.invisibleFigure; 
-   subplot(121);
-   imagesc(currentFrame.irEdge);colorbar;
-   hold on;
-   plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
-   title('IR Edge');
-   subplot(122);
-   imagesc(currentFrame.zEdge);colorbar;
-   hold on;
-   plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
-   title('Z Edge');
-   Calibration.aux.saveFigureAsImage(ff,params,'IRandZEdge','',1);
+%    ff = Calibration.aux.invisibleFigure; 
+%    subplot(121);
+%    imagesc(currentFrame.irEdge);colorbar;
+%    hold on;
+%    plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
+%    title('IR Edge');
+%    subplot(122);
+%    imagesc(currentFrame.zEdge);colorbar;
+%    hold on;
+%    plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
+%    title('Z Edge');
+%    Calibration.aux.saveFigureAsImage(ff,params,'IRandZEdge','',1);
 
    % Initial and final uv mappin
    ff = Calibration.aux.invisibleFigure; 
@@ -162,16 +173,16 @@ if isfield(params,'outputFolder')
    Calibration.aux.saveFigureAsImage(ff,params,'UVInitAndFinal','',1,0,0);
    Calibration.aux.saveFigureAsImage(ff,params,'UVInitAndFinal','',1,1,0);
    
-   % Initial and final uv mappin
-   ff = Calibration.aux.invisibleFigure; 
-   imagesc(currentFrame.rgbIDT);
-   hold on
-   plot(dbg.uvMapOrig(:,1)+1,dbg.uvMapOrig(:,2)+1,'r*','markersize',1);
-   plot(dbg.uvMapNew(:,1)+1,dbg.uvMapNew(:,2)+1,'g*','markersize',1);
-   title('Inverse Distance Transform');
-   legend({'UVPre';'UVPost(Pre Los Scale Clipping)'});
-   Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',1,0,0);
-   Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',1,1,0);
+%    % Initial and final uv mappin
+%    ff = Calibration.aux.invisibleFigure; 
+%    imagesc(currentFrame.rgbIDT);
+%    hold on
+%    plot(dbg.uvMapOrig(:,1)+1,dbg.uvMapOrig(:,2)+1,'r*','markersize',1);
+%    plot(dbg.uvMapNew(:,1)+1,dbg.uvMapNew(:,2)+1,'g*','markersize',1);
+%    title('Inverse Distance Transform');
+%    legend({'UVPre';'UVPost(Pre Los Scale Clipping)'});
+%    Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',1,0,0);
+%    Calibration.aux.saveFigureAsImage(ff,params,'IDT_UVInitAndFinal','',1,1,0);
 
    % Isvalid, cost improvement
    
