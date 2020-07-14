@@ -14,13 +14,14 @@
 clear
 close all
 
-testSubName = '_iterativeFromAtv';
+testSubName = '_iterativeFromAtvDivideAug';
 
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
 sceneHeadDir = 'X:\IVCAM2_calibration _testing\ATVs';
 rng(4);
 nAugPerScene = 1;
 ind = 0;
+indThermal = 0;
 
 goodScenesList = {};
 badScenesList = {};
@@ -30,12 +31,15 @@ params.augMethod = 'dsmAndRotation';
 params.AC2 = 1;
 params.applyK2DSMFix = true;
 params.rgbThermalFix = 1;
+resultsSubDirName = fullfile(resultsHeadDir,[datestr(now,'yy_mmmm_dd___HH_MM'),testSubName]);
+mkdirSafe(resultsSubDirName);
+params.logOutFolder = resultsSubDirName;
 
 serialsDirs = dir(fullfile(sceneHeadDir,'F*'));
 for se = 1:numel(serialsDirs)
     atvDir = dir(fullfile(sceneHeadDir,serialsDirs(se).name,'ATV*'));
     cyclesDir = dir(fullfile(sceneHeadDir,serialsDirs(se).name,atvDir.name,'\Images\Thermal','cycle*'));
-    for cy = 1:numel(cyclesDir)
+    for cy = 1:13:numel(cyclesDir)
         sceneFullPath = fullfile(sceneHeadDir,serialsDirs(se).name,atvDir.name,['\Images\Thermal\cycle' num2str(cy-1)]);
         for au = 1:nAugPerScene
             try
@@ -51,8 +55,16 @@ for se = 1:numel(serialsDirs)
                     params.randVecForDsmAndRotation(1) = 0.5;
                     params.randVecForDsmAndRotation(2) = 0.5;
                 end
-                sceneResults = OnlineCalibration.datasetAnalysis.runIterativeAC2FromDirAtv(sceneFullPath,params);
+                params.acData = OnlineCalibration.aux.defaultACTable();
+                params.acData.flags = 1;
+                params.acData.hFactor = ((rand*4-2)+100)/100;
+                params.acData.vFactor = ((rand*4-2)+100)/100;
+                sceneResults = OnlineCalibration.datasetAnalysis.runIterativeAC2FromDirAtvs(sceneFullPath,params);
+                params.correctThermal = 1;
+                sceneResultsThermal = OnlineCalibration.datasetAnalysis.runIterativeAC2FromDirAtvs(sceneFullPath,params);
+                params.correctThermal = 0;
                 sceneResults.randomSeed = seed;
+                sceneResultsThermal.randomSeed = seed;
                 if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
                     ind = ind + 1;
                     results(ind) = sceneResults;
@@ -60,24 +72,31 @@ for se = 1:numel(serialsDirs)
                 else
                     badScenesList{numel(goodScenesList)+1} = sceneFullPath;
                 end
-                if any(isnan(sceneResults.features))
-                    warning('Found nan in SVM features');
+                if ~(isnan(sceneResultsThermal.uvErrPre) || isinf(sceneResultsThermal.uvErrPre))
+                    indThermal = indThermal + 1;
+                    resultsThermal(indThermal) = sceneResultsThermal;
+                    goodScenesListThermal{numel(goodScenesList)+1} = sceneFullPath;
+                else
+                    badScenesListThermal{numel(goodScenesList)+1} = sceneFullPath;
                 end
+%                 if any(isnan(sceneResults.features))
+%                     warning('Found nan in SVM features');
+%                 end
                 fprintf('cost: ');
                 fprintf('%g ',results(ind).desicionParams.initialCost);
                 fprintf('-> %g ',results(ind).newCost);
                 fprintf('\n');
                 
-                fprintf('uv: ');
+                fprintf('uv: Pre->Post->PostThermal\n');
                 fprintf('%2.2g ',results(ind).uvErrPre);
-                fprintf('-> %2.2g ',results(ind).uvErrPostK2DSM);
+                fprintf('-> %2.2g \n',results(ind).uvErrPostK2DSM);
                 fprintf('\n');
                 fprintf('uv: %2.2g -> %2.2g       (Kz From P)        \n',results(ind).uvErrPre,results(ind).uvErrPostKzFromPOpt(1));
                 
                 
-                fprintf('gid: ');
+                fprintf('gid: Pre->Post->PostThermal\n');
                 fprintf('%2.2g ',results(ind).gidPre);
-                fprintf('-> %2.2g ',results(ind).gidPostK2DSM);
+                fprintf('-> %2.2g \n',results(ind).gidPostK2DSM);
                 fprintf('\n');
                 fprintf('gid: %2.2g -> %2.2g    (Kz From P)\n',results(ind).gidPre,results(ind).metricsPostKzFromP(1).gid);
                 
@@ -86,9 +105,33 @@ for se = 1:numel(serialsDirs)
                 else
                     fprintf('[x] Invalid fix\n');
                 end
+                
+                fprintf('cost: ');
+                fprintf('%g ',resultsThermal(indThermal).desicionParams.initialCost);
+                fprintf('-> %g ',resultsThermal(indThermal).newCost);
+                fprintf('\n');
+                
+                fprintf('uv: Pre->Post->PostThermal\n');
+                fprintf('%2.2g ',resultsThermal(indThermal).uvErrPre);
+                fprintf('-> %2.2g \n',resultsThermal(indThermal).uvErrPostK2DSM);
+                fprintf('\n');
+                fprintf('uv: %2.2g -> %2.2g       (Kz From P)        \n',resultsThermal(indThermal).uvErrPre,resultsThermal(indThermal).uvErrPostKzFromPOpt(1));
+                
+                
+                fprintf('gid: Pre->Post->PostThermal\n');
+                fprintf('%2.2g ',resultsThermal(indThermal).gidPre);
+                fprintf('-> %2.2g \n',resultsThermal(indThermal).gidPostK2DSM);
+                fprintf('\n');
+                fprintf('gid: %2.2g -> %2.2g    (Kz From P)\n',resultsThermal(indThermal).gidPre,resultsThermal(indThermal).metricsPostKzFromP(1).gid);
+                
+                if sceneResults.validFixBySVM
+                    fprintf('[v] Valid fix\n');
+                else
+                    fprintf('[x] Invalid fix\n');
+                end
             catch e
                 badScenesList{numel(goodScenesList)+1} = sceneFullPath;
-                sceneFullPath
+                sceneFullPath 
                 e.message
                 e.stack(1)
             end
@@ -96,26 +139,24 @@ for se = 1:numel(serialsDirs)
     end
 end
 
-
-resultsSubDirName = fullfile(resultsHeadDir,[datestr(now,'yy_mmmm_dd___HH_MM'),testSubName]);
-mkdir(resultsSubDirName);
 resultsFileName = fullfile(resultsSubDirName,'results.mat');
 % save(resultsFileName,'results','nAugPerScene')
-save(resultsFileName,'results','nAugPerScene','goodScenesList','badScenesList')
-
-%% Create a before and after table:
-uvPre = [results.uvErrPre];
-uvPost = [results.uvErrPostKzFromPOpt];
-uvPostPthermal = [results.uvErrPostPthermalOpt];
-uvPostKzPthermal = [results.uvErrPostKzFromPthermalOpt];
-
-gidPre = [results.metricsPre];
-gidPre = [gidPre.gid];
-gidPost = [results.metricsPostKzFromP];
-gidPost = [gidPost.gid];
-gidPostPthermal = [results.metricsPostKzFromPthermal];
-gidPostPthermal = [gidPostPthermal.gid];
-
-A = [uvPre',uvPost',uvPostPthermal',uvPostKzPthermal',gidPre',gidPost',gidPostPthermal'];
-pt = array2table(A, 'VariableNames', {'uvPre', 'uvPost','uvPostPthermal','uvPostKzPthermal','gidPre', 'gidPost','gidPostPthermal'})
-writetable(pt, fullfile(resultsSubDirName,'uvPrePostGidPrePost.xls'))
+save(resultsFileName,'results','resultsThermal','nAugPerScene','goodScenesList','badScenesList','goodScenesListThermal');
+structFieldNames = fieldnames(results);
+thinResultsStruct = struct();
+thinResultsStructThermal = struct();
+for k = 1:numel(structFieldNames)
+    if contains(structFieldNames{k},'uv') || contains(structFieldNames{k},'gid') || contains(structFieldNames{k},'valid') || contains(structFieldNames{k},'Error') || contains(structFieldNames{k},'Seed')
+        for ix = 1:numel(results)
+            thinResultsStruct(ix).(structFieldNames{k}) = results(ix).(structFieldNames{k});
+            thinResultsStructThermal(ix).(structFieldNames{k}) = resultsThermal(ix).(structFieldNames{k});
+            thinResultsStruct(ix).captureHumT = results(ix).originalParams.captureHumT;
+            thinResultsStructThermal(ix).captureHumT = resultsThermal(ix).originalParams.captureHumT;
+            thinResultsStructThermal(ix).referenceTemp = resultsThermal(ix).originalParams.referenceTemp;
+        end
+    end
+end
+resultsTable = struct2table(thinResultsStruct);
+resultsTableThermal = struct2table(thinResultsStructThermal);
+writetable(resultsTable, fullfile(resultsSubDirName,'resultsTable.csv'));
+writetable(resultsTableThermal, fullfile(resultsSubDirName,'resultsTableThermal.csv'))

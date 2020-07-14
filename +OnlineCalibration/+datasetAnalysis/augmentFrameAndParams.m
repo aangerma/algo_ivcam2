@@ -182,18 +182,18 @@ elseif strcmp(method,'chooseAll')
 elseif strcmp(method,'dsmAndRotation')
     assert(isfield(params,'serial'),'Unknown unit serial for DSM augmentation');
     assert(isfield(params,'randVecForDsmAndRotation'),'randVecForDsmAndRotation should be generated so it will affect both scene and CB');
-    params.dsmScaleX = params.randVecForDsmAndRotation(1)*4-2;
-    params.dsmScaleY = params.randVecForDsmAndRotation(2)*4-2;
+%     params.dsmScaleX = params.randVecForDsmAndRotation(1)*4-2;
+%     params.dsmScaleY = params.randVecForDsmAndRotation(2)*4-2;
     rotationDiff = (vec(params.randVecForDsmAndRotation(3:5))-0.5);
     rotationDiff = rotationDiff./norm(rotationDiff);
     rotationDiff = rotationDiff./params.RnormalizationParams*params.augmentationMaxMovement*params.augmentRand01Number;
     params.xAlpha = params.xAlpha + rotationDiff(1);
     params.yBeta = params.yBeta + rotationDiff(2);
     params.zGamma = params.zGamma + rotationDiff(3);
-    [warper,dsmScaleX,dsmScaleY] = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,params.dsmScaleX,params.dsmScaleY);
-    params.dsmScaleX = str2num(dsmScaleX);
-    params.dsmScaleY = str2num(dsmScaleY);
-    frame = warper.ApplyWarp(frame,1);
+%     [warper,dsmScaleX,dsmScaleY] = OnlineCalibration.Aug.fetchDsmWarper(params.serial,params.depthRes,params.dsmScaleX,params.dsmScaleY);
+%     params.dsmScaleX = str2num(dsmScaleX);
+%     params.dsmScaleY = str2num(dsmScaleY);
+%     frame = warper.ApplyWarp(frame,1);
 end
 params.Rrgb = OnlineCalibration.aux.calcRmatRromAngs(params.xAlpha,params.yBeta,params.zGamma);
 params.rgbPmat = params.Krgb*[params.Rrgb,params.Trgb];

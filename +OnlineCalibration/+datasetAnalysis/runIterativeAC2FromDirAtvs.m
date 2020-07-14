@@ -1,59 +1,52 @@
-function [sceneResults] = runIterativeAC2FromDir(sceneDir,params)
+function [sceneResults] = runIterativeAC2FromDirAtvs(sceneDir,params)
 global runParams;
 runParams.loadSingleScene = 1;
+
 sceneResults = struct;
-sceneResults.sceneFullPath = fullfile(sceneDir,'Scene');
-sceneResults.cbFullPath = fullfile(sceneDir,'CheckerBoard');
-if contains(sceneDir,'aged')
-    load(fullfile(sceneResults.sceneFullPath,'cameraParams.mat'),'cameraParams');
-    params = mergestruct(params,cameraParams);
-else
-    [params] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneResults.sceneFullPath,params);
-end
+% sceneResults.sceneFullPath = fullfile(sceneDir,'Scene');
+% sceneResults.cbFullPath = fullfile(sceneDir,'CheckerBoard');
+sceneResults.sceneFullPath = sceneDir;
+frame = OnlineCalibration.aux.loadZIRGBFramesAtv(sceneResults.sceneFullPath);
+frameCB = frame;
+params.depthRes = size(frame.i);
+params.rgbRes = fliplr(size(frame.yuy2));
+strsplitTemp = strsplit(sceneDir,'\');
+sceneResults.atvDataPath = fullfile(strsplitTemp{1:end-3},'Matlab\mat_files');
+runIx = strsplit(sceneDir,'cycle');
+runIx = str2double(runIx{end})+1;
+[params] = OnlineCalibration.aux.getCameraParamsFromAtvRun(sceneResults.atvDataPath,params,runIx);
 [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
 [params] = OnlineCalibration.aux.getParamsForAC(params);
 [params] = OnlineCalibration.datasetAnalysis.getAugmentationParams(params);
 params.targetType = 'checkerboard_Iv2A1';
-if contains(sceneDir,'aged')
-    params.serial = 'F9440656';
-else
-    params.serial = strsplit(sceneDir,'\'); params.serial = params.serial{end-2};
-end
+params.serial = strsplit(sceneDir,'\'); params.serial = params.serial{end-4};
 [params.atcPath,params.accPath,params.calPathValid] = OnlineCalibration.aux.serialToCalDirs(params.serial);
-frame = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.sceneFullPath,[]);
-frameCB = OnlineCalibration.aux.loadZIRGBFrames(sceneResults.cbFullPath,[]);
-frameCB.z = frameCB.z(:,:,end);
-frameCB.i = frameCB.i(:,:,end);
-frameCB.yuy2Prev = frameCB.yuy2(:,:,end-1);
-frameCB.yuy2 = frameCB.yuy2(:,:,end);
-if isfield(params,'runOnCB') && params.runOnCB
-    currentFrame = frameCB;
-else
-    currentFrame.yuy2Prev = frame.yuy2(:,:,1);
-    currentFrame.z = frame.z(:,:,end);
-    currentFrame.i = frame.i(:,:,end);
-    currentFrame.yuy2 = frame.yuy2(:,:,2);
-end
+
+currentFrame.yuy2Prev = frame.yuy2;
+currentFrame.z = frame.z;
+currentFrame.i = frame.i;
+currentFrame.yuy2 = frame.yuy2;
 currentFrame.yuy2FromLastSuccess = zeros(size(currentFrame.yuy2));
 
-
+if isfield(params,'correctThermal') &&  params.correctThermal
+    params.thermalInputParams.fromFile = 1;
+    params.thermalInputParams.tablePath = OnlineCalibration.aux.getRgbThermalTablePathAc(sceneDir,1);
+    [params.rgbTmat,params.referenceTemp] = OnlineCalibration.aux.getRgbThermalCorrectionMat(params.thermalInputParams,params.captureHumT);
+    [params.rgbPmat,params.Krgb] = OnlineCalibration.aux.correctThermalScale(params.Krgb,params.Rrgb,params.Trgb,params.rgbTmat(1,1));
+end
 
 [sceneResults.uvErrPreWithoutAug] = OnlineCalibration.Metrics.calcUVMappingErr(frameCB,params,0);
 [sceneResults.metricsPreWithoutAug] = OnlineCalibration.aux.runGeometricMetrics(frameCB, params);
- 
+
 [currentFrame,params] = OnlineCalibration.datasetAnalysis.augmentFrameAndParams(currentFrame,params,params.augMethod);
 [frameCB,params] = OnlineCalibration.datasetAnalysis.augmentFrameAndParams(frameCB,params,params.augMethod);
 originalParams = params;
 sceneResults.originalParams = originalParams;
 
 
-calData = Calibration.tables.getCalibDataFromCalPath(params.atcPath, params.accPath);
-regsDEST.hbaseline = 0;
-regsDEST.baseline = -10;
-regsDEST.baseline2 = regsDEST.baseline^2;
-regs = calData.regs;
-regs.DEST = mergestruct(regs.DEST, regsDEST);
-dsmRegsOrig = calData.regs.EXTL;
+load(fullfile(sceneResults.atvDataPath,'validationCalcAfterHeating_in.mat'),'data');
+regs = data.regs;
+dsmRegsOrig = data.regs.EXTL;
 if ~isfield(params,'acData')
     acData = OnlineCalibration.aux.defaultACTable();
     acData.flags = 1;

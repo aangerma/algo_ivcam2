@@ -14,10 +14,10 @@
 clear
 close all
 
-testSubName = '_iterativeAged';
+testSubName = '_AC2_Status_OnCheckers';
 
 resultsHeadDir = 'X:\IVCAM2_calibration _testing\analysisResults';
-sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration3_Scene&CB_aged';%'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
+sceneHeadDir = 'X:\IVCAM2_calibration _testing\AutoCalibration2_Scene&CB';
 rng(4);
 ind = 0;
 
@@ -25,15 +25,15 @@ goodScenesList = {};
 badScenesList = {};
 if contains(sceneHeadDir,'aged')
     params.augmentationMaxMovement = 0;
-    params.applyK2DSMFix = false;
     nAugPerScene = 1;
 else
-    params.augmentationMaxMovement = 10;
-    params.applyK2DSMFix = true;
+    params.augmentationMaxMovement = 0;
     nAugPerScene = 1;
 end
 params.augMethod = 'dsmAndRotation';
-params.AC2 = 1;
+resultsSubDirName = fullfile(resultsHeadDir,[datestr(now,'yy_mmmm_dd___HH_MM'),testSubName]);
+mkdirSafe(resultsSubDirName);
+params.logOutFolder = resultsSubDirName;
 
 sceneDirs = dir(fullfile(sceneHeadDir,'scene*'));
 for sc = 1:numel(sceneDirs)
@@ -58,6 +58,12 @@ for sc = 1:numel(sceneDirs)
                             params.randVecForDsmAndRotation(1) = 0.5;
                             params.randVecForDsmAndRotation(2) = 0.5;
                         end
+                        
+%                         params.acData = OnlineCalibration.aux.defaultACTable();
+%                         params.acData.flags = 1;
+%                         params.acData.hFactor = ((rand*4-2)+100)/100;
+%                         params.acData.vFactor = ((rand*4-2)+100)/100;
+%                         params.runOnCB = true;
                         sceneResults = OnlineCalibration.datasetAnalysis.runIterativeAC2FromDir(sceneFullPath,params);
                         sceneResults.randomSeed = seed;
                         if ~(isnan(sceneResults.uvErrPre) || isinf(sceneResults.uvErrPre))
@@ -66,9 +72,6 @@ for sc = 1:numel(sceneDirs)
                             goodScenesList{numel(goodScenesList)+1} = sceneFullPath;
                         else
                             badScenesList{numel(goodScenesList)+1} = sceneFullPath;
-                        end
-                        if any(isnan(sceneResults.features))
-                            warning('Found nan in SVM features');
                         end
                         fprintf('cost: ');
                         fprintf('%g ',results(ind).desicionParams.initialCost);
@@ -106,8 +109,6 @@ for sc = 1:numel(sceneDirs)
 end
 
 
-resultsSubDirName = fullfile(resultsHeadDir,[datestr(now,'yy_mmmm_dd___HH_MM'),testSubName]);
-mkdir(resultsSubDirName);
 resultsFileName = fullfile(resultsSubDirName,'results.mat');
 % save(resultsFileName,'results','nAugPerScene')
 save(resultsFileName,'results','nAugPerScene','goodScenesList','badScenesList')

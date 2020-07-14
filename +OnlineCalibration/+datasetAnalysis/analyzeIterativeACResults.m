@@ -1,7 +1,8 @@
 clear
 close all
 % Define params = 
-analysisParams.optResultsPath = 'X:\IVCAM2_calibration _testing\analysisResults\\20_May_17___03_02_AC2_Iterative_Status\results.mat';
+analysisParams.testName = '20_June_03___23_04_AC2_Status_OnCheckers';
+analysisParams.optResultsPath = fullfile('X:\IVCAM2_calibration _testing\analysisResults',analysisParams.testName,'results.mat');
 
 analysisParams.performCrossValidation = 0;
 analysisParams.successFunc = [0,2;...
@@ -20,61 +21,110 @@ load(analysisParams.optResultsPath);
     
 % Classifiy scenes
 uvPre = [results.uvErrPre];
-gidPre = getFields(results,'metricsPre','gid');
-
+gidPre = [results.gidPre];
+scalePreH = [results.scaleErrorHPre];
+scalePreV = [results.scaleErrorVPre];
 for k = 1:numel(results)
     uvPost(k) = results(k).uvErrPostK2DSM(end);
     gidPost(k) = results(k).gidPostK2DSM(end);
+    scaleH(k) = results(k).scaleErrorHPostK2DSM(end);
+    scaleV(k) = results(k).scaleErrorVPostK2DSM(end);
 end
+
 
 labelsGT = OnlineCalibration.datasetAnalysis.succesfulOptimization(uvPre,uvPost,analysisParams.successFunc)';
-labelsActual = [results.validFixBySVM];
-OnlineCalibration.datasetAnalysis.plotResults(labelsGT,labelsActual,uvPre,uvPost,gidPre,gidPost,analysisParams);
-successRate = mean(labelsGT);
+params.svmModelPath = fullfile(ivcam2root,'+OnlineCalibration','+SVMModel','SVMModelLinear.mat');
+decisionParams = [results.(['desicionParams'])];
+load(params.svmModelPath);
+[featuresMat] = OnlineCalibration.aux.extractFeatures(decisionParams);
+distanceFromPlane = (featuresMat-SVMModel.Mu)./SVMModel.Sigma*SVMModel.Beta+SVMModel.Bias;
+labelsActual = distanceFromPlane' > 0;
 
-uvPostKz = [results.uvErrPostKzFromPOpt];
-gidPostKz = getFields(results,'metricsPostKzFromP','gid');
-labelsGT = OnlineCalibration.datasetAnalysis.succesfulOptimization(uvPre,uvPostKz,analysisParams.successFunc)';
-OnlineCalibration.datasetAnalysis.plotResults(labelsGT,labelsActual,uvPre,uvPostKz,gidPre,gidPostKz,analysisParams);
-successRateKz = mean(labelsGT);
+labelsGT = gidPost<gidPre;
 
-figure;
-histogram(gidPost);
-hold on
-histogram(gidPostKz);
-legend({'gidK2DSM';'gidKdepth'});
-xlabel('GID[mm]')
+metricViz(1).pre = uvPre;
+metricViz(1).post = uvPost;
+metricViz(1).name = 'UV';
+metricViz(1).units = 'pix';
 
-figure;
-plot(gidPre,gidPost,'r*');
-hold on
-plot(gidPre,gidPostKz,'g*');
-plot(gidPre,gidPre);
-legend({'gidK2DSM';'gidKdepth'});
-xlabel('GID pre[mm]')
-ylabel('GID post[mm]')
-axis equal
+metricViz(2).pre = gidPre;
+metricViz(2).post = gidPost;
+metricViz(2).name = 'GID';
+metricViz(2).units = 'mm';
 
-dg = 1;
-qVec = 1:dg:10;
-[~,mem] = min(abs(gidPre'-qVec),[],2);
-for i = 1:max(mem(:))
-    inds = mem == i;
-    gidK2DSMQ(i) = mean(gidPost(inds));
-    gidKdepthQ(i) = mean(gidPostKz(inds));
-end
-figure;
-bar([gidK2DSMQ;gidKdepthQ]');
-legend({'gidK2DSM';'gidKdepth'});
-grid minor
-title('Mean GID Post Quantized')
+metricViz(3).pre = scalePreH;
+metricViz(3).post = scaleH;
+metricViz(3).name = 'ScaleH';
+metricViz(3).units = 'prc';
+
+metricViz(4).pre = scalePreV;
+metricViz(4).post = scaleV;
+metricViz(4).name = 'ScaleV';
+metricViz(4).units = 'prc';
+
+OnlineCalibration.robotAnalysis.plotResultMetrics(labelsGT,labelsActual,metricViz);
+
+% 
+% uvPostKz = [results.uvErrPostKzFromPOpt];
+% gidPostKz = getFields(results,'metricsPostKzFromP','gid');
+% labelsGT = OnlineCalibration.datasetAnalysis.succesfulOptimization(uvPre,uvPostKz,analysisParams.successFunc)';
+% OnlineCalibration.datasetAnalysis.plotResults(labelsGT,labelsActual,uvPre,uvPostKz,gidPre,gidPostKz,analysisParams);
+% successRateKz = mean(labelsGT);
+% 
+% figure;
+% histogram(gidPost);
+% hold on
+% histogram(gidPostKz);
+% legend({'gidK2DSM';'gidKdepth'});
+% xlabel('GID[mm]')
+% 
+% figure;
+% plot(gidPre,gidPost,'r*');
+% hold on
+% plot(gidPre,gidPostKz,'g*');
+% plot(gidPre,gidPre);
+% legend({'gidK2DSM';'gidKdepth'});
+% xlabel('GID pre[mm]')
+% ylabel('GID post[mm]')
+% axis equal
+% 
+% dg = 1;
+% qVec = 1:dg:10;
+% [~,mem] = min(abs(gidPre'-qVec),[],2);
+% for i = 1:max(mem(:))
+%     inds = mem == i;
+%     gidK2DSMQ(i) = mean(gidPost(inds));
+%     gidKdepthQ(i) = mean(gidPostKz(inds));
+% end
+% figure;
+% bar([gidK2DSMQ;gidKdepthQ]');
+% legend({'gidK2DSM';'gidKdepth'});
+% grid minor
+% title('Mean GID Post Quantized')
 %% Train SVM - For all params or just one
-svmTrain = @(feature,label) fitcsvm(feature,label,'KernelFunction',analysisParams.svmMethod,...
-    'Standardize',true);
-SVMModel = svmTrain(featuresMat,labels);
-[newLabels,score] = predict(SVMModel,featuresMat);
-OnlineCalibration.datasetAnalysis.plotResults(labels,newLabels,uvPre,uvPost,gidPre,gidPost,analysisParams);
 
+desicionParams = [results.(['desicionParams'])];
+featuresMat = OnlineCalibration.aux.extractFeatures(desicionParams,[]);
+featuresMat(:,8) = [];
+
+
+gidPre(any(isnan(featuresMat),2)) = [];
+gidPost(any(isnan(featuresMat),2)) = [];
+uvPre(any(isnan(featuresMat),2)) = [];
+uvPost(any(isnan(featuresMat),2)) = [];
+labelsGT(any(isnan(featuresMat),2)) = [];
+featuresMat(any(isnan(featuresMat),2),:) = [];
+
+svmTrain = @(feature,label) fitcsvm(feature,label,'KernelFunction',analysisParams.svmMethod,...
+    'Standardize',false);
+SVMModel = svmTrain(featuresMat,labelsGT);
+[newLabels,score] = predict(SVMModel,featuresMat);
+OnlineCalibration.datasetAnalysis.plotResults(labelsGT,newLabels',uvPre,uvPost,gidPre,gidPost,analysisParams);
+SVMModel2.Mu = zeros(1,10);
+SVMModel2.Sigma = ones(1,10);
+SVMModel2.Beta = [ SVMModel.Beta(1:7);0; SVMModel.Beta(8:9)];
+SVMModel2.Bias = [ SVMModel.Bias];
+SVMModel = SVMModel2;
     dataDir = fileparts(analysisParams.optResultsPath);
     SVMPath = fullfile(dataDir,'SVMModel.mat');
     save(SVMPath,'SVMModel');

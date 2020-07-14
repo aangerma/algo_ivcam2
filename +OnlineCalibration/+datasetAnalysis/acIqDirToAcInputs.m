@@ -1,19 +1,7 @@
 function [frame,params,dataForACTableGeneration] = acIqDirToAcInputs(main_dir)
-inputDataMatFile = dir(fullfile(main_dir,'**','InputData.mat'));
-if ~isempty(inputDataMatFile)
-    load(fullfile(inputDataMatFile.folder,inputDataMatFile.name),'ac2_dsm_params','frame');
-    dataForACTableGeneration.binWithHeaders = true;
-    dataForACTableGeneration.DSMRegs.dsmYoffset = uint32(ac2_dsm_params.extLdsmYoffset);
-    dataForACTableGeneration.DSMRegs.dsmXoffset = uint32(ac2_dsm_params.extLdsmXoffset);
-    dataForACTableGeneration.DSMRegs.dsmYscale = uint32(ac2_dsm_params.extLdsmYscale);
-    dataForACTableGeneration.DSMRegs.dsmXscale = uint32(ac2_dsm_params.extLdsmXscale);
-    dataForACTableGeneration.calibDataBin = ac2_dsm_params.table_313';
-    dataForACTableGeneration.acDataBin = ac2_dsm_params.table_240';
-    scene_data_folder = inputDataMatFile.folder;
-else
-    scene_data_folder = dir(fullfile(main_dir,'**','*cal.registers'));
-    scene_data_folder = scene_data_folder.folder;
-end
+
+scene_data_folder = dir(fullfile(main_dir,'**','*cal.registers'));
+scene_data_folder = scene_data_folder.folder;
 
 main_dir_subfolders = dir(main_dir);
 main_dir_subfolders = {main_dir_subfolders(:).name}';
@@ -29,42 +17,40 @@ after_folder = fullfile(main_dir,main_dir_subfolders{after_folder_ind});
 tmp = regexp(main_dir_subfolders,'iteration\d+\_before','match');
 before_folder_ind = ~cellfun('isempty',tmp);
 before_folder = fullfile(main_dir,main_dir_subfolders{before_folder_ind});
+%% DSM params
+regsFilename = dir(fullfile(main_dir,'**','*cal.registers'));
+regsFilename = fullfile(regsFilename.folder,regsFilename.name);
+table240Filename = dir(fullfile(main_dir,'**','*dsm.params'));
+table240Filename = fullfile(table240Filename.folder,table240Filename.name);
+table313Filename = dir(fullfile(main_dir,'**','*cal.info'));
+table313Filename = fullfile(table313Filename.folder,table313Filename.name);
 
-if isempty(inputDataMatFile)
-    %% DSM params
-    regsFilename = dir(fullfile(main_dir,'**','*cal.registers'));
-    regsFilename = fullfile(regsFilename.folder,regsFilename.name);
-    table240Filename = dir(fullfile(main_dir,'**','*dsm.params'));
-    table240Filename = fullfile(table240Filename.folder,table240Filename.name);
-    table313Filename = dir(fullfile(main_dir,'**','*cal.info'));
-    table313Filename = fullfile(table313Filename.folder,table313Filename.name);
+% regsFilename = fullfile(scene_data_folder,'cal.registers');
+% table240Filename = fullfile(scene_data_folder,'dsm.params');
+% table313Filename = fullfile(scene_data_folder,'cal.info');
 
-    % regsFilename = fullfile(scene_data_folder,'cal.registers');
-    % table240Filename = fullfile(scene_data_folder,'dsm.params');
-    % table313Filename = fullfile(scene_data_folder,'cal.info');
+fid = fopen(regsFilename,'r');
+% regsVec = typecast(fread(fid,inf,'uint32'),'double');
+regsVec = fread(fid,'double');
+fclose(fid);
 
-    fid = fopen(regsFilename,'r');
-    % regsVec = typecast(fread(fid,inf,'uint32'),'double');
-    regsVec = fread(fid,'double');
-    fclose(fid);
+fid = fopen(table240Filename,'r');
+table240Vec = fread(fid,inf,'uint8');
+fclose(fid);
 
-    fid = fopen(table240Filename,'r');
-    table240Vec = fread(fid,inf,'uint8');
-    fclose(fid);
+fid = fopen(table313Filename,'rb');
+table313Vec = fread(fid,inf,'*uint8');
+fclose(fid);
 
-    fid = fopen(table313Filename,'rb');
-    table313Vec = fread(fid,inf,'*uint8');
-    fclose(fid);
+% dataForACTableGeneration
+dataForACTableGeneration.binWithHeaders = false;
+dataForACTableGeneration.DSMRegs.dsmYoffset = typecast(single(regsVec(4)),'uint32');
+dataForACTableGeneration.DSMRegs.dsmXoffset = typecast(single(regsVec(3)),'uint32');
+dataForACTableGeneration.DSMRegs.dsmYscale = typecast(single(regsVec(2)),'uint32');
+dataForACTableGeneration.DSMRegs.dsmXscale = typecast(single(regsVec(1)),'uint32');
+dataForACTableGeneration.calibDataBin = table313Vec';
+dataForACTableGeneration.acDataBin = table240Vec';
 
-    % dataForACTableGeneration
-    dataForACTableGeneration.binWithHeaders = false;
-    dataForACTableGeneration.DSMRegs.dsmYoffset = typecast(single(regsVec(4)),'uint32');
-    dataForACTableGeneration.DSMRegs.dsmXoffset = typecast(single(regsVec(3)),'uint32');
-    dataForACTableGeneration.DSMRegs.dsmYscale = typecast(single(regsVec(2)),'uint32');
-    dataForACTableGeneration.DSMRegs.dsmXscale = typecast(single(regsVec(1)),'uint32');
-    dataForACTableGeneration.calibDataBin = table313Vec';
-    dataForACTableGeneration.acDataBin = table240Vec';
-end
 %% params
 iterNum = strsplit(main_dir,'iteration');
 iterNum = iterNum{end};
@@ -105,28 +91,25 @@ params.Rrgb = reshape(CalibData.Rgb.Extrinsics.Depth.RotationMatrix,[3,3])';
 params.rgbPmat = params.Krgb*[ params.Rrgb, params.Trgb];
 
 [params] = OnlineCalibration.aux.getParamsForAC(params);
-if isempty(inputDataMatFile)
-    params.zMaxSubMM = 4;
+params.zMaxSubMM = 4;
 
-    %% rename and save all the images with the expected format
-    frame_ir = dir(fullfile(scene_data_folder,'*ir.raw'));
-    frame_ir = fullfile(frame_ir.folder,frame_ir.name);
-    frame_depth = dir(fullfile(scene_data_folder,'*depth.raw'));
-    frame_depth = fullfile(frame_depth.folder,frame_depth.name);
-    frame_color = dir(fullfile(scene_data_folder,'*rgb.raw'));
-    frame_color = fullfile(frame_color.folder,frame_color.name);
-    frame_color_prev = dir(fullfile(scene_data_folder,'*rgb_prev.raw'));
-    frame_color_prev = fullfile(frame_color_prev.folder,frame_color_prev.name);
+%% rename and save all the images with the expected format
+frame_ir = dir(fullfile(scene_data_folder,'*ir.raw'));
+frame_ir = fullfile(frame_ir.folder,frame_ir.name);
+frame_depth = dir(fullfile(scene_data_folder,'*depth.raw'));
+frame_depth = fullfile(frame_depth.folder,frame_depth.name);
+frame_color = dir(fullfile(scene_data_folder,'*rgb.raw'));
+frame_color = fullfile(frame_color.folder,frame_color.name);
+frame_color_prev = dir(fullfile(scene_data_folder,'*rgb_prev.raw'));
+frame_color_prev = fullfile(frame_color_prev.folder,frame_color_prev.name);
 
 
-    %%
-    frame.i(:,:,1) = io.readGeneralBin(frame_ir, 'uint8', [params.depthRes(1) params.depthRes(2)]);
-    frame.z(:,:,1) = io.readGeneralBin(frame_depth, 'uint16', [params.depthRes(1) params.depthRes(2)]);
-    frame.yuy2(:,:,1) = du.formats.readBinRGBImage(frame_color, [params.rgbRes(1) params.rgbRes(2)], 5);
-    frame.yuy2Prev(:,:,1) = du.formats.readBinRGBImage(frame_color_prev, [params.rgbRes(1) params.rgbRes(2)], 5);
-else
-    params.zMaxSubMM = 1;
-end
+%%
+frame.i(:,:,1) = io.readGeneralBin(frame_ir, 'uint8', [params.depthRes(1) params.depthRes(2)]);
+frame.z(:,:,1) = io.readGeneralBin(frame_depth, 'uint16', [params.depthRes(1) params.depthRes(2)]);
+frame.yuy2(:,:,1) = du.formats.readBinRGBImage(frame_color, [params.rgbRes(1) params.rgbRes(2)], 5);
+frame.yuy2Prev(:,:,1) = du.formats.readBinRGBImage(frame_color_prev, [params.rgbRes(1) params.rgbRes(2)], 5);
+
 % figure; subplot(3,1,1); imagesc(frame.i); title('IR');
 % subplot(3,1,2); imagesc(frame.z); title('Z');
 % subplot(3,1,3); imagesc(frame.yuy2); title('YUY2');
