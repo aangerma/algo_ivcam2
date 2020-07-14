@@ -9,9 +9,9 @@ function [currentFrameCand,newParamsK2DSM,acDataCand,dsmRegsCand,dsmData,inputs]
     KRaw = OnlineCalibration.aux.rotateKMat(params.Kdepth,params.depthRes);
     
     [acData] = setStructFields2Double(acData,{'hFactor';'vFactor';'hOffset';'vOffset'});
-    
-    dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse');
     [dsmRegs] = setStructFields2Double(dsmRegs);
+    dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse');
+    
     [preProcData, first_ConvertNormVerticesToLos_data] = OnlineCalibration.K2DSM.PreProcessing(regs, acData, dsmRegs, KRaw, rot90(currentFrame.relevantPixelsImage,2), params.maxLosScalingStep);
     losShift = zeros(2,1); % any residual LOS shift is reflected onto RGB principle point and/or extrinsic translation
     [losScaling,dbgK2LosErr] = OnlineCalibration.K2DSM.ConvertKToLosError(preProcData, newKRaw);

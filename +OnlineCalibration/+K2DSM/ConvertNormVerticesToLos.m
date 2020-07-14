@@ -1,4 +1,4 @@
-function [los, dbg]  = ConvertNormVerticesToLos(regs, dsmRegs, vertices)
+function [los, ConvertNormVerticesToLos_data]  = ConvertNormVerticesToLos(regs, dsmRegs, vertices)
    
     % Transforming to direction vector
     outboundDirection = vertices./sqrt(sum(vertices.^2,2)); % Nx3
@@ -11,7 +11,7 @@ function [los, dbg]  = ConvertNormVerticesToLos(regs, dsmRegs, vertices)
         angPostExp = acosd(outboundDirection(:,3)); % angle w.r.t. Z-axis [deg]
         angGrid = (0:45)';
         angOutOnGrid = angGrid + angGrid.^[1,2,3,4]*vec(double(regs.FRMW.fovexNominal));
-        angPreExp = OnlineCalibration.K2DSM.DirectInterp(angOutOnGrid, angGrid, angPostExp); % direct implementation of Matlab's function: interp1(angOutOnGrid, angGrid, angPostExp)
+        angPreExp = interp1(angOutOnGrid, angGrid, angPostExp);
         fovexIndicentDirection(:,3) = cosd(angPreExp);
         xyNorm = outboundDirection(:,1).^2+outboundDirection(:,2).^2; % can never be 0 in IVCAM2
         xyFactor = sqrt((1-fovexIndicentDirection(:,3).^2)./xyNorm);
@@ -33,7 +33,7 @@ function [los, dbg]  = ConvertNormVerticesToLos(regs, dsmRegs, vertices)
     dsmGrid = (-2100:10:2100)';
     dsmXcoarseOnGrid = dsmGrid + (dsmGrid/2047).^[1,2,3]*vec(double(regs.FRMW.polyVars));
     dsmXcorrOnGrid = dsmXcoarseOnGrid + (dsmXcoarseOnGrid/2047).^[1,2,3,4]*vec(double(regs.FRMW.undistAngHorz));
-    dsmX = OnlineCalibration.K2DSM.DirectInterp(dsmXcorrOnGrid, dsmGrid, dsmXcorr); % direct implementation of Matlab's function: interp1(dsmXcorrOnGrid, dsmGrid, dsmXcorr)
+    dsmX = interp1(dsmXcorrOnGrid, dsmGrid, dsmXcorr); % Nx1
     dsmY = dsmYcorr - (dsmX/2047)*double(regs.FRMW.pitchFixFactor);
 
     % Reverting DSM (taken from Utils.convert.applyDsm)
@@ -41,14 +41,14 @@ function [los, dbg]  = ConvertNormVerticesToLos(regs, dsmRegs, vertices)
     losY = (dsmY + 2047)/double(dsmRegs.dsmYscale) - double(dsmRegs.dsmYoffset);
     los = [losX, losY];
     
-    dbg.dsmX = dsmX;
-    dbg.dsmY = dsmY;
+    ConvertNormVerticesToLos_data.dsmX = dsmX;
+    ConvertNormVerticesToLos_data.dsmY = dsmY;
     
-    dbg.dsmXcorr = dsmXcorr;
-    dbg.dsmYcorr = dsmYcorr;
-    dbg.mirrorNormalDirection = mirrorNormalDirection;
-    dbg.angX = angX;
-    dbg.angY = angY;
-    dbg.fovexIndicentDirection = fovexIndicentDirection;
-    dbg.laserIncidentDirection = laserIncidentDirection;
+    ConvertNormVerticesToLos_data.dsmXcorr = dsmXcorr;
+    ConvertNormVerticesToLos_data.dsmYcorr = dsmYcorr;
+    ConvertNormVerticesToLos_data.mirrorNormalDirection = mirrorNormalDirection;
+    ConvertNormVerticesToLos_data.angX = angX;
+    ConvertNormVerticesToLos_data.angY = angY;
+    ConvertNormVerticesToLos_data.fovexIndicentDirection = fovexIndicentDirection;
+    ConvertNormVerticesToLos_data.laserIncidentDirection = laserIncidentDirection;
 end

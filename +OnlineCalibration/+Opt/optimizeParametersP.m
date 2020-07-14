@@ -48,6 +48,7 @@ while notConverged && iterCount < params.maxOptimizationIters
         iteration_data.normalized_grads = grad;
         iteration_data.grads_norm = grads_norm;
         iteration_data.newRgbPmat = newRgbPmat;
+        iteration_data.newKrgb = newKrgb;
         iteration_data.newCost = newCost;
         iteration_data.BacktrackingLineIterCount = BacktrackingLineIterCount;
         iteration_data.t = t;

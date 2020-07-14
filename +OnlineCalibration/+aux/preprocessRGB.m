@@ -11,7 +11,7 @@ function [rgbEdge, rgbIDT, rgbIDTx, rgbIDTy, sectionMapRgb, sectionMapRgbEdges] 
         else
             [rgbIDT] = OnlineCalibration.aux.calcInverseDistanceImage2(rgbEdge,params.inverseDistParams);% Ready for LibRealSenseImplementation
         end
-        rgbIDT = single(rgbIDT);
+        %rgbIDT = single(rgbIDT);
         [~,rgbIDTx,rgbIDTy] = OnlineCalibration.aux.edgeSobelXY(rgbIDT);
         
         

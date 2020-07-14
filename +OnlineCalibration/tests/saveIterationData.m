@@ -69,6 +69,10 @@ p_matrix = iteration_data.p_matrix';
 f_name = sprintf('p_matrix_iteration_%d_%d',iteration_data.cycle,iteration_data.iterCount);  
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, p_matrix(:)','double');
 
+Krgb = iteration_data.Krgb';
+f_name = sprintf('Krgb_iteration_%d_%d',iteration_data.cycle,iteration_data.iterCount);  
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, Krgb(:)','double');
+
 unit_grad = iteration_data.unit_grad';
 f_name = sprintf('unit_grad_iteration_%d_%d',iteration_data.cycle,iteration_data.iterCount);  
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, unit_grad(:)','double');
@@ -76,6 +80,10 @@ OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, unit_grad(:)','do
 newRgbPmat = iteration_data.newRgbPmat';
 f_name = sprintf('next_p_matrix_iteration_%d_%d',iteration_data.cycle,iteration_data.iterCount);  
 OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, newRgbPmat(:)','double');
+
+newKrgb = iteration_data.newKrgb';
+f_name = sprintf('next_Krgb_iteration_%d_%d',iteration_data.cycle,iteration_data.iterCount);  
+OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, newKrgb(:)','double');
 
 cost = iteration_data.cost;
 f_name = sprintf('cost_iteration_%d_%d',iteration_data.cycle,iteration_data.iterCount);  

@@ -1,4 +1,4 @@
-function [edgesDirSpread,directionData,dbg] = checkEdgesDirSpread(directions,xim,yim,res,params)
+function [edgesDirSpread,directionData,dbg] = checkEdgesDirSpread(directions,xim,yim,res,params,outputBinFilesPath)
 % Enough Edges in enough directions and Std Per Dir (weights will be
 % normalized by direction,Normalize by weights is done in a seperate
 % function)
@@ -33,6 +33,12 @@ if params.requireOrthogonalValidDirs % If true, we need to have two valid direct
 end
 
 directionData.edgesPerDirection = dbg.edgesAmountPerDirections;
+
+if exist('outputBinFilesPath','var') && ~isempty(outputBinFilesPath)
+    Spread = edgesDirSpread;
+    f_name = sprintf('DirSpread');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, Spread,'uint8');
+end
 end
 
 % for i = 1:4

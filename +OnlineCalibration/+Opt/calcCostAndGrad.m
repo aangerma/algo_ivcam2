@@ -104,6 +104,7 @@ function [cost,grad,iteration_data] = calcCostAndGrad(frame,params)
 	iteration_data.DxVals = DxVals;
 	iteration_data.DyVals = DyVals;
 	iteration_data.p_matrix = params.rgbPmat;
+    iteration_data.Krgb = params.Krgb;
     iteration_data.cost = cost;
 	iteration_data.grad = grad;
     

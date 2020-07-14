@@ -6,6 +6,22 @@ rgbRes = [res(2),res(1)];
 depthData = dir(fullfile(folderPath,'depth_*.bin'));
 [depthRes] = getResFromFileName(depthData.name);
 [paramsOut,acInputData] = parseIqToAlgoInputs(rgbRes,depthRes,params,ac2_dsm_params);
+
+paramsOut.zMaxSubMM = 4;
+frame.z = frame.z*4;
+
+mkdirSafe(fullfile(folderPath,'\binFiles\ac2'));
+OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2'),'depth', frame.z,'uint16');
+OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2'),'ir', frame.i,'uint8');
+yuy2 = uint16(frame.yuy2);
+OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2'),'color', yuy2,'uint16');
+yuy2_prev = uint16(frame.yuy2Prev);
+
+OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2'),'previous_color',yuy2_prev,'uint16');
+frame.yuy_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2', 'color_*'));
+frame.yuy_files(2) = dir(fullfile(folderPath ,'\binFiles\ac2','previous_color_*'));
+frame.z_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2', 'depth_*'));
+frame.i_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2','ir_*'));
     
 end
 

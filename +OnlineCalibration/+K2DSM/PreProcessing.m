@@ -10,10 +10,17 @@ function [data,dbg] = PreProcessing(regs, acData, dsmRegs, origK, isValidPix, ma
     % backward model: transforming pixels to original LOS, as it was during factory calibration
     sz = size(isValidPix);
     [yPixGrid, xPixGrid] = ndgrid(0:sz(1)-1, 0:sz(2)-1);
-    data.verticesOrig = [xPixGrid(isValidPix), yPixGrid(isValidPix), ones(sum(isValidPix(:)),1)] * inv(origK)';
+    %data.verticesOrig = [xPixGrid(isValidPix), yPixGrid(isValidPix), ones(sum(isValidPix(:)),1)] * inv(origK)';
+    data.verticesOrig = [sampleByMask(xPixGrid,isValidPix), sampleByMask(yPixGrid,isValidPix), ones(sum(isValidPix(:)),1)] * inv(origK)';
+   
     dsmRegsOrig = Utils.convert.applyAcResOnDsmModel(acData, dsmRegs, 'inverse'); % existing DSM correction must be reverted
     [data.losOrig,dbg] = OnlineCalibration.K2DSM.ConvertNormVerticesToLos(regs, dsmRegsOrig, data.verticesOrig);
     
 end
 
-
+function [values] = sampleByMask(I,binMask)
+    % Extract values from image I using the binMask with the order being
+    % row and then column
+    I = I';
+    values = I(binMask');
+end

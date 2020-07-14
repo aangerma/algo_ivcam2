@@ -5,13 +5,13 @@ runParams.loadSingleScene = 1;
 % runParams.saveBins = 0;
 % runParams.ignoreSceneInvalidation = 1;
 % runParams.ignoreOutputInvalidation = 1;
-
 % close all
 %% Load frames from IPDev
+
 if isempty(sceneDir)
     switch runType
         case 'iqData'
-            sceneDir = '\\rslabs-nas.iil.intel.com\VIDB\AC2 Field Test\Tests\Old\19_05_2020\Danielle\Scene 1\iteration15\ac_15\1';
+            sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\iq4RunOnlineCalibration\11-06-20\Automatic (Regular Flow)\Dariia\D153\iteration12\ac_12\1';
         case 'lrs'
             sceneDir = '\\ger\ec\proj\ha\RSG\SA_3DCam\Avishag\ForMaya\1698';
         otherwise
@@ -21,7 +21,8 @@ end
 disp(sceneDir);
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-outputBinFilesPath = fullfile(pwd,'binFiles'); % Path for saving binary images
+outputBinFilesPath = fullfile(pwd,'binFiles\ac2'); % Path for saving binary images
+mkdirSafe(outputBinFilesPath);
 % Load data of scene
 % load(intrinsicsExtrinsicsPath);
 switch runType
@@ -31,12 +32,18 @@ switch runType
         calibDataBin = [acInputData.calibDataBin{:}];
         acDataBin = [acInputData.acDataBin{:}];
         dsmRegs = acInputData.DSMRegs;
+        fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
+        fprintf( fid, 'binFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
+        fclose( fid );
     case 'lrs'
         [frame,camerasParams,acInputData] = getCameraParamsRaw(sceneDir);
         dsmRegs = acInputData.dsmRegs;
         calibDataBin = acInputData.calibDataBin;
         binWithHeaders = acInputData.binWithHeaders;
         acDataBin = acInputData.acDataBin;
+        fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
+        fprintf( fid, '%s\n%s\n%s\n%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
+        fclose( fid );
     otherwise
         [camerasParams] = OnlineCalibration.aux.getCameraParamsFromRsc(sceneDir);
         % Raw AC data from unit,
@@ -71,8 +78,14 @@ switch runType
             frame.yuy2 = frame.yuy2(:,:,1);
             %frame.yuy2Prev = frame.yuy2;
         end
+        fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
+        fprintf( fid, '%s\n%s\n%s\n%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
+        fclose( fid );
 end
 % Define hyperparameters
+
+  
+    
 
 params = camerasParams;
 [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
@@ -160,7 +173,7 @@ md.n_relevant_pixels = sum(frame.relevantPixelsImage(:) == 1);
 
 %% decisionParams from input scene
 [~,validInputStruct,isMovement] = OnlineCalibration.aux.validScene(frame,params,outputBinFilesPath);
-[validInputs,directionData,sceneResults.inputValidityDbg] = OnlineCalibration.aux.inputValidityChecks(frame,params);
+[validInputs,directionData,sceneResults.inputValidityDbg] = OnlineCalibration.aux.inputValidityChecks(frame,params,outputBinFilesPath);
 
 if isMovement || ~validInputs
     return;
