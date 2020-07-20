@@ -77,16 +77,20 @@ params.gradRgbTh = 10*1280/params.rgbRes(1); % (checkEnoughRgbEdges) Should vary
 if manualTrigger
     params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
     % Input validity checks+++++++
-    params.pixPerSectionRgbTh = 0;% (checkDepthEdgesSpatialSpread)
-    params.pixPerSectionDepthTh = 0;% (checkDepthEdgesSpatialSpread)
-    params.minSectionWithEnoughEdges = 0;% (checkDepthEdgesSpatialSpread)
-    params.edgesPerDirectionRatioTh = 0; % (checkEdgesDirSpread)
-    params.minimalFullDirections = 0;% (checkEdgesDirSpread)
+    params.pixPerSectionRgbTh = 0.01;% (checkDepthEdgesSpatialSpread)
+    params.pixPerSectionDepthTh = 0.01;% (checkDepthEdgesSpatialSpread)
+    params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
+    params.edgesPerDirectionRatioTh = 0.004; % (checkEdgesDirSpread)
+    params.minimalFullDirections = 2;% (checkEdgesDirSpread)
     params.requireOrthogonalValidDirs = false;% (checkEdgesDirSpread)
-    params.dirStdTh = [0,0,0,0];% (checkEdgesDirSpread)
-    params.irSaturationRatioTh = 1;
-    params.irSaturationValue = 256; % Larger than max IR value  
-    
+    params.dirStdTh = [0.09,0.09,0.09,0.09];% (checkEdgesDirSpread)
+    params.irSaturationRatioTh = 0.15;
+    if ~isfield(params,'apdGain') || params.apdGain == 0 || params.apdGain == 9 % Long Preset
+        params.irSaturationValue = 230;  
+    elseif params.apdGain == 18 % Short Preset
+        params.irSaturationValue = 250;
+    end
+    assert(~isfield(params,'apdGain') || params.apdGain == 0 || params.apdGain == 9 || params.apdGain == 18); 
 else
     params.maxGlobalLosScalingStep = 0.004;% Clip the different between starting scale and final scale by this value
     % Input validity checks+++++++
