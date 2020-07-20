@@ -25,7 +25,8 @@ for i = 1:numel(iterationDirs)
        params.acData = currAcData;
     end
     params.checkMovementFromLastSuccess = 0;
-    params.outputFolder = 'X:\Users\tmund\dbg';
+    params.outputFolder = fileparts(outputResFile);
+    mkdirSafe(params.outputFolder);
     params.iterFromStart = iterFromStart;
     if runMultiFrame
         params.maxGlobalLosScalingStep = 0.005;
