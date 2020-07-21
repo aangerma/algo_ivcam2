@@ -18,7 +18,6 @@ end
 % 1. Enough Edges in RGB image (Lights off bug fix)
 [dbg.rgbEdgesSpread,dbg.rgbEdgesSpreadDbg] = OnlineCalibration.aux.checkEdgesSpatialSpread(frame.sectionMapRgbEdges,params.rgbRes,params.pixPerSectionRgbTh,params.minSectionWithEnoughEdges,params.numSections);
 
-
 % 2. Enough Edges in enough locations (3/4 quarters)
 [dbg.depthEdgesSpread,dbg.depthEdgesSpreadDbg] = OnlineCalibration.aux.checkEdgesSpatialSpread(frame.sectionMapDepth,params.depthRes,params.pixPerSectionDepthTh,params.minSectionWithEnoughEdges,params.numSections);
 
@@ -34,6 +33,19 @@ else
     dbg.isMovementFromLastSuccess = 1;
     dbg.movingPixelsFromLastSuccess = 0;
 end
+if exist('outputBinFilesPath','var') && ~isempty(outputBinFilesPath)
+    rgbSpread = dbg.rgbEdgesSpread;
+    f_name = sprintf('rgbEdgesSpread');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, rgbSpread,'uint8');
+    
+    depthSpread = dbg.depthEdgesSpread;
+    f_name = sprintf('depthEdgesSpread');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, depthSpread,'uint8');
+    
+    isMovementFromLastSuccess = dbg.isMovementFromLastSuccess;
+    f_name = sprintf('isMovementFromLastSuccess');
+    OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, isMovementFromLastSuccess,'uint8');
+    
 % 6. Check for saturation in the IR image
 [dbg.depthIsntSaturated,dbg.depthSaturationDbg] = OnlineCalibration.aux.checkForSaturation(frame.i,params.irSaturationValue,params.irSaturationRatioTh,outputBinFilesPath);
 

@@ -21,7 +21,7 @@ end
 disp(sceneDir);
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-outputBinFilesPath = fullfile(pwd,'binFiles\ac2'); % Path for saving binary images
+outputBinFilesPath = fullfile(sceneDir,'binFiles\ac2'); % Path for saving binary images
 mkdirSafe(outputBinFilesPath);
 % Load data of scene
 % load(intrinsicsExtrinsicsPath);
@@ -33,7 +33,7 @@ switch runType
         acDataBin = [acInputData.acDataBin{:}];
         dsmRegs = acInputData.DSMRegs;
         fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
-        fprintf( fid, 'binFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.z_files(1).name, frame.i_files(1).name );
+        fprintf( fid, 'binFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.yuy_files(3).name, frame.z_files(1).name, frame.i_files(1).name );
         fclose( fid );
     case 'lrs'
         [frame,camerasParams,acInputData] = getCameraParamsRaw(sceneDir);
@@ -93,7 +93,12 @@ params = camerasParams;
 % This image is the last RGB image that converged since the last play.
 % It is initialized to zeros at the start of stream for easy use in
 % the first cycle (Release AC2.1)
-frame.lastValidYuy2 = 0*frame.yuy2;
+if isfield(frame, 'yuy2_prev_valid')
+    frame.lastValidYuy2 = frame.yuy2_prev_valid;
+else
+    frame.lastValidYuy2 = 0*frame.yuy2;
+    
+end
 % Auto Trigger Mode
 manualTrigger = 0;
 
@@ -124,6 +129,20 @@ md = struct;
 % them here hard coded
 humidityTemp = 40;
 params.apdGain = 9;% should actually be the apd state
+
+fid = fopen( fullfile( outputBinFilesPath, 'settings' ), 'w' );
+
+if params.apdGain == 0 || params.apdGain == 9
+    ambient = 1;
+else
+    ambient = 2;
+end
+fwrite( fid, manualTrigger, 'uint8' );
+fwrite( fid, humidityTemp, 'double' );
+fwrite( fid, ambient, 'uint32' );
+fwrite( fid, params.apdGain, 'uint32' );
+fclose( fid );
+
 [params] = OnlineCalibration.aux.getParamsForAC(params,manualTrigger);
 
 [validACConditions,dbg] = OnlineCalibration.aux.checkACConstrains(params.apdGain,humidityTemp,params);
