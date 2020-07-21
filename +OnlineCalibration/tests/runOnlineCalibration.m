@@ -21,7 +21,7 @@ end
 disp(sceneDir);
 % imagesSubdir = fullfile(sceneDir,'ZIRGB');
 % intrinsicsExtrinsicsPath = fullfile(sceneDir,'camerasParams.mat');
-outputBinFilesPath = fullfile(sceneDir,'binFiles\ac2'); % Path for saving binary images
+outputBinFilesPath = fullfile(pwd,'binFiles\ac2'); % Path for saving binary images
 mkdirSafe(outputBinFilesPath);
 % Load data of scene
 % load(intrinsicsExtrinsicsPath);
