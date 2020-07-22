@@ -1,5 +1,6 @@
 function [frame,paramsOut,acInputData] = iqFolderToAlgoInputs(folderPath)
 load(fullfile(folderPath,'InputData.mat'),'frame','params','ac2_dsm_params');
+
 colorData = dir(fullfile(folderPath,'color_*.bin'));
 [res] = getResFromFileName(colorData.name);
 rgbRes = [res(2),res(1)];
@@ -16,10 +17,24 @@ OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2'),'ir', fr
 yuy2 = uint16(frame.yuy2);
 OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2'),'color', yuy2,'uint16');
 yuy2_prev = uint16(frame.yuy2Prev);
-
 OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2'),'previous_color',yuy2_prev,'uint16');
+try
+    yuy2filesTemp = dir(fullfile(folderPath,'previous_valid_color_*'));
+    splittedStr = strsplit(yuy2filesTemp.name,'_');
+    splittedStr = strsplit(splittedStr{4},'x');
+    [frame.yuy2_prev_valid,~] = du.formats.readBinRGBImage(fullfile(yuy2filesTemp.folder,yuy2filesTemp.name),[str2double(splittedStr{2}), str2double(splittedStr{1})],5);
+    yuy2_prev_valid = uint16(frame.yuy2_prev_valid);
+catch
+    yuy2_prev_valid = 0*frame.yuy2;
+    frame.yuy2_prev_valid = yuy2_prev_valid;
+end
+
+OnlineCalibration.aux.saveBinImage(fullfile(folderPath,'\binFiles\ac2') ,'previous_valid_color',yuy2_prev_valid,'uint16');
+
 frame.yuy_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2', 'color_*'));
 frame.yuy_files(2) = dir(fullfile(folderPath ,'\binFiles\ac2','previous_color_*'));
+frame.yuy_files(3) = dir(fullfile(folderPath ,'\binFiles\ac2','previous_valid_color_*'));
+
 frame.z_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2', 'depth_*'));
 frame.i_files(1) = dir(fullfile(folderPath ,'\binFiles\ac2','ir_*'));
 try
