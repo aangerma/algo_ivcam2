@@ -37,9 +37,14 @@ for i = 1:numel(iterationDirs)
         end
         [validParamsRerun,paramsRerun,~,newAcData,dbgRerun,frameList] = OnlineCalibration.aux.runSingleMFACIteration(frame,params,origParams,dataForACTableGeneration,frameList);               
     else
+        if i > 1 && exist('lastValidYuy2Temp','var')
+            frame.lastValidYuy2 = lastValidYuy2Temp; 
+        end
         [validParamsRerun,paramsRerun,~,newAcData,dbgRerun] = OnlineCalibration.aux.runSingleACIteration(frame,params,origParams,dataForACTableGeneration);    
     end
-    
+    if validParamsRerun
+        lastValidYuy2Temp = frame.yuy2;
+    end
     results.validParamsRerun = validParamsRerun;
     results.paramsRerun = paramsRerun;
     results.newAcData = newAcData;

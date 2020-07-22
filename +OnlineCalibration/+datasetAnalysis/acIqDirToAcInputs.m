@@ -1,6 +1,12 @@
 function [frame,params,dataForACTableGeneration] = acIqDirToAcInputs(main_dir)
 
 scene_data_folder = dir(fullfile(main_dir,'**','*cal.registers'));
+matFileFormat = 0;
+if isempty(scene_data_folder)
+    scene_data_folder = dir(fullfile(main_dir,'**','InputData.mat'));
+    load(fullfile(scene_data_folder.folder,'InputData.mat'),'params','ac2_dsm_params');
+    matFileFormat = 1;
+end
 scene_data_folder = scene_data_folder.folder;
 
 main_dir_subfolders = dir(main_dir);
@@ -18,39 +24,49 @@ tmp = regexp(main_dir_subfolders,'iteration\d+\_before','match');
 before_folder_ind = ~cellfun('isempty',tmp);
 before_folder = fullfile(main_dir,main_dir_subfolders{before_folder_ind});
 %% DSM params
-regsFilename = dir(fullfile(main_dir,'**','*cal.registers'));
-regsFilename = fullfile(regsFilename.folder,regsFilename.name);
-table240Filename = dir(fullfile(main_dir,'**','*dsm.params'));
-table240Filename = fullfile(table240Filename.folder,table240Filename.name);
-table313Filename = dir(fullfile(main_dir,'**','*cal.info'));
-table313Filename = fullfile(table313Filename.folder,table313Filename.name);
-
-% regsFilename = fullfile(scene_data_folder,'cal.registers');
-% table240Filename = fullfile(scene_data_folder,'dsm.params');
-% table313Filename = fullfile(scene_data_folder,'cal.info');
-
-fid = fopen(regsFilename,'r');
-% regsVec = typecast(fread(fid,inf,'uint32'),'double');
-regsVec = fread(fid,'double');
-fclose(fid);
-
-fid = fopen(table240Filename,'r');
-table240Vec = fread(fid,inf,'uint8');
-fclose(fid);
-
-fid = fopen(table313Filename,'rb');
-table313Vec = fread(fid,inf,'*uint8');
-fclose(fid);
-
-% dataForACTableGeneration
-dataForACTableGeneration.binWithHeaders = false;
-dataForACTableGeneration.DSMRegs.dsmYoffset = typecast(single(regsVec(4)),'uint32');
-dataForACTableGeneration.DSMRegs.dsmXoffset = typecast(single(regsVec(3)),'uint32');
-dataForACTableGeneration.DSMRegs.dsmYscale = typecast(single(regsVec(2)),'uint32');
-dataForACTableGeneration.DSMRegs.dsmXscale = typecast(single(regsVec(1)),'uint32');
-dataForACTableGeneration.calibDataBin = table313Vec';
-dataForACTableGeneration.acDataBin = table240Vec';
-
+if matFileFormat
+     % dataForACTableGeneration
+    dataForACTableGeneration.binWithHeaders = 1;
+    dataForACTableGeneration.DSMRegs.dsmYoffset = ac2_dsm_params.extLdsmYoffset;
+    dataForACTableGeneration.DSMRegs.dsmXoffset = ac2_dsm_params.extLdsmXoffset;
+    dataForACTableGeneration.DSMRegs.dsmYscale = ac2_dsm_params.extLdsmYscale;
+    dataForACTableGeneration.DSMRegs.dsmXscale = ac2_dsm_params.extLdsmXscale;
+    dataForACTableGeneration.calibDataBin = ac2_dsm_params.table_313;
+    dataForACTableGeneration.acDataBin = ac2_dsm_params.table_240;
+else
+    regsFilename = dir(fullfile(main_dir,'**','*cal.registers'));
+    regsFilename = fullfile(regsFilename.folder,regsFilename.name);
+    table240Filename = dir(fullfile(main_dir,'**','*dsm.params'));
+    table240Filename = fullfile(table240Filename.folder,table240Filename.name);
+    table313Filename = dir(fullfile(main_dir,'**','*cal.info'));
+    table313Filename = fullfile(table313Filename.folder,table313Filename.name);
+    
+    % regsFilename = fullfile(scene_data_folder,'cal.registers');
+    % table240Filename = fullfile(scene_data_folder,'dsm.params');
+    % table313Filename = fullfile(scene_data_folder,'cal.info');
+    
+    fid = fopen(regsFilename,'r');
+    % regsVec = typecast(fread(fid,inf,'uint32'),'double');
+    regsVec = fread(fid,'double');
+    fclose(fid);
+    
+    fid = fopen(table240Filename,'r');
+    table240Vec = fread(fid,inf,'uint8');
+    fclose(fid);
+    
+    fid = fopen(table313Filename,'rb');
+    table313Vec = fread(fid,inf,'*uint8');
+    fclose(fid);
+    
+    % dataForACTableGeneration
+    dataForACTableGeneration.binWithHeaders = false;
+    dataForACTableGeneration.DSMRegs.dsmYoffset = typecast(single(regsVec(4)),'uint32');
+    dataForACTableGeneration.DSMRegs.dsmXoffset = typecast(single(regsVec(3)),'uint32');
+    dataForACTableGeneration.DSMRegs.dsmYscale = typecast(single(regsVec(2)),'uint32');
+    dataForACTableGeneration.DSMRegs.dsmXscale = typecast(single(regsVec(1)),'uint32');
+    dataForACTableGeneration.calibDataBin = table313Vec';
+    dataForACTableGeneration.acDataBin = table240Vec';
+end
 %% params
 iterNum = strsplit(main_dir,'iteration');
 iterNum = iterNum{end};
@@ -94,14 +110,25 @@ params.rgbPmat = params.Krgb*[ params.Rrgb, params.Trgb];
 params.zMaxSubMM = 4;
 
 %% rename and save all the images with the expected format
-frame_ir = dir(fullfile(scene_data_folder,'*ir.raw'));
-frame_ir = fullfile(frame_ir.folder,frame_ir.name);
-frame_depth = dir(fullfile(scene_data_folder,'*depth.raw'));
-frame_depth = fullfile(frame_depth.folder,frame_depth.name);
-frame_color = dir(fullfile(scene_data_folder,'*rgb.raw'));
-frame_color = fullfile(frame_color.folder,frame_color.name);
-frame_color_prev = dir(fullfile(scene_data_folder,'*rgb_prev.raw'));
-frame_color_prev = fullfile(frame_color_prev.folder,frame_color_prev.name);
+if matFileFormat
+    frame_ir = dir(fullfile(scene_data_folder,'ir_*.bin'));
+    frame_ir = fullfile(frame_ir.folder,frame_ir.name);
+    frame_depth = dir(fullfile(scene_data_folder,'depth_*.bin'));
+    frame_depth = fullfile(frame_depth.folder,frame_depth.name);
+    frame_color = dir(fullfile(scene_data_folder,'color_*.bin'));
+    frame_color = fullfile(frame_color.folder,frame_color.name);
+    frame_color_prev = dir(fullfile(scene_data_folder,'previous_color_*.bin'));
+    frame_color_prev = fullfile(frame_color_prev.folder,frame_color_prev.name);
+else
+    frame_ir = dir(fullfile(scene_data_folder,'*ir.raw'));
+    frame_ir = fullfile(frame_ir.folder,frame_ir.name);
+    frame_depth = dir(fullfile(scene_data_folder,'*depth.raw'));
+    frame_depth = fullfile(frame_depth.folder,frame_depth.name);
+    frame_color = dir(fullfile(scene_data_folder,'*rgb.raw'));
+    frame_color = fullfile(frame_color.folder,frame_color.name);
+    frame_color_prev = dir(fullfile(scene_data_folder,'*rgb_prev.raw'));
+    frame_color_prev = fullfile(frame_color_prev.folder,frame_color_prev.name);
+end
 
 
 %%
