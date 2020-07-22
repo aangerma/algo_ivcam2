@@ -25,7 +25,7 @@ for k = 2:size(frames.yuy2,3)
     im2 = frames.yuy2(:,:,k);
 %     im1 = frame(k-1).color;
 %     im2 = frame(k).color;
-    isMovement = OnlineCalibration.aux.isMovementInImages(im1,im2,isMoveParams);
+    isMovement = OnlineCalibration.aux.isMovementInImages(im1,im2,isMoveParams,isMoveParams.moveThreshPixVal,isMoveParams.moveThreshPixNum);
     if isMovement
         disp('Movement detected!');
         figure; subplot(211);imagesc(im1);impixelinfo;

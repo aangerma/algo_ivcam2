@@ -28,7 +28,7 @@ end
 
 % 5. Check movement between this scene and the previous good one
 if ~params.manualTrigger
-    [dbg.isMovementFromLastSuccess,dbg.movingPixelsFromLastSuccess] = OnlineCalibration.aux.isMovementInImages(frame.lastValidYuy2,frame.yuy2,params);
+    [dbg.isMovementFromLastSuccess,dbg.movingPixelsFromLastSuccess] = OnlineCalibration.aux.isMovementInImages(frame.lastValidYuy2,frame.yuy2,params,params.moveLastSuccessThreshPixVal,params.moveLastSuccessThreshPixNum);
 else
     dbg.isMovementFromLastSuccess = 1;
     dbg.movingPixelsFromLastSuccess = 0;
@@ -45,7 +45,7 @@ if exist('outputBinFilesPath','var') && ~isempty(outputBinFilesPath)
     isMovementFromLastSuccess = dbg.isMovementFromLastSuccess;
     f_name = sprintf('isMovementFromLastSuccess');
     OnlineCalibration.aux.saveBinImage(outputBinFilesPath, f_name, isMovementFromLastSuccess,'uint8');
-    
+end    
 % 6. Check for saturation in the IR image
 [dbg.depthIsntSaturated,dbg.depthSaturationDbg] = OnlineCalibration.aux.checkForSaturation(frame.i,params.irSaturationValue,params.irSaturationRatioTh,outputBinFilesPath);
 

@@ -8,7 +8,7 @@ if nargin < 3
     outputBinFilesPath = [];
 end
 
-[isMovement,validSceneStruct.movingPixels] = OnlineCalibration.aux.isMovementInImages(frames.yuy2Prev,frames.yuy2,params,outputBinFilesPath);
+[isMovement,validSceneStruct.movingPixels] = OnlineCalibration.aux.isMovementInImages(frames.yuy2Prev,frames.yuy2,params,params.moveThreshPixVal,params.moveThreshPixNum,outputBinFilesPath);
 if isMovement
     if ~isempty(validSceneStruct.invalidReason)
         validSceneStruct.invalidReason = [validSceneStruct.invalidReason,'&'];
