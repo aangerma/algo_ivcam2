@@ -3,7 +3,7 @@
 clear
 
 %% Parameters
-depthRes = [480,640];
+depthRes = [240,320];%[768,1024];
 rgbRes = [1920,1080];
 presetNum = 1;
 hw = HWinterface;
@@ -22,33 +22,34 @@ cameraParams.depthRes = depthRes;
 params = cameraParams;
 [params.xAlpha,params.yBeta,params.zGamma] = OnlineCalibration.aux.extractAnglesFromRotMat(params.Rrgb);
 params.cbGridSz = [9,13];% not part of the optimization 
-[params] = OnlineCalibration.aux.getParamsForAC(params);
 
 params.derivVar = 'P';
-params.maxIters = 100;
+params.maxIters = 1;
+params.burnToUnit = false;
+basePath  = 'C:\temp\QVGAtest';
+mkdirSafe = basePath;
 
 flowParams.deltaTmptr = 0;
 flowParams.deltaTimeSec = 60*10;
 flowParams.pauseTimeAfterInvalidScene = 5;
+flowParams.manualTrigger = 0;
 %% Online calibration flow
 startTime = tic;
 prevTime = toc(startTime);
 prevTmptr = hw.getLddTemperature;
 originalParams = params;
-sectionMapDepth = OnlineCalibration.aux.sectionPerPixel(params);
-sectionMapRgb = OnlineCalibration.aux.sectionPerPixel(params,1);
-
 
 % Stream is running
 iter = 1;
 while true
+    params.save4now = fullfile(basePath,['dataCollection' num2str(iter) '.mat']);
     currTime = toc(startTime);
     currTmptr = hw.getLddTemperature;
     if ~(abs(currTmptr-prevTmptr) > flowParams.deltaTmptr || abs(currTime-prevTime) > flowParams.deltaTimeSec)
         continue;
     end
     params.iterFromStart = iter;
-    [params,frame,CurrentOrigParams,validParams,dbg] = OnlineCalibration.aux.calcNewCameraParams(hw,params,originalParams,sectionMapDepth,sectionMapRgb,flowParams);
+    [params,frame,CurrentOrigParams,validParams,dbg] = OnlineCalibration.aux.calcNewCameraParams(hw,params,originalParams,[],[],flowParams);
     
     if validParams
         prevTime = toc(startTime);

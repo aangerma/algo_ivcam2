@@ -865,9 +865,11 @@ classdef HWinterface <handle
                     warning('Depth stream is not playing, using default intrinisc');
                 end
                 if all(dSz == [768 1024])
-                    [~,apdGain] = obj.cmd('AMCGET 4 0 1');
+                    [~,apdGain] = obj.cmd('AMCGET 4 0 1');
                 elseif all(dSz == [480 640])
-                    [~,apdGain] = obj.cmd('AMCGET 4 0 0');
+                    [~,apdGain] = obj.cmd('AMCGET 4 0 0');
+                elseif all(dSz == [240 320])
+                    [~,apdGain] = obj.cmd('AMCGET 4 0 2');
                 end
             catch e
                 error(e.message);
