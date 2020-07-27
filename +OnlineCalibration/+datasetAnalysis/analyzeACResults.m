@@ -79,7 +79,7 @@ for i = 1:numel(resMat)
     % Metrics from Luts
     for m = 1:numel(metricLutNames)
         metrics(m).pre(i) = interp2(lutData.hfactor,lutData.vfactor,lutData.metrics(m).values,res.inputState.hfactor,res.inputState.vfactor);
-        metrics(m).post(i) = interp2(lutData.hfactor,lutData.vfactor,lutData.metrics(m).values,res.outputState.hfactor,res.outputState.vfactor);
+        metrics(m).post(i) = interp2(lutData.hfactor,lutData.vfactor,lutData.metrics(m).values,double(res.outputState.hfactor),double(res.outputState.vfactor));
         metrics(m).postNoClipping(i) = interp2(lutData.hfactor,lutData.vfactor,lutData.metrics(m).values,res.outputStateNoClipping.hfactor,res.outputStateNoClipping.vfactor);
     end
 

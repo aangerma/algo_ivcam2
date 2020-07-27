@@ -23,8 +23,8 @@ for iTest = 1:nFrames
             continue;
         end
         params = dbData.paramsAll(iTest);
+        [frame,params.apdGain] = OnlineCalibration.datasetAnalysis.loadFrame(dbData.framePathsAll{iTest},dbData.dbTypeAll(iTest,:));
         [params] = OnlineCalibration.aux.getParamsForAC(params);
-        [frame] = OnlineCalibration.datasetAnalysis.loadFrame(dbData.framePathsAll{iTest},dbData.dbTypeAll(iTest,:));
         if dbAnalysisFlags.rerunWithDSMAug
             params.acData = OnlineCalibration.aux.defaultACTable();
             params.acData.hFactor = ((rand*4-2)+100)/100;

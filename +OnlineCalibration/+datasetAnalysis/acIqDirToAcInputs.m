@@ -76,7 +76,7 @@ di = find(contains(splittedProfile,'depth'));
 ri = find(contains(splittedProfile,'color'));
 params.depthRes = [str2double(splittedProfile{di+4}), str2double(splittedProfile{di+2})];%[1280 720];
 params.rgbRes = [str2double(splittedProfile{ri+2}), str2double(splittedProfile{ri+4})];%[480 640];
-
+params.apdGain = 18*strcmp(mdData.preset,'low_ambient') + 9*(1-strcmp(mdData.preset,'low_ambient'));
 calibFilename = fullfile(before_folder,'modified_calibration.json');
 CalibData = loadjson(calibFilename);
 

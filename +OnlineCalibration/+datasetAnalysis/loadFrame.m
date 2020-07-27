@@ -1,8 +1,16 @@
-function [frame] = loadFrame(framePath,dbType)
+function [frame,apdGain] = loadFrame(framePath,dbType)
+apdGain = 0;
 global runParams;
 switch dbType
     case 'iq'
         load(fullfile(framePath,'InputData.mat'),'frame');
+        try
+            mdFile = dir(fullfile(framePath,'../../**/md.json'));
+            md = loadjson(fullfile(mdFile.folder,mdFile.name));
+            apdGain = 18*strcmp(md.preset,'low_ambient') + 9*(1-strcmp(md.preset,'low_ambient'));
+        catch
+            fprintf('Could not find md file for scene:\n %s\n',framePath);
+        end
     case 'robot'
         load(framePath,'frame');
     case 'dataCollection'
