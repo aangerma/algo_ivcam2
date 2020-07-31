@@ -142,7 +142,7 @@ if isfield(params,'outputFolder')
    plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
    title('IR');
    subplot(122);
-   imagesc(currentFrame.z/4);colorbar;
+   imagesc(currentFrame.z/params.zMaxSubMM);colorbar;
    hold on;
    plot(originalFrame.xim+1,originalFrame.yim+1,'r*','markersize',1);
    title('Z');
