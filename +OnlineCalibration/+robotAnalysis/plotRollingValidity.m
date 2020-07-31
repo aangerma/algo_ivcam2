@@ -24,14 +24,14 @@ function plotRollingValidity(res,imagePath,showPlot)
     for f = 1:numel(logicNames)
         values = getFields(res,'dbgRerun','inputValidityDbg',logicNames{f});
         subplot(numel(logicNames)+numel(extraFields),1,f);
-        scatter(1:numel(values), values, 50, [0,255,0].*values', 'filled');
+        scatter(1:numel(values), values, 50, [0,1,0].*values', 'filled');
         xlabel('Iter');
         title(logicNames{f});
     end
     for f = 1:numel(extraFields)
         values = extras(f,:);
         subplot(numel(logicNames)+numel(extraFields),1,f+numel(logicNames));
-        scatter(1:numel(values), values, 50, [0,255,0].*values', 'filled');
+        scatter(1:numel(values), values, 50, [0,1,0].*values', 'filled');
         xlabel('Iter');
         title(extraFields{f});
     end
