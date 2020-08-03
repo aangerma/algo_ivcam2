@@ -74,7 +74,7 @@ params.maxLosScalingStep = 0.02;% In each K2DSM call, this factor determines the
 params.minHumTh = 32;
 params.maxHumTh = 46;
 
-params.gradRgbTh = 10*1280/params.rgbRes(1); % (checkEnoughRgbEdges) Should vary between resolutions as the transition takes more/less pixels
+params.gradRgbTh = 15*1280/params.rgbRes(1); % (checkEnoughRgbEdges) Should vary between resolutions as the transition takes more/less pixels
 % Difference between manual trigger and autotrigger
 if manualTrigger
     params.maxGlobalLosScalingStep = 0.005;% Clip the different between starting scale and final scale by this value
@@ -96,7 +96,7 @@ if manualTrigger
 else
     params.maxGlobalLosScalingStep = 0.004;% Clip the different between starting scale and final scale by this value
     % Input validity checks+++++++
-    params.pixPerSectionRgbTh = 0.01;% (checkDepthEdgesSpatialSpread)
+    params.pixPerSectionRgbTh = 0.02;% (checkDepthEdgesSpatialSpread)
     params.pixPerSectionDepthTh = 0.01;% (checkDepthEdgesSpatialSpread)
     params.minSectionWithEnoughEdges = 2;% (checkDepthEdgesSpatialSpread)
     params.edgesPerDirectionRatioTh = 0.004; % (checkEdgesDirSpread)
