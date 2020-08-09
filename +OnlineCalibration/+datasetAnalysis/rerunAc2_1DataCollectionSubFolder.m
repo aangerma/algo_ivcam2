@@ -31,7 +31,10 @@ for i = 1:numel(iterationDirs)
     if runMultiFrame
         params = OnlineCalibration.aux.getParamsForACMF(params);
     else
-        params = OnlineCalibration.aux.getParamsForAC(params);
+        if ~isfield(params,'manualTrigger')
+            params.manualTrigger = 0;
+        end
+        params = OnlineCalibration.aux.getParamsForAC(params,params.manualTrigger);
     end
     if i == 1
        origParams = params;
