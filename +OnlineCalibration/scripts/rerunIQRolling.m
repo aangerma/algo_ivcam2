@@ -1,16 +1,16 @@
-baseDir ='\\ger\ec\proj\ha\RSG\SA_3DCam\Avishai\AC2.1 Drop #2\2_8_2020\AC2.1 Diverged to 1.0051.015 Boxes and Toys';%'\\syn03.iil.intel.com\VIDB\AC2 Field Test\Data Collection\09-07-20\Rolling_V(1.1.0)\Benny';
+baseDir ='\\ger\ec\proj\ha\RSG\SA_3DCam\Avishai\AC2.1 Drop #2\11_8_2020\F0070142';%'\\syn03.iil.intel.com\VIDB\AC2 Field Test\Data Collection\09-07-20\Rolling_V(1.1.0)\Benny';
 sefFn = [];
 lrsRecording = 1;
 if lrsRecording
     dirData = dir(fullfile(baseDir,'Scene*'));
 else
-    dirData = dir(fullfile(baseDir,'*_checker*'));
+    dirData = dir(fullfile(baseDir,'B*'));
 end
-
-for k = 1:numel(dirData)
+savePath = 'X:\Users\mkiperwa\onlineCalibration\dbgIQRolling\AvishaiDebugTriger11Aug20_F0070142';
+for k = 1:numel(dirData) 
     rerunDir = fullfile(baseDir,dirData(k).name);
     [~,name,~] = fileparts(rerunDir);
-    outputDir = fullfile('X:\Users\mkiperwa\onlineCalibration\dbgIQRolling\AvishaiDebug_BoxesAndToys',['rerunIQ' name]);
+    outputDir = fullfile(savePath,['rerunIQ' name]);
     sefFn{k} = ['rerunIQ' name];
     mkdirSafe(outputDir);
     outputResFile = fullfile(outputDir,'res.mat');
@@ -56,7 +56,7 @@ OnlineCalibration.robotAnalysis.plotRollingValidity(res,'RollingValidity.png',1)
 %%
 % sefFn = {'rerunIQB1249_checker';'rerunIQB1407_checker';'rerunIQB1421_checker'};
 for l = 1:numel(sefFn)
-    load(fullfile('X:\Users\mkiperwa\onlineCalibration\dbgIQRolling\AvishaiDebug_BoxesAndToys',sefFn{l},'res.mat'));
+    load(fullfile(savePath,sefFn{l},'res.mat'));
     validity = [res.validParamsRerun];
     hFactorOut = getFields(res,'dbgRerun','acDataOut','hFactor');
     vFactorOut = getFields(res,'dbgRerun','acDataOut','vFactor');

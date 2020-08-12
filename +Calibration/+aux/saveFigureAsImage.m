@@ -22,7 +22,7 @@ imDir = fullfile(runParams.outputFolder,'figures');
 mkdirSafe(imDir);
 if addNumericPostFix
     i = 0;
-    maxFigures = 50;
+    maxFigures = 200;
     impath = fullfile(imDir,strcat(block,'_',name,sprintf('_%02d',i),pfix));
     while (exist(impath, 'file') == 2) && i < maxFigures
        i = i + 1;
