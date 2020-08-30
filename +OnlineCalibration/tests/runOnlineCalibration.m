@@ -33,7 +33,7 @@ switch runType
         acDataBin = [acInputData.acDataBin{:}];
         dsmRegs = acInputData.DSMRegs;
         fid = fopen( fullfile( outputBinFilesPath, 'yuy_prev_z_i.files' ), 'wt' );
-        fprintf( fid, 'binFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s\nbinFiles\\ac2\\%s', frame.yuy_files(1).name, frame.yuy_files(2).name, frame.yuy_files(3).name, frame.z_files(1).name, frame.i_files(1).name );
+        fprintf( fid, 'binFiles/ac2/%s\nbinFiles/ac2/%s\nbinFiles/ac2/%s\nbinFiles/ac2/%s\nbinFiles/ac2/%s', frame.yuy_files(1).name, frame.yuy_files(2).name,frame.z_files(1).name, frame.i_files(1).name,  frame.yuy_files(3).name );
         fclose( fid );
     case 'lrs'
         [frame,camerasParams,acInputData] = getCameraParamsRaw(sceneDir);
